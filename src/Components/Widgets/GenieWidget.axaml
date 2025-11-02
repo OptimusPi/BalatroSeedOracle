@@ -38,8 +38,8 @@
             </Border>
             <TextBlock Text="Genie"
                        FontSize="10"
-                       
-                       Foreground="White"
+                       FontFamily="{StaticResource BalatroFont}"
+                       Foreground="{StaticResource White}"
                        HorizontalAlignment="Center"/>
         </StackPanel>
 
@@ -65,8 +65,8 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       
-                                       Foreground="White"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
@@ -81,7 +81,7 @@
                             <!-- Prompt Input -->
                             <StackPanel Spacing="6">
                                 <TextBlock Text="✨ Describe your dream seed:"
-                                           
+                                           FontFamily="{StaticResource BalatroFont}"
                                            FontSize="12"
                                            Foreground="{StaticResource White}"/>
                                 <TextBox Classes="widget-prompt-input"
@@ -117,12 +117,12 @@
                                     Padding="10">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="✅ Generated Filter:"
-                                               
+                                               FontFamily="{StaticResource BalatroFont}"
                                                FontSize="11"
                                                Foreground="{StaticResource Blue}"/>
 
                                     <TextBlock Text="{Binding GeneratedFilterName}"
-                                               
+                                               FontFamily="{StaticResource BalatroFont}"
                                                FontSize="12"
                                                Foreground="{StaticResource White}"/>
 

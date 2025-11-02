@@ -25,12 +25,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private IBrush _validationStatusColor = Brushes.Gray;
 
+        /// <summary>
+        /// Returns the current filter name from the parent ViewModel for display in the editor header
+        /// </summary>
+        public string FilterFileName => !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
+            ? $"📄 {_parentViewModel.FilterName}.json"
+            : "📄 filter.json";
+
         public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
             _parentViewModel = parentViewModel;
 
             // Set default JSON content
             JsonContent = GetDefaultJsonContent();
+
+            // Listen for filter name changes from parent to update display
+            if (_parentViewModel != null)
+            {
+                _parentViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
+                    {
+                        OnPropertyChanged(nameof(FilterFileName));
+                    }
+                };
+            }
         }
 
         #region Command Implementations

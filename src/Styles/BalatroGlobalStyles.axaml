@@ -57,11 +57,18 @@
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          TextBlock.Foreground="{TemplateBinding Foreground}"
-                                          TextBlock.FontSize="{TemplateBinding FontSize}"
-                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                          TextBlock.FontFamily="{TemplateBinding FontFamily}"/>
+                                          ContentTemplate="{TemplateBinding ContentTemplate}">
+                            <ContentPresenter.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
+                                    <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
+                                    <Setter Property="FontWeight" Value="{Binding $parent[Button].FontWeight}"/>
+                                    <Setter Property="FontFamily" Value="{Binding $parent[Button].FontFamily}"/>
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                            </ContentPresenter.Styles>
+                        </ContentPresenter>
                     </Border>
                 </Grid>
             </ControlTemplate>
@@ -147,6 +154,31 @@
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Balatro-themed checkbox styling (red/orange accent) -->
+    <Style Selector="CheckBox /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <!-- Checked state - use Red for the checkmark -->
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{StaticResource Red}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Red}" />
+    </Style>
+
+    <!-- Hover state -->
+    <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="BorderBrush" Value="{StaticResource RedHover}" />
+    </Style>
+
+    <!-- Checked + Hover state -->
+    <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
+        <Setter Property="BorderBrush" Value="{StaticResource RedHover}" />
     </Style>
     
     <Style Selector="NumericUpDown:focus">
@@ -290,6 +322,14 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
         <Setter Property="Background" Value="{StaticResource Purple}" />
     </Style>
+
+    <!-- Warning/Stop button - Orange to match Back button -->
+    <Style Selector="Button:not(.SystemCaptionButton).btn-warning">
+        <Setter Property="Background" Value="{StaticResource Orange}" />
+    </Style>
+    <Style Selector="Button:not(.SystemCaptionButton).btn-warning:pointerover">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
     
     <!-- Big back button style -->
     <Style Selector="Button.btn-back">
@@ -306,11 +346,11 @@
     <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="21" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
-        <Setter Property="MinHeight" Value="45" />
+        <Setter Property="MinHeight" Value="44" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="MaxWidth" Value="160" />
@@ -326,12 +366,12 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
 
-    <!-- Special (Wildcards) button - yellow-orange variant -->
+    <!-- Special (Wildcards) button - Orange to match Back button -->
     <Style Selector="Button.nav-button.special">
-        <Setter Property="Background" Value="{StaticResource YellowOrange}" />
+        <Setter Property="Background" Value="{StaticResource Orange}" />
     </Style>
     <Style Selector="Button.nav-button.special:pointerover">
-        <Setter Property="Background" Value="{StaticResource YellowOrangeHover}" />
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
     <Style Selector="Button.nav-button.special.active">
         <Setter Property="Background" Value="{StaticResource Blue}" />

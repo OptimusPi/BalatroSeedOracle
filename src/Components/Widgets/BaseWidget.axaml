@@ -15,13 +15,13 @@
                     Width="100" Height="100"
                     Background="{StaticResource ModalGrey}"
                     BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="3"
+                    BorderThickness="2"
                     CornerRadius="12"
                     Cursor="Hand"
                     Command="{Binding ExpandCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                     <TextBlock Text="{Binding WidgetIcon}" FontSize="19" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding WidgetTitle}" FontSize="12"  Foreground="White" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding WidgetTitle}" FontSize="12" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
@@ -39,7 +39,7 @@
         <Border Name="ExpandedView"
                 ZIndex="10"
                 Classes="widget-container"
-                Background="{StaticResource MediumBackground}"
+                Background="{StaticResource ModalGrey}"
                 IsVisible="{Binding !IsMinimized}"
                 Width="350" Height="450">
 
@@ -77,8 +77,8 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       
-                                       Foreground="White"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>

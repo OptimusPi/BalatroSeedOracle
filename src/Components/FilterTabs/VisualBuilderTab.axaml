@@ -34,9 +34,9 @@
             <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
                 <!-- Filter Name Display at top -->
                 <Border Grid.Row="0"
-                        Background="{StaticResource DarkTealGrey}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
-                        CornerRadius="8"
+                        CornerRadius="12"
                         Padding="12,8">
                     <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
                                FontFamily="{StaticResource BalatroFont}"
@@ -49,9 +49,8 @@
 
                 <!-- Search bar -->
                 <Border Grid.Row="2"
-                        Background="{StaticResource ModalGrey}"
-                        BorderBrush="{StaticResource Blue}"
-                        BorderThickness="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
                         CornerRadius="8"
                         Padding="8,4">
                     <TextBox Name="SearchBox"
@@ -62,10 +61,16 @@
                              Foreground="{StaticResource White}"
                              Padding="4"
                              VerticalContentAlignment="Center"
-                             FontSize="13"/>
+                             FontSize="13">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
                 </Border>
 
-                <StackPanel Grid.Row="4" Spacing="8" Name="CategoryNav" DragDrop.AllowDrop="True">
+                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
                     <!-- Category buttons without section headers -->
                     <Button Content="Special"
                             Classes="nav-button special"
@@ -132,9 +137,9 @@
             <!-- CENTER COLUMN - Grouped Scrollable Items (NO PAGINATION) -->
             <Grid Grid.Column="1" Margin="8,0">
                 <Border Name="ItemGridBorder"
-                        Background="{StaticResource DarkTealGrey}"
+                        Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
-                        CornerRadius="8"
+                        CornerRadius="12"
                         Padding="12"
                         DragDrop.AllowDrop="True">
                     <ScrollViewer Name="ItemScrollViewer"
@@ -146,15 +151,15 @@
                                     <StackPanel Margin="0,0,0,16">
                                         <!-- Subcategory Header -->
                                         <Border Background="{StaticResource DarkBackground}"
-                                                BorderBrush="{StaticResource ModalBorder}"
-                                                BorderThickness="0,0,0,2"
+                                                BorderThickness="0"
                                                 Padding="8,6"
                                                 Margin="0,0,0,8"
                                                 CornerRadius="4">
                                             <TextBlock Text="{Binding GroupName}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="14"
-                                                       Foreground="{StaticResource Orange}"
+                                                       FontSize="13"
+                                                       FontWeight="Normal"
+                                                       Foreground="{StaticResource LightGrey}"
                                                        TextAlignment="Left"/>
                                         </Border>
 
@@ -175,9 +180,8 @@
                                                                     <StackPanel Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                                 IsHitTestVisible="False">
                                                                         <!-- Simple box visual for operators -->
-                                                                        <Border Background="{StaticResource DarkTealGrey}"
-                                                                                BorderBrush="{StaticResource Blue}"
-                                                                                BorderThickness="2"
+                                                                        <Border Background="{StaticResource DarkBackground}"
+                                                                                BorderThickness="0"
                                                                                 CornerRadius="6"
                                                                                 Width="70"
                                                                                 Height="50"
@@ -233,7 +237,7 @@
                                                                                        TextAlignment="Center"
                                                                                        TextWrapping="Wrap"
                                                                                        Margin="0,3,0,0"
-                                                                                       MaxWidth="80"/>
+                                                                                       MaxWidth="110"/>
                                                                         </StackPanel>
                                                                     </Border>
                                                                 </DataTemplate>
@@ -436,8 +440,7 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        DragDrop.AllowDrop="True"
-                        PointerEntered="OnMustDropZoneHover">
+                        DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
                             <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
@@ -451,7 +454,7 @@
 
                         <!-- Top: Horizontal Label - Clickable -->
                         <Border Grid.Row="0"
-                                Background="{StaticResource DarkTealGrey}"
+                                Background="{StaticResource DarkBackground}"
                                 Cursor="Hand"
                                 Padding="8,4"
                                 PointerPressed="OnMustLabelClick">
@@ -584,8 +587,7 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        DragDrop.AllowDrop="True"
-                        PointerEntered="OnShouldDropZoneHover">
+                        DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
                             <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
@@ -599,7 +601,7 @@
 
                         <!-- Top: Horizontal Label - Clickable -->
                         <Border Grid.Row="0"
-                                Background="{StaticResource DarkTealGrey}"
+                                Background="{StaticResource DarkBackground}"
                                 Cursor="Hand"
                                 Padding="8,4"
                                 PointerPressed="OnShouldLabelClick">
@@ -732,8 +734,7 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="0"
-                        DragDrop.AllowDrop="True"
-                        PointerEntered="OnMustNotDropZoneHover">
+                        DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
                             <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
@@ -747,12 +748,12 @@
 
                         <!-- Top: Horizontal Label - Clickable -->
                         <Border Grid.Row="0"
-                                Background="{StaticResource DarkTealGrey}"
+                                Background="{StaticResource DarkBackground}"
                                 Cursor="Hand"
                                 Padding="8,4"
                                 PointerPressed="OnCantLabelClick">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="CAN'T"
+                                <TextBlock Text="Banned Item Criteria"
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="18"
                                            FontWeight="ExtraBold"

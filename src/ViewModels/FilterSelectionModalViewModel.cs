@@ -229,21 +229,80 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Called by View after user confirms delete
+        /// Called by View after user confirms delete.
+        /// Performs the deletion and refreshes the UI without closing the modal.
         /// </summary>
-        public void ConfirmDelete()
+        public async void ConfirmDelete()
         {
             if (SelectedFilter == null || SelectedFilter.IsCreateNew)
                 return;
 
-            Result = new FilterSelectionResult
-            {
-                Cancelled = false,
-                Action = FilterAction.Delete,
-                FilterId = SelectedFilter.FilterId,
-            };
+            var filterIdToDelete = SelectedFilter.FilterId;
+            var filterNameToDelete = SelectedFilter.Name;
 
-            ModalCloseRequested?.Invoke(this, EventArgs.Empty);
+            DebugLogger.Log(
+                "FilterSelectionModalVM",
+                $"Starting delete for filter: {filterNameToDelete} ({filterIdToDelete})"
+            );
+
+            // Get FilterService to perform the deletion
+            var filterService = Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
+            var filtersDir = System.IO.Path.Combine(
+                System.IO.Directory.GetCurrentDirectory(),
+                "JsonItemFilters"
+            );
+            var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
+
+            // Perform deletion (this also removes from cache)
+            var deleted = await filterService.DeleteFilterAsync(filterPath);
+
+            if (!deleted)
+            {
+                DebugLogger.LogError(
+                    "FilterSelectionModalVM",
+                    $"Failed to delete filter: {filterIdToDelete}"
+                );
+                return;
+            }
+
+            DebugLogger.Log(
+                "FilterSelectionModalVM",
+                $"Filter deleted successfully: {filterIdToDelete}"
+            );
+
+            // CRITICAL: Clear the selected filter FIRST to avoid showing stale data
+            SelectedFilter = null;
+            FilterList.SelectedFilter = null;
+
+            // Refresh the filter list to reflect the deletion (reloads from cache/disk)
+            FilterList.RefreshFilters();
+
+            DebugLogger.Log(
+                "FilterSelectionModalVM",
+                $"Filter list refreshed - {FilterList.CurrentPageFilters.Count} filters on current page"
+            );
+
+            // Auto-select the first filter if any remain, otherwise show placeholder
+            if (FilterList.CurrentPageFilters.Count > 0)
+            {
+                // Use the SelectFilterCommand to properly trigger selection
+                var firstFilterViewModel = FilterList.CurrentPageFilters[0];
+                await FilterList.SelectFilterCommand.ExecuteAsync(firstFilterViewModel);
+
+                DebugLogger.Log(
+                    "FilterSelectionModalVM",
+                    $"Auto-selected first filter: {firstFilterViewModel.DisplayText}"
+                );
+            }
+            else
+            {
+                DebugLogger.Log(
+                    "FilterSelectionModalVM",
+                    "No filters remaining - showing placeholder"
+                );
+            }
+
+            // Modal stays open so user can continue managing filters
         }
 
         [RelayCommand]

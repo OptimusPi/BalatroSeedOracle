@@ -61,200 +61,25 @@
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Header with filter search -->
-            <RowDefinition Height="*"/>    <!-- Results table -->
-            <RowDefinition Height="Auto"/> <!-- Action buttons -->
+            <RowDefinition Height="Auto"/> <!-- Title and result count -->
+            <RowDefinition Height="*"/>    <!-- SortableResultsGrid -->
         </Grid.RowDefinitions>
 
-        <!-- Header with filter search -->
+        <!-- Title with result count -->
         <Border Grid.Row="0"
                 Classes="modal-content-box"
                 Margin="0,0,0,8">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Title -->
-                <TextBlock Grid.Row="0"
-                           Text="{Binding ResultsCount, StringFormat='Results: {0} seeds found'}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="18"
-                           Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,12"/>
-
-                <!-- Search box and buttons -->
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Filter search box -->
-                    <TextBox Grid.Column="0"
-                             Name="FilterSearchBox"
-                             Text="{Binding ResultsFilterText}"
-                             Watermark="Filter by seed name..."
-                             Height="40"
-                             Margin="0,0,8,0"
-                             FontFamily="{StaticResource BalatroFont}"
-                             FontSize="14"
-                             Background="{StaticResource VeryDarkGrey}"
-                             BorderBrush="{StaticResource DarkBorder}"
-                             BorderThickness="1"
-                             CornerRadius="6"
-                             Padding="12,0"/>
-
-                    <!-- Clear button -->
-                    <Button Grid.Column="1"
-                            Content="Clear"
-                            Command="{Binding ClearResultsCommand}"
-                            Classes="small-button"
-                            Margin="0,0,8,0"
-                            Background="{StaticResource Red}">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
-
-                    <!-- Refresh button -->
-                    <Button Grid.Column="2"
-                            Content="Refresh"
-                            Command="{Binding RefreshResultsCommand}"
-                            Classes="small-button"/>
-                </Grid>
-            </Grid>
+            <TextBlock Text="{Binding ResultsCount, StringFormat='Results: {0} seeds found'}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       Margin="0,8"/>
         </Border>
 
-        <!-- Results Table -->
-        <Border Grid.Row="1"
-                Classes="modal-content-box">
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Name="ResultsContainer" Spacing="0">
-                    <!-- Table Header -->
-                    <Border Background="{StaticResource DarkBorder}"
-                            CornerRadius="6,6,0,0"
-                            Padding="0"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="0,0,0,1">
-                        <Grid Margin="8,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="120"/> <!-- Seed -->
-                                <ColumnDefinition Width="100"/> <!-- Total Score -->
-                                <ColumnDefinition Width="*"/>   <!-- Details/Scores -->
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Seed Header -->
-                            <Button Grid.Column="0"
-                                    Content="Seed"
-                                    Classes="header-button"
-                                    Command="{Binding SortBySeedCommand}"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    FontSize="13"
-                                    Foreground="{StaticResource Gold}"
-                                    />
-
-                            <!-- Total Score Header -->
-                            <Button Grid.Column="1"
-                                    Content="Total Score"
-                                    Classes="header-button"
-                                    Command="{Binding SortByScoreCommand}"
-                                    FontFamily="{StaticResource BalatroFont}"
-                                    FontSize="13"
-                                    Foreground="{StaticResource Gold}"
-                                    />
-
-                            <!-- Details Header -->
-                            <TextBlock Grid.Column="2"
-                                       Text="Details"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource Gold}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Results Rows (using ItemsControl for data binding) -->
-                    <ItemsControl ItemsSource="{Binding FilteredResults}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Classes="result-row">
-                                    <Grid Margin="8,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="120"/> <!-- Seed -->
-                                            <ColumnDefinition Width="100"/> <!-- Total Score -->
-                                            <ColumnDefinition Width="*"/>   <!-- Details -->
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Seed -->
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Seed}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource LightCream}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"/>
-
-                                        <!-- Total Score -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding TotalScore}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource Green}"
-                                                   
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"/>
-
-                                        <!-- Details (scores array) -->
-                                        <TextBlock Grid.Column="2"
-                                                   Text="{Binding ScoresDisplay}"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MediumGrey}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Left"
-                                                   TextWrapping="Wrap"
-                                                   Margin="12,0,0,0"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
-
-        <!-- Action Buttons -->
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Spacing="12"
-                    Margin="0,8,0,0">
-            <!-- Export Results -->
-            <Button Content="Export Results"
-                    Command="{Binding ExportResultsCommand}"
-                    Classes="small-button"
-                    MinWidth="140"
-                    Background="{StaticResource Green}">
-                <Button.Styles>
-                    <Style Selector="Button:pointerover">
-                        <Setter Property="Background" Value="{StaticResource GreenHover}"/>
-                    </Style>
-                </Button.Styles>
-            </Button>
-
-            <!-- Copy to Clipboard -->
-            <Button Content="Copy Seeds"
-                    Command="{Binding CopySeedsCommand}"
-                    Classes="small-button"
-                    MinWidth="140"/>
-        </StackPanel>
+        <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->
+        <controls:SortableResultsGrid Grid.Row="1"
+                                      Name="ResultsGrid"
+                                      Margin="0"/>
     </Grid>
 </UserControl>

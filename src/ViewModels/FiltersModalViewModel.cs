@@ -528,6 +528,16 @@ namespace BalatroSeedOracle.ViewModels
                     PopulateFilterTabs(config);
                     LoadConfigIntoState(config);
                     LoadedConfig = config;
+
+                    // Update JSON editor with loaded content
+                    UpdateJsonEditorFromConfig(config);
+
+                    // Update Visual Builder with FilterItem objects
+                    await UpdateVisualBuilderFromItemConfigs();
+
+                    // CRITICAL: Expand drop zones that have items so they render
+                    ExpandDropZonesWithItems();
+
                     DebugLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
                 }
             }
@@ -985,6 +995,10 @@ namespace BalatroSeedOracle.ViewModels
                         // CRITICAL: Load the config into state (populates SelectedMust/Should/MustNot)
                         LoadConfigIntoState(config);
 
+                        // Update Visual Builder with FilterItem objects and expand zones
+                        await UpdateVisualBuilderFromItemConfigs();
+                        ExpandDropZonesWithItems();
+
                         // Update deck and stake selection indices
                         if (!string.IsNullOrEmpty(config.Deck))
                         {
@@ -1120,6 +1134,11 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             LoadedConfig = newConfig;
                             CurrentFilterPath = newPath;
+
+                            // Load config and update Visual Builder
+                            LoadConfigIntoState(newConfig);
+                            await UpdateVisualBuilderFromItemConfigs();
+                            ExpandDropZonesWithItems();
 
                             // Preserve deck/stake selections from the copy
                             if (!string.IsNullOrEmpty(newConfig.Deck))
@@ -1279,6 +1298,204 @@ namespace BalatroSeedOracle.ViewModels
                 "gold",
             };
             return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+        }
+
+        /// <summary>
+        /// Update JSON editor content from loaded config
+        /// </summary>
+        private void UpdateJsonEditorFromConfig(Motely.Filters.MotelyJsonConfig config)
+        {
+            try
+            {
+                // Find JSON Editor tab by checking Content property (which is the view, with DataContext as ViewModel)
+                var jsonEditorTab = TabItems.FirstOrDefault(t =>
+                    t.Content is Components.FilterTabs.JsonEditorTab);
+
+                if (jsonEditorTab?.Content is Components.FilterTabs.JsonEditorTab jsonEditorView &&
+                    jsonEditorView.DataContext is FilterTabs.JsonEditorTabViewModel jsonEditorVm)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    });
+                    jsonEditorVm.JsonContent = json;
+                    DebugLogger.Log("FiltersModalViewModel", "Updated JSON editor from config");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error updating JSON editor: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Update Visual Builder FilterItem collections from ItemConfigs
+        /// </summary>
+        private async Task UpdateVisualBuilderFromItemConfigs()
+        {
+            try
+            {
+                if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                {
+                    // Clear existing items
+                    visualVm.SelectedMust.Clear();
+                    visualVm.SelectedShould.Clear();
+                    visualVm.SelectedMustNot.Clear();
+
+                    // Convert Must items
+                    foreach (var itemKey in SelectedMust)
+                    {
+                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                        {
+                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                            if (filterItem != null)
+                            {
+                                visualVm.SelectedMust.Add(filterItem);
+                            }
+                        }
+                    }
+
+                    // Convert Should items
+                    foreach (var itemKey in SelectedShould)
+                    {
+                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                        {
+                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                            if (filterItem != null)
+                            {
+                                visualVm.SelectedShould.Add(filterItem);
+                            }
+                        }
+                    }
+
+                    // Convert MustNot items
+                    foreach (var itemKey in SelectedMustNot)
+                    {
+                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                        {
+                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                            if (filterItem != null)
+                            {
+                                visualVm.SelectedMustNot.Add(filterItem);
+                            }
+                        }
+                    }
+
+                    DebugLogger.Log("FiltersModalViewModel", $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error updating Visual Builder: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Convert ItemConfig to FilterItem for Visual Builder
+        /// </summary>
+        private Task<Models.FilterItem?> ConvertItemConfigToFilterItem(ItemConfig itemConfig)
+        {
+            try
+            {
+                var spriteService = SpriteService.Instance;
+
+                // Determine category for layout behavior
+                var category = DetermineCategoryFromType(itemConfig.ItemType);
+
+                // Create FilterItem - ItemImage and SoulFaceImage are computed properties based on Type and Name
+                var filterItem = new Models.FilterItem
+                {
+                    Name = itemConfig.ItemName,
+                    Type = itemConfig.IsSoulJoker ? "SoulJoker" : itemConfig.ItemType,
+                    Category = category,
+                    ItemKey = itemConfig.ItemKey,
+                    DisplayName = BalatroData.GetDisplayNameFromSprite(itemConfig.ItemName),
+                    // Get appropriate sprite image based on type
+                    ItemImage = itemConfig.ItemType switch
+                    {
+                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName),
+                        "SmallBlindTag" => spriteService.GetTagImage(itemConfig.ItemName),
+                        "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
+                        "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
+                        "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
+                        "Spectral" => spriteService.GetSpectralImage(itemConfig.ItemName),
+                        "Boss" => spriteService.GetBossImage(itemConfig.ItemName),
+                        _ => null
+                    }
+                };
+
+                return Task.FromResult<Models.FilterItem?>(filterItem);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error converting ItemConfig to FilterItem: {ex.Message}");
+                return Task.FromResult<Models.FilterItem?>(null);
+            }
+        }
+
+        /// <summary>
+        /// Maps item type to category for CategoryGroupedLayoutBehavior
+        /// </summary>
+        private string DetermineCategoryFromType(string itemType)
+        {
+            return itemType switch
+            {
+                "Joker" or "SoulJoker" => "Jokers",
+                "SmallBlindTag" => "Tags",
+                "Boss" => "Bosses",
+                "Voucher" => "Vouchers",
+                "Tarot" or "Planet" or "Spectral" => "Consumables",
+                _ => "Other"
+            };
+        }
+
+        /// <summary>
+        /// CRITICAL: Expand drop zones that contain items after loading a filter.
+        /// Without this, loaded items won't render because the ItemsControl IsVisible=false when collapsed.
+        /// </summary>
+        private void ExpandDropZonesWithItems()
+        {
+            try
+            {
+                if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                {
+                    // Determine which zone has the most items and expand it
+                    var mustCount = visualVm.SelectedMust.Count;
+                    var shouldCount = visualVm.SelectedShould.Count;
+                    var mustNotCount = visualVm.SelectedMustNot.Count;
+
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"Expanding drop zones with items - Must: {mustCount}, Should: {shouldCount}, MustNot: {mustNotCount}");
+
+                    // Expand the zone with the most items (or MUST if tied/empty)
+                    if (mustCount >= shouldCount && mustCount >= mustNotCount)
+                    {
+                        visualVm.IsMustExpanded = true;
+                        visualVm.IsShouldExpanded = false;
+                        visualVm.IsCantExpanded = false;
+                        DebugLogger.Log("FiltersModalViewModel", "Expanded MUST zone");
+                    }
+                    else if (shouldCount > mustCount && shouldCount >= mustNotCount)
+                    {
+                        visualVm.IsMustExpanded = false;
+                        visualVm.IsShouldExpanded = true;
+                        visualVm.IsCantExpanded = false;
+                        DebugLogger.Log("FiltersModalViewModel", "Expanded SHOULD zone");
+                    }
+                    else if (mustNotCount > 0)
+                    {
+                        visualVm.IsMustExpanded = false;
+                        visualVm.IsShouldExpanded = false;
+                        visualVm.IsCantExpanded = true;
+                        DebugLogger.Log("FiltersModalViewModel", "Expanded MUST-NOT zone");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error expanding drop zones: {ex.Message}");
+            }
         }
     }
 }

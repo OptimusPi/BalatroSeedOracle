@@ -11,6 +11,8 @@ namespace BalatroSeedOracle.Services
         Task<bool> DeleteFilterAsync(string filePath);
         Task<bool> ValidateFilterAsync(string filePath);
         string GenerateFilterFileName(string baseName);
+        Task<string> GetFilterNameAsync(string filterId);
+        Task<string> CloneFilterAsync(string filterId, string newName);
     }
 
     public class FilterService : IFilterService
@@ -97,6 +99,96 @@ namespace BalatroSeedOracle.Services
             var filtersDir = _configurationService.GetFiltersDirectory();
             var fileName = $"{baseName}.json";
             return Path.Combine(filtersDir, fileName);
+        }
+
+        public async Task<string> GetFilterNameAsync(string filterId)
+        {
+            try
+            {
+                var filtersDir = _configurationService.GetFiltersDirectory();
+                var filterPath = Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (File.Exists(filterPath))
+                {
+                    var json = await File.ReadAllTextAsync(filterPath);
+
+                    var deserializeOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true
+                    };
+
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, deserializeOptions);
+                    return config?.Name ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("FilterService", $"Error reading filter name: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
+        public async Task<string> CloneFilterAsync(string filterId, string newName)
+        {
+            try
+            {
+                var filtersDir = _configurationService.GetFiltersDirectory();
+                var filterPath = Path.Combine(filtersDir, $"{filterId}.json");
+
+                if (!File.Exists(filterPath))
+                {
+                    Helpers.DebugLogger.LogError("FilterService", $"Filter not found: {filterPath}");
+                    return string.Empty;
+                }
+
+                var json = await File.ReadAllTextAsync(filterPath);
+
+                // Use same deserialization options as MotelyJsonConfig.TryLoadFromJsonFile
+                var deserializeOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, deserializeOptions);
+
+                if (config != null)
+                {
+                    config.Name = newName; // Use custom name
+                    config.DateCreated = DateTime.UtcNow;
+                    var userProfileService = Helpers.ServiceHelper.GetService<UserProfileService>();
+                    config.Author = userProfileService?.GetAuthorName() ?? "Unknown";
+
+                    // Generate clean ID from name
+                    var cleanName = newName.Replace(" ", "").ToLower();
+                    var newId = $"{cleanName}_{Guid.NewGuid():N}";
+                    var newPath = Path.Combine(filtersDir, $"{newId}.json");
+
+                    // Use camelCase serialization to maintain JSON format consistency
+                    var serializeOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    };
+
+                    var newJson = System.Text.Json.JsonSerializer.Serialize(config, serializeOptions);
+                    await File.WriteAllTextAsync(newPath, newJson);
+
+                    // Cache will auto-refresh on next access (file watcher)
+                    Helpers.DebugLogger.Log("FilterService", $"Filter cloned: {filterId} -> {newId} (name: {newName})");
+                    return newId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("FilterService", $"Error cloning filter: {ex.Message}");
+            }
+
+            return string.Empty;
         }
     }
 }

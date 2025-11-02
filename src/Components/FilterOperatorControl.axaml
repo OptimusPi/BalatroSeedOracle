@@ -7,10 +7,9 @@
 
     <Border
         Padding="4"
-        Background="{StaticResource DarkTealGrey}"
-        BorderBrush="{StaticResource Blue}"
-        BorderThickness="2"
-        CornerRadius="8"
+        Background="{StaticResource DarkBackground}"
+        BorderThickness="0"
+        CornerRadius="12"
         MinWidth="120"
         MinHeight="80">
 
@@ -37,9 +36,8 @@
                 Grid.Row="1"
                 Name="ChildrenDropZone"
                 Padding="4"
-                Background="{StaticResource Black}"
-                BorderBrush="{StaticResource TealGrey}"
-                BorderThickness="1"
+                Background="{StaticResource DarkBackground}"
+                BorderThickness="0"
                 CornerRadius="4"
                 MinHeight="60"
                 DragDrop.AllowDrop="True">
@@ -62,9 +60,8 @@
                                 <Border
                                     Margin="2"
                                     Padding="2"
-                                    Background="{StaticResource TealGrey}"
-                                    BorderBrush="{StaticResource Blue}"
-                                    BorderThickness="1"
+                                    Background="{StaticResource DarkBackground}"
+                                    BorderThickness="0"
                                     CornerRadius="4"
                                     Width="50"
                                     Height="66"

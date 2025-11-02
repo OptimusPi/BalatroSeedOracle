@@ -64,8 +64,8 @@
                             IsVisible="{Binding ShowNewDayBadge}">
                         <TextBlock Text="!"
                                    FontSize="12"
-                                   
-                                   Foreground="White"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource White}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
@@ -73,8 +73,8 @@
 
                 <TextBlock Text="Daylatro"
                            FontSize="10"
-                           
-                           Foreground="White"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
@@ -101,8 +101,8 @@
                             <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
-                                       
-                                       Foreground="White"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
@@ -236,7 +236,7 @@
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding Initials}"
                                                            FontSize="12"
-                                                           />
+                                                           FontFamily="{StaticResource BalatroFont}"/>
 
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding Ante}"

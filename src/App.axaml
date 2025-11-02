@@ -35,8 +35,6 @@
         <SolidColorBrush x:Key="PureBlack">#374244</SolidColorBrush>
         <SolidColorBrush x:Key="PaleRed">#8f3b36</SolidColorBrush>
         <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="YellowOrange">#ffb020</SolidColorBrush>
-        <SolidColorBrush x:Key="YellowOrangeHover">#d89518</SolidColorBrush>
         <SolidColorBrush x:Key="PlanetTeal">#00a7ca</SolidColorBrush>
         <SolidColorBrush x:Key="SpectralBlue">#2e76fd</SolidColorBrush>
         <SolidColorBrush x:Key="VoucherOrange">#ff5611</SolidColorBrush>
@@ -58,7 +56,6 @@
         <SolidColorBrush x:Key="LightGreyHover">#404c4e</SolidColorBrush>
         <SolidColorBrush x:Key="TarotPurple">#9e74ce</SolidColorBrush>
         <SolidColorBrush x:Key="SemiTransparentBlack">#44222222</SolidColorBrush>
-        <SolidColorBrush x:Key="VeryTransparentBlack">#000000CC</SolidColorBrush> <!-- 80% opacity modal overlay -->
         <SolidColorBrush x:Key="LightCream">#f5e6d3</SolidColorBrush>
         <SolidColorBrush x:Key="DarkerGrey">#1e2b2d</SolidColorBrush>
         <SolidColorBrush x:Key="DarkGrey">#2e3f42</SolidColorBrush>

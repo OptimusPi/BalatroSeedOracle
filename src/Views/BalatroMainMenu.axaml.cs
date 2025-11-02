@@ -40,6 +40,10 @@ namespace BalatroSeedOracle.Views
         private Action<float, float, float, float>? _audioAnalysisHandler;
         private Popup? _volumePopup;
 
+        // Modal navigation stack (for Back button support)
+        private UserControl? _previousModalContent;
+        private string? _previousModalTitle;
+
         // ViewModel (injected via DI - never null after construction)
         public BalatroMainMenuViewModel ViewModel { get; }
 
@@ -220,6 +224,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void ShowSearchModal()
         {
+            // Clear modal stack when starting fresh from main menu
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
             // Create FilterSelectionModal and show it as main modal content (NOT as a dialog)
             var filterSelectionModal = new FilterSelectionModal();
             var filterSelectionVM = new FilterSelectionModalViewModel(
@@ -256,6 +264,10 @@ namespace BalatroSeedOracle.Views
                     case Models.FilterAction.Search:
                         if (result.FilterId != null)
                         {
+                            // Save FilterSelectionModal for back navigation
+                            _previousModalContent = filterSelectionModal;
+                            _previousModalTitle = "🔍 SELECT FILTER";
+
                             // Resolve filter id to full path
                             var filtersDir = System.IO.Path.Combine(
                                 System.IO.Directory.GetCurrentDirectory(),
@@ -352,7 +364,28 @@ namespace BalatroSeedOracle.Views
                 // Show SearchModal as main modal content (replaces FilterSelectionModal)
                 var modal = new StandardModal("🎰 SEED SEARCH");
                 modal.SetContent(searchContent);
-                modal.BackClicked += (s, e) => HideModalContent();
+                modal.BackClicked += (s, e) =>
+                {
+                    // Check if we have a previous modal to return to
+                    if (_previousModalContent != null && _previousModalTitle != null)
+                    {
+                        // Return to FilterSelectionModal
+                        var previousContent = _previousModalContent;
+                        var previousTitle = _previousModalTitle;
+
+                        // Clear stack for next navigation
+                        _previousModalContent = null;
+                        _previousModalTitle = null;
+
+                        // Restore previous modal
+                        ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                    }
+                    else
+                    {
+                        // No previous modal - close entirely
+                        HideModalContent();
+                    }
+                };
                 // Keep backdrop visible during transition to prevent flicker
                 ShowModalContent(modal, "🎰 SEED SEARCH", keepBackdrop: true);
             }
@@ -414,12 +447,9 @@ namespace BalatroSeedOracle.Views
                         }
                         else
                         {
-                            // User cancelled - just close modal
-                            if (ViewModel != null)
-                            {
-                                ViewModel.IsModalVisible = false;
-                            }
-                            HideModalContent();
+                            // User cancelled - stay in FilterSelectionModal (don't close entire modal)
+                            Helpers.DebugLogger.Log("BalatroMainMenu", "Create filter cancelled - staying in filter selection");
+                            // Do nothing - just let the dialog close and stay in FilterSelectionModal
                         }
                         break;
                     case Models.FilterAction.Edit:
@@ -435,8 +465,9 @@ namespace BalatroSeedOracle.Views
                         // Show dialog to get copy name, then clone and open designer
                         if (result.FilterId != null)
                         {
-                            // Get original filter name for default
-                            var originalName = await GetFilterName(result.FilterId);
+                            // Get original filter name for default (using FilterService)
+                            var filterService = Helpers.ServiceHelper.GetRequiredService<IFilterService>();
+                            var originalName = await filterService.GetFilterNameAsync(result.FilterId);
                             var defaultCopyName = string.IsNullOrEmpty(originalName)
                                 ? "Filter Copy"
                                 : $"{originalName} Copy";
@@ -444,7 +475,7 @@ namespace BalatroSeedOracle.Views
                             var copyName = await ShowFilterNameInputDialog(defaultCopyName);
                             if (!string.IsNullOrWhiteSpace(copyName))
                             {
-                                var clonedId = await CloneFilterWithName(result.FilterId, copyName);
+                                var clonedId = await filterService.CloneFilterAsync(result.FilterId, copyName);
                                 if (!string.IsNullOrEmpty(clonedId))
                                 {
                                     await Dispatcher.UIThread.InvokeAsync(() =>
@@ -454,30 +485,20 @@ namespace BalatroSeedOracle.Views
                             }
                             else
                             {
-                                // User cancelled - just close modal
-                                if (ViewModel != null)
-                                {
-                                    ViewModel.IsModalVisible = false;
-                                }
-                                HideModalContent();
+                                // User cancelled - stay in FilterSelectionModal (don't close entire modal)
+                                Helpers.DebugLogger.Log("BalatroMainMenu", "Copy filter cancelled - staying in filter selection");
+                                // Do nothing - just let the dialog close and stay in FilterSelectionModal
                             }
                         }
                         break;
                     case Models.FilterAction.Delete:
-                        // Delete the filter and close modal
-                        if (result.FilterId != null)
-                        {
-                            DeleteFilter(result.FilterId);
-                        }
-                        // Reset IsModalVisible and hide modal - ensure on UI thread
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            if (ViewModel != null)
-                            {
-                                ViewModel.IsModalVisible = false;
-                            }
-                            HideModalContent();
-                        });
+                        // NOTE: Delete is now handled entirely in FilterSelectionModalViewModel.ConfirmDelete()
+                        // This case should never be reached since ConfirmDelete() doesn't invoke ModalCloseRequested anymore
+                        // Kept for backwards compatibility in case of refactoring
+                        Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            "Delete action reached ModalCloseRequested - this should not happen. Delete is handled in ViewModel."
+                        );
                         break;
                 }
             };
@@ -513,11 +534,18 @@ namespace BalatroSeedOracle.Views
                 filterId = sanitizedName;
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                // Create default empty filter
+                // Create default empty filter in NEW MotelyJsonConfig format
                 var defaultFilter = new
                 {
                     name = filterName,
-                    items = new object[] { }
+                    description = "Created with visual filter builder",
+                    author = "pifreak",
+                    dateCreated = DateTime.UtcNow.ToString("O"),
+                    deck = "Red",
+                    stake = "White",
+                    must = new object[] { },
+                    should = new object[] { },
+                    mustNot = new object[] { }
                 };
                 System.IO.File.WriteAllText(filterPath, System.Text.Json.JsonSerializer.Serialize(defaultFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
@@ -677,12 +705,18 @@ namespace BalatroSeedOracle.Views
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                // Create minimal valid filter JSON
+                // Create minimal valid filter JSON in NEW MotelyJsonConfig format
                 var minimalFilter = new
                 {
-                    filterName = filterName,
-                    filterAuthor = "User",
-                    itemGroups = new object[] { }
+                    name = filterName,
+                    description = "Created with visual filter builder",
+                    author = "pifreak",
+                    dateCreated = DateTime.UtcNow.ToString("O"),
+                    deck = "Red",
+                    stake = "White",
+                    must = new object[] { },
+                    should = new object[] { },
+                    mustNot = new object[] { }
                 };
 
                 var json = System.Text.Json.JsonSerializer.Serialize(minimalFilter, new System.Text.Json.JsonSerializerOptions
@@ -877,10 +911,10 @@ namespace BalatroSeedOracle.Views
             var windowHeight = this.Bounds.Height;
 
             // Set initial states BEFORE making visible or adding content
-            // Skip backdrop reset if we're transitioning between modals (prevents flicker)
+            // Backdrop appears INSTANTLY (no fade) - Balatro style
             if (!keepBackdrop)
             {
-                _modalOverlay.Opacity = UIConstants.InvisibleOpacity;
+                _modalOverlay.Opacity = UIConstants.FullOpacity;
             }
 
             // CRITICAL: Keep content wrapper invisible until transform is applied
@@ -919,11 +953,7 @@ namespace BalatroSeedOracle.Views
                     // Make content wrapper visible now that transform is set
                     _modalContentWrapper.Opacity = UIConstants.FullOpacity;
 
-                    // Fade in overlay (0 → 1) only if we're not keeping the backdrop
-                    if (!keepBackdrop)
-                    {
-                        _modalOverlay.Opacity = UIConstants.FullOpacity;
-                    }
+                    // Backdrop is already instant - no fade animation
 
                     // Slide up content from below screen (translateY: windowHeight → 0)
                     translateTransform.Y = 0;
@@ -1701,155 +1731,9 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Get filter name from filter ID
         /// </summary>
-        private async Task<string> GetFilterName(string filterId)
-        {
-            try
-            {
-                var filtersDir = "JsonItemFilters";
-                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
-
-                if (System.IO.File.Exists(filterPath))
-                {
-                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-                    return config?.Name ?? "";
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Error reading filter name: {ex.Message}");
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Clone filter with custom name
-        /// </summary>
-        private async Task<string> CloneFilterWithName(string filterId, string newName)
-        {
-            try
-            {
-                var filtersDir = "JsonItemFilters";
-                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
-
-                if (!System.IO.File.Exists(filterPath))
-                {
-                    DebugLogger.LogError("BalatroMainMenu", $"Filter not found: {filterPath}");
-                    return string.Empty;
-                }
-
-                var json = await System.IO.File.ReadAllTextAsync(filterPath);
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
-
-                if (config != null)
-                {
-                    config.Name = newName; // Use custom name from dialog
-                    config.DateCreated = DateTime.UtcNow;
-                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
-
-                    // Generate clean ID from name
-                    var cleanName = newName.Replace(" ", "").ToLower();
-                    var newId = $"{cleanName}_{Guid.NewGuid():N}";
-                    var newPath = System.IO.Path.Combine(filtersDir, $"{newId}.json");
-
-                    var newJson = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
-                    );
-                    await System.IO.File.WriteAllTextAsync(newPath, newJson);
-
-                    DebugLogger.Log("BalatroMainMenu", $"Filter cloned: {filterId} -> {newId} (name: {newName})");
-                    return newId;
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Error cloning filter: {ex.Message}");
-            }
-
-            return string.Empty;
-        }
-
-        [Obsolete("Use CloneFilterWithName instead")]
-        private async Task<string> CloneFilter(string filterId)
-        {
-            try
-            {
-                // JsonItemFilters is in the project root, not the bin directory
-                var filtersDir = "JsonItemFilters";
-                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
-
-                if (!System.IO.File.Exists(filterPath))
-                {
-                    DebugLogger.LogError("BalatroMainMenu", $"Filter not found: {filterPath}");
-                    return string.Empty;
-                }
-
-                var json = await System.IO.File.ReadAllTextAsync(filterPath);
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        json
-                    );
-
-                if (config != null)
-                {
-                    config.Name = $"{config.Name} (Copy)";
-                    config.DateCreated = DateTime.UtcNow;
-                    config.Author =
-                        ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
-                        ?? "Unknown";
-
-                    var newId = $"{filterId}_copy_{DateTime.UtcNow.Ticks}";
-                    var newPath = System.IO.Path.Combine(filtersDir, $"{newId}.json");
-
-                    var newJson = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
-                    );
-                    await System.IO.File.WriteAllTextAsync(newPath, newJson);
-
-                    DebugLogger.Log("BalatroMainMenu", $"Filter cloned: {filterId} -> {newId}");
-                    return newId;
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Error cloning filter: {ex.Message}");
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Delete a filter
-        /// </summary>
-        private void DeleteFilter(string filterId)
-        {
-            try
-            {
-                // JsonItemFilters is in the project root, not the bin directory
-                var filtersDir = "JsonItemFilters";
-                var filterPath = System.IO.Path.Combine(filtersDir, $"{filterId}.json");
-
-                if (System.IO.File.Exists(filterPath))
-                {
-                    System.IO.File.Delete(filterPath);
-                    DebugLogger.Log("BalatroMainMenu", $"Filter deleted: {filterId}");
-                }
-                else
-                {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Filter not found for deletion: {filterPath}"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("BalatroMainMenu", $"Error deleting filter: {ex.Message}");
-            }
-        }
+        // REMOVED: GetFilterName, CloneFilterWithName, DeleteFilter
+        // These methods have been moved to FilterService for proper MVVM separation
+        // Use IFilterService.GetFilterNameAsync(), IFilterService.CloneFilterAsync(), IFilterService.DeleteFilterAsync()
 
         #endregion
 

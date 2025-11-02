@@ -354,10 +354,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         returnOverlay.IsVisible = true;
                     }
 
-                    // Hide drop zone overlays
-                    if (mustOverlay != null) mustOverlay.IsVisible = false;
-                    if (shouldOverlay != null) shouldOverlay.IsVisible = false;
-                    if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+                    // Hide ALL drop zone overlays when over return area
+                    // BUT only if we're dragging FROM a drop zone (not from shelf)
+                    if (_sourceDropZone != null)
+                    {
+                        if (mustOverlay != null) mustOverlay.IsVisible = false;
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = false;
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+                    }
                 }
                 // Check if over drop zone container - determine which third
                 else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
@@ -374,33 +378,69 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     if (localPos.Y < thirdHeight)
                     {
-                        // Top third - MUST
+                        // Top third - MUST - Show ONLY this overlay, hide others
                         if (mustOverlay != null) mustOverlay.IsVisible = true;
                         if (shouldOverlay != null) shouldOverlay.IsVisible = false;
                         if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+
+                        // Expand MUST zone, collapse others (accordion style during drag)
+                        if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                        {
+                            vm.IsMustExpanded = true;
+                            vm.IsShouldExpanded = false;
+                            vm.IsCantExpanded = false;
+                        }
                     }
                     else if (localPos.Y < thirdHeight * 2)
                     {
-                        // Middle third - SHOULD
+                        // Middle third - SHOULD - Show ONLY this overlay, hide others
                         if (mustOverlay != null) mustOverlay.IsVisible = false;
                         if (shouldOverlay != null) shouldOverlay.IsVisible = true;
                         if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
+
+                        // Expand SHOULD zone, collapse others (accordion style during drag)
+                        if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                        {
+                            vm.IsMustExpanded = false;
+                            vm.IsShouldExpanded = true;
+                            vm.IsCantExpanded = false;
+                        }
                     }
                     else
                     {
-                        // Bottom third - CAN'T
+                        // Bottom third - CAN'T - Show ONLY this overlay, hide others
                         if (mustOverlay != null) mustOverlay.IsVisible = false;
                         if (shouldOverlay != null) shouldOverlay.IsVisible = false;
                         if (mustNotOverlay != null) mustNotOverlay.IsVisible = true;
+
+                        // Expand MUST-NOT zone, collapse others (accordion style during drag)
+                        if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                        {
+                            vm.IsMustExpanded = false;
+                            vm.IsShouldExpanded = false;
+                            vm.IsCantExpanded = true;
+                        }
                     }
                 }
                 else
                 {
-                    // Not over any drop zone - hide all overlays
+                    // Not over any drop zone - show ALL overlays again (back to initial drag state)
+                    // Exclude source zone if dragging from a drop zone
+                    if (_sourceDropZone == null)
+                    {
+                        // Dragging from shelf - show all drop zone overlays
+                        if (mustOverlay != null) mustOverlay.IsVisible = true;
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = true;
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = true;
+                    }
+                    else
+                    {
+                        // Dragging from a drop zone - show all overlays EXCEPT source
+                        if (mustOverlay != null) mustOverlay.IsVisible = (_sourceDropZone != "MustDropZone");
+                        if (shouldOverlay != null) shouldOverlay.IsVisible = (_sourceDropZone != "ShouldDropZone");
+                        if (mustNotOverlay != null) mustNotOverlay.IsVisible = (_sourceDropZone != "MustNotDropZone");
+                    }
                     if (returnOverlay != null) returnOverlay.IsVisible = false;
-                    if (mustOverlay != null) mustOverlay.IsVisible = false;
-                    if (shouldOverlay != null) shouldOverlay.IsVisible = false;
-                    if (mustNotOverlay != null) mustNotOverlay.IsVisible = false;
                 }
             }
             catch (Exception ex)
@@ -1304,7 +1344,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         /// <summary>
         /// Show drop zone overlays. If excludeZone is specified, that zone won't show its overlay.
-        /// Also shows Favorites overlay. ONLY shows overlays for EXPANDED drop zones to avoid visual clash.
+        /// Also shows Favorites overlay. Shows ALL drop zone overlays when drag starts.
         /// </summary>
         private void ShowDropZoneOverlays(string? excludeZone = null)
         {
@@ -1313,24 +1353,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (backdrop != null)
                 backdrop.IsVisible = true;
 
-            // Get ViewModel to check expansion states
-            var viewModel = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-
-            if (excludeZone != "MustDropZone" && viewModel?.IsMustExpanded == true)
+            // Show ALL drop zone overlays (excluding the source zone if specified)
+            if (excludeZone != "MustDropZone")
             {
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
                 if (mustOverlay != null)
                     mustOverlay.IsVisible = true;
             }
 
-            if (excludeZone != "ShouldDropZone" && viewModel?.IsShouldExpanded == true)
+            if (excludeZone != "ShouldDropZone")
             {
                 var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
                 if (shouldOverlay != null)
                     shouldOverlay.IsVisible = true;
             }
 
-            if (excludeZone != "MustNotDropZone" && viewModel?.IsCantExpanded == true)
+            if (excludeZone != "MustNotDropZone")
             {
                 var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
                 if (mustNotOverlay != null)
@@ -1421,45 +1459,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 vm.ExpandCantCommand.Execute(null);
                 DebugLogger.Log("VisualBuilderTab", "CAN'T zone expanded via label click");
-            }
-        }
-
-        /// <summary>
-        /// Handle MUST zone hover - expand MUST, collapse others (accordion style)
-        /// </summary>
-        private void OnMustDropZoneHover(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsMustExpanded = true;
-                vm.IsShouldExpanded = false;
-                vm.IsCantExpanded = false;
-            }
-        }
-
-        /// <summary>
-        /// Handle SHOULD zone hover - expand SHOULD, collapse others (accordion style)
-        /// </summary>
-        private void OnShouldDropZoneHover(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsMustExpanded = false;
-                vm.IsShouldExpanded = true;
-                vm.IsCantExpanded = false;
-            }
-        }
-
-        /// <summary>
-        /// Handle MUST-NOT zone hover - expand MUST-NOT, collapse others (accordion style)
-        /// </summary>
-        private void OnMustNotDropZoneHover(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsMustExpanded = false;
-                vm.IsShouldExpanded = false;
-                vm.IsCantExpanded = true;
             }
         }
     }

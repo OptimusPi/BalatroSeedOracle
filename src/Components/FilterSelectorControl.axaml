@@ -147,9 +147,9 @@
                                             HorizontalAlignment="Center"
                                             IsVisible="{Binding IsSelected}">
                                         <TextBlock Text="✓"
-                                                   Foreground="White"
+                                                   Foreground="{StaticResource White}"
                                                    FontSize="12"
-                                                   
+                                                   FontFamily="{StaticResource BalatroFont}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"/>
                                     </Border>
@@ -270,7 +270,7 @@
 
                     <!-- Description (FULL, not truncated!) - Dark Balatro style -->
                     <Border Grid.Row="2"
-                            Background="{StaticResource VeryDarkTeal}"
+                            Background="{StaticResource DarkBackground}"
                             BorderThickness="0"
                             CornerRadius="6"
                             Padding="12,8"
@@ -313,9 +313,9 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
-                                                            Background="{StaticResource White}"
-                                                            BorderBrush="{StaticResource CardBrown}"
-                                                            BorderThickness="3"
+                                                            Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="0"
                                                             Margin="4"
                                                             Padding="2"
                                                             BoxShadow="0 2 4 #00000040"
@@ -371,9 +371,9 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
-                                                            Background="{StaticResource White}"
-                                                            BorderBrush="{StaticResource CardBrown}"
-                                                            BorderThickness="3"
+                                                            Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="0"
                                                             Margin="4"
                                                             Padding="2"
                                                             BoxShadow="0 2 4 #00000040"

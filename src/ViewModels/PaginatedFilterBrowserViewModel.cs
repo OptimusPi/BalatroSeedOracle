@@ -534,6 +534,11 @@ namespace BalatroSeedOracle.ViewModels
 
         public void RefreshFilters()
         {
+            // CRITICAL FIX: Rescan filesystem FIRST to remove deleted filters from cache
+            var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
+            filterCache?.RefreshCache();
+
+            // THEN reload from refreshed cache
             LoadFilters();
         }
     }

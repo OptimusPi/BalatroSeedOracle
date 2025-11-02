@@ -204,7 +204,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Height" Value="26"/>
             <Setter Property="Margin" Value="0,2"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>

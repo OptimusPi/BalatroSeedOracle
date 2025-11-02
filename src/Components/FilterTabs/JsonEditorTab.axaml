@@ -4,130 +4,76 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              x:Class="BalatroSeedOracle.Components.FilterTabs.JsonEditorTab"
              x:DataType="vm:JsonEditorTabViewModel">
-
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>     <!-- Editor -->
-            <RowDefinition Height="Auto"/>  <!-- Status Bar -->
-        </Grid.RowDefinitions>
-
-        <!-- JSON Editor - Balatro Style (NO BORDER!) -->
-        <Border Grid.Row="0"
-                Background="{StaticResource EditorDarkBg}"
-                BorderThickness="0"
-                CornerRadius="12"
-                Padding="0"
-                BoxShadow="inset 0 2 4 #00000040">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
-                <!-- Editor Header Bar -->
-                <Border Grid.Row="0"
-                        Background="{StaticResource EditorHeaderBg}"
-                        BorderBrush="{StaticResource EditorBorderBg}"
-                        BorderThickness="0,0,0,1"
-                        CornerRadius="12,12,0,0"
-                        Padding="12,8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="📄 filter.json" 
-                                       Foreground="{StaticResource EditorTextGrey}" 
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                            <Button Content="⚡" 
-                                    ToolTip.Tip="Auto-format JSON"
-                                    Command="{Binding FormatJsonCommand}"
-                                    Width="28" Height="24"
+    <Border Grid.Row="0"
+            Background="{StaticResource EditorDarkBg}"
+            BorderThickness="0"
+            CornerRadius="12"
+            Padding="0"
+            BoxShadow="inset 0 2 4 #00000040">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Editor Header Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource EditorHeaderBg}"
+                    BorderBrush="{StaticResource EditorBorderBg}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="12,12,0,0"
+                    Padding="12,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding FilterFileName}"
+                                    Foreground="{StaticResource EditorTextGrey}"
+                                    FontFamily="{StaticResource BalatroFont}"
                                     FontSize="14"
-                                    Background="{StaticResource EditorButtonBg}"
-                                    BorderThickness="0"
-                                    CornerRadius="4"
-                                    Foreground="{StaticResource BrightGold}"/>
-                            <Button Content="✓" 
-                                    ToolTip.Tip="Validate JSON"
-                                    Command="{Binding ValidateJsonCommand}"
-                                    Width="28" Height="24"
-                                    FontSize="14"
-                                    Background="{StaticResource EditorButtonBg}"
-                                    BorderThickness="0"
-                                    CornerRadius="4"
-                                    Foreground="{StaticResource BrightGreenEditor}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                
-                <!-- Editor Content -->
-                <AvaloniaEdit:TextEditor Grid.Row="1"
-                                       Name="JsonEditor"
-                                       SyntaxHighlighting="Json"
-                                       ShowLineNumbers="True"
-                                       FontFamily="Consolas,Cascadia Code,Menlo,Courier New,monospace"
-                                       FontSize="16"
-                                       Background="{StaticResource EditorDarkBg}"
-                                       Foreground="{StaticResource White}"
-                                       LineNumbersForeground="{StaticResource EditorLineNumbers}"
-                                       Margin="0"
-                                       Padding="12,8"
-                                       HorizontalScrollBarVisibility="Auto"
-                                       VerticalScrollBarVisibility="Auto"/>
-            </Grid>
-        </Border>
-        
-        <!-- Status Bar (Balatro flat style) -->
-        <Border Grid.Row="1"
-                Background="{StaticResource EditorStatusBg}"
-                BorderThickness="0"
-                Padding="12,6"
-                Margin="0,8,0,0"
-                CornerRadius="8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Status Icon -->
-                <Border Grid.Column="0"
-                        Background="{Binding ValidationStatusColor}"
-                        Width="8" Height="8"
-                        CornerRadius="4"
-                        Margin="0,0,8,0"
-                        VerticalAlignment="Center"/>
-
-                <!-- Status Text -->
-                <TextBlock Grid.Column="1"
-                           Text="{Binding ValidationStatus}"
-                           Foreground="{StaticResource EditorTextGrey}"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="12"
-                           VerticalAlignment="Center"/>
-
-                <!-- Essential buttons only -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <Button Content="💾 Save"
-                            ToolTip.Tip="Save current filter"
-                            Background="{StaticResource PurpleButton}"
-                            Foreground="White"
-                            BorderThickness="0"
-                            CornerRadius="6"
-                            Padding="10,6"
-                            FontSize="11"
-                            FontFamily="{StaticResource BalatroFont}"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-    </Grid>
+                                    VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                        <Button Content="⚡" 
+                                ToolTip.Tip="Auto-format JSON"
+                                Command="{Binding FormatJsonCommand}"
+                                Width="28" Height="24"
+                                FontSize="14"
+                                Background="{StaticResource EditorButtonBg}"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Foreground="{StaticResource BrightGold}"/>
+                        <Button Content="✓" 
+                                ToolTip.Tip="Validate JSON"
+                                Command="{Binding ValidateJsonCommand}"
+                                Width="28" Height="24"
+                                FontSize="14"
+                                Background="{StaticResource EditorButtonBg}"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Foreground="{StaticResource BrightGreenEditor}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Editor Content -->
+            <AvaloniaEdit:TextEditor Grid.Row="1"
+                                    Name="JsonEditor"
+                                    SyntaxHighlighting="Json"
+                                    ShowLineNumbers="True"
+                                    FontFamily="Consolas,Cascadia Code,Menlo,Courier New,monospace"
+                                    FontSize="16"
+                                    Background="{StaticResource EditorDarkBg}"
+                                    Foreground="{StaticResource White}"
+                                    LineNumbersForeground="{StaticResource EditorLineNumbers}"
+                                    Margin="0"
+                                    Padding="12,8"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+    </Border>
 </UserControl>

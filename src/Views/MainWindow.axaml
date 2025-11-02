@@ -5,8 +5,8 @@
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="🃏Balatro Seed BalatroSeedOracle🥠"
-        Width="1280"
-        Height="720"
+        Width="1582"
+        Height="830"
         DragDrop.AllowDrop="True">
     
     <Window.Styles>

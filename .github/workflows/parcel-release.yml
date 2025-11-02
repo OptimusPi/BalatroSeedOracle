@@ -33,27 +33,27 @@ jobs:
     - name: Package with Parcel
       run: |
         cd src
-        parcel pack
+        parcel BalatroSeedOracle.parcel --runtimes win-x64 linux-x64 osx-x64 --packages nsis deb dmg
 
     - name: Upload Windows Installer
       uses: actions/upload-artifact@v4
       with:
         name: windows-installer
-        path: Parcel/Releases/*.exe
+        path: src/bin/packages/*.exe
         if-no-files-found: error
 
     - name: Upload macOS Bundle
       uses: actions/upload-artifact@v4
       with:
         name: macos-bundle
-        path: Parcel/Releases/*.dmg
+        path: src/bin/packages/*.dmg
         if-no-files-found: warn
 
     - name: Upload Linux Package
       uses: actions/upload-artifact@v4
       with:
         name: linux-package
-        path: Parcel/Releases/*.deb
+        path: src/bin/packages/*.deb
         if-no-files-found: warn
 
     - name: Create GitHub Release
@@ -61,9 +61,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          Parcel/Releases/*.exe
-          Parcel/Releases/*.dmg
-          Parcel/Releases/*.deb
+          src/bin/packages/*.exe
+          src/bin/packages/*.dmg
+          src/bin/packages/*.deb
         draft: false
         prerelease: false
         generate_release_notes: true

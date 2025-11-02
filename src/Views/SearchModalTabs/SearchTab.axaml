@@ -5,26 +5,6 @@
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab">
 
     <UserControl.Styles>
-        <!-- Big COOK button style -->
-        <Style Selector="Button.cook-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="36"/>
-            <Setter Property="Height" Value="64"/>
-            <Setter Property="MinWidth" Value="280"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.cook-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        <Style Selector="Button.cook-button.stop">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-        </Style>
-        <Style Selector="Button.cook-button.stop:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
 
         <!-- Terminal style for console -->
         <Style Selector="TextBox.terminal">
@@ -276,7 +256,7 @@
                                       BorderBrush="{StaticResource DarkBorder}"
                                       BorderThickness="2"
                                       CornerRadius="4"
-                                      Padding="8,6"/>
+                                      Padding="8,4"/>
                         </StackPanel>
 
                     </StackPanel>
@@ -333,11 +313,11 @@
                                       VerticalAlignment="Center"
                                       Margin="0,0,16,0"/>
 
-                            <!-- COOK button -->
+                            <!-- COOK button - Dynamic classes based on state -->
                             <Button Name="CookButton"
                                     Content="{Binding CookButtonText}"
-                                    Classes="cook-button"
-                                    Classes.stop="{Binding IsSearching}"
+                                    Classes.btn-blue="{Binding !IsSearching}"
+                                    Classes.btn-warning="{Binding IsSearching}"
                                     Command="{Binding ToggleSearchCommand}"
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="24"
@@ -361,7 +341,7 @@
 
                     <!-- Progress % Strip (Gold) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Progress" Classes="strip-label-text"/>
                             </Border>
@@ -374,7 +354,7 @@
 
                     <!-- Speed Strip (Gold) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Speed" Classes="strip-label-text"/>
                             </Border>
@@ -387,12 +367,12 @@
 
                     <!-- Seeds Processed Strip (White) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label">
                                 <TextBlock Text="Seeds" Classes="strip-label-text"/>
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value">
-                                <TextBlock Text="{Binding SeedsProcessed, StringFormat='{}{0:N0}'}"
+                                <TextBlock Text="{Binding SeedsProcessed}"
                                            Classes="strip-value-text"/>
                             </Border>
                         </Grid>
@@ -400,7 +380,7 @@
 
                     <!-- Time Elapsed Strip (White) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label">
                                 <TextBlock Text="Time" Classes="strip-label-text"/>
                             </Border>
@@ -413,7 +393,7 @@
 
                     <!-- ETA Strip (Cyan) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label cyan">
                                 <TextBlock Text="ETA" Classes="strip-label-text"/>
                             </Border>
@@ -426,7 +406,7 @@
 
                     <!-- Results Found Strip (Green) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label green">
                                 <TextBlock Text="Found" Classes="strip-label-text"/>
                             </Border>
@@ -439,7 +419,7 @@
 
                     <!-- Find Rate Strip (White) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label">
                                 <TextBlock Text="Rate" Classes="strip-label-text"/>
                             </Border>
@@ -452,7 +432,7 @@
 
                     <!-- Rarity Strip (Gold) -->
                     <Border Classes="balatro-stat-strip">
-                        <Grid ColumnDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,*">
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Rarity" Classes="strip-label-text"/>
                             </Border>

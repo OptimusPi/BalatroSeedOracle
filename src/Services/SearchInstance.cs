@@ -393,8 +393,8 @@ namespace BalatroSeedOracle.Services
             cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";
             cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
             cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(offset));
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+            while (await reader.ReadAsync().ConfigureAwait(false))
             {
                 var seed = reader.GetString(0);
                 var score = reader.GetInt32(1);
@@ -494,8 +494,8 @@ namespace BalatroSeedOracle.Services
             cmd.CommandText =
                 $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT ?";
             cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+            while (await reader.ReadAsync().ConfigureAwait(false))
             {
                 var seed = reader.GetString(0);
                 var score = reader.GetInt32(1);
@@ -538,7 +538,7 @@ namespace BalatroSeedOracle.Services
 
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetAllResultsAsync()
         {
-            return await GetResultsPageAsync(0, 420_069);
+            return await GetResultsPageAsync(0, 420_069).ConfigureAwait(false);
         }
 
         public async Task<int> GetResultCountAsync()
@@ -555,7 +555,7 @@ namespace BalatroSeedOracle.Services
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM results";
-            var v = await cmd.ExecuteScalarAsync();
+            var v = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
             var count = v == null ? 0 : Convert.ToInt32(v);
 
             // Cache the result
@@ -573,7 +573,7 @@ namespace BalatroSeedOracle.Services
             {
                 if (!_dbInitialized)
                     return 0;
-                var count = await GetResultCountAsync();
+                var count = await GetResultCountAsync().ConfigureAwait(false);
                 if (count == 0)
                     return 0;
 
@@ -581,7 +581,7 @@ namespace BalatroSeedOracle.Services
                 using var cmd = _connection.CreateCommand();
                 cmd.CommandText =
                     $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{filePath.Replace("'", "''")}' (HEADER true, DELIMITER ',')";
-                await cmd.ExecuteNonQueryAsync();
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 
                 return count;
             }
@@ -603,7 +603,7 @@ namespace BalatroSeedOracle.Services
                     return null;
                 using var cmd = _connection.CreateCommand();
                 cmd.CommandText = "SELECT value FROM search_meta WHERE key='last_batch'";
-                var val = await cmd.ExecuteScalarAsync();
+                var val = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
                 if (val == null)
                     return null;
                 return ulong.TryParse(val.ToString(), out var batch) ? batch : null;
@@ -628,7 +628,7 @@ namespace BalatroSeedOracle.Services
                 cmd.CommandText =
                     "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)";
                 cmd.Parameters.Add(new DuckDBParameter(batchNumber.ToString()));
-                await cmd.ExecuteNonQueryAsync();
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -643,7 +643,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Start searching with a file path
         /// </summary>
-        private async Task StartSearchFromFileAsync(
+        private void StartSearchFromFile(
             string configPath,
             SearchConfiguration config,
             IProgress<SearchProgress>? progress = null,
@@ -702,17 +702,20 @@ namespace BalatroSeedOracle.Services
                 if (
                     !Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
                         configPath,
-                        out var ouijaConfig
+                        out var filterConfig
                     )
                 )
                 {
                     throw new Exception($"Failed to load config from {configPath}");
                 }
 
-                _currentConfig = ouijaConfig;
+                _currentConfig = filterConfig;
                 _currentSearchConfig = config;
                 ConfigPath = configPath;
-                FilterName = ouijaConfig.Name ?? Path.GetFileNameWithoutExtension(configPath);
+                // Use filter's name, or "Unnamed Filter" as fallback (NOT the ugly GUID filename)
+                FilterName = !string.IsNullOrWhiteSpace(filterConfig.Name)
+                    ? filterConfig.Name
+                    : "Unnamed Filter";
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
 
@@ -761,21 +764,21 @@ namespace BalatroSeedOracle.Services
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.Must?.Count ?? 0} MUST clauses"
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.Should?.Count ?? 0} SHOULD clauses"
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.MustNot?.Count ?? 0} MUST NOT clauses"
                 );
 
                 // Log the actual filter content for debugging
-                if (ouijaConfig.Must != null)
+                if (filterConfig.Must != null)
                 {
-                    foreach (var must in ouijaConfig.Must)
+                    foreach (var must in filterConfig.Must)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -783,9 +786,9 @@ namespace BalatroSeedOracle.Services
                         );
                     }
                 }
-                if (ouijaConfig.Should != null)
+                if (filterConfig.Should != null)
                 {
-                    foreach (var should in ouijaConfig.Should)
+                    foreach (var should in filterConfig.Should)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -799,44 +802,23 @@ namespace BalatroSeedOracle.Services
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
 
-                _searchTask = Task.Run(
-                    () =>
-                        RunSearchInProcess(
-                            ouijaConfig,
-                            searchCriteria,
-                            progress,
-                            _cancellationTokenSource.Token
-                        ),
+                // Start search on threadpool via async continuation (proper async/await chain)
+                _searchTask = RunSearchWithCompletionHandling(
+                    filterConfig,
+                    searchCriteria,
+                    progress,
                     _cancellationTokenSource.Token
                 );
 
-                await _searchTask;
-
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
-            }
-            catch (OperationCanceledException)
-            {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+                // Fire-and-forget is intentional here - UI should not wait
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search started in background");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"Search failed: {ex.Message}"
-                );
-                progress?.Report(
-                    new SearchProgress
-                    {
-                        Message = $"Search failed: {ex.Message}",
-                        HasError = true,
-                        IsComplete = true,
-                    }
-                );
-            }
-            finally
-            {
+                // Only catch setup exceptions
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to start: {ex.Message}");
                 _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
+                throw;
             }
         }
 
@@ -874,7 +856,7 @@ namespace BalatroSeedOracle.Services
                 $"Loading config from: {criteria.ConfigPath}"
             );
 
-            // Load and validate the Ouija config - use LoadFromJson to get PostProcess!
+            // Load and validate the filter config - use LoadFromJson to get PostProcess!
             if (
                 !Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
                     criteria.ConfigPath,
@@ -1000,7 +982,7 @@ namespace BalatroSeedOracle.Services
             {
                 try
                 {
-                    var last = await GetLastBatchAsync();
+                    var last = await GetLastBatchAsync().ConfigureAwait(false);
                     if (last.HasValue && last.Value > 0)
                     {
                         criteria.StartBatch = last.Value;
@@ -1034,7 +1016,7 @@ namespace BalatroSeedOracle.Services
             };
 
             // Call the main search method with the file path
-            await StartSearchFromFileAsync(
+            StartSearchFromFile(
                 criteria.ConfigPath,
                 searchConfig,
                 progress,
@@ -1046,7 +1028,7 @@ namespace BalatroSeedOracle.Services
         /// Start searching with a config object directly (no file I/O)
         /// Used for quick in-memory tests of unsaved filters
         /// </summary>
-        public async Task StartSearchAsync(
+        public Task StartSearchAsync(
             SearchCriteria criteria,
             MotelyJsonConfig config,
             IProgress<SearchProgress>? progress = null,
@@ -1128,20 +1110,23 @@ namespace BalatroSeedOracle.Services
                 DebugSeed = criteria.DebugSeed,
             };
 
-            // Call the main search method with the config object
-            await StartSearchFromConfigAsync(
+            // Call the main search method with the config object (synchronous fire-and-forget)
+            StartSearchFromConfig(
                 config,
                 searchConfig,
                 progress,
                 cancellationToken
             );
+
+            // Return completed task immediately (fire-and-forget pattern by design)
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Private method to run search from a config object (no file loading)
         /// </summary>
-        private async Task StartSearchFromConfigAsync(
-            MotelyJsonConfig ouijaConfig,
+        private void StartSearchFromConfig(
+            MotelyJsonConfig filterConfig,
             SearchConfiguration config,
             IProgress<SearchProgress>? progress = null,
             CancellationToken cancellationToken = default
@@ -1149,7 +1134,7 @@ namespace BalatroSeedOracle.Services
         {
             DebugLogger.LogImportant(
                 $"SearchInstance[{_searchId}]",
-                $"StartSearchFromConfigAsync ENTERED! config.Name={ouijaConfig.Name}"
+                $"StartSearchFromConfigAsync ENTERED! config.Name={filterConfig.Name}"
             );
 
             if (_isRunning)
@@ -1162,12 +1147,12 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"Starting search from in-memory config: {ouijaConfig.Name}"
+                    $"Starting search from in-memory config: {filterConfig.Name}"
                 );
 
-                _currentConfig = ouijaConfig;
+                _currentConfig = filterConfig;
                 _currentSearchConfig = config;
-                FilterName = ouijaConfig.Name ?? "InMemoryFilter";
+                FilterName = filterConfig.Name ?? "InMemoryFilter";
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
 
@@ -1214,21 +1199,21 @@ namespace BalatroSeedOracle.Services
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Must?.Count ?? 0} MUST clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.Must?.Count ?? 0} MUST clauses"
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.Should?.Count ?? 0} SHOULD clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.Should?.Count ?? 0} SHOULD clauses"
                 );
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Motely.Filters.MotelyJsonConfig has {ouijaConfig.MustNot?.Count ?? 0} MUST NOT clauses"
+                    $"Motely.Filters.MotelyJsonConfig has {filterConfig.MustNot?.Count ?? 0} MUST NOT clauses"
                 );
 
                 // Log the actual filter content for debugging
-                if (ouijaConfig.Must != null)
+                if (filterConfig.Must != null)
                 {
-                    foreach (var must in ouijaConfig.Must)
+                    foreach (var must in filterConfig.Must)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -1236,9 +1221,9 @@ namespace BalatroSeedOracle.Services
                         );
                     }
                 }
-                if (ouijaConfig.Should != null)
+                if (filterConfig.Should != null)
                 {
-                    foreach (var should in ouijaConfig.Should)
+                    foreach (var should in filterConfig.Should)
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -1250,44 +1235,23 @@ namespace BalatroSeedOracle.Services
                 // Run the search using the MotelySearchService pattern
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Starting in-process search...");
 
-                _searchTask = Task.Run(
-                    () =>
-                        RunSearchInProcess(
-                            ouijaConfig,
-                            searchCriteria,
-                            progress,
-                            _cancellationTokenSource.Token
-                        ),
+                // Start search on threadpool via async continuation (proper async/await chain)
+                _searchTask = RunSearchWithCompletionHandling(
+                    filterConfig,
+                    searchCriteria,
+                    progress,
                     _cancellationTokenSource.Token
                 );
 
-                await _searchTask;
-
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
-            }
-            catch (OperationCanceledException)
-            {
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+                // Fire-and-forget is intentional here - UI should not wait
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search started in background");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"Search failed: {ex.Message}"
-                );
-                progress?.Report(
-                    new SearchProgress
-                    {
-                        Message = $"Search failed: {ex.Message}",
-                        HasError = true,
-                        IsComplete = true,
-                    }
-                );
-            }
-            finally
-            {
+                // Only catch setup exceptions
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to start: {ex.Message}");
                 _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
+                throw;
             }
         }
 
@@ -1345,8 +1309,54 @@ namespace BalatroSeedOracle.Services
                 $"Resuming search from batch {resumeCriteria.StartBatch} to {resumeCriteria.EndBatch}"
             );
 
-            // Restart the search from the saved position
-            StartSearchAsync(resumeCriteria).ConfigureAwait(false);
+            // Restart the search from the saved position (fire-and-forget is intentional for UI responsiveness)
+            _ = StartSearchAsync(resumeCriteria);
+        }
+
+        /// <summary>
+        /// Wraps RunSearchInProcess with proper completion handling (replaces Task.Run hack)
+        /// </summary>
+        private async Task RunSearchWithCompletionHandling(
+            Motely.Filters.MotelyJsonConfig filterConfig,
+            SearchCriteria searchCriteria,
+            IProgress<SearchProgress>? progress,
+            CancellationToken cancellationToken
+        )
+        {
+            try
+            {
+                await RunSearchInProcess(
+                    filterConfig,
+                    searchCriteria,
+                    progress,
+                    cancellationToken
+                ).ConfigureAwait(false);
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search was cancelled");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        Message = $"Search failed: {ex.Message}",
+                        HasError = true,
+                        IsComplete = true,
+                    }
+                );
+            }
+            finally
+            {
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public void StopSearch()
@@ -1890,6 +1900,21 @@ namespace BalatroSeedOracle.Services
                         seedsPerMs = 0; // Reset to 0 to avoid displaying negative values
                     }
 
+                    // Calculate ETA based on progress percentage and elapsed time
+                    TimeSpan? estimatedTimeRemaining = null;
+                    if (progressPercent > 0 && progressPercent < 100 && elapsed.TotalMilliseconds > 0)
+                    {
+                        // Total time = elapsed / (progress / 100)
+                        // Time remaining = total time - elapsed
+                        double totalEstimatedMs = elapsed.TotalMilliseconds / (progressPercent / 100.0);
+                        double remainingMs = totalEstimatedMs - elapsed.TotalMilliseconds;
+
+                        if (remainingMs > 0 && !double.IsNaN(remainingMs) && !double.IsInfinity(remainingMs))
+                        {
+                            estimatedTimeRemaining = TimeSpan.FromMilliseconds(Math.Min(remainingMs, TimeSpan.MaxValue.TotalMilliseconds));
+                        }
+                    }
+
                     var currentProgress = new SearchProgress
                     {
                         SeedsSearched = seedsSearched,
@@ -1897,6 +1922,7 @@ namespace BalatroSeedOracle.Services
                         SeedsPerMillisecond = seedsPerMs,
                         Message = $"Searched {completedBatches:N0} batches",
                         ResultsFound = _resultCount,
+                        EstimatedTimeRemaining = estimatedTimeRemaining,
                     };
 
                     progress?.Report(currentProgress);
@@ -1904,7 +1930,10 @@ namespace BalatroSeedOracle.Services
 
                     try
                     {
-                        await Task.Delay(100, cancellationToken);
+                        // CRITICAL FIX: Increased delay from 100ms to 500ms for balanced responsiveness
+                        // With batch flush threshold reduced to 1, progress updates are immediate
+                        // 500ms polling provides smooth UI updates without excessive overhead
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {

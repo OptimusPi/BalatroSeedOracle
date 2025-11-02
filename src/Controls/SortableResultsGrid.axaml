@@ -1,7 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Controls.SortableResultsGrid">
-    
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
+             x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
+             x:DataType="vm:SortableResultsGridViewModel"
+             x:CompileBindings="True">
+
     <UserControl.Resources>
     </UserControl.Resources>
     
@@ -25,86 +28,63 @@
                 </Grid.ColumnDefinitions>
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15">
-                    <TextBlock Text="🔍 SEARCH RESULTS" 
-                               Foreground="{StaticResource White}" 
-                               FontFamily="{StaticResource BalatroFont}" 
-                               FontSize="18" 
-                               
+                    <TextBlock Text="🔍 SEARCH RESULTS"
+                               Foreground="{StaticResource White}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
                                VerticalAlignment="Center"/>
-                    
-                    <TextBlock Name="ResultsCountText" 
-                               Text="0 results" 
-                               Foreground="{StaticResource Gold}" 
+
+                    <TextBlock Text="{Binding ResultsCountText}"
+                               Foreground="{StaticResource Gold}"
                                FontSize="14"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                     <!-- Sort controls -->
-                    <TextBlock Text="Sort by:" 
-                               Foreground="{StaticResource White}" 
-                               FontSize="12" 
+                    <TextBlock Text="Sort by:"
+                               Foreground="{StaticResource White}"
+                               FontSize="12"
                                VerticalAlignment="Center"/>
-                    
-                    <ComboBox Name="SortComboBox" 
+
+                    <ComboBox SelectedIndex="{Binding SelectedSortIndex}"
                               Background="{StaticResource DarkBackground}"
                               Foreground="{StaticResource Gold}"
                               BorderBrush="{StaticResource ModalBorder}"
-                              SelectionChanged="SortComboBox_SelectionChanged"
                               MinWidth="160">
-                        <ComboBoxItem Content="Seed" Tag="Seed"/>
-                        <ComboBoxItem Content="Score ↓" Tag="TotalScore_Desc" IsSelected="True"/>
-                        <ComboBoxItem Content="Score ↑" Tag="TotalScore_Asc"/>
+                        <ComboBoxItem Content="Seed"/>
+                        <ComboBoxItem Content="Score ↓"/>
+                        <ComboBoxItem Content="Score ↑"/>
                     </ComboBox>
-                    
+
                     <!-- Export button -->
-                    <Button Content="📤 Export" 
-                            Name="ExportButton"
-                            Click="ExportButton_Click"/>
+                    <Button Content="📤 Export"
+                            Command="{Binding ExportAllCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
         
         <!-- Main DataGrid -->
-        <DataGrid Grid.Row="1" 
+        <DataGrid Grid.Row="1"
                   Name="ResultsDataGrid"
+                  ItemsSource="{Binding DisplayedResults}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  SelectionMode="Single"
-                  DoubleTapped="ResultsDataGrid_DoubleTapped">
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="📋 Copy seed"
-                              Command="{Binding $parent[UserControl].CopySeedCommand}"
-                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem.Seed}"/>
-                    <MenuItem Header="🔍 Search similar"
-                              Command="{Binding $parent[UserControl].SearchSimilarCommand}"
-                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
-                    <MenuItem Header="⭐ Add to favorites"
-                              Command="{Binding $parent[UserControl].AddToFavoritesCommand}"
-                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
-                    <MenuItem Header="📤 Export this seed"
-                              Command="{Binding $parent[UserControl].ExportSeedCommand}"
-                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
-                    <MenuItem Header="🧪 Analyze"
-                              Command="{Binding $parent[UserControl].AnalyzeSeedCommand}"
-                              CommandParameter="{Binding #ResultsDataGrid.SelectedItem}"/>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
+                  SelectionMode="Single">
             <DataGrid.Columns>
                 <!-- Seed column with copy button -->
                 <DataGridTemplateColumn Header="SEED" Width="150" SortMemberPath="Seed">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="5">
-                                <TextBlock Text="{Binding Seed}" 
-                                           FontFamily="Consolas" 
-                                           FontSize="12" 
+                                <TextBlock Text="{Binding Seed}"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
                                            VerticalAlignment="Center"/>
                                 <Button Classes="copy-btn"
                                         Content="📋"
                                         ToolTip.Tip="Copy seed to clipboard"
-                                        Command="{Binding $parent[UserControl].CopySeedCommand}"
+                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
                                         CommandParameter="{Binding Seed}"/>
                             </StackPanel>
                         </DataTemplate>
@@ -127,12 +107,12 @@
                                 <Button Classes="copy-btn"
                                         Content="📋"
                                         ToolTip.Tip="Copy seed"
-                                        Command="{Binding $parent[UserControl].CopySeedCommand}"
+                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
                                         CommandParameter="{Binding Seed}"/>
                                 <Button Classes="copy-btn"
                                         Content="📊"
                                         ToolTip.Tip="Analyze seed"
-                                        Command="{Binding $parent[UserControl].AnalyzeSeedCommand}"
+                                        Command="{Binding $parent[UserControl].DataContext.AnalyzeCommand}"
                                         CommandParameter="{Binding}"/>
                             </StackPanel>
                         </DataTemplate>
@@ -142,54 +122,50 @@
         </DataGrid>
         
         <!-- Footer with pagination and stats -->
-        <Border Grid.Row="2" 
-                Background="{StaticResource DarkBackground}" 
-                BorderBrush="{StaticResource ModalBorder}" 
-                BorderThickness="0,2,0,0" 
+        <Border Grid.Row="2"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,2,0,0"
                 Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
+
                 <!-- Stats -->
-                <TextBlock Grid.Column="0" 
-                           Name="StatsText"
-                           Text="Ready to search"
-                           Foreground="{StaticResource White}" 
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatsText}"
+                           Foreground="{StaticResource White}"
                            FontSize="12"
                            VerticalAlignment="Center"/>
-                
+
                 <!-- Pagination -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                    <Button Name="PreviousButton"
-                            Content="◀"
+                    <Button Content="◀"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding IsPreviousEnabled}"
                             Classes="btn-red"
                             Width="40"
                             Height="32"
                             Padding="0"
-                            VerticalAlignment="Center"
-                            IsEnabled="False"
-                            Click="PreviousButton_Click"/>
+                            VerticalAlignment="Center"/>
 
-                    <Button Name="PageInfoBadge"
-                            Content="Page 1 of 1"
+                    <Button Content="{Binding PageInfoText}"
                             Classes="btn-red"
                             MinWidth="100"
                             Height="32"
                             IsHitTestVisible="False"
                             VerticalAlignment="Center"/>
 
-                    <Button Name="NextButton"
-                            Content="▶"
+                    <Button Content="▶"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding IsNextEnabled}"
                             Classes="btn-red"
                             Width="40"
                             Height="32"
                             Padding="0"
-                            VerticalAlignment="Center"
-                            IsEnabled="False"
-                            Click="NextButton_Click"/>
+                            VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>

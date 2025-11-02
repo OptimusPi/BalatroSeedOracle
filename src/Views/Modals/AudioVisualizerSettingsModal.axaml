@@ -17,8 +17,8 @@
                         <!-- THEME SELECTION SECTION -->
                         <StackPanel Spacing="10">
                             <TextBlock Text="Select Theme"
-                                       Foreground="{StaticResource DarkBackground}"
-
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
 
                             <ComboBox SelectedIndex="{Binding ThemeIndex}"
@@ -79,8 +79,8 @@
                         <!-- INTENSITY SETTINGS -->
                         <StackPanel Spacing="15">
                             <TextBlock Text="Intensity Settings"
-                                       Foreground="{StaticResource DarkBackground}"
-
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
 
                             <!-- Music Sensitivity Slider (Balatro style with value badge) -->
@@ -114,11 +114,12 @@
                         <!-- AUDIO EVENT TRIGGERS -->
                         <StackPanel Spacing="12">
                             <TextBlock Text="🔊 Audio Event Triggers"
-                                       Foreground="{StaticResource DarkBackground}"
-
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
                             <TextBlock Text="Play sound effect jingles when events happen (you'll add the SFX files later!)"
-                                       Foreground="#888"
+                                       Foreground="{StaticResource LightGrey}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="11"
                                        TextWrapping="Wrap"
                                        Margin="0,-8,0,8"/>
@@ -141,8 +142,8 @@
                         <!-- PRESETS -->
                         <StackPanel Spacing="12">
                             <TextBlock Text="Presets"
-                                       Foreground="{StaticResource DarkBackground}"
-
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
 
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
@@ -163,12 +164,13 @@
                         <!-- SHADER EFFECT AUDIO MAPPING -->
                         <StackPanel Spacing="12">
                             <TextBlock Text="🎵 Shader Effect Audio Mapping"
-                                       Foreground="{StaticResource DarkBackground}"
-
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
 
                             <TextBlock Text="Map audio sources to visual effects. Choose which part of the music controls each shader effect!"
-                                       Foreground="#666"
+                                       Foreground="{StaticResource LightGrey}"
+                                       FontFamily="{StaticResource BalatroFont}"
                                        FontSize="11"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,8"/>
@@ -278,7 +280,7 @@
 
                         <!-- 🐛 SHADER DEBUG CONTROLS (Advanced Users Only!) -->
                         <Expander Header="🐛 Advanced Shader Debug" IsExpanded="False">
-                            <Border Background="{StaticResource VeryLightGrey}" CornerRadius="6" Padding="15" Margin="0,8,0,0">
+                            <Border Background="{StaticResource DarkBackground}" CornerRadius="6" Padding="15" Margin="0,8,0,0">
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="⚠️ WARNING: These are LOW-LEVEL shader parameters. Only adjust if you know what you're doing!"
                                                Foreground="{StaticResource Red}"

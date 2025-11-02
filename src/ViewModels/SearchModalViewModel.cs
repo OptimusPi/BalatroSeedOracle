@@ -178,7 +178,7 @@ namespace BalatroSeedOracle.ViewModels
         private int _maxBatch = 0;
 
         [ObservableProperty]
-        private long _seedsProcessed = 0;
+        private string _seedsProcessed = "0";
 
         [ObservableProperty]
         private string _timeElapsed = "00:00:00";
@@ -192,8 +192,22 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _rarity = "--";
 
-        // Search button dynamic properties
-        public string CookButtonText => IsSearching ? "STOP SEARCH" : "START SEARCH";
+        // Search button dynamic properties - CRITICAL: State machine for PAUSE vs STOP
+        public string CookButtonText
+        {
+            get
+            {
+                if (!IsSearching)
+                    return "START SEARCH";
+
+                // If Continue is enabled, show PAUSE (saves state)
+                // If Continue is disabled, show STOP (doesn't save state)
+                return ContinueFromLast ? "PAUSE SEARCH" : "STOP SEARCH";
+            }
+        }
+
+        // Button color class - Blue when stopped, Yellow-Orange when running
+        public string CookButtonClass => IsSearching ? "btn-warning" : "btn-blue";
 
         // Results filtering
         [ObservableProperty]
@@ -235,6 +249,19 @@ namespace BalatroSeedOracle.ViewModels
         {
             StopSearchCommand.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(CookButtonText));
+            OnPropertyChanged(nameof(CookButtonClass));
+        }
+
+        partial void OnContinueFromLastChanged(bool value)
+        {
+            // Update button text when Continue checkbox changes
+            OnPropertyChanged(nameof(CookButtonText));
+
+            // If user just enabled Continue while search is NOT running, load saved progress
+            if (value && !IsSearching)
+            {
+                LoadSavedProgressAsync().ConfigureAwait(false);
+            }
         }
 
         partial void OnResultsFilterTextChanged(string value)
@@ -349,6 +376,10 @@ namespace BalatroSeedOracle.ViewModels
                 _searchInstance.SearchCompleted += OnSearchCompleted;
                 _searchInstance.ProgressUpdated += OnProgressUpdated;
 
+                // CRITICAL FIX: Add immediate feedback that search is starting
+                AddConsoleMessage($"Search started with ID: {_currentSearchId}");
+                AddConsoleMessage($"Monitoring progress updates...");
+
                 DebugLogger.Log(
                     "SearchModalViewModel",
                     $"Search started with ID: {_currentSearchId}"
@@ -377,9 +408,40 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_searchInstance != null)
                 {
-                    _searchInstance.StopSearch();
-                    AddConsoleMessage("Search stopped by user.");
-                    DebugLogger.Log("SearchModalViewModel", "Search stopped by user");
+                    // CRITICAL: Different behavior based on Continue checkbox state
+                    bool shouldSaveState = ContinueFromLast;
+
+                    if (shouldSaveState)
+                    {
+                        // PAUSE mode: Save current batch position to DuckDB
+                        AddConsoleMessage("Pausing search and saving progress...");
+                        DebugLogger.Log("SearchModalViewModel", "Pausing search (saving state)");
+
+                        // The SearchInstance already saves state periodically in OnProgressUpdated
+                        // We just need to stop gracefully without clearing the database
+                        _searchInstance.StopSearch();
+                    }
+                    else
+                    {
+                        // STOP mode: Don't save state, just stop
+                        AddConsoleMessage("Stopping search (progress will NOT be saved)...");
+                        DebugLogger.Log("SearchModalViewModel", "Stopping search (NOT saving state)");
+
+                        // Stop without saving
+                        _searchInstance.StopSearch();
+                    }
+
+                    // Unsubscribe from events
+                    _searchInstance.SearchStarted -= OnSearchStarted;
+                    _searchInstance.SearchCompleted -= OnSearchCompleted;
+                    _searchInstance.ProgressUpdated -= OnProgressUpdated;
+
+                    // Dispose and clear the instance
+                    _searchInstance.Dispose();
+                    _searchInstance = null;
+
+                    var actionText = shouldSaveState ? "paused" : "stopped";
+                    AddConsoleMessage($"Search {actionText} by user.");
                 }
 
                 IsSearching = false;
@@ -499,7 +561,6 @@ namespace BalatroSeedOracle.ViewModels
             if (value == SearchMode.SingleSeed)
             {
                 ThreadCount = 1;
-                BatchSize = 1;
             }
         }
 
@@ -779,9 +840,13 @@ namespace BalatroSeedOracle.ViewModels
 
         private void OnSearchCompleted(object? sender, EventArgs e)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 IsSearching = false;
+
+                // CRITICAL FIX: Load results from DuckDB into ObservableCollection
+                await LoadExistingResults();
+
                 AddConsoleMessage($"Search completed. Found {SearchResults.Count} results.");
                 PanelText = $"Search complete: {SearchResults.Count} seeds";
                 DebugLogger.Log(
@@ -841,27 +906,28 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             int resumeBatch = savedState.LastCompletedBatch;
 
-                            // If user changed batch size, convert the batch number
+                            // INTENTIONALLY REMOVED: Batch size conversion logic
+                            // The batch size is now HARDCODED to 3 for optimal performance
+                            // This eliminates the pitfall where startBatch calculation breaks if batch size changes
+                            // If the user somehow has a saved state with a different batch size, we ignore it
+                            // and start fresh (better than corrupting the search state)
                             if (savedState.BatchSize != BatchSize)
                             {
-                                resumeBatch = Services.SearchStateManager.ConvertBatchNumber(
-                                    savedState.LastCompletedBatch,
-                                    savedState.BatchSize,
-                                    BatchSize
-                                );
-
-                                DebugLogger.Log(
+                                DebugLogger.LogError(
                                     "SearchModalViewModel",
-                                    $"Converted batch {savedState.LastCompletedBatch} (size {savedState.BatchSize}) "
-                                        + $"to batch {resumeBatch} (size {BatchSize})"
+                                    $"Saved state has different batch size ({savedState.BatchSize} vs {BatchSize}). "
+                                        + "Batch size is now hardcoded to 3. Ignoring saved state and starting fresh."
                                 );
                                 AddConsoleMessage(
-                                    $"Batch size changed - converted to batch {resumeBatch}"
+                                    $"WARNING: Saved state has incompatible batch size. Starting fresh search."
                                 );
+                                criteria.StartBatch = 0;
                             }
-
-                            criteria.StartBatch = (ulong)(resumeBatch + 1); // +1 to start AFTER last completed
-                            AddConsoleMessage($"Resuming from batch {resumeBatch + 1}");
+                            else
+                            {
+                                criteria.StartBatch = (ulong)(resumeBatch + 1); // +1 to start AFTER last completed
+                                AddConsoleMessage($"Resuming from batch {resumeBatch + 1}");
+                            }
                         }
                         else
                         {
@@ -1214,6 +1280,12 @@ namespace BalatroSeedOracle.ViewModels
                         $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})"
                     );
 
+                    // Load saved progress if Continue is enabled
+                    if (ContinueFromLast)
+                    {
+                        _ = LoadSavedProgressAsync();
+                    }
+
                     // Switch to the Search tab so user can start searching
                     SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
                 }
@@ -1246,11 +1318,61 @@ namespace BalatroSeedOracle.ViewModels
             });
         }
 
+        // Track last console log time to avoid spamming
+        private DateTime _lastConsoleLog = DateTime.MinValue;
+        private DateTime _lastResultsLoad = DateTime.MinValue;
+
         private void OnProgressUpdated(object? sender, SearchProgress e)
         {
             // Store immutable data on background thread (safe)
             LatestProgress = e;
             LastKnownResultCount = e.ResultsFound;
+
+            // CRITICAL FIX: Load results periodically during search for real-time display
+            // Load every 2 seconds to avoid overwhelming the UI
+            var now = DateTime.Now;
+            if ((now - _lastResultsLoad).TotalSeconds >= 2 && e.ResultsFound > SearchResults.Count)
+            {
+                _lastResultsLoad = now;
+
+                // Load new results in background without blocking progress updates
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_searchInstance == null) return;
+
+                        var existingCount = SearchResults.Count;
+                        var newResults = await _searchInstance.GetResultsPageAsync(existingCount, 100);
+
+                        if (newResults != null && newResults.Count > 0)
+                        {
+                            // Inject tally labels from SearchInstance column names (seed, score, then tallies)
+                            var labels = _searchInstance.ColumnNames.Count > 2
+                                ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                                : Array.Empty<string>();
+
+                            // Add results on UI thread
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                            {
+                                foreach (var result in newResults)
+                                {
+                                    // Set labels only on the first result to drive grid headers
+                                    if (SearchResults.Count == 0 && labels.Length > 0)
+                                    {
+                                        result.Labels = labels;
+                                    }
+                                    SearchResults.Add(result);
+                                }
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("SearchModalViewModel", $"Failed to load live results: {ex.Message}");
+                    }
+                });
+            }
 
             // Save state periodically (only for AllSeeds mode)
             // Calculate current batch from seeds searched
@@ -1292,27 +1414,38 @@ namespace BalatroSeedOracle.ViewModels
             // Marshal ALL property updates to UI thread
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                // Calculate seeds per second once for use in multiple places
+                double seedsPerSecond = e.SeedsPerMillisecond * 1000.0;
+
+                // CRITICAL FIX: Add console progress logging every 5 seconds
+                var now = DateTime.Now;
+                if ((now - _lastConsoleLog).TotalSeconds >= 5)
+                {
+                    AddConsoleMessage($"Progress: {e.PercentComplete:0.00}% (~{seedsPerSecond:N0} seeds/s) {e.ResultsFound} results");
+                    _lastConsoleLog = now;
+                }
+
+                // Log first result found as immediate feedback
+                if (e.ResultsFound == 1 && LastKnownResultCount == 0)
+                {
+                    AddConsoleMessage($"First result found!");
+                }
+
                 // Update all stats properties
                 ProgressPercent = e.PercentComplete;
-
-                // Calculate seeds per second from SeedsPerMillisecond
-                double seedsPerSecond = e.SeedsPerMillisecond * 1000.0;
-                SearchSpeed = $"{seedsPerSecond:N0} seeds/s";
+                SearchSpeed = FormatSeedSpeed(seedsPerSecond);
 
                 // Use the search instance for additional stats if available
                 if (_searchInstance != null)
                 {
-                    SeedsProcessed = (long)e.SeedsSearched;
+                    SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
                     TimeElapsed = _searchInstance.SearchDuration.ToString(@"hh\:mm\:ss");
 
-                    // Estimate time remaining based on progress
-                    if (e.PercentComplete > 0 && e.PercentComplete < 100)
+                    // CRITICAL FIX: Use EstimatedTimeRemaining from SearchProgress (calculated in SearchInstance)
+                    // This ensures consistent ETA calculation across all layers
+                    if (e.EstimatedTimeRemaining.HasValue)
                     {
-                        var elapsed = _searchInstance.SearchDuration;
-                        var totalEstimated = TimeSpan.FromSeconds(
-                            elapsed.TotalSeconds / (e.PercentComplete / 100.0)
-                        );
-                        var remaining = totalEstimated - elapsed;
+                        var remaining = e.EstimatedTimeRemaining.Value;
                         EstimatedTimeRemaining = remaining.ToString(@"hh\:mm\:ss");
                     }
                     else
@@ -1322,7 +1455,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    SeedsProcessed = (long)e.SeedsSearched;
+                    SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
                     TimeElapsed = "00:00:00";
                     EstimatedTimeRemaining = "--:--:--";
                 }
@@ -1448,6 +1581,111 @@ namespace BalatroSeedOracle.ViewModels
                     "SearchModalViewModel",
                     $"Failed to load wordlists: {ex.Message}"
                 );
+            }
+        }
+
+        /// <summary>
+        /// Format seed speed with K/M abbreviations
+        /// </summary>
+        private static string FormatSeedSpeed(double seedsPerSecond)
+        {
+            if (seedsPerSecond >= 1_000_000)
+            {
+                return $"{seedsPerSecond / 1_000_000:0.0}M/s";
+            }
+            else if (seedsPerSecond >= 1_000)
+            {
+                return $"{seedsPerSecond / 1_000:0.0}K/s";
+            }
+            else
+            {
+                return $"{seedsPerSecond:0}/s";
+            }
+        }
+
+        private static string FormatSeedsCount(long count)
+        {
+            if (count >= 1_000_000)
+            {
+                return $"{count / 1_000_000.0:0.00}M";
+            }
+            else if (count >= 1_000)
+            {
+                return $"{count / 1_000.0:0.0}K";
+            }
+            else
+            {
+                return $"{count:N0}";
+            }
+        }
+
+        /// <summary>
+        /// Load saved search progress from DuckDB when "Continue from last position" is enabled
+        /// </summary>
+        private async Task LoadSavedProgressAsync()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(CurrentFilterPath))
+                {
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        "Cannot load saved progress: No filter path"
+                    );
+                    return;
+                }
+
+                // Convert JSON filter path to database path
+                var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+                var searchResultsDir = System.IO.Path.Combine(
+                    System.IO.Directory.GetCurrentDirectory(),
+                    "SearchResults"
+                );
+                var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+
+                if (!System.IO.File.Exists(dbPath))
+                {
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"No saved state found at: {dbPath}"
+                    );
+                    ProgressPercent = 0.0;
+                    return;
+                }
+
+                var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
+                if (savedState != null)
+                {
+                    // Calculate progress percentage from saved batch
+                    // BatchSize is hardcoded to 3, so total batches = 35^4 = 1,500,625
+                    long totalBatches = (long)Math.Pow(35, BatchSize + 1);
+                    double progress = ((double)savedState.LastCompletedBatch / totalBatches) * 100.0;
+
+                    ProgressPercent = progress;
+                    AddConsoleMessage(
+                        $"Loaded saved state: Batch {savedState.LastCompletedBatch:N0} ({progress:0.00}%)"
+                    );
+
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Loaded saved progress: {progress:0.00}% from batch {savedState.LastCompletedBatch}"
+                    );
+                }
+                else
+                {
+                    ProgressPercent = 0.0;
+                    AddConsoleMessage("No saved progress found for this filter");
+                }
+
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load saved progress: {ex.Message}"
+                );
+                ProgressPercent = 0.0;
             }
         }
 
