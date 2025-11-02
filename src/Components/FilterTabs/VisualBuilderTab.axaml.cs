@@ -1778,15 +1778,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
             }
 
-            // Only allow regular FilterItems (not operators) to be dropped here
-            if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
+            // Allow regular items OR operators being moved back from drop zones
+            if (_draggedItem != null)
             {
-                e.DragEffects = DragDropEffects.Copy;
+                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
+                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
 
-                // Highlight the tray
-                if (sender is Border border)
+                if (canDrop)
                 {
-                    border.BorderThickness = new Avalonia.Thickness(3);
+                    e.DragEffects = DragDropEffects.Copy;
+
+                    // ONLY highlight if dragging FROM a drop zone (editing an existing operator)
+                    // Do NOT highlight when dragging from shelf (building new operator)
+                    if (sender is Border border && !string.IsNullOrEmpty(_sourceDropZone))
+                    {
+                        border.BorderThickness = new Avalonia.Thickness(3);
+                    }
+                }
+                else
+                {
+                    e.DragEffects = DragDropEffects.None;
                 }
             }
             else
@@ -1844,15 +1855,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
             }
 
-            // Only allow regular FilterItems (not operators) to be dropped here
-            if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
+            // Allow regular items OR operators being moved back from drop zones
+            if (_draggedItem != null)
             {
-                e.DragEffects = DragDropEffects.Copy;
+                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
+                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
 
-                // Highlight the tray
-                if (sender is Border border)
+                if (canDrop)
                 {
-                    border.BorderThickness = new Avalonia.Thickness(3);
+                    e.DragEffects = DragDropEffects.Copy;
+
+                    // ONLY highlight if dragging FROM a drop zone (editing an existing operator)
+                    // Do NOT highlight when dragging from shelf (building new operator)
+                    if (sender is Border border && !string.IsNullOrEmpty(_sourceDropZone))
+                    {
+                        border.BorderThickness = new Avalonia.Thickness(3);
+                    }
+                }
+                else
+                {
+                    e.DragEffects = DragDropEffects.None;
                 }
             }
             else

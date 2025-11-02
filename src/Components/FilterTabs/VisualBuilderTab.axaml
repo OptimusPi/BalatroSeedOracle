@@ -150,8 +150,8 @@
                                 BorderBrush="{StaticResource Blue}"
                                 BorderThickness="2"
                                 CornerRadius="6"
-                                Padding="4"
-                                MinHeight="50"
+                                Padding="6"
+                                MinHeight="75"
                                 Cursor="Hand"
                                 PointerPressed="OnTrayOrPointerPressed"
                                 DragDrop.AllowDrop="True">
@@ -208,8 +208,8 @@
                                 BorderBrush="{StaticResource Green}"
                                 BorderThickness="2"
                                 CornerRadius="6"
-                                Padding="4"
-                                MinHeight="50"
+                                Padding="6"
+                                MinHeight="75"
                                 Cursor="Hand"
                                 PointerPressed="OnTrayAndPointerPressed"
                                 DragDrop.AllowDrop="True">
@@ -294,7 +294,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="0,6" Width="95" Height="110">
+                                                    <Grid Margin="0,4" Width="70" Height="95">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                         </i:Interaction.Behaviors>
@@ -337,19 +337,19 @@
                                                                     <Border Background="Transparent"
                                                                             Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                             Cursor="Hand"
-                                                                            Width="57"
-                                                                            Height="94">
+                                                                            Width="45"
+                                                                            Height="75">
                                                                         <StackPanel IsHitTestVisible="False">
                                                                             <Grid>
                                                                                 <Image Source="{Binding ItemImage}"
-                                                                                       Width="57"
-                                                                                       Height="76"
+                                                                                       Width="45"
+                                                                                       Height="60"
                                                                                        Stretch="Uniform"
                                                                                        HorizontalAlignment="Center"/>
 
                                                                                 <Image Source="{Binding SoulFaceImage}"
-                                                                                       Width="57"
-                                                                                       Height="76"
+                                                                                       Width="45"
+                                                                                       Height="60"
                                                                                        Stretch="Uniform"
                                                                                        HorizontalAlignment="Center"
                                                                                        IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
@@ -358,12 +358,13 @@
                                                                             <TextBlock Text="{Binding DisplayName}"
                                                                                        Foreground="{StaticResource White}"
                                                                                        FontFamily="{StaticResource BalatroFont}"
-                                                                                       FontSize="11"
+                                                                                       FontSize="9"
                                                                                        HorizontalAlignment="Center"
                                                                                        TextAlignment="Center"
-                                                                                       TextWrapping="Wrap"
-                                                                                       Margin="0,3,0,0"
-                                                                                       MaxWidth="110"/>
+                                                                                       TextWrapping="NoWrap"
+                                                                                       TextTrimming="CharacterEllipsis"
+                                                                                       Margin="0,2,0,0"
+                                                                                       MaxWidth="70"/>
                                                                         </StackPanel>
                                                                     </Border>
                                                                 </DataTemplate>
