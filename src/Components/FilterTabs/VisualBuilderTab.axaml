@@ -30,9 +30,113 @@
                 <ColumnDefinition Width="*"/>     <!-- Right: Drop Zones (takes 1x space) -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - Operator Tray + Filter Name + Search + Categories -->
-            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,Auto,8,*">
-                <!-- OPERATOR TRAY - Moved to very top, compact horizontal layout -->
+            <!-- LEFT COLUMN - Filter Name + Search + Categories (Operator Tray moved to center column) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
+                <!-- Filter Name Display (Auto-Save Status removed - was causing layout shift) -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12,8">
+                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </Border>
+
+                <!-- Search bar -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="8,4">
+                    <TextBox Name="SearchBox"
+                             Watermark="Search items..."
+                             Text="{Binding SearchFilter, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource White}"
+                             Padding="4"
+                             VerticalContentAlignment="Center"
+                             FontSize="13">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
+                </Border>
+
+                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                    <!-- Category buttons without section headers -->
+                    <Button Content="Special"
+                            Classes="nav-button special"
+                            Click="OnCategoryClick"
+                            Tag="Favorites"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Joker"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Joker"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Consumable"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Consumable"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Skip Tags"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="SkipTag"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Boss Blind"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Boss"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Voucher"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Voucher"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Standard Card"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="StandardCard"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <!-- Favorites drop overlay - covers category nav area only -->
+                <Border Grid.Row="4"
+                        Name="FavoritesDropOverlay"
+                        Background="{StaticResource SemiTransparentBlack}"
+                        BorderBrush="{StaticResource Red}"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False">
+                    <TextBlock FontFamily="{StaticResource BalatroFont}"
+                               FontSize="20"
+                               Foreground="{StaticResource Red}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               FontWeight="Bold">
+                        <Run Text="ADD"/>
+                        <LineBreak/>
+                        <Run Text="TO"/>
+                        <LineBreak/>
+                        <Run Text="FAVORITES"/>
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <!-- CENTER COLUMN - Operator Tray + Grouped Scrollable Items -->
+            <Grid Grid.Column="1" Margin="8,0" RowDefinitions="Auto,8,*">
+                <!-- OPERATOR TRAY - Top shelf for building OR/AND groups -->
                 <Border Grid.Row="0"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
@@ -157,121 +261,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Filter Name Display with Auto-Save Status -->
-                <Border Grid.Row="2"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="12"
-                        Padding="12,8">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"/>
-
-                        <!-- Auto-Save Status Indicator -->
-                        <TextBlock Text="{Binding AutoSaveStatus}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="10"
-                                   Foreground="{StaticResource Green}"
-                                   HorizontalAlignment="Center"
-                                   IsVisible="{Binding AutoSaveStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Search bar -->
-                <Border Grid.Row="4"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="8"
-                        Padding="8,4">
-                    <TextBox Name="SearchBox"
-                             Watermark="Search items..."
-                             Text="{Binding SearchFilter, Mode=TwoWay}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource White}"
-                             Padding="4"
-                             VerticalContentAlignment="Center"
-                             FontSize="13">
-                        <TextBox.Styles>
-                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
-                            </Style>
-                        </TextBox.Styles>
-                    </TextBox>
-                </Border>
-
-                <StackPanel Grid.Row="6" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                    <!-- Category buttons without section headers -->
-                    <Button Content="Special"
-                            Classes="nav-button special"
-                            Click="OnCategoryClick"
-                            Tag="Favorites"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Joker"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Joker"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Consumable"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Consumable"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Skip Tags"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="SkipTag"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Boss Blind"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Boss"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Voucher"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Voucher"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Standard Card"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="StandardCard"
-                            HorizontalAlignment="Stretch"/>
-                </StackPanel>
-
-                <!-- Favorites drop overlay - covers category nav area only -->
-                <Border Grid.Row="6"
-                        Name="FavoritesDropOverlay"
-                        Background="{StaticResource SemiTransparentBlack}"
-                        BorderBrush="{StaticResource Red}"
-                        BorderThickness="3"
-                        CornerRadius="8"
-                        IsVisible="False"
-                        IsHitTestVisible="False">
-                    <TextBlock FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               Foreground="{StaticResource Red}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               TextAlignment="Center"
-                               FontWeight="Bold">
-                        <Run Text="ADD"/>
-                        <LineBreak/>
-                        <Run Text="TO"/>
-                        <LineBreak/>
-                        <Run Text="FAVORITES"/>
-                    </TextBlock>
-                </Border>
-            </Grid>
-
-            <!-- CENTER COLUMN - Grouped Scrollable Items (NO PAGINATION) -->
-            <Grid Grid.Column="1" Margin="8,0">
-                <Border Name="ItemGridBorder"
+                <!-- ITEMS SHELF - Scrollable item list below top shelf -->
+                <Border Grid.Row="2" Name="ItemGridBorder"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"

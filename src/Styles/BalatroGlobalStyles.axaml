@@ -100,11 +100,6 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     
-    <!-- Enhanced red button hover shadow using exact color (precise resource) -->
-    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
-    </Style>
-    
     <!-- Button disabled state -->
     <Style Selector="Button:not(.SystemCaptionButton):disabled">
         <Setter Property="Opacity" Value="0.6" />
@@ -306,6 +301,8 @@
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-red">
         <Setter Property="Background" Value="{StaticResource Red}" />
+        <Setter Property="FontSize" Value="18" /> <!-- Increased from default 16 -->
+        <Setter Property="Margin" Value="5" /> <!-- Increased from default 4 (1px more spacing) -->
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover">
         <Setter Property="Background" Value="{StaticResource RedHover}" />
@@ -321,14 +318,6 @@
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
         <Setter Property="Background" Value="{StaticResource Purple}" />
-    </Style>
-
-    <!-- Warning/Stop button - Orange to match Back button -->
-    <Style Selector="Button:not(.SystemCaptionButton).btn-warning">
-        <Setter Property="Background" Value="{StaticResource Orange}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-warning:pointerover">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
     
     <!-- Big back button style -->

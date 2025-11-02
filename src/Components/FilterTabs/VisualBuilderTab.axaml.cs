@@ -30,6 +30,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private TopLevel? _topLevel;
         private bool _isDragging = false;
         private bool _isAnimating = false; // Track if rubber-band animation is playing
+        private bool _isDraggingTray = false; // Track if we're dragging an operator tray (disables drop acceptance on trays)
         private Avalonia.Point _dragStartPosition;
         private Control? _originalDragSource; // Store the original control to animate back to
         private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
@@ -836,71 +837,95 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // SoundEffectService.Instance.PlayCardDrop();
 
                         // Check if dropping onto an operator (nested drop zone)
+                        // DISABLED: Operators in drop zones are READ-ONLY
+                        // Users must drag operator back to top shelf to edit it
                         var targetOperator = FindOperatorAtPosition(cursorPos, zoneName, vm);
 
                         if (targetOperator != null && _draggedItem is not Models.FilterOperatorItem)
                         {
-                            DebugLogger.Log(
-                                "VisualBuilderTab",
-                                $"📦 Adding {_draggedItem.Name} to {targetOperator.OperatorType} operator"
-                            );
-                            // Add to operator's children instead of main zone
-                            targetOperator.Children.Add(_draggedItem);
-                        }
-                        else if (_draggedItem is Models.FilterOperatorItem operatorItem)
-                        {
-                            DebugLogger.Log(
-                                "VisualBuilderTab",
-                                $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
-                            );
+                            // IMPORTANT: Only allow drops into TOP SHELF tray operators (TrayOrOperator, TrayAndOperator)
+                            // Operators already in drop zones are READ-ONLY to prevent accidental "disappearing" items
+                            bool isTrayOperator = (targetOperator == vm.TrayOrOperator || targetOperator == vm.TrayAndOperator);
 
-                            // Check if this is one of the tray operators
-                            bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
-
-                            // Add operator to zone (operators can't go inside operators)
-                            switch (zoneName)
-                            {
-                                case "MustDropZone":
-                                    vm.AddToMustCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("MUST");
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.AddToShouldCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("SHOULD");
-                                    break;
-                                case "MustNotDropZone":
-                                    vm.AddToMustNotCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("CANT");
-                                    break;
-                            }
-
-                            // Clear the tray operator's children after dropping
                             if (isTrayOperator)
                             {
-                                operatorItem.Children.Clear();
                                 DebugLogger.Log(
                                     "VisualBuilderTab",
-                                    $"Cleared tray operator {operatorItem.OperatorType} children"
+                                    $"📦 Adding {_draggedItem.Name} to {targetOperator.OperatorType} tray operator"
                                 );
+                                // Add to operator's children (top shelf staging area only)
+                                targetOperator.Children.Add(_draggedItem);
+                            }
+                            else
+                            {
+                                // Operator is in a drop zone (MUST/SHOULD/MUSTNOT) - treat as regular drop
+                                DebugLogger.Log(
+                                    "VisualBuilderTab",
+                                    $"⚠️ Operator in drop zone is READ-ONLY - dropping {_draggedItem.Name} next to it instead"
+                                );
+                                // Fall through to regular zone add logic below
+                                targetOperator = null; // Treat as if no operator was hit
                             }
                         }
-                        else
+
+                        // Only process if we didn't add to tray operator above
+                        if (targetOperator == null)
                         {
-                            // Add to target zone (allows duplicates from shelf!)
-                            switch (zoneName)
+                            if (_draggedItem is Models.FilterOperatorItem operatorItem)
                             {
-                                case "MustDropZone":
-                                    vm.AddToMustCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("MUST");
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.AddToShouldCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("SHOULD");
-                                    break;
-                                case "MustNotDropZone":
-                                    vm.AddToMustNotCommand.Execute(_draggedItem);
-                                    vm.CollapseToZone("CANT");
-                                    break;
+                                DebugLogger.Log(
+                                    "VisualBuilderTab",
+                                    $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
+                                );
+
+                                // Check if this is one of the tray operators
+                                bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
+
+                                // Add operator to zone (operators can't go inside operators)
+                                switch (zoneName)
+                                {
+                                    case "MustDropZone":
+                                        vm.AddToMustCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("MUST");
+                                        break;
+                                    case "ShouldDropZone":
+                                        vm.AddToShouldCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("SHOULD");
+                                        break;
+                                    case "MustNotDropZone":
+                                        vm.AddToMustNotCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("CANT");
+                                        break;
+                                }
+
+                                // Clear the tray operator's children after dropping
+                                if (isTrayOperator)
+                                {
+                                    operatorItem.Children.Clear();
+                                    DebugLogger.Log(
+                                        "VisualBuilderTab",
+                                        $"Cleared tray operator {operatorItem.OperatorType} children"
+                                    );
+                                }
+                            }
+                            else
+                            {
+                                // Add to target zone (allows duplicates from shelf!)
+                                switch (zoneName)
+                                {
+                                    case "MustDropZone":
+                                        vm.AddToMustCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("MUST");
+                                        break;
+                                    case "ShouldDropZone":
+                                        vm.AddToShouldCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("SHOULD");
+                                        break;
+                                    case "MustNotDropZone":
+                                        vm.AddToMustNotCommand.Execute(_draggedItem);
+                                        vm.CollapseToZone("CANT");
+                                        break;
+                                }
                             }
                         }
                     }
@@ -945,6 +970,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _draggedItem.IsBeingDragged = false;
                 }
                 _isDragging = false;
+                _isDraggingTray = false; // Re-enable drop acceptance on trays
                 _draggedItem = null;
                 _originalDragSource = null;
                 _sourceDropZone = null; // Clear the source zone
@@ -1033,6 +1059,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Placement = Avalonia.Controls.PlacementMode.Pointer,
                 PlacementTarget = sourceControl,
                 IsLightDismissEnabled = true,
+                OverlayInputPassThroughElement = configPopup,
             };
 
             popupViewModel.ConfigApplied += (appliedConfig) =>
@@ -1673,6 +1700,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Start dragging the OR operator with its children
             _draggedItem = vm.TrayOrOperator;
             _isDragging = true;
+            _isDraggingTray = true; // Disable drop acceptance on trays while dragging
             _originalDragSource = sender as Control;
             _sourceDropZone = null; // From tray, not a drop zone
 
@@ -1714,6 +1742,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Start dragging the AND operator with its children
             _draggedItem = vm.TrayAndOperator;
             _isDragging = true;
+            _isDraggingTray = true; // Disable drop acceptance on trays while dragging
             _originalDragSource = sender as Control;
             _sourceDropZone = null;
 
@@ -1741,6 +1770,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayOrDragOver(object? sender, DragEventArgs e)
         {
+            // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
+            if (_isDraggingTray)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
             // Only allow regular FilterItems (not operators) to be dropped here
             if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
             {
@@ -1799,6 +1836,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayAndDragOver(object? sender, DragEventArgs e)
         {
+            // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
+            if (_isDraggingTray)
+            {
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
             // Only allow regular FilterItems (not operators) to be dropped here
             if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
             {

@@ -68,7 +68,14 @@ namespace BalatroSeedOracle.ViewModels
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            // When RadioButton is checked (true), return the parameter as the string value
+            if (value is bool isChecked && isChecked && parameter != null)
+            {
+                return parameter.ToString();
+            }
+
+            // When RadioButton is unchecked, do nothing (another RadioButton in group will handle it)
+            return Avalonia.Data.BindingOperations.DoNothing;
         }
     }
 

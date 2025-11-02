@@ -198,11 +198,11 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 if (!IsSearching)
-                    return "START SEARCH";
+                    return ContinueFromLast ? "Resume Search" : "Start Search";
 
                 // If Continue is enabled, show PAUSE (saves state)
                 // If Continue is disabled, show STOP (doesn't save state)
-                return ContinueFromLast ? "PAUSE SEARCH" : "STOP SEARCH";
+                return ContinueFromLast ? "Pause Search" : "Stop Search";
             }
         }
 

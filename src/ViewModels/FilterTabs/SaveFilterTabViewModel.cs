@@ -299,17 +299,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                // Build quick test search criteria: STOP AFTER 1 SEED FOUND!
-                // MaxResults = 1 ensures we stop immediately when a match is found
+                // Build test search criteria: Test millions of seeds
+                // Batch size 3 = 35^3 = 42,875 seeds per batch
+                // Testing 10,000 batches = ~428 MILLION seeds
+                // At millions/sec, this should complete in under a minute
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    BatchSize = 3, // Default batch size
+                    BatchSize = 3, // 35^3 = 42,875 seeds per batch
                     StartBatch = 0,
-                    EndBatch = Math.Min(46656, GetMaxBatchesForBatchSize(3)), // Max batches for batch size 3
+                    EndBatch = 10000, // 10K batches = ~428M seeds tested
                     Deck = deckName,
                     Stake = stakeName,
                     MinScore = 0,
-                    MaxResults = 1, // STOP AFTER FINDING 1 SEED!
+                    MaxResults = 10, // Find up to 10 matching seeds
                 };
 
                 // Start search via SearchManager and wait for results
