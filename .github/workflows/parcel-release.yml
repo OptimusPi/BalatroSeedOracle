@@ -31,6 +31,8 @@ jobs:
       run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
 
     - name: Package with Parcel
+      env:
+        PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
       run: |
         cd src
         parcel BalatroSeedOracle.parcel --runtimes win-x64 linux-x64 osx-x64 --packages nsis deb dmg
