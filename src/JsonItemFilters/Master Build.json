@@ -1,0 +1,17 @@
+{
+  "name": "Master Build",
+  "author": "pifreak",
+  "description": "Created with visual filter builder",
+  "dateCreated": "2025-11-02T11:53:49.2815797-06:00",
+  "deck": "Red",
+  "stake": "white",
+  "must": [
+    {
+      "type": "Operator",
+      "value": "OR",
+      "score": 1
+    }
+  ],
+  "should": [],
+  "mustNot": []
+}
