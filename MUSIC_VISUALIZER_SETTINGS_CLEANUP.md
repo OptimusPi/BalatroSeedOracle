@@ -94,7 +94,7 @@ The Music Visualizer Widget was created to avoid covering the beautiful paint-sw
         <TextBlock Text="EFFECT TESTING"
                    Foreground="{StaticResource White}"
                    FontSize="15"
-                   FontWeight="Bold"/>
+                   />
         <TextBlock Text="Test shader effects with custom intensity values"
                    Foreground="{StaticResource LightTextGrey}"
                    FontSize="12"
@@ -333,7 +333,7 @@ public class TriggerPoint
         <TextBlock Text="TRIGGER POINT CREATOR"
                    Foreground="{StaticResource White}"
                    FontSize="15"
-                   FontWeight="Bold"/>
+                   />
         <TextBlock Text="Define custom audio thresholds that trigger effects"
                    Foreground="{StaticResource LightTextGrey}"
                    FontSize="12"
@@ -480,7 +480,7 @@ private string GenerateTriggerPointName(string trackName, string freqBand, doubl
         <TextBlock Text="EFFECT → TRIGGER MAPPING"
                    Foreground="{StaticResource White}"
                    FontSize="15"
-                   FontWeight="Bold"/>
+                   />
         <TextBlock Text="Map shader effects to your custom trigger points"
                    Foreground="{StaticResource LightTextGrey}"
                    FontSize="12"

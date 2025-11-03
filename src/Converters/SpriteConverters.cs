@@ -319,11 +319,11 @@ namespace BalatroSeedOracle.Converters
                 if (parts.Length < 3)
                     return null;
 
-                string? seal = null;
-                string? edition = null;
                 string rank = "";
                 string suit = "";
 
+                // Parse the card string to extract rank and suit
+                // Format: "[modifiers...] <rank> of <suit>"
                 int rankIndex = -1;
                 for (int i = 0; i < parts.Length; i++)
                 {
@@ -339,25 +339,12 @@ namespace BalatroSeedOracle.Converters
                 if (string.IsNullOrEmpty(rank) || string.IsNullOrEmpty(suit))
                     return null;
 
-                for (int i = 0; i < rankIndex; i++)
-                {
-                    var part = parts[i].ToLowerInvariant();
-                    if (part == "red" || part == "blue" || part == "gold" || part == "purple")
-                    {
-                        seal = parts[i];
-                    }
-                    else if (
-                        part == "foil"
-                        || part == "holographic"
-                        || part == "polychrome"
-                        || part == "negative"
-                    )
-                    {
-                        edition = parts[i];
-                    }
-                }
-
-                return spriteService.GetPlayingCardImage(suit, rank, null, seal, edition);
+                // StandardCards are rendered with proper multi-layer compositing:
+                // - Base layer: BlankCard or Enhancement sprite (Glass, Gold, Steel, etc.)
+                // - Overlay layer: Rank + Suit pattern (transparent PNG)
+                // - Optional: Mult/Bonus glyph for Type B2 enhancements
+                // Note: StandardCards do NOT use negative edition (that's jokers only)
+                return spriteService.GetStandardCardImage(suit, rank, enhancement: null);
             }
             catch (Exception ex)
             {

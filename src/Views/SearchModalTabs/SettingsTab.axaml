@@ -52,7 +52,7 @@
                                    Text="{Binding DeckSelection}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="18"
-                                   FontWeight="Bold"
+                                   
                                    Foreground="{StaticResource Black}"/>
                         <TextBlock Name="DeckDescriptionText"
                                    FontFamily="{StaticResource BalatroFont}"

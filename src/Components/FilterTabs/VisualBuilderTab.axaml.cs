@@ -358,10 +358,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Log less frequently to avoid spam
                     if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 100 < 16) // ~10fps logging
                     {
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Ghost moved to ({position.X}, {position.Y})"
-                        );
+                        // Ghost position tracking (spam removed)
                     }
                 }
 

@@ -392,7 +392,7 @@ public enum FilterTestState
                     <TextBlock Text="{Binding FoundSeed.Seed, StringFormat='SEED: {0}'}"
                                FontFamily="Consolas"
                                FontSize="16"
-                               FontWeight="Bold"
+                               
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding FoundSeed.TotalScore, StringFormat='Score: {0:N0}'}"
@@ -426,7 +426,7 @@ public enum FilterTestState
                        Foreground="{StaticResource White}"
                        FontSize="14">
                 <Run Text="Searched "/>
-                <Run Text="{Binding SeedsChecked, StringFormat='{0:N0}'}" FontWeight="Bold"/>
+                <Run Text="{Binding SeedsChecked, StringFormat='{0:N0}'}" />
                 <Run Text=" seeds without finding a match for this filter."/>
             </TextBlock>
 
@@ -464,7 +464,7 @@ public enum FilterTestState
                 Command="{Binding TestFilterCommand}"
                 Classes="btn-red"
                 FontSize="16"
-                FontWeight="Bold"
+                
                 Padding="40,12"
                 IsVisible="{Binding !IsTestRunning}"/>
 
@@ -546,7 +546,7 @@ var testSearch = new SearchInstance(filter)
         IsVisible="{Binding FilterVerified}">
     <TextBlock Text="✓ VERIFIED"
                FontSize="10"
-               FontWeight="Bold"
+               
                Foreground="White"/>
 </Border>
 
@@ -556,7 +556,7 @@ var testSearch = new SearchInstance(filter)
         IsVisible="{Binding !FilterVerified}">
     <TextBlock Text="⚠ UNVERIFIED"
                FontSize="10"
-               FontWeight="Bold"
+               
                Foreground="White"/>
 </Border>
 ```

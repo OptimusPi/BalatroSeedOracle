@@ -26,17 +26,21 @@ namespace BalatroSeedOracle.Components
             {
                 if (DataContext is FilterOperatorItem operatorItem)
                 {
-                    var headerBorder = this.FindControl<Border>("OperatorContainer");
-                    var labelBorder = this.Get<Border>("Grid").Children.OfType<Border>().FirstOrDefault();
-                    if (labelBorder != null)
+                    var containerBorder = this.FindControl<Border>("OperatorContainer");
+                    var headerBorder = this.FindControl<Border>("OperatorHeader");
+
+                    // Set the border color based on operator type
+                    if (containerBorder != null)
                     {
-                        labelBorder.Tag = operatorItem.OperatorType;
+                        containerBorder.BorderBrush = operatorItem.OperatorType == "OR"
+                            ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
+                            : Application.Current?.FindResource("Blue") as Avalonia.Media.IBrush;
                     }
 
-                    // Also set the border color based on operator type
+                    // Set the header background based on operator type
                     if (headerBorder != null)
                     {
-                        headerBorder.BorderBrush = operatorItem.OperatorType == "OR"
+                        headerBorder.Background = operatorItem.OperatorType == "OR"
                             ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
                             : Application.Current?.FindResource("Blue") as Avalonia.Media.IBrush;
                     }

@@ -1,0 +1,17 @@
+{
+  "name": "Power Play",
+  "author": "pifreak",
+  "description": "Created with visual filter builder",
+  "dateCreated": "2025-11-02T19:40:27.642603-06:00",
+  "deck": "Red",
+  "stake": "white",
+  "must": [],
+  "should": [
+    {
+      "type": "SoulJoker",
+      "value": "Canio",
+      "score": 1
+    }
+  ],
+  "mustNot": []
+}

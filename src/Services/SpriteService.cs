@@ -652,10 +652,6 @@ namespace BalatroSeedOracle.Services
         {
             ArgumentNullException.ThrowIfNull(name_in);
             var name = NormalizeSpriteName(name_in);
-            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
-                "GetJokerSoulImage",
-                $"🎴 SOUL IMAGE REQUEST - Input: '{name_in}', Normalized: '{name}'"
-            );
 
             // For legendary jokers, the soul is one row below (y+1)
             if (
@@ -664,11 +660,6 @@ namespace BalatroSeedOracle.Services
                 || !jokerPositions.TryGetValue(name, out var basePos)
             )
             {
-                var prefix = name.Substring(0, Math.Min(3, name.Length));
-                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
-                    "GetJokerSoulImage",
-                    $"🎴 Failed to find position for: {name}. Available positions: {string.Join(", ", jokerPositions?.Keys.Where(k => k.Contains(prefix, StringComparison.OrdinalIgnoreCase)).Take(5) ?? new List<string>())}"
-                );
                 return null;
             }
 
@@ -681,20 +672,6 @@ namespace BalatroSeedOracle.Services
 
             int x = soulPos.Pos.X * spriteWidth;
             int y = soulPos.Pos.Y * spriteHeight;
-
-            // Validate coordinates
-            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
-                "GetJokerSoulImage",
-                $"🎴 Sheet dimensions: {jokerSheet.PixelSize.Width}x{jokerSheet.PixelSize.Height}"
-            );
-            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
-                "GetJokerSoulImage",
-                $"🎴 Trying to crop at ({x}, {y}) with size {spriteWidth}x{spriteHeight}"
-            );
-            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
-                "GetJokerSoulImage",
-                $"🎴 Bottom-right corner would be at ({x + spriteWidth}, {y + spriteHeight})"
-            );
 
             if (
                 x >= 0
@@ -1367,6 +1344,68 @@ namespace BalatroSeedOracle.Services
                 playingCardsSheet,
                 new PixelRect(x, y, spriteWidth, spriteHeight)
             );
+        }
+
+        /// <summary>
+        /// Get a StandardCard (playing card) image with proper multi-layer compositing.
+        /// StandardCards are rendered by compositing:
+        /// 1. Base layer (BlankCard or Enhancement sprite like Glass/Gold/Steel)
+        /// 2. Overlay layer (Rank + Suit pattern as transparent PNG)
+        /// 3. Optional glyph layer (for Mult/Bonus enhancements)
+        /// This matches how Balatro renders playing cards with get_front_spriteinfo() + base cards.
+        /// </summary>
+        public IImage? GetStandardCardImage(string suit, string rank, string? enhancement = null)
+        {
+            ArgumentNullException.ThrowIfNull(suit);
+            ArgumentNullException.ThrowIfNull(rank);
+
+            try
+            {
+                // Special case: Stone enhancement has no rank/suit pattern
+                if (enhancement == "Stone")
+                {
+                    return GetEnhancementImage("Stone");
+                }
+
+                // 1. Get base card (enhancement sprite or BlankCard)
+                IImage? baseCard = null;
+                if (!string.IsNullOrEmpty(enhancement))
+                {
+                    baseCard = GetEnhancementImage(enhancement);
+                }
+                else
+                {
+                    // Use blank card as base
+                    baseCard = GetSpecialImage("BlankCard");
+                }
+
+                if (baseCard == null)
+                {
+                    return null;
+                }
+
+                // 2. Get card pattern overlay (rank + suit)
+                var cardPattern = GetPlayingCardPattern(suit, rank);
+                if (cardPattern == null)
+                {
+                    return baseCard; // Return just the base if no pattern found
+                }
+
+                // 3. Composite the images together (base + pattern overlay)
+                // Playing cards are 142x190 pixels
+                return CompositeImages(baseCard, cardPattern, 142, 190);
+
+                // TODO: Type B2 (Mult/Bonus) needs third layer with glyph overlay
+                // This requires research into where Mult/Bonus glyphs are stored in Balatro assets
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error creating StandardCard image: {ex.Message}"
+                );
+                return null;
+            }
         }
 
         // Helper method to load stickers metadata

@@ -1,10 +1,10 @@
 {
-  "name": "Lucky Find",
-  "author": "pifreak",
+  "name": "Pro Strat",
   "description": "Created with visual filter builder",
-  "dateCreated": "2025-11-02T19:49:36.1335176-06:00",
+  "author": "pifreak",
+  "dateCreated": "2025-11-03T01:18:55.3085321Z",
   "deck": "Red",
-  "stake": "white",
+  "stake": "White",
   "must": [],
   "should": [],
   "mustNot": []

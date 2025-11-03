@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1756,8 +1757,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Generate filter file path
+                // Generate filter file path (normalized with underscores)
                 var filePath = filterService.GenerateFilterFileName(filterName);
+
+                // Check if there's an old file with spaces instead of underscores and delete it
+                if (filterName.Contains(' '))
+                {
+                    var oldFilePath = Path.Combine(
+                        configService.GetFiltersDirectory(),
+                        $"{filterName}.json"
+                    );
+                    if (File.Exists(oldFilePath) && oldFilePath != filePath)
+                    {
+                        try
+                        {
+                            File.Delete(oldFilePath);
+                            DebugLogger.Log("VisualBuilderTab", $"Deleted old filter file with spaces: {oldFilePath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugLogger.LogError("VisualBuilderTab", $"Failed to delete old filter file: {ex.Message}");
+                        }
+                    }
+                }
 
                 // Save the filter
                 var success = await configService.SaveFilterAsync(filePath, config);

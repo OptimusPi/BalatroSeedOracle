@@ -61,8 +61,16 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     [ObservableProperty]
     private bool _sourcesVisible;
 
-    [ObservableProperty]
-    private List<bool> _selectedAntes = Enumerable.Repeat(true, 9).ToList();
+    // Individual ante properties for proper MVVM binding (can't use indexers in XAML)
+    [ObservableProperty] private bool _ante0 = true;
+    [ObservableProperty] private bool _ante1 = true;
+    [ObservableProperty] private bool _ante2 = true;
+    [ObservableProperty] private bool _ante3 = true;
+    [ObservableProperty] private bool _ante4 = true;
+    [ObservableProperty] private bool _ante5 = true;
+    [ObservableProperty] private bool _ante6 = true;
+    [ObservableProperty] private bool _ante7 = true;
+    [ObservableProperty] private bool _ante8 = true;
 
     [ObservableProperty]
     private string _selectedEdition = "none";
@@ -141,15 +149,25 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
         if (config.Antes != null)
         {
-            var newAntes = Enumerable.Repeat(false, 9).ToList();
+            // Reset all to false first
+            Ante0 = Ante1 = Ante2 = Ante3 = Ante4 = Ante5 = Ante6 = Ante7 = Ante8 = false;
+
+            // Set specified antes to true
             foreach (var ante in config.Antes)
             {
-                if (ante >= 0 && ante < 9)
+                switch (ante)
                 {
-                    newAntes[ante] = true;
+                    case 0: Ante0 = true; break;
+                    case 1: Ante1 = true; break;
+                    case 2: Ante2 = true; break;
+                    case 3: Ante3 = true; break;
+                    case 4: Ante4 = true; break;
+                    case 5: Ante5 = true; break;
+                    case 6: Ante6 = true; break;
+                    case 7: Ante7 = true; break;
+                    case 8: Ante8 = true; break;
                 }
             }
-            SelectedAntes = newAntes;
         }
 
         SelectedEdition = config.Edition;
@@ -315,13 +333,15 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private void Apply()
     {
         var antes = new List<int>();
-        for (int i = 0; i < SelectedAntes.Count; i++)
-        {
-            if (SelectedAntes[i])
-            {
-                antes.Add(i);
-            }
-        }
+        if (Ante0) antes.Add(0);
+        if (Ante1) antes.Add(1);
+        if (Ante2) antes.Add(2);
+        if (Ante3) antes.Add(3);
+        if (Ante4) antes.Add(4);
+        if (Ante5) antes.Add(5);
+        if (Ante6) antes.Add(6);
+        if (Ante7) antes.Add(7);
+        if (Ante8) antes.Add(8);
 
         var config = new ItemConfig
         {

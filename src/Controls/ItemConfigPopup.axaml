@@ -61,15 +61,15 @@
                                Foreground="{StaticResource ModalBorder}"
                                Margin="0,0,0,6"/>
                     <UniformGrid Grid.Row="1" Columns="9" Margin="-2">
-                        <CheckBox IsChecked="{Binding SelectedAntes[0]}" Content="0" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[1]}" Content="1" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[2]}" Content="2" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[3]}" Content="3" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[4]}" Content="4" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[5]}" Content="5" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[6]}" Content="6" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[7]}" Content="7" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding SelectedAntes[8]}" Content="8" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante0}" Content="0" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante1}" Content="1" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante2}" Content="2" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante3}" Content="3" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante4}" Content="4" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante5}" Content="5" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante6}" Content="6" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante7}" Content="7" Classes="ante-checkbox" Margin="2"/>
+                        <CheckBox IsChecked="{Binding Ante8}" Content="8" Classes="ante-checkbox" Margin="2"/>
                     </UniformGrid>
                 </Grid>
             </Border>
@@ -118,19 +118,19 @@
                                Foreground="{StaticResource ModalBorder}"
                                Margin="0,0,0,6"/>
                     <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
-                        <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Normal'}" GroupName="ItemEdition" Classes="edition-radio" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Normal'}" GroupName="ItemEdition" Classes="edition-radio" Margin="2">
                             <Image Source="{Binding EditionImages[Normal]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
-                        <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Foil'}" GroupName="ItemEdition" Classes="edition-radio edition-foil" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Foil'}" GroupName="ItemEdition" Classes="edition-radio edition-foil" Margin="2">
                             <Image Source="{Binding EditionImages[Foil]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
-                        <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Holographic'}" GroupName="ItemEdition" Classes="edition-radio edition-holo" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Holographic'}" GroupName="ItemEdition" Classes="edition-radio edition-holo" Margin="2">
                             <Image Source="{Binding EditionImages[Holographic]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
-                        <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Polychrome'}" GroupName="ItemEdition" Classes="edition-radio edition-poly" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Polychrome'}" GroupName="ItemEdition" Classes="edition-radio edition-poly" Margin="2">
                             <Image Source="{Binding EditionImages[Polychrome]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
-                        <RadioButton IsChecked="{Binding SelectedEdition, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Negative'}" GroupName="ItemEdition" Classes="edition-radio edition-negative" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Negative'}" GroupName="ItemEdition" Classes="edition-radio edition-negative" Margin="2">
                             <Image Source="{Binding EditionImages[Negative]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
                     </UniformGrid>

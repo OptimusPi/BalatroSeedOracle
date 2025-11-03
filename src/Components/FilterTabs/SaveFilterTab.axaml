@@ -188,7 +188,7 @@
                                        Foreground="{StaticResource Gold}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        HorizontalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       />
                             <ProgressBar IsIndeterminate="True"
                                          Width="200"
                                          Height="10"/>
@@ -214,7 +214,7 @@
                                        Foreground="{StaticResource White}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        HorizontalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       />
 
                             <!-- Found Seed Display -->
                             <Border IsVisible="{Binding ShowFoundSeed}"
@@ -236,7 +236,7 @@
                                                    FontSize="14"
                                                    Foreground="{StaticResource Gold}"
                                                    FontFamily="Consolas"
-                                                   FontWeight="Bold"
+                                                   
                                                    VerticalAlignment="Center"/>
                                         <Button Content="📋"
                                                 Command="{Binding CopySeedCommand}"
@@ -272,7 +272,7 @@
                                        Foreground="{StaticResource White}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        HorizontalAlignment="Center"
-                                       FontWeight="Bold"/>
+                                       />
                             <TextBlock Text="{Binding TestResultMessage}"
                                        FontSize="12"
                                        Foreground="{StaticResource White}"
@@ -337,7 +337,7 @@
                                    FontSize="11"
                                    Foreground="{StaticResource White}"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontWeight="Bold"/>
+                                   />
                     </Border>
                 </StackPanel>
             </Border>

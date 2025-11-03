@@ -402,7 +402,47 @@
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     
-    <!-- Pokémon cards style (for your joker/item cards) -->
+    <!-- Authentic Balatro card style (cream/white background with shadow) -->
+    <Style Selector="Border.balatro-card-authentic">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#F5F5F0" Offset="0"/>
+                    <GradientStop Color="#EEEEE8" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BoxShadow" Value="0 2 6 0 #30000000, 0 0 0 1 #20000000" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.balatro-card-authentic:pointerover">
+        <Setter Property="BoxShadow" Value="0 4 10 0 #40000000, 0 0 0 1 #20000000" />
+    </Style>
+
+    <!-- Small Balatro card variant (for item palette) -->
+    <Style Selector="Border.balatro-card-small">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#F5F5F0" Offset="0"/>
+                    <GradientStop Color="#EEEEE8" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="BoxShadow" Value="0 1 4 0 #25000000, 0 0 0 1 #20000000" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <!-- Legacy card style (deprecated - use balatro-card-authentic instead) -->
     <Style Selector="Border.game-item-card">
         <Setter Property="Background" Value="{StaticResource ModalGrey}" />
         <Setter Property="CornerRadius" Value="8" />

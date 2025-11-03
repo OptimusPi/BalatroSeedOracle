@@ -705,8 +705,31 @@ namespace BalatroSeedOracle.ViewModels
                 MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
             };
 
+            // CRITICAL FIX: Read from VisualBuilderTab's collections if available
+            // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
+            IEnumerable<string> mustKeys;
+            IEnumerable<string> shouldKeys;
+            IEnumerable<string> mustNotKeys;
+
+            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+            {
+                // Convert FilterItem objects to their keys (ItemKey property)
+                mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
+                shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
+                mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
+                DebugLogger.Log("FilterConfigurationService",
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+            }
+            else
+            {
+                // Fallback to parent's collections (legacy support)
+                mustKeys = SelectedMust;
+                shouldKeys = SelectedShould;
+                mustNotKeys = SelectedMustNot;
+            }
+
             // Build Must clauses
-            foreach (var itemKey in SelectedMust)
+            foreach (var itemKey in mustKeys)
             {
                 if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                 {
@@ -717,7 +740,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Build Should clauses
-            foreach (var itemKey in SelectedShould)
+            foreach (var itemKey in shouldKeys)
             {
                 if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                 {
@@ -728,7 +751,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Build MustNot clauses
-            foreach (var itemKey in SelectedMustNot)
+            foreach (var itemKey in mustNotKeys)
             {
                 if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                 {

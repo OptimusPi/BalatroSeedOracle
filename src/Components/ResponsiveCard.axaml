@@ -4,122 +4,130 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="clr-namespace:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.ResponsiveCard">
-    
+
     <UserControl.Styles>
-        <Style Selector="local|ResponsiveCard.selected-need Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
-            <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardGreen}"/>
+        <!-- Card border styling - transparent background because card images are complete -->
+        <Style Selector="Border#CardBackground">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 1 #20000000"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-want Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource ToggleRed}"/>
-            <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardRed}"/>
+        <!-- Subtle hover effect - slight lift with enhanced shadow -->
+        <Style Selector="local|ResponsiveCard:pointerover Border#CardBackground">
+            <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 1 #20000000"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource ToggleGreen}"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardGreenHover}"/>
+        <Style Selector="local|ResponsiveCard.selected-need Border#CardBackground">
+            <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 3 #4CAF50"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#CardBorder">
-            <Setter Property="BorderBrush" Value="{StaticResource ToggleRedHover}"/>
-            <Setter Property="Background" Value="{StaticResource ResponsiveCardRedHover}"/>
+        <Style Selector="local|ResponsiveCard.selected-want Border#CardBackground">
+            <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 3 #EF5350"/>
         </Style>
-        
+
+        <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#CardBackground">
+            <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 3 #66BB6A"/>
+        </Style>
+
+        <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#CardBackground">
+            <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 3 #FF6659"/>
+        </Style>
+
         <!-- Soul image styles for legendary jokers -->
         <Style Selector="Image#SoulImage">
             <Setter Property="Opacity" Value="0.8"/>
         </Style>
     </UserControl.Styles>
 
-    <Border Name="CardBorder"
-            Background="Transparent"
-            Padding="2"
-            MinWidth="80"
-            MinHeight="72"
+    <!-- The card IS the border - no extra wrapper needed! -->
+    <Border Name="CardBackground"
             Cursor="Hand"
-            IsHitTestVisible="True">
-        <!-- Hitbox stays stable -->
-        <Border Name="VisualBorder"
-                Background="Transparent"
-                RenderTransformOrigin="0.5,0.5">
-            <Border.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    <RotateTransform Angle="0"/>
-                </TransformGroup>
-            </Border.RenderTransform>
-            <i:Interaction.Behaviors>
-                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
-            </i:Interaction.Behaviors>
-            <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            
-            <!-- Main card container with layered images -->
-            <Grid Grid.Row="0" Margin="6" Name="ImageContainer">
-                <!-- Gold background for legendary jokers -->
-                <Border Name="LegendaryBackground" 
-                        IsVisible="False"
-                        CornerRadius="4">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                            <GradientStop Color="{Binding Source={StaticResource GoldGradient1}, Path=Color}" Offset="0" />
-                            <GradientStop Color="{Binding Source={StaticResource GoldGradient2}, Path=Color}" Offset="0.5" />
-                            <GradientStop Color="{Binding Source={StaticResource GoldGradient1}, Path=Color}" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                </Border>
-                
-                <!-- Base card image -->
-                <Image Name="CardImage" 
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
-                
-                <!-- Soul/Face overlay for legendary jokers -->
-                <Image Name="SoulImage" 
-                       IsVisible="False"
-                       Width="64"
-                       Height="64"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       RenderTransformOrigin="0.5,0.5">
-                    <Image.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform ScaleX="1" ScaleY="1"/>
-                            <RotateTransform Angle="0"/>
-                        </TransformGroup>
-                    </Image.RenderTransform>
-                </Image>
-                
-                <!-- Edition overlay for jokers with editions -->
-                <Image Name="EditionOverlay" 
-                       IsVisible="False"
-                       Width="64"
-                       Height="64"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-            </Grid>
-            
-            <TextBlock Grid.Row="1"
-                       Name="CardName"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap"
-                       Foreground="{StaticResource White}"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="11"
-                       MaxWidth="120"
-                       LineHeight="12"
-                       Margin="0,3,0,2" />
-            </Grid>
-        </Border>
+            IsHitTestVisible="True"
+            RenderTransformOrigin="0.5,0.5"
+            Margin="2">
+        <Border.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                <RotateTransform Angle="0"/>
+            </TransformGroup>
+        </Border.RenderTransform>
+        <i:Interaction.Behaviors>
+            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+        </i:Interaction.Behaviors>
+        <Border.Transitions>
+            <Transitions>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
+            </Transitions>
+        </Border.Transitions>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Card image container -->
+                    <Grid Grid.Row="0" Name="ImageContainer">
+                        <!-- Gold background for legendary jokers -->
+                        <Border Name="LegendaryBackground"
+                                IsVisible="False"
+                                CornerRadius="4"
+                                Margin="2">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                    <GradientStop Color="{Binding Source={StaticResource GoldGradient1}, Path=Color}" Offset="0" />
+                                    <GradientStop Color="{Binding Source={StaticResource GoldGradient2}, Path=Color}" Offset="0.5" />
+                                    <GradientStop Color="{Binding Source={StaticResource GoldGradient1}, Path=Color}" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Base card image -->
+                        <Image Name="CardImage"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="2" />
+
+                        <!-- Soul/Face overlay for legendary jokers -->
+                        <Image Name="SoulImage"
+                               IsVisible="False"
+                               Width="64"
+                               Height="64"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               RenderTransformOrigin="0.5,0.5">
+                            <Image.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    <RotateTransform Angle="0"/>
+                                </TransformGroup>
+                            </Image.RenderTransform>
+                        </Image>
+
+                        <!-- Edition overlay for jokers with editions -->
+                        <Image Name="EditionOverlay"
+                               IsVisible="False"
+                               Width="64"
+                               Height="64"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    </Grid>
+
+        <!-- Card name below image - allow text to extend naturally -->
+        <TextBlock Grid.Row="1"
+                   Name="CardName"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   Foreground="#2A2A2A"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="10"
+                   LineHeight="11"
+                   Margin="2,2,2,4" />
+        </Grid>
     </Border>
 
 </UserControl>
