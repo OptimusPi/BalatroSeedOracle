@@ -474,86 +474,44 @@ namespace BalatroSeedOracle.ViewModels
                 var trackName = _trackNames[SelectedTrackIndex];
 
                 // Auto-generate name: TrackName + FreqBand + ValueWithoutDecimals
-                // e.g., "Bass1Mid63" for Bass1 track, Mid band, value 63.47
+                // e.g., "Bass1Mid63" for Bass1 track, Mid band, value 0.63
                 var valueInt = (int)Math.Round(thresholdValue * 100); // Convert 0.63 to 63
                 var triggerPointName = $"{trackName}{frequencyBand}{valueInt}";
 
+                // Create AudioTriggerPoint using new model
+                var audioTrigger = new AudioTriggerPoint
+                {
+                    Name = triggerPointName,
+                    TrackName = trackName,
+                    TrackId = trackName.ToLowerInvariant(),
+                    FrequencyBand = frequencyBand,
+                    ThresholdValue = thresholdValue
+                };
+
                 // Create trigger point directory if it doesn't exist
-                var triggerPointsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "publish", "visualizer");
+                var triggerPointsDir = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "visualizer",
+                    "audio_triggers"
+                );
                 Directory.CreateDirectory(triggerPointsDir);
 
-                var filePath = Path.Combine(triggerPointsDir, "trigger_points.json");
+                // Save as individual JSON file
+                var fileName = $"{triggerPointName}.json";
+                var filePath = Path.Combine(triggerPointsDir, fileName);
 
-                // Load existing trigger points or create new list
-                var triggerPoints = new System.Collections.Generic.List<TriggerPointData>();
-                if (File.Exists(filePath))
-                {
-                    var existingJson = File.ReadAllText(filePath);
-                    var existing = JsonSerializer.Deserialize<TriggerPointsFile>(existingJson, JsonOptions);
-                    if (existing?.TriggerPoints != null)
-                    {
-                        triggerPoints = existing.TriggerPoints;
-                    }
-                }
-
-                // Check if trigger point with same name already exists
-                var existingPoint = triggerPoints.Find(tp => tp.Name == triggerPointName);
-                if (existingPoint != null)
-                {
-                    // Update existing
-                    existingPoint.TrackName = trackName;
-                    existingPoint.FrequencyBand = frequencyBand;
-                    existingPoint.ThresholdValue = thresholdValue;
-                    DebugLogger.Log("FrequencyDebugWidget", $"Updated trigger point: {triggerPointName}");
-                }
-                else
-                {
-                    // Add new trigger point
-                    var newPoint = new TriggerPointData
-                    {
-                        Name = triggerPointName,
-                        TrackName = trackName,
-                        TrackId = trackName.ToLowerInvariant(),
-                        FrequencyBand = frequencyBand,
-                        ThresholdValue = thresholdValue,
-                        EffectName = "ZoomPunch", // Default effect
-                        EffectIntensity = 1.0
-                    };
-                    triggerPoints.Add(newPoint);
-                    DebugLogger.Log("FrequencyDebugWidget", $"Saved new trigger point: {triggerPointName}");
-                }
-
-                // Save to file
-                var wrapper = new TriggerPointsFile { TriggerPoints = triggerPoints };
-                var json = JsonSerializer.Serialize(wrapper, JsonOptions);
+                var json = JsonSerializer.Serialize(audioTrigger, JsonOptions);
                 File.WriteAllText(filePath, json);
 
                 DebugLogger.LogImportant("FrequencyDebugWidget",
-                    $"✅ Trigger point saved: {triggerPointName} ({trackName} @ {frequencyBand} = {thresholdValue:F2})");
+                    $"✅ Audio trigger saved: {triggerPointName} ({trackName} @ {frequencyBand} = {thresholdValue:F2})");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save trigger point: {ex.Message}");
+                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save audio trigger: {ex.Message}");
             }
         }
 
         #endregion
-    }
-
-    // Helper classes for trigger point serialization
-    public class TriggerPointData
-    {
-        public string Name { get; set; } = "";
-        public string TrackName { get; set; } = "";
-        public string TrackId { get; set; } = "";
-        public string FrequencyBand { get; set; } = "";
-        public double ThresholdValue { get; set; }
-        public string EffectName { get; set; } = "";
-        public double EffectIntensity { get; set; }
-    }
-
-    public class TriggerPointsFile
-    {
-        public System.Collections.Generic.List<TriggerPointData> TriggerPoints { get; set; } = new();
     }
 }

@@ -242,7 +242,7 @@
                         CornerRadius="8"
                         IsVisible="False"
                         IsHitTestVisible="False">
-                    <TextBlock Text="↩️ Drop here to remove from filter"
+                    <TextBlock Text="Drop here to remove from filter"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="20"
                                Foreground="{StaticResource Orange}"
@@ -422,7 +422,7 @@
                                               Opacity="1.0"/>
                         </Border.Effect>
                         <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="✨ DROP IN MUST HAVE ✨"
+                        <TextBlock Text="DROP IN MUST HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="24"
                                    Foreground="{StaticResource White}"
@@ -453,7 +453,7 @@
                                               Opacity="1.0"/>
                         </Border.Effect>
                         <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="💫 DROP IN SHOULD HAVE 💫"
+                        <TextBlock Text="DROP IN SHOULD HAVE"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="24"
                                    Foreground="{StaticResource White}"
@@ -484,7 +484,7 @@
                                               Opacity="1.0"/>
                         </Border.Effect>
                         <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="⛔ DROP IN BANNED ITEMS ⛔"
+                        <TextBlock Text="DROP IN BANNED ITEMS"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="24"
                                    Foreground="{StaticResource White}"

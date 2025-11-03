@@ -273,7 +273,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- TRIGGER POINT CREATOR -->
+                        <!-- SHADER PARAM TO TRIGGER MAPPING (ENHANCED) -->
                         <Border Background="{StaticResource DarkGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="1"
@@ -281,225 +281,139 @@
                                 Padding="12"
                                 Margin="0,8,0,0">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="TRIGGER POINT CREATOR"
+                                <TextBlock Text="SHADER PARAM TO TRIGGER MAPPING"
                                            Foreground="{StaticResource White}"
-                                           FontSize="15"
-                                           />
-                                <TextBlock Text="Define custom audio thresholds that trigger effects"
+                                           FontSize="15"/>
+                                <TextBlock Text="Map shader parameters to audio triggers with Set/Inertia modes"
                                            Foreground="{StaticResource LightTextGrey}"
                                            FontSize="12"
                                            Margin="0,0,0,4"/>
 
-                                <!-- Track Selection -->
-                                <Grid ColumnDefinitions="100,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Audio Track"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              SelectedIndex="{Binding SelectedTriggerTrackIndex}">
-                                        <ComboBoxItem>Bass1</ComboBoxItem>
-                                        <ComboBoxItem>Bass2</ComboBoxItem>
-                                        <ComboBoxItem>Drums1</ComboBoxItem>
-                                        <ComboBoxItem>Drums2</ComboBoxItem>
-                                        <ComboBoxItem>Chords1</ComboBoxItem>
-                                        <ComboBoxItem>Chords2</ComboBoxItem>
-                                        <ComboBoxItem>Melody1</ComboBoxItem>
-                                        <ComboBoxItem>Melody2</ComboBoxItem>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Frequency Band Selection -->
-                                <Grid ColumnDefinitions="100,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Frequency Band"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              SelectedIndex="{Binding SelectedFrequencyBandIndex}">
-                                        <ComboBoxItem>Low (Bass)</ComboBoxItem>
-                                        <ComboBoxItem>Mid</ComboBoxItem>
-                                        <ComboBoxItem>High (Treble)</ComboBoxItem>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Threshold Slider with LED Indicator -->
-                                <StackPanel Spacing="4">
-                                    <Grid ColumnDefinitions="100,*,60,40" ColumnSpacing="8">
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Threshold"
-                                                   Foreground="{StaticResource White}"
-                                                   VerticalAlignment="Center"
-                                                   FontSize="13"/>
-                                        <Slider Grid.Column="1"
-                                                Minimum="0"
-                                                Maximum="100"
-                                                Value="{Binding TriggerThresholdValue}"
-                                                VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="2"
-                                                   Text="{Binding TriggerThresholdValue, StringFormat='{}{0:F1}'}"
+                                <!-- Instructions -->
+                                <Border Background="{StaticResource VeryDarkGrey}"
+                                        BorderBrush="{StaticResource ModalBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="8"
+                                        Margin="0,0,0,4">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="🔹 SetValue: Direct mapping (snappy, instant)"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="11"/>
+                                        <TextBlock Text="🔹 AddInertia: Physics-based (smooth, alive feel with decay)"
+                                                   Foreground="{StaticResource LightTextGrey}"
+                                                   FontSize="11"/>
+                                        <TextBlock Text="💡 Create triggers in FFT Window first!"
                                                    Foreground="{StaticResource Gold}"
-                                                   VerticalAlignment="Center"
-                                                   TextAlignment="Right"
-                                                   FontSize="13"/>
+                                                   FontSize="11"
+                                                   FontStyle="Italic"/>
+                                    </StackPanel>
+                                </Border>
 
-                                        <!-- LED Indicator -->
-                                        <Ellipse Grid.Column="3"
-                                                 Width="20"
-                                                 Height="20"
-                                                 Fill="{Binding TriggerLedColor}"
-                                                 HorizontalAlignment="Center"
-                                                 VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <TextBlock Text="{Binding CurrentBandValue, StringFormat='Current value: {0:F1}'}"
-                                               Foreground="{StaticResource LightTextGrey}"
-                                               FontSize="11"
-                                               Margin="100,0,0,0"/>
-                                </StackPanel>
+                                <!-- Zoom Scale Mapping -->
+                                <Expander Header="Zoom Scale" FontSize="13" Foreground="{StaticResource White}">
+                                    <StackPanel Spacing="6" Margin="0,8,0,0">
+                                        <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Trigger" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding AvailableAudioTriggers}"
+                                                      SelectedItem="{Binding ZoomScaleTrigger}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,100" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Mode" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" SelectedIndex="{Binding ZoomScaleEffectMode}">
+                                                <ComboBoxItem Content="Set Value (instant)"/>
+                                                <ComboBoxItem Content="Add Inertia (smooth)"/>
+                                            </ComboBox>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="x" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                                <NumericUpDown Value="{Binding ZoomScaleMultiplier}" Minimum="0" Maximum="10" Increment="0.1" FormatString="F1" Width="80"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8" IsVisible="{Binding ZoomScaleIsInertiaMode}">
+                                            <TextBlock Grid.Column="0" Text="Decay" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding ZoomScaleInertiaDecay}" Minimum="0" Maximum="1" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ZoomScaleInertiaDecay, StringFormat='{}{0:F2}'}" Foreground="{StaticResource Gold}" FontSize="12" TextAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Expander>
 
-                                <!-- Effect Selection -->
-                                <Grid ColumnDefinitions="100,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Effect"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              SelectedIndex="{Binding SelectedTriggerEffectIndex}">
-                                        <ComboBoxItem>Zoom Punch</ComboBoxItem>
-                                        <ComboBoxItem>Contrast Boost</ComboBoxItem>
-                                        <ComboBoxItem>Spin</ComboBoxItem>
-                                        <ComboBoxItem>Twirl</ComboBoxItem>
-                                    </ComboBox>
-                                </Grid>
+                                <!-- Contrast Mapping -->
+                                <Expander Header="Contrast" FontSize="13" Foreground="{StaticResource White}">
+                                    <StackPanel Spacing="6" Margin="0,8,0,0">
+                                        <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Trigger" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding AvailableAudioTriggers}"
+                                                      SelectedItem="{Binding ContrastTrigger}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,100" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Mode" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" SelectedIndex="{Binding ContrastEffectMode}">
+                                                <ComboBoxItem Content="Set Value (instant)"/>
+                                                <ComboBoxItem Content="Add Inertia (smooth)"/>
+                                            </ComboBox>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="x" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                                <NumericUpDown Value="{Binding ContrastMultiplier}" Minimum="0" Maximum="10" Increment="0.1" FormatString="F1" Width="80"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8" IsVisible="{Binding ContrastIsInertiaMode}">
+                                            <TextBlock Grid.Column="0" Text="Decay" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding ContrastInertiaDecay}" Minimum="0" Maximum="1" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ContrastInertiaDecay, StringFormat='{}{0:F2}'}" Foreground="{StaticResource Gold}" FontSize="12" TextAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Expander>
 
-                                <!-- Effect Intensity -->
-                                <Grid ColumnDefinitions="100,*,60" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Intensity"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <Slider Grid.Column="1"
-                                            Minimum="0.1"
-                                            Maximum="2.0"
-                                            Value="{Binding TriggerEffectIntensity}"
-                                            VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding TriggerEffectIntensity, StringFormat='{}{0:F1}'}"
-                                               Foreground="{StaticResource Gold}"
-                                               VerticalAlignment="Center"
-                                               TextAlignment="Right"
-                                               FontSize="13"/>
-                                </Grid>
+                                <!-- Spin Amount Mapping -->
+                                <Expander Header="Spin Amount" FontSize="13" Foreground="{StaticResource White}">
+                                    <StackPanel Spacing="6" Margin="0,8,0,0">
+                                        <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Trigger" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding AvailableAudioTriggers}"
+                                                      SelectedItem="{Binding SpinAmountTrigger}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,100" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0" Text="Mode" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" SelectedIndex="{Binding SpinAmountEffectMode}">
+                                                <ComboBoxItem Content="Set Value (instant)"/>
+                                                <ComboBoxItem Content="Add Inertia (smooth)"/>
+                                            </ComboBox>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="x" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                                <NumericUpDown Value="{Binding SpinAmountMultiplier}" Minimum="0" Maximum="10" Increment="0.1" FormatString="F1" Width="80"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8" IsVisible="{Binding SpinAmountIsInertiaMode}">
+                                            <TextBlock Grid.Column="0" Text="Decay" Foreground="{StaticResource White}" FontSize="12" VerticalAlignment="Center"/>
+                                            <Slider Grid.Column="1" Value="{Binding SpinAmountInertiaDecay}" Minimum="0" Maximum="1" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding SpinAmountInertiaDecay, StringFormat='{}{0:F2}'}" Foreground="{StaticResource Gold}" FontSize="12" TextAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Expander>
 
-                                <!-- Save Trigger Point Button -->
-                                <Button Content="Save Trigger Point"
-                                        Classes="btn-green"
-                                        Command="{Binding SaveTriggerPointCommand}"
-                                        HorizontalAlignment="Right"
-                                        Height="32"
-                                        Padding="16,4"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- EFFECT TO TRIGGER MAPPING -->
-                        <Border Background="{StaticResource DarkGrey}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Padding="12"
-                                Margin="0,8,0,0">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="EFFECT TO TRIGGER MAPPING"
-                                           Foreground="{StaticResource White}"
-                                           FontSize="15"
-                                           />
-                                <TextBlock Text="Map shader effects to your custom trigger points"
+                                <TextBlock Text="Configure more params with VisualizerPreset JSON files"
                                            Foreground="{StaticResource LightTextGrey}"
-                                           FontSize="12"
-                                           Margin="0,0,0,4"/>
-
-                                <!-- Zoom Punch Mapping -->
-                                <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Zoom Punch"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding TriggerPoints}"
-                                              SelectedItem="{Binding ZoomPunchTrigger}"
-                                              HorizontalAlignment="Stretch">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Contrast Boost Mapping -->
-                                <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Contrast Boost"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding TriggerPoints}"
-                                              SelectedItem="{Binding ContrastBoostTrigger}"
-                                              HorizontalAlignment="Stretch">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Spin Mapping -->
-                                <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Spin"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding TriggerPoints}"
-                                              SelectedItem="{Binding SpinTrigger}"
-                                              HorizontalAlignment="Stretch">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Twirl Mapping -->
-                                <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Twirl"
-                                               Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"
-                                               FontSize="13"/>
-                                    <ComboBox Grid.Column="1"
-                                              ItemsSource="{Binding TriggerPoints}"
-                                              SelectedItem="{Binding TwirlTrigger}"
-                                              HorizontalAlignment="Stretch">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}"/>
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                </Grid>
-
-                                <TextBlock Text="Mappings auto-save to current shader theme"
-                                           Foreground="{StaticResource Green}"
                                            FontSize="11"
                                            FontStyle="Italic"
                                            Margin="0,4,0,0"/>

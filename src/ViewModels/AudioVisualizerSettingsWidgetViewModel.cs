@@ -50,7 +50,10 @@ namespace BalatroSeedOracle.ViewModels
             FrequencyBreakpoints = new ObservableCollection<FrequencyBreakpoint>();
             MelodicBreakpoints = new ObservableCollection<MelodicBreakpoint>();
 
-            // Load trigger points from file
+            // Load audio trigger points from individual JSON files
+            _ = LoadAudioTriggerPoints();
+
+            // Load old trigger points from file (backwards compatibility)
             _ = LoadTriggerPointsFromFile();
 
             // Wire up property change notifications from underlying ViewModel
@@ -232,10 +235,79 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-        #region Trigger Point Creator Properties and Commands
+        #region Audio Trigger Mapping Properties
 
         /// <summary>
-        /// Collection of saved trigger points
+        /// Collection of available audio triggers (loaded from visualizer/audio_triggers/)
+        /// </summary>
+        public ObservableCollection<AudioTriggerPoint> AvailableAudioTriggers { get; } = new ObservableCollection<AudioTriggerPoint>();
+
+        // Zoom Scale Mapping
+        [ObservableProperty]
+        private AudioTriggerPoint? _zoomScaleTrigger;
+
+        [ObservableProperty]
+        private int _zoomScaleEffectMode = 0; // 0=SetValue, 1=AddInertia
+
+        [ObservableProperty]
+        private float _zoomScaleMultiplier = 1.0f;
+
+        [ObservableProperty]
+        private float _zoomScaleInertiaDecay = 0.9f;
+
+        public bool ZoomScaleIsInertiaMode => ZoomScaleEffectMode == 1;
+
+        partial void OnZoomScaleEffectModeChanged(int value)
+        {
+            OnPropertyChanged(nameof(ZoomScaleIsInertiaMode));
+        }
+
+        // Contrast Mapping
+        [ObservableProperty]
+        private AudioTriggerPoint? _contrastTrigger;
+
+        [ObservableProperty]
+        private int _contrastEffectMode = 0;
+
+        [ObservableProperty]
+        private float _contrastMultiplier = 1.0f;
+
+        [ObservableProperty]
+        private float _contrastInertiaDecay = 0.9f;
+
+        public bool ContrastIsInertiaMode => ContrastEffectMode == 1;
+
+        partial void OnContrastEffectModeChanged(int value)
+        {
+            OnPropertyChanged(nameof(ContrastIsInertiaMode));
+        }
+
+        // Spin Amount Mapping
+        [ObservableProperty]
+        private AudioTriggerPoint? _spinAmountTrigger;
+
+        [ObservableProperty]
+        private int _spinAmountEffectMode = 1; // Default to AddInertia for spin (feels better)
+
+        [ObservableProperty]
+        private float _spinAmountMultiplier = 1.0f;
+
+        [ObservableProperty]
+        private float _spinAmountInertiaDecay = 0.95f;
+
+        public bool SpinAmountIsInertiaMode => SpinAmountEffectMode == 1;
+
+        partial void OnSpinAmountEffectModeChanged(int value)
+        {
+            OnPropertyChanged(nameof(SpinAmountIsInertiaMode));
+        }
+
+        #endregion
+
+        #region Old Trigger Point Creator Properties (DEPRECATED - to be removed)
+
+        /// <summary>
+        /// Collection of saved trigger points (OLD MODEL - use AudioTriggerPoint instead)
         /// </summary>
         public ObservableCollection<TriggerPoint> TriggerPoints { get; } = new ObservableCollection<TriggerPoint>();
 
@@ -364,7 +436,60 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Loads trigger points from JSON file
+        /// Loads AudioTriggerPoints from individual JSON files in visualizer/audio_triggers/
+        /// </summary>
+        private async Task LoadAudioTriggerPoints()
+        {
+            try
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var audioTriggersDir = Path.Combine(appDir, "visualizer", "audio_triggers");
+
+                if (!Directory.Exists(audioTriggersDir))
+                {
+                    DebugLogger.Log("AudioVisualizerWidget", "Audio triggers directory not found, creating it");
+                    Directory.CreateDirectory(audioTriggersDir);
+                    return;
+                }
+
+                var jsonFiles = Directory.GetFiles(audioTriggersDir, "*.json");
+                AvailableAudioTriggers.Clear();
+
+                foreach (var file in jsonFiles)
+                {
+                    try
+                    {
+                        var json = await File.ReadAllTextAsync(file);
+                        var trigger = System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(json,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                            });
+
+                        if (trigger != null && !string.IsNullOrEmpty(trigger.Name))
+                        {
+                            AvailableAudioTriggers.Add(trigger);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("AudioVisualizerWidget",
+                            $"Failed to load audio trigger from {Path.GetFileName(file)}: {ex.Message}");
+                    }
+                }
+
+                DebugLogger.Log("AudioVisualizerWidget",
+                    $"Loaded {AvailableAudioTriggers.Count} audio triggers from {jsonFiles.Length} files");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget",
+                    $"Failed to load audio triggers: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads trigger points from JSON file (OLD MODEL - deprecated)
         /// </summary>
         private async Task LoadTriggerPointsFromFile()
         {

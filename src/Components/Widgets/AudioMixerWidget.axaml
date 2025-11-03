@@ -1,0 +1,215 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Components.AudioMixerWidget"
+             x:DataType="vm:AudioMixerWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <!-- Single container with drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Compact Icon -->
+        <StackPanel IsVisible="{Binding IsMinimized}"
+                    Spacing="4"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <Border Classes="widget-container"
+                    Width="64" Height="64"
+                    Cursor="Hand">
+                <TextBlock Text="🎚" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Mixer"
+                       FontSize="10"
+                       Foreground="{StaticResource White}"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Expanded State - Audio Mixer Panel -->
+        <Border Classes="widget-window"
+                IsVisible="{Binding !IsMinimized}"
+                MinWidth="420"
+                MaxWidth="520">
+
+            <Grid RowDefinitions="Auto,Auto,*">
+                <!-- Header with Title and Minimize Button -->
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"
+                                Margin="0,0,8,0"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🎚" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="Audio Mixer"
+                                       FontSize="13"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Preset Management -->
+                <StackPanel Grid.Row="1" Margin="15,12,15,8" Spacing="8">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0"
+                                   Text="Preset:"
+                                   Foreground="{StaticResource White}"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding AvailablePresets}"
+                                  SelectedItem="{Binding CurrentPresetName}"
+                                  FontSize="13"/>
+                        <Button Grid.Column="2"
+                                Content="Load"
+                                Classes="btn-blue"
+                                Command="{Binding LoadPresetCommand}"
+                                CommandParameter="{Binding CurrentPresetName}"
+                                Height="30"
+                                Padding="12,4"/>
+                        <Button Grid.Column="3"
+                                Content="Save"
+                                Classes="btn-green"
+                                Command="{Binding SavePresetCommand}"
+                                Height="30"
+                                Padding="12,4"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Track Mixer Lines -->
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15,0,15,15" Spacing="4">
+                        <TextBlock Text="TRACKS"
+                                   Foreground="{StaticResource White}"
+                                   FontSize="15"
+                                   Margin="0,0,0,8"/>
+
+                        <!-- Each track gets one compact line -->
+                        <ItemsControl ItemsSource="{Binding Tracks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:TrackMixViewModel">
+                                    <Grid ColumnDefinitions="70,32,32,*,80" ColumnSpacing="6" Margin="0,4">
+                                        <!-- Track Name Label -->
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding TrackName}"
+                                                   Foreground="{StaticResource White}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"
+                                                   TextAlignment="Left"/>
+
+                                        <!-- Mute Button -->
+                                        <ToggleButton Grid.Column="1"
+                                                      IsChecked="{Binding Muted}"
+                                                      Width="28"
+                                                      Height="28"
+                                                      Padding="0"
+                                                      ToolTip.Tip="Mute"
+                                                      FontSize="11">
+                                            <ToggleButton.Styles>
+                                                <Style Selector="ToggleButton">
+                                                    <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
+                                                    <Setter Property="Content" Value="M"/>
+                                                </Style>
+                                                <Style Selector="ToggleButton:checked">
+                                                    <Setter Property="Background" Value="{StaticResource Red}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter Property="Content" Value="M"/>
+                                                </Style>
+                                            </ToggleButton.Styles>
+                                        </ToggleButton>
+
+                                        <!-- Solo Button -->
+                                        <ToggleButton Grid.Column="2"
+                                                      IsChecked="{Binding Solo}"
+                                                      Width="28"
+                                                      Height="28"
+                                                      Padding="0"
+                                                      ToolTip.Tip="Solo"
+                                                      FontSize="11">
+                                            <ToggleButton.Styles>
+                                                <Style Selector="ToggleButton">
+                                                    <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource White}"/>
+                                                    <Setter Property="Content" Value="S"/>
+                                                </Style>
+                                                <Style Selector="ToggleButton:checked">
+                                                    <Setter Property="Background" Value="{StaticResource Gold}"/>
+                                                    <Setter Property="Foreground" Value="Black"/>
+                                                    <Setter Property="Content" Value="S"/>
+                                                </Style>
+                                            </ToggleButton.Styles>
+                                        </ToggleButton>
+
+                                        <!-- Volume Slider -->
+                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                            <Slider Value="{Binding Volume}"
+                                                    Minimum="0"
+                                                    Maximum="1"
+                                                    Width="140"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip.Tip="Volume"/>
+                                            <TextBlock Text="{Binding Volume, StringFormat='{}{0:P0}'}"
+                                                       Foreground="{StaticResource LightTextGrey}"
+                                                       FontSize="12"
+                                                       FontFamily="Consolas"
+                                                       VerticalAlignment="Center"
+                                                       MinWidth="40"
+                                                       TextAlignment="Right"/>
+                                        </StackPanel>
+
+                                        <!-- Pan Slider -->
+                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6">
+                                            <Slider Value="{Binding Pan}"
+                                                    Minimum="-1"
+                                                    Maximum="1"
+                                                    Width="60"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip.Tip="Pan (L/R)"/>
+                                            <TextBlock Foreground="{StaticResource LightTextGrey}"
+                                                       FontSize="11"
+                                                       FontFamily="Consolas"
+                                                       VerticalAlignment="Center"
+                                                       MinWidth="30"
+                                                       TextAlignment="Center">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0}">
+                                                        <Binding Path="Pan" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Helper Text -->
+                        <TextBlock Text="M = Mute, S = Solo | Volume (0-100%) | Pan (L ← → R)"
+                                   Foreground="{StaticResource LightTextGrey}"
+                                   FontSize="11"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
