@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using BalatroSeedOracle.Models;
+using System.Linq;
 
 namespace BalatroSeedOracle.Components
 {
@@ -17,7 +18,30 @@ namespace BalatroSeedOracle.Components
             {
                 dropZone.AddHandler(DragDrop.DragOverEvent, OnChildrenDragOver);
                 dropZone.AddHandler(DragDrop.DropEvent, OnChildrenDrop);
+                dropZone.AddHandler(DragDrop.DragLeaveEvent, OnChildrenDragLeave);
             }
+
+            // Set up the operator type tag for styling
+            DataContextChanged += (s, e) =>
+            {
+                if (DataContext is FilterOperatorItem operatorItem)
+                {
+                    var headerBorder = this.FindControl<Border>("OperatorContainer");
+                    var labelBorder = this.Get<Border>("Grid").Children.OfType<Border>().FirstOrDefault();
+                    if (labelBorder != null)
+                    {
+                        labelBorder.Tag = operatorItem.OperatorType;
+                    }
+
+                    // Also set the border color based on operator type
+                    if (headerBorder != null)
+                    {
+                        headerBorder.BorderBrush = operatorItem.OperatorType == "OR"
+                            ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
+                            : Application.Current?.FindResource("Blue") as Avalonia.Media.IBrush;
+                    }
+                }
+            };
         }
 
         private void OnChildrenDragOver(object? sender, DragEventArgs e)
@@ -28,10 +52,16 @@ namespace BalatroSeedOracle.Components
                 e.DragEffects = DragDropEffects.Move;
                 e.Handled = true;
 
-                // Visual feedback - highlight the drop zone
-                if (sender is Border border)
+                // Balatro-style visual feedback - white border and colored overlay
+                if (sender is Border dropZone && !dropZone.Classes.Contains("drag-active"))
                 {
-                    border.Opacity = 0.7;
+                    dropZone.Classes.Add("drag-active");
+                }
+
+                var operatorContainer = this.FindControl<Border>("OperatorContainer");
+                if (operatorContainer != null && !operatorContainer.Classes.Contains("drag-over"))
+                {
+                    operatorContainer.Classes.Add("drag-over");
                 }
             }
             else
@@ -40,12 +70,33 @@ namespace BalatroSeedOracle.Components
             }
         }
 
+        private void OnChildrenDragLeave(object? sender, DragEventArgs e)
+        {
+            // Reset visual feedback - remove Balatro-style highlighting
+            if (sender is Border dropZone)
+            {
+                dropZone.Classes.Remove("drag-active");
+            }
+
+            var operatorContainer = this.FindControl<Border>("OperatorContainer");
+            if (operatorContainer != null)
+            {
+                operatorContainer.Classes.Remove("drag-over");
+            }
+        }
+
         private void OnChildrenDrop(object? sender, DragEventArgs e)
         {
-            // Reset visual feedback
-            if (sender is Border border)
+            // Reset visual feedback - remove Balatro-style highlighting
+            if (sender is Border dropZone)
             {
-                border.Opacity = 1.0;
+                dropZone.Classes.Remove("drag-active");
+            }
+
+            var operatorContainer = this.FindControl<Border>("OperatorContainer");
+            if (operatorContainer != null)
+            {
+                operatorContainer.Classes.Remove("drag-over");
             }
 
             if (e.Data.Get("FilterItem") is FilterItem item && item is not FilterOperatorItem)

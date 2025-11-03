@@ -125,18 +125,19 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         // Determine visibility based on item type or other properties
         // This is a placeholder, the actual logic will be more complex
         AntesVisible = true;
-        EditionVisible = config.ItemType == "Joker";
-        SealVisible = config.ItemType == "PlayingCard";
-        EnhancementVisible = config.ItemType == "PlayingCard";
-        RankVisible = config.ItemType == "PlayingCard";
-        SuitVisible = config.ItemType == "PlayingCard";
+        EditionVisible = config.ItemType == "Joker" || config.ItemType == "StandardCard";
+        SealVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
+        EnhancementVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
+        RankVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
+        SuitVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         SourcesVisible =
             config.ItemType == "Joker"
             || config.ItemType == "SoulJoker"
             || config.ItemType == "Tarot"
             || config.ItemType == "Spectral"
             || config.ItemType == "Planet"
-            || config.ItemType == "PlayingCard";
+            || config.ItemType == "PlayingCard"
+            || config.ItemType == "StandardCard";
 
         if (config.Antes != null)
         {

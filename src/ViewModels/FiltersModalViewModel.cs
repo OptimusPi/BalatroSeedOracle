@@ -1522,45 +1522,12 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ExpandDropZonesWithItems()
         {
-            try
+            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
-                if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
-                {
-                    // Determine which zone has the most items and expand it
-                    var mustCount = visualVm.SelectedMust.Count;
-                    var shouldCount = visualVm.SelectedShould.Count;
-                    var mustNotCount = visualVm.SelectedMustNot.Count;
-
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"Expanding drop zones with items - Must: {mustCount}, Should: {shouldCount}, MustNot: {mustNotCount}");
-
-                    // Expand the zone with the most items (or MUST if tied/empty)
-                    if (mustCount >= shouldCount && mustCount >= mustNotCount)
-                    {
-                        visualVm.IsMustExpanded = true;
-                        visualVm.IsShouldExpanded = false;
-                        visualVm.IsCantExpanded = false;
-                        DebugLogger.Log("FiltersModalViewModel", "Expanded MUST zone");
-                    }
-                    else if (shouldCount > mustCount && shouldCount >= mustNotCount)
-                    {
-                        visualVm.IsMustExpanded = false;
-                        visualVm.IsShouldExpanded = true;
-                        visualVm.IsCantExpanded = false;
-                        DebugLogger.Log("FiltersModalViewModel", "Expanded SHOULD zone");
-                    }
-                    else if (mustNotCount > 0)
-                    {
-                        visualVm.IsMustExpanded = false;
-                        visualVm.IsShouldExpanded = false;
-                        visualVm.IsCantExpanded = true;
-                        DebugLogger.Log("FiltersModalViewModel", "Expanded MUST-NOT zone");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error expanding drop zones: {ex.Message}");
+                // Expand ALL zones that have items
+                visualVm.IsMustExpanded = visualVm.SelectedMust.Count > 0;
+                visualVm.IsShouldExpanded = visualVm.SelectedShould.Count > 0;
+                visualVm.IsCantExpanded = visualVm.SelectedMustNot.Count > 0;
             }
         }
     }

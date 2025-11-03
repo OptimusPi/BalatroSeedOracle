@@ -94,6 +94,9 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Load planet positions from json (they're also in the tarots sprite sheet)
+                // NOTE: Planet X, Ceres, and Eris positions are defined at (0,6), (1,6), (2,6)
+                // but the Tarots.png sprite sheet needs to be expanded from 710x570 to 710x665 pixels
+                // and have sprites added for these three planets at row 6.
                 planetPositions = LoadSpritePositions(
                     "avares://BalatroSeedOracle/Assets/Tarots/planets.json"
                 );
@@ -1190,6 +1193,12 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                // Special case: Stone enhancement has no rank/suit pattern
+                if (enhancement == "Stone")
+                {
+                    return GetEnhancementImage("Stone");
+                }
+
                 // Start with base card or enhancement
                 IImage? baseCard = null;
                 if (!string.IsNullOrEmpty(enhancement))
@@ -1214,10 +1223,9 @@ namespace BalatroSeedOracle.Services
                     return baseCard; // Return just the base if no pattern found
                 }
 
-                // Composite the images together using Avalonia's image manipulation
-                // Note: Full compositing implementation requires RenderTargetBitmap
-                // For now, return the pattern overlay as the primary visual
-                return cardPattern;
+                // Composite the images together (base + pattern overlay)
+                // Playing cards are 142x190 pixels
+                return CompositeImages(baseCard, cardPattern, 142, 190);
             }
             catch (Exception ex)
             {

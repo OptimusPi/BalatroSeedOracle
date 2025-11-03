@@ -452,17 +452,17 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width" Value="12" />
+        <Setter Property="Width" Value="20" />
     </Style>
     <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height" Value="12" />
+        <Setter Property="Height" Value="20" />
     </Style>
     <Style Selector="ScrollBar /template/ Thumb">
         <Setter Property="Background" Value="{StaticResource ModalBorder}" />
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
     <Style Selector="ScrollBar /template/ Thumb:pointerover">
-        <Setter Property="Background" Value="{StaticResource ModalBorder}" />
+        <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
     
     <!-- Removed duplicate global style for Border.modal-content-box.

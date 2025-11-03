@@ -109,8 +109,6 @@ namespace BalatroSeedOracle.Converters
                 return "Any Legendary Joker";
             if (normalized.Equals("AnyTarot", StringComparison.OrdinalIgnoreCase))
                 return "Any Tarot";
-            if (normalized.Equals("AnySpectral", StringComparison.OrdinalIgnoreCase))
-                return "Any Spectral";
             if (normalized.Equals("AnyPlanet", StringComparison.OrdinalIgnoreCase))
                 return "Any Planet";
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -48,6 +49,9 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize frequency breakpoints collection
             FrequencyBreakpoints = new ObservableCollection<FrequencyBreakpoint>();
             MelodicBreakpoints = new ObservableCollection<MelodicBreakpoint>();
+
+            // Load trigger points from file
+            _ = LoadTriggerPointsFromFile();
 
             // Wire up property change notifications from underlying ViewModel
             _settingsViewModel.PropertyChanged += (s, e) =>
@@ -155,6 +159,356 @@ namespace BalatroSeedOracle.ViewModels
             {
                 MelodicBreakpoints.Remove(breakpoint);
                 DebugLogger.Log("AudioVisualizerWidget", $"Removed melodic breakpoint: {breakpoint.Name}");
+            }
+        }
+
+        #endregion
+
+        #region Test Effect Properties and Commands
+
+        /// <summary>
+        /// Test value for Zoom Punch effect
+        /// </summary>
+        [ObservableProperty]
+        private double _testZoomPunchValue = 15.0;
+
+        /// <summary>
+        /// Test value for Contrast Boost effect
+        /// </summary>
+        [ObservableProperty]
+        private double _testContrastValue = 2.0;
+
+        /// <summary>
+        /// Test value for Spin effect
+        /// </summary>
+        [ObservableProperty]
+        private double _testSpinValue = 5.0;
+
+        /// <summary>
+        /// Test value for Twirl effect
+        /// </summary>
+        [ObservableProperty]
+        private double _testTwirlValue = 1.0;
+
+        /// <summary>
+        /// Triggers a manual Zoom Punch effect test
+        /// </summary>
+        [RelayCommand]
+        private void TestZoomPunch()
+        {
+            VisualizerEventManager.Instance.TriggerManualEffect("Zoom", (float)TestZoomPunchValue);
+            DebugLogger.Log("AudioVisualizerWidget", $"Testing Zoom Punch: {TestZoomPunchValue:F1}");
+        }
+
+        /// <summary>
+        /// Triggers a manual Contrast Boost effect test
+        /// </summary>
+        [RelayCommand]
+        private void TestContrast()
+        {
+            VisualizerEventManager.Instance.TriggerManualEffect("Contrast", (float)TestContrastValue);
+            DebugLogger.Log("AudioVisualizerWidget", $"Testing Contrast: {TestContrastValue:F1}");
+        }
+
+        /// <summary>
+        /// Triggers a manual Spin effect test
+        /// </summary>
+        [RelayCommand]
+        private void TestSpin()
+        {
+            VisualizerEventManager.Instance.TriggerManualEffect("Spin", (float)TestSpinValue);
+            DebugLogger.Log("AudioVisualizerWidget", $"Testing Spin: {TestSpinValue:F1}");
+        }
+
+        /// <summary>
+        /// Triggers a manual Twirl effect test
+        /// </summary>
+        [RelayCommand]
+        private void TestTwirl()
+        {
+            VisualizerEventManager.Instance.TriggerManualEffect("Twirl", (float)TestTwirlValue);
+            DebugLogger.Log("AudioVisualizerWidget", $"Testing Twirl: {TestTwirlValue:F1}");
+        }
+
+        #endregion
+
+        #region Trigger Point Creator Properties and Commands
+
+        /// <summary>
+        /// Collection of saved trigger points
+        /// </summary>
+        public ObservableCollection<TriggerPoint> TriggerPoints { get; } = new ObservableCollection<TriggerPoint>();
+
+        /// <summary>
+        /// Selected track index for trigger point creator
+        /// </summary>
+        [ObservableProperty]
+        private int _selectedTriggerTrackIndex = 0;
+
+        /// <summary>
+        /// Selected frequency band index (0=Low, 1=Mid, 2=High)
+        /// </summary>
+        [ObservableProperty]
+        private int _selectedFrequencyBandIndex = 1;
+
+        /// <summary>
+        /// Threshold value for trigger point (0-100)
+        /// </summary>
+        [ObservableProperty]
+        private double _triggerThresholdValue = 50.0;
+
+        /// <summary>
+        /// Selected effect index for trigger point
+        /// </summary>
+        [ObservableProperty]
+        private int _selectedTriggerEffectIndex = 0;
+
+        /// <summary>
+        /// Effect intensity for trigger point
+        /// </summary>
+        [ObservableProperty]
+        private double _triggerEffectIntensity = 1.0;
+
+        /// <summary>
+        /// Current audio band value for LED indicator
+        /// </summary>
+        [ObservableProperty]
+        private double _currentBandValue = 0.0;
+
+        /// <summary>
+        /// LED indicator color (red when threshold is exceeded, gray otherwise)
+        /// </summary>
+        [ObservableProperty]
+        private string _triggerLedColor = "#404040";
+
+        /// <summary>
+        /// Saves the currently configured trigger point
+        /// </summary>
+        [RelayCommand]
+        private async Task SaveTriggerPoint()
+        {
+            try
+            {
+                // Get track name from index
+                var trackNames = new[] { "Bass1", "Bass2", "Drums1", "Drums2", "Chords1", "Chords2", "Melody1", "Melody2" };
+                var trackName = trackNames[SelectedTriggerTrackIndex];
+
+                // Get frequency band name
+                var bandNames = new[] { "Low", "Mid", "High" };
+                var bandName = bandNames[SelectedFrequencyBandIndex];
+
+                // Get effect name
+                var effectNames = new[] { "ZoomPunch", "Contrast", "Spin", "Twirl" };
+                var effectName = effectNames[SelectedTriggerEffectIndex];
+
+                // Generate auto-name: TrackName + Band + RoundedValue
+                var roundedValue = (int)Math.Round(TriggerThresholdValue);
+                var autoName = $"{trackName}{bandName}{roundedValue}";
+
+                // Create new trigger point
+                var triggerPoint = new TriggerPoint
+                {
+                    Name = autoName,
+                    TrackName = trackName,
+                    TrackId = trackName.ToLowerInvariant(),
+                    FrequencyBand = bandName,
+                    ThresholdValue = TriggerThresholdValue,
+                    EffectName = effectName,
+                    EffectIntensity = TriggerEffectIntensity
+                };
+
+                // Add to collection
+                TriggerPoints.Add(triggerPoint);
+
+                // Save to JSON
+                await SaveTriggerPointsToFile();
+
+                DebugLogger.Log("AudioVisualizerWidget",
+                    $"Saved trigger point: {autoName} ({trackName} {bandName} @ {TriggerThresholdValue:F1} -> {effectName})");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget",
+                    $"Failed to save trigger point: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Saves trigger points to JSON file
+        /// </summary>
+        private async Task SaveTriggerPointsToFile()
+        {
+            try
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var visualizerDir = Path.Combine(appDir, "visualizer");
+                if (!Directory.Exists(visualizerDir))
+                {
+                    Directory.CreateDirectory(visualizerDir);
+                }
+
+                var filePath = Path.Combine(visualizerDir, "trigger_points.json");
+
+                var data = new { TriggerPoints = TriggerPoints };
+                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(data, options);
+
+                await File.WriteAllTextAsync(filePath, json);
+                DebugLogger.Log("AudioVisualizerWidget", $"Saved {TriggerPoints.Count} trigger points to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget",
+                    $"Failed to save trigger points file: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads trigger points from JSON file
+        /// </summary>
+        private async Task LoadTriggerPointsFromFile()
+        {
+            try
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var filePath = Path.Combine(appDir, "visualizer", "trigger_points.json");
+
+                if (!File.Exists(filePath))
+                {
+                    DebugLogger.Log("AudioVisualizerWidget", "No trigger points file found");
+                    return;
+                }
+
+                var json = await File.ReadAllTextAsync(filePath);
+                var data = System.Text.Json.JsonSerializer.Deserialize<TriggerPointsData>(json);
+
+                if (data?.TriggerPoints != null)
+                {
+                    TriggerPoints.Clear();
+                    foreach (var tp in data.TriggerPoints)
+                    {
+                        TriggerPoints.Add(tp);
+                    }
+                    DebugLogger.Log("AudioVisualizerWidget", $"Loaded {TriggerPoints.Count} trigger points");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget",
+                    $"Failed to load trigger points file: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Helper class for JSON deserialization
+        /// </summary>
+        private class TriggerPointsData
+        {
+            public List<TriggerPoint>? TriggerPoints { get; set; }
+        }
+
+        #endregion
+
+        #region Effect to Trigger Mapping Properties
+
+        /// <summary>
+        /// Selected trigger point for Zoom Punch effect
+        /// </summary>
+        [ObservableProperty]
+        private TriggerPoint? _zoomPunchTrigger;
+
+        /// <summary>
+        /// Selected trigger point for Contrast Boost effect
+        /// </summary>
+        [ObservableProperty]
+        private TriggerPoint? _contrastBoostTrigger;
+
+        /// <summary>
+        /// Selected trigger point for Spin effect
+        /// </summary>
+        [ObservableProperty]
+        private TriggerPoint? _spinTrigger;
+
+        /// <summary>
+        /// Selected trigger point for Twirl effect
+        /// </summary>
+        [ObservableProperty]
+        private TriggerPoint? _twirlTrigger;
+
+        partial void OnZoomPunchTriggerChanged(TriggerPoint? value)
+        {
+            _ = SaveEffectMappingsToTheme();
+        }
+
+        partial void OnContrastBoostTriggerChanged(TriggerPoint? value)
+        {
+            _ = SaveEffectMappingsToTheme();
+        }
+
+        partial void OnSpinTriggerChanged(TriggerPoint? value)
+        {
+            _ = SaveEffectMappingsToTheme();
+        }
+
+        partial void OnTwirlTriggerChanged(TriggerPoint? value)
+        {
+            _ = SaveEffectMappingsToTheme();
+        }
+
+        /// <summary>
+        /// Saves effect mappings to the current shader theme
+        /// </summary>
+        private async Task SaveEffectMappingsToTheme()
+        {
+            try
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var visualizerDir = Path.Combine(appDir, "visualizer", "themes");
+                if (!Directory.Exists(visualizerDir))
+                {
+                    Directory.CreateDirectory(visualizerDir);
+                }
+
+                var themeName = CurrentPresetName.Replace(" ", "_").ToLowerInvariant();
+                var filePath = Path.Combine(visualizerDir, $"{themeName}.json");
+
+                // Create theme data with effect mappings
+                var themeData = new
+                {
+                    ThemeName = CurrentPresetName,
+                    ThemeIndex = ThemeIndex,
+                    MainColor = MainColor,
+                    AccentColor = AccentColor,
+                    EffectMappings = new
+                    {
+                        ZoomPunch = ZoomPunchTrigger?.Name ?? "",
+                        ContrastBoost = ContrastBoostTrigger?.Name ?? "",
+                        Spin = SpinTrigger?.Name ?? "",
+                        Twirl = TwirlTrigger?.Name ?? ""
+                    },
+                    EffectRanges = new
+                    {
+                        ZoomPunchMin = -10.0,
+                        ZoomPunchMax = 50.0,
+                        ContrastMin = 0.5,
+                        ContrastMax = 8.0,
+                        SpinMin = 0.0,
+                        SpinMax = 10.0,
+                        TwirlMin = 0.0,
+                        TwirlMax = 5.0
+                    }
+                };
+
+                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                var json = System.Text.Json.JsonSerializer.Serialize(themeData, options);
+
+                await File.WriteAllTextAsync(filePath, json);
+                DebugLogger.Log("AudioVisualizerWidget", $"Saved effect mappings to theme: {filePath}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget",
+                    $"Failed to save effect mappings to theme: {ex.Message}");
             }
         }
 

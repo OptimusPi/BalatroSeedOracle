@@ -40,18 +40,21 @@
             MinWidth="80"
             MinHeight="72"
             Cursor="Hand"
-            IsHitTestVisible="True"
-            RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform>
-            <TransformGroup>
-                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                <RotateTransform Angle="0"/>
-            </TransformGroup>
-        </Border.RenderTransform>
-        <i:Interaction.Behaviors>
-            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
-        </i:Interaction.Behaviors>
-        <Grid>
+            IsHitTestVisible="True">
+        <!-- Hitbox stays stable -->
+        <Border Name="VisualBorder"
+                Background="Transparent"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Border.RenderTransform>
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+            </i:Interaction.Behaviors>
+            <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -112,10 +115,11 @@
                        Foreground="{StaticResource White}"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="11"
-                       MaxWidth="80"
+                       MaxWidth="120"
                        LineHeight="12"
                        Margin="0,3,0,2" />
-        </Grid>
+            </Grid>
+        </Border>
     </Border>
-    
+
 </UserControl>

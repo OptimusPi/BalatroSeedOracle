@@ -61,6 +61,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> AllSpectrals { get; }
         public ObservableCollection<FilterItem> AllBosses { get; }
         public ObservableCollection<FilterItem> AllWildcards { get; }
+        public ObservableCollection<FilterItem> AllStandardCards { get; }
 
         // Filtered items (based on search)
         public ObservableCollection<FilterItem> FilteredJokers { get; }
@@ -71,6 +72,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> FilteredSpectrals { get; }
         public ObservableCollection<FilterItem> FilteredBosses { get; }
         public ObservableCollection<FilterItem> FilteredWildcards { get; }
+        public ObservableCollection<FilterItem> FilteredStandardCards { get; }
 
         public ObservableCollection<FilterItem> FilteredItems { get; }
 
@@ -202,6 +204,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             AllSpectrals = new ObservableCollection<FilterItem>();
             AllBosses = new ObservableCollection<FilterItem>();
             AllWildcards = new ObservableCollection<FilterItem>();
+            AllStandardCards = new ObservableCollection<FilterItem>();
 
             FilteredJokers = new ObservableCollection<FilterItem>();
             FilteredTags = new ObservableCollection<FilterItem>();
@@ -211,6 +214,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FilteredSpectrals = new ObservableCollection<FilterItem>();
             FilteredBosses = new ObservableCollection<FilterItem>();
             FilteredWildcards = new ObservableCollection<FilterItem>();
+            FilteredStandardCards = new ObservableCollection<FilterItem>();
 
             FilteredItems = new ObservableCollection<FilterItem>();
             GroupedItems = new ObservableCollection<ItemGroup>();
@@ -431,8 +435,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "StandardCard":
-                    // Playing cards logic (to be implemented later)
-                    AddGroup("PLAYING CARDS", new List<FilterItem>());
+                    // Standard playing cards organized by suit and enhancement
+                    AddGroup("HEARTS", FilteredStandardCards.Where(c => c.Category == "Hearts"));
+                    AddGroup("SPADES", FilteredStandardCards.Where(c => c.Category == "Spades"));
+                    AddGroup("DIAMONDS", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
+                    AddGroup("CLUBS", FilteredStandardCards.Where(c => c.Category == "Clubs"));
+                    AddGroup("MULT CARDS", FilteredStandardCards.Where(c => c.Category == "Mult"));
+                    AddGroup("BONUS CARDS", FilteredStandardCards.Where(c => c.Category == "Bonus"));
+                    AddGroup("GLASS CARDS", FilteredStandardCards.Where(c => c.Category == "Glass"));
+                    AddGroup("GOLD CARDS", FilteredStandardCards.Where(c => c.Category == "Gold"));
+                    AddGroup("STEEL CARDS", FilteredStandardCards.Where(c => c.Category == "Steel"));
+                    AddGroup("STONE CARD", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
         }
@@ -1292,12 +1305,83 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     DebugLogger.LogError("VisualBuilderTab", $"Error loading bosses: {ex.Message}");
                 }
 
-                // Note: Playing cards would need special handling for suits/ranks
-                // Skipping for now as they're more complex
+                // Load Standard Playing Cards (52 base cards + enhanced variants)
+                try
+                {
+                    var suits = new[] { "Hearts", "Spades", "Diamonds", "Clubs" };
+                    var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
+
+                    // Generate base 52 cards (Type A - Normal cards with no enhancement)
+                    foreach (var suit in suits)
+                    {
+                        foreach (var rank in ranks)
+                        {
+                            var displayName = rank == "Ace" ? $"Ace of {suit}" : $"{rank} of {suit}";
+                            var item = new FilterItem
+                            {
+                                Name = $"{rank}_{suit}",
+                                Type = "StandardCard",
+                                Category = suit,
+                                DisplayName = displayName,
+                                Rank = rank,
+                                Suit = suit,
+                                Enhancement = null,
+                                ItemImage = spriteService.GetPlayingCardImage(suit, rank),
+                            };
+                            AllStandardCards.Add(item);
+                        }
+                    }
+
+                    // Generate enhanced variants (Type B1 and B2)
+                    var enhancements = new[] { "Mult", "Bonus", "Glass", "Gold", "Steel" };
+                    foreach (var enhancement in enhancements)
+                    {
+                        foreach (var rank in ranks)
+                        {
+                            var suit = "Hearts"; // Use Hearts as default suit for enhanced cards
+                            var displayName = $"{enhancement} {rank}";
+                            if (rank == "Ace")
+                                displayName = $"{enhancement} Ace";
+
+                            var item = new FilterItem
+                            {
+                                Name = $"{enhancement}_{rank}_{suit}",
+                                Type = "StandardCard",
+                                Category = enhancement,
+                                DisplayName = displayName,
+                                Rank = rank,
+                                Suit = suit,
+                                Enhancement = enhancement,
+                                ItemImage = spriteService.GetPlayingCardImage(suit, rank, enhancement),
+                            };
+                            AllStandardCards.Add(item);
+                        }
+                    }
+
+                    // Add Stone card (special case with no rank/suit)
+                    var stoneCard = new FilterItem
+                    {
+                        Name = "Stone",
+                        Type = "StandardCard",
+                        Category = "Stone",
+                        DisplayName = "Stone Card",
+                        Rank = null,
+                        Suit = null,
+                        Enhancement = "Stone",
+                        ItemImage = spriteService.GetPlayingCardImage("Hearts", "Ace", "Stone"),
+                    };
+                    AllStandardCards.Add(stoneCard);
+
+                    DebugLogger.Log("VisualBuilderTab", $"Loaded {AllStandardCards.Count} standard playing cards");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Error loading standard cards: {ex.Message}");
+                }
 
                 DebugLogger.Log(
                     "VisualBuilderTab",
-                    $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses with images"
+                    $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses, {AllStandardCards.Count} standard cards with images"
                 );
                 DebugLogger.Log(
                     "VisualBuilderTab",
@@ -1412,8 +1496,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FilteredSpectrals.Clear();
             FilteredBosses.Clear();
             FilteredWildcards.Clear();
+            FilteredStandardCards.Clear();
 
             var filter = SearchFilter.ToLowerInvariant();
+
+            DebugLogger.Log("VisualBuilderTab", $"ApplyFilter called - AllJokers count: {AllJokers.Count}, filter: '{filter}'");
 
             foreach (var joker in AllJokers)
             {
@@ -1426,6 +1513,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     FilteredJokers.Add(joker);
                 }
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}");
 
             foreach (var tag in AllTags)
             {
@@ -1508,6 +1597,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 )
                 {
                     FilteredWildcards.Add(wildcard);
+                }
+            }
+
+            foreach (var card in AllStandardCards)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || card.Name.ToLowerInvariant().Contains(filter)
+                    || card.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredStandardCards.Add(card);
                 }
             }
 

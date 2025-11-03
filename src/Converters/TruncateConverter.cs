@@ -31,8 +31,8 @@ namespace BalatroSeedOracle.Converters
                 return input;
 
             // Use ellipsis; avoid negative substring length
-            var take = Math.Max(0, max - 1);
-            return input.Substring(0, take) + "…";
+            var take = Math.Max(0, max - 3);
+            return input.Substring(0, take) + "...";
         }
 
         public object ConvertBack(

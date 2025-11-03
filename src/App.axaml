@@ -94,6 +94,7 @@
         <!-- Color variants for effects (DropShadowEffect requires Color type, not Brush) -->
         <Color x:Key="BlueColor">#0093ff</Color>
         <Color x:Key="GoldColor">#eac058</Color>
+        <Color x:Key="GreenColor">#35bd86</Color>
         <Color x:Key="RedColor">#ff4c40</Color>
 
         <!-- Semi-transparent overlays for drop zones -->

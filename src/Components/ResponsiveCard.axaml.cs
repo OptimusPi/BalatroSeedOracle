@@ -19,6 +19,7 @@ namespace BalatroSeedOracle.Components
     public partial class ResponsiveCard : UserControl, IDisposable
     {
         private Border _cardBorder;
+        private Border _visualBorder;
         private Image _cardImage;
         private Image _soulImage;
         private Image _editionOverlay;
@@ -114,6 +115,7 @@ namespace BalatroSeedOracle.Components
             InitializeComponent();
 
             _cardBorder = this.FindControl<Border>("CardBorder")!;
+            _visualBorder = this.FindControl<Border>("VisualBorder")!;
             _cardImage = this.FindControl<Image>("CardImage")!;
             _soulImage = this.FindControl<Image>("SoulImage")!;
             _editionOverlay = this.FindControl<Image>("EditionOverlay")!;
@@ -132,8 +134,9 @@ namespace BalatroSeedOracle.Components
             _cardBorder.PointerExited += OnPointerExited;
 
             // Get reference to the scale transform from XAML (part of TransformGroup)
+            // Note: We target VisualBorder for animations to prevent hitbox jiggling
             if (
-                _cardBorder.RenderTransform is TransformGroup transformGroup
+                _visualBorder.RenderTransform is TransformGroup transformGroup
                 && transformGroup.Children.Count > 0
             )
             {

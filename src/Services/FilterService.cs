@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BalatroSeedOracle.Services
@@ -97,8 +98,66 @@ namespace BalatroSeedOracle.Services
         public string GenerateFilterFileName(string baseName)
         {
             var filtersDir = _configurationService.GetFiltersDirectory();
-            var fileName = $"{baseName}.json";
+            // NORMALIZE the filter name to create a safe filename/ID
+            var safeFileName = NormalizeFilterName(baseName);
+            var fileName = $"{safeFileName}.json";
             return Path.Combine(filtersDir, fileName);
+        }
+
+        /// <summary>
+        /// Normalize a filter name into a safe filename/ID that can be used across:
+        /// - File system (JSON files)
+        /// - Memory (in-memory cache keys)
+        /// - DuckDB (database identifiers)
+        ///
+        /// Rules:
+        /// - Replace spaces with underscores
+        /// - Remove/replace invalid filename characters
+        /// - Keep alphanumeric, underscore, hyphen only
+        /// - Trim and collapse multiple underscores
+        ///
+        /// Examples:
+        /// "Mega Search" -> "Mega_Search"
+        /// "My Filter v2.1" -> "My_Filter_v21"
+        /// "Test: Special (Cool)" -> "Test_Special_Cool"
+        /// </summary>
+        public static string NormalizeFilterName(string filterName)
+        {
+            if (string.IsNullOrWhiteSpace(filterName))
+                return "unnamed_filter";
+
+            // Start with trimmed input
+            var normalized = filterName.Trim();
+
+            // Replace spaces with underscores
+            normalized = normalized.Replace(' ', '_');
+
+            // Remove invalid filename characters: \ / : * ? " < > |
+            var invalidChars = Path.GetInvalidFileNameChars();
+            foreach (var ch in invalidChars)
+            {
+                normalized = normalized.Replace(ch.ToString(), "");
+            }
+
+            // Keep only alphanumeric, underscore, hyphen
+            normalized = new string(normalized
+                .Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-')
+                .ToArray());
+
+            // Collapse multiple underscores into single underscore
+            while (normalized.Contains("__"))
+            {
+                normalized = normalized.Replace("__", "_");
+            }
+
+            // Trim underscores from start/end
+            normalized = normalized.Trim('_');
+
+            // If somehow empty after all that, use default
+            if (string.IsNullOrEmpty(normalized))
+                return "unnamed_filter";
+
+            return normalized;
         }
 
         public async Task<string> GetFilterNameAsync(string filterId)

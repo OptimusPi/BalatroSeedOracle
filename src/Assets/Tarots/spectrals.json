@@ -16,6 +16,5 @@
   {"name": "medium", "pos": {"x": 4, "y": 5}},
   {"name": "cryptid", "pos": {"x": 5, "y": 5}},
   {"name": "soul", "pos": {"x": 2, "y": 2}},
-  {"name": "blackhole", "pos": {"x": 9, "y": 3}},
-  {"name": "anyspectral", "pos": {"x": 5, "y": 2}}
+  {"name": "blackhole", "pos": {"x": 9, "y": 3}}
 ]

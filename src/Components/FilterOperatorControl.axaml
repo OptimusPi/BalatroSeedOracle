@@ -5,26 +5,70 @@
     xmlns:models="using:BalatroSeedOracle.Models"
     x:DataType="models:FilterOperatorItem">
 
+    <UserControl.Styles>
+        <!-- Expansion animation on hover -->
+        <Style Selector="Border#OperatorContainer:pointerover">
+            <Setter Property="MinWidth" Value="320"/>
+            <Setter Property="MinHeight" Value="240"/>
+            <Setter Property="BorderThickness" Value="3"/>
+        </Style>
+
+        <!-- Balatro-style highlight when dragging over - white border with colored overlay -->
+        <Style Selector="Border#OperatorContainer.drag-over">
+            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="MinWidth" Value="320"/>
+            <Setter Property="MinHeight" Value="240"/>
+        </Style>
+
+        <!-- Semi-transparent overlay for drop zone -->
+        <Style Selector="Border#ChildrenDropZone.drag-active">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="#4CAF50" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+    </UserControl.Styles>
+
     <Border
-        Padding="4"
+        Name="OperatorContainer"
+        Padding="12"
         Background="{StaticResource DarkBackground}"
-        BorderThickness="0"
+        BorderThickness="2"
+        BorderBrush="{StaticResource Blue}"
         CornerRadius="12"
-        MinWidth="120"
-        MinHeight="80">
+        MinWidth="240"
+        MinHeight="160">
+        <Border.Transitions>
+            <Transitions>
+                <DoubleTransition Property="MinWidth" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                <DoubleTransition Property="MinHeight" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                <ThicknessTransition Property="BorderThickness" Duration="0:0:0.2"/>
+            </Transitions>
+        </Border.Transitions>
 
         <Grid RowDefinitions="Auto,*">
-            <!-- Operator Label Header -->
+            <!-- Operator Label Header - Flat connected style -->
             <Border
                 Grid.Row="0"
-                Padding="8,4"
-                Background="{StaticResource Blue}"
-                CornerRadius="4"
+                Padding="12,8"
+                CornerRadius="12,12,0,0"
                 HorizontalAlignment="Stretch"
-                Margin="0,0,0,4">
+                Margin="-12,-12,-12,0">
+                <Border.Style>
+                    <Style Selector="Border">
+                        <Setter Property="Background" Value="{StaticResource Blue}"/>
+                    </Style>
+                    <Style Selector="^[Tag=OR]">
+                        <Setter Property="Background" Value="{StaticResource Green}"/>
+                    </Style>
+                </Border.Style>
                 <TextBlock
                     Text="{Binding OperatorType}"
-                    FontSize="14"
+                    FontSize="20"
                     FontWeight="Bold"
                     Foreground="{StaticResource White}"
                     HorizontalAlignment="Center"
@@ -35,11 +79,13 @@
             <Border
                 Grid.Row="1"
                 Name="ChildrenDropZone"
-                Padding="4"
-                Background="{StaticResource DarkBackground}"
-                BorderThickness="0"
-                CornerRadius="4"
-                MinHeight="60"
+                Padding="8"
+                Background="#1A1A1A"
+                BorderThickness="2"
+                BorderBrush="#2A2A2A"
+                CornerRadius="0,0,8,8"
+                MinHeight="120"
+                Margin="4,8,4,4"
                 DragDrop.AllowDrop="True">
 
                 <ScrollViewer
@@ -50,36 +96,47 @@
                         ItemsSource="{Binding Children}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" />
+                                <StackPanel Orientation="Vertical" Spacing="8" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Small card representation -->
+                                <!-- Full-size card representation -->
                                 <Border
-                                    Margin="2"
-                                    Padding="2"
+                                    Padding="4"
                                     Background="{StaticResource DarkBackground}"
-                                    BorderThickness="0"
-                                    CornerRadius="4"
-                                    Width="50"
-                                    Height="66"
+                                    BorderThickness="1"
+                                    BorderBrush="#3A3A3A"
+                                    CornerRadius="6"
+                                    Width="73"
+                                    Height="92"
+                                    HorizontalAlignment="Center"
                                     ToolTip.Tip="{Binding DisplayName}">
+                                    <Border.Styles>
+                                        <Style Selector="Border:pointerover">
+                                            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </Style>
+                                    </Border.Styles>
+
                                     <Grid>
                                         <!-- Main card image -->
                                         <Image
                                             Source="{Binding ItemImage}"
-                                            Width="46"
-                                            Height="62"
+                                            Width="57"
+                                            Height="76"
                                             Stretch="Uniform"
-                                            Opacity="0.9" />
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
                                         <!-- Soul face overlay for legendary jokers -->
                                         <Image
                                             Source="{Binding SoulFaceImage}"
-                                            Width="46"
-                                            Height="62"
+                                            Width="57"
+                                            Height="76"
                                             Stretch="Uniform"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
                                             IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                     </Grid>
                                 </Border>

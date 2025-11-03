@@ -331,6 +331,25 @@ namespace BalatroSeedOracle.Services
             });
         }
 
+        /// <summary>
+        /// Triggers a manual effect test (used by test buttons in UI)
+        /// </summary>
+        /// <param name="effectName">Name of the effect (ZoomPunch, Contrast, Spin, Twirl)</param>
+        /// <param name="intensity">Effect intensity</param>
+        public void TriggerManualEffect(string effectName, float intensity)
+        {
+            DebugLogger.Log("VisualizerEventManager", $"Manual effect test: {effectName} @ {intensity:F2}");
+
+            // Route to appropriate event using FrequencyBreakpointHit
+            FrequencyBreakpointHit?.Invoke(this, new FrequencyBreakpointEventArgs
+            {
+                BreakpointName = "Manual Test",
+                EffectName = effectName,
+                EffectIntensity = intensity,
+                DurationMs = 500
+            });
+        }
+
         #endregion
     }
 }

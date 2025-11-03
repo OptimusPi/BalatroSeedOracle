@@ -144,6 +144,12 @@ namespace BalatroSeedOracle.Models
         public bool IncludeShopStream { get; set; }
         public bool IncludeSkipTags { get; set; }
 
+        // Playing card properties
+        public string? Rank { get; set; }
+        public string? Suit { get; set; }
+        public string? Enhancement { get; set; }
+        public string? Seal { get; set; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

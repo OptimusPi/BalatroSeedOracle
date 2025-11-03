@@ -111,11 +111,6 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeSpectralCards()
         {
-            // Add wildcard entries first
-            SpectralCards["any"] = "Any Spectral";
-            SpectralCards["*"] = "Any Spectral";
-            SpectralCards["anyspectral"] = "Any Spectral";
-
             foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
             {
                 var name = spectral.ToString();

@@ -90,6 +90,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (trayOrBorder != null)
             {
                 trayOrBorder.AddHandler(DragDrop.DragOverEvent, OnTrayOrDragOver);
+                trayOrBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayOrDragLeave);
                 trayOrBorder.AddHandler(DragDrop.DropEvent, OnTrayOrDrop);
                 DebugLogger.Log("VisualBuilderTab", "OR Tray drag/drop handlers attached");
             }
@@ -97,6 +98,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (trayAndBorder != null)
             {
                 trayAndBorder.AddHandler(DragDrop.DragOverEvent, OnTrayAndDragOver);
+                trayAndBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayAndDragLeave);
                 trayAndBorder.AddHandler(DragDrop.DropEvent, OnTrayAndDrop);
                 DebugLogger.Log("VisualBuilderTab", "AND Tray drag/drop handlers attached");
             }
@@ -881,30 +883,53 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 // Check if this is one of the tray operators
                                 bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
 
+                                // If it's a tray operator, create a COPY with its children
+                                Models.FilterItem itemToAdd = _draggedItem;
+                                if (isTrayOperator && operatorItem.Children.Count > 0)
+                                {
+                                    // Create a copy of the operator with its children
+                                    var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
+                                    {
+                                        DisplayName = operatorItem.DisplayName,
+                                        Name = operatorItem.Name,
+                                        Type = operatorItem.Type,
+                                        Category = operatorItem.Category,
+                                    };
+
+                                    // Copy all children
+                                    foreach (var child in operatorItem.Children.ToList())
+                                    {
+                                        operatorCopy.Children.Add(child);
+                                    }
+
+                                    itemToAdd = operatorCopy;
+                                    DebugLogger.Log("VisualBuilderTab", $"Created operator copy with {operatorCopy.Children.Count} children");
+                                }
+
                                 // Add operator to zone (operators can't go inside operators)
                                 switch (zoneName)
                                 {
                                     case "MustDropZone":
-                                        vm.AddToMustCommand.Execute(_draggedItem);
+                                        vm.AddToMustCommand.Execute(itemToAdd);
                                         vm.CollapseToZone("MUST");
                                         break;
                                     case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(_draggedItem);
+                                        vm.AddToShouldCommand.Execute(itemToAdd);
                                         vm.CollapseToZone("SHOULD");
                                         break;
                                     case "MustNotDropZone":
-                                        vm.AddToMustNotCommand.Execute(_draggedItem);
+                                        vm.AddToMustNotCommand.Execute(itemToAdd);
                                         vm.CollapseToZone("CANT");
                                         break;
                                 }
 
-                                // Clear the tray operator's children after dropping
+                                // Clear the tray operator's children after copying them
                                 if (isTrayOperator)
                                 {
                                     operatorItem.Children.Clear();
                                     DebugLogger.Log(
                                         "VisualBuilderTab",
-                                        $"Cleared tray operator {operatorItem.OperatorType} children"
+                                        $"Cleared tray operator {operatorItem.OperatorType} children after copying"
                                     );
                                 }
                             }
@@ -1059,7 +1084,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Placement = Avalonia.Controls.PlacementMode.Pointer,
                 PlacementTarget = sourceControl,
                 IsLightDismissEnabled = true,
-                OverlayInputPassThroughElement = configPopup,
+                // REMOVED: OverlayInputPassThroughElement was causing ALL clicks to pass through popup!
+                // This made the popup completely non-interactive - buttons/radiobuttons didn't work
             };
 
             popupViewModel.ConfigApplied += (appliedConfig) =>
@@ -1357,7 +1383,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var green = Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
                     var darkBg = Application.Current?.FindResource("DarkBackground") as IBrush ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
                     var white = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
-                    var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily;
+                    var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily ?? Avalonia.Media.FontFamily.Default;
 
                     var operatorBorder = new Border
                     {
@@ -1408,20 +1434,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Regular item - show card image
                     var imageGrid = new Grid { Width = 71, Height = 95 };
 
-                    // Main card image
-                    imageGrid.Children.Add(
-                        new Image
-                        {
-                            Source = item!.ItemImage!, // Non-null: every FilterItem must have an image
-                            Width = 71,
-                            Height = 95,
-                            Stretch = Stretch.Uniform,
-                            Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
-                        }
-                    );
+                    // Main card image - ensure item and ItemImage are not null
+                    if (item?.ItemImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.ItemImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
+                            }
+                        );
+                    }
+                    else
+                    {
+                        // Fallback for missing image - show placeholder
+                        DebugLogger.LogError("VisualBuilderTab", $"Item {item?.Name ?? "unknown"} has no image!");
+                    }
 
                     // Soul face overlay for legendary jokers
-                    if (item.SoulFaceImage != null)
+                    if (item?.SoulFaceImage != null)
                     {
                         imageGrid.Children.Add(
                             new Image
@@ -1461,7 +1495,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             cardContent, // Card with physics
                             new TextBlock
                             {
-                                Text = item.DisplayName,
+                                Text = item?.DisplayName ?? "Unknown Item",
                                 Foreground = Brushes.White,
                                 FontSize = 14,
                                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -1770,6 +1804,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayOrDragOver(object? sender, DragEventArgs e)
         {
+            // HIDE drop zone overlays when hovering over tray (tray is in front of drop zones)
+            HideAllDropZoneOverlays();
+
             // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
             if (_isDraggingTray)
             {
@@ -1803,6 +1840,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
             else
             {
                 e.DragEffects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle drag leave from OR tray - restore drop zone overlays
+        /// </summary>
+        private void OnTrayOrDragLeave(object? sender, DragEventArgs e)
+        {
+            // Restore drop zone overlays when leaving tray
+            if (_isDragging && _draggedItem != null)
+            {
+                ShowDropZoneOverlays(_sourceDropZone);
+            }
+
+            // Reset border thickness
+            if (sender is Border border)
+            {
+                border.BorderThickness = new Avalonia.Thickness(2);
             }
             e.Handled = true;
         }
@@ -1847,6 +1903,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayAndDragOver(object? sender, DragEventArgs e)
         {
+            // HIDE drop zone overlays when hovering over tray (tray is in front of drop zones)
+            HideAllDropZoneOverlays();
+
             // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
             if (_isDraggingTray)
             {
@@ -1880,6 +1939,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
             else
             {
                 e.DragEffects = DragDropEffects.None;
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle drag leave from AND tray - restore drop zone overlays
+        /// </summary>
+        private void OnTrayAndDragLeave(object? sender, DragEventArgs e)
+        {
+            // Restore drop zone overlays when leaving tray
+            if (_isDragging && _draggedItem != null)
+            {
+                ShowDropZoneOverlays(_sourceDropZone);
+            }
+
+            // Reset border thickness
+            if (sender is Border border)
+            {
+                border.BorderThickness = new Avalonia.Thickness(2);
             }
             e.Handled = true;
         }
