@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -15,7 +16,7 @@ namespace BalatroSeedOracle.Components
     /// </summary>
     public partial class FilterSelector : UserControl
     {
-        // Events - forwarded from ViewModel for backward compatibility
+        // Events - forwarded from ViewModel for consistent API
         public event EventHandler<string>? FilterSelected;
         public event EventHandler<string>? FilterLoaded;
         public event EventHandler<string>? FilterCopyRequested;
@@ -120,7 +121,7 @@ namespace BalatroSeedOracle.Components
                 filterCacheService
             );
 
-            // Wire up ViewModel events to our events for backward compatibility
+            // Wire up ViewModel events to control events
             viewModel.FilterSelected += (s, e) => FilterSelected?.Invoke(this, e);
             viewModel.FilterLoaded += (s, e) => FilterLoaded?.Invoke(this, e);
             viewModel.FilterCopyRequested += (s, e) => FilterCopyRequested?.Invoke(this, e);
@@ -148,11 +149,19 @@ namespace BalatroSeedOracle.Components
         /// <summary>
         /// Public method to refresh filters - delegates to ViewModel
         /// </summary>
-        public async void RefreshFilters()
+        public async Task RefreshFiltersAsync()
         {
-            if (ViewModel != null)
+            try
             {
-                await ViewModel.RefreshFiltersAsync();
+                if (ViewModel != null)
+                {
+                    await ViewModel.RefreshFiltersAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"RefreshFiltersAsync failed: {ex.Message}");
+                throw;
             }
         }
     }

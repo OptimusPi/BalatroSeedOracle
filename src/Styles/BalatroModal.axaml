@@ -127,7 +127,7 @@
         </Setter>
     </Style>
     <Style Selector="Button.back-button:pointerover">
-        <Setter Property="Background" Value="{StaticResource Orange}"/>
+        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
     </Style>
     <Style Selector="Button.back-button:pressed">
         <Setter Property="Background" Value="{StaticResource Orange}"/>

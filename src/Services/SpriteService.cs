@@ -362,7 +362,13 @@ namespace BalatroSeedOracle.Services
                 var uri = new Uri(avaresUri);
                 return AssetLoader.Open(uri);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugLogger.Log(
+                    "SpriteService",
+                    $"AssetLoader failed for '{avaresUri}': {ex.Message}. Trying filesystem fallback..."
+                );
+            }
 
             // Fallback: attempt to find the asset under a local Assets folder by stripping the avares scheme
             // Expected format: avares://Assembly/Assets/Path/to/file
@@ -651,6 +657,42 @@ namespace BalatroSeedOracle.Services
                 $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}"
             );
             return null;
+        }
+
+        /// <summary>
+        /// Gets the Soul Gem overlay sprite from Enhancers.png for "The Soul" spectral card
+        /// </summary>
+        public IImage? GetSoulGemImage(
+            int spriteWidth = UIConstants.SpectralSpriteWidth,
+            int spriteHeight = UIConstants.SpectralSpriteHeight
+        )
+        {
+            return GetSpriteImage(
+                "TheSoulGem",
+                specialPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "special"
+            );
+        }
+
+        /// <summary>
+        /// Gets the Mystery Joker Face overlay sprite from Enhancers.png for wildcard jokers
+        /// </summary>
+        public IImage? GetMysteryJokerFaceImage(
+            int spriteWidth = UIConstants.JokerSpriteWidth,
+            int spriteHeight = UIConstants.JokerSpriteHeight
+        )
+        {
+            return GetSpriteImage(
+                "MysteryJokerFace",
+                specialPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "special"
+            );
         }
 
         public IImage? GetTagImage(
@@ -1049,10 +1091,6 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Convert both images to bitmaps
-                if (baseImage is not Bitmap baseBitmap || overlayImage is not Bitmap overlayBitmap)
-                    return baseImage;
-
                 // Create a new render target bitmap
                 var renderTarget = new Avalonia.Media.Imaging.RenderTargetBitmap(
                     new Avalonia.PixelSize(width, height),
@@ -1061,27 +1099,15 @@ namespace BalatroSeedOracle.Services
 
                 using (var ctx = renderTarget.CreateDrawingContext())
                 {
-                    // Draw base image
+                    // Draw base image - accepts IImage (includes Bitmap and CroppedBitmap)
                     ctx.DrawImage(
-                        baseBitmap,
-                        new Avalonia.Rect(
-                            0,
-                            0,
-                            baseBitmap.PixelSize.Width,
-                            baseBitmap.PixelSize.Height
-                        ),
+                        baseImage,
                         new Avalonia.Rect(0, 0, width, height)
                     );
 
-                    // Draw overlay image on top
+                    // Draw overlay image on top - accepts IImage
                     ctx.DrawImage(
-                        overlayBitmap,
-                        new Avalonia.Rect(
-                            0,
-                            0,
-                            overlayBitmap.PixelSize.Width,
-                            overlayBitmap.PixelSize.Height
-                        ),
+                        overlayImage,
                         new Avalonia.Rect(0, 0, width, height)
                     );
                 }
@@ -1096,7 +1122,7 @@ namespace BalatroSeedOracle.Services
         }
 
         // Get a composite playing card image (enhancement + card pattern)
-        public IImage? GetPlayingCardImage(
+        public IImage GetPlayingCardImage(
             string suit,
             string rank,
             string? enhancement = null,
@@ -1104,50 +1130,43 @@ namespace BalatroSeedOracle.Services
             string? edition = null
         )
         {
-            try
+            // Special case: Stone enhancement has no rank/suit pattern
+            if (enhancement == "Stone")
             {
-                // Special case: Stone enhancement has no rank/suit pattern
-                if (enhancement == "Stone")
-                {
-                    return GetEnhancementImage("Stone");
-                }
-
-                // Start with base card or enhancement
-                IImage? baseCard = null;
-                if (!string.IsNullOrEmpty(enhancement))
-                {
-                    baseCard = GetEnhancementImage(enhancement);
-                }
-                else
-                {
-                    // Use blank card as base
-                    baseCard = GetSpecialImage("BlankCard");
-                }
-
-                if (baseCard == null)
-                {
-                    return null;
-                }
-
-                // Get the card pattern overlay
-                var cardPattern = GetPlayingCardPattern(suit, rank);
-                if (cardPattern == null)
-                {
-                    return baseCard; // Return just the base if no pattern found
-                }
-
-                // Composite the images together (base + pattern overlay)
-                // Playing cards are 142x190 pixels
-                return CompositeImages(baseCard, cardPattern, 142, 190);
+                var stoneImage = GetEnhancementImage("Stone");
+                if (stoneImage == null)
+                    throw new InvalidOperationException("Stone enhancement image not found!");
+                return stoneImage;
             }
-            catch (Exception ex)
+
+            // Start with base card or enhancement
+            IImage baseCard;
+            if (!string.IsNullOrEmpty(enhancement))
             {
-                DebugLogger.LogError(
-                    "SpriteService",
-                    $"Error creating playing card image: {ex.Message}"
-                );
-                return null;
+                var enhancementImage = GetEnhancementImage(enhancement);
+                if (enhancementImage == null)
+                    throw new InvalidOperationException($"Enhancement '{enhancement}' image not found!");
+                baseCard = enhancementImage;
             }
+            else
+            {
+                // Use blank card as base (StandardCard_Base in metadata)
+                var blankCard = GetSpecialImage("StandardCard_Base");
+                if (blankCard == null)
+                    throw new InvalidOperationException("StandardCard_Base image not found in special sprites!");
+                baseCard = blankCard;
+            }
+
+            // Get the card pattern overlay (will throw if not found - which is what we want!)
+            var cardPattern = GetPlayingCardPattern(suit, rank);
+
+            // Composite the images together (base + pattern overlay)
+            // Playing cards are 142x190 pixels
+            var result = CompositeImages(baseCard, cardPattern, 142, 190);
+            if (result == null)
+                throw new InvalidOperationException($"Failed to composite playing card {rank} of {suit}!");
+
+            return result;
         }
 
         // Get boss blind image (first frame of animation, similar size to tags)
@@ -1252,21 +1271,28 @@ namespace BalatroSeedOracle.Services
         }
 
         // Get just the playing card pattern (suit/rank)
-        private IImage? GetPlayingCardPattern(string suit, string rank)
+        private IImage GetPlayingCardPattern(string suit, string rank)
         {
-            if (playingCardPositions == null || playingCardsSheet == null)
-            {
-                return null;
-            }
+            if (playingCardPositions == null)
+                throw new InvalidOperationException("Playing card positions not loaded! LoadSprites() was not called or failed.");
+
+            if (playingCardsSheet == null)
+                throw new InvalidOperationException("Playing cards sprite sheet not loaded! 8BitDeck.png missing or failed to load.");
 
             if (!playingCardPositions.TryGetValue(suit, out var suitCards))
             {
-                return null;
+                throw new ArgumentException(
+                    $"Suit '{suit}' not found. Available: {string.Join(", ", playingCardPositions.Keys)}",
+                    nameof(suit)
+                );
             }
 
             if (!suitCards.TryGetValue(rank, out var position))
             {
-                return null;
+                throw new ArgumentException(
+                    $"Rank '{rank}' not found for suit '{suit}'. Available: {string.Join(", ", suitCards.Keys)}",
+                    nameof(rank)
+                );
             }
 
             // Calculate sprite dimensions (1846x760 with 13x4 grid)
@@ -1276,72 +1302,15 @@ namespace BalatroSeedOracle.Services
             int x = position.Pos.X * spriteWidth;
             int y = position.Pos.Y * spriteHeight;
 
+            DebugLogger.Log(
+                "SpriteService",
+                $"Loading pattern {rank} of {suit} from position ({position.Pos.X}, {position.Pos.Y}) -> pixel ({x}, {y})"
+            );
+
             return new CroppedBitmap(
                 playingCardsSheet,
                 new PixelRect(x, y, spriteWidth, spriteHeight)
             );
-        }
-
-        /// <summary>
-        /// Get a StandardCard (playing card) image with proper multi-layer compositing.
-        /// StandardCards are rendered by compositing:
-        /// 1. Base layer (BlankCard or Enhancement sprite like Glass/Gold/Steel)
-        /// 2. Overlay layer (Rank + Suit pattern as transparent PNG)
-        /// 3. Optional glyph layer (for Mult/Bonus enhancements)
-        /// This matches how Balatro renders playing cards with get_front_spriteinfo() + base cards.
-        /// </summary>
-        public IImage? GetStandardCardImage(string suit, string rank, string? enhancement = null)
-        {
-            ArgumentNullException.ThrowIfNull(suit);
-            ArgumentNullException.ThrowIfNull(rank);
-
-            try
-            {
-                // Special case: Stone enhancement has no rank/suit pattern
-                if (enhancement == "Stone")
-                {
-                    return GetEnhancementImage("Stone");
-                }
-
-                // 1. Get base card (enhancement sprite or BlankCard)
-                IImage? baseCard = null;
-                if (!string.IsNullOrEmpty(enhancement))
-                {
-                    baseCard = GetEnhancementImage(enhancement);
-                }
-                else
-                {
-                    // Use blank card as base
-                    baseCard = GetSpecialImage("BlankCard");
-                }
-
-                if (baseCard == null)
-                {
-                    return null;
-                }
-
-                // 2. Get card pattern overlay (rank + suit)
-                var cardPattern = GetPlayingCardPattern(suit, rank);
-                if (cardPattern == null)
-                {
-                    return baseCard; // Return just the base if no pattern found
-                }
-
-                // 3. Composite the images together (base + pattern overlay)
-                // Playing cards are 142x190 pixels
-                return CompositeImages(baseCard, cardPattern, 142, 190);
-
-                // TODO: Type B2 (Mult/Bonus) needs third layer with glyph overlay
-                // This requires research into where Mult/Bonus glyphs are stored in Balatro assets
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SpriteService",
-                    $"Error creating StandardCard image: {ex.Message}"
-                );
-                return null;
-            }
         }
 
         // Helper method to load stickers metadata
@@ -1556,7 +1525,9 @@ namespace BalatroSeedOracle.Services
 
         private sealed class CardPosition
         {
+            [JsonPropertyName("x")]
             public int X { get; set; }
+            [JsonPropertyName("y")]
             public int Y { get; set; }
         }
 

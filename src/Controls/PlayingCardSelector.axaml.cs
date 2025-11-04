@@ -21,7 +21,7 @@ namespace BalatroSeedOracle.Controls
 
             InitializeComponent();
 
-            // Forward ViewModel events to control events for backward compatibility
+            // Forward ViewModel events to control events
             _viewModel.SelectionChanged += OnViewModelSelectionChanged;
         }
 

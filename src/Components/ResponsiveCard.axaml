@@ -7,30 +7,30 @@
 
     <UserControl.Styles>
         <!-- Card border styling - transparent background because card images are complete -->
-        <Style Selector="Border#CardBackground">
+        <Style Selector="Border#VisualBorder">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 1 #20000000"/>
         </Style>
 
         <!-- Subtle hover effect - slight lift with enhanced shadow -->
-        <Style Selector="local|ResponsiveCard:pointerover Border#CardBackground">
+        <Style Selector="local|ResponsiveCard:pointerover Border#VisualBorder">
             <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 1 #20000000"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-need Border#CardBackground">
+        <Style Selector="local|ResponsiveCard.selected-need Border#VisualBorder">
             <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 3 #4CAF50"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-want Border#CardBackground">
+        <Style Selector="local|ResponsiveCard.selected-want Border#VisualBorder">
             <Setter Property="BoxShadow" Value="0 2 8 0 #30000000, 0 0 0 3 #EF5350"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#CardBackground">
+        <Style Selector="local|ResponsiveCard.selected-need:pointerover Border#VisualBorder">
             <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 3 #66BB6A"/>
         </Style>
 
-        <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#CardBackground">
+        <Style Selector="local|ResponsiveCard.selected-want:pointerover Border#VisualBorder">
             <Setter Property="BoxShadow" Value="0 4 12 0 #40000000, 0 0 0 3 #FF6659"/>
         </Style>
 
@@ -41,25 +41,29 @@
     </UserControl.Styles>
 
     <!-- The card IS the border - no extra wrapper needed! -->
-    <Border Name="CardBackground"
+    <!-- CardBorder: Outer container for hit testing (hitbox stays fixed) -->
+    <Border Name="CardBorder"
             Cursor="Hand"
             IsHitTestVisible="True"
-            RenderTransformOrigin="0.5,0.5"
             Margin="2">
-        <Border.RenderTransform>
-            <TransformGroup>
-                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                <RotateTransform Angle="0"/>
-            </TransformGroup>
-        </Border.RenderTransform>
-        <i:Interaction.Behaviors>
-            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
-        </i:Interaction.Behaviors>
-        <Border.Transitions>
-            <Transitions>
-                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
-            </Transitions>
-        </Border.Transitions>
+        <!-- VisualBorder: Inner border for visual transforms (uses RenderTransform so hitbox is NOT affected) -->
+        <Border Name="VisualBorder"
+                IsHitTestVisible="False"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <RotateTransform Angle="0"/>
+                </TransformGroup>
+            </Border.RenderTransform>
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+            </i:Interaction.Behaviors>
+            <Border.Transitions>
+                <Transitions>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
+                </Transitions>
+            </Border.Transitions>
 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -128,6 +132,7 @@
                    LineHeight="11"
                    Margin="2,2,2,4" />
         </Grid>
-    </Border>
+        </Border> <!-- End VisualBorder -->
+    </Border> <!-- End CardBorder -->
 
 </UserControl>

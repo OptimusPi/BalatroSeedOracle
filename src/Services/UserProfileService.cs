@@ -52,9 +52,9 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Load the user profile asynchronously
         /// </summary>
-        public async Task<UserProfile> LoadUserProfileAsync()
+        public Task<UserProfile> LoadUserProfileAsync()
         {
-            return await Task.FromResult(_currentProfile);
+            return Task.FromResult(_currentProfile);
         }
 
         /// <summary>

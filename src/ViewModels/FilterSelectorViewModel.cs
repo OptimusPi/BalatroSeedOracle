@@ -172,7 +172,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a PanelItem from a cached filter
         /// </summary>
-        private async Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(
+        private Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(
             Services.CachedFilter cached
         )
         {
@@ -185,7 +185,7 @@ namespace BalatroSeedOracle.ViewModels
                         "FilterSelectorViewModel",
                         $"Skipping filter with no name: {cached.FilterId}"
                     );
-                    return null;
+                    return Task.FromResult<PanelItem?>(null);
                 }
 
                 // Build description
@@ -203,7 +203,7 @@ namespace BalatroSeedOracle.ViewModels
                     GetImage = () => CreateFannedPreviewImageFromConfig(config),
                 };
 
-                return await Task.FromResult(item);
+                return Task.FromResult<PanelItem?>(item);
             }
             catch (Exception ex)
             {
@@ -211,7 +211,7 @@ namespace BalatroSeedOracle.ViewModels
                     "FilterSelectorViewModel",
                     $"Error creating panel item from cache for {cached.FilterId}: {ex.Message}"
                 );
-                return null;
+                return Task.FromResult<PanelItem?>(null);
             }
         }
 
@@ -235,23 +235,15 @@ namespace BalatroSeedOracle.ViewModels
                         if (!string.IsNullOrEmpty(item.Value))
                         {
                             previewItems.Add((item.Value, item.Type));
-                            if (previewItems.Count >= 4)
-                                break;
                         }
                     }
                 }
 
-                // Add should items if we have space
-                if (previewItems.Count < 4 && config.Should != null)
+                foreach (var item in config.Should)
                 {
-                    foreach (var item in config.Should)
+                    if (!string.IsNullOrEmpty(item.Value))
                     {
-                        if (!string.IsNullOrEmpty(item.Value))
-                        {
-                            previewItems.Add((item.Value, item.Type));
-                            if (previewItems.Count >= 4)
-                                break;
-                        }
+                        previewItems.Add((item.Value, item.Type));
                     }
                 }
 
@@ -259,10 +251,9 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     DebugLogger.Log(
                         "FilterSelectorViewModel",
-                        "No preview items found, showing MysteryJoker"
+                        "No preview items found - returning null"
                     );
-                    // Return a MysteryJoker image for empty filters
-                    return _spriteService.GetJokerImage("j_joker");
+                    return null;
                 }
 
                 DebugLogger.Log(
@@ -430,6 +421,97 @@ namespace BalatroSeedOracle.ViewModels
                 else if (cardBase != null)
                 {
                     return cardBase;
+                }
+            }
+
+            // Special handling for "The Soul" spectral card - composite with card base + gem overlay
+            if (lowerType == "spectral" && value.Equals("soul", StringComparison.OrdinalIgnoreCase))
+            {
+                var cardBase = _spriteService.GetSpectralImage(value);
+                var soulGem = _spriteService.GetSoulGemImage();
+
+                if (cardBase != null && soulGem != null)
+                {
+                    var pixelSize = new PixelSize(
+                        UIConstants.SpectralSpriteWidth,
+                        UIConstants.SpectralSpriteHeight
+                    );
+                    var dpi = new Vector(96, 96);
+
+                    try
+                    {
+                        var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
+
+                        using (var context = renderBitmap.CreateDrawingContext())
+                        {
+                            // Draw card base first
+                            var cardRect = new Rect(0, 0, pixelSize.Width, pixelSize.Height);
+                            context.DrawImage(cardBase, cardRect);
+
+                            // Draw soul gem overlay on top
+                            context.DrawImage(soulGem, cardRect);
+                        }
+
+                        return renderBitmap;
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "FilterSelectorViewModel",
+                            $"Failed to create Soul composite image: {ex.Message}"
+                        );
+                        return soulGem ?? cardBase;
+                    }
+                }
+                else
+                {
+                    return soulGem ?? cardBase;
+                }
+            }
+
+            // Special handling for wildcard jokers - composite with base + mystery face overlay
+            if ((lowerType == "joker" || lowerType == "souljoker") &&
+                value.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                var cardBase = _spriteService.GetJokerImage(value);
+                var mysteryFace = _spriteService.GetMysteryJokerFaceImage();
+
+                if (cardBase != null && mysteryFace != null)
+                {
+                    var pixelSize = new PixelSize(
+                        UIConstants.JokerSpriteWidth,
+                        UIConstants.JokerSpriteHeight
+                    );
+                    var dpi = new Vector(96, 96);
+
+                    try
+                    {
+                        var renderBitmap = new RenderTargetBitmap(pixelSize, dpi);
+
+                        using (var context = renderBitmap.CreateDrawingContext())
+                        {
+                            // Draw card base first
+                            var cardRect = new Rect(0, 0, pixelSize.Width, pixelSize.Height);
+                            context.DrawImage(cardBase, cardRect);
+
+                            // Draw mystery face overlay on top
+                            context.DrawImage(mysteryFace, cardRect);
+                        }
+
+                        return renderBitmap;
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "FilterSelectorViewModel",
+                            $"Failed to create wildcard joker composite image: {ex.Message}"
+                        );
+                        return mysteryFace ?? cardBase;
+                    }
+                }
+                else
+                {
+                    return mysteryFace ?? cardBase;
                 }
             }
 

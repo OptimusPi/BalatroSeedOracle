@@ -34,7 +34,7 @@ namespace BalatroSeedOracle.Services
             public List<string> ShouldItems { get; set; } = new List<string>();
             public List<string> MustNotItems { get; set; } = new List<string>();
 
-            // For backward compatibility
+            // Check if favorite has zone-specific item assignments
             public bool HasZoneInfo => MustItems.Any() || ShouldItems.Any() || MustNotItems.Any();
         }
 

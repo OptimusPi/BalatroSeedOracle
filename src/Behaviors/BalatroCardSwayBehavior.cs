@@ -81,6 +81,16 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
+            // STOP ambient sway when card is being hovered
+            // Walk up visual tree to find ResponsiveCard parent
+            var parent = AssociatedObject.Parent;
+            while (parent != null)
+            {
+                if (parent is Components.ResponsiveCard card && card.IsHovering)
+                    return; // Stop animation when hovering
+                parent = parent.Parent;
+            }
+
             // Find the RotateTransform - either standalone or in a TransformGroup
             RotateTransform? rotateTransform = null;
 

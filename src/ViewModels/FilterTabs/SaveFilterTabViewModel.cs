@@ -249,16 +249,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Uses shared FilterConfigurationService instead of duplicating massive logic
         private MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            // Get actual selections from parent ViewModel
-            var selectedMust = _parentViewModel.SelectedMust.ToList();
-            var selectedShould = _parentViewModel.SelectedShould.ToList();
-            var selectedMustNot = _parentViewModel.SelectedMustNot.ToList();
+            // CRITICAL FIX: Read from VisualBuilderTab's collections if available
+            // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
+            IEnumerable<string> mustKeys;
+            IEnumerable<string> shouldKeys;
+            IEnumerable<string> mustNotKeys;
+
+            if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
+            {
+                // Convert FilterItem objects to their keys (ItemKey property)
+                mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
+                shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
+                mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
+                DebugLogger.Log("SaveFilterTab",
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+            }
+            else
+            {
+                // Fallback to parent's collections (for JSON editor mode)
+                mustKeys = _parentViewModel.SelectedMust;
+                shouldKeys = _parentViewModel.SelectedShould;
+                mustNotKeys = _parentViewModel.SelectedMustNot;
+                DebugLogger.Log("SaveFilterTab",
+                    $"Building config from parent collections: {mustKeys.Count()} must, {shouldKeys.Count()} should, {mustNotKeys.Count()} mustNot");
+            }
+
             var itemConfigs = _parentViewModel.ItemConfigs;
 
             return _filterConfigurationService.BuildConfigFromSelections(
-                selectedMust,
-                selectedShould,
-                selectedMustNot,
+                mustKeys.ToList(),
+                shouldKeys.ToList(),
+                mustNotKeys.ToList(),
                 itemConfigs,
                 FilterName,
                 FilterDescription

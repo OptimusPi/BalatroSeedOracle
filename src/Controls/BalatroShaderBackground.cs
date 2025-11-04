@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.Controls
     /// </summary>
     public class BalatroShaderBackground : Control
     {
-        // Legacy enums for compatibility - will be removed after full refactor
+        // Theme presets (stored but not used in current shader implementation)
         public enum BackgroundTheme
         {
             Default,
@@ -53,7 +53,7 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
-        // Legacy theme property for compatibility
+        // Theme property (stored but not used in rendering)
         private BackgroundTheme _theme = BackgroundTheme.Default;
         public BackgroundTheme Theme
         {

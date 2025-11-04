@@ -231,7 +231,8 @@ namespace BalatroSeedOracle.Services
                     var serializeOptions = new System.Text.Json.JsonSerializerOptions
                     {
                         WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
                     };
 
                     var newJson = System.Text.Json.JsonSerializer.Serialize(config, serializeOptions);

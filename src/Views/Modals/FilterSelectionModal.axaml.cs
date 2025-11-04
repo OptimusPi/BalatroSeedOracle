@@ -129,7 +129,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (result == ButtonResult.Yes && ViewModel != null)
             {
-                ViewModel.ConfirmDelete();
+                await ViewModel.ConfirmDeleteAsync();
             }
         }
 

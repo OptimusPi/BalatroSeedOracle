@@ -5,6 +5,8 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Constants;
 
 namespace BalatroSeedOracle.Behaviors
@@ -27,6 +29,7 @@ namespace BalatroSeedOracle.Behaviors
         private RotateTransform? _rotateTransform;
         private ScaleTransform? _scaleTransform;
         private Control? _visualChild; // The actual visual content that gets transformed
+        private Control? _hitboxElement; // The hitbox element that receives pointer events
 
         /// <summary>
         /// Enable/disable all animations
@@ -80,7 +83,20 @@ namespace BalatroSeedOracle.Behaviors
             }
             else if (AssociatedObject is Avalonia.Controls.Panel panel && panel.Children.Count > 0)
             {
-                _visualChild = panel.Children[0] as Control;
+                // Find the VISUAL child (IsHitTestVisible=False) to transform, NOT the hitbox
+                foreach (var panelChild in panel.Children)
+                {
+                    if (panelChild is Control control && control.IsHitTestVisible == false)
+                    {
+                        _visualChild = control;
+                        break;
+                    }
+                }
+                // If no visual child found, use first child
+                if (_visualChild == null)
+                {
+                    _visualChild = panel.Children[0] as Control;
+                }
             }
             else
             {
@@ -102,12 +118,28 @@ namespace BalatroSeedOracle.Behaviors
             _visualChild.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
             _visualChild.RenderTransform = _transformGroup;
 
-            // Attach pointer events to the PARENT (which has static hitbox)
-            AssociatedObject.PointerEntered += OnPointerEntered;
-            AssociatedObject.PointerExited += OnPointerExited;
-            AssociatedObject.PointerMoved += OnPointerMoved;
-            AssociatedObject.PointerPressed += OnPointerPressed;
-            AssociatedObject.PointerReleased += OnPointerReleased;
+            // CRITICAL FIX: Attach pointer events to the HITBOX (IsHitTestVisible=True child), not the parent
+            // This prevents the rotating visual child from affecting hit detection
+            _hitboxElement = AssociatedObject;
+            if (AssociatedObject is Avalonia.Controls.Panel panelForHitbox)
+            {
+                // Find the hitbox child (IsHitTestVisible=True, typically ZIndex=1)
+                foreach (var panelChild in panelForHitbox.Children)
+                {
+                    if (panelChild is Control control && control.IsHitTestVisible == true)
+                    {
+                        _hitboxElement = control;
+                        break;
+                    }
+                }
+            }
+
+            // Attach pointer events to the hitbox element (static, never rotates)
+            _hitboxElement.PointerEntered += OnPointerEntered;
+            _hitboxElement.PointerExited += OnPointerExited;
+            _hitboxElement.PointerMoved += OnPointerMoved;
+            _hitboxElement.PointerPressed += OnPointerPressed;
+            _hitboxElement.PointerReleased += OnPointerReleased;
 
             // Create animation timer but don't start it yet
             _animationTimer = new DispatcherTimer
@@ -121,13 +153,13 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnDetaching();
 
-            if (AssociatedObject != null)
+            if (_hitboxElement != null)
             {
-                AssociatedObject.PointerEntered -= OnPointerEntered;
-                AssociatedObject.PointerExited -= OnPointerExited;
-                AssociatedObject.PointerMoved -= OnPointerMoved;
-                AssociatedObject.PointerPressed -= OnPointerPressed;
-                AssociatedObject.PointerReleased -= OnPointerReleased;
+                _hitboxElement.PointerEntered -= OnPointerEntered;
+                _hitboxElement.PointerExited -= OnPointerExited;
+                _hitboxElement.PointerMoved -= OnPointerMoved;
+                _hitboxElement.PointerPressed -= OnPointerPressed;
+                _hitboxElement.PointerReleased -= OnPointerReleased;
             }
 
             _animationTimer?.Stop();
@@ -137,7 +169,16 @@ namespace BalatroSeedOracle.Behaviors
         private void OnPointerEntered(object? sender, PointerEventArgs e)
         {
             _isHovering = true;
-            _lastPointerPosition = e.GetPosition(AssociatedObject);
+            _lastPointerPosition = e.GetPosition(_hitboxElement);
+
+            // Play Balatro card hover sound (paper1.ogg with random pitch)
+            var sfxService = ServiceHelper.GetService<SoundEffectsService>();
+            sfxService?.PlayCardHover();
+
+            // Start animation timer when hovering begins
+        {
+            _isHovering = true;
+            _lastPointerPosition = e.GetPosition(_hitboxElement);
 
             // Start animation timer when hovering begins
             if (_animationTimer != null && !_animationTimer.IsEnabled)
@@ -170,14 +211,14 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (_isHovering || _isDragging)
             {
-                _lastPointerPosition = e.GetPosition(AssociatedObject);
+                _lastPointerPosition = e.GetPosition(_hitboxElement);
             }
         }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             _isDragging = true;
-            _pointerPressedPosition = e.GetPosition(AssociatedObject);
+            _pointerPressedPosition = e.GetPosition(_hitboxElement);
 
             // Trigger juice animation (Balatro's bounce effect on pickup)
             _juiceStartTime = DateTime.Now;
@@ -228,7 +269,7 @@ namespace BalatroSeedOracle.Behaviors
             if (_isDragging && _lastPointerPosition.HasValue && _pointerPressedPosition.HasValue)
             {
                 // DRAG MODE: Tilt based on drag offset (like Balatro's focus state)
-                var bounds = AssociatedObject.Bounds;
+                var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
                 var centerX = bounds.Width / 2;
                 var centerY = bounds.Height / 2;
 
@@ -254,7 +295,7 @@ namespace BalatroSeedOracle.Behaviors
             else if (_isHovering && _lastPointerPosition.HasValue)
             {
                 // HOVER MODE: Tilt towards cursor
-                var bounds = AssociatedObject.Bounds;
+                var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
                 var centerX = bounds.Width / 2;
                 var centerY = bounds.Height / 2;
 

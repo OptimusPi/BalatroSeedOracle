@@ -203,7 +203,8 @@
                                                                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                 Cursor="Hand"
                                                                 ZIndex="0"
-                                                                ClipToBounds="True">
+                                                                ClipToBounds="True"
+                                                                IsHitTestVisible="False">
                                                             <!-- Just the card sprite and label - no border wrapper! -->
                                                             <StackPanel Spacing="2">
                                                                 <!-- Card image with soul overlay -->
@@ -240,6 +241,7 @@
                                                         <Border ZIndex="1"
                                                                 Background="Transparent"
                                                                 Cursor="Hand"
+                                                                IsHitTestVisible="True"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
                                                                 Width="54"
@@ -262,26 +264,59 @@
 
                 <!-- Return Overlay - Shows when dragging from drop zones -->
                 <Border Name="ReturnOverlay"
-                        Background="{StaticResource SemiTransparentBlack}"
-                        BorderBrush="{StaticResource Orange}"
+                        Background="{StaticResource Orange}"
+                        BorderBrush="#FFFFFF"
                         BorderThickness="3"
                         CornerRadius="8"
                         IsVisible="False"
-                        IsHitTestVisible="False">
-                    <TextBlock Text="Drop here to remove from filter"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Styles>
+                        <Style Selector="Border[IsVisible=True]">
+                            <Style.Animations>
+                                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Border.Styles>
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource OrangeColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <TextBlock Text="REMOVE FROM FILTER"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               Foreground="{StaticResource Orange}"
+                               FontSize="24"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               TextAlignment="Center"/>
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
                 </Border>
             </Grid>
 
             <!-- RIGHT COLUMN - Operator Trays + Drop Zones (Collapsible!) -->
             <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- OR/AND Trays -->
+                    <RowDefinition Height="90"/>  <!-- OR/AND Trays - FIXED HEIGHT to prevent layout shift -->
                     <RowDefinition Height="8"/>  <!-- Spacing -->
                     <RowDefinition Height="1*"/>  <!-- MUST - Always expanded, equal height -->
                     <RowDefinition Height="4"/>     <!-- Spacing -->
@@ -298,128 +333,124 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- OR Operator Box -->
+                    <!-- OR Operator Box - Fanned display -->
                     <Border Grid.Column="0"
                             Name="TrayOrOperator"
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource Green}"
-                            BorderThickness="2"
-                            CornerRadius="6"
-                            Padding="0"
-                            MinHeight="70"
                             Cursor="Hand"
                             PointerPressed="OnTrayOrPointerPressed"
                             DragDrop.AllowDrop="True">
-                        <Grid RowDefinitions="Auto,*">
-                            <!-- OR Header - CONNECTED flat top like filter tabs -->
-                            <Border Grid.Row="0"
-                                    Background="{StaticResource Green}"
-                                    CornerRadius="6,6,0,0"
-                                    Padding="8,4"
-                                    Margin="-2,-2,-2,0">
-                                <TextBlock Text="OR"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
-
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"/>
-                            </Border>
-
-                            <StackPanel Grid.Row="1" Spacing="2" Margin="6">
-                                <!-- Item Count -->
-                                <TextBlock Text="{Binding TrayOrOperator.Children.Count, StringFormat='{}{0} items'}"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="9"
-                                           Foreground="{StaticResource LightGrey}"
-                                           HorizontalAlignment="Center"/>
-
-                                <!-- Small thumbnails - fanned out like cards in hand -->
-                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                              VerticalScrollBarVisibility="Disabled"
-                                              Height="50">
-                                    <ItemsControl ItemsSource="{Binding TrayOrOperator.Children}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" Margin="4,0"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Width="36" Height="48" Margin="-8,0,0,0">
-                                                    <Image Source="{Binding ItemImage}"
-                                                           Stretch="Uniform"/>
-                                                    <Image Source="{Binding SoulFaceImage}"
-                                                           Stretch="Uniform"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </StackPanel>
-                        </Grid>
+                        <components:FilterOperatorControl DataContext="{Binding TrayOrOperator}"/>
                     </Border>
 
-                    <!-- AND Operator Box -->
+                    <!-- AND Operator Box - Fanned display -->
                     <Border Grid.Column="2"
                             Name="TrayAndOperator"
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource Blue}"
-                            BorderThickness="2"
-                            CornerRadius="6"
-                            Padding="0"
-                            MinHeight="70"
                             Cursor="Hand"
                             PointerPressed="OnTrayAndPointerPressed"
                             DragDrop.AllowDrop="True">
-                        <Grid RowDefinitions="Auto,*">
-                            <!-- AND Header - CONNECTED flat top like filter tabs -->
-                            <Border Grid.Row="0"
-                                    Background="{StaticResource Blue}"
-                                    CornerRadius="6,6,0,0"
-                                    Padding="8,4"
-                                    Margin="-2,-2,-2,0">
-                                <TextBlock Text="AND"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
+                        <components:FilterOperatorControl DataContext="{Binding TrayAndOperator}"/>
+                    </Border>
 
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"/>
-                            </Border>
+                    <!-- OR Tray Drop Overlay -->
+                    <Border Name="TrayOrDropOverlay"
+                            Grid.Column="0"
+                            Background="{StaticResource Green}"
+                            BorderBrush="#FFFFFF"
+                            BorderThickness="3"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            ZIndex="200">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource GreenColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN OR"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
 
-                            <StackPanel Grid.Row="1" Spacing="2" Margin="6">
-                                <!-- Item Count -->
-                                <TextBlock Text="{Binding TrayAndOperator.Children.Count, StringFormat='{}{0} items'}"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="9"
-                                           Foreground="{StaticResource LightGrey}"
-                                           HorizontalAlignment="Center"/>
-
-                                <!-- Small thumbnails - fanned out like cards in hand -->
-                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                              VerticalScrollBarVisibility="Disabled"
-                                              Height="50">
-                                    <ItemsControl ItemsSource="{Binding TrayAndOperator.Children}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" Margin="4,0"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Width="36" Height="48" Margin="-8,0,0,0">
-                                                    <Image Source="{Binding ItemImage}"
-                                                           Stretch="Uniform"/>
-                                                    <Image Source="{Binding SoulFaceImage}"
-                                                           Stretch="Uniform"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </StackPanel>
-                        </Grid>
+                    <!-- AND Tray Drop Overlay -->
+                    <Border Name="TrayAndDropOverlay"
+                            Grid.Column="2"
+                            Background="{StaticResource Blue}"
+                            BorderBrush="#FFFFFF"
+                            BorderThickness="3"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            ZIndex="200">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource BlueColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN AND"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                     </Border>
                 </Grid>
 
@@ -435,7 +466,27 @@
                     <Border Name="MustDropOverlay"
                             Grid.Row="0"
                             Classes="dropzone-overlay"
-                            Background="{StaticResource SemiTransparentBlue}">
+                            Background="{StaticResource Blue}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource BlueColor}"
                                               OffsetX="0"
@@ -454,7 +505,27 @@
                     <Border Name="ShouldDropOverlay"
                             Grid.Row="1"
                             Classes="dropzone-overlay"
-                            Background="{StaticResource SemiTransparentGreen}">
+                            Background="{StaticResource Green}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource GreenColor}"
                                               OffsetX="0"
@@ -473,9 +544,27 @@
                     <Border Name="MustNotDropOverlay"
                             Grid.Row="2"
                             Classes="dropzone-overlay"
-                            Background="{StaticResource SemiTransparentRed}"
-                            BorderBrush="{StaticResource Red}"
-                            BorderThickness="6">
+                            Background="{StaticResource Red}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource RedColor}"
                                               OffsetX="0"
@@ -554,7 +643,7 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64">
+                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
@@ -687,7 +776,7 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64">
+                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
@@ -820,7 +909,7 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64">
+                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"

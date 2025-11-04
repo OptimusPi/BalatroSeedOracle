@@ -44,7 +44,12 @@ namespace BalatroSeedOracle.Services
                 "name",
                 !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter"
             );
-            writer.WriteString("description", config.Description ?? string.Empty);
+
+            // Only write description if it has content
+            if (!string.IsNullOrWhiteSpace(config.Description))
+            {
+                writer.WriteString("description", config.Description);
+            }
 
             var authorName = !string.IsNullOrWhiteSpace(config.Author)
                 ? config.Author
@@ -60,7 +65,7 @@ namespace BalatroSeedOracle.Services
                 writer.WriteString("mode", config.Mode);
             }
 
-            // Must array
+            // Must array - always write (even if empty, for easy editing)
             writer.WriteStartArray("must");
             foreach (var item in config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
             {
@@ -68,7 +73,7 @@ namespace BalatroSeedOracle.Services
             }
             writer.WriteEndArray();
 
-            // Should array
+            // Should array - always write (even if empty, for easy editing)
             writer.WriteStartArray("should");
             foreach (
                 var item in config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
@@ -78,7 +83,7 @@ namespace BalatroSeedOracle.Services
             }
             writer.WriteEndArray();
 
-            // MustNot array
+            // MustNot array - always write (even if empty, for easy editing)
             writer.WriteStartArray("mustNot");
             foreach (
                 var item in config.MustNot ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
@@ -88,9 +93,16 @@ namespace BalatroSeedOracle.Services
             }
             writer.WriteEndArray();
 
-            // Deck and Stake
-            writer.WriteString("deck", config.Deck ?? "Red");
-            writer.WriteString("stake", config.Stake ?? "White");
+            // Deck and Stake - only write if not null
+            if (!string.IsNullOrWhiteSpace(config.Deck))
+            {
+                writer.WriteString("deck", config.Deck);
+            }
+
+            if (!string.IsNullOrWhiteSpace(config.Stake))
+            {
+                writer.WriteString("stake", config.Stake);
+            }
 
             writer.WriteEndObject();
             writer.Flush();

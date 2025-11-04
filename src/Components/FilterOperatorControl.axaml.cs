@@ -80,9 +80,8 @@ namespace BalatroSeedOracle.Components
 
         private void OnHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            // Operator containers are not draggable - only the cards inside them can be dragged
-            // This prevents crashes and maintains the logical structure of the filter
-            e.Handled = true;
+            // Let the event bubble up - operators in drop zones need to be draggable
+            // Parent handlers (OnDropZoneItemPointerPressed, OnTrayOrPointerPressed) will handle dragging
         }
 
         private void OnCardPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -125,11 +124,11 @@ namespace BalatroSeedOracle.Components
             if (itemsControl == null)
                 return;
 
-            // Wait for the visual tree to be ready
+            // Wait for the visual tree to be FULLY rendered (Background priority runs after layout/render)
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 CalculateFannedPositions(operatorItem);
-            }, Avalonia.Threading.DispatcherPriority.Loaded);
+            }, Avalonia.Threading.DispatcherPriority.Background);
         }
 
         private void CalculateFannedPositions(FilterOperatorItem operatorItem)
@@ -184,7 +183,8 @@ namespace BalatroSeedOracle.Components
                 }
 
                 // Set Z-Index so cards on the right appear in front
-                container.ZIndex = i;
+                // Use high base value (100) to ensure cards render above operator borders
+                container.ZIndex = 100 + i;
             }
         }
 

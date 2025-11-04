@@ -96,12 +96,7 @@
         <Color x:Key="GoldColor">#eac058</Color>
         <Color x:Key="GreenColor">#35bd86</Color>
         <Color x:Key="RedColor">#ff4c40</Color>
-
-        <!-- Semi-transparent overlays for drop zones - 35% opacity to show cards underneath -->
-        <SolidColorBrush x:Key="SemiTransparentBlue">#590093ff</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentGreen">#594CAF50</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentGold">#59eac058</SolidColorBrush>
-        <SolidColorBrush x:Key="SemiTransparentRed">#59ff4c40</SolidColorBrush>
+        <Color x:Key="OrangeColor">#ff9800</Color>
 
         <!-- Dramatic backdrop overlay for drag operations -->
         <SolidColorBrush x:Key="DragBackdropOverlay">#80000000</SolidColorBrush>

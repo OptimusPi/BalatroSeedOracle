@@ -36,6 +36,10 @@ namespace BalatroSeedOracle.Components
 
         // Animation state
         private ScaleTransform? _cardScaleTransform;
+        private RotateTransform? _cardRotateTransform;
+
+        // Hover state - used by BalatroCardSwayBehavior to stop ambient sway during hover
+        public bool IsHovering { get; private set; }
 
         public static readonly StyledProperty<string> ItemNameProperty = AvaloniaProperty.Register<
             ResponsiveCard,
@@ -133,14 +137,15 @@ namespace BalatroSeedOracle.Components
             _cardBorder.PointerEntered += OnPointerEntered;
             _cardBorder.PointerExited += OnPointerExited;
 
-            // Get reference to the scale transform from XAML (part of TransformGroup)
+            // Get reference to transforms from XAML (part of TransformGroup)
             // Note: We target VisualBorder for animations to prevent hitbox jiggling
             if (
                 _visualBorder.RenderTransform is TransformGroup transformGroup
-                && transformGroup.Children.Count > 0
+                && transformGroup.Children.Count >= 2
             )
             {
                 _cardScaleTransform = transformGroup.Children[0] as ScaleTransform;
+                _cardRotateTransform = transformGroup.Children[1] as RotateTransform;
             }
 
             // Listen for parent size changes to update breakpoint
@@ -283,13 +288,21 @@ namespace BalatroSeedOracle.Components
 
         private void OnPointerEntered(object? sender, PointerEventArgs e)
         {
-            PlayHoverThudAnimation();
+            IsHovering = true; // Stop ambient sway
+
+            // CRITICAL FIX: Reset rotation to 0 immediately to prevent jiggle
+            // The ambient sway rotation causes hitbox edge to move away from mouse,
+            // triggering PointerExited, which rotates back, causing infinite loop
+            if (_cardRotateTransform != null)
+            {
+                _cardRotateTransform.Angle = 0;
+            }
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)
         {
-            // Reset scale smoothly when pointer exits
-            AnimateScale(1.0, TimeSpan.FromMilliseconds(150));
+            IsHovering = false; // Resume ambient sway, stop magnetic tilt
+            // BalatroCardSwayBehavior handles the transition back to ambient sway
         }
 
         private void PlayHoverThudAnimation()
@@ -431,6 +444,9 @@ namespace BalatroSeedOracle.Components
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
         {
             var currentPoint = e.GetCurrentPoint(_cardBorder);
+
+            // Magnetic tilt is now handled by BalatroCardSwayBehavior ONLY
+            // Removed duplicate tilt code that was causing jiggle between cards
 
             if (
                 currentPoint.Properties.IsLeftButtonPressed

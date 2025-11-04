@@ -278,19 +278,19 @@ namespace BalatroSeedOracle.Views
                                 result.FilterId + ".json"
                             );
                             // TRANSITION to SearchModal (no flicker - just content swap)
-                            ShowSearchModalWithFilter(configPath);
+                            _ = ShowSearchModalWithFilterAsync(configPath);
                         }
                         break;
 
                     case Models.FilterAction.Edit:
                         if (result.FilterId != null)
-                            ShowFiltersModalDirect(result.FilterId);
+                            _ = ShowFiltersModalDirectAsync(result.FilterId);
                         else
-                            ShowFiltersModalDirect(); // CreateNew
+                            _ = ShowFiltersModalDirectAsync(); // CreateNew
                         break;
 
                     case Models.FilterAction.CreateNew:
-                        ShowFiltersModalDirect();
+                        _ = ShowFiltersModalDirectAsync();
                         break;
                 }
             };
@@ -302,7 +302,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show search modal with a specific filter loaded (overload for FilterSelectionModal flow)
         /// </summary>
-        private async void ShowSearchModalWithFilter(string configPath)
+        private async Task ShowSearchModalWithFilterAsync(string configPath)
         {
             try
             {
@@ -442,7 +442,7 @@ namespace BalatroSeedOracle.Views
                             var newFilterId = await CreateNewFilterWithName(filterName);
                             if (!string.IsNullOrEmpty(newFilterId))
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirect(newFilterId));
+                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirectAsync(newFilterId));
                             }
                         }
                         else
@@ -457,7 +457,7 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null)
                         {
                             await Dispatcher.UIThread.InvokeAsync(() =>
-                                ShowFiltersModalDirect(result.FilterId)
+                                ShowFiltersModalDirectAsync(result.FilterId)
                             );
                         }
                         break;
@@ -479,7 +479,7 @@ namespace BalatroSeedOracle.Views
                                 if (!string.IsNullOrEmpty(clonedId))
                                 {
                                     await Dispatcher.UIThread.InvokeAsync(() =>
-                                        ShowFiltersModalDirect(clonedId)
+                                        ShowFiltersModalDirectAsync(clonedId)
                                     );
                                 }
                             }
@@ -510,11 +510,13 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show filters modal directly (internal use - called after filter selection)
         /// </summary>
-        private async void ShowFiltersModalDirect(string? filterId = null)
+        private async Task ShowFiltersModalDirectAsync(string? filterId = null)
         {
-            // If no filterId provided (Create New), prompt for filter name first
-            if (string.IsNullOrEmpty(filterId))
+            try
             {
+                // If no filterId provided (Create New), prompt for filter name first
+                if (string.IsNullOrEmpty(filterId))
+                {
                 var filterName = await ShowFilterNameInputDialog();
                 if (string.IsNullOrEmpty(filterName))
                 {
@@ -591,6 +593,12 @@ namespace BalatroSeedOracle.Views
             modal.BackClicked += (s, e) => HideModalContent();
             // Keep backdrop visible during transition to prevent flicker
             ShowModalContent(modal, keepBackdrop: true);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowFiltersModalDirectAsync failed: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -967,14 +975,16 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Smoothly transition from current modal to new modal (Balatro-style)
         /// </summary>
-        private async void TransitionToNewModal(UserControl newContent, string? title)
+        private async Task TransitionToNewModalAsync(UserControl newContent, string? title)
         {
-            if (
-                _modalContainer == null
-                || _modalContentWrapper == null
-                || _modalContentWrapper.Content == null
-            )
-                return;
+            try
+            {
+                if (
+                    _modalContainer == null
+                    || _modalContentWrapper == null
+                    || _modalContentWrapper.Content == null
+                )
+                    return;
 
             var oldContent = _modalContentWrapper.Content as Control;
             if (oldContent == null)
@@ -1047,77 +1057,91 @@ namespace BalatroSeedOracle.Views
             await fallAnimation.RunAsync(oldContent);
 
             _modalContentWrapper.Content = null;
-            ShowModalWithAnimation(newContent, title);
+            await ShowModalWithAnimationAsync(newContent, title);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"TransitionToNewModalAsync failed: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
         /// Show modal with pop-up bounce animation (Balatro-style)
         /// </summary>
-        private async void ShowModalWithAnimation(UserControl content, string? title)
+        private async Task ShowModalWithAnimationAsync(UserControl content, string? title)
         {
-            if (_modalContainer == null || _modalContentWrapper == null || _modalOverlay == null)
-                return;
-
-            _modalContentWrapper.Content = content;
-            _modalContainer.IsVisible = true;
-            _activeModalContent = content;
-            _modalOverlay.Opacity = UIConstants.FullOpacity; // Keep overlay visible during transition
-
-            if (!string.IsNullOrEmpty(title))
+            try
             {
-                SetTitle(title);
-            }
+                if (_modalContainer == null || _modalContentWrapper == null || _modalOverlay == null)
+                    return;
 
-            // Smooth gravity bounce - rises from below with elastic bounce
-            var popAnimation = new Avalonia.Animation.Animation
-            {
-                Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs), // Smooth rise with bounce
-                Easing = new ElasticEaseOut(), // Bouncy landing
-                Children =
+                _modalContentWrapper.Content = content;
+                _modalContainer.IsVisible = true;
+                _activeModalContent = content;
+                _modalOverlay.Opacity = UIConstants.FullOpacity; // Keep overlay visible during transition
+
+                if (!string.IsNullOrEmpty(title))
                 {
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(0),
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 800d), // Start from below
-                            new Setter(OpacityProperty, 0.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.5d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.8d),
-                        },
-                    },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(0.4), // Rising up
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 200d),
-                            new Setter(OpacityProperty, 0.8d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.95d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.98d),
-                        },
-                    },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(1), // Final position with elastic bounce
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 0d),
-                            new Setter(OpacityProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.0d),
-                        },
-                    },
-                },
-            };
+                    SetTitle(title);
+                }
 
-            var transformGroup = new TransformGroup();
-            transformGroup.Children.Add(new ScaleTransform(1, 1));
-            transformGroup.Children.Add(new TranslateTransform(0, 0));
-            content.RenderTransform = transformGroup;
-            content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                // Smooth gravity bounce - rises from below with elastic bounce
+                var popAnimation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs), // Smooth rise with bounce
+                    Easing = new ElasticEaseOut(), // Bouncy landing
+                    Children =
+                    {
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0),
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 800d), // Start from below
+                                new Setter(OpacityProperty, 0.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.5d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.8d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.4), // Rising up
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 200d),
+                                new Setter(OpacityProperty, 0.8d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.95d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.98d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(1), // Final position with elastic bounce
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 0d),
+                                new Setter(OpacityProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
+                            },
+                        },
+                    },
+                };
 
-            await popAnimation.RunAsync(content);
+                var transformGroup = new TransformGroup();
+                transformGroup.Children.Add(new ScaleTransform(1, 1));
+                transformGroup.Children.Add(new TranslateTransform(0, 0));
+                content.RenderTransform = transformGroup;
+                content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+                await popAnimation.RunAsync(content);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowModalWithAnimationAsync failed: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -1475,13 +1499,13 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows the search modal for an existing search instance
         /// </summary>
-        public async void ShowSearchModalForInstance(string searchId, string? configPath = null)
+        public async Task ShowSearchModalForInstanceAsync(string searchId, string? configPath = null)
         {
             try
             {
                 DebugLogger.Log(
                     "BalatroMainMenu",
-                    $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}"
+                    $"ShowSearchModalForInstanceAsync called - SearchId: {searchId}, ConfigPath: {configPath}"
                 );
 
                 var searchContent = new SearchModal();
@@ -1513,8 +1537,9 @@ namespace BalatroSeedOracle.Views
             {
                 DebugLogger.LogError(
                     "BalatroMainMenu",
-                    $"Failed to show search modal for instance: {ex}"
+                    $"ShowSearchModalForInstanceAsync failed: {ex.Message}"
                 );
+                throw;
             }
         }
 

@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Controls
 
         public SortableResultsGridViewModel ViewModel { get; }
 
-        // Expose ViewModel events for backward compatibility
+        // Expose ViewModel events for external access
         public event EventHandler<SearchResult>? SeedCopied
         {
             add => ViewModel.SeedCopied += value;
@@ -139,7 +139,7 @@ namespace BalatroSeedOracle.Controls
             EnsureTallyColumns();
         }
 
-        // Public method wrappers for backward compatibility
+        // Public method wrappers for simplified API
         public void AddResults(IEnumerable<SearchResult> results)
         {
             ViewModel.AddResults(results);

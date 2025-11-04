@@ -26,22 +26,13 @@ namespace BalatroSeedOracle.Services
 
                 if (config is Motely.Filters.MotelyJsonConfig motelyConfig)
                 {
-                    var json = System.Text.Json.JsonSerializer.Serialize(
-                        motelyConfig,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
-                        }
-                    );
-                    // Format with compact arrays for better editability
-                    var formattedJson = Helpers.CompactJsonFormatter.Format(json);
-                    await File.WriteAllTextAsync(filePath, formattedJson);
+                    // Use FilterSerializationService for consistent, clean JSON output
+                    // This omits null properties, empty arrays, and empty strings
+                    var userProfileService = Helpers.ServiceHelper.GetService<UserProfileService>();
+                    var serializationService = new FilterSerializationService(userProfileService!);
+                    var json = serializationService.SerializeConfig(motelyConfig);
+
+                    await File.WriteAllTextAsync(filePath, json);
 
                     // Invalidate cache for this filter (use ServiceHelper to avoid circular dependency)
                     var filterId = Path.GetFileNameWithoutExtension(filePath);

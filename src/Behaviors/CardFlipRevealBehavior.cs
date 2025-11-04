@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -106,13 +107,13 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            // Listen for RevealSprite changes to trigger flip (legacy behavior)
+            // Listen for RevealSprite changes to trigger flip
             this.GetObservable(RevealSpriteProperty)
                 .Subscribe(sprite =>
                 {
                     if (AutoTrigger && sprite != null && !WatchSource)
                     {
-                        TriggerFlip();
+                        _ = TriggerFlipAsync();
                     }
                 });
 
@@ -129,7 +130,7 @@ namespace BalatroSeedOracle.Behaviors
                         {
                             // Cache the converted sprite and trigger flip
                             _cachedRevealSprite = newSource;
-                            TriggerFlip();
+                            _ = TriggerFlipAsync();
                         }
                     });
             }
@@ -138,7 +139,7 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Manually trigger the flip animation
         /// </summary>
-        public async void TriggerFlip()
+        public async Task TriggerFlipAsync()
         {
             if (AssociatedObject == null || _isAnimating)
                 return;

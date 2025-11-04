@@ -40,7 +40,8 @@
         BorderThickness="2"
         CornerRadius="8"
         MinWidth="160"
-        MinHeight="100">
+        MinHeight="100"
+        ClipToBounds="False">
         <Border.Transitions>
             <Transitions>
                 <DoubleTransition Property="MinWidth" Duration="0:0:0.3" Easing="CubicEaseOut"/>
@@ -77,6 +78,7 @@
                 BorderThickness="0"
                 CornerRadius="0,0,6,6"
                 MinHeight="80"
+                ClipToBounds="False"
                 DragDrop.AllowDrop="True">
 
                 <!-- Canvas for absolute positioning of fanned cards -->
@@ -84,7 +86,8 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         MinWidth="160"
-                        MinHeight="80">
+                        MinHeight="80"
+                        ClipToBounds="False">
                     <ItemsControl
                         Name="ChildrenItemsControl"
                         ItemsSource="{Binding Children}">

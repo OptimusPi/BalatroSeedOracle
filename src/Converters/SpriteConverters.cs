@@ -299,6 +299,104 @@ namespace BalatroSeedOracle.Converters
         }
     }
 
+    /// <summary>
+    /// Converts a spectral card name to its Soul Gem overlay (for "The Soul" spectral card)
+    /// </summary>
+    public class SoulGemOverlayConverter : IValueConverter
+    {
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            string? itemName = value switch
+            {
+                string str => str,
+                ItemConfig config => config.ItemName,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(itemName))
+                return null;
+
+            // Only return soul gem overlay for "The Soul" spectral card
+            if (!itemName.Equals("soul", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetSoulGemImage();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SoulGemOverlayConverter", $"Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts a joker name to its Mystery Face overlay (for wildcard jokers)
+    /// </summary>
+    public class MysteryJokerFaceOverlayConverter : IValueConverter
+    {
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            string? itemName = value switch
+            {
+                string str => str,
+                ItemConfig config => config.ItemName,
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(itemName))
+                return null;
+
+            // Only return mystery face overlay for wildcard jokers
+            if (!itemName.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetMysteryJokerFaceImage();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("MysteryJokerFaceOverlayConverter", $"Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class StandardCardToSpriteConverter : IValueConverter
     {
         public object? Convert(
@@ -344,7 +442,7 @@ namespace BalatroSeedOracle.Converters
                 // - Overlay layer: Rank + Suit pattern (transparent PNG)
                 // - Optional: Mult/Bonus glyph for Type B2 enhancements
                 // Note: StandardCards do NOT use negative edition (that's jokers only)
-                return spriteService.GetStandardCardImage(suit, rank, enhancement: null);
+                return spriteService.GetPlayingCardImage(suit, rank, enhancement: null);
             }
             catch (Exception ex)
             {

@@ -29,10 +29,10 @@
                             <!-- Override TabItem Template to be fully rounded Balatro buttons with shadows -->
                             <Style Selector="TabItem">
                                 <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="FontSize" Value="12"/>
                                 <Setter Property="Background" Value="{StaticResource Red}"/>
                                 <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                <Setter Property="Padding" Value="16,0"/>
+                                <Setter Property="Padding" Value="14,3"/>
                                 <Setter Property="Margin" Value="4,0"/>
                                 <Setter Property="CornerRadius" Value="8"/>
                                 <Setter Property="Cursor" Value="Hand"/>
@@ -48,13 +48,13 @@
                                             <Border Name="BottomShadow"
                                                     Background="{StaticResource HoverShadow}"
                                                     CornerRadius="8"
-                                                    Margin="0,3,0,0"/>
+                                                    Margin="0,2,0,0"/>
                                             <!-- Main tab face -->
                                             <Border Name="TabFace"
                                                     Background="{TemplateBinding Background}"
                                                     CornerRadius="8"
                                                     Padding="{TemplateBinding Padding}"
-                                                    Margin="0,0,0,3">
+                                                    Margin="0,0,0,2">
                                                 <ContentPresenter Name="PART_ContentPresenter"
                                                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
                                                                   Content="{TemplateBinding Header}"
@@ -90,7 +90,7 @@
                             </Style>
                             <!-- Move tab face down when pressed -->
                             <Style Selector="TabItem:pressed /template/ Border#TabFace">
-                                <Setter Property="Margin" Value="0,3,0,0"/>
+                                <Setter Property="Margin" Value="0,2,0,0"/>
                             </Style>
                         </TabControl.Styles>
                     </TabControl>

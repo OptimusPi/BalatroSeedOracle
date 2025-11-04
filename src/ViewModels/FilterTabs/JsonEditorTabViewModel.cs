@@ -430,7 +430,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private string GetDefaultJsonContent()
         {
-            // Default JSON template - copied from original FiltersModal logic
+            // Default JSON template - compact formatting
             return @"{
   ""name"": ""New Filter"",
   ""description"": ""Created with visual filter builder"",
@@ -440,12 +440,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 + @""",
   ""deck"": ""Red"",
   ""stake"": ""White"",
-  ""must"": [
-  ],
-  ""should"": [
-  ],
-  ""mustNot"": [
-  ]
+  ""must"": [],
+  ""should"": [],
+  ""mustNot"": []
 }";
         }
 

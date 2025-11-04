@@ -34,7 +34,7 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService = userProfileService;
             _searchManager = searchManager;
 
-            InitializeAsync();
+            _ = InitializeWindowAsync();
         }
 
         #region Command Implementations
@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Helper Methods
 
-        private async void InitializeAsync()
+        private async Task InitializeWindowAsync()
         {
             try
             {
@@ -104,6 +104,7 @@ namespace BalatroSeedOracle.ViewModels
                     "MainWindowViewModel",
                     $"Error initializing MainWindow: {ex.Message}"
                 );
+                throw;
             }
         }
 

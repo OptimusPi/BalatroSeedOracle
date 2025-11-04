@@ -717,15 +717,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 case "MustDropZone":
                                     vm.SelectedMust.Remove(_draggedItem);
-                                    vm.CollapseToZone("MUST");
+                                    vm.IsDragging = false;
                                     break;
                                 case "ShouldDropZone":
                                     vm.SelectedShould.Remove(_draggedItem);
-                                    vm.CollapseToZone("SHOULD");
+                                    vm.IsDragging = false;
                                     break;
                                 case "MustNotDropZone":
                                     vm.SelectedMustNot.Remove(_draggedItem);
-                                    vm.CollapseToZone("CANT");
+                                    vm.IsDragging = false;
                                     break;
                             }
                             // Play trash sound (or card drop)
@@ -750,13 +750,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         switch (zoneName)
                         {
                             case "MustDropZone":
-                                vm.CollapseToZone("MUST");
+                                vm.IsDragging = false;
                                 break;
                             case "ShouldDropZone":
-                                vm.CollapseToZone("SHOULD");
+                                vm.IsDragging = false;
                                 break;
                             case "MustNotDropZone":
-                                vm.CollapseToZone("CANT");
+                                vm.IsDragging = false;
                                 break;
                         }
                     }
@@ -835,7 +835,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 Models.FilterItem itemToAdd = _draggedItem;
                                 if (isTrayOperator && operatorItem.Children.Count > 0)
                                 {
-                                    // Create a copy of the operator with its children
+                                    // Create a copy of the operator with deep copied children
                                     var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
                                     {
                                         DisplayName = operatorItem.DisplayName,
@@ -844,14 +844,38 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         Category = operatorItem.Category,
                                     };
 
-                                    // Copy all children
+                                    // Deep copy all children to avoid binding issues
                                     foreach (var child in operatorItem.Children.ToList())
                                     {
-                                        operatorCopy.Children.Add(child);
+                                        var childCopy = new Models.FilterItem
+                                        {
+                                            Name = child.Name,
+                                            Type = child.Type,
+                                            Category = child.Category,
+                                            DisplayName = child.DisplayName,
+                                            ItemKey = child.ItemKey,
+                                            ItemImage = child.ItemImage,
+                                            IsFavorite = child.IsFavorite,
+                                            Status = child.Status,
+                                            // Copy configuration properties
+                                            Value = child.Value,
+                                            Label = child.Label,
+                                            Antes = child.Antes,
+                                            Edition = child.Edition,
+                                            IncludeBoosterPacks = child.IncludeBoosterPacks,
+                                            IncludeShopStream = child.IncludeShopStream,
+                                            IncludeSkipTags = child.IncludeSkipTags,
+                                            // Copy playing card properties
+                                            Rank = child.Rank,
+                                            Suit = child.Suit,
+                                            Enhancement = child.Enhancement,
+                                            Seal = child.Seal
+                                        };
+                                        operatorCopy.Children.Add(childCopy);
                                     }
 
                                     itemToAdd = operatorCopy;
-                                    DebugLogger.Log("VisualBuilderTab", $"Created operator copy with {operatorCopy.Children.Count} children");
+                                    DebugLogger.Log("VisualBuilderTab", $"Created operator copy with {operatorCopy.Children.Count} deep-copied children");
                                 }
 
                                 // Add operator to zone (operators can't go inside operators)
@@ -859,15 +883,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 {
                                     case "MustDropZone":
                                         vm.AddToMustCommand.Execute(itemToAdd);
-                                        vm.CollapseToZone("MUST");
+                                        vm.IsDragging = false;
                                         break;
                                     case "ShouldDropZone":
                                         vm.AddToShouldCommand.Execute(itemToAdd);
-                                        vm.CollapseToZone("SHOULD");
+                                        vm.IsDragging = false;
                                         break;
                                     case "MustNotDropZone":
                                         vm.AddToMustNotCommand.Execute(itemToAdd);
-                                        vm.CollapseToZone("CANT");
+                                        vm.IsDragging = false;
                                         break;
                                 }
 
@@ -888,15 +912,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 {
                                     case "MustDropZone":
                                         vm.AddToMustCommand.Execute(_draggedItem);
-                                        vm.CollapseToZone("MUST");
+                                        vm.IsDragging = false;
                                         break;
                                     case "ShouldDropZone":
                                         vm.AddToShouldCommand.Execute(_draggedItem);
-                                        vm.CollapseToZone("SHOULD");
+                                        vm.IsDragging = false;
                                         break;
                                     case "MustNotDropZone":
                                         vm.AddToMustNotCommand.Execute(_draggedItem);
-                                        vm.CollapseToZone("CANT");
+                                        vm.IsDragging = false;
                                         break;
                                 }
                             }
@@ -1617,15 +1641,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle MUST zone label click - expand MUST, collapse others
+        /// Handle MUST zone label click - zones are always expanded now
         /// </summary>
         private void OnMustLabelClick(object? sender, PointerPressedEventArgs e)
         {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.ExpandMustCommand.Execute(null);
-                DebugLogger.Log("VisualBuilderTab", "MUST zone expanded via label click");
-            }
+            // Zones are always expanded - no action needed
+            DebugLogger.Log("VisualBuilderTab", "MUST zone label clicked (zones always expanded)");
         }
 
         /// <summary>
@@ -1664,15 +1685,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle SHOULD zone label click - expand SHOULD, collapse others
+        /// Handle SHOULD zone label click - zones are always expanded now
         /// </summary>
         private void OnShouldLabelClick(object? sender, PointerPressedEventArgs e)
         {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.ExpandShouldCommand.Execute(null);
-                DebugLogger.Log("VisualBuilderTab", "SHOULD zone expanded via label click");
-            }
+            // Zones are always expanded - no action needed
+            DebugLogger.Log("VisualBuilderTab", "SHOULD zone label clicked (zones always expanded)");
         }
 
         /// <summary>
@@ -1715,11 +1733,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnCantLabelClick(object? sender, PointerPressedEventArgs e)
         {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.ExpandCantCommand.Execute(null);
-                DebugLogger.Log("VisualBuilderTab", "CAN'T zone expanded via label click");
-            }
+            // Zones are always expanded - no action needed
+            DebugLogger.Log("VisualBuilderTab", "CAN'T zone label clicked (zones always expanded)");
         }
 
         /// <summary>
@@ -1848,8 +1863,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayOrDragOver(object? sender, DragEventArgs e)
         {
-            // HIDE drop zone overlays when hovering over tray (tray is in front of drop zones)
-            HideAllDropZoneOverlays();
+            // Keep drop zone overlays visible - hiding them creates erratic flickering
 
             // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
             if (_isDraggingTray)
@@ -1889,15 +1903,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle drag leave from OR tray - restore drop zone overlays
+        /// Handle drag leave from OR tray - reset visual state
         /// </summary>
         private void OnTrayOrDragLeave(object? sender, DragEventArgs e)
         {
-            // Restore drop zone overlays when leaving tray
-            if (_isDragging && _draggedItem != null)
-            {
-                ShowDropZoneOverlays(_sourceDropZone);
-            }
+            // Overlays stay visible during drag - no need to restore
 
             // Reset border thickness
             if (sender is Border border)
@@ -1947,8 +1957,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         /// </summary>
         private void OnTrayAndDragOver(object? sender, DragEventArgs e)
         {
-            // HIDE drop zone overlays when hovering over tray (tray is in front of drop zones)
-            HideAllDropZoneOverlays();
+            // Keep drop zone overlays visible - hiding them creates erratic flickering
 
             // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
             if (_isDraggingTray)
@@ -1988,15 +1997,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle drag leave from AND tray - restore drop zone overlays
+        /// Handle drag leave from AND tray - reset visual state
         /// </summary>
         private void OnTrayAndDragLeave(object? sender, DragEventArgs e)
         {
-            // Restore drop zone overlays when leaving tray
-            if (_isDragging && _draggedItem != null)
-            {
-                ShowDropZoneOverlays(_sourceDropZone);
-            }
+            // Overlays stay visible during drag - no need to restore
 
             // Reset border thickness
             if (sender is Border border)

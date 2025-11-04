@@ -837,7 +837,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             else
             {
-                // Fallback to parent's collections (legacy support)
+                // Fallback to parent's collections
                 mustKeys = SelectedMust;
                 shouldKeys = SelectedShould;
                 mustNotKeys = SelectedMustNot;

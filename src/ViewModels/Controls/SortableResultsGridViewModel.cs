@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 
@@ -55,7 +57,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
         private int _selectedSortIndex = 1; // Default to "Score ↓"
 
         // Commands
-        public IRelayCommand<string> CopySeedCommand { get; }
+        public IAsyncRelayCommand<string> CopySeedCommand { get; }
         public IRelayCommand<SearchResult> SearchSimilarCommand { get; }
         public IRelayCommand<SearchResult> AddToFavoritesCommand { get; }
         public IRelayCommand<SearchResult> ExportSeedCommand { get; }
@@ -75,7 +77,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
         public SortableResultsGridViewModel()
         {
             // Initialize commands
-            CopySeedCommand = new RelayCommand<string>(CopySeed);
+            CopySeedCommand = new AsyncRelayCommand<string>(CopySeedAsync);
             SearchSimilarCommand = new RelayCommand<SearchResult>(SearchSimilar);
             AddToFavoritesCommand = new RelayCommand<SearchResult>(AddToFavorites);
             ExportSeedCommand = new RelayCommand<SearchResult>(ExportSeed);
@@ -186,16 +188,24 @@ namespace BalatroSeedOracle.ViewModels.Controls
         }
 
         // Command implementations
-        private async void CopySeed(string? seed)
+        private async Task CopySeedAsync(string? seed)
         {
-            if (string.IsNullOrWhiteSpace(seed)) return;
-
-            await ClipboardService.CopyToClipboardAsync(seed);
-
-            var result = AllResults.FirstOrDefault(r => r.Seed == seed);
-            if (result != null)
+            try
             {
-                SeedCopied?.Invoke(this, result);
+                if (string.IsNullOrWhiteSpace(seed)) return;
+
+                await ClipboardService.CopyToClipboardAsync(seed);
+
+                var result = AllResults.FirstOrDefault(r => r.Seed == seed);
+                if (result != null)
+                {
+                    SeedCopied?.Invoke(this, result);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SortableResultsGridViewModel", $"CopySeedAsync failed: {ex.Message}");
+                throw;
             }
         }
 

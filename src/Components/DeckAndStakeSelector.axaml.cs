@@ -16,7 +16,7 @@ public partial class DeckAndStakeSelector : UserControl
 {
     private readonly DeckAndStakeSelectorViewModel _viewModel;
 
-    // Events mirror the inner ViewModel so other controls can subscribe (kept for backward compatibility)
+    // Events mirror the inner ViewModel for external subscribers
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
     public event EventHandler? DeckSelected;
 

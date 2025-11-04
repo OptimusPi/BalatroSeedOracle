@@ -102,7 +102,7 @@ namespace BalatroSeedOracle.Views
             try
             {
                 // Open search modal and load the filter using existing method
-                mainMenu.ShowSearchModalForInstance(args.searchId, args.configPath);
+                _ = mainMenu.ShowSearchModalForInstanceAsync(args.searchId, args.configPath);
                 DebugLogger.Log(
                     "SearchDesktopIcon",
                     "Opened search modal with filter loaded successfully"

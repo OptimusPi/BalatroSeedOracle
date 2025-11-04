@@ -124,21 +124,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isStandardCardCategorySelected = false;
 
-        // Scroll-to-view trigger property
-        private string? _scrollToGroupName;
-        public string? ScrollToGroupName
-        {
-            get => _scrollToGroupName;
-            private set
-            {
-                if (_scrollToGroupName != value)
-                {
-                    _scrollToGroupName = value;
-                    OnPropertyChanged(nameof(ScrollToGroupName));
-                }
-            }
-        }
-
         // Edition/Enhancement/Seal toggles
         [ObservableProperty]
         private string _currentEdition = "None";
@@ -345,7 +330,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             // Initialize data asynchronously without blocking UI
             // Fire and forget is OK here - data will populate when ready
-            _ = Task.Run(LoadSampleDataAsync);
+            _ = Task.Run(LoadGameDataAsync);
         }
 
         public void SetCategory(string category)
@@ -423,30 +408,57 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "Voucher":
-                    // Organize vouchers into 8-column pairs (base + upgrade) matching sprite sheet
+                    // Organize vouchers to match sprite sheet layout: 8 columns wide with base/upgrade rows
                     var voucherPairs = GetVoucherPairs();
-                    var pairedVouchers = new List<FilterItem>();
+                    var organizedVouchers = new List<FilterItem>();
 
-                    foreach (var (baseName, upgradeName) in voucherPairs)
+                    // First 8 pairs (row 0 bases, then row 1 upgrades)
+                    var firstSet = voucherPairs.Take(8).ToList();
+
+                    // Add all 8 base vouchers from row 0
+                    foreach (var (baseName, _) in firstSet)
                     {
-                        // Add base voucher first
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
                         if (baseVoucher != null)
-                            pairedVouchers.Add(baseVoucher);
+                            organizedVouchers.Add(baseVoucher);
+                    }
 
-                        // Add upgrade voucher directly below
+                    // Add all 8 upgrade vouchers from row 1
+                    foreach (var (_, upgradeName) in firstSet)
+                    {
                         var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
                         if (upgradeVoucher != null)
-                            pairedVouchers.Add(upgradeVoucher);
+                            organizedVouchers.Add(upgradeVoucher);
                     }
 
-                    // Add any remaining vouchers that weren't in the pairs (e.g., mystery/locked)
-                    var remainingVouchers = FilteredVouchers.Except(pairedVouchers);
-                    pairedVouchers.AddRange(remainingVouchers);
+                    // Second 8 pairs (row 2 bases, then row 3 upgrades)
+                    var secondSet = voucherPairs.Skip(8).Take(8).ToList();
 
-                    AddGroup("Vouchers", pairedVouchers);
+                    // Add all 8 base vouchers from row 2
+                    foreach (var (baseName, _) in secondSet)
+                    {
+                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                        if (baseVoucher != null)
+                            organizedVouchers.Add(baseVoucher);
+                    }
+
+                    // Add all 8 upgrade vouchers from row 3
+                    foreach (var (_, upgradeName) in secondSet)
+                    {
+                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                        if (upgradeVoucher != null)
+                            organizedVouchers.Add(upgradeVoucher);
+                    }
+
+                    // Add any remaining vouchers that weren't in the pairs
+                    var remainingVouchers = FilteredVouchers.Except(organizedVouchers);
+                    organizedVouchers.AddRange(remainingVouchers);
+
+                    AddGroup("Vouchers", organizedVouchers);
                     break;
 
                 case "StandardCard":
@@ -579,207 +591,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RebuildGroupedItems();
         }
 
-        #region Scroll-to-View Commands
-
-        // Joker Commands
-        [RelayCommand]
-        private void ScrollToLegendary()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Legendary requested");
-            ScrollToGroupName = "Legendary Jokers";
-        }
-
-        [RelayCommand]
-        private void ScrollToRare()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Rare requested");
-            ScrollToGroupName = "Rare Jokers";
-        }
-
-        [RelayCommand]
-        private void ScrollToUncommon()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Uncommon requested");
-            ScrollToGroupName = "Uncommon Jokers";
-        }
-
-        [RelayCommand]
-        private void ScrollToCommon()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Common requested");
-            ScrollToGroupName = "Common Jokers";
-        }
-
-        // Consumable Commands
-        [RelayCommand]
-        private void ScrollToTarot()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Tarot requested");
-            ScrollToGroupName = "Tarot Cards";
-        }
-
-        [RelayCommand]
-        private void ScrollToPlanet()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Planet requested");
-            ScrollToGroupName = "Planet Cards";
-        }
-
-        [RelayCommand]
-        private void ScrollToSpectral()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Spectral requested");
-            ScrollToGroupName = "Spectral Cards";
-        }
-
-        // Skip Tag Commands
-        [RelayCommand]
-        private void ScrollToAnyAnte()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Any Ante tags requested");
-            ScrollToGroupName = "Skip Tags - Any Ante";
-        }
-
-        [RelayCommand]
-        private void ScrollToAnte2Plus()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Ante 2+ tags requested");
-            ScrollToGroupName = "Skip Tags - Ante 2+";
-        }
-
-        // Boss Commands
-        [RelayCommand]
-        private void ScrollToRegularBoss()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Regular Boss requested");
-            ScrollToGroupName = "Boss Blinds";
-        }
-
-        [RelayCommand]
-        private void ScrollToFinisherBoss()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Finisher Boss requested");
-            ScrollToGroupName = "Finisher Boss Blinds";
-        }
-
-        // Voucher Commands
-        [RelayCommand]
-        private void ScrollToBaseVoucher()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Base Voucher requested");
-            ScrollToGroupName = "Base Vouchers";
-        }
-
-        [RelayCommand]
-        private void ScrollToUpgradeVoucher()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Upgrade Voucher requested");
-            ScrollToGroupName = "Upgrade Vouchers";
-        }
-
-        // Standard Card Commands
-        [RelayCommand]
-        private void ScrollToSpade()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Spades requested");
-            ScrollToGroupName = "Spades";
-        }
-
-        [RelayCommand]
-        private void ScrollToClub()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Clubs requested");
-            ScrollToGroupName = "Clubs";
-        }
-
-        [RelayCommand]
-        private void ScrollToHeart()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Hearts requested");
-            ScrollToGroupName = "Hearts";
-        }
-
-        [RelayCommand]
-        private void ScrollToDiamond()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Diamonds requested");
-            ScrollToGroupName = "Diamonds";
-        }
-
-        [RelayCommand]
-        private void ScrollToEnhanced()
-        {
-            DebugLogger.Log("VisualBuilderTab", "Scroll to Enhanced requested");
-            ScrollToGroupName = "Enhanced Cards";
-        }
-
-        /// <summary>
-        /// Expand MUST zone, collapse others
-        /// </summary>
-        [RelayCommand]
-        private void ExpandMust()
-        {
-            IsMustExpanded = true;
-            IsShouldExpanded = false;
-            IsCantExpanded = false;
-        }
-
-        /// <summary>
-        /// Expand SHOULD zone, collapse others
-        /// </summary>
-        [RelayCommand]
-        private void ExpandShould()
-        {
-            IsMustExpanded = false;
-            IsShouldExpanded = true;
-            IsCantExpanded = false;
-        }
-
-        /// <summary>
-        /// Expand CAN'T zone, collapse others
-        /// </summary>
-        [RelayCommand]
-        private void ExpandCant()
-        {
-            IsMustExpanded = false;
-            IsShouldExpanded = false;
-            IsCantExpanded = true;
-        }
-
-        /// <summary>
-        /// Expand all zones (called when dragging starts)
-        /// </summary>
-        public void ExpandAllZones()
-        {
-            IsDragging = true;
-            IsMustExpanded = true;
-            IsShouldExpanded = true;
-            IsCantExpanded = true;
-        }
-
-        /// <summary>
-        /// Collapse to specific zone (called after drop)
-        /// </summary>
-        public void CollapseToZone(string zoneName)
-        {
-            IsDragging = false;
-
-            switch (zoneName)
-            {
-                case "MUST":
-                    ExpandMust();
-                    break;
-                case "SHOULD":
-                    ExpandShould();
-                    break;
-                case "CANT":
-                    ExpandCant();
-                    break;
-            }
-        }
-
-        #endregion
-
         #region Commands
 
         public ICommand AddToMustCommand { get; }
@@ -796,167 +607,161 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMust(FilterItem? item)
         {
-            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
-            if (item != null)
+            if (item == null) return;
+
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
+            SelectedMust.Add(item);
+
+            // Sync with parent ViewModel if available
+            if (_parentViewModel != null)
             {
-                SelectedMust.Add(item);
-
-                // Sync with parent ViewModel if available
-                if (_parentViewModel != null)
+                // Special handling for operators
+                if (item is FilterOperatorItem operatorItem)
                 {
-                    // Special handling for operators
-                    if (item is FilterOperatorItem operatorItem)
-                    {
-                        SyncOperatorToParent(operatorItem, "Must");
-                    }
-                    else
-                    {
-                        var itemKey = _parentViewModel.GenerateNextItemKey();
-                        var itemConfig = new ItemConfig
-                        {
-                            ItemKey = itemKey,
-                            ItemType = item.Type,
-                            ItemName = item.Name,
-                        };
-                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                        _parentViewModel.SelectedMust.Add(itemKey);
-                    }
+                    SyncOperatorToParent(operatorItem, "Must");
                 }
-
-                DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                else
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = item.Type,
+                        ItemName = item.Name,
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedMust.Add(itemKey);
+                }
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         private void AddToShould(FilterItem? item)
         {
-            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
-            if (item != null)
+            if (item == null) return;
+
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
+            SelectedShould.Add(item);
+
+            // Sync with parent ViewModel if available
+            if (_parentViewModel != null)
             {
-                SelectedShould.Add(item);
-
-                // Sync with parent ViewModel if available
-                if (_parentViewModel != null)
+                // Special handling for operators
+                if (item is FilterOperatorItem operatorItem)
                 {
-                    // Special handling for operators
-                    if (item is FilterOperatorItem operatorItem)
-                    {
-                        SyncOperatorToParent(operatorItem, "Should");
-                    }
-                    else
-                    {
-                        var itemKey = _parentViewModel.GenerateNextItemKey();
-                        var itemConfig = new ItemConfig
-                        {
-                            ItemKey = itemKey,
-                            ItemType = item.Type,
-                            ItemName = item.Name,
-                        };
-                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                        _parentViewModel.SelectedShould.Add(itemKey);
-                    }
+                    SyncOperatorToParent(operatorItem, "Should");
                 }
-
-                DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                else
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = item.Type,
+                        ItemName = item.Name,
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedShould.Add(itemKey);
+                }
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         private void AddToMustNot(FilterItem? item)
         {
-            // ALLOW DUPLICATES: Remove the name check so same item can be added multiple times with different configs
-            if (item != null)
+            if (item == null) return;
+
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
+            SelectedMustNot.Add(item);
+
+            // Sync with parent ViewModel if available
+            if (_parentViewModel != null)
             {
-                SelectedMustNot.Add(item);
-
-                // Sync with parent ViewModel if available
-                if (_parentViewModel != null)
+                // Special handling for operators
+                if (item is FilterOperatorItem operatorItem)
                 {
-                    // Special handling for operators
-                    if (item is FilterOperatorItem operatorItem)
-                    {
-                        SyncOperatorToParent(operatorItem, "MustNot");
-                    }
-                    else
-                    {
-                        var itemKey = _parentViewModel.GenerateNextItemKey();
-                        var itemConfig = new ItemConfig
-                        {
-                            ItemKey = itemKey,
-                            ItemType = item.Type,
-                            ItemName = item.Name,
-                        };
-                        _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                        _parentViewModel.SelectedMustNot.Add(itemKey);
-                    }
+                    SyncOperatorToParent(operatorItem, "MustNot");
                 }
-
-                DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                else
+                {
+                    var itemKey = _parentViewModel.GenerateNextItemKey();
+                    var itemConfig = new ItemConfig
+                    {
+                        ItemKey = itemKey,
+                        ItemType = item.Type,
+                        ItemName = item.Name,
+                    };
+                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                    _parentViewModel.SelectedMustNot.Add(itemKey);
+                }
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         private void RemoveFromMust(FilterItem? item)
         {
-            if (item != null)
+            if (item == null) return;
+
+            SelectedMust.Remove(item);
+
+            // Sync with parent ViewModel - remove from parent collections
+            if (_parentViewModel != null)
             {
-                SelectedMust.Remove(item);
-
-                // Sync with parent ViewModel - remove from parent collections
-                if (_parentViewModel != null)
-                {
-                    RemoveItemFromParent(item, _parentViewModel.SelectedMust);
-                }
-
-                DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                RemoveItemFromParent(item, _parentViewModel.SelectedMust);
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         private void RemoveFromShould(FilterItem? item)
         {
-            if (item != null)
+            if (item == null) return;
+
+            SelectedShould.Remove(item);
+
+            // Sync with parent ViewModel - remove from parent collections
+            if (_parentViewModel != null)
             {
-                SelectedShould.Remove(item);
-
-                // Sync with parent ViewModel - remove from parent collections
-                if (_parentViewModel != null)
-                {
-                    RemoveItemFromParent(item, _parentViewModel.SelectedShould);
-                }
-
-                DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                RemoveItemFromParent(item, _parentViewModel.SelectedShould);
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         private void RemoveFromMustNot(FilterItem? item)
         {
-            if (item != null)
+            if (item == null) return;
+
+            SelectedMustNot.Remove(item);
+
+            // Sync with parent ViewModel - remove from parent collections
+            if (_parentViewModel != null)
             {
-                SelectedMustNot.Remove(item);
-
-                // Sync with parent ViewModel - remove from parent collections
-                if (_parentViewModel != null)
-                {
-                    RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
-                }
-
-                DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
-
-                // Trigger auto-sync to JSON Editor
-                NotifyJsonEditorOfChanges();
+                RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
             }
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
         }
 
         /// <summary>
@@ -1025,8 +830,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Store the operator config
             _parentViewModel.ItemConfigs[itemKey] = operatorConfig;
 
-            // Add to the appropriate collection based on target zone
-            // OR operators typically go to Should, but respect the targetZone
+            // Add to the zone where the user dropped it
             var targetCollection = targetZone switch
             {
                 "Must" => _parentViewModel.SelectedMust,
@@ -1057,11 +861,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private async Task LoadSampleDataAsync()
+        private async Task LoadGameDataAsync()
         {
             try
             {
-                await Task.Run(() => LoadSampleData());
+                await Task.Run(() => LoadGameData());
 
                 // Apply filter and update loading state on UI thread
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1081,12 +885,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
-        private void LoadSampleData()
+        private void LoadGameData()
         {
             // Ensure UI thread safety for collection initialization
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(LoadSampleData);
+                Avalonia.Threading.Dispatcher.UIThread.Post(LoadGameData);
                 return;
             }
 

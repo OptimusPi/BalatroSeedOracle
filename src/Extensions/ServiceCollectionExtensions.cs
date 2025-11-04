@@ -20,6 +20,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SearchManager>();
             // services.AddSingleton<SoundEffectService>(); // Removed - NAudio dependency
             services.AddSingleton<SoundFlowAudioManager>();
+            services.AddSingleton<SoundEffectsService>(); // UI sound effects (card hover, button clicks, etc.)
             // FavoritesService uses a private constructor and singleton Instance
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
             // ClipboardService is static, no DI registration needed
