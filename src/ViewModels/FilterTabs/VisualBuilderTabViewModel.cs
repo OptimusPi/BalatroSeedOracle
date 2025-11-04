@@ -423,8 +423,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "Voucher":
-                    // For now, show all vouchers (base/upgrade split can be added later)
-                    AddGroup("Vouchers", FilteredVouchers);
+                    // Organize vouchers into 8-column pairs (base + upgrade) matching sprite sheet
+                    var voucherPairs = GetVoucherPairs();
+                    var pairedVouchers = new List<FilterItem>();
+
+                    foreach (var (baseName, upgradeName) in voucherPairs)
+                    {
+                        // Add base voucher first
+                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                        if (baseVoucher != null)
+                            pairedVouchers.Add(baseVoucher);
+
+                        // Add upgrade voucher directly below
+                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                        if (upgradeVoucher != null)
+                            pairedVouchers.Add(upgradeVoucher);
+                    }
+
+                    // Add any remaining vouchers that weren't in the pairs (e.g., mystery/locked)
+                    var remainingVouchers = FilteredVouchers.Except(pairedVouchers);
+                    pairedVouchers.AddRange(remainingVouchers);
+
+                    AddGroup("Vouchers", pairedVouchers);
                     break;
 
                 case "StandardCard":
@@ -451,6 +473,36 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Items = new ObservableCollection<FilterItem>(items),
             };
             GroupedItems.Add(group);
+        }
+
+        /// <summary>
+        /// Get vouchers organized into pairs (base + upgrade) matching sprite sheet layout.
+        /// Returns 8-column pairs where each pair has base voucher followed by upgrade voucher.
+        /// </summary>
+        private List<(string baseName, string upgradeName)> GetVoucherPairs()
+        {
+            return new List<(string, string)>
+            {
+                // Row 0 -> Row 1 pairs (8 pairs)
+                ("overstock", "overstockplus"),
+                ("tarotmerchant", "tarottycoon"),
+                ("planetmerchant", "planettycoon"),
+                ("clearancesale", "liquidation"),
+                ("hone", "glowup"),
+                ("grabber", "nachotong"),
+                ("wasteful", "recyclomancy"),
+                ("blank", "antimatter"),
+
+                // Row 2 -> Row 3 pairs (8 pairs)
+                ("rerollsurplus", "rerollglut"),
+                ("seedmoney", "moneytree"),
+                ("crystalball", "omenglobe"),
+                ("telescope", "observatory"),
+                ("magictrick", "illusion"),
+                ("hieroglyph", "petroglyph"),
+                ("directorscut", "retcon"),
+                ("paintbrush", "palette"),
+            };
         }
 
         private void RefreshFilteredItems()
