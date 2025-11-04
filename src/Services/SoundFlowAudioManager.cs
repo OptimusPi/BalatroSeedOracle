@@ -367,6 +367,18 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
+        /// Set pan for a specific track (-1.0 = left, 0.0 = center, 1.0 = right)
+        /// </summary>
+        public void SetTrackPan(string trackName, float pan)
+        {
+            if (_players.TryGetValue(trackName, out var player))
+            {
+                player.Pan = Math.Clamp(pan, -1f, 1f);
+                Console.WriteLine($"[SoundFlowAudioManager] Set {trackName} pan to {pan:F2}");
+            }
+        }
+
+        /// <summary>
         /// Mute/unmute a specific track
         /// </summary>
         public void SetTrackMuted(string trackName, bool muted)

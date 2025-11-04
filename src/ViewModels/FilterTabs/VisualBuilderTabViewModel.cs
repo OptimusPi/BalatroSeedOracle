@@ -37,18 +37,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isLoading = true;
 
-        // Collapsible drop zones - only one expanded at a time
+        // Drop zones - always expanded for simplicity
         [ObservableProperty]
-        private bool _isMustExpanded = true; // Start with MUST expanded
+        private bool _isMustExpanded = true;
 
         [ObservableProperty]
-        private bool _isShouldExpanded = false;
+        private bool _isShouldExpanded = true;
 
         [ObservableProperty]
-        private bool _isCantExpanded = false;
+        private bool _isCantExpanded = true;
 
         [ObservableProperty]
         private bool _isDragging = false; // Track if user is dragging a card
+
+        // Hover state tracking for drop-zones (used to show indicators only when hovering over collapsed zones)
+        [ObservableProperty]
+        private bool _isMustHovered = false;
+
+        [ObservableProperty]
+        private bool _isShouldHovered = false;
+
+        [ObservableProperty]
+        private bool _isCantHovered = false;
 
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
@@ -373,80 +383,62 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 case "Favorites":
                     // Section 1: Favorite Items (user's frequently used items)
                     var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
-                    AddGroup("FAVORITE ITEMS", favoriteItems);
+                    AddGroup("Favorite Items", favoriteItems);
 
-                    // Section 2: Filter Operators (OR/AND)
-                    var operators = new List<FilterItem>
-                    {
-                        new FilterOperatorItem("OR")
-                        {
-                            DisplayName = "OR",
-                            Type = "Operator",
-                            Category = "Operator",
-                        },
-                        new FilterOperatorItem("AND")
-                        {
-                            DisplayName = "AND",
-                            Type = "Operator",
-                            Category = "Operator",
-                        },
-                    };
-                    AddGroup("FILTER OPERATORS", operators);
-
-                    // Section 3: Wildcards (ALL wildcards in one place)
-                    AddGroup("WILDCARDS", FilteredWildcards);
+                    // Section 2: Wildcards (ALL wildcards in one place)
+                    AddGroup("Wildcards", FilteredWildcards);
                     break;
 
                 case "Joker":
                     // Add groups: Legendary, Rare, Uncommon, Common
-                    AddGroup("LEGENDARY JOKERS", FilteredJokers.Where(j => j.Type == "SoulJoker"));
+                    AddGroup("Legendary Jokers", FilteredJokers.Where(j => j.Type == "SoulJoker"));
                     AddGroup(
-                        "RARE JOKERS",
+                        "Rare Jokers",
                         FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare")
                     );
                     AddGroup(
-                        "UNCOMMON JOKERS",
+                        "Uncommon Jokers",
                         FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon")
                     );
                     AddGroup(
-                        "COMMON JOKERS",
+                        "Common Jokers",
                         FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common")
                     );
                     break;
 
                 case "Consumable":
-                    AddGroup("TAROT CARDS", FilteredTarots);
-                    AddGroup("PLANET CARDS", FilteredPlanets);
-                    AddGroup("SPECTRAL CARDS", FilteredSpectrals);
+                    AddGroup("Tarot Cards", FilteredTarots);
+                    AddGroup("Planet Cards", FilteredPlanets);
+                    AddGroup("Spectral Cards", FilteredSpectrals);
                     break;
 
                 case "SkipTag":
                     // For now, just show all tags (ante filtering can be added later)
-                    AddGroup("SKIP TAGS - ANY ANTE", FilteredTags);
+                    AddGroup("Skip Tags - Any Ante", FilteredTags);
                     break;
 
                 case "Boss":
                     // For now, show all bosses (regular/finisher split can be added later)
-                    AddGroup("BOSS BLINDS", FilteredBosses);
+                    AddGroup("Boss Blinds", FilteredBosses);
                     break;
 
                 case "Voucher":
                     // For now, show all vouchers (base/upgrade split can be added later)
-                    AddGroup("VOUCHERS", FilteredVouchers);
+                    AddGroup("Vouchers", FilteredVouchers);
                     break;
 
                 case "StandardCard":
                     // Standard playing cards organized by suit and enhancement
-                    AddGroup("HEARTS", FilteredStandardCards.Where(c => c.Category == "Hearts"));
-                    AddGroup("SPADES", FilteredStandardCards.Where(c => c.Category == "Spades"));
-                    AddGroup("DIAMONDS", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
-                    AddGroup("CLUBS", FilteredStandardCards.Where(c => c.Category == "Clubs"));
-                    AddGroup("MULT CARDS", FilteredStandardCards.Where(c => c.Category == "Mult"));
-                    AddGroup("BONUS CARDS", FilteredStandardCards.Where(c => c.Category == "Bonus"));
-                    AddGroup("GLASS CARDS", FilteredStandardCards.Where(c => c.Category == "Glass"));
-                    AddGroup("GOLD CARDS", FilteredStandardCards.Where(c => c.Category == "Gold"));
-                    AddGroup("STEEL CARDS", FilteredStandardCards.Where(c => c.Category == "Steel"));
-                    AddGroup("STONE CARD", FilteredStandardCards.Where(c => c.Category == "Stone"));
+                    AddGroup("Hearts", FilteredStandardCards.Where(c => c.Category == "Hearts"));
+                    AddGroup("Spades", FilteredStandardCards.Where(c => c.Category == "Spades"));
+                    AddGroup("Diamonds", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
+                    AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
+                    AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
+                    AddGroup("Bonus Cards", FilteredStandardCards.Where(c => c.Category == "Bonus"));
+                    AddGroup("Glass Cards", FilteredStandardCards.Where(c => c.Category == "Glass"));
+                    AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
+                    AddGroup("Steel Cards", FilteredStandardCards.Where(c => c.Category == "Steel"));
+                    AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
         }
@@ -542,28 +534,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToLegendary()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Legendary requested");
-            ScrollToGroupName = "LEGENDARY JOKERS";
+            ScrollToGroupName = "Legendary Jokers";
         }
 
         [RelayCommand]
         private void ScrollToRare()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Rare requested");
-            ScrollToGroupName = "RARE JOKERS";
+            ScrollToGroupName = "Rare Jokers";
         }
 
         [RelayCommand]
         private void ScrollToUncommon()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Uncommon requested");
-            ScrollToGroupName = "UNCOMMON JOKERS";
+            ScrollToGroupName = "Uncommon Jokers";
         }
 
         [RelayCommand]
         private void ScrollToCommon()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Common requested");
-            ScrollToGroupName = "COMMON JOKERS";
+            ScrollToGroupName = "Common Jokers";
         }
 
         // Consumable Commands
@@ -571,21 +563,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToTarot()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Tarot requested");
-            ScrollToGroupName = "TAROT CARDS";
+            ScrollToGroupName = "Tarot Cards";
         }
 
         [RelayCommand]
         private void ScrollToPlanet()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Planet requested");
-            ScrollToGroupName = "PLANET CARDS";
+            ScrollToGroupName = "Planet Cards";
         }
 
         [RelayCommand]
         private void ScrollToSpectral()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Spectral requested");
-            ScrollToGroupName = "SPECTRAL CARDS";
+            ScrollToGroupName = "Spectral Cards";
         }
 
         // Skip Tag Commands
@@ -593,14 +585,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToAnyAnte()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Any Ante tags requested");
-            ScrollToGroupName = "SKIP TAGS - ANY ANTE";
+            ScrollToGroupName = "Skip Tags - Any Ante";
         }
 
         [RelayCommand]
         private void ScrollToAnte2Plus()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Ante 2+ tags requested");
-            ScrollToGroupName = "SKIP TAGS - ANTE 2+";
+            ScrollToGroupName = "Skip Tags - Ante 2+";
         }
 
         // Boss Commands
@@ -608,14 +600,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToRegularBoss()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Regular Boss requested");
-            ScrollToGroupName = "BOSS BLINDS";
+            ScrollToGroupName = "Boss Blinds";
         }
 
         [RelayCommand]
         private void ScrollToFinisherBoss()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Finisher Boss requested");
-            ScrollToGroupName = "FINISHER BOSS BLINDS";
+            ScrollToGroupName = "Finisher Boss Blinds";
         }
 
         // Voucher Commands
@@ -623,14 +615,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToBaseVoucher()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Base Voucher requested");
-            ScrollToGroupName = "BASE VOUCHERS";
+            ScrollToGroupName = "Base Vouchers";
         }
 
         [RelayCommand]
         private void ScrollToUpgradeVoucher()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Upgrade Voucher requested");
-            ScrollToGroupName = "UPGRADE VOUCHERS";
+            ScrollToGroupName = "Upgrade Vouchers";
         }
 
         // Standard Card Commands
@@ -638,35 +630,35 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ScrollToSpade()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Spades requested");
-            ScrollToGroupName = "SPADES";
+            ScrollToGroupName = "Spades";
         }
 
         [RelayCommand]
         private void ScrollToClub()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Clubs requested");
-            ScrollToGroupName = "CLUBS";
+            ScrollToGroupName = "Clubs";
         }
 
         [RelayCommand]
         private void ScrollToHeart()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Hearts requested");
-            ScrollToGroupName = "HEARTS";
+            ScrollToGroupName = "Hearts";
         }
 
         [RelayCommand]
         private void ScrollToDiamond()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Diamonds requested");
-            ScrollToGroupName = "DIAMONDS";
+            ScrollToGroupName = "Diamonds";
         }
 
         [RelayCommand]
         private void ScrollToEnhanced()
         {
             DebugLogger.Log("VisualBuilderTab", "Scroll to Enhanced requested");
-            ScrollToGroupName = "ENHANCED CARDS";
+            ScrollToGroupName = "Enhanced Cards";
         }
 
         /// <summary>
@@ -1076,8 +1068,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             {
                                 "Joker" or "SoulJoker" => spriteService.GetJokerImage(name),
                                 "Tarot" => spriteService.GetTarotImage(name),
-                                "Planet" => spriteService.GetPlanetCardImage("Pluto"),
-                                "Spectral" => spriteService.GetSpectralImage("Familiar"),
+                                "Planet" => spriteService.GetPlanetCardImage(name),
+                                "Spectral" => spriteService.GetSpectralImage(name),
                                 _ => null
                             }
                         }
@@ -1632,31 +1624,73 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public void RemoveItem(FilterItem item)
         {
-            // Remove from all zones
-            SelectedMust.Remove(item);
-            SelectedShould.Remove(item);
-            SelectedMustNot.Remove(item);
+            // Find which zone the item is in and get its index BEFORE removing
+            string? sourceZone = null;
+            string? itemKeyToRemove = null;
+            int itemIndex = -1;
 
-            // Find and remove associated config
-            var itemKey = ItemConfigs.Keys.FirstOrDefault(k =>
-                ItemConfigs[k].ItemName == item.Name && ItemConfigs[k].ItemType == item.Type
-            );
-
-            if (!string.IsNullOrEmpty(itemKey))
+            // Check MUST zone
+            itemIndex = SelectedMust.IndexOf(item);
+            if (itemIndex >= 0)
             {
-                ItemConfigs.Remove(itemKey);
-
-                // Sync with parent ViewModel
-                if (_parentViewModel != null)
+                sourceZone = "MUST";
+                if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMust.Count)
                 {
-                    _parentViewModel.SelectedMust.Remove(itemKey);
-                    _parentViewModel.SelectedShould.Remove(itemKey);
-                    _parentViewModel.SelectedMustNot.Remove(itemKey);
-                    _parentViewModel.ItemConfigs.Remove(itemKey);
+                    itemKeyToRemove = _parentViewModel.SelectedMust[itemIndex];
+                }
+                SelectedMust.RemoveAt(itemIndex);
+            }
+            // Check SHOULD zone
+            else
+            {
+                itemIndex = SelectedShould.IndexOf(item);
+                if (itemIndex >= 0)
+                {
+                    sourceZone = "SHOULD";
+                    if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedShould.Count)
+                    {
+                        itemKeyToRemove = _parentViewModel.SelectedShould[itemIndex];
+                    }
+                    SelectedShould.RemoveAt(itemIndex);
+                }
+                // Check MUSTNOT zone
+                else
+                {
+                    itemIndex = SelectedMustNot.IndexOf(item);
+                    if (itemIndex >= 0)
+                    {
+                        sourceZone = "MUSTNOT";
+                        if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMustNot.Count)
+                        {
+                            itemKeyToRemove = _parentViewModel.SelectedMustNot[itemIndex];
+                        }
+                        SelectedMustNot.RemoveAt(itemIndex);
+                    }
                 }
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Removed item: {item.Name}");
+            // Remove associated config and sync with parent
+            if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel != null)
+            {
+                ItemConfigs.Remove(itemKeyToRemove);
+                _parentViewModel.ItemConfigs.Remove(itemKeyToRemove);
+
+                // Remove from parent's zone collections (only the specific zone)
+                if (sourceZone == "MUST")
+                {
+                    _parentViewModel.SelectedMust.Remove(itemKeyToRemove);
+                }
+                else if (sourceZone == "SHOULD")
+                {
+                    _parentViewModel.SelectedShould.Remove(itemKeyToRemove);
+                }
+                else if (sourceZone == "MUSTNOT")
+                {
+                    _parentViewModel.SelectedMustNot.Remove(itemKeyToRemove);
+                }
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed item: {item.Name} from {sourceZone ?? "UNKNOWN"} zone");
         }
 
         #endregion

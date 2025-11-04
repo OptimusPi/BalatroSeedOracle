@@ -185,6 +185,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return; // No completions available
 
             var completionWindow = new CompletionWindow(_jsonEditor.TextArea);
+            
+            // Find the start of the current word/token being typed
+            // This ensures we replace what's already typed, not just insert
+            var wordStart = offset;
+            while (wordStart > 0)
+            {
+                var ch = _jsonEditor.Document.GetCharAt(wordStart - 1);
+                if (!char.IsLetterOrDigit(ch) && ch != '_' && ch != '-')
+                    break;
+                wordStart--;
+            }
+            
+            // Set the completion segment to replace from wordStart to current position
+            completionWindow.StartOffset = wordStart;
+            completionWindow.EndOffset = offset;
+
             var data = completionWindow.CompletionList.CompletionData;
 
             // Add all smart completions

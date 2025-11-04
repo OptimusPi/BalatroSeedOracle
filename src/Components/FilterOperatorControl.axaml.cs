@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 using BalatroSeedOracle.Models;
+using System;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace BalatroSeedOracle.Components
@@ -19,6 +23,13 @@ namespace BalatroSeedOracle.Components
                 dropZone.AddHandler(DragDrop.DragOverEvent, OnChildrenDragOver);
                 dropZone.AddHandler(DragDrop.DropEvent, OnChildrenDrop);
                 dropZone.AddHandler(DragDrop.DragLeaveEvent, OnChildrenDragLeave);
+            }
+
+            // Make the entire container draggable by clicking the header
+            var headerBorder = this.FindControl<Border>("OperatorHeader");
+            if (headerBorder != null)
+            {
+                headerBorder.PointerPressed += OnHeaderPointerPressed;
             }
 
             // Set up the operator type tag for styling
@@ -44,8 +55,137 @@ namespace BalatroSeedOracle.Components
                             ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
                             : Application.Current?.FindResource("Blue") as Avalonia.Media.IBrush;
                     }
+
+                    // Subscribe to Children collection changes to update fanned layout
+                    operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
+
+                    // Initial layout update
+                    UpdateFannedLayout();
                 }
             };
+
+            // Attach to visual tree to set up card drag handlers
+            this.AttachedToVisualTree += (s, e) => SetupCardDragHandlers();
+        }
+
+        private void SetupCardDragHandlers()
+        {
+            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
+            if (itemsControl == null)
+                return;
+
+            // Add pointer handlers to enable dragging individual cards
+            itemsControl.AddHandler(PointerPressedEvent, OnCardPointerPressed, handledEventsToo: true);
+        }
+
+        private void OnHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            // Operator containers are not draggable - only the cards inside them can be dragged
+            // This prevents crashes and maintains the logical structure of the filter
+            e.Handled = true;
+        }
+
+        private void OnCardPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            // Find the card that was clicked
+            var point = e.GetCurrentPoint(this);
+            if (!point.Properties.IsLeftButtonPressed)
+                return;
+
+            // Walk up the visual tree to find the Border container
+            var source = e.Source as Visual;
+            while (source != null)
+            {
+                if (source is Border border && border.DataContext is FilterItem item)
+                {
+                    // Start drag operation for this individual card
+                    var data = new Avalonia.Input.DataObject();
+                    data.Set("FilterItem", item);
+
+                    DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+                    e.Handled = true;
+                    return;
+                }
+                source = source.GetVisualParent();
+            }
+        }
+
+        private void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Update the fanned card layout whenever children change
+            UpdateFannedLayout();
+        }
+
+        private void UpdateFannedLayout()
+        {
+            if (DataContext is not FilterOperatorItem operatorItem)
+                return;
+
+            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
+            if (itemsControl == null)
+                return;
+
+            // Wait for the visual tree to be ready
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                CalculateFannedPositions(operatorItem);
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void CalculateFannedPositions(FilterOperatorItem operatorItem)
+        {
+            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
+            if (itemsControl == null)
+                return;
+
+            int count = operatorItem.Children.Count;
+            if (count == 0)
+                return;
+
+            // Fanning parameters (poker hand style)
+            double baseAngle = -15.0;  // Start angle for first card
+            double angleDelta = count > 1 ? 30.0 / (count - 1) : 0;  // Spread across 30 degrees
+            double xOffset = 18.0;     // Horizontal spacing between cards
+            double cardWidth = 40.0;
+
+            // Center the fan
+            double totalWidth = (count - 1) * xOffset + cardWidth;
+            double startX = -totalWidth / 2.0 + cardWidth / 2.0;
+
+            // Apply transforms to each card container
+            var containers = itemsControl.GetVisualDescendants().OfType<Border>().ToList();
+
+            for (int i = 0; i < Math.Min(count, containers.Count); i++)
+            {
+                var container = containers[i];
+                if (container.RenderTransform is not TransformGroup transformGroup)
+                    continue;
+
+                // Calculate angle for this card
+                double angle = baseAngle + (i * angleDelta);
+
+                // Calculate position
+                double x = startX + (i * xOffset);
+                double y = 0;
+
+                // Update transforms
+                if (transformGroup.Children.Count >= 2)
+                {
+                    if (transformGroup.Children[0] is RotateTransform rotateTransform)
+                    {
+                        rotateTransform.Angle = angle;
+                    }
+
+                    if (transformGroup.Children[1] is TranslateTransform translateTransform)
+                    {
+                        translateTransform.X = x;
+                        translateTransform.Y = y;
+                    }
+                }
+
+                // Set Z-Index so cards on the right appear in front
+                container.ZIndex = i;
+            }
         }
 
         private void OnChildrenDragOver(object? sender, DragEventArgs e)

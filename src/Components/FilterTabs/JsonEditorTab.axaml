@@ -38,7 +38,7 @@
                     </StackPanel>
                     
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                        <Button Content="⚡" 
+                        <Button Content="Format Document" 
                                 ToolTip.Tip="Auto-format JSON"
                                 Command="{Binding FormatJsonCommand}"
                                 Width="28" Height="24"
@@ -47,7 +47,7 @@
                                 BorderThickness="0"
                                 CornerRadius="4"
                                 Foreground="{StaticResource BrightGold}"/>
-                        <Button Content="✓" 
+                        <Button Content="Validate Document" 
                                 ToolTip.Tip="Validate JSON"
                                 Command="{Binding ValidateJsonCommand}"
                                 Width="28" Height="24"
@@ -65,7 +65,7 @@
                                     Name="JsonEditor"
                                     SyntaxHighlighting="Json"
                                     ShowLineNumbers="True"
-                                    FontFamily="Consolas,Cascadia Code,Menlo,Courier New,monospace"
+                                    FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"
                                     FontSize="16"
                                     Background="{StaticResource EditorDarkBg}"
                                     Foreground="{StaticResource White}"

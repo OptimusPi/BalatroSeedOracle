@@ -10,18 +10,35 @@
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True">
 
-    <Grid VerticalAlignment="Stretch">
-        <!-- Dramatic backdrop overlay when dragging - dims everything -->
-        <Border Name="DragBackdrop"
-                Background="{StaticResource DragBackdropOverlay}"
-                IsVisible="False"
-                IsHitTestVisible="False"
-                ZIndex="100">
-            <Border.Effect>
-                <BlurEffect Radius="8"/>
-            </Border.Effect>
-        </Border>
+    <UserControl.Styles>
+        <!-- Shared drop zone overlay style -->
+        <Style Selector="Border.dropzone-overlay">
+            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="ZIndex" Value="200"/>
+        </Style>
 
+        <Style Selector="Border.dropzone-overlay TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.dropzone-overlay TextBlock > Border.Effect">
+            <Setter Property="Effect">
+                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid VerticalAlignment="Stretch">
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -72,7 +89,7 @@
 
                 <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
                     <!-- Category buttons without section headers -->
-                    <Button Content="Special"
+                    <Button Content="Favorites"
                             Classes="nav-button special"
                             Click="OnCategoryClick"
                             Tag="Favorites"
@@ -112,24 +129,32 @@
                 <!-- Favorites drop overlay - covers category nav area only -->
                 <Border Grid.Row="4"
                         Name="FavoritesDropOverlay"
-                        Background="{StaticResource SemiTransparentBlack}"
-                        BorderBrush="{StaticResource Red}"
+                        Background="{StaticResource SemiTransparentGold}"
+                        BorderBrush="#FFFFFF"
                         BorderThickness="3"
                         CornerRadius="8"
                         IsVisible="False"
-                        IsHitTestVisible="False">
-                    <TextBlock FontFamily="{StaticResource BalatroFont}"
-                               FontSize="20"
-                               Foreground="{StaticResource Red}"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource GoldColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <!-- Balatro-style drop zone - BIG and prominent text -->
+                    <TextBlock Text="ADD TO FAVORITES"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="28"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               TextAlignment="Center"
-                               >
-                        <Run Text="ADD"/>
-                        <LineBreak/>
-                        <Run Text="TO"/>
-                        <LineBreak/>
-                        <Run Text="FAVORITES"/>
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
                     </TextBlock>
                 </Border>
             </Grid>
@@ -154,11 +179,11 @@
                                         <Border Background="{StaticResource DarkBackground}"
                                                 BorderThickness="0"
                                                 Padding="8,6"
-                                                Margin="0,0,0,8"
+                                                Margin="0,0,0,4"
                                                 CornerRadius="4">
                                             <TextBlock Text="{Binding GroupName}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="13"
+                                                       FontSize="16"
                                                        FontWeight="Normal"
                                                        Foreground="{StaticResource LightGrey}"
                                                        TextAlignment="Left"/>
@@ -169,7 +194,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="0,2" Width="70" Height="95">
+                                                    <Grid Margin="0,2" Width="54" Height="78">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                         </i:Interaction.Behaviors>
@@ -177,7 +202,8 @@
                                                         <Border Background="Transparent"
                                                                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                 Cursor="Hand"
-                                                                ZIndex="0">
+                                                                ZIndex="0"
+                                                                ClipToBounds="True">
                                                             <!-- Just the card sprite and label - no border wrapper! -->
                                                             <StackPanel Spacing="2">
                                                                 <!-- Card image with soul overlay -->
@@ -216,8 +242,8 @@
                                                                 Cursor="Hand"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Width="95"
-                                                                Height="110"/>
+                                                                Width="54"
+                                                                Height="78"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
@@ -257,11 +283,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>  <!-- OR/AND Trays -->
                     <RowDefinition Height="8"/>  <!-- Spacing -->
-                    <RowDefinition Height="{Binding IsMustExpanded, Converter={x:Static converters:BoolToGridLengthConverter.Instance}}"/>  <!-- MUST - Expands/collapses -->
+                    <RowDefinition Height="1*"/>  <!-- MUST - Always expanded, equal height -->
                     <RowDefinition Height="4"/>     <!-- Spacing -->
-                    <RowDefinition Height="{Binding IsShouldExpanded, Converter={x:Static converters:BoolToGridLengthConverter.Instance}}"/>  <!-- SHOULD - Expands/collapses -->
+                    <RowDefinition Height="1*"/>  <!-- SHOULD - Always expanded, equal height -->
                     <RowDefinition Height="4"/>     <!-- Spacing -->
-                    <RowDefinition Height="{Binding IsCantExpanded, Converter={x:Static converters:BoolToGridLengthConverter.Instance}}"/>  <!-- CAN'T - Expands/collapses -->
+                    <RowDefinition Height="1*"/>  <!-- CAN'T - Always expanded, equal height -->
                 </Grid.RowDefinitions>
 
                 <!-- OR/AND OPERATOR TRAYS at top of right column -->
@@ -310,7 +336,7 @@
                                 <!-- Small thumbnails - fanned out like cards in hand -->
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                                               VerticalScrollBarVisibility="Disabled"
-                                              Height="35">
+                                              Height="50">
                                     <ItemsControl ItemsSource="{Binding TrayOrOperator.Children}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -319,7 +345,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Width="20" Height="28" Margin="-6,0,0,0">
+                                                <Grid Width="36" Height="48" Margin="-8,0,0,0">
                                                     <Image Source="{Binding ItemImage}"
                                                            Stretch="Uniform"/>
                                                     <Image Source="{Binding SoulFaceImage}"
@@ -372,7 +398,7 @@
                                 <!-- Small thumbnails - fanned out like cards in hand -->
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                                               VerticalScrollBarVisibility="Disabled"
-                                              Height="35">
+                                              Height="50">
                                     <ItemsControl ItemsSource="{Binding TrayAndOperator.Children}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -381,7 +407,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Width="20" Height="28" Margin="-6,0,0,0">
+                                                <Grid Width="36" Height="48" Margin="-8,0,0,0">
                                                     <Image Source="{Binding ItemImage}"
                                                            Stretch="Uniform"/>
                                                     <Image Source="{Binding SoulFaceImage}"
@@ -405,15 +431,11 @@
                         <RowDefinition Height="1*"/>  <!-- Bottom third - CAN'T -->
                     </Grid.RowDefinitions>
 
-                    <!-- MUST drop overlay - Balatro style with white border -->
+                    <!-- MUST drop overlay -->
                     <Border Name="MustDropOverlay"
                             Grid.Row="0"
-                            Background="{StaticResource SemiTransparentBlue}"
-                            BorderBrush="#FFFFFF"
-                            BorderThickness="3"
-                            CornerRadius="8"
-                            IsVisible="False"
-                            ZIndex="200">
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource SemiTransparentBlue}">
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource BlueColor}"
                                               OffsetX="0"
@@ -421,30 +443,18 @@
                                               BlurRadius="30"
                                               Opacity="1.0"/>
                         </Border.Effect>
-                        <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="DROP IN MUST HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-
-                                   TextAlignment="Center">
+                        <TextBlock Text="DROP IN MUST HAVE">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="8" OffsetX="2" OffsetY="2" Opacity="1"/>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
 
-                    <!-- SHOULD drop overlay - Balatro style with white border -->
+                    <!-- SHOULD drop overlay -->
                     <Border Name="ShouldDropOverlay"
                             Grid.Row="1"
-                            Background="{StaticResource SemiTransparentGreen}"
-                            BorderBrush="#FFFFFF"
-                            BorderThickness="3"
-                            CornerRadius="8"
-                            IsVisible="False"
-                            ZIndex="200">
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource SemiTransparentGreen}">
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource GreenColor}"
                                               OffsetX="0"
@@ -452,30 +462,20 @@
                                               BlurRadius="30"
                                               Opacity="1.0"/>
                         </Border.Effect>
-                        <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="DROP IN SHOULD HAVE"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-
-                                   TextAlignment="Center">
+                        <TextBlock Text="DROP IN SHOULD HAVE">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="8" OffsetX="2" OffsetY="2" Opacity="1"/>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
 
-                    <!-- CAN'T drop overlay - bottom third -->
+                    <!-- CAN'T drop overlay -->
                     <Border Name="MustNotDropOverlay"
                             Grid.Row="2"
+                            Classes="dropzone-overlay"
                             Background="{StaticResource SemiTransparentRed}"
                             BorderBrush="{StaticResource Red}"
-                            BorderThickness="6"
-                            CornerRadius="8"
-                            IsVisible="False"
-                            ZIndex="200">
+                            BorderThickness="6">
                         <Border.Effect>
                             <DropShadowEffect Color="{StaticResource RedColor}"
                                               OffsetX="0"
@@ -483,17 +483,9 @@
                                               BlurRadius="30"
                                               Opacity="1.0"/>
                         </Border.Effect>
-                        <!-- Balatro-style drop zone - no pulsing, just bright overlay -->
-                        <TextBlock Text="DROP IN BANNED ITEMS"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-
-                                   TextAlignment="Center">
+                        <TextBlock Text="DROP IN BANNED ITEMS">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="8" OffsetX="2" OffsetY="2" Opacity="1"/>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
@@ -517,42 +509,23 @@
                             <RowDefinition Height="*"/>        <!-- Drop area -->
                         </Grid.RowDefinitions>
 
-                        <!-- Top: Horizontal Label - Clickable -->
+                        <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Cursor="Hand"
-                                Padding="8,4"
-                                PointerPressed="OnMustLabelClick">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="MUST"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="18"
-                                           FontWeight="ExtraBold"
-                                           Foreground="{StaticResource Blue}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,0,8,0"/>
-
-                                <!-- Item count badge (visible when collapsed) -->
-                                <Border Background="{StaticResource Blue}"
-                                        CornerRadius="10"
-                                        Padding="6,2"
-                                        IsVisible="{Binding !IsMustExpanded}">
-                                    <TextBlock Text="{Binding SelectedMust.Count}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="12"
-                                               
-                                               Foreground="{StaticResource DarkBackground}"
-                                               HorizontalAlignment="Center"/>
-                                </Border>
-                            </StackPanel>
+                                Padding="8,4">
+                            <TextBlock Text="MUST"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       
+                                       Foreground="{StaticResource Blue}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
                         </Border>
 
-                        <!-- Bottom: Drop Area - Hidden when collapsed -->
+                        <!-- Bottom: Drop Area - Always visible -->
                         <ItemsControl Grid.Row="1"
                                       ItemsSource="{Binding SelectedMust}"
-                                      Margin="12"
-                                      IsVisible="{Binding IsMustExpanded}">
+                                      Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -581,12 +554,12 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="64" Height="90">
+                                                    <StackPanel Spacing="2" Width="54" Height="64">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -594,8 +567,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -629,11 +602,11 @@
                                                         <!-- Card name floating below -->
                                                         <TextBlock Text="{Binding DisplayName}"
                                                                    FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="9"
+                                                                   FontSize="7"
                                                                    Foreground="#FFFFFF"
                                                                    TextAlignment="Center"
                                                                    TextWrapping="Wrap"
-                                                                   MaxWidth="64"/>
+                                                                   MaxWidth="54"/>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>
@@ -669,42 +642,23 @@
                             <RowDefinition Height="*"/>        <!-- Drop area -->
                         </Grid.RowDefinitions>
 
-                        <!-- Top: Horizontal Label - Clickable -->
+                        <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Cursor="Hand"
-                                Padding="8,4"
-                                PointerPressed="OnShouldLabelClick">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="SHOULD"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="18"
-                                           FontWeight="ExtraBold"
-                                           Foreground="{StaticResource Green}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,0,8,0"/>
-
-                                <!-- Item count badge (visible when collapsed) -->
-                                <Border Background="{StaticResource Green}"
-                                        CornerRadius="10"
-                                        Padding="6,2"
-                                        IsVisible="{Binding !IsShouldExpanded}">
-                                    <TextBlock Text="{Binding SelectedShould.Count}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="12"
-                                               
-                                               Foreground="{StaticResource DarkBackground}"
-                                               HorizontalAlignment="Center"/>
-                                </Border>
-                            </StackPanel>
+                                Padding="8,4">
+                            <TextBlock Text="SHOULD"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       
+                                       Foreground="{StaticResource Green}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
                         </Border>
 
-                        <!-- Bottom: Drop Area - Hidden when collapsed -->
+                        <!-- Bottom: Drop Area - Always visible -->
                         <ItemsControl Grid.Row="1"
                                       ItemsSource="{Binding SelectedShould}"
-                                      Margin="12"
-                                      IsVisible="{Binding IsShouldExpanded}">
+                                      Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -733,12 +687,12 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="64" Height="90">
+                                                    <StackPanel Spacing="2" Width="54" Height="64">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -746,8 +700,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -781,11 +735,11 @@
                                                         <!-- Card name floating below -->
                                                         <TextBlock Text="{Binding DisplayName}"
                                                                    FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="9"
+                                                                   FontSize="7"
                                                                    Foreground="#FFFFFF"
                                                                    TextAlignment="Center"
                                                                    TextWrapping="Wrap"
-                                                                   MaxWidth="64"/>
+                                                                   MaxWidth="54"/>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>
@@ -821,42 +775,23 @@
                             <RowDefinition Height="*"/>        <!-- Drop area -->
                         </Grid.RowDefinitions>
 
-                        <!-- Top: Horizontal Label - Clickable -->
+                        <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Cursor="Hand"
-                                Padding="8,4"
-                                PointerPressed="OnCantLabelClick">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock Text="Banned Item Criteria"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="18"
-                                           FontWeight="ExtraBold"
-                                           Foreground="{StaticResource Red}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,0,8,0"/>
-
-                                <!-- Item count badge (visible when collapsed) -->
-                                <Border Background="{StaticResource Red}"
-                                        CornerRadius="10"
-                                        Padding="6,2"
-                                        IsVisible="{Binding !IsCantExpanded}">
-                                    <TextBlock Text="{Binding SelectedMustNot.Count}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="12"
-                                               
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"/>
-                                </Border>
-                            </StackPanel>
+                                Padding="8,4">
+                            <TextBlock Text="BANNED"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       
+                                       Foreground="{StaticResource Red}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
                         </Border>
 
-                        <!-- Bottom: Drop Area - Hidden when collapsed -->
+                        <!-- Bottom: Drop Area - Always visible -->
                         <ItemsControl Grid.Row="1"
                                       ItemsSource="{Binding SelectedMustNot}"
-                                      Margin="12"
-                                      IsVisible="{Binding IsCantExpanded}">
+                                      Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas/>
@@ -885,12 +820,12 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="64" Height="90">
+                                                    <StackPanel Spacing="2" Width="54" Height="64">
                                                         <!-- Card image with soul overlay -->
                                                         <Grid>
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -898,8 +833,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="60"
-                                                                   Height="80"
+                                                                   Width="48"
+                                                                   Height="64"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -933,11 +868,11 @@
                                                         <!-- Card name floating below -->
                                                         <TextBlock Text="{Binding DisplayName}"
                                                                    FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="9"
+                                                                   FontSize="7"
                                                                    Foreground="#FFFFFF"
                                                                    TextAlignment="Center"
                                                                    TextWrapping="Wrap"
-                                                                   MaxWidth="64"/>
+                                                                   MaxWidth="54"/>
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>

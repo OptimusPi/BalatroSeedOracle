@@ -533,54 +533,10 @@ namespace BalatroSeedOracle.Services
         {
             ArgumentNullException.ThrowIfNull(name);
 
-            // Check if this is a wildcard joker that needs mystery face overlay
-            var normalizedName = name.ToLowerInvariant();
-            if (normalizedName.StartsWith("wildcard_") || normalizedName == "wildcard")
+            // Translate Wildcard_ prefix to the actual sprite name
+            if (name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
             {
-                // Get the base "anyjoker" sprite (blank joker template at position 9,9)
-                var baseJoker = GetSpriteImage(
-                    "anyjoker",
-                    jokerPositions,
-                    jokerSheet,
-                    spriteWidth,
-                    spriteHeight,
-                    "joker"
-                );
-
-                if (baseJoker == null)
-                {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        $"Failed to get base joker sprite for wildcard '{name}'"
-                    );
-                    return null;
-                }
-
-                // Determine which mystery face to use
-                string mysterySprite = normalizedName.Contains("legendary")
-                    ? "MysteryLegendary"
-                    : "MysteryGeneric";
-
-                DebugLogger.Log(
-                    "SpriteService",
-                    $"Wildcard detected: '{name}' -> base joker + {mysterySprite} overlay"
-                );
-
-                // Get the mystery face from the special sprites (it's 142x190)
-                var mysteryFace = GetSpecialImage(mysterySprite, 142, 190);
-
-                if (mysteryFace == null)
-                {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        $"Failed to get mystery sprite '{mysterySprite}' for wildcard '{name}'"
-                    );
-                    // Return just the base joker if mystery face fails
-                    return baseJoker;
-                }
-
-                // Composite: base joker card + mystery face overlay (scaled down to joker size)
-                return CompositeImages(baseJoker, mysteryFace, spriteWidth, spriteHeight);
+                name = "anyjoker";
             }
 
             return GetSpriteImage(
@@ -715,44 +671,10 @@ namespace BalatroSeedOracle.Services
         {
             ArgumentNullException.ThrowIfNull(name);
 
-            // Check if this is a wildcard tarot that needs mystery face overlay
-            var normalizedName = name.ToLowerInvariant();
-            if (normalizedName.StartsWith("wildcard_tarot") || normalizedName == "wildcard_tarot")
+            // Translate Wildcard_ prefix to the actual sprite name
+            if (name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
             {
-                // Get the base "anytarot" sprite (blank tarot template)
-                var baseTarot = GetSpriteImage(
-                    "anytarot",
-                    tarotPositions,
-                    tarotSheet,
-                    spriteWidth,
-                    spriteHeight,
-                    "tarot"
-                );
-
-                if (baseTarot == null)
-                {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        $"Failed to get base tarot sprite for wildcard '{name}'"
-                    );
-                    return null;
-                }
-
-                // Get the mystery face overlay
-                string mysterySprite = "MysteryGeneric";
-                var mysteryFace = GetSpecialImage(mysterySprite, 142, 190);
-
-                if (mysteryFace == null)
-                {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        $"Failed to get mystery sprite '{mysterySprite}' for wildcard tarot '{name}'"
-                    );
-                    return baseTarot;
-                }
-
-                // Composite: base tarot card + mystery face overlay
-                return CompositeImages(baseTarot, mysteryFace, spriteWidth, spriteHeight);
+                name = "anytarot";
             }
 
             return GetSpriteImage(
@@ -772,6 +694,13 @@ namespace BalatroSeedOracle.Services
         )
         {
             ArgumentNullException.ThrowIfNull(name);
+
+            // Translate Wildcard_ prefix to the actual sprite name
+            if (name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                name = "anyspectral";
+            }
+
             return GetSpriteImage(
                 name,
                 spectralPositions,
@@ -789,6 +718,13 @@ namespace BalatroSeedOracle.Services
         )
         {
             ArgumentNullException.ThrowIfNull(name);
+
+            // Translate Wildcard_ prefix to the actual sprite name
+            if (name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                name = "anyplanet";
+            }
+
             // Planet cards are in the tarots sprite sheet
             return GetSpriteImage(
                 name,

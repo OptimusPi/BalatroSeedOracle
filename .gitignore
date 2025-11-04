@@ -75,3 +75,4 @@ avalonia.license
 .env.*
 **/appsettings.*.json
 !**/appsettings.json
+/node_modules

@@ -19,7 +19,8 @@
             </Grid.RowDefinitions>
             
             <!-- Main modal container - Balatro style with subtle south edge -->
-            <Grid Grid.Column="1" Grid.Row="1"
+            <Grid x:Name="ModalSizeGrid"
+                  Grid.Column="1" Grid.Row="1"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   Width="1080"

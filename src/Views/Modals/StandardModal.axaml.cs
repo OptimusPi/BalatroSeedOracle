@@ -18,6 +18,18 @@ namespace BalatroSeedOracle.Views.Modals
         public event EventHandler? BackClicked;
         private bool _isBackRequestedHooked = false;
 
+        /// <summary>
+        /// When true, modal uses auto sizing instead of fixed 1080x600
+        /// </summary>
+        public static readonly StyledProperty<bool> SqueezeProperty =
+            AvaloniaProperty.Register<StandardModal, bool>(nameof(Squeeze), defaultValue: false);
+
+        public bool Squeeze
+        {
+            get => GetValue(SqueezeProperty);
+            set => SetValue(SqueezeProperty, value);
+        }
+
         public StandardModal()
         {
             InitializeComponent();
@@ -125,6 +137,9 @@ namespace BalatroSeedOracle.Views.Modals
                 _isBackRequestedHooked = true;
             }
 
+            // Apply sizing based on Squeeze property
+            ApplySqueezeSizing();
+
             // Animate modal appearance for smooth slide-in
             try
             {
@@ -143,6 +158,33 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 topLevel.BackRequested -= OnTopLevelBackRequested;
                 _isBackRequestedHooked = false;
+            }
+        }
+
+        /// <summary>
+        /// Applies sizing to the modal based on the Squeeze property
+        /// </summary>
+        private void ApplySqueezeSizing()
+        {
+            var modalSizeGrid = this.FindControl<Grid>("ModalSizeGrid");
+            if (modalSizeGrid == null)
+                return;
+
+            if (Squeeze)
+            {
+                // Compact mode: auto-size with max constraints
+                modalSizeGrid.Width = double.NaN; // Auto
+                modalSizeGrid.Height = double.NaN; // Auto
+                modalSizeGrid.MaxWidth = 700;
+                modalSizeGrid.MaxHeight = 500;
+            }
+            else
+            {
+                // Standard mode: fixed size
+                modalSizeGrid.Width = 1080;
+                modalSizeGrid.Height = 600;
+                modalSizeGrid.MaxWidth = double.PositiveInfinity;
+                modalSizeGrid.MaxHeight = double.PositiveInfinity;
             }
         }
 

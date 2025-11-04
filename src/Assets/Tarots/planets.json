@@ -8,8 +8,8 @@
   {"name": "uranus", "pos": {"x": 6, "y": 3}},
   {"name": "neptune", "pos": {"x": 7, "y": 3}},
   {"name": "pluto", "pos": {"x": 8, "y": 3}},
-  {"name": "planetx", "pos": {"x": 0, "y": 6}},
-  {"name": "ceres", "pos": {"x": 1, "y": 6}},
-  {"name": "eris", "pos": {"x": 2, "y": 6}},
-  {"name": "anyplanet", "pos": {"x": 3, "y": 2}}
+  {"name": "planetx", "pos": {"x": 9, "y": 2}},
+  {"name": "ceres", "pos": {"x": 8, "y": 2}},
+  {"name": "eris", "pos": {"x": 3, "y": 2}},
+  {"name": "anyplanet", "pos": {"x": 7, "y": 2}}
 ]

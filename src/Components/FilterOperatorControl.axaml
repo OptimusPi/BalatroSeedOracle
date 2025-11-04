@@ -8,8 +8,8 @@
     <UserControl.Styles>
         <!-- Expansion animation on hover -->
         <Style Selector="Border#OperatorContainer:pointerover">
-            <Setter Property="MinWidth" Value="180"/>
-            <Setter Property="MinHeight" Value="120"/>
+            <Setter Property="MinWidth" Value="220"/>
+            <Setter Property="MinHeight" Value="140"/>
             <Setter Property="BorderThickness" Value="3"/>
         </Style>
 
@@ -17,8 +17,8 @@
         <Style Selector="Border#OperatorContainer.drag-over">
             <Setter Property="BorderBrush" Value="#FFFFFF"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="MinWidth" Value="180"/>
-            <Setter Property="MinHeight" Value="120"/>
+            <Setter Property="MinWidth" Value="220"/>
+            <Setter Property="MinHeight" Value="140"/>
         </Style>
 
         <!-- Semi-transparent overlay for drop zone -->
@@ -35,13 +35,12 @@
 
     <Border
         Name="OperatorContainer"
-        Padding="8"
-        Background="{StaticResource DarkBackground}"
+        Padding="0"
+        Background="Transparent"
         BorderThickness="2"
-        BorderBrush="{StaticResource Blue}"
         CornerRadius="8"
-        MinWidth="140"
-        MinHeight="80">
+        MinWidth="160"
+        MinHeight="100">
         <Border.Transitions>
             <Transitions>
                 <DoubleTransition Property="MinWidth" Duration="0:0:0.3" Easing="CubicEaseOut"/>
@@ -51,66 +50,81 @@
         </Border.Transitions>
 
         <Grid RowDefinitions="Auto,*">
-            <!-- Operator Label Header - Flat connected style -->
+            <!-- Operator Label Header - Flat connected style (dynamic color based on operator type) -->
             <Border
                 Name="OperatorHeader"
                 Grid.Row="0"
-                Background="{StaticResource Blue}"
-                Padding="8,4"
-                CornerRadius="8,8,0,0"
+                Padding="12,6"
+                CornerRadius="6,6,0,0"
                 HorizontalAlignment="Stretch"
-                Margin="-8,-8,-8,0">
+                Cursor="Hand">
                 <TextBlock
                     Text="{Binding OperatorType}"
                     FontSize="14"
                     FontFamily="{StaticResource BalatroFont}"
+                    
                     Foreground="{StaticResource White}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center" />
             </Border>
 
-            <!-- Drop Zone for Children -->
+            <!-- Fanned Cards Container -->
             <Border
                 Grid.Row="1"
                 Name="ChildrenDropZone"
-                Padding="6"
-                Background="#1A1A1A"
-                BorderThickness="1"
-                BorderBrush="#2A2A2A"
+                Padding="12"
+                Background="{StaticResource DarkBackground}"
+                BorderThickness="0"
                 CornerRadius="0,0,6,6"
-                MinHeight="60"
-                Margin="2,6,2,2"
+                MinHeight="80"
                 DragDrop.AllowDrop="True">
 
-                <ScrollViewer
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
+                <!-- Canvas for absolute positioning of fanned cards -->
+                <Canvas Name="FannedCardsCanvas"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        MinWidth="160"
+                        MinHeight="80">
                     <ItemsControl
                         Name="ChildrenItemsControl"
                         ItemsSource="{Binding Children}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="0" Margin="4,0" />
+                                <Canvas/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Small fanned thumbnails like the trays -->
-                                <Grid Width="24" Height="32" Margin="-8,0,0,0" ToolTip.Tip="{Binding DisplayName}">
-                                    <Image
-                                        Source="{Binding ItemImage}"
-                                        Stretch="Uniform"/>
-                                    <!-- Soul face overlay for legendary jokers -->
-                                    <Image
-                                        Source="{Binding SoulFaceImage}"
-                                        Stretch="Uniform"
-                                        IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                </Grid>
+                                <!-- Fanned card with rotation and offset -->
+                                <Border Background="Transparent"
+                                        RenderTransformOrigin="0.5,1.0"
+                                        ToolTip.Tip="{Binding DisplayName}"
+                                        Cursor="Hand">
+                                    <Border.RenderTransform>
+                                        <TransformGroup>
+                                            <RotateTransform Angle="0"/>
+                                            <TranslateTransform X="0" Y="0"/>
+                                        </TransformGroup>
+                                    </Border.RenderTransform>
+
+                                    <Grid Width="40" Height="56">
+                                        <Image
+                                            Source="{Binding ItemImage}"
+                                            Stretch="Uniform"
+                                            IsHitTestVisible="False"/>
+                                        <!-- Soul face overlay for legendary jokers -->
+                                        <Image
+                                            Source="{Binding SoulFaceImage}"
+                                            Stretch="Uniform"
+                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            IsHitTestVisible="False"/>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
+                </Canvas>
             </Border>
         </Grid>
     </Border>

@@ -39,7 +39,9 @@ namespace BalatroSeedOracle.Services
                                 .WhenWritingNull,
                         }
                     );
-                    await File.WriteAllTextAsync(filePath, json);
+                    // Format with compact arrays for better editability
+                    var formattedJson = Helpers.CompactJsonFormatter.Format(json);
+                    await File.WriteAllTextAsync(filePath, formattedJson);
 
                     // Invalidate cache for this filter (use ServiceHelper to avoid circular dependency)
                     var filterId = Path.GetFileNameWithoutExtension(filePath);

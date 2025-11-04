@@ -64,7 +64,7 @@
                                     <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
                                     <Setter Property="FontWeight" Value="{Binding $parent[Button].FontWeight}"/>
                                     <Setter Property="FontFamily" Value="{Binding $parent[Button].FontFamily}"/>
-                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                    <!-- REMOVED IsHitTestVisible to prevent text selection bug -->
                                     <Setter Property="Background" Value="Transparent"/>
                                 </Style>
                             </ContentPresenter.Styles>
@@ -84,10 +84,16 @@
     </Style>
     
     <!-- Prevent text selection/highlighting in all buttons -->
+    <!-- TEMPORARILY DISABLED TO TEST
     <Style Selector="Button TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="SelectionBrush" Value="Transparent" />
     </Style>
+    -->
+    <!-- REMOVED - These were causing text selection issues
     <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
@@ -99,6 +105,7 @@
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="Background" Value="Transparent" />
     </Style>
+    -->
     
     <!-- Button disabled state -->
     <Style Selector="Button:not(.SystemCaptionButton):disabled">
@@ -331,6 +338,9 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-back:pointerover">
         <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
+    <Style Selector="Button.btn-back:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
 
     <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
     <Style Selector="Button.nav-button">
@@ -537,12 +547,19 @@
         <Setter Property="IsVisible" Value="False"/>
     </Style>
 
-    <!-- Keep text white when button is pressed -->
+    <!-- Keep text white when button is pressed - MORE SPECIFIC SELECTORS TO PREVENT BLACK TEXT -->
     <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ ContentPresenter">
-        <Setter Property="TextBlock.Foreground" Value="{StaticResource White}"/>
+        <Setter Property="TextBlock.Foreground" Value="{StaticResource White}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton):pressed TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource White}"/>
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+    </Style>
+    <!-- FORCE white text for orange buttons specifically when pressed -->
+    <Style Selector="Button.btn-orange:pressed TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+    </Style>
+    <Style Selector="Button.btn-back:pressed TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource White}" />
     </Style>
 
     <!-- Disable keyboard navigation for main menu colored buttons -->

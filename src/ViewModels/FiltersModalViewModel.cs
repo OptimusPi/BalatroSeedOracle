@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
@@ -47,6 +49,9 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private MotelyJsonConfig? _loadedConfig;
+
+        // Track original filter criteria hash to detect MUST/SHOULD/MUSTNOT changes
+        private string? _originalCriteriaHash;
 
         [ObservableProperty]
         private string _filterName = "";
@@ -230,8 +235,26 @@ namespace BalatroSeedOracle.ViewModels
                     CurrentFilterPath = _configurationService.GetTempFilterPath();
                 }
 
-                // CRITICAL: Clean up databases BEFORE saving new filter
-                await CleanupFilterDatabases();
+                // Check if MUST/SHOULD/MUSTNOT criteria changed (not just metadata like name/description)
+                var currentHash = ComputeCriteriaHash();
+                var criteriaChanged = _originalCriteriaHash == null || currentHash != _originalCriteriaHash;
+
+                if (criteriaChanged)
+                {
+                    DebugLogger.LogImportant(
+                        "FiltersModalViewModel",
+                        $"🔄 Filter criteria changed - invalidating databases and dumping to fertilizer.txt"
+                    );
+                    // CRITICAL: Clean up databases BEFORE saving filter with changed criteria
+                    await CleanupFilterDatabases();
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        "📝 Only metadata changed (name/description/notes) - keeping databases intact"
+                    );
+                }
 
                 var config = BuildConfigFromCurrentState();
                 var success = await _configurationService.SaveFilterAsync(
@@ -242,9 +265,10 @@ namespace BalatroSeedOracle.ViewModels
                 if (success)
                 {
                     LoadedConfig = config;
+                    _originalCriteriaHash = currentHash; // Update hash for next save
                     DebugLogger.Log(
                         "FiltersModalViewModel",
-                        $"✅ Filter saved with database cleanup: {CurrentFilterPath}"
+                        $"✅ Filter saved: {CurrentFilterPath}"
                     );
                 }
                 else
@@ -292,10 +316,14 @@ namespace BalatroSeedOracle.ViewModels
                     );
                 }
 
-                // STEP 2: Find and delete ALL DuckDB files for this filter
+                // STEP 2: Dump seeds to fertilizer.txt BEFORE deleting databases
                 if (Directory.Exists(searchResultsDir))
                 {
                     var dbFiles = Directory.GetFiles(searchResultsDir, $"{filterName}_*.duckdb");
+
+                    // Dump all seeds from all database files to fertilizer.txt
+                    await DumpDatabasesToFertilizerAsync(dbFiles);
+
                     var walFiles = Directory.GetFiles(
                         searchResultsDir,
                         $"{filterName}_*.duckdb.wal"
@@ -362,6 +390,92 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        /// <summary>
+        /// Dumps all seeds from multiple database files to WordLists/fertilizer.txt.
+        /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
+        /// </summary>
+        private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
+        {
+            if (dbFiles == null || dbFiles.Length == 0)
+            {
+                DebugLogger.Log("FiltersModalViewModel", "No database files to dump");
+                return;
+            }
+
+            try
+            {
+                // Ensure WordLists directory exists
+                var wordListsDir = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "WordLists"
+                );
+                Directory.CreateDirectory(wordListsDir);
+
+                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
+                var allSeeds = new List<string>();
+
+                // Collect seeds from all database files
+                foreach (var dbFile in dbFiles)
+                {
+                    if (!File.Exists(dbFile))
+                        continue;
+
+                    try
+                    {
+                        using var connection = new DuckDB.NET.Data.DuckDBConnection($"Data Source={dbFile}");
+                        connection.Open();
+
+                        using var cmd = connection.CreateCommand();
+                        cmd.CommandText = "SELECT seed FROM results ORDER BY seed";
+
+                        using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
+                        while (await reader.ReadAsync().ConfigureAwait(false))
+                        {
+                            var seed = reader.GetString(0);
+                            if (!string.IsNullOrWhiteSpace(seed))
+                            {
+                                allSeeds.Add(seed);
+                            }
+                        }
+
+                        DebugLogger.Log(
+                            "FiltersModalViewModel",
+                            $"🌱 Collected seeds from: {Path.GetFileName(dbFile)}"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "FiltersModalViewModel",
+                            $"Failed to dump seeds from {Path.GetFileName(dbFile)}: {ex.Message}"
+                        );
+                    }
+                }
+
+                if (allSeeds.Count == 0)
+                {
+                    DebugLogger.Log("FiltersModalViewModel", "No seeds found in databases");
+                    return;
+                }
+
+                // Append all seeds to fertilizer.txt
+                await File.AppendAllLinesAsync(fertilizerPath, allSeeds).ConfigureAwait(false);
+
+                DebugLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"🌱 Dumped {allSeeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Failed to dump databases to fertilizer.txt: {ex.Message}"
+                );
+                // Don't throw - fertilizer dump is a nice-to-have, not critical
+            }
+        }
+
         [RelayCommand]
         public async Task LoadFilter()
         {
@@ -394,6 +508,7 @@ namespace BalatroSeedOracle.ViewModels
                 LoadedConfig = null;
                 FilterName = "";
                 FilterDescription = "";
+                _originalCriteriaHash = null; // New filter has no original criteria
                 DebugLogger.Log("FiltersModalViewModel", "Created new filter");
             }
             catch (Exception ex)
@@ -903,6 +1018,66 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             LoadedConfig = config;
+
+            // Capture criteria hash after loading
+            _originalCriteriaHash = ComputeCriteriaHash();
+        }
+
+        /// <summary>
+        /// Computes SHA256 hash of current MUST/SHOULD/MUSTNOT criteria.
+        /// Only considers filter logic, NOT metadata like name/description/notes.
+        /// Used to detect when filter criteria actually changed vs metadata-only edits.
+        /// </summary>
+        private string ComputeCriteriaHash()
+        {
+            var sb = new StringBuilder();
+
+            // MUST clauses
+            sb.Append("MUST:");
+            foreach (var itemKey in SelectedMust.OrderBy(k => k))
+            {
+                if (ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
+                    sb.Append($"{config.Edition}|{config.Label}|");
+                    if (config.Antes != null)
+                        sb.Append(string.Join(",", config.Antes));
+                    sb.Append("|");
+                }
+            }
+
+            // SHOULD clauses
+            sb.Append("SHOULD:");
+            foreach (var itemKey in SelectedShould.OrderBy(k => k))
+            {
+                if (ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
+                    sb.Append($"{config.Edition}|{config.Label}|");
+                    if (config.Antes != null)
+                        sb.Append(string.Join(",", config.Antes));
+                    sb.Append("|");
+                }
+            }
+
+            // MUSTNOT clauses
+            sb.Append("MUSTNOT:");
+            foreach (var itemKey in SelectedMustNot.OrderBy(k => k))
+            {
+                if (ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
+                    sb.Append($"{config.Edition}|{config.Label}|");
+                    if (config.Antes != null)
+                        sb.Append(string.Join(",", config.Antes));
+                    sb.Append("|");
+                }
+            }
+
+            // Compute SHA256 hash
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            var hash = SHA256.HashData(bytes);
+            return Convert.ToHexString(hash);
         }
 
         private ItemConfig ConvertClauseToItemConfig(

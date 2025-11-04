@@ -222,7 +222,7 @@ namespace BalatroSeedOracle.ViewModels
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
-            ConsoleOutput = new ObservableCollection<string>();
+            ConsoleOutput = new ObservableCollection<Models.ConsoleMessage>();
 
             // Set default values
             ThreadCount = Environment.ProcessorCount / 2;
@@ -290,7 +290,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public ObservableCollection<TabItemViewModel> TabItems { get; } = new();
         public ObservableCollection<Models.SearchResult> SearchResults { get; }
-        public ObservableCollection<string> ConsoleOutput { get; }
+        public ObservableCollection<Models.ConsoleMessage> ConsoleOutput { get; }
 
         #endregion
 
@@ -963,7 +963,46 @@ namespace BalatroSeedOracle.ViewModels
             var formattedMessage = $"[{timestamp}] {message}";
 
             _consoleBuffer.AddLine(formattedMessage);
-            ConsoleOutput.Add(formattedMessage);
+
+            var consoleMessage = new Models.ConsoleMessage
+            {
+                Text = formattedMessage,
+                CopyableText = null // No copy button for regular messages
+            };
+            ConsoleOutput.Add(consoleMessage);
+
+            // Update the ConsoleText binding
+            ConsoleText += formattedMessage + "\n";
+
+            // Keep console output manageable
+            while (ConsoleOutput.Count > 1000)
+            {
+                ConsoleOutput.RemoveAt(0);
+            }
+        }
+
+        /// <summary>
+        /// Adds a seed found message to the console with a copy button
+        /// </summary>
+        private void AddSeedFoundMessage(string seed, int score)
+        {
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            var formattedMessage = $"[{timestamp}] Found seed: {seed} (Score: {score})";
+
+            _consoleBuffer.AddLine(formattedMessage);
+
+            var consoleMessage = new Models.ConsoleMessage
+            {
+                Text = formattedMessage,
+                CopyableText = seed, // Copy button will copy just the seed name
+                CopyCommand = new RelayCommand(async () =>
+                {
+                    // Copy seed to clipboard using ClipboardService
+                    await Services.ClipboardService.CopyToClipboardAsync(seed);
+                    AddConsoleMessage($"Copied '{seed}' to clipboard");
+                })
+            };
+            ConsoleOutput.Add(consoleMessage);
 
             // Update the ConsoleText binding
             ConsoleText += formattedMessage + "\n";
@@ -1367,9 +1406,9 @@ namespace BalatroSeedOracle.ViewModels
             LastKnownResultCount = e.ResultsFound;
 
             // CRITICAL FIX: Load results periodically during search for real-time display
-            // Load every 2 seconds to avoid overwhelming the UI
+            // Only query when new results are available (invalidation flag pattern)
             var now = DateTime.Now;
-            if ((now - _lastResultsLoad).TotalSeconds >= 2 && e.ResultsFound > SearchResults.Count)
+            if ((now - _lastResultsLoad).TotalSeconds >= 1.0 && _searchInstance != null && _searchInstance.HasNewResultsSinceLastQuery)
             {
                 _lastResultsLoad = now;
 
@@ -1382,6 +1421,9 @@ namespace BalatroSeedOracle.ViewModels
 
                         var existingCount = SearchResults.Count;
                         var newResults = await _searchInstance.GetResultsPageAsync(existingCount, 100);
+
+                        // Acknowledge that we've queried and displayed the new results
+                        _searchInstance.AcknowledgeResultsQueried();
 
                         if (newResults != null && newResults.Count > 0)
                         {
@@ -1401,6 +1443,9 @@ namespace BalatroSeedOracle.ViewModels
                                         result.Labels = labels;
                                     }
                                     SearchResults.Add(result);
+
+                                    // Add seed found message to console with copy button
+                                    AddSeedFoundMessage(result.Seed, result.TotalScore);
                                 }
                             });
                         }

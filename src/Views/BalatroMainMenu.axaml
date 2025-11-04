@@ -198,8 +198,7 @@
                                        FontSize="14"
                                        
                                        HorizontalAlignment="Center"
-                                       Foreground="{StaticResource White}"
-                                       IsHitTestVisible="False"/>
+                                       Foreground="{StaticResource White}"/>
                             
                             <!-- Author Button (Balatro style like language buttons) -->
                             <Button x:Name="AuthorButton"
@@ -211,8 +210,7 @@
                                     <!-- Display mode -->
                                     <TextBlock x:Name="AuthorDisplay"
                                                Text="{Binding AuthorName}"
-                                               IsVisible="{Binding AuthorDisplayMode}"
-                                               IsHitTestVisible="False"/>
+                                               IsVisible="{Binding AuthorDisplayMode}"/>
 
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
@@ -253,8 +251,7 @@
                             MinWidth="158">
                         <TextBlock Text="SEARCH"
                                    FontSize="36"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
+                                   FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
 
                     <Button Classes="btn-blue"
@@ -263,8 +260,7 @@
                             MinWidth="100">
                         <TextBlock Text="DESIGNER"
                                    FontSize="28"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
+                                   FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
 
                     <Button Classes="btn-purple"
@@ -273,8 +269,7 @@
                             MinWidth="100">
                         <TextBlock Text="ANALYZER"
                                    FontSize="28"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
+                                   FontFamily="{StaticResource BalatroFont}"/>
                     </Button>
 
                     <!-- MODS button equivalent - MORE (orange) -->
@@ -317,8 +312,7 @@
                                 <TextBlock Text="🎨"
                                            FontFamily="Segoe UI Symbol"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"/>
+                                           VerticalAlignment="Center"/>
                             </Button>
 
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
@@ -336,8 +330,7 @@
                                 <TextBlock Text="{Binding AnimationIconText}"
                                            FontFamily="Segoe UI Symbol, Segoe UI Emoji"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"/>
+                                           VerticalAlignment="Center"/>
                             </Button>
 
                             <!-- Music Toggle Button -->
@@ -356,8 +349,7 @@
                                            Text="{Binding MusicIconText}"
                                            FontFamily="Segoe UI Emoji, Noto Color Emoji"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"/>
+                                           VerticalAlignment="Center"/>
                             </Button>
                         </StackPanel>
                     </Border>

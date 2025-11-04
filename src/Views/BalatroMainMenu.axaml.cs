@@ -547,7 +547,8 @@ namespace BalatroSeedOracle.Views
                     should = new object[] { },
                     mustNot = new object[] { }
                 };
-                System.IO.File.WriteAllText(filterPath, System.Text.Json.JsonSerializer.Serialize(defaultFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                var jsonContent = System.Text.Json.JsonSerializer.Serialize(defaultFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                System.IO.File.WriteAllText(filterPath, Helpers.CompactJsonFormatter.Format(jsonContent));
 
                 Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterName} ({filterId}.json)");
             }
@@ -744,6 +745,7 @@ namespace BalatroSeedOracle.Views
             var settingsModal = new Modals.SettingsModal();
 
             var modal = new StandardModal("SETTINGS");
+            modal.Squeeze = true; // Use compact sizing for settings
             modal.SetContent(settingsModal);
             modal.BackClicked += (s, e) => HideModalContent();
 

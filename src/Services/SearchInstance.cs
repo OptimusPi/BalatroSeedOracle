@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -39,27 +38,16 @@ namespace BalatroSeedOracle.Services
         private Motely.Filters.MotelyJsonConfig? _currentConfig;
         private IMotelySearch? _currentSearch;
         private DateTime _searchStartTime;
-        private readonly ObservableCollection<BalatroSeedOracle.Models.SearchResult> _results;
-        private readonly ConcurrentQueue<BalatroSeedOracle.Models.SearchResult> _pendingResults =
-            new();
-        private readonly List<string> _consoleHistory = new();
-        private readonly object _consoleHistoryLock = new();
+        private readonly ConcurrentQueue<string> _consoleHistory = new();
         private volatile int _resultCount = 0;
-        private readonly List<string> _recentSeeds = new();
-        private readonly object _recentSeedsLock = new();
         private Task? _searchTask;
         private bool _preventStateSave = false; // Flag to prevent saving state when icon is removed
+        private volatile bool _hasNewResultsSinceLastQuery = false;
 
         // Persistent DuckDB connection for database operations
         private readonly DuckDBConnection _connection;
-        private readonly ThreadLocal<DuckDB.NET.Data.DuckDBAppender?> _threadAppender = new();
-
-        // Track last successful manual flush (for diagnostics only)
-        private DateTime _lastAppenderFlush = DateTime.UtcNow;
-
-        // COUNT(*) caching for performance
-        private volatile int _cachedResultCount = -1; // -1 means not cached
-        private readonly object _countCacheLock = new();
+        private DuckDB.NET.Data.DuckDBAppender? _appender;
+        private readonly object _appenderLock = new();
 
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -72,7 +60,6 @@ namespace BalatroSeedOracle.Services
         }
         public bool IsRunning => _isRunning;
         public bool IsPaused => _isPaused;
-        public ObservableCollection<BalatroSeedOracle.Models.SearchResult> Results => _results;
         public TimeSpan SearchDuration => DateTime.UtcNow - _searchStartTime;
         public DateTime SearchStartTime => _searchStartTime;
         public string ConfigPath { get; private set; } = string.Empty;
@@ -92,10 +79,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public List<string> GetConsoleHistory()
         {
-            lock (_consoleHistoryLock)
-            {
-                return new List<string>(_consoleHistory);
-            }
+            return _consoleHistory.ToList();
         }
 
         /// <summary>
@@ -103,11 +87,22 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void AddToConsole(string message)
         {
-            lock (_consoleHistoryLock)
-            {
-                var timestamp = DateTime.UtcNow.ToString("HH:mm:ss");
-                _consoleHistory.Add($"[{timestamp}] {message}");
-            }
+            var timestamp = DateTime.UtcNow.ToString("HH:mm:ss");
+            _consoleHistory.Enqueue($"[{timestamp}] {message}");
+        }
+
+        /// <summary>
+        /// Indicates whether new results have been added since the last UI query.
+        /// Used to avoid wasteful DuckDB queries when no new results exist.
+        /// </summary>
+        public bool HasNewResultsSinceLastQuery => _hasNewResultsSinceLastQuery;
+
+        /// <summary>
+        /// Resets the new results flag after UI has queried and displayed them.
+        /// </summary>
+        public void AcknowledgeResultsQueried()
+        {
+            _hasNewResultsSinceLastQuery = false;
         }
 
         // Events for UI integration
@@ -119,7 +114,6 @@ namespace BalatroSeedOracle.Services
         {
             _searchId = searchId;
             _userProfileService = ServiceHelper.GetService<UserProfileService>();
-            _results = new ObservableCollection<BalatroSeedOracle.Models.SearchResult>();
 
             // Require a non-empty path immediately so query helpers are safe to call early
             if (string.IsNullOrWhiteSpace(dbPath))
@@ -277,7 +271,6 @@ namespace BalatroSeedOracle.Services
                         "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )";
                     createMeta.ExecuteNonQuery();
                 }
-                // Appenders created per-thread as needed - no global appender!
                 // DuckDB PRIMARY KEY handles duplicates automatically
                 _dbInitialized = true;
                 DebugLogger.Log(
@@ -295,26 +288,18 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        // Force flush all thread-local appenders to make data visible for queries
+        // Force flush appender to make data visible for queries
         public void ForceFlush()
         {
             try
             {
-                // Flush this thread's appender if it exists
-                var appender = _threadAppender.Value;
-                if (appender != null)
+                lock (_appenderLock)
                 {
-                    var closeMethod = appender
-                        .GetType()
-                        .GetMethod(
-                            "Close",
-                            System.Reflection.BindingFlags.Public
-                                | System.Reflection.BindingFlags.Instance
-                        );
-                    closeMethod?.Invoke(appender, null);
-                    // Recreate appender for continued use
-                    _threadAppender.Value = _connection.CreateAppender("results");
-                    _lastAppenderFlush = DateTime.UtcNow;
+                    if (_appender != null)
+                    {
+                        _appender.Dispose();
+                        _appender = null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -326,13 +311,6 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private void InvalidateCountCache()
-        {
-            lock (_countCacheLock)
-            {
-                _cachedResultCount = -1;
-            }
-        }
 
         private void AddSearchResult(SearchResult result)
         {
@@ -341,29 +319,25 @@ namespace BalatroSeedOracle.Services
 
             try
             {
-                // Get or create thread-local appender - NO LOCKS!
-                var appender = _threadAppender.Value;
-                if (appender == null)
+                lock (_appenderLock)
                 {
-                    appender = _connection.CreateAppender("results");
-                    _threadAppender.Value = appender;
+                    _appender ??= _connection.CreateAppender("results");
+
+                    var row = _appender.CreateRow();
+                    row.AppendValue(result.Seed).AppendValue(result.TotalScore);
+
+                    int tallyCount = _columnNames.Count - 2;
+                    for (int i = 0; i < tallyCount; i++)
+                    {
+                        int val =
+                            (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
+                        row.AppendValue(val);
+                    }
+                    row.EndRow();
                 }
 
-                // Simple appender usage - NO LOCKS!
-                var row = appender.CreateRow();
-                row.AppendValue(result.Seed).AppendValue(result.TotalScore);
-
-                int tallyCount = _columnNames.Count - 2;
-                for (int i = 0; i < tallyCount; i++)
-                {
-                    int val =
-                        (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
-                    row.AppendValue(val);
-                }
-                row.EndRow();
-
-                // Invalidate count cache after successful insert
-                InvalidateCountCache();
+                // Invalidate query cache - new results are available
+                _hasNewResultsSinceLastQuery = true;
             }
             catch (Exception ex)
             {
@@ -536,9 +510,11 @@ namespace BalatroSeedOracle.Services
             return results;
         }
 
+        private const int MaxResultsForGetAll = 1_000_000;
+
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetAllResultsAsync()
         {
-            return await GetResultsPageAsync(0, 420_069).ConfigureAwait(false);
+            return await GetResultsPageAsync(0, MaxResultsForGetAll).ConfigureAwait(false);
         }
 
         public async Task<int> GetResultCountAsync()
@@ -546,25 +522,13 @@ namespace BalatroSeedOracle.Services
             if (!_dbInitialized)
                 throw new InvalidOperationException("Database not initialized");
 
-            // Check cache first
-            if (_cachedResultCount >= 0)
-                return _cachedResultCount;
-
             // Force flush to ensure all buffered results are counted
             ForceFlush();
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM results";
             var v = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
-            var count = v == null ? 0 : Convert.ToInt32(v);
-
-            // Cache the result
-            lock (_countCacheLock)
-            {
-                _cachedResultCount = count;
-            }
-
-            return count;
+            return v == null ? 0 : Convert.ToInt32(v);
         }
 
         public async Task<int> ExportResultsAsync(string filePath)
@@ -641,6 +605,76 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
+        /// Dumps all seeds from current database to WordLists/fertilizer.txt before database invalidation.
+        /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
+        /// </summary>
+        private async Task DumpSeedsToFertilizerAsync()
+        {
+            try
+            {
+                if (!_dbInitialized || !File.Exists(_dbPath))
+                {
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        "No database to dump - skipping fertilizer.txt"
+                    );
+                    return;
+                }
+
+                // Ensure WordLists directory exists
+                var wordListsDir = Path.Combine(
+                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? ".",
+                    "WordLists"
+                );
+                Directory.CreateDirectory(wordListsDir);
+
+                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
+
+                // Get all seeds from database
+                using var cmd = _connection.CreateCommand();
+                cmd.CommandText = "SELECT seed FROM results ORDER BY seed";
+
+                var seeds = new List<string>();
+                using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+                {
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var seed = reader.GetString(0);
+                        if (!string.IsNullOrWhiteSpace(seed))
+                        {
+                            seeds.Add(seed);
+                        }
+                    }
+                }
+
+                if (seeds.Count == 0)
+                {
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        "No seeds to dump - database is empty"
+                    );
+                    return;
+                }
+
+                // Append seeds to fertilizer.txt
+                await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
+
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to dump seeds to fertilizer.txt: {ex.Message}"
+                );
+                // Don't throw - fertilizer dump is a nice-to-have, not critical
+            }
+        }
+
+        /// <summary>
         /// Start searching with a file path
         /// </summary>
         private void StartSearchFromFile(
@@ -668,6 +702,7 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
+                // TODO: Move to FiltersModalViewModel.SaveFilter - only invalidate when MUST/SHOULD/MUSTNOT changes during SAVE
                 // Check if filter file was modified since last search
                 if (File.Exists(_dbPath) && File.Exists(configPath))
                 {
@@ -680,6 +715,10 @@ namespace BalatroSeedOracle.Services
                             $"SearchInstance[{_searchId}]",
                             $"Filter modified since last search - invalidating database"
                         );
+
+                        // Dump seeds to fertilizer.txt before clearing database
+                        DumpSeedsToFertilizerAsync().GetAwaiter().GetResult();
+
                         try
                         {
                             File.Delete(_dbPath);
@@ -712,25 +751,16 @@ namespace BalatroSeedOracle.Services
                 _currentConfig = filterConfig;
                 _currentSearchConfig = config;
                 ConfigPath = configPath;
-                // Use filter's name, or "Unnamed Filter" as fallback (NOT the ugly GUID filename)
-                FilterName = !string.IsNullOrWhiteSpace(filterConfig.Name)
-                    ? filterConfig.Name
-                    : "Unnamed Filter";
+                // Filter must have a name - throw exception if missing
+                if (string.IsNullOrWhiteSpace(filterConfig.Name))
+                    throw new InvalidOperationException("Filter config must have a valid Name property");
+                FilterName = filterConfig.Name;
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
 
                 _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationToken
                 );
-
-                // Clear previous results and pending queue
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    _results.Clear();
-                });
-
-                // Clear pending queue
-                while (_pendingResults.TryDequeue(out _)) { }
 
                 // Notify UI that search started
                 SearchStarted?.Invoke(this, EventArgs.Empty);
@@ -1160,15 +1190,6 @@ namespace BalatroSeedOracle.Services
                     cancellationToken
                 );
 
-                // Clear previous results and pending queue
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    _results.Clear();
-                });
-
-                // Clear pending queue
-                while (_pendingResults.TryDequeue(out _)) { }
-
                 // Notify UI that search started
                 SearchStarted?.Invoke(this, EventArgs.Empty);
 
@@ -1372,35 +1393,8 @@ namespace BalatroSeedOracle.Services
 
                 _preventStateSave = preventStateSave;
 
-                // Flush and close thread-local appenders
-                try
-                {
-                    var appender = _threadAppender.Value;
-                    if (appender != null)
-                    {
-                        DebugLogger.Log(
-                            $"SearchInstance[{_searchId}]",
-                            "Closing thread-local DuckDB appender..."
-                        );
-                        var closeMethod = appender
-                            .GetType()
-                            .GetMethod(
-                                "Close",
-                                System.Reflection.BindingFlags.Public
-                                    | System.Reflection.BindingFlags.Instance
-                            );
-                        closeMethod?.Invoke(appender, null);
-                        appender.Dispose();
-                        _threadAppender.Value = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError(
-                        $"SearchInstance[{_searchId}]",
-                        $"Error closing appenders: {ex.Message}"
-                    );
-                }
+                // Flush and close appender
+                ForceFlush();
 
                 // Flush any pending search state to disk before stopping (unless prevented)
                 if (!preventStateSave)
@@ -2068,70 +2062,23 @@ namespace BalatroSeedOracle.Services
 
         public void Dispose()
         {
-            // First stop the search if it's running
+            // Stop search cleanly
             if (_isRunning)
-            {
-                DebugLogger.Log(
-                    $"SearchInstance[{_searchId}]",
-                    "Dispose called while running - forcing stop"
-                );
                 StopSearch();
 
-                // Wait a bit for graceful shutdown
-                System.Threading.Thread.Sleep(1000);
-            }
-
-            // Ensure the search task is completed or abandoned
-            if (_searchTask != null && !_searchTask.IsCompleted)
-            {
-                try
-                {
-                    // Give it one more chance to complete
-                    _searchTask.Wait(100);
-                }
-                catch
-                { /* ignore */
-                }
-                _searchTask = null;
-            }
-
+            // Cancel token
             _cancellationTokenSource?.Dispose();
 
-            // Dispose thread-local appenders and connection
-            try
+            // Close appender and connection
+            lock (_appenderLock)
             {
-                var appender = _threadAppender.Value;
-                if (appender != null)
-                {
-                    appender.Dispose();
-                    _threadAppender.Value = null;
-                }
-                _threadAppender.Dispose(); // Dispose the ThreadLocal itself
-                _connection.Dispose();
+                _appender?.Dispose();
+                _appender = null;
             }
-            catch
-            {
-                // Ignore disposal errors - best effort cleanup
-            }
+            _connection?.Dispose();
 
-            // Force dispose of the search if it still exists and not already disposed
-            if (_currentSearch != null)
-            {
-                try
-                {
-                    // Check if not already disposed
-                    if (_currentSearch.Status != MotelySearchStatus.Disposed)
-                    {
-                        _currentSearch.Dispose();
-                    }
-                }
-                catch
-                { /* ignore disposal errors */
-                }
-                _currentSearch = null;
-            }
-
-            DebugLogger.Log($"SearchInstance[{_searchId}]", "Dispose completed");
+            // Dispose search
+            _currentSearch?.Dispose();
 
             GC.SuppressFinalize(this);
         }

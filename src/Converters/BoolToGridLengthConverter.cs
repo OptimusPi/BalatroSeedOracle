@@ -24,10 +24,10 @@ namespace BalatroSeedOracle.Converters
             if (value is bool isExpanded)
             {
                 // When expanded: take all available space (*)
-                // When collapsed: fixed 40px height (just enough for label + badge)
-                return isExpanded ? new GridLength(1, GridUnitType.Star) : new GridLength(40);
+                // When collapsed: fixed 30px height (compact size for label + badge)
+                return isExpanded ? new GridLength(1, GridUnitType.Star) : new GridLength(30);
             }
-            return new GridLength(40); // Default to collapsed
+            return new GridLength(30); // Default to collapsed
         }
 
         public object? ConvertBack(

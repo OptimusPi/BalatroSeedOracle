@@ -389,11 +389,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (ValidateJsonSyntax())
                 {
-                    var parsed = JsonSerializer.Deserialize<object>(JsonContent);
-                    JsonContent = JsonSerializer.Serialize(
-                        parsed,
-                        new JsonSerializerOptions { WriteIndented = true }
-                    );
+                    // Use custom compact formatter that keeps arrays horizontal
+                    JsonContent = CompactJsonFormatter.Format(JsonContent, maxArrayWidth: 120);
 
                     ValidationStatus = "✓ JSON formatted";
                     ValidationStatusColor = Brushes.Green;

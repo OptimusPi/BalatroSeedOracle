@@ -273,15 +273,49 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBox Grid.Row="0"
-                             Name="ConsoleOutput"
-                             Classes="terminal"
-                             IsReadOnly="True"
-                             AcceptsReturn="True"
-                             TextWrapping="NoWrap"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             Text="{Binding ConsoleText}"/>
+                    <!-- Console with scrollable messages and copy buttons -->
+                    <ScrollViewer Grid.Row="0"
+                                  Name="ConsoleScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  Background="{StaticResource DarkBackground}">
+                        <ItemsControl ItemsSource="{Binding ConsoleOutput}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="4,2" BorderThickness="0,0,0,1" BorderBrush="#202020">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <!-- Message text -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Text}"
+                                                       FontFamily="Consolas, Courier New, monospace"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource LightGrey}"
+                                                       TextWrapping="NoWrap"/>
+
+                                            <!-- Copy button (only visible if HasCopyButton is true) -->
+                                            <Button Grid.Column="1"
+                                                    Content="📋 Copy"
+                                                    Command="{Binding CopyCommand}"
+                                                    IsVisible="{Binding HasCopyButton}"
+                                                    Padding="6,2"
+                                                    Margin="8,0,0,0"
+                                                    FontSize="10"
+                                                    Background="{StaticResource Blue}"
+                                                    Foreground="White"
+                                                    CornerRadius="4"
+                                                    Cursor="Hand">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover">
+                                                        <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                                    </Style>
+                                                </Button.Styles>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
 
                     <!-- Bottom controls area -->
                     <!-- Single row: Min Score on left, Continue checkbox center, COOK button on right -->
