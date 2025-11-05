@@ -24,11 +24,15 @@ namespace BalatroSeedOracle.Services
     {
         private const int UPDATE_RATE_MS = 16; // ~60 FPS
 
+        // Singleton instance
+        public static SoundFlowAudioManager Instance { get; } = new();
+
         // SoundFlow components
         private AudioEngine? _engine;
         private AudioPlaybackDevice? _device;
         private readonly Dictionary<string, SoundPlayer> _players = new();
         private readonly Dictionary<string, SpectrumAnalyzer> _analyzers = new();
+        private readonly Dictionary<string, SoundPlayer> _sfxPlayers = new();
 
         // Track names
         private readonly string[] _trackNames =
@@ -41,6 +45,14 @@ namespace BalatroSeedOracle.Services
             "Chords2",
             "Melody1",
             "Melody2",
+        };
+
+        // Sound effect names
+        private readonly string[] _sfxNames =
+        {
+            "highlight1",
+            "paper1",
+            "button",
         };
 
         // Update loop
@@ -119,6 +131,9 @@ namespace BalatroSeedOracle.Services
                 // 4. Load all 8 tracks as SoundPlayers
                 LoadTracks(format);
 
+                // 4b. Load sound effects (highlight1.ogg, paper1.ogg, button.ogg)
+                LoadSoundEffects(format);
+
                 // 5. Start the device MUTED (settings will restore user's volume preference)
                 _device.MasterMixer.Volume = 0f; // CRITICAL: Start muted to prevent audio blast on startup
                 _masterVolume = 0f; // Sync internal state
@@ -133,7 +148,7 @@ namespace BalatroSeedOracle.Services
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
 
                 Console.WriteLine(
-                    $"[SoundFlowAudioManager] ✓ Initialized with {_players.Count} tracks and REAL FFT analysis"
+                    $"[SoundFlowAudioManager] ✓ Initialized with {_players.Count} tracks, {_sfxPlayers.Count} SFX, and REAL FFT analysis"
                 );
             }
             catch (Exception ex)
@@ -219,6 +234,71 @@ namespace BalatroSeedOracle.Services
                 {
                     Console.WriteLine(
                         $"[SoundFlowAudioManager] ERROR loading {trackName}: {ex.Message}"
+                    );
+                    Console.WriteLine($"[SoundFlowAudioManager]   Stack: {ex.StackTrace}");
+                }
+            }
+        }
+
+        private void LoadSoundEffects(AudioFormat format)
+        {
+            // Find audio directory
+            var possiblePaths = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio", "SFX"),
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio", "SFX"),
+            };
+
+            string? sfxDir = possiblePaths.FirstOrDefault(Directory.Exists);
+            if (sfxDir == null)
+            {
+                Console.WriteLine(
+                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio/SFX directory"
+                );
+                return;
+            }
+
+            // Load each sound effect
+            foreach (var sfxName in _sfxNames)
+            {
+                var filePath = Path.Combine(sfxDir, $"{sfxName}.flac");
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.flac at {filePath}"
+                    );
+                    continue;
+                }
+
+                try
+                {
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] Loading SFX {sfxName} from {filePath}"
+                    );
+
+                    // Create StreamDataProvider for the SFX file
+                    var fileStream = File.OpenRead(filePath);
+                    var dataProvider = new StreamDataProvider(_engine!, format, fileStream);
+
+                    // Create SoundPlayer for SFX
+                    var player = new SoundPlayer(_engine!, format, dataProvider);
+                    player.Name = sfxName;
+                    player.Volume = 1.0f; // 100% by default
+                    player.IsLooping = false; // Don't loop SFX
+
+                    // Add player to MasterMixer (but don't start playing yet)
+                    _device!.MasterMixer.AddComponent(player);
+
+                    _sfxPlayers[sfxName] = player;
+
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.flac"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"[SoundFlowAudioManager] ERROR loading SFX {sfxName}: {ex.Message}"
                     );
                     Console.WriteLine($"[SoundFlowAudioManager]   Stack: {ex.StackTrace}");
                 }
@@ -406,6 +486,34 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        /// <summary>
+        /// Play a pre-loaded sound effect by name
+        /// Available effects: highlight1, paper1, button
+        /// </summary>
+        public void PlaySfx(string name, float volume = 1.0f)
+        {
+            if (!_sfxPlayers.TryGetValue(name, out var player))
+            {
+                Console.WriteLine($"[SoundFlowAudioManager] ERROR: SFX '{name}' not found or not loaded");
+                return;
+            }
+
+            try
+            {
+                // Set volume
+                player.Volume = Math.Clamp(volume, 0f, 1f);
+
+                // Stop any existing playback and restart from beginning
+                player.Stop();
+                player.Play();
+                Console.WriteLine($"[SoundFlowAudioManager] Playing SFX: {name} at volume {volume:F2}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SoundFlowAudioManager] ERROR playing SFX '{name}': {ex.Message}");
+            }
+        }
+
         public void Dispose()
         {
             if (_isDisposed)
@@ -415,10 +523,9 @@ namespace BalatroSeedOracle.Services
 
             // Stop update loop
             _cancellationTokenSource?.Cancel();
-            _updateTask?.Wait(TimeSpan.FromSeconds(1));
             _cancellationTokenSource?.Dispose();
 
-            // Stop all players
+            // Stop all music tracks
             foreach (var player in _players.Values)
             {
                 player.Stop();
@@ -426,6 +533,14 @@ namespace BalatroSeedOracle.Services
             }
             _players.Clear();
             _analyzers.Clear();
+
+            // Stop all sound effects
+            foreach (var player in _sfxPlayers.Values)
+            {
+                player.Stop();
+                player.Dispose();
+            }
+            _sfxPlayers.Clear();
 
             // Stop and dispose device
             _device?.Stop();

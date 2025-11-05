@@ -176,11 +176,6 @@ namespace BalatroSeedOracle.Behaviors
             sfxService?.PlayCardHover();
 
             // Start animation timer when hovering begins
-        {
-            _isHovering = true;
-            _lastPointerPosition = e.GetPosition(_hitboxElement);
-
-            // Start animation timer when hovering begins
             if (_animationTimer != null && !_animationTimer.IsEnabled)
             {
                 _animationTimer.Start();

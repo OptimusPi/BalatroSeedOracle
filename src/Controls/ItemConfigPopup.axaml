@@ -16,7 +16,158 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- ... existing styles ... -->
+        <!-- Thumb styles for sliders -->
+        <Style Selector="Thumb">
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Label styles -->
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Header style -->
+        <Style Selector="TextBlock.header">
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Radio button styles -->
+        <Style Selector="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+
+        <Style Selector="RadioButton:checked /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <!-- CheckBox styles -->
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style Selector="CheckBox:checked /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <!-- Ante checkbox styles -->
+        <Style Selector="CheckBox.ante-checkbox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- Default ante border style -->
+        <Style Selector="CheckBox.ante-checkbox Border.ante-border">
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+        </Style>
+
+        <!-- Checked state for ante checkboxes -->
+        <Style Selector="CheckBox.ante-checkbox:checked Border.ante-border">
+            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <Style Selector="CheckBox.ante-checkbox:checked TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <!-- Edition radio button styles -->
+        <Style Selector="RadioButton.edition-radio">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- Default edition border style -->
+        <Style Selector="RadioButton.edition-radio Border.edition-border">
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+        </Style>
+
+        <!-- Checked states for each edition -->
+        <Style Selector="RadioButton.edition-radio:checked Border.edition-border">
+            <Setter Property="Background" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="RadioButton.edition-foil:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
+        </Style>
+
+        <Style Selector="RadioButton.edition-holo:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="{StaticResource ToggleRed}"/>
+        </Style>
+
+        <Style Selector="RadioButton.edition-poly:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="{StaticResource Purple}"/>
+        </Style>
+
+        <Style Selector="RadioButton.edition-negative:checked Border.edition-border">
+            <Setter Property="BorderBrush" Value="{StaticResource Purple}"/>
+        </Style>
+
+        <!-- Source checkbox styles -->
+        <Style Selector="CheckBox.source-checkbox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- Default source border style -->
+        <Style Selector="CheckBox.source-checkbox Border.source-border">
+            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+        </Style>
+
+        <!-- Checked state for source checkboxes -->
+        <Style Selector="CheckBox.source-checkbox:checked Border.source-border">
+            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <!-- Button styles -->
+        <Style Selector="Button.apply-button">
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.delete-button">
+            <Setter Property="Background" Value="{StaticResource ToggleRed}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.cancel-button">
+            <Setter Property="Background" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
     </UserControl.Styles>
 
     <Border MinWidth="280"

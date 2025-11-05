@@ -32,7 +32,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 // Bind results to the sortable grid
                 grid.ItemsSource = vm.SearchResults;
 
-                // Forward export-all with CSV format: SEED,TOTALSCORE,<tally labels>
+                // CRITICAL FIX: Export to EXCEL with ClosedXML for proper data handling
                 grid.ExportAllRequested += async (s, results) =>
                 {
                     try
@@ -43,44 +43,121 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             return;
                         }
 
+                        // Get TopLevel for file picker
+                        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+                        if (topLevel == null)
+                        {
+                            DebugLogger.LogError("ResultsTab", "Could not get TopLevel for file picker");
+                            return;
+                        }
+
+                        // Show save file dialog
+                        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                            new Avalonia.Platform.Storage.FilePickerSaveOptions
+                            {
+                                Title = "Export Search Results to Excel",
+                                DefaultExtension = "xlsx",
+                                SuggestedFileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                                FileTypeChoices = new[]
+                                {
+                                    new Avalonia.Platform.Storage.FilePickerFileType("Excel Files")
+                                    {
+                                        Patterns = new[] { "*.xlsx" }
+                                    },
+                                    new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
+                                    {
+                                        Patterns = new[] { "*.csv" }
+                                    }
+                                }
+                            }
+                        );
+
+                        if (file == null)
+                        {
+                            DebugLogger.Log("ResultsTab", "Export cancelled by user");
+                            return;
+                        }
+
                         var first = results.First();
                         var labels = first?.Labels ?? Array.Empty<string>();
 
-                        // Build CSV header: SEED,TOTALSCORE,<labels>
-                        var header = "SEED,TOTALSCORE";
-                        if (labels.Length > 0)
+                        // Check file extension to determine export format
+                        var filePath = file.Path.LocalPath;
+                        if (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
                         {
-                            header +=
-                                "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
-                        }
+                            // EXCEL EXPORT using ClosedXML
+                            using var workbook = new ClosedXML.Excel.XLWorkbook();
+                            var worksheet = workbook.Worksheets.Add("Search Results");
 
-                        // Build CSV rows
-                        var csv = new System.Text.StringBuilder();
-                        csv.AppendLine(header);
+                            // CRITICAL: Build headers with all columns
+                            var headers = new System.Collections.Generic.List<string> { "SEED", "TOTALSCORE" };
+                            headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
 
-                        foreach (var result in results)
-                        {
-                            var row = $"{result.Seed},{result.TotalScore}";
-                            if (result.Scores != null && result.Scores.Length > 0)
+                            // Write headers
+                            for (int i = 0; i < headers.Count; i++)
                             {
-                                row += "," + string.Join(",", result.Scores);
+                                var cell = worksheet.Cell(1, i + 1);
+                                cell.Value = headers[i];
+                                cell.Style.Font.Bold = true;
+                                cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
                             }
-                            csv.AppendLine(row);
+
+                            // Write data rows
+                            int row = 2;
+                            foreach (var result in results)
+                            {
+                                worksheet.Cell(row, 1).Value = result.Seed;
+                                worksheet.Cell(row, 2).Value = result.TotalScore;
+
+                                // Write tally scores
+                                if (result.Scores != null)
+                                {
+                                    for (int i = 0; i < result.Scores.Length; i++)
+                                    {
+                                        worksheet.Cell(row, i + 3).Value = result.Scores[i];
+                                    }
+                                }
+                                row++;
+                            }
+
+                            // Auto-fit columns for readability
+                            worksheet.ColumnsUsed().AdjustToContents();
+
+                            // Save workbook
+                            workbook.SaveAs(filePath);
+                            DebugLogger.Log(
+                                "ResultsTab",
+                                $"Exported {results.Count()} results to Excel: {filePath}"
+                            );
                         }
+                        else
+                        {
+                            // CSV EXPORT as fallback
+                            var header = "SEED,TOTALSCORE";
+                            if (labels.Length > 0)
+                            {
+                                header += "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                            }
 
-                        // Save to publish/results.csv
-                        var publishDir = System.IO.Path.Combine(
-                            System.IO.Directory.GetCurrentDirectory(),
-                            "publish"
-                        );
-                        System.IO.Directory.CreateDirectory(publishDir);
-                        var csvPath = System.IO.Path.Combine(publishDir, "results.csv");
+                            var csv = new System.Text.StringBuilder();
+                            csv.AppendLine(header);
 
-                        await System.IO.File.WriteAllTextAsync(csvPath, csv.ToString());
-                        DebugLogger.Log(
-                            "ResultsTab",
-                            $"Exported {results.Count()} results to {csvPath}"
-                        );
+                            foreach (var result in results)
+                            {
+                                var csvRow = $"{result.Seed},{result.TotalScore}";
+                                if (result.Scores != null && result.Scores.Length > 0)
+                                {
+                                    csvRow += "," + string.Join(",", result.Scores);
+                                }
+                                csv.AppendLine(csvRow);
+                            }
+
+                            await System.IO.File.WriteAllTextAsync(filePath, csv.ToString());
+                            DebugLogger.Log(
+                                "ResultsTab",
+                                $"Exported {results.Count()} results to CSV: {filePath}"
+                            );
+                        }
                     }
                     catch (System.Exception ex)
                     {

@@ -15,6 +15,9 @@ namespace BalatroSeedOracle.Models
 
         [JsonPropertyName("muted")]
         public bool Muted { get; set; } = false;
+
+        [JsonPropertyName("solo")]
+        public bool Solo { get; set; } = false;
     }
 
     /// <summary>
