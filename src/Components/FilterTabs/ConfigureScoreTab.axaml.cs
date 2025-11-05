@@ -155,6 +155,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     // Show drop overlay
                     ShowDropOverlay();
+
+                    // Phase 2: Transition to DragActive state
+                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    vm?.EnterDragActiveState();
                 }
             }
             catch (Exception ex)
@@ -162,6 +166,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("ConfigureScoreTab", $"Drag operation failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
+
+                // Phase 2: Return to Default state on error
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                vm?.EnterDefaultState();
             }
         }
 
@@ -431,6 +439,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Hide all drop zone overlays when drag ends
                 HideAllDropZoneOverlays();
+
+                // Phase 2: Return to Default state when drag ends
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                vm?.EnterDefaultState();
             }
             catch (Exception ex)
             {
@@ -445,6 +457,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (backdrop != null)
                 backdrop.IsVisible = true;
 
+            // Show OR tray overlay
+            var orTrayOverlay = this.FindControl<Border>("OrTrayDropOverlay");
+            if (orTrayOverlay != null)
+                orTrayOverlay.IsVisible = true;
+
+            // Show AND tray overlay
+            var andTrayOverlay = this.FindControl<Border>("AndTrayDropOverlay");
+            if (andTrayOverlay != null)
+                andTrayOverlay.IsVisible = true;
+
             // Show the score list overlay so user can see where to drop
             var scoreListOverlay = this.FindControl<Border>("ScoreListDropOverlay");
             if (scoreListOverlay != null)
@@ -457,6 +479,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var backdrop = this.FindControl<Border>("DragBackdrop");
             if (backdrop != null)
                 backdrop.IsVisible = false;
+
+            // Hide OR tray overlay
+            var orTrayOverlay = this.FindControl<Border>("OrTrayDropOverlay");
+            if (orTrayOverlay != null)
+                orTrayOverlay.IsVisible = false;
+
+            // Hide AND tray overlay
+            var andTrayOverlay = this.FindControl<Border>("AndTrayDropOverlay");
+            if (andTrayOverlay != null)
+                andTrayOverlay.IsVisible = false;
 
             // Hide score list overlay
             var scoreListOverlay = this.FindControl<Border>("ScoreListDropOverlay");

@@ -183,9 +183,152 @@
                         CornerRadius="12"
                         Padding="12"
                         DragDrop.AllowDrop="True">
-                    <ScrollViewer Name="ItemScrollViewer"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Edition/Sticker/Seal Selector Bar -->
+                        <StackPanel Grid.Row="0" Spacing="8">
+                            <!-- Edition Buttons -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Edition:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"
+                                           Margin="0,0,0,2"/>
+                                <WrapPanel HorizontalAlignment="Left" Margin="0">
+                                    <Button Content="None"
+                                            Command="{Binding SetEditionCommand}"
+                                            CommandParameter="None"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Foil"
+                                            Command="{Binding SetEditionCommand}"
+                                            CommandParameter="Foil"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Holo"
+                                            Command="{Binding SetEditionCommand}"
+                                            CommandParameter="Holo"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Polychrome"
+                                            Command="{Binding SetEditionCommand}"
+                                            CommandParameter="Polychrome"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Negative"
+                                            Command="{Binding SetEditionCommand}"
+                                            CommandParameter="Negative"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Sticker Toggles -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Stickers:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"
+                                           Margin="0,0,0,2"/>
+                                <WrapPanel HorizontalAlignment="Left" Margin="0">
+                                    <Button Content="Perishable"
+                                            Command="{Binding ToggleStickerPerishableCommand}"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding StickerPerishable}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Eternal"
+                                            Command="{Binding ToggleStickerEternalCommand}"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding StickerEternal}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Rental"
+                                            Command="{Binding ToggleStickerRentalCommand}"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding StickerRental}"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Seal Buttons (StandardCard only) -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Seal:"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"
+                                           Margin="0,0,0,2"/>
+                                <WrapPanel HorizontalAlignment="Left" Margin="0">
+                                    <Button Content="None"
+                                            Command="{Binding SetSealCommand}"
+                                            CommandParameter="None"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Purple"
+                                            Command="{Binding SetSealCommand}"
+                                            CommandParameter="Purple"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Gold"
+                                            Command="{Binding SetSealCommand}"
+                                            CommandParameter="Gold"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Red"
+                                            Command="{Binding SetSealCommand}"
+                                            CommandParameter="Red"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                    <Button Content="Blue"
+                                            Command="{Binding SetSealCommand}"
+                                            CommandParameter="Blue"
+                                            Classes="small-pill-button"
+                                            Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
+                                            Padding="8,4"
+                                            FontSize="11"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Item Shelf ScrollViewer -->
+                        <ScrollViewer Grid.Row="2"
+                                      Name="ItemScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
@@ -267,6 +410,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+                    </Grid>
                 </Border>
 
                 <Border Name="ReturnOverlay"
@@ -321,136 +465,12 @@
 
             <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="90"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0"
-                            Name="TrayOrOperator"
-                            Cursor="Hand"
-                            PointerPressed="OnTrayOrPointerPressed"
-                            DragDrop.AllowDrop="True">
-                        <components:FilterOperatorControl DataContext="{Binding TrayOrOperator}"/>
-                    </Border>
-
-                    <Border Grid.Column="2"
-                            Name="TrayAndOperator"
-                            Cursor="Hand"
-                            PointerPressed="OnTrayAndPointerPressed"
-                            DragDrop.AllowDrop="True">
-                        <components:FilterOperatorControl DataContext="{Binding TrayAndOperator}"/>
-                    </Border>
-
-                    <Border Name="TrayOrDropOverlay"
-                            Grid.Column="0"
-                            Background="{StaticResource Green}"
-                            BorderBrush="#FFFFFF"
-                            BorderThickness="3"
-                            CornerRadius="6"
-                            IsVisible="False"
-                            IsHitTestVisible="False"
-                            ZIndex="200">
-                        <Border.Styles>
-                            <Style Selector="Border[IsVisible=True]">
-                                <Style.Animations>
-                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
-                                        <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Green}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Green}"/>
-                                        </KeyFrame>
-                                    </Animation>
-                                </Style.Animations>
-                            </Style>
-                        </Border.Styles>
-                        <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource GreenColor}"
-                                              OffsetX="0"
-                                              OffsetY="0"
-                                              BlurRadius="30"
-                                              Opacity="1.0"/>
-                        </Border.Effect>
-                        <TextBlock Text="DROP IN OR"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="22"
-                                   FontWeight="ExtraBold"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextAlignment="Center">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                    </Border>
-
-                    <Border Name="TrayAndDropOverlay"
-                            Grid.Column="2"
-                            Background="{StaticResource Blue}"
-                            BorderBrush="#FFFFFF"
-                            BorderThickness="3"
-                            CornerRadius="6"
-                            IsVisible="False"
-                            IsHitTestVisible="False"
-                            ZIndex="200">
-                        <Border.Styles>
-                            <Style Selector="Border[IsVisible=True]">
-                                <Style.Animations>
-                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
-                                        <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
-                                        </KeyFrame>
-                                    </Animation>
-                                </Style.Animations>
-                            </Style>
-                        </Border.Styles>
-                        <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource BlueColor}"
-                                              OffsetX="0"
-                                              OffsetY="0"
-                                              BlurRadius="30"
-                                              Opacity="1.0"/>
-                        </Border.Effect>
-                        <TextBlock Text="DROP IN AND"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="22"
-                                   FontWeight="ExtraBold"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextAlignment="Center">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                    </Border>
-                </Grid>
 
                 <Grid Name="DropOverlaysGrid" Grid.Row="2" Grid.RowSpan="3" IsHitTestVisible="False" ZIndex="200">
                     <Grid.RowDefinitions>

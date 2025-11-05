@@ -199,6 +199,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
 
+                    // Phase 2: Transition to DragActive state
+                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    vm?.EnterDragActiveState();
+
                     // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
                     // Capturing to sender (the small image) would prevent us from getting events outside its bounds
                 }
@@ -212,6 +216,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("ConfigureFilterTab", $"Drag operation failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
+
+                // Phase 2: Return to Default state on error
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                vm?.EnterDefaultState();
             }
         }
 
@@ -323,6 +331,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     // Show overlays for OTHER drop zones (not the source)
                     ShowDropZoneOverlays(_sourceDropZone);
+
+                    // Phase 2: Transition to DragActive state
+                    vm?.EnterDragActiveState();
                 }
             }
             catch (Exception ex)
@@ -330,6 +341,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("ConfigureFilterTab", $"Drop zone drag failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
+
+                // Phase 2: Return to Default state on error
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                vm?.EnterDefaultState();
             }
         }
 
@@ -1310,6 +1325,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Hide all drop zone overlays when drag ends
                 HideAllDropZoneOverlays();
+
+                // Phase 2: Return to Default state when drag ends
+                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                vm?.EnterDefaultState();
             }
             catch (Exception ex)
             {

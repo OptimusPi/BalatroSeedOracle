@@ -379,6 +379,34 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
 
+    <!-- Small pill button style (for edition/sticker/seal selectors) -->
+    <Style Selector="Button.small-pill-button">
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+        <Setter Property="Foreground" Value="{StaticResource LightGrey}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.small-pill-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}" />
+        <Setter Property="BorderBrush" Value="{StaticResource LightGrey}" />
+    </Style>
+    <Style Selector="Button.small-pill-button.active">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+    </Style>
+    <Style Selector="Button.small-pill-button.active:pointerover">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+    </Style>
+
     <!-- Search box style -->
     <Style Selector="TextBox.search-box">
         <Setter Property="FontSize" Value="14" />

@@ -17,6 +17,18 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
+    /// <summary>
+    /// UI state enum for Phase 2 state system
+    /// Controls which parts of the UI are visible and how they're displayed
+    /// </summary>
+    public enum EditingState
+    {
+        Default,        // Normal view - all sections visible at normal size
+        DragActive,     // User is dragging - show overlays
+        ClauseEdit,     // Editing OR/AND clause - expand to full column
+        ScoreEdit       // Editing score list - expand to full column
+    }
+
     public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
@@ -36,6 +48,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private bool _isLoading = true;
+
+        // Phase 2: UI State Management
+        [ObservableProperty]
+        private EditingState _currentEditingState = EditingState.Default;
+
+        // Computed properties for state-based visibility
+        public bool IsDefaultState => CurrentEditingState == EditingState.Default;
+        public bool IsDragActiveState => CurrentEditingState == EditingState.DragActive;
+        public bool IsClauseEditState => CurrentEditingState == EditingState.ClauseEdit;
+        public bool IsScoreEditState => CurrentEditingState == EditingState.ScoreEdit;
+
+        // Computed properties for layout control
+        public bool ShouldShowItemShelf => CurrentEditingState == EditingState.Default || CurrentEditingState == EditingState.DragActive;
+        public bool ShouldExpandClauses => CurrentEditingState == EditingState.ClauseEdit;
+        public bool ShouldExpandScoreList => CurrentEditingState == EditingState.ScoreEdit;
+        public bool ShouldCollapseClauses => CurrentEditingState == EditingState.ScoreEdit;
+        public bool ShouldCollapseScoreList => CurrentEditingState == EditingState.ClauseEdit;
 
         // Drop zones - always expanded for simplicity
         [ObservableProperty]
@@ -124,7 +153,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isStandardCardCategorySelected = false;
 
-        // Edition/Enhancement/Seal toggles
+        // Phase 3: Edition/Sticker/Seal selectors (apply to ALL items in shelf)
+        [ObservableProperty]
+        private string _selectedEdition = "None"; // None, Foil, Holo, Polychrome, Negative
+
+        [ObservableProperty]
+        private bool _stickerPerishable = false;
+
+        [ObservableProperty]
+        private bool _stickerEternal = false;
+
+        [ObservableProperty]
+        private bool _stickerRental = false;
+
+        [ObservableProperty]
+        private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
+
+        // Legacy properties (kept for compatibility)
         [ObservableProperty]
         private string _currentEdition = "None";
 
@@ -649,6 +694,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemType = item.Type,
                         ItemName = item.Name,
                     };
+
+                    // Phase 3: Apply currently selected edition/stickers/seal
+                    ApplyEditionStickersSeal(itemConfig, item);
+
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
                     _parentViewModel.SelectedMust.Add(itemKey);
                 }
@@ -684,6 +733,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemType = item.Type,
                         ItemName = item.Name,
                     };
+
+                    // Phase 3: Apply currently selected edition/stickers/seal
+                    ApplyEditionStickersSeal(itemConfig, item);
+
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
                     _parentViewModel.SelectedShould.Add(itemKey);
                 }
@@ -719,6 +772,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemType = item.Type,
                         ItemName = item.Name,
                     };
+
+                    // Phase 3: Apply currently selected edition/stickers/seal
+                    ApplyEditionStickersSeal(itemConfig, item);
+
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
                     _parentViewModel.SelectedMustNot.Add(itemKey);
                 }
@@ -1785,6 +1842,271 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     AutoSaveStatus = "Auto-save error";
                 });
             }
+        }
+
+        #endregion
+
+        #region Phase 2: State Transition Methods
+
+        /// <summary>
+        /// Automatically invoked when CurrentEditingState changes (via [ObservableProperty])
+        /// Notifies all computed state properties to update bindings
+        /// </summary>
+        partial void OnCurrentEditingStateChanged(EditingState value)
+        {
+            OnPropertyChanged(nameof(IsDefaultState));
+            OnPropertyChanged(nameof(IsDragActiveState));
+            OnPropertyChanged(nameof(IsClauseEditState));
+            OnPropertyChanged(nameof(IsScoreEditState));
+            OnPropertyChanged(nameof(ShouldShowItemShelf));
+            OnPropertyChanged(nameof(ShouldExpandClauses));
+            OnPropertyChanged(nameof(ShouldExpandScoreList));
+            OnPropertyChanged(nameof(ShouldCollapseClauses));
+            OnPropertyChanged(nameof(ShouldCollapseScoreList));
+
+            DebugLogger.Log("VisualBuilderTab", $"State changed to: {value}");
+        }
+
+        /// <summary>
+        /// Transitions to Default state - normal view with all sections visible
+        /// </summary>
+        [RelayCommand]
+        public void EnterDefaultState()
+        {
+            CurrentEditingState = EditingState.Default;
+            IsDragging = false;
+        }
+
+        /// <summary>
+        /// Transitions to DragActive state - user is dragging an item
+        /// </summary>
+        public void EnterDragActiveState()
+        {
+            CurrentEditingState = EditingState.DragActive;
+            IsDragging = true;
+        }
+
+        /// <summary>
+        /// Transitions to ClauseEdit state - expand OR/AND clause to full column
+        /// </summary>
+        [RelayCommand]
+        public void EnterClauseEditState()
+        {
+            CurrentEditingState = EditingState.ClauseEdit;
+        }
+
+        /// <summary>
+        /// Transitions to ScoreEdit state - expand score list to full column
+        /// </summary>
+        [RelayCommand]
+        public void EnterScoreEditState()
+        {
+            CurrentEditingState = EditingState.ScoreEdit;
+        }
+
+        /// <summary>
+        /// Exits any editing state and returns to Default
+        /// </summary>
+        [RelayCommand]
+        public void ExitEditingState()
+        {
+            CurrentEditingState = EditingState.Default;
+        }
+
+        #endregion
+
+        #region Phase 3: Edition/Sticker/Seal Commands
+
+        /// <summary>
+        /// Sets the edition for all items in drop zones AND future items
+        /// </summary>
+        [RelayCommand]
+        public void SetEdition(string edition)
+        {
+            SelectedEdition = edition;
+
+            // Apply to all existing items in drop zones
+            if (_parentViewModel != null)
+            {
+                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                {
+                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                    {
+                        config.Edition = edition == "None" ? null : edition.ToLower();
+                    }
+                }
+                TriggerAutoSave();
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items");
+        }
+
+        /// <summary>
+        /// Toggles Perishable sticker for all items in drop zones AND future items
+        /// </summary>
+        [RelayCommand]
+        public void ToggleStickerPerishable()
+        {
+            StickerPerishable = !StickerPerishable;
+
+            // Apply to all existing items
+            ApplyStickersToAllItems();
+
+            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items");
+        }
+
+        /// <summary>
+        /// Toggles Eternal sticker for all items in drop zones AND future items (respects CanBeEternal logic)
+        /// </summary>
+        [RelayCommand]
+        public void ToggleStickerEternal()
+        {
+            StickerEternal = !StickerEternal;
+
+            // Apply to all existing items
+            ApplyStickersToAllItems();
+
+            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items");
+        }
+
+        /// <summary>
+        /// Toggles Rental sticker for all items in drop zones AND future items
+        /// </summary>
+        [RelayCommand]
+        public void ToggleStickerRental()
+        {
+            StickerRental = !StickerRental;
+
+            // Apply to all existing items
+            ApplyStickersToAllItems();
+
+            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items");
+        }
+
+        /// <summary>
+        /// Sets the seal for all StandardCard items in drop zones AND future items
+        /// </summary>
+        [RelayCommand]
+        public void SetSeal(string seal)
+        {
+            SelectedSeal = seal;
+
+            // Apply to all existing items
+            if (_parentViewModel != null)
+            {
+                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                {
+                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                    {
+                        // Only apply seal to StandardCards
+                        if (config.ItemType == "StandardCard")
+                        {
+                            config.Seal = seal == "None" ? null : seal;
+                        }
+                    }
+                }
+                TriggerAutoSave();
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards");
+        }
+
+        /// <summary>
+        /// Checks if an item can have the Eternal sticker based on CanBeEternal logic
+        /// Jokers, Consumables, and Vouchers can be eternal; Tags cannot
+        /// </summary>
+        public bool CanItemBeEternal(FilterItem item)
+        {
+            return item.Type switch
+            {
+                "Joker" or "SoulJoker" => true,
+                "Tarot" or "Planet" or "Spectral" => true,
+                "Voucher" => true,
+                "SmallBlindTag" or "BigBlindTag" => false,
+                "Boss" => false,
+                "StandardCard" => true,
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// Applies stickers to all items currently in drop zones
+        /// </summary>
+        private void ApplyStickersToAllItems()
+        {
+            if (_parentViewModel == null) return;
+
+            foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+            {
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    // Build sticker list based on current toggles
+                    var stickers = new List<string>();
+                    if (StickerPerishable)
+                        stickers.Add("perishable");
+
+                    // Check CanBeEternal based on ItemType
+                    bool canBeEternal = config.ItemType switch
+                    {
+                        "Joker" or "SoulJoker" => true,
+                        "Tarot" or "Planet" or "Spectral" => true,
+                        "Voucher" => true,
+                        "StandardCard" => true,
+                        "SmallBlindTag" or "BigBlindTag" => false,
+                        "Boss" => false,
+                        _ => false
+                    };
+
+                    if (StickerEternal && canBeEternal)
+                        stickers.Add("eternal");
+
+                    if (StickerRental)
+                        stickers.Add("rental");
+
+                    // Apply stickers (or clear if none selected)
+                    config.Stickers = stickers.Any() ? stickers : null;
+                }
+            }
+
+            TriggerAutoSave();
+        }
+
+        /// <summary>
+        /// Applies the currently selected edition, stickers, and seal to an ItemConfig
+        /// Called when an item is added to a drop zone
+        /// </summary>
+        private void ApplyEditionStickersSeal(ItemConfig config, FilterItem item)
+        {
+            // Apply Edition (if not None)
+            if (SelectedEdition != "None")
+            {
+                config.Edition = SelectedEdition.ToLower();
+            }
+
+            // Apply Stickers
+            var stickers = new List<string>();
+            if (StickerPerishable)
+                stickers.Add("perishable");
+
+            if (StickerEternal && CanItemBeEternal(item))
+                stickers.Add("eternal");
+
+            if (StickerRental)
+                stickers.Add("rental");
+
+            if (stickers.Any())
+            {
+                config.Stickers = stickers;
+            }
+
+            // Apply Seal (for StandardCards only)
+            if (item.Type == "StandardCard" && SelectedSeal != "None")
+            {
+                config.Seal = SelectedSeal;
+            }
+
+            DebugLogger.Log("VisualBuilderTab",
+                $"Applied edition={config.Edition}, stickers=[{string.Join(",", config.Stickers ?? new List<string>())}], seal={config.Seal} to {item.Name}");
         }
 
         #endregion
