@@ -66,6 +66,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public bool ShouldCollapseClauses => CurrentEditingState == EditingState.ScoreEdit;
         public bool ShouldCollapseScoreList => CurrentEditingState == EditingState.ClauseEdit;
 
+        // Track which clause is being edited
+        [ObservableProperty]
+        private string _editingClauseType = ""; // "Or" or "And"
+
+        // Computed visibility for zones during clause editing
+        public bool IsEditingOrClause => EditingClauseType == "Or";
+        public bool IsEditingAndClause => EditingClauseType == "And";
+        public bool ShouldHideAndTray => OrTrayItems.Count > 0 && EditingClauseType == "Or";
+        public bool ShouldHideOrTray => AndTrayItems.Count > 0 && EditingClauseType == "And";
+        public bool ShouldHideShouldZone => CurrentEditingState == EditingState.ClauseEdit;
+
         // Drop zones - always expanded for simplicity
         [ObservableProperty]
         private bool _isMustExpanded = true;
@@ -374,6 +385,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RemoveFromOrTrayCommand = new RelayCommand<FilterItem>(RemoveFromOrTray);
             RemoveFromAndTrayCommand = new RelayCommand<FilterItem>(RemoveFromAndTray);
 
+            CommitOrClauseCommand = new RelayCommand(CommitOrClause);
+            CommitAndClauseCommand = new RelayCommand(CommitAndClause);
+
             // Simple property change handling
             PropertyChanged += (s, e) =>
             {
@@ -666,6 +680,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand RemoveFromOrTrayCommand { get; }
         public ICommand RemoveFromAndTrayCommand { get; }
 
+        // Commit clause commands
+        public ICommand CommitOrClauseCommand { get; }
+        public ICommand CommitAndClauseCommand { get; }
+
         #endregion
 
         #region Command Implementations
@@ -845,32 +863,70 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
-            // Add to OR tray - these are still SHOULD items, just visually grouped
+            // Enter clause editing mode on first item
+            if (OrTrayItems.Count == 0)
+            {
+                CurrentEditingState = EditingState.ClauseEdit;
+                EditingClauseType = "Or";
+                DebugLogger.Log("VisualBuilderTab", "Entered OR clause editing mode");
+            }
+
+            // Add to OR tray
             OrTrayItems.Add(item);
 
-            // Also add to SelectedShould to maintain compatibility with existing logic
-            if (!SelectedShould.Contains(item))
+            // Create ItemConfig and apply current edition/sticker/seal settings
+            if (_parentViewModel != null)
             {
-                AddToShould(item);
+                var itemKey = _parentViewModel.GenerateNextItemKey();
+                var itemConfig = new ItemConfig
+                {
+                    ItemKey = itemKey,
+                    ItemType = item.Type,
+                    ItemName = item.Name,
+                };
+
+                ApplyEditionStickersSeal(itemConfig, item);
+                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to OR tray");
+            OnPropertyChanged(nameof(ShouldHideAndTray));
+            OnPropertyChanged(nameof(ShouldHideShouldZone));
         }
 
         private void AddToAndTray(FilterItem? item)
         {
             if (item == null) return;
 
-            // Add to AND tray - these are still SHOULD items, just visually grouped
+            // Enter clause editing mode on first item
+            if (AndTrayItems.Count == 0)
+            {
+                CurrentEditingState = EditingState.ClauseEdit;
+                EditingClauseType = "And";
+                DebugLogger.Log("VisualBuilderTab", "Entered AND clause editing mode");
+            }
+
+            // Add to AND tray
             AndTrayItems.Add(item);
 
-            // Also add to SelectedShould to maintain compatibility with existing logic
-            if (!SelectedShould.Contains(item))
+            // Create ItemConfig and apply current edition/sticker/seal settings
+            if (_parentViewModel != null)
             {
-                AddToShould(item);
+                var itemKey = _parentViewModel.GenerateNextItemKey();
+                var itemConfig = new ItemConfig
+                {
+                    ItemKey = itemKey,
+                    ItemType = item.Type,
+                    ItemName = item.Name,
+                };
+
+                ApplyEditionStickersSeal(itemConfig, item);
+                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to AND tray");
+            OnPropertyChanged(nameof(ShouldHideOrTray));
+            OnPropertyChanged(nameof(ShouldHideShouldZone));
         }
 
         private void RemoveFromOrTray(FilterItem? item)
@@ -895,6 +951,149 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RemoveFromShould(item);
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from AND tray");
+        }
+
+        /// <summary>
+        /// Commits OR clause to SHOULD list as a grouped clause with Children
+        /// </summary>
+        private void CommitOrClause()
+        {
+            if (OrTrayItems.Count == 0)
+            {
+                DebugLogger.Log("VisualBuilderTab", "Cannot commit empty OR clause");
+                return;
+            }
+
+            // Create grouped ItemConfig with OperatorType="Or" and Children
+            var groupedConfig = new ItemConfig
+            {
+                ItemKey = $"or_clause_{Guid.NewGuid():N}",
+                ItemType = "Clause",
+                ItemName = $"OR ({OrTrayItems.Count} items)",
+                OperatorType = "Or",
+                Mode = "Max",
+                Children = new List<ItemConfig>()
+            };
+
+            // Add each item in OR tray as a child
+            if (_parentViewModel != null)
+            {
+                foreach (var item in OrTrayItems.ToList())
+                {
+                    // Find the ItemConfig for this item
+                    var existingConfig = _parentViewModel.ItemConfigs
+                        .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
+
+                    if (existingConfig.Value != null)
+                    {
+                        groupedConfig.Children.Add(existingConfig.Value);
+                    }
+                }
+            }
+
+            // Create FilterOperatorItem for UI display
+            var operatorItem = new FilterOperatorItem("OR")
+            {
+                DisplayName = $"OR ({OrTrayItems.Count} items)"
+            };
+
+            // Add tray items as children to the operator item
+            foreach (var item in OrTrayItems.ToList())
+            {
+                operatorItem.Children.Add(item);
+            }
+
+            // Add to local SelectedShould for UI binding
+            SelectedShould.Add(operatorItem);
+
+            // Add grouped config to parent for persistence
+            if (_parentViewModel != null)
+            {
+                _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
+                _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
+            }
+
+            // Clear OR tray
+            OrTrayItems.Clear();
+
+            // Exit clause editing mode
+            CurrentEditingState = EditingState.Default;
+            EditingClauseType = "";
+
+            DebugLogger.Log("VisualBuilderTab", $"Committed OR clause with {groupedConfig.Children.Count} children to SHOULD");
+
+            NotifyJsonEditorOfChanges();
+        }
+
+        /// <summary>
+        /// Commits AND clause to SHOULD list as a grouped clause with Children
+        /// </summary>
+        private void CommitAndClause()
+        {
+            if (AndTrayItems.Count == 0)
+            {
+                DebugLogger.Log("VisualBuilderTab", "Cannot commit empty AND clause");
+                return;
+            }
+
+            // Create grouped ItemConfig with OperatorType="And" and Children
+            var groupedConfig = new ItemConfig
+            {
+                ItemKey = $"and_clause_{Guid.NewGuid():N}",
+                ItemType = "Clause",
+                ItemName = $"AND ({AndTrayItems.Count} items)",
+                OperatorType = "And",
+                Children = new List<ItemConfig>()
+            };
+
+            // Add each item in AND tray as a child
+            if (_parentViewModel != null)
+            {
+                foreach (var item in AndTrayItems.ToList())
+                {
+                    // Find the ItemConfig for this item
+                    var existingConfig = _parentViewModel.ItemConfigs
+                        .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
+
+                    if (existingConfig.Value != null)
+                    {
+                        groupedConfig.Children.Add(existingConfig.Value);
+                    }
+                }
+            }
+
+            // Create FilterOperatorItem for UI display
+            var operatorItem = new FilterOperatorItem("AND")
+            {
+                DisplayName = $"AND ({AndTrayItems.Count} items)"
+            };
+
+            // Add tray items as children to the operator item
+            foreach (var item in AndTrayItems.ToList())
+            {
+                operatorItem.Children.Add(item);
+            }
+
+            // Add to local SelectedShould for UI binding
+            SelectedShould.Add(operatorItem);
+
+            // Add grouped config to parent for persistence
+            if (_parentViewModel != null)
+            {
+                _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
+                _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
+            }
+
+            // Clear AND tray
+            AndTrayItems.Clear();
+
+            // Exit clause editing mode
+            CurrentEditingState = EditingState.Default;
+            EditingClauseType = "";
+
+            DebugLogger.Log("VisualBuilderTab", $"Committed AND clause with {groupedConfig.Children.Count} children to SHOULD");
+
+            NotifyJsonEditorOfChanges();
         }
 
         /// <summary>

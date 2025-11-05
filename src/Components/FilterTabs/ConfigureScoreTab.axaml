@@ -373,7 +373,7 @@
                         <!-- Operator Trays (VERTICAL STACK) -->
                         <StackPanel Grid.Row="2" Spacing="8" Margin="0,0,0,12">
                             <!-- OR Tray Wrapper (with overlay) -->
-                            <Grid>
+                            <Grid IsVisible="{Binding !ShouldHideOrTray}">
                                 <Border Name="OrTray"
                                         Background="{StaticResource DarkBackground}"
                                         BorderBrush="{StaticResource Green}"
@@ -381,17 +381,17 @@
                                         CornerRadius="6"
                                         Padding="8"
                                         MinHeight="80"
-                                        MaxHeight="300"
                                         DragDrop.AllowDrop="True">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
                                     <!-- OR Label -->
                                     <TextBlock Grid.Row="0"
-                                               Text="OR"
+                                               Text="OR CLAUSE"
                                                FontFamily="{StaticResource BalatroFont}"
                                                FontSize="14"
                                                FontWeight="Bold"
@@ -449,6 +449,25 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </ScrollViewer>
+
+                                    <!-- Footer bar with Done button -->
+                                    <Border Grid.Row="2"
+                                            Background="{StaticResource Blue}"
+                                            Padding="8"
+                                            Margin="0,8,0,0"
+                                            CornerRadius="4">
+                                        <Button Content="Done ✓"
+                                                Command="{Binding CommitOrClauseCommand}"
+                                                HorizontalAlignment="Stretch"
+                                                Background="{StaticResource Blue}"
+                                                Foreground="{StaticResource White}"
+                                                FontFamily="{StaticResource BalatroFont}"
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Padding="0,6"
+                                                CornerRadius="4"
+                                                Classes="pill-button"/>
+                                    </Border>
                                 </Grid>
                             </Border>
 
@@ -493,7 +512,7 @@
                         </Grid>
 
                             <!-- AND Tray Wrapper (with overlay) -->
-                            <Grid>
+                            <Grid IsVisible="{Binding !ShouldHideAndTray}">
                                 <Border Name="AndTray"
                                         Background="{StaticResource DarkBackground}"
                                         BorderBrush="{StaticResource Blue}"
@@ -501,17 +520,17 @@
                                         CornerRadius="6"
                                         Padding="8"
                                         MinHeight="80"
-                                        MaxHeight="300"
                                         DragDrop.AllowDrop="True">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
                                     <!-- AND Label -->
                                     <TextBlock Grid.Row="0"
-                                               Text="AND"
+                                               Text="AND CLAUSE"
                                                FontFamily="{StaticResource BalatroFont}"
                                                FontSize="14"
                                                FontWeight="Bold"
@@ -569,6 +588,25 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </ScrollViewer>
+
+                                    <!-- Footer bar with Done button -->
+                                    <Border Grid.Row="2"
+                                            Background="{StaticResource Blue}"
+                                            Padding="8"
+                                            Margin="0,8,0,0"
+                                            CornerRadius="4">
+                                        <Button Content="Done ✓"
+                                                Command="{Binding CommitAndClauseCommand}"
+                                                HorizontalAlignment="Stretch"
+                                                Background="{StaticResource Blue}"
+                                                Foreground="{StaticResource White}"
+                                                FontFamily="{StaticResource BalatroFont}"
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Padding="0,6"
+                                                CornerRadius="4"
+                                                Classes="pill-button"/>
+                                    </Border>
                                 </Grid>
                             </Border>
 
@@ -618,14 +656,95 @@
                                 Height="2"
                                 Background="{StaticResource ModalBorder}"
                                 Margin="0,0,0,12"
-                                CornerRadius="1"/>
+                                CornerRadius="1"
+                                IsVisible="{Binding !ShouldHideShouldZone}"/>
 
                         <!-- Score List Wrapper (with overlay) -->
-                        <Grid Grid.Row="4">
+                        <Grid Grid.Row="4" IsVisible="{Binding !ShouldHideShouldZone}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding SelectedShould}">
-                                <ItemsControl.ItemTemplate>
+                                <ItemsControl.DataTemplates>
+                                    <!-- Template for FilterOperatorItem (OR/AND clauses with children) -->
+                                    <DataTemplate DataType="models:FilterOperatorItem">
+                                        <Expander Margin="0,0,0,8"
+                                                  HorizontalAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="4">
+                                                    <!-- Operator Type Badge -->
+                                                    <Border Grid.Column="0"
+                                                            Background="{StaticResource Green}"
+                                                            BorderThickness="2"
+                                                            BorderBrush="{StaticResource Green}"
+                                                            CornerRadius="4"
+                                                            Padding="12,8"
+                                                            Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding OperatorType}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{StaticResource White}"/>
+                                                    </Border>
+
+                                                    <!-- Clause description -->
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding DisplayName}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="14"
+                                                               Foreground="{StaticResource White}"
+                                                               VerticalAlignment="Center"/>
+
+                                                    <!-- Remove button -->
+                                                    <Button Grid.Column="2"
+                                                            Content="×"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="White"
+                                                            FontSize="16"
+                                                            FontWeight="Bold"
+                                                            Width="28"
+                                                            Height="28"
+                                                            CornerRadius="14"
+                                                            Padding="0"
+                                                            HorizontalContentAlignment="Center"
+                                                            VerticalContentAlignment="Center"/>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <!-- Expanded: Show children -->
+                                            <Border Background="{StaticResource ModalGrey}"
+                                                    BorderThickness="2,0,0,0"
+                                                    BorderBrush="{StaticResource Green}"
+                                                    Padding="12"
+                                                    Margin="4,0,4,4">
+                                                <ItemsControl ItemsSource="{Binding Children}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="models:FilterItem">
+                                                            <Border Margin="0,2" Padding="4" Background="{StaticResource DarkBackground}" CornerRadius="4">
+                                                                <Grid ColumnDefinitions="Auto,*">
+                                                                    <Grid Grid.Column="0" Width="24" Height="32" Margin="0,0,6,0">
+                                                                        <Image Source="{Binding ItemImage}"
+                                                                               Width="24"
+                                                                               Height="32"
+                                                                               Stretch="Uniform"/>
+                                                                    </Grid>
+                                                                    <TextBlock Grid.Column="1"
+                                                                               Text="{Binding DisplayName}"
+                                                                               FontFamily="{StaticResource BalatroFont}"
+                                                                               FontSize="11"
+                                                                               Foreground="{StaticResource White}"
+                                                                               VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Border>
+                                        </Expander>
+                                    </DataTemplate>
+
+                                    <!-- Template for regular FilterItem (jokers, cards, etc) -->
                                     <DataTemplate DataType="models:FilterItem">
                                         <Expander Margin="0,0,0,8"
                                                   HorizontalAlignment="Stretch">
@@ -775,7 +894,7 @@
                                             </Border>
                                         </Expander>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
+                                </ItemsControl.DataTemplates>
                             </ItemsControl>
                         </ScrollViewer>
 
