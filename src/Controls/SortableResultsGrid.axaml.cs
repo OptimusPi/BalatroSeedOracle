@@ -15,6 +15,7 @@ namespace BalatroSeedOracle.Controls
     public partial class SortableResultsGrid : UserControl
     {
         private bool _tallyColumnsInitialized = false;
+        private int _initializedColumnCount = 0;
         private ObservableCollection<SearchResult>? _itemsSource;
 
         public SortableResultsGridViewModel ViewModel { get; }
@@ -73,8 +74,6 @@ namespace BalatroSeedOracle.Controls
 
         private void EnsureTallyColumns()
         {
-            if (_tallyColumnsInitialized)
-                return;
             var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
             if (dataGrid == null)
                 return;
@@ -88,6 +87,34 @@ namespace BalatroSeedOracle.Controls
                     return;
             }
 
+            // Check if we need to rebuild columns
+            bool needsRebuild = !_tallyColumnsInitialized || _initializedColumnCount != first!.Scores!.Length;
+
+            // Also rebuild if we now have Labels when we didn't before
+            if (_tallyColumnsInitialized && first.Labels != null && first.Labels.Length > 0)
+            {
+                var existingColumns = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                if (existingColumns.Any(c => c.Header?.ToString()?.StartsWith("TALLY") == true))
+                {
+                    needsRebuild = true; // We have placeholder names, rebuild with real Labels
+                }
+            }
+
+            if (!needsRebuild)
+                return;
+
+            // Clear existing tally columns (keep SEED and TOTALSCORE)
+            if (_tallyColumnsInitialized)
+            {
+                var columnsToRemove = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                foreach (var col in columnsToRemove)
+                {
+                    dataGrid.Columns.Remove(col);
+                }
+            }
+
+            // Add tally columns (insert before Actions column)
+            var actionsColumnIndex = dataGrid.Columns.Count - 1;
             for (int i = 0; i < first!.Scores!.Length; i++)
             {
                 // UPPERCASE header from Labels (from SearchInstance.ColumnNames)
@@ -122,9 +149,10 @@ namespace BalatroSeedOracle.Controls
                 );
 
                 col.CellTemplate = template;
-                dataGrid.Columns.Add(col);
+                dataGrid.Columns.Insert(actionsColumnIndex + i, col);
             }
 
+            _initializedColumnCount = first.Scores.Length;
             _tallyColumnsInitialized = true;
         }
 

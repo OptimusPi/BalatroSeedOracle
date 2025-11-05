@@ -672,7 +672,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=Visual, 1=JSON, 2=Save (LOAD tab removed)</param>
+        /// <param name="tabIndex">0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log(
@@ -694,14 +694,18 @@ namespace BalatroSeedOracle.ViewModels
                     IsVisualTabVisible = true;
                     DebugLogger.Log(
                         "FiltersModalViewModel",
-                        "Visual tab visible, all others hidden"
+                        "Configure Filter tab visible, all others hidden"
                     );
                     break;
                 case 1:
-                    IsJsonTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "JSON tab visible, all others hidden");
+                    IsVisualTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Configure Score tab visible, all others hidden");
                     break;
                 case 2:
+                    IsJsonTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible, all others hidden");
+                    break;
+                case 3:
                     IsSaveTabVisible = true;
                     // Refresh Save tab data when it becomes visible
                     RefreshSaveTabData();
@@ -1142,14 +1146,25 @@ namespace BalatroSeedOracle.ViewModels
         {
             TabItems.Clear();
 
-            // Create child ViewModels with parent reference
+            // Create a single VisualBuilderTabViewModel instance to share between the two new tabs
             var visualBuilderViewModel = new FilterTabs.VisualBuilderTabViewModel(this);
-            var visualBuilderTab = new Components.FilterTabs.VisualBuilderTab
-            {
-                DataContext = visualBuilderViewModel,
-            };
-            VisualBuilderTab = visualBuilderViewModel; // Store reference
+            VisualBuilderTab = visualBuilderViewModel; // Store reference for other components
 
+            // Tab 1: Configure Filter (MUST and MUST NOT zones only)
+            var configureFilterTab = new Components.FilterTabs.ConfigureFilterTab
+            {
+                DataContext = visualBuilderViewModel, // Share the same ViewModel!
+            };
+            TabItems.Add(new TabItemViewModel("CONFIGURE FILTER", configureFilterTab));
+
+            // Tab 2: Configure Score (SHOULD items in a row-based UI)
+            var configureScoreTab = new Components.FilterTabs.ConfigureScoreTab
+            {
+                DataContext = visualBuilderViewModel, // Share the same ViewModel!
+            };
+            TabItems.Add(new TabItemViewModel("CONFIGURE SCORE", configureScoreTab));
+
+            // JSON Editor tab
             var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
             var jsonEditorTab = new Components.FilterTabs.JsonEditorTab
             {
@@ -1157,7 +1172,9 @@ namespace BalatroSeedOracle.ViewModels
             };
             JsonEditorTab = jsonEditorViewModel; // Store reference
 
-            // Create SaveFilterTab with parent reference so it can access selected items
+            TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
+
+            // Save Filter tab
             var configService =
                 ServiceHelper.GetService<IConfigurationService>() ?? new ConfigurationService();
             var filterService =
@@ -1179,14 +1196,10 @@ namespace BalatroSeedOracle.ViewModels
                 DataContext = saveFilterViewModel,
             };
 
-            // Order must match UpdateTabVisibility mapping:
-            // 0=Visual, 1=JSON, 2=Save (LOAD tab removed - now using FilterSelectionModal)
-            TabItems.Add(new TabItemViewModel("VISUAL BUILDER", visualBuilderTab));
-            TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
-            // Separate SAVE header with SaveFilterTab content
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
 
             // Ensure initial tab content and visibility are set
+            // Order now: 0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }

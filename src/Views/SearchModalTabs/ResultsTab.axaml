@@ -81,5 +81,58 @@
         <controls:SortableResultsGrid Grid.Row="1"
                                       Name="ResultsGrid"
                                       Margin="0"/>
+
+        <!-- Loading overlay (shown when searching with 0 results) -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkerGrey}"
+                CornerRadius="8"
+                Padding="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                ZIndex="10">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsSearching"/>
+                    <Binding Path="ResultsCount" Converter="{x:Static ObjectConverters.Equal}" ConverterParameter="0"/>
+                </MultiBinding>
+            </Border.IsVisible>
+
+            <StackPanel Spacing="16" HorizontalAlignment="Center">
+                <TextBlock Text="◆"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="48"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center">
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock">
+                            <Style.Animations>
+                                <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="Opacity" Value="0.3"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+
+                <TextBlock Text="Searching for seeds..."
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Results will appear here as they are found"
+                           FontSize="12"
+                           Foreground="{StaticResource MediumGrey}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

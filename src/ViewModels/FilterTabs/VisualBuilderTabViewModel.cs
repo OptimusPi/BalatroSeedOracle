@@ -172,6 +172,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> SelectedShould { get; }
         public ObservableCollection<FilterItem> SelectedMustNot { get; }
 
+        // Operator trays for Configure Score tab
+        public ObservableCollection<FilterItem> OrTrayItems { get; }
+        public ObservableCollection<FilterItem> AndTrayItems { get; }
+
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
@@ -298,12 +302,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedShould = new ObservableCollection<FilterItem>();
             SelectedMustNot = new ObservableCollection<FilterItem>();
 
+            // Initialize operator trays
+            OrTrayItems = new ObservableCollection<FilterItem>();
+            AndTrayItems = new ObservableCollection<FilterItem>();
+
             ItemConfigs = new Dictionary<string, ItemConfig>();
 
             // Subscribe to collection changes for auto-save
             SelectedMust.CollectionChanged += OnZoneCollectionChanged;
             SelectedShould.CollectionChanged += OnZoneCollectionChanged;
             SelectedMustNot.CollectionChanged += OnZoneCollectionChanged;
+            OrTrayItems.CollectionChanged += OnZoneCollectionChanged;
+            AndTrayItems.CollectionChanged += OnZoneCollectionChanged;
 
             // Initialize commands
             AddToMustCommand = new RelayCommand<FilterItem>(AddToMust);
@@ -313,6 +323,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RemoveFromMustCommand = new RelayCommand<FilterItem>(RemoveFromMust);
             RemoveFromShouldCommand = new RelayCommand<FilterItem>(RemoveFromShould);
             RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
+
+            AddToOrTrayCommand = new RelayCommand<FilterItem>(AddToOrTray);
+            AddToAndTrayCommand = new RelayCommand<FilterItem>(AddToAndTray);
+            RemoveFromOrTrayCommand = new RelayCommand<FilterItem>(RemoveFromOrTray);
+            RemoveFromAndTrayCommand = new RelayCommand<FilterItem>(RemoveFromAndTray);
 
             // Simple property change handling
             PropertyChanged += (s, e) =>
@@ -601,6 +616,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand RemoveFromShouldCommand { get; }
         public ICommand RemoveFromMustNotCommand { get; }
 
+        public ICommand AddToOrTrayCommand { get; }
+        public ICommand AddToAndTrayCommand { get; }
+        public ICommand RemoveFromOrTrayCommand { get; }
+        public ICommand RemoveFromAndTrayCommand { get; }
+
         #endregion
 
         #region Command Implementations
@@ -762,6 +782,62 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
+        }
+
+        private void AddToOrTray(FilterItem? item)
+        {
+            if (item == null) return;
+
+            // Add to OR tray - these are still SHOULD items, just visually grouped
+            OrTrayItems.Add(item);
+
+            // Also add to SelectedShould to maintain compatibility with existing logic
+            if (!SelectedShould.Contains(item))
+            {
+                AddToShould(item);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to OR tray");
+        }
+
+        private void AddToAndTray(FilterItem? item)
+        {
+            if (item == null) return;
+
+            // Add to AND tray - these are still SHOULD items, just visually grouped
+            AndTrayItems.Add(item);
+
+            // Also add to SelectedShould to maintain compatibility with existing logic
+            if (!SelectedShould.Contains(item))
+            {
+                AddToShould(item);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to AND tray");
+        }
+
+        private void RemoveFromOrTray(FilterItem? item)
+        {
+            if (item == null) return;
+
+            OrTrayItems.Remove(item);
+
+            // Also remove from SelectedShould
+            RemoveFromShould(item);
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from OR tray");
+        }
+
+        private void RemoveFromAndTray(FilterItem? item)
+        {
+            if (item == null) return;
+
+            AndTrayItems.Remove(item);
+
+            // Also remove from SelectedShould
+            RemoveFromShould(item);
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from AND tray");
         }
 
         /// <summary>

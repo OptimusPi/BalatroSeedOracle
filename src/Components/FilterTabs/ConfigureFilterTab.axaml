@@ -1,0 +1,823 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.ConfigureFilterTab"
+             x:DataType="vm:VisualBuilderTabViewModel"
+             x:CompileBindings="True">
+
+    <UserControl.Styles>
+        <Style Selector="Border.dropzone-overlay">
+            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="ZIndex" Value="200"/>
+        </Style>
+
+        <Style Selector="Border.dropzone-overlay TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.dropzone-overlay TextBlock > Border.Effect">
+            <Setter Property="Effect">
+                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid VerticalAlignment="Stretch">
+        <Border Name="DragBackdrop"
+                Background="#00000066"
+                IsVisible="False"
+                IsHitTestVisible="False"
+                ZIndex="199"/>
+
+        <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="1.1*"/>
+                <ColumnDefinition Width="1.1*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
+                <Border Grid.Row="0"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12,8">
+                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </Border>
+
+                <Border Grid.Row="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="8,4">
+                    <TextBox Name="SearchBox"
+                             Watermark="Search items..."
+                             Text="{Binding SearchFilter, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource White}"
+                             Padding="4"
+                             VerticalContentAlignment="Center"
+                             FontSize="13">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
+                </Border>
+
+                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                    <Button Content="Favorites"
+                            Classes="nav-button special"
+                            Click="OnCategoryClick"
+                            Tag="Favorites"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Joker"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Joker"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Consumable"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Consumable"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Skip Tags"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="SkipTag"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Boss Blind"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Boss"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Voucher"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Voucher"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Standard Card"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="StandardCard"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <Border Grid.Row="4"
+                        Name="FavoritesDropOverlay"
+                        Background="{StaticResource Gold}"
+                        BorderBrush="#FFFFFF"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Styles>
+                        <Style Selector="Border[IsVisible=True]">
+                            <Style.Animations>
+                                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Gold}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Gold}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Gold}"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Border.Styles>
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource GoldColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <TextBlock Text="ADD TO FAVORITES"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="28"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Column="1" Margin="8,0">
+                <Border Name="ItemGridBorder"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12"
+                        DragDrop.AllowDrop="True">
+                    <ScrollViewer Name="ItemScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding GroupedItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
+                                    <StackPanel Margin="0,0,0,16">
+                                        <Border Background="{StaticResource DarkBackground}"
+                                                BorderThickness="0"
+                                                Padding="8,6"
+                                                Margin="0,0,0,4"
+                                                CornerRadius="4">
+                                            <TextBlock Text="{Binding GroupName}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="16"
+                                                       FontWeight="Normal"
+                                                       Foreground="{StaticResource LightGrey}"
+                                                       TextAlignment="Left"/>
+                                        </Border>
+
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="models:FilterItem">
+                                                    <Grid Margin="0,2" Width="54" Height="78">
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                        </i:Interaction.Behaviors>
+                                                        <Border Background="Transparent"
+                                                                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                                                                Cursor="Hand"
+                                                                ZIndex="0"
+                                                                ClipToBounds="True"
+                                                                IsHitTestVisible="False">
+                                                            <StackPanel Spacing="2">
+                                                                <Grid Width="48" Height="64">
+                                                                    <Image Source="{Binding ItemImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+
+                                                                    <Image Source="{Binding SoulFaceImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                </Grid>
+
+                                                                <TextBlock Text="{Binding DisplayName}"
+                                                                           Foreground="#FFFFFF"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="8"
+                                                                           HorizontalAlignment="Center"
+                                                                           TextAlignment="Center"
+                                                                           TextWrapping="Wrap"
+                                                                           MaxWidth="54"/>
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <Border ZIndex="1"
+                                                                Background="Transparent"
+                                                                Cursor="Hand"
+                                                                IsHitTestVisible="True"
+                                                                PointerPressed="OnItemPointerPressed"
+                                                                PointerEntered="OnCardPointerEntered"
+                                                                Width="54"
+                                                                Height="78"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
+                <Border Name="ReturnOverlay"
+                        Background="{StaticResource Orange}"
+                        BorderBrush="#FFFFFF"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Styles>
+                        <Style Selector="Border[IsVisible=True]">
+                            <Style.Animations>
+                                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Border.Styles>
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource OrangeColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <TextBlock Text="REMOVE FROM FILTER"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="24"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="90"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Name="TrayOrOperator"
+                            Cursor="Hand"
+                            PointerPressed="OnTrayOrPointerPressed"
+                            DragDrop.AllowDrop="True">
+                        <components:FilterOperatorControl DataContext="{Binding TrayOrOperator}"/>
+                    </Border>
+
+                    <Border Grid.Column="2"
+                            Name="TrayAndOperator"
+                            Cursor="Hand"
+                            PointerPressed="OnTrayAndPointerPressed"
+                            DragDrop.AllowDrop="True">
+                        <components:FilterOperatorControl DataContext="{Binding TrayAndOperator}"/>
+                    </Border>
+
+                    <Border Name="TrayOrDropOverlay"
+                            Grid.Column="0"
+                            Background="{StaticResource Green}"
+                            BorderBrush="#FFFFFF"
+                            BorderThickness="3"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            ZIndex="200">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource GreenColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN OR"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+
+                    <Border Name="TrayAndDropOverlay"
+                            Grid.Column="2"
+                            Background="{StaticResource Blue}"
+                            BorderBrush="#FFFFFF"
+                            BorderThickness="3"
+                            CornerRadius="6"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            ZIndex="200">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource BlueColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN AND"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="22"
+                                   FontWeight="ExtraBold"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <Grid Name="DropOverlaysGrid" Grid.Row="2" Grid.RowSpan="3" IsHitTestVisible="False" ZIndex="200">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Name="MustDropOverlay"
+                            Grid.Row="0"
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource Blue}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource BlueColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN MUST HAVE">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+
+                    <Border Name="MustNotDropOverlay"
+                            Grid.Row="1"
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource Red}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="Background" Value="{StaticResource Red}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource RedColor}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN BANNED ITEMS">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <Border Name="MustDropZone"
+                        Grid.Row="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="0"
+                        DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="8,4">
+                            <TextBlock Text="MUST"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource Blue}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding SelectedMust}" Margin="6">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:FilterItem">
+                                        <Expander Margin="0,0,0,6"
+                                                  HorizontalAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="4">
+                                                    <Grid Grid.Column="0" Width="24" Height="32" Margin="0,0,6,0">
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="24"
+                                                               Height="32"
+                                                               Stretch="Uniform"/>
+                                                        <Image Source="{Binding SoulFaceImage}"
+                                                               Width="24"
+                                                               Height="32"
+                                                               Stretch="Uniform"
+                                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding DisplayName}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource White}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,0,6,0"/>
+
+                                                    <Button Grid.Column="2"
+                                                            Content="×"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="White"
+                                                            FontSize="12"
+                                                            FontWeight="Bold"
+                                                            Width="20"
+                                                            Height="20"
+                                                            CornerRadius="10"
+                                                            Padding="0"
+                                                            HorizontalContentAlignment="Center"
+                                                            VerticalContentAlignment="Center">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <Border Background="{StaticResource ModalGrey}"
+                                                    BorderThickness="0"
+                                                    CornerRadius="4"
+                                                    Padding="8"
+                                                    Margin="4,0,4,4">
+                                                <StackPanel Spacing="6">
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Antes (optional)"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <CheckBox Content="1" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="2" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="3" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="4" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="5" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="6" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="7" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="8" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Edition"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <RadioButton Content="None" Margin="3,1" FontSize="10" IsChecked="True"/>
+                                                            <RadioButton Content="Foil" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Holo" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Poly" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Negative" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Source"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <CheckBox Content="Booster" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="Shop" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="Tags" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </Expander>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <Border Name="MustNotDropZone"
+                        Grid.Row="4"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="0"
+                        DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="8,4">
+                            <TextBlock Text="BANNED"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource Red}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding SelectedMustNot}" Margin="6">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:FilterItem">
+                                        <Expander Margin="0,0,0,6"
+                                                  HorizontalAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="4">
+                                                    <Grid Grid.Column="0" Width="24" Height="32" Margin="0,0,6,0">
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="24"
+                                                               Height="32"
+                                                               Stretch="Uniform"/>
+                                                        <Image Source="{Binding SoulFaceImage}"
+                                                               Width="24"
+                                                               Height="32"
+                                                               Stretch="Uniform"
+                                                               IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding DisplayName}"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource White}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,0,6,0"/>
+
+                                                    <Button Grid.Column="2"
+                                                            Content="×"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="{StaticResource Red}"
+                                                            Foreground="White"
+                                                            FontSize="12"
+                                                            FontWeight="Bold"
+                                                            Width="20"
+                                                            Height="20"
+                                                            CornerRadius="10"
+                                                            Padding="0"
+                                                            HorizontalContentAlignment="Center"
+                                                            VerticalContentAlignment="Center">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <Border Background="{StaticResource ModalGrey}"
+                                                    BorderThickness="0"
+                                                    CornerRadius="4"
+                                                    Padding="8"
+                                                    Margin="4,0,4,4">
+                                                <StackPanel Spacing="6">
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Antes (optional)"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <CheckBox Content="1" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="2" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="3" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="4" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="5" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="6" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="7" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="8" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Edition"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <RadioButton Content="None" Margin="3,1" FontSize="10" IsChecked="True"/>
+                                                            <RadioButton Content="Foil" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Holo" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Poly" Margin="3,1" FontSize="10"/>
+                                                            <RadioButton Content="Negative" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Spacing="4">
+                                                        <TextBlock Text="Source"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="10"
+                                                                   Foreground="{StaticResource LightGrey}"/>
+                                                        <WrapPanel>
+                                                            <CheckBox Content="Booster" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="Shop" Margin="3,1" FontSize="10"/>
+                                                            <CheckBox Content="Tags" Margin="3,1" FontSize="10"/>
+                                                        </WrapPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                            </Border>
+                                        </Expander>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

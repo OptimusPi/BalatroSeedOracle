@@ -126,7 +126,13 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 _ => AllResults.OrderByDescending(r => r.TotalScore)
             };
 
-            AllResults = new ObservableCollection<SearchResult>(sorted);
+            // Preserve collection instance to maintain bindings
+            var sortedList = sorted.ToList();
+            AllResults.Clear();
+            foreach (var item in sortedList)
+            {
+                AllResults.Add(item);
+            }
         }
 
         private void UpdateDisplay()
@@ -137,10 +143,14 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             // Get current page items
             var startIndex = (CurrentPage - 1) * ItemsPerPage;
-            var pageItems = AllResults.Skip(startIndex).Take(ItemsPerPage);
+            var pageItems = AllResults.Skip(startIndex).Take(ItemsPerPage).ToList();
 
-            // Update displayed results
-            DisplayedResults = new ObservableCollection<SearchResult>(pageItems);
+            // Update displayed results (preserve collection instance)
+            DisplayedResults.Clear();
+            foreach (var item in pageItems)
+            {
+                DisplayedResults.Add(item);
+            }
 
             // Update computed properties
             UpdatePageInfo();
