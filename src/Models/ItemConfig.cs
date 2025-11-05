@@ -19,14 +19,14 @@ namespace BalatroSeedOracle.Models
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<int>? Antes { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public string Edition { get; set; } = "none";
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Edition { get; set; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public string Seal { get; set; } = "None"; // Red, Blue, Gold, Purple
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Seal { get; set; } // Red, Blue, Gold, Purple
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public string Enhancement { get; set; } = "None"; // Bonus, Mult, Wild, Glass, Steel, Stone, Lucky
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Enhancement { get; set; } // Bonus, Mult, Wild, Glass, Steel, Stone, Lucky
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Rank { get; set; } // For playing cards
