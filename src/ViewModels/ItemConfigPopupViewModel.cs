@@ -170,9 +170,9 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             }
         }
 
-        SelectedEdition = config.Edition;
-        SelectedSeal = config.Seal;
-        SelectedEnhancement = config.Enhancement;
+        SelectedEdition = config.Edition ?? "none";
+        SelectedSeal = config.Seal ?? "None";
+        SelectedEnhancement = config.Enhancement ?? "None";
         SelectedRank = config.Rank ?? "Ace";
         SelectedSuit = config.Suit ?? "Spades";
 
