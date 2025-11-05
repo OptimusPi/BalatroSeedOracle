@@ -33,6 +33,5 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
     <PackageVersion Include="SkiaSharp" Version="3.119.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" />
-    <PackageVersion Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 </Project>

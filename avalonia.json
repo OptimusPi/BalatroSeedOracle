@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "targetFramework": "net9.0",
   "outputType": "Exe",
-  "startupObject": "NalatroSeedOracle.Program",
+  "startupObject": "BalatroSeedOracle.Program",
   "projectPath": "src/BalatroSeedOracle.csproj",
   "outputPath": "src/bin/Debug/net9.0/BalatroSeedOracle.dll",
   "workingDirectory": "",
