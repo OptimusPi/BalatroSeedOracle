@@ -193,7 +193,7 @@ namespace BalatroSeedOracle.Behaviors
 
                 var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
 
-                // Step 2: Pinch in (ScaleX: 1 → 0)
+                // Step 2: Pinch in (ScaleX: 1 → 0.15 to keep card visible)
                 var pinchIn = new Avalonia.Animation.Animation
                 {
                     Duration = pinchDuration,
@@ -207,7 +207,7 @@ namespace BalatroSeedOracle.Behaviors
                             {
                                 new Setter(
                                     ScaleTransform.ScaleXProperty,
-                                    UIConstants.InvisibleOpacity
+                                    0.15  // Keep card slightly visible instead of completely invisible
                                 ),
                             },
                         },
@@ -301,6 +301,12 @@ namespace BalatroSeedOracle.Behaviors
             }
             finally
             {
+                // Ensure transform is reset even if animation is interrupted
+                if (AssociatedObject != null && AssociatedObject.RenderTransform is ScaleTransform st)
+                {
+                    st.ScaleX = UIConstants.DefaultScaleFactor;
+                    st.ScaleY = UIConstants.DefaultScaleFactor;
+                }
                 _isAnimating = false;
             }
         }

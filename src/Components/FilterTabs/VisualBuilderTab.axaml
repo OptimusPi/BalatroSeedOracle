@@ -42,7 +42,7 @@
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>   <!-- Left: Category Buttons -->
+                <ColumnDefinition Width="125"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
             </Grid.ColumnDefinitions>
@@ -69,7 +69,8 @@
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="8"
-                        Padding="8,4">
+                        Padding="8,4"
+                        Margin="4,0,4,0">
                     <TextBox Name="SearchBox"
                              Watermark="Search items..."
                              Text="{Binding SearchFilter, Mode=TwoWay}"
