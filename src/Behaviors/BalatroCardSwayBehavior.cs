@@ -81,13 +81,23 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            // STOP ambient sway when card is being hovered
+            // CRITICAL FIX: STOP ambient sway when card is being hovered
+            // This prevents the seizure-inducing flicker when hovering between cards
             // Walk up visual tree to find ResponsiveCard parent
             var parent = AssociatedObject.Parent;
             while (parent != null)
             {
-                if (parent is Components.ResponsiveCard card && card.IsHovering)
-                    return; // Stop animation when hovering
+                if (parent is Components.ResponsiveCard card)
+                {
+                    if (card.IsHovering)
+                    {
+                        // IMMEDIATELY reset rotation to 0 when hovering starts
+                        // This prevents jiggle caused by rotation moving hitbox edge
+                        ResetRotation();
+                        return; // Stop animation when hovering
+                    }
+                    break;
+                }
                 parent = parent.Parent;
             }
 
@@ -110,11 +120,11 @@ namespace BalatroSeedOracle.Behaviors
             // Calculate elapsed time (like G.TIMERS.REAL in Balatro)
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
 
-            // Balatro's ambient tilt formula:
+            // Balatro's ambient tilt formula from card.lua:4380
             // local tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
             var tilt_angle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
-            // Tilt amount based on cos wave (creates breathing effect)
+            // Tilt amount based on cos wave (creates breathing effect) from card.lua:4383
             // self.tilt_var.amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
             var tilt_amt =
                 AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
@@ -122,6 +132,31 @@ namespace BalatroSeedOracle.Behaviors
             // Apply rotation (convert to degrees)
             // Balatro rotates in radians, we need degrees
             rotateTransform.Angle = tilt_amt * UIConstants.CardRotationToDegrees; // Scale for visibility
+        }
+
+        /// <summary>
+        /// Immediately reset rotation to 0 to prevent flicker/jiggle
+        /// </summary>
+        private void ResetRotation()
+        {
+            if (AssociatedObject == null)
+                return;
+
+            RotateTransform? rotateTransform = null;
+
+            if (AssociatedObject.RenderTransform is RotateTransform rotate)
+            {
+                rotateTransform = rotate;
+            }
+            else if (AssociatedObject.RenderTransform is TransformGroup group)
+            {
+                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+            }
+
+            if (rotateTransform != null)
+            {
+                rotateTransform.Angle = 0;
+            }
         }
     }
 }

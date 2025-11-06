@@ -34,9 +34,15 @@ namespace BalatroSeedOracle.ViewModels
 
         // Computed display properties that delegate to Config
         public string DisplayName => Config.ItemName;
+        public string Name => Config.ItemName; // Alias for compatibility
         public string ItemType => Config.ItemType;
+        public string Type => Config.ItemType; // Alias for compatibility
         public string ItemKey => Config.ItemKey;
         public string Category => Config.ItemType; // For filtering/grouping
+
+        // Additional UI-only properties for compatibility with existing code
+        public bool IsFavorite { get; set; }
+        public int StaggerDelay { get; set; } // For flip animations
 
         // For OR/AND operators - wraps Config.Children
         public ObservableCollection<FilterBuilderItemViewModel>? ChildViewModels { get; set; }

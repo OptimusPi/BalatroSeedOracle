@@ -280,5 +280,26 @@ namespace BalatroSeedOracle.Models
         /// Audio source for search complete trigger (0=None, 1=Drums, 2=Bass, 3=Chords, 4=Melody)
         /// </summary>
         public int SearchCompleteAudioSource { get; set; } = 3; // Default to Chords
+
+        // ============================================
+        // SEARCH TRANSITION SETTINGS (Progress-Driven Shader Effects)
+        // ============================================
+
+        /// <summary>
+        /// Enable shader transition during searches (colors/effects change as search progresses 0-100%)
+        /// </summary>
+        public bool EnableSearchTransition { get; set; } = false;
+
+        /// <summary>
+        /// Name of the preset to use as the START state (0% progress) for search transitions
+        /// Set to null or empty to use default dark/red preset
+        /// </summary>
+        public string? SearchTransitionStartPresetName { get; set; }
+
+        /// <summary>
+        /// Name of the preset to use as the END state (100% progress) for search transitions
+        /// Set to null or empty to use default bright/blue preset
+        /// </summary>
+        public string? SearchTransitionEndPresetName { get; set; }
     }
 }

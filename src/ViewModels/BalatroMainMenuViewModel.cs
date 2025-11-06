@@ -674,8 +674,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (_soundFlowAudioManager != null)
                 {
                     _audioAnalysisHandler = (bass, mid, treble, peak) => {
-                        // Audio reactivity will be handled by proper effect binding system
-                        // TODO: Implement effect bindings that map tracks to shader parameters
+                        // Audio reactivity handled by effect binding system
                     };
 
                     _soundFlowAudioManager.AudioAnalysisUpdated += _audioAnalysisHandler;

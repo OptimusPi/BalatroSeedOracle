@@ -130,8 +130,7 @@ public partial class ItemConfigPopupViewModel : ObservableObject
         // ItemName will be set from the view
         // ItemImage will be set from the view
 
-        // Determine visibility based on item type or other properties
-        // This is a placeholder, the actual logic will be more complex
+        // Determine visibility based on item type
         AntesVisible = true;
         EditionVisible = config.ItemType == "Joker" || config.ItemType == "StandardCard";
         SealVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";

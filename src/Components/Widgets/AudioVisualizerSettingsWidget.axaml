@@ -1172,6 +1172,58 @@
                             </Grid>
                         </StackPanel>
 
+                        <!-- SEARCH TRANSITIONS -->
+                        <StackPanel Spacing="6" Margin="0,12,0,0">
+                            <TextBlock Text="SEARCH TRANSITIONS" Foreground="{StaticResource White}" FontSize="16"/>
+                            <TextBlock Text="Shader effects that transition as search progresses 0-100%" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,4"/>
+
+                            <!-- Enable Toggle -->
+                            <CheckBox Content="Enable shader transitions during searches"
+                                      IsChecked="{Binding EnableSearchTransition}"
+                                      Foreground="{StaticResource White}"
+                                      FontSize="14"
+                                      Margin="0,0,0,8"/>
+
+                            <!-- Start Preset Dropdown -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0"
+                                           Text="Start Preset:"
+                                           Foreground="{StaticResource White}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           MinWidth="120"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailablePresetNames}"
+                                          SelectedItem="{Binding SearchTransitionStartPresetName}"
+                                          HorizontalAlignment="Stretch"
+                                          FontSize="13"/>
+                            </Grid>
+
+                            <!-- End Preset Dropdown -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0"
+                                           Text="End Preset:"
+                                           Foreground="{StaticResource White}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           MinWidth="120"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailablePresetNames}"
+                                          SelectedItem="{Binding SearchTransitionEndPresetName}"
+                                          HorizontalAlignment="Stretch"
+                                          FontSize="13"/>
+                            </Grid>
+
+                            <!-- Refresh Button -->
+                            <Button Content="Refresh Preset List"
+                                    Classes="btn-blue"
+                                    Command="{Binding RefreshPresetListCommand}"
+                                    HorizontalAlignment="Left"
+                                    Height="32"
+                                    Padding="16,4"
+                                    Margin="0,4,0,0"/>
+                        </StackPanel>
+
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

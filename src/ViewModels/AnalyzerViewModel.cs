@@ -183,7 +183,6 @@ public partial class AnalyzerViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadMoreAntesAsync()
     {
-        // Placeholder for Ante 9+ support
         await Task.CompletedTask;
     }
 

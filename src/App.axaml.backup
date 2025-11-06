@@ -1,0 +1,193 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.App"
+             xmlns:local="using:BalatroSeedOracle"
+             RequestedThemeVariant="Dark">
+    
+    <Application.Resources>
+        <FontFamily x:Key="BalatroFont">avares://BalatroSeedOracle/m6x11plusplus.otf#m6x11plusplus</FontFamily>
+
+        <!-- EVERY COLOR DEFINED EXACTLY ONCE -->
+        <SolidColorBrush x:Key="Red">#ff4c40</SolidColorBrush>
+        <SolidColorBrush x:Key="RedHover">#a02721</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkRed">#a02721</SolidColorBrush>
+        <SolidColorBrush x:Key="BadgeRedEdge">#a92b23</SolidColorBrush>
+        <SolidColorBrush x:Key="Blue">#0093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="BlueHover">#0057a1</SolidColorBrush>
+        <SolidColorBrush x:Key="Orange">#ff9800</SolidColorBrush>
+        <SolidColorBrush x:Key="OrangeHover">#a05b00</SolidColorBrush>
+        <SolidColorBrush x:Key="Green">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenHover">#2a9568</SolidColorBrush>
+        <SolidColorBrush x:Key="Purple">#9e74ce</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleHover">#7d5ca8</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalGrey">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalBorder">#b9c2d2</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalBorderSouth">#777e89</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBackground">#2e3f42</SolidColorBrush>
+        <SolidColorBrush x:Key="MediumGreyPanel">#33464b</SolidColorBrush>
+        <SolidColorBrush x:Key="MediumGrey">#33464b</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkTealGrey">#1e2b2d</SolidColorBrush>
+        <SolidColorBrush x:Key="LightGrey">#708386</SolidColorBrush>
+        <SolidColorBrush x:Key="SilverBadge">#a3acb9</SolidColorBrush>
+        <SolidColorBrush x:Key="SilverBadgeShadow">#686e78</SolidColorBrush>
+        <SolidColorBrush x:Key="White">#FFFFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="Black">#374244</SolidColorBrush>
+        <SolidColorBrush x:Key="PureBlack">#374244</SolidColorBrush>
+        <SolidColorBrush x:Key="PaleRed">#8f3b36</SolidColorBrush>
+        <SolidColorBrush x:Key="Gold">#eac058</SolidColorBrush>
+        <SolidColorBrush x:Key="PlanetTeal">#00a7ca</SolidColorBrush>
+        <SolidColorBrush x:Key="SpectralBlue">#2e76fd</SolidColorBrush>
+        <SolidColorBrush x:Key="VoucherOrange">#ff5611</SolidColorBrush>
+        <SolidColorBrush x:Key="HoverShadow">#1e2e32</SolidColorBrush>
+        <SolidColorBrush x:Key="SliderEmpty">#2a2a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="LightTextGrey">#bfc7d5</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryLightGrey">#D8D8D8</SolidColorBrush>
+        <SolidColorBrush x:Key="TextInactive">#88888899</SolidColorBrush>
+        <SolidColorBrush x:Key="BodyText">#4a4a4a</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBorder">#4F6367</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGreyBorder">#5f7377</SolidColorBrush>
+        <SolidColorBrush x:Key="Teal">#008ee6</SolidColorBrush>
+        <SolidColorBrush x:Key="OrangeText">#ff8f00</SolidColorBrush>
+        <SolidColorBrush x:Key="GoldText">#f5b244</SolidColorBrush>
+        <SolidColorBrush x:Key="TextBlue">#0093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="SpecialGreenText">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="GreenHighlight">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="SouthModalShadow">#777e89</SolidColorBrush>
+        <SolidColorBrush x:Key="LightGreyHover">#404c4e</SolidColorBrush>
+        <SolidColorBrush x:Key="TarotPurple">#9e74ce</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentBlack">#44222222</SolidColorBrush>
+        <SolidColorBrush x:Key="LightCream">#f5e6d3</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkerGrey">#1e2b2d</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGrey">#2e3f42</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryDarkGrey">#1e2b2d</SolidColorBrush>
+        <SolidColorBrush x:Key="DaytroOrange">#ff9800</SolidColorBrush>
+        <SolidColorBrush x:Key="DockGrey">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="MediumBackground">#7A9E9F</SolidColorBrush>
+        <BoxShadows x:Key="StandardModalShadow">0 4 8 0 #777e89</BoxShadows>
+        <SolidColorBrush x:Key="ItemConfigDarkBg">#374244</SolidColorBrush>
+        <SolidColorBrush x:Key="ItemConfigMediumBg">#424e54</SolidColorBrush>
+        <SolidColorBrush x:Key="MainBackground">#7A9E9F</SolidColorBrush>
+        <SolidColorBrush x:Key="Border">#7A9E9F</SolidColorBrush>
+        <SolidColorBrush x:Key="Background">#5f8a8d</SolidColorBrush>
+        <SolidColorBrush x:Key="LightContentBackground">#5f8a8d</SolidColorBrush>
+        <SolidColorBrush x:Key="AccentGreen">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalBackground">#374244</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalGreen">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="RedHighlight">#ff4c40</SolidColorBrush>
+        <SolidColorBrush x:Key="TextDark">#4F6367</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleRed">#ff4c40</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleBlue">#0093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleGreen">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="ToggleRedHover">#a02721</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentDarkBackground">#2e3f4266</SolidColorBrush>
+        <SolidColorBrush x:Key="LightBlue">#0093ff</SolidColorBrush>
+        <SolidColorBrush x:Key="BrighterBlue">#2e76fd</SolidColorBrush>
+        <SolidColorBrush x:Key="TealGrey">#5f8a8d</SolidColorBrush>
+        <SolidColorBrush x:Key="MediumDarkGrey">#344143</SolidColorBrush>
+        <SolidColorBrush x:Key="PopupBackground">#2e3f42</SolidColorBrush>
+        <SolidColorBrush x:Key="PopupHover">#3a5055</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardGreen">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardGreenHover">#35bd86</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardRed">#ff4c40</SolidColorBrush>
+        <SolidColorBrush x:Key="ResponsiveCardRedHover">#a02721</SolidColorBrush>
+
+        <!-- Color variants for effects (DropShadowEffect requires Color type, not Brush) -->
+        <Color x:Key="BlueColor">#0093ff</Color>
+        <Color x:Key="GoldColor">#eac058</Color>
+        <Color x:Key="GreenColor">#35bd86</Color>
+        <Color x:Key="RedColor">#ff4c40</Color>
+        <Color x:Key="OrangeColor">#ff9800</Color>
+
+        <!-- Dramatic backdrop overlay for drag operations -->
+        <SolidColorBrush x:Key="DragBackdropOverlay">#80000000</SolidColorBrush>
+
+        <!-- Additional colors for UI elements -->
+        <SolidColorBrush x:Key="NeonGreen">#00FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGold">#FFD700</SolidColorBrush>
+        <SolidColorBrush x:Key="LightGrey2">#CCCCCC</SolidColorBrush>
+        <SolidColorBrush x:Key="Cyan">#00FFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="CyanHighlight">#6ECFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="CardBrown">#8B7355</SolidColorBrush>
+        <SolidColorBrush x:Key="CardCream">#F4E4C1</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGrey2">#1a1a1a</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGrey3">#2a2a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryDarkGrey2">#1A1D23</SolidColorBrush>
+        <SolidColorBrush x:Key="SlateGrey">#8FA5B0</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBorderGrey">#4A5A6A</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleViolet">#2a1a4a</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkPurple">#1a0a2a</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleMuted">#4a3a6a</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightRed">#FF5050</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGreen">#40C853</SolidColorBrush>
+        <SolidColorBrush x:Key="DarkGreenTeal">#2A8A3A</SolidColorBrush>
+        <SolidColorBrush x:Key="VeryDarkTeal">#1A3A3A</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorDarkBg">#1e1e1e</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorHeaderBg">#2d2d30</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorBorderBg">#3e3e42</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorButtonBg">#404045</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorStatusBg">#252526</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorTextGrey">#cccccc</SolidColorBrush>
+        <SolidColorBrush x:Key="EditorLineNumbers">#888888</SolidColorBrush>
+        <SolidColorBrush x:Key="PurpleButton">#6f42c1</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightGreenEditor">#27ca3f</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentNeonGreen">#2200FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="SemiTransparentNeonGreen2">#4400FF88</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark1">#11000000</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark2">#11001100</SolidColorBrush>
+        <SolidColorBrush x:Key="TransparentDark3">#00000033</SolidColorBrush>
+        <SolidColorBrush x:Key="SliderGrey">#404040</SolidColorBrush>
+        <SolidColorBrush x:Key="SuccessGreen">#51cf66</SolidColorBrush>
+        <SolidColorBrush x:Key="ErrorRed">#ff6b6b</SolidColorBrush>
+        <SolidColorBrush x:Key="ModalOverlay">#80000000</SolidColorBrush>
+        <SolidColorBrush x:Key="BrightRed2">#FF0000</SolidColorBrush>
+
+        <LinearGradientBrush x:Key="GoldGradient1" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#f3d078" Offset="0"/>
+            <GradientStop Color="#eac058" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GoldGradient2" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#f3d078" Offset="0"/>
+            <GradientStop Color="#d4a840" Offset="1"/>
+        </LinearGradientBrush>
+
+        <x:Double x:Key="FontSizeNormal">14</x:Double>
+        <x:Double x:Key="FontSizeSmall">12</x:Double>
+        <x:Double x:Key="FontSizeLarge">16</x:Double>
+
+    </Application.Resources>
+
+    <Application.Styles>
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroTabs.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroAnimations.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroModal.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/TextBoxStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroSliderStyles.axaml" />
+
+        <Style Selector="TextBlock.balatro-triangle">
+            <Setter Property="Foreground" Value="{StaticResource Red}"/>
+            <Setter Property="Text" Value="▼"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Opacity" Value="1.0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Margin" Value="0,0,0,0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Margin" Value="0,-4,0,0"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+    </Application.Styles>
+</Application>

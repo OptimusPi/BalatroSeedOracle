@@ -150,6 +150,10 @@ namespace BalatroSeedOracle.Models
         public string? Enhancement { get; set; }
         public string? Seal { get; set; }
 
+        // Animation properties
+        // Used for staggered flip animations - each card gets a unique delay
+        public int StaggerDelay { get; set; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

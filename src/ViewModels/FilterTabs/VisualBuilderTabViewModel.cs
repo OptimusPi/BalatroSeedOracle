@@ -180,6 +180,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
+        // Flip Animation Trigger - incremented whenever edition/sticker/seal changes
+        // Cards watch this property and flip when it changes
+        [ObservableProperty]
+        private int _flipAnimationTrigger = 0;
+
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
         private string _currentEdition = "None";
@@ -553,10 +558,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddGroup(string groupName, IEnumerable<FilterItem> items)
         {
+            // Assign stagger delays for flip animation (20ms between each card for smooth wave effect)
+            int delayCounter = 0;
+            var itemsList = items.ToList();
+            foreach (var item in itemsList)
+            {
+                item.StaggerDelay = delayCounter * 20; // 20ms stagger between cards
+                delayCounter++;
+            }
+
             var group = new ItemGroup
             {
                 GroupName = groupName,
-                Items = new ObservableCollection<FilterItem>(items),
+                Items = new ObservableCollection<FilterItem>(itemsList),
             };
             GroupedItems.Add(group);
         }
@@ -2117,12 +2131,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for all items in drop zones AND future items
+        /// Sets the edition for ALL items in shelf (GroupedItems) AND drop zones
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
         {
             SelectedEdition = edition;
+
+            // Apply to ALL items in the shelf
+            foreach (var group in GroupedItems)
+            {
+                foreach (var item in group.Items)
+                {
+                    if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    {
+                        config.Edition = edition == "None" ? null : edition.ToLower();
+                    }
+                }
+            }
 
             // Apply to all existing items in drop zones
             if (_parentViewModel != null)
@@ -2137,7 +2163,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items");
+            // TRIGGER FLIP ANIMATION for all items in shelf
+            FlipAnimationTrigger++;
+
+            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger})");
         }
 
         /// <summary>
@@ -2151,7 +2180,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items");
+            // TRIGGER FLIP ANIMATION for all items in shelf
+            FlipAnimationTrigger++;
+
+            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
         }
 
         /// <summary>
@@ -2165,7 +2197,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items");
+            // TRIGGER FLIP ANIMATION for all items in shelf
+            FlipAnimationTrigger++;
+
+            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
         }
 
         /// <summary>
@@ -2179,23 +2214,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items");
+            // TRIGGER FLIP ANIMATION for all items in shelf
+            FlipAnimationTrigger++;
+
+            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
         }
 
         /// <summary>
-        /// Sets the seal for all StandardCard items in drop zones AND future items
+        /// Sets the seal for all StandardCard items in shelf AND drop zones
         /// </summary>
         [RelayCommand]
         public void SetSeal(string seal)
         {
             SelectedSeal = seal;
 
-            // Apply to all existing items
-            if (_parentViewModel != null)
+            if (_parentViewModel == null) return;
+
+            // Apply to ALL items in the shelf
+            foreach (var group in GroupedItems)
             {
-                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                foreach (var item in group.Items)
                 {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                    if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         // Only apply seal to StandardCards
                         if (config.ItemType == "StandardCard")
@@ -2204,10 +2244,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         }
                     }
                 }
-                TriggerAutoSave();
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards");
+            // Apply to all existing items in drop zones
+            foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+            {
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    // Only apply seal to StandardCards
+                    if (config.ItemType == "StandardCard")
+                    {
+                        config.Seal = seal == "None" ? null : seal;
+                    }
+                }
+            }
+
+            TriggerAutoSave();
+
+            // TRIGGER FLIP ANIMATION for all items in shelf
+            FlipAnimationTrigger++;
+
+            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger})");
         }
 
         /// <summary>
@@ -2229,41 +2286,40 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
-        /// Applies stickers to all items currently in drop zones
+        /// Applies stickers to all items in shelf AND drop zones
+        /// Respects Eternal restrictions for specific jokers and Soul Jokers
         /// </summary>
         private void ApplyStickersToAllItems()
         {
             if (_parentViewModel == null) return;
 
+            // Jokers that CANNOT be Eternal (from Balatro game logic)
+            var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
+                "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                // Soul Jokers also cannot be Eternal
+                "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
+            };
+
+            // Apply to ALL items in the shelf
+            foreach (var group in GroupedItems)
+            {
+                foreach (var item in group.Items)
+                {
+                    if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    {
+                        ApplyStickerLogic(config, item.Name, eternalRestrictedJokers);
+                    }
+                }
+            }
+
+            // Apply to all existing items in drop zones
             foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
             {
                 if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                 {
-                    // Build sticker list based on current toggles
-                    var stickers = new List<string>();
-                    if (StickerPerishable)
-                        stickers.Add("perishable");
-
-                    // Check CanBeEternal based on ItemType
-                    bool canBeEternal = config.ItemType switch
-                    {
-                        "Joker" or "SoulJoker" => true,
-                        "Tarot" or "Planet" or "Spectral" => true,
-                        "Voucher" => true,
-                        "StandardCard" => true,
-                        "SmallBlindTag" or "BigBlindTag" => false,
-                        "Boss" => false,
-                        _ => false
-                    };
-
-                    if (StickerEternal && canBeEternal)
-                        stickers.Add("eternal");
-
-                    if (StickerRental)
-                        stickers.Add("rental");
-
-                    // Apply stickers (or clear if none selected)
-                    config.Stickers = stickers.Any() ? stickers : null;
+                    ApplyStickerLogic(config, config.ItemName, eternalRestrictedJokers);
                 }
             }
 
@@ -2271,8 +2327,56 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
+        /// Helper method to apply sticker logic with Eternal restrictions
+        /// </summary>
+        private void ApplyStickerLogic(ItemConfig config, string itemName, HashSet<string> eternalRestrictedJokers)
+        {
+            // Build sticker list based on current toggles
+            var stickers = new List<string>();
+
+            // Perishable and Eternal are mutually exclusive
+            if (StickerPerishable)
+            {
+                stickers.Add("perishable");
+            }
+            else if (StickerEternal)
+            {
+                // Check if item type can be eternal
+                bool canTypeBeEternal = config.ItemType switch
+                {
+                    "Joker" or "SoulJoker" => true,
+                    "Tarot" or "Planet" or "Spectral" => true,
+                    "Voucher" => true,
+                    "StandardCard" => true,
+                    "SmallBlindTag" or "BigBlindTag" => false,
+                    "Boss" => false,
+                    _ => false
+                };
+
+                // Check if specific joker is restricted from Eternal
+                bool isRestrictedJoker = (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
+                    && eternalRestrictedJokers.Contains(itemName);
+
+                if (canTypeBeEternal && !isRestrictedJoker)
+                {
+                    stickers.Add("eternal");
+                }
+            }
+
+            // Rental can combine with Eternal but not Perishable
+            if (StickerRental && !StickerPerishable)
+            {
+                stickers.Add("rental");
+            }
+
+            // Apply stickers (or clear if none selected)
+            config.Stickers = stickers.Any() ? stickers : null;
+        }
+
+        /// <summary>
         /// Applies the currently selected edition, stickers, and seal to an ItemConfig
         /// Called when an item is added to a drop zone
+        /// Respects Eternal restrictions for specific jokers
         /// </summary>
         private void ApplyEditionStickersSeal(ItemConfig config, FilterItem item)
         {
@@ -2282,16 +2386,39 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Edition = SelectedEdition.ToLower();
             }
 
-            // Apply Stickers
+            // Apply Stickers with Eternal restrictions
+            var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
+                "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                // Soul Jokers also cannot be Eternal
+                "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
+            };
+
             var stickers = new List<string>();
+
+            // Perishable and Eternal are mutually exclusive
             if (StickerPerishable)
+            {
                 stickers.Add("perishable");
+            }
+            else if (StickerEternal && CanItemBeEternal(item))
+            {
+                // Check if specific joker is restricted from Eternal
+                bool isRestrictedJoker = (item.Type == "Joker" || item.Type == "SoulJoker")
+                    && eternalRestrictedJokers.Contains(item.Name);
 
-            if (StickerEternal && CanItemBeEternal(item))
-                stickers.Add("eternal");
+                if (!isRestrictedJoker)
+                {
+                    stickers.Add("eternal");
+                }
+            }
 
-            if (StickerRental)
+            // Rental can combine with Eternal but not Perishable
+            if (StickerRental && !StickerPerishable)
+            {
                 stickers.Add("rental");
+            }
 
             if (stickers.Any())
             {

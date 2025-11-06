@@ -57,7 +57,10 @@
                 </TransformGroup>
             </Border.RenderTransform>
             <i:Interaction.Behaviors>
+                <!-- Ambient breathing sway - ONLY active when NOT hovering -->
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                <!-- Magnetic 3D tilt toward mouse - ONLY active when hovering -->
+                <behaviors:MagneticTiltBehavior TiltFactor="0.3" MaxTiltAngle="15" />
             </i:Interaction.Behaviors>
             <Border.Transitions>
                 <Transitions>

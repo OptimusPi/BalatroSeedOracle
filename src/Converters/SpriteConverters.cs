@@ -554,4 +554,120 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts an edition string to its sprite image
+    /// </summary>
+    public class EditionSpriteConverter : IValueConverter
+    {
+        public static readonly EditionSpriteConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            var edition = parameter as string ?? value as string;
+            if (string.IsNullOrEmpty(edition))
+                return null;
+
+            // Special case for "None" - return regular joker sprite
+            if (edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetItemImage("Joker", "Joker");
+            }
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetEditionImage(edition);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("EditionSpriteConverter", $"Failed to get edition sprite for '{edition}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts a sticker string to its sprite image (Joker with sticker overlay)
+    /// </summary>
+    public class StickerSpriteConverter : IValueConverter
+    {
+        public static readonly StickerSpriteConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            var sticker = parameter as string ?? value as string;
+            if (string.IsNullOrEmpty(sticker))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                // Return composite image of Joker with sticker overlay
+                return spriteService.GetJokerWithStickerImage(sticker);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("StickerSpriteConverter", $"Failed to get sticker sprite for '{sticker}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts a seal string to its sprite image
+    /// </summary>
+    public class SealSpriteConverter : IValueConverter
+    {
+        public static readonly SealSpriteConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            var seal = parameter as string ?? value as string;
+            if (string.IsNullOrEmpty(seal) || seal.Equals("None", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetSealImage(seal);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SealSpriteConverter", $"Failed to get seal sprite for '{seal}': {ex.Message}");
+                return null;
+            }
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

@@ -288,7 +288,7 @@ namespace BalatroSeedOracle.Components
 
         private void OnPointerEntered(object? sender, PointerEventArgs e)
         {
-            IsHovering = true; // Stop ambient sway
+            IsHovering = true; // Stop ambient sway, enable magnetic tilt
 
             // CRITICAL FIX: Reset rotation to 0 immediately to prevent jiggle
             // The ambient sway rotation causes hitbox edge to move away from mouse,
@@ -297,6 +297,9 @@ namespace BalatroSeedOracle.Components
             {
                 _cardRotateTransform.Angle = 0;
             }
+
+            // Play Balatro-style hover "thud" animation
+            PlayHoverThudAnimation();
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)

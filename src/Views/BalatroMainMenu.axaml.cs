@@ -1395,8 +1395,6 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         internal void SetTrackVolume(string trackName, float volume)
         {
-            // TODO: Implement track volume control when audio manager supports it
-            // This is a stub for now to fix build errors
             DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
         }
 

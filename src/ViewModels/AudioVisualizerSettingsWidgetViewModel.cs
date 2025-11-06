@@ -56,6 +56,12 @@ namespace BalatroSeedOracle.ViewModels
             // Load old trigger points from file (backwards compatibility)
             _ = LoadTriggerPointsFromFile();
 
+            // Load search transition settings from user profile
+            LoadSearchTransitionSettings();
+
+            // Load available preset names for search transition dropdowns
+            RefreshPresetList();
+
             // Wire up property change notifications from underlying ViewModel
             _settingsViewModel.PropertyChanged += (s, e) =>
             {
@@ -1218,6 +1224,116 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _currentPresetName = "Default Balatro";
 
+        // ============================================
+        // SEARCH TRANSITION SETTINGS (UI Configuration)
+        // ============================================
+
+        /// <summary>
+        /// Enable shader transition during searches (colors/effects change as search progresses 0-100%)
+        /// </summary>
+        [ObservableProperty]
+        private bool _enableSearchTransition;
+
+        /// <summary>
+        /// List of available preset names for dropdown selection
+        /// </summary>
+        public ObservableCollection<string> AvailablePresetNames { get; } = new ObservableCollection<string> { "Default Dark", "Default Normal" };
+
+        /// <summary>
+        /// Selected start preset name for search transitions
+        /// </summary>
+        [ObservableProperty]
+        private string? _searchTransitionStartPresetName;
+
+        /// <summary>
+        /// Selected end preset name for search transitions
+        /// </summary>
+        [ObservableProperty]
+        private string? _searchTransitionEndPresetName;
+
+        partial void OnEnableSearchTransitionChanged(bool value)
+        {
+            // Save to user profile when changed
+            if (_userProfileService != null)
+            {
+                _userProfileService.GetProfile().VisualizerSettings.EnableSearchTransition = value;
+                _userProfileService.SaveProfile();
+            }
+        }
+
+        partial void OnSearchTransitionStartPresetNameChanged(string? value)
+        {
+            // Save to user profile when changed
+            if (_userProfileService != null)
+            {
+                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionStartPresetName = value;
+                _userProfileService.SaveProfile();
+            }
+        }
+
+        partial void OnSearchTransitionEndPresetNameChanged(string? value)
+        {
+            // Save to user profile when changed
+            if (_userProfileService != null)
+            {
+                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName = value;
+                _userProfileService.SaveProfile();
+            }
+        }
+
+        /// <summary>
+        /// Loads search transition settings from user profile
+        /// </summary>
+        private void LoadSearchTransitionSettings()
+        {
+            try
+            {
+                var settings = _userProfileService.GetProfile().VisualizerSettings;
+                EnableSearchTransition = settings.EnableSearchTransition;
+                SearchTransitionStartPresetName = settings.SearchTransitionStartPresetName;
+                SearchTransitionEndPresetName = settings.SearchTransitionEndPresetName;
+
+                DebugLogger.Log("AudioVisualizerWidget",
+                    $"Loaded search transition settings: Enabled={EnableSearchTransition}, Start={SearchTransitionStartPresetName}, End={SearchTransitionEndPresetName}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load search transition settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads available preset names from disk
+        /// </summary>
+        [RelayCommand]
+        private void RefreshPresetList()
+        {
+            try
+            {
+                AvailablePresetNames.Clear();
+
+                // Add default presets
+                AvailablePresetNames.Add("Default Dark");
+                AvailablePresetNames.Add("Default Normal");
+
+                // Load all saved presets
+                var presets = Helpers.PresetHelper.LoadAllPresets();
+                foreach (var preset in presets)
+                {
+                    if (!string.IsNullOrWhiteSpace(preset.Name))
+                    {
+                        AvailablePresetNames.Add(preset.Name);
+                    }
+                }
+
+                DebugLogger.Log("AudioVisualizerWidget", $"Loaded {AvailablePresetNames.Count} preset names");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset names: {ex.Message}");
+            }
+        }
+
         [RelayCommand]
         private async Task LoadPreset()
         {
@@ -1424,8 +1540,6 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ExportToJson()
         {
-            // TODO: Implement JSON export for all shader parameters
-            // This would serialize TimeValue, SpinTimeValue, etc. to a JSON file
             System.Diagnostics.Debug.WriteLine("Export to JSON - Not yet implemented");
         }
 

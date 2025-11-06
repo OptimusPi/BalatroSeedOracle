@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -18,6 +19,9 @@ namespace BalatroSeedOracle.Services
     {
         private static SpriteService _instance = null!;
         public static SpriteService Instance => _instance ??= new SpriteService();
+
+        private bool _spritesPreloaded = false;
+        private readonly Dictionary<string, IImage> _preloadedSprites = new();
 
         /// <summary>
         /// Normalizes a sprite name for consistent lookup: trims whitespace, removes spaces and underscores, converts to lowercase.
@@ -65,6 +69,451 @@ namespace BalatroSeedOracle.Services
         private SpriteService()
         {
             LoadAssets();
+        }
+
+        public async Task PreloadAllSpritesAsync(IProgress<(string category, int current, int total)>? progress = null)
+        {
+            if (_spritesPreloaded)
+            {
+                DebugLogger.Log("SpriteService", "Sprites already preloaded, skipping...");
+                return;
+            }
+
+            DebugLogger.LogImportant("SpriteService", "Starting sprite pre-load...");
+            var startTime = DateTime.Now;
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    PreloadJokers(progress);
+                    PreloadTags(progress);
+                    PreloadTarots(progress);
+                    PreloadSpectrals(progress);
+                    PreloadPlanets(progress);
+                    PreloadVouchers(progress);
+                    PreloadDecks(progress);
+                    PreloadStakes(progress);
+                    PreloadBosses(progress);
+                    PreloadBlinds(progress);
+                    PreloadStickers(progress);
+                    PreloadBoosters(progress);
+                    PreloadEditions(progress);
+                    PreloadEnhancements(progress);
+                    PreloadSeals(progress);
+                });
+
+                _spritesPreloaded = true;
+                var elapsed = DateTime.Now - startTime;
+                DebugLogger.LogImportant("SpriteService", $"Sprite pre-load complete in {elapsed.TotalSeconds:F2} seconds! Loaded {_preloadedSprites.Count} sprites.");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SpriteService", $"Error during sprite pre-load: {ex.Message}");
+            }
+        }
+
+        private void PreloadJokers(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (jokerPositions == null || jokerSheet == null) return;
+
+            var jokers = jokerPositions.Keys.ToList();
+            for (int i = 0; i < jokers.Count; i++)
+            {
+                try
+                {
+                    var key = $"joker_{jokers[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetJokerImage(jokers[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Jokers", i + 1, jokers.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload joker {jokers[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadTags(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (tagPositions == null || tagSheet == null) return;
+
+            var tags = tagPositions.Keys.ToList();
+            for (int i = 0; i < tags.Count; i++)
+            {
+                try
+                {
+                    var key = $"tag_{tags[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetTagImage(tags[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Tags", i + 1, tags.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload tag {tags[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadTarots(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (tarotPositions == null || tarotSheet == null) return;
+
+            var tarots = tarotPositions.Keys.ToList();
+            for (int i = 0; i < tarots.Count; i++)
+            {
+                try
+                {
+                    var key = $"tarot_{tarots[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetTarotImage(tarots[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Tarots", i + 1, tarots.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload tarot {tarots[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadSpectrals(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (spectralPositions == null || spectralSheet == null) return;
+
+            var spectrals = spectralPositions.Keys.ToList();
+            for (int i = 0; i < spectrals.Count; i++)
+            {
+                try
+                {
+                    var key = $"spectral_{spectrals[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetSpectralImage(spectrals[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Spectrals", i + 1, spectrals.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload spectral {spectrals[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadPlanets(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (planetPositions == null || tarotSheet == null) return;
+
+            var planets = planetPositions.Keys.ToList();
+            for (int i = 0; i < planets.Count; i++)
+            {
+                try
+                {
+                    var key = $"planet_{planets[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetPlanetCardImage(planets[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Planets", i + 1, planets.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload planet {planets[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadVouchers(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (voucherPositions == null || voucherSheet == null) return;
+
+            var vouchers = voucherPositions.Keys.ToList();
+            for (int i = 0; i < vouchers.Count; i++)
+            {
+                try
+                {
+                    var key = $"voucher_{vouchers[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetVoucherImage(vouchers[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Vouchers", i + 1, vouchers.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload voucher {vouchers[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadDecks(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (deckPositions == null || deckSheet == null) return;
+
+            var decks = deckPositions.Keys.ToList();
+            for (int i = 0; i < decks.Count; i++)
+            {
+                try
+                {
+                    var key = $"deck_{decks[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetDeckImage(decks[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Decks", i + 1, decks.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload deck {decks[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadStakes(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (stakePositions == null || stakeSheet == null) return;
+
+            var stakes = stakePositions.Keys.ToList();
+            for (int i = 0; i < stakes.Count; i++)
+            {
+                try
+                {
+                    var key = $"stake_{stakes[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetStakeImage(stakes[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Stakes", i + 1, stakes.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload stake {stakes[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadBosses(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (bossPositions == null || bossSheet == null) return;
+
+            var bosses = bossPositions.Keys.ToList();
+            for (int i = 0; i < bosses.Count; i++)
+            {
+                try
+                {
+                    var key = $"boss_{bosses[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetBossImage(bosses[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Bosses", i + 1, bosses.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload boss {bosses[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadBlinds(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (blindPositions == null || bossSheet == null) return;
+
+            var blinds = blindPositions.Keys.ToList();
+            for (int i = 0; i < blinds.Count; i++)
+            {
+                try
+                {
+                    var key = $"blind_{blinds[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetBlindImage(blinds[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Blinds", i + 1, blinds.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload blind {blinds[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadStickers(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (stickerPositions == null || stickersSheet == null) return;
+
+            var stickers = stickerPositions.Keys.ToList();
+            for (int i = 0; i < stickers.Count; i++)
+            {
+                try
+                {
+                    var key = $"sticker_{stickers[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetStickerImage(stickers[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Stickers", i + 1, stickers.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload sticker {stickers[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadBoosters(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (boosterPositions == null || boosterSheet == null) return;
+
+            var boosters = boosterPositions.Keys.ToList();
+            for (int i = 0; i < boosters.Count; i++)
+            {
+                try
+                {
+                    var key = $"booster_{boosters[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetBoosterImage(boosters[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Boosters", i + 1, boosters.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload booster {boosters[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadEditions(IProgress<(string category, int current, int total)>? progress)
+        {
+            var editions = new[] { "none", "foil", "holographic", "polychrome", "negative" };
+            for (int i = 0; i < editions.Length; i++)
+            {
+                try
+                {
+                    var key = $"edition_{editions[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetEditionImage(editions[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Editions", i + 1, editions.Length));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload edition {editions[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadEnhancements(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (enhancementPositions == null || enhancersSheet == null) return;
+
+            var enhancements = enhancementPositions.Keys.ToList();
+            for (int i = 0; i < enhancements.Count; i++)
+            {
+                try
+                {
+                    var key = $"enhancement_{enhancements[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetEnhancementImage(enhancements[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Enhancements", i + 1, enhancements.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload enhancement {enhancements[i]}: {ex.Message}");
+                }
+            }
+        }
+
+        private void PreloadSeals(IProgress<(string category, int current, int total)>? progress)
+        {
+            if (sealPositions == null || enhancersSheet == null) return;
+
+            var seals = sealPositions.Keys.ToList();
+            for (int i = 0; i < seals.Count; i++)
+            {
+                try
+                {
+                    var key = $"seal_{seals[i]}";
+                    if (!_preloadedSprites.ContainsKey(key))
+                    {
+                        var image = GetSealImage(seals[i]);
+                        if (image != null)
+                        {
+                            _preloadedSprites[key] = image;
+                        }
+                    }
+                    progress?.Report(("Seals", i + 1, seals.Count));
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SpriteService", $"Failed to preload seal {seals[i]}: {ex.Message}");
+                }
+            }
         }
 
         private void LoadAssets()
@@ -1233,6 +1682,33 @@ namespace BalatroSeedOracle.Services
                 190,
                 "sticker"
             );
+        }
+
+        /// <summary>
+        /// Gets a composite image of a Joker with a sticker overlay
+        /// </summary>
+        public IImage? GetJokerWithStickerImage(string stickerType)
+        {
+            ArgumentNullException.ThrowIfNull(stickerType);
+
+            // Get base joker image
+            var baseJoker = GetItemImage("Joker", "Joker");
+            if (baseJoker == null)
+            {
+                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for sticker composite");
+                return null;
+            }
+
+            // Get sticker overlay
+            var stickerOverlay = GetStickerImage(stickerType);
+            if (stickerOverlay == null)
+            {
+                DebugLogger.LogError("SpriteService", $"Failed to get sticker image for '{stickerType}'");
+                return baseJoker; // Return just the joker if sticker not found
+            }
+
+            // Composite them together (142x190 pixels - standard joker size)
+            return CompositeImages(baseJoker, stickerOverlay, 142, 190);
         }
 
         // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
