@@ -103,6 +103,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
+        // Expose parent's SelectedDeck for flip animation
+        public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
         public ObservableCollection<FilterItem> AllTags { get; }

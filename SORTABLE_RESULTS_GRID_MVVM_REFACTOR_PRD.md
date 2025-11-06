@@ -449,9 +449,6 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     <MenuItem Header="📋 Copy seed"
                               Command="{Binding CopySeedCommand}"
                               CommandParameter="{Binding Seed}"/>
-                    <MenuItem Header="🔍 Search similar"
-                              Command="{Binding SearchSimilarCommand}"
-                              CommandParameter="{Binding}"/>
                     <MenuItem Header="⭐ Add to favorites"
                               Command="{Binding AddToFavoritesCommand}"
                               CommandParameter="{Binding}"/>

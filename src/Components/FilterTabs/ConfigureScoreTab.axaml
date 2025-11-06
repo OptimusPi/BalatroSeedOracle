@@ -315,7 +315,7 @@
                                                                            VerticalAlignment="Center">
                                                                         <i:Interaction.Behaviors>
                                                                             <behaviors:CardFlipOnTriggerBehavior
-                                                                                DeckName="Red"
+                                                                                DeckName="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).SelectedDeck}"
                                                                                 FlipTrigger="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).FlipAnimationTrigger}"
                                                                                 StaggerDelay="{Binding StaggerDelay}"/>
                                                                         </i:Interaction.Behaviors>
