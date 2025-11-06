@@ -193,7 +193,7 @@ namespace BalatroSeedOracle.Behaviors
 
                 var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
 
-                // Step 2: Pinch in (ScaleX: 1 → 0.15 to keep card visible)
+                // Step 2: Pinch in (ScaleX: 1 → 0.3 to keep card visible during flip)
                 var pinchIn = new Avalonia.Animation.Animation
                 {
                     Duration = pinchDuration,
@@ -207,7 +207,7 @@ namespace BalatroSeedOracle.Behaviors
                             {
                                 new Setter(
                                     ScaleTransform.ScaleXProperty,
-                                    0.15  // Keep card slightly visible instead of completely invisible
+                                    0.3  // Keep card clearly visible during flip (was 0.15, too narrow)
                                 ),
                             },
                         },
