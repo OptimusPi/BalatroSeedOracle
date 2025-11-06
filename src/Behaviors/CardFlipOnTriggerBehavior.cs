@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
@@ -9,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Xaml.Interactivity;
 using BalatroSeedOracle.Constants;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Behaviors
@@ -27,6 +31,7 @@ namespace BalatroSeedOracle.Behaviors
     {
         private bool _isAnimating;
         private int _lastTriggerValue = -1;
+        private CancellationTokenSource? _animationCts;
 
         /// <summary>
         /// The deck name to show on the card back (e.g., "Red", "Anaglyph")
@@ -79,6 +84,13 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
+            // Ensure the Image has a ScaleTransform for the flip animation
+            if (AssociatedObject.RenderTransform == null)
+            {
+                AssociatedObject.RenderTransform = new ScaleTransform();
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            }
+
             // Watch for FlipTrigger changes
             this.GetObservable(FlipTriggerProperty)
                 .Subscribe(triggerValue =>
@@ -93,198 +105,184 @@ namespace BalatroSeedOracle.Behaviors
         }
 
         /// <summary>
-        /// Manually trigger the flip animation
+        /// Manually trigger the flip animation using proper Avalonia animations
         /// </summary>
         public async Task TriggerFlipAsync()
         {
             if (AssociatedObject == null || _isAnimating)
+            {
+                DebugLogger.Log("CardFlip", $"Skipping flip - AssociatedObject={AssociatedObject != null}, _isAnimating={_isAnimating}");
                 return;
+            }
+
+            // Cancel any in-progress animation
+            _animationCts?.Cancel();
+            _animationCts = new CancellationTokenSource();
+            var cancellationToken = _animationCts.Token;
 
             _isAnimating = true;
+            DebugLogger.Log("CardFlip", $"Starting flip animation for deck: {DeckName}");
 
             try
             {
-                // Wait for stagger delay
+                // Wait for stagger delay (if specified)
                 if (StaggerDelay > 0)
                 {
-                    await Task.Delay(StaggerDelay);
+                    await Task.Delay(StaggerDelay, cancellationToken);
                 }
 
                 // CRITICAL: Wait for bindings to update before caching the source
                 // When edition/seal/sticker changes, FlipTrigger++ happens immediately,
                 // but the ItemImage binding takes a few milliseconds to update.
                 // We need to cache the NEW source (with new enhancement), not the old one!
-                await Task.Delay(50); // Small delay to let ItemImage binding update
+                await Task.Delay(50, cancellationToken);
 
                 // Cache the NEW sprite source (now has updated enhancement/seal)
                 var originalSource = AssociatedObject.Source;
+                DebugLogger.Log("CardFlip", $"Cached original source: {originalSource != null}");
 
-                // Get deck back sprite
+                // Get deck back sprite at actual sheet size (71x95) - Image control will scale to fit display size
+                // NOTE: GetDeckImage parameters are sprite sheet grid dimensions (crop size), NOT output size!
                 var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 71, 95);
+                DebugLogger.Log("CardFlip", $"Got deck back sprite: {deckBackSprite != null}");
 
                 if (deckBackSprite == null || originalSource == null)
                 {
                     // Fallback: skip animation if sprites not available
+                    DebugLogger.LogError("CardFlip", $"Skipping animation - deckBack={deckBackSprite != null}, original={originalSource != null}");
                     _isAnimating = false;
                     return;
                 }
 
-                // Find the SoulFaceImage sibling (if it exists) to hide during flip
-                Image? soulFaceImage = null;
+                // Find ALL overlay images (Edition, Stickers, SoulFace) to hide during flip
+                var overlayImages = new List<Image>();
                 if (AssociatedObject.Parent is Grid parentGrid)
                 {
                     foreach (var child in parentGrid.Children)
                     {
-                        if (child is Image img && img != AssociatedObject && img.IsVisible)
+                        if (child is Image img && img != AssociatedObject)
                         {
-                            soulFaceImage = img;
-                            break;
+                            overlayImages.Add(img);
                         }
                     }
                 }
 
-                // Step 1: Show deck back and hide soul face overlay
-                AssociatedObject.Source = deckBackSprite as Bitmap;
-                if (soulFaceImage != null)
+                // Keep reference to soul face for compatibility
+                Image? soulFaceImage = overlayImages.FirstOrDefault();
+
+                // Create the flip animation
+                // We'll use ScaleTransform.ScaleX to create a horizontal flip effect
+                var transform = AssociatedObject.RenderTransform as ScaleTransform;
+                if (transform == null)
                 {
-                    soulFaceImage.IsVisible = false;
+                    DebugLogger.LogError("CardFlip", "RenderTransform is not a ScaleTransform!");
+                    _isAnimating = false;
+                    return;
                 }
 
-                // Create ScaleTransform for animation
-                var scaleTransform = new ScaleTransform(
-                    UIConstants.DefaultScaleFactor,
-                    UIConstants.DefaultScaleFactor
-                );
-                AssociatedObject.RenderTransform = scaleTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.5,
-                    RelativeUnit.Relative
-                );
+                // Animation parameters
+                var flipDuration = TimeSpan.FromMilliseconds(150);
+                var easing = new CubicEaseInOut();
 
-                var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
-
-                // Step 2: Pinch in (ScaleX: 1 → 0.7 to keep card VERY visible during flip)
-                var pinchIn = new Avalonia.Animation.Animation
+                // Phase 1: Flip from front to edge (ScaleX: 1 -> 0)
+                var flipToEdgeAnimation = new Avalonia.Animation.Animation
                 {
-                    Duration = pinchDuration,
-                    Easing = new CubicEaseIn(), // Smooth ease in
+                    Duration = flipDuration,
+                    Easing = easing,
                     Children =
                     {
-                        new Avalonia.Animation.KeyFrame
+                        new KeyFrame
                         {
-                            Cue = new Cue(1),
+                            Cue = new Cue(0.0),
                             Setters =
                             {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    0.7  // Keep card VERY visible (0.5 still too narrow!)
-                                ),
-                            },
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0)
+                            }
                         },
-                    },
+                        new KeyFrame
+                        {
+                            Cue = new Cue(1.0),
+                            Setters =
+                            {
+                                new Setter(ScaleTransform.ScaleXProperty, 0.0)
+                            }
+                        }
+                    }
                 };
 
-                await pinchIn.RunAsync(scaleTransform);
+                // Phase 2: Flip from edge to back (ScaleX: 0 -> 1)
+                var flipFromEdgeAnimation = new Avalonia.Animation.Animation
+                {
+                    Duration = flipDuration,
+                    Easing = easing,
+                    Children =
+                    {
+                        new KeyFrame
+                        {
+                            Cue = new Cue(0.0),
+                            Setters =
+                            {
+                                new Setter(ScaleTransform.ScaleXProperty, 0.0)
+                            }
+                        },
+                        new KeyFrame
+                        {
+                            Cue = new Cue(1.0),
+                            Setters =
+                            {
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0)
+                            }
+                        }
+                    }
+                };
 
-                // Step 3: Swap sprite at ScaleX = 0 and restore soul face overlay
+                // Execute Phase 1: Flip to edge while showing original sprite
+                DebugLogger.Log("CardFlip", "Phase 1: Flipping to edge");
+                await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+
+                // At the midpoint (card is edge-on), swap to deck back and hide ALL overlays
+                DebugLogger.Log("CardFlip", "Midpoint: Swapping to deck back sprite");
+                AssociatedObject.Source = deckBackSprite;
+                foreach (var overlay in overlayImages)
+                {
+                    overlay.IsVisible = false;
+                }
+
+                // Execute Phase 2: Flip from edge to show deck back
+                DebugLogger.Log("CardFlip", "Phase 2: Revealing deck back");
+                await flipFromEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+
+                // Brief pause to show deck back
+                await Task.Delay(100, cancellationToken);
+
+                // Execute Phase 3: Flip to edge again
+                DebugLogger.Log("CardFlip", "Phase 3: Flipping to edge");
+                await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+
+                // At the midpoint, swap back to joker sprite and restore ALL overlays
+                DebugLogger.Log("CardFlip", "Midpoint: Swapping to joker sprite");
                 AssociatedObject.Source = originalSource;
-                if (soulFaceImage != null)
+                foreach (var overlay in overlayImages)
                 {
-                    soulFaceImage.IsVisible = true;
+                    overlay.IsVisible = true;
                 }
 
-                // Step 4: Pinch out (ScaleX: 0 → 1)
-                var pinchOut = new Avalonia.Animation.Animation
-                {
-                    Duration = pinchDuration,
-                    Easing = new CubicEaseOut(), // Smooth ease out
-                    Children =
-                    {
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(1),
-                            Setters =
-                            {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                            },
-                        },
-                    },
-                };
+                // Execute Phase 4: Flip from edge to show joker with new enhancement
+                DebugLogger.Log("CardFlip", "Phase 4: Revealing enhanced joker");
+                await flipFromEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
 
-                await pinchOut.RunAsync(scaleTransform);
-
-                // Step 5: Juice up! (both X and Y scale bounce)
-                var juiceUp = new Avalonia.Animation.Animation
-                {
-                    Duration = TimeSpan.FromMilliseconds(UIConstants.MediumAnimationDurationMs),
-                    Easing = new ElasticEaseOut(), // Bouncy feel
-                    Children =
-                    {
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(0),
-                            Setters =
-                            {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                            },
-                        },
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(0.5),
-                            Setters =
-                            {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    1.15
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    1.15
-                                ),
-                            },
-                        },
-                        new Avalonia.Animation.KeyFrame
-                        {
-                            Cue = new Cue(1),
-                            Setters =
-                            {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                            },
-                        },
-                    },
-                };
-
-                await juiceUp.RunAsync(scaleTransform);
-
-                // Reset render transform to allow other behaviors (sway, tilt) to work
-                AssociatedObject.RenderTransform = null;
+                DebugLogger.Log("CardFlip", "Animation completed successfully");
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log("CardFlip", "Animation was cancelled");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("CardFlip", $"Animation failed: {ex.Message}");
             }
             finally
             {
-                // Ensure transform is reset even if animation is interrupted
-                if (AssociatedObject != null && AssociatedObject.RenderTransform is ScaleTransform st)
-                {
-                    st.ScaleX = UIConstants.DefaultScaleFactor;
-                    st.ScaleY = UIConstants.DefaultScaleFactor;
-                }
                 _isAnimating = false;
             }
         }
@@ -292,6 +290,11 @@ namespace BalatroSeedOracle.Behaviors
         protected override void OnDetaching()
         {
             base.OnDetaching();
+
+            // Cancel any in-progress animation and dispose of the cancellation token
+            _animationCts?.Cancel();
+            _animationCts?.Dispose();
+            _animationCts = null;
         }
     }
 }

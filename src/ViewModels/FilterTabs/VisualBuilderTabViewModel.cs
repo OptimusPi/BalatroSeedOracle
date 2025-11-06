@@ -143,6 +143,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             public string GroupName { get; set; } = "";
             public ObservableCollection<FilterItem> Items { get; set; } = new();
+
+            // Vouchers: 8 wide (580px), Others: 5 wide (380px)
+            public double ShelfMaxWidth => GroupName == "Vouchers" ? 580 : 380;
         }
 
         [ObservableProperty]
@@ -197,6 +200,33 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private string _currentSeal = "None";
+
+        // Computed properties for button visibility based on category
+        public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+        public bool ShowStickerButtons => SelectedMainCategory == "Joker";
+        public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
+        public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
+        public bool SupportsFlipAnimation => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+
+        // Notify property changes when category changes
+        partial void OnSelectedMainCategoryChanged(string value)
+        {
+            OnPropertyChanged(nameof(ShowEditionButtons));
+            OnPropertyChanged(nameof(ShowStickerButtons));
+            OnPropertyChanged(nameof(ShowSealButtons));
+            OnPropertyChanged(nameof(ShowEnhancementButtons));
+            OnPropertyChanged(nameof(SupportsFlipAnimation));
+
+            // Reset edition/sticker/seal state when switching categories
+            // Cards should start fresh with no enhancements
+            SelectedEdition = "None";
+            SelectedSeal = "None";
+            StickerPerishable = false;
+            StickerEternal = false;
+            StickerRental = false;
+
+            DebugLogger.Log("VisualBuilderTab", $"Category changed to: {value} - reset all editions/stickers/seals");
+        }
 
         // Display name for current category
         public string CurrentCategoryDisplay =>
@@ -2139,6 +2169,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         public void SetEdition(string edition)
         {
+            // Don't trigger animation if edition didn't actually change
+            if (SelectedEdition == edition)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"Edition already set to '{edition}' - skipping animation");
+                return;
+            }
+
             SelectedEdition = edition;
 
             // Apply to ALL items in the shelf
@@ -2149,6 +2186,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         config.Edition = edition == "None" ? null : edition.ToLower();
+                        // CRITICAL: Also update item.Edition to trigger property change notification for EditionImage binding
+                        item.Edition = config.Edition;
                     }
                 }
             }
@@ -2166,10 +2205,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
-            // TRIGGER FLIP ANIMATION for all items in shelf
-            FlipAnimationTrigger++;
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
         /// <summary>
@@ -2183,10 +2225,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf
-            FlipAnimationTrigger++;
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
         /// <summary>
@@ -2200,10 +2245,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf
-            FlipAnimationTrigger++;
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
         /// <summary>
@@ -2217,10 +2265,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf
-            FlipAnimationTrigger++;
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
         /// <summary>
@@ -2229,6 +2280,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         public void SetSeal(string seal)
         {
+            // Don't trigger animation if seal didn't actually change
+            if (SelectedSeal == seal)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"Seal already set to '{seal}' - skipping animation");
+                return;
+            }
+
             SelectedSeal = seal;
 
             if (_parentViewModel == null) return;
@@ -2264,10 +2322,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             TriggerAutoSave();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf
-            FlipAnimationTrigger++;
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
         /// <summary>
@@ -2313,6 +2374,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         ApplyStickerLogic(config, item.Name, eternalRestrictedJokers);
+                        // CRITICAL: Also update item.Stickers to trigger property change notifications for sticker image bindings
+                        item.Stickers = config.Stickers;
                     }
                 }
             }

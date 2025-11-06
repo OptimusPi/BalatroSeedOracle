@@ -171,13 +171,13 @@ namespace BalatroSeedOracle.Behaviors
                 if (deckBackSprite == null)
                 {
                     // Fallback: skip animation and just show the reveal sprite
-                    AssociatedObject.Source = spriteToReveal as Bitmap;
+                    AssociatedObject.Source = spriteToReveal;
                     _isAnimating = false;
                     return;
                 }
 
                 // Step 1: Show deck back
-                AssociatedObject.Source = deckBackSprite as Bitmap;
+                AssociatedObject.Source = deckBackSprite;
 
                 // Create ScaleTransform for animation (this is what Avalonia can actually animate!)
                 var scaleTransform = new ScaleTransform(
@@ -191,12 +191,12 @@ namespace BalatroSeedOracle.Behaviors
                     RelativeUnit.Relative
                 );
 
-                var pinchDuration = TimeSpan.FromMilliseconds(UIConstants.QuickAnimationDurationMs);
+                var flipDuration = TimeSpan.FromMilliseconds(150);
 
-                // Step 2: Pinch in (ScaleX: 1 → 0.7 to keep card VERY visible during flip)
-                var pinchIn = new Avalonia.Animation.Animation
+                // Step 2: Squeeze in horizontally (0.85 to stay visible)
+                var squeezeIn = new Avalonia.Animation.Animation
                 {
-                    Duration = pinchDuration,
+                    Duration = flipDuration,
                     Easing = new LinearEasing(),
                     Children =
                     {
@@ -207,22 +207,22 @@ namespace BalatroSeedOracle.Behaviors
                             {
                                 new Setter(
                                     ScaleTransform.ScaleXProperty,
-                                    0.7  // Keep card VERY visible (0.5 still too narrow!)
+                                    0.85  // Gentle squeeze - stays visible!
                                 ),
                             },
                         },
                     },
                 };
 
-                await pinchIn.RunAsync(scaleTransform);
+                await squeezeIn.RunAsync(AssociatedObject);
 
-                // Step 3: Swap sprite at ScaleX = 0
-                AssociatedObject.Source = spriteToReveal as Bitmap;
+                // Step 3: Swap sprite
+                AssociatedObject.Source = spriteToReveal;
 
-                // Step 4: Pinch out (ScaleX: 0 → 1)
-                var pinchOut = new Avalonia.Animation.Animation
+                // Step 4: Squeeze out back to normal
+                var squeezeOut = new Avalonia.Animation.Animation
                 {
-                    Duration = pinchDuration,
+                    Duration = flipDuration,
                     Easing = new LinearEasing(),
                     Children =
                     {
@@ -233,14 +233,14 @@ namespace BalatroSeedOracle.Behaviors
                             {
                                 new Setter(
                                     ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
+                                    1.0
                                 ),
                             },
                         },
                     },
                 };
 
-                await pinchOut.RunAsync(scaleTransform);
+                await squeezeOut.RunAsync(AssociatedObject);
 
                 // Step 5: Juice up! (both X and Y scale bounce)
                 var juiceUp = new Avalonia.Animation.Animation
@@ -297,7 +297,7 @@ namespace BalatroSeedOracle.Behaviors
                     },
                 };
 
-                await juiceUp.RunAsync(scaleTransform);
+                await juiceUp.RunAsync(AssociatedObject);
             }
             finally
             {

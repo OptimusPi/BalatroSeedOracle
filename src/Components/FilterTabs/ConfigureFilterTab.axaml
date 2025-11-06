@@ -46,7 +46,7 @@
 
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="1.1*"/>
                 <ColumnDefinition Width="1.1*"/>
             </Grid.ColumnDefinitions>
@@ -87,8 +87,20 @@
                     </TextBox>
                 </Border>
 
-                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                    <Button Content="Favorites"
+                <!-- Category buttons with bouncing arrow indicator -->
+                <Grid Grid.Row="4">
+                    <!-- Bouncing arrow indicator (points at active category) -->
+                    <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
+                        <Polygon Name="CategoryArrow"
+                                 Points="15,0 0,10 15,20"
+                                 Classes="balatro-triangle balatro-bounce-horizontal"
+                                 Canvas.Left="-20"
+                                 Canvas.Top="0"
+                                 IsVisible="True"/>
+                    </Canvas>
+
+                    <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                        <Button Content="Favorites"
                             Classes="nav-button special"
                             Click="OnCategoryClick"
                             Tag="Favorites"
@@ -123,7 +135,8 @@
                             Click="OnCategoryClick"
                             Tag="StandardCard"
                             HorizontalAlignment="Stretch"/>
-                </StackPanel>
+                    </StackPanel>
+                </Grid>
 
                 <Border Grid.Row="4"
                         Name="FavoritesDropOverlay"
@@ -192,7 +205,8 @@
 
                         <!-- Edition/Sticker/Seal Toolbar - Single horizontal row with sprite icons -->
                         <WrapPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,4">
-                            <!-- Edition Buttons -->
+                            <!-- Edition Buttons (Jokers and Standard Cards only) -->
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
                             <Button Command="{Binding SetEditionCommand}"
                                     CommandParameter="None"
                                     Classes="icon-button"
@@ -252,8 +266,10 @@
                                 <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
                                        Stretch="Uniform"/>
                             </Button>
+                            </StackPanel>
 
-                            <!-- Sticker Buttons -->
+                            <!-- Sticker Buttons (Jokers only) -->
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowStickerButtons}">
                             <Button Command="{Binding ToggleStickerPerishableCommand}"
                                     Classes="icon-button"
                                     Classes.active="{Binding StickerPerishable}"
@@ -286,8 +302,10 @@
                                 <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
                                        Stretch="Uniform"/>
                             </Button>
+                            </StackPanel>
 
                             <!-- Seal Buttons (StandardCard only) -->
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
                             <Button Command="{Binding SetSealCommand}"
                                     CommandParameter="None"
                                     Classes="icon-button"
@@ -346,12 +364,13 @@
                                 <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
                                        Stretch="Uniform"/>
                             </Button>
+                            </StackPanel>
                         </WrapPanel>
 
                         <!-- Item Shelf ScrollViewer -->
                         <ScrollViewer Grid.Row="2"
                                       Name="ItemScrollViewer"
-                                      VerticalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Hidden"
                                       HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
@@ -370,24 +389,24 @@
                                                        TextAlignment="Left"/>
                                         </Border>
 
-                                        <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl ItemsSource="{Binding Items}" MaxWidth="{Binding ShelfMaxWidth}" HorizontalAlignment="Left">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
-                                                    <Grid Margin="0,2" Width="54" Height="78">
+                                                    <Grid Margin="0,2" Width="70" Height="110">
                                                         <i:Interaction.Behaviors>
-                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
                                                         </i:Interaction.Behaviors>
                                                         <Border Background="Transparent"
                                                                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                 Cursor="Hand"
                                                                 ZIndex="0"
-                                                                ClipToBounds="True"
+                                                                ClipToBounds="False"
                                                                 IsHitTestVisible="False">
                                                             <StackPanel Spacing="2">
-                                                                <Grid Width="48" Height="64">
+                                                                <Grid Width="64" Height="85">
                                                                     <Image Source="{Binding ItemImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="64"
+                                                                           Height="85"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center">
@@ -399,9 +418,41 @@
                                                                         </i:Interaction.Behaviors>
                                                                     </Image>
 
+                                                                    <Image Source="{Binding EditionImage}"
+                                                                           Width="64"
+                                                                           Height="85"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding EternalStickerImage}"
+                                                                           Width="64"
+                                                                           Height="85"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding PerishableStickerImage}"
+                                                                           Width="64"
+                                                                           Height="85"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding RentalStickerImage}"
+                                                                           Width="64"
+                                                                           Height="85"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
                                                                     <Image Source="{Binding SoulFaceImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="64"
+                                                                           Height="85"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
@@ -411,11 +462,11 @@
                                                                 <TextBlock Text="{Binding DisplayName}"
                                                                            Foreground="#FFFFFF"
                                                                            FontFamily="{StaticResource BalatroFont}"
-                                                                           FontSize="8"
+                                                                           FontSize="10"
                                                                            HorizontalAlignment="Center"
                                                                            TextAlignment="Center"
                                                                            TextWrapping="Wrap"
-                                                                           MaxWidth="54"/>
+                                                                           MaxWidth="70"/>
                                                             </StackPanel>
                                                         </Border>
 
@@ -425,8 +476,8 @@
                                                                 IsHitTestVisible="True"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Width="54"
-                                                                Height="78"/>
+                                                                Width="70"
+                                                                Height="110"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
@@ -92,6 +93,70 @@ namespace BalatroSeedOracle.Models
             }
         }
 
+        public IImage? EditionImage
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Edition) || Edition == "None")
+                {
+                    Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition is null/empty/None");
+                    return null;
+                }
+
+                // Get the edition overlay sprite (foil/holo/poly/negative)
+                var img = Services.SpriteService.Instance.GetEditionImage(Edition);
+                Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition='{Edition}', Image={img != null}");
+                return img;
+            }
+        }
+
+        private List<string>? _stickers;
+        public List<string>? Stickers
+        {
+            get => _stickers;
+            set
+            {
+                if (_stickers != value)
+                {
+                    _stickers = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EternalStickerImage));
+                    OnPropertyChanged(nameof(PerishableStickerImage));
+                    OnPropertyChanged(nameof(RentalStickerImage));
+                }
+            }
+        }
+
+        public IImage? EternalStickerImage
+        {
+            get
+            {
+                if (Stickers == null || !Stickers.Contains("eternal"))
+                    return null;
+                return Services.SpriteService.Instance.GetStickerImage("eternal");
+            }
+        }
+
+        public IImage? PerishableStickerImage
+        {
+            get
+            {
+                if (Stickers == null || !Stickers.Contains("perishable"))
+                    return null;
+                return Services.SpriteService.Instance.GetStickerImage("perishable");
+            }
+        }
+
+        public IImage? RentalStickerImage
+        {
+            get
+            {
+                if (Stickers == null || !Stickers.Contains("rental"))
+                    return null;
+                return Services.SpriteService.Instance.GetStickerImage("rental");
+            }
+        }
+
         public bool IsFavorite { get; set; }
 
         public string DisplayName
@@ -139,7 +204,21 @@ namespace BalatroSeedOracle.Models
         public string? Value { get; set; }
         public string? Label { get; set; }
         public int[]? Antes { get; set; }
-        public string? Edition { get; set; }
+
+        private string? _edition;
+        public string? Edition
+        {
+            get => _edition;
+            set
+            {
+                if (_edition != value)
+                {
+                    _edition = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EditionImage)); // Notify EditionImage to refresh
+                }
+            }
+        }
         public bool IncludeBoosterPacks { get; set; }
         public bool IncludeShopStream { get; set; }
         public bool IncludeSkipTags { get; set; }

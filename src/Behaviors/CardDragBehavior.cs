@@ -141,12 +141,13 @@ namespace BalatroSeedOracle.Behaviors
             _hitboxElement.PointerPressed += OnPointerPressed;
             _hitboxElement.PointerReleased += OnPointerReleased;
 
-            // Create animation timer but don't start it yet
+            // Create animation timer and start it immediately for ambient sway
             _animationTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // 60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
+            _animationTimer.Start(); // Always running for ambient idle animation
         }
 
         protected override void OnDetaching()
@@ -174,32 +175,12 @@ namespace BalatroSeedOracle.Behaviors
             // Play Balatro card hover sound (paper1.ogg with random pitch)
             var sfxService = ServiceHelper.GetService<SoundEffectsService>();
             sfxService?.PlayCardHover();
-
-            // Start animation timer when hovering begins
-            if (_animationTimer != null && !_animationTimer.IsEnabled)
-            {
-                _animationTimer.Start();
-            }
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)
         {
             _isHovering = false;
             _lastPointerPosition = null;
-
-            // Stop animation timer when not hovering or dragging
-            if (!_isDragging && _animationTimer != null && _animationTimer.IsEnabled)
-            {
-                _animationTimer.Stop();
-                // Reset transforms to neutral state
-                if (_rotateTransform != null)
-                    _rotateTransform.Angle = 0;
-                if (_scaleTransform != null)
-                {
-                    _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor;
-                    _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor;
-                }
-            }
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -229,20 +210,6 @@ namespace BalatroSeedOracle.Behaviors
         {
             _isDragging = false;
             _pointerPressedPosition = null;
-
-            // Stop animation timer if not hovering anymore
-            if (!_isHovering && _animationTimer != null && _animationTimer.IsEnabled)
-            {
-                _animationTimer.Stop();
-                // Reset transforms to neutral state
-                if (_rotateTransform != null)
-                    _rotateTransform.Angle = 0;
-                if (_scaleTransform != null)
-                {
-                    _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor;
-                    _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor;
-                }
-            }
         }
 
         private void OnAnimationTick(object? sender, EventArgs e)

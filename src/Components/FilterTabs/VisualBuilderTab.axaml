@@ -42,7 +42,7 @@
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="125"/>   <!-- Left: Category Buttons -->
+                <ColumnDefinition Width="100"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
             </Grid.ColumnDefinitions>
@@ -70,7 +70,7 @@
                         BorderThickness="0"
                         CornerRadius="8"
                         Padding="8,4"
-                        Margin="4,0,4,0">
+                        Margin="0">
                     <TextBox Name="SearchBox"
                              Watermark="Search items..."
                              Text="{Binding SearchFilter, Mode=TwoWay}"
@@ -88,9 +88,21 @@
                     </TextBox>
                 </Border>
 
-                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                    <!-- Category buttons without section headers -->
-                    <Button Content="Favorites"
+                <!-- Category buttons with bouncing arrow indicator -->
+                <Grid Grid.Row="4">
+                    <!-- Bouncing arrow indicator (points at active category) -->
+                    <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
+                        <Polygon Name="CategoryArrow"
+                                 Points="15,0 0,10 15,20"
+                                 Classes="balatro-triangle balatro-bounce-horizontal"
+                                 Canvas.Left="-20"
+                                 Canvas.Top="0"
+                                 IsVisible="True"/>
+                    </Canvas>
+
+                    <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                        <!-- Category buttons without section headers -->
+                        <Button Content="Favorites"
                             Classes="nav-button special"
                             Click="OnCategoryClick"
                             Tag="Favorites"
@@ -125,7 +137,8 @@
                             Click="OnCategoryClick"
                             Tag="StandardCard"
                             HorizontalAlignment="Stretch"/>
-                </StackPanel>
+                    </StackPanel>
+                </Grid>
 
                 <!-- Favorites drop overlay - covers category nav area only -->
                 <Border Grid.Row="4"
@@ -195,7 +208,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="0,2" Width="54" Height="78">
+                                                    <Grid Margin="0,2" Width="54" Height="90">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                         </i:Interaction.Behaviors>
@@ -204,7 +217,7 @@
                                                                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                 Cursor="Hand"
                                                                 ZIndex="0"
-                                                                ClipToBounds="True"
+                                                                ClipToBounds="False"
                                                                 IsHitTestVisible="False">
                                                             <!-- Just the card sprite and label - no border wrapper! -->
                                                             <StackPanel Spacing="2">
@@ -216,6 +229,38 @@
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"/>
+
+                                                                    <Image Source="{Binding EditionImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding EternalStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding PerishableStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <Image Source="{Binding RentalStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                                     <Image Source="{Binding SoulFaceImage}"
                                                                            Width="48"
@@ -246,13 +291,13 @@
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
                                                                 Width="54"
-                                                                Height="78"/>
+                                                                Height="90"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <WrapPanel Orientation="Horizontal"/>
+                                                    <WrapPanel Orientation="Horizontal" MaxWidth="280"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
@@ -655,6 +700,46 @@
                                                                    VerticalAlignment="Center"
                                                                    IsHitTestVisible="False"/>
 
+                                                            <!-- Edition overlay -->
+                                                            <Image Source="{Binding EditionImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Eternal sticker overlay -->
+                                                            <Image Source="{Binding EternalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Perishable sticker overlay -->
+                                                            <Image Source="{Binding PerishableStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Rental sticker overlay -->
+                                                            <Image Source="{Binding RentalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
                                                                    Width="48"
@@ -788,6 +873,46 @@
                                                                    VerticalAlignment="Center"
                                                                    IsHitTestVisible="False"/>
 
+                                                            <!-- Edition overlay -->
+                                                            <Image Source="{Binding EditionImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Eternal sticker overlay -->
+                                                            <Image Source="{Binding EternalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Perishable sticker overlay -->
+                                                            <Image Source="{Binding PerishableStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Rental sticker overlay -->
+                                                            <Image Source="{Binding RentalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
                                                                    Width="48"
@@ -919,6 +1044,46 @@
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Edition overlay -->
+                                                            <Image Source="{Binding EditionImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Eternal sticker overlay -->
+                                                            <Image Source="{Binding EternalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Perishable sticker overlay -->
+                                                            <Image Source="{Binding PerishableStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"/>
+
+                                                            <!-- Rental sticker overlay -->
+                                                            <Image Source="{Binding RentalStickerImage}"
+                                                                   Width="48"
+                                                                   Height="64"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                                    IsHitTestVisible="False"/>
 
                                                             <!-- Soul face overlay for legendary jokers -->

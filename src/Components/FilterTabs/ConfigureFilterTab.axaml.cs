@@ -49,6 +49,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
+
+            // Subscribe to ViewModel PropertyChanged for arrow positioning
+            this.DataContextChanged += (s, e) =>
+            {
+                if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                {
+                    vm.PropertyChanged += OnViewModelPropertyChanged;
+                    UpdateArrowPosition(vm.SelectedMainCategory); // Set initial position
+                }
+            };
         }
 
         private void SetupDropZones()
@@ -1680,6 +1690,44 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 e.Handled = true;
             }
         }
+
+        #endregion
+
+        #region Category Arrow Animation
+
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory))
+            {
+                var vm = sender as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                if (vm != null)
+                {
+                    UpdateArrowPosition(vm.SelectedMainCategory);
+                }
+            }
+        }
+
+        private void UpdateArrowPosition(string category)
+        {
+            var arrow = this.FindControl<Avalonia.Controls.Shapes.Polygon>("CategoryArrow");
+            if (arrow == null) return;
+
+            int index = GetCategoryIndex(category);
+            double yPos = (index * 50) + 12;
+            Canvas.SetTop(arrow, yPos);
+        }
+
+        private int GetCategoryIndex(string category) => category switch
+        {
+            "Favorites" => 0,
+            "Joker" => 1,
+            "Consumable" => 2,
+            "SkipTag" => 3,
+            "Boss" => 4,
+            "Voucher" => 5,
+            "StandardCard" => 6,
+            _ => 0 // Default to Favorites
+        };
 
         #endregion
     }
