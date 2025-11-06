@@ -342,15 +342,15 @@
         <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
 
-    <!-- Category navigation buttons - 2px shorter to prevent scrollbar -->
+    <!-- Category navigation buttons - compact for narrow sidebar -->
     <Style Selector="Button.nav-button">
         <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,1" />
         <Setter Property="MinHeight" Value="44" />
-        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Padding" Value="6,4" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="MaxWidth" Value="160" />
         <Setter Property="Focusable" Value="False" />

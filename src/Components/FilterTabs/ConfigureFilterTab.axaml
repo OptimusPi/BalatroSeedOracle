@@ -46,7 +46,7 @@
 
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="115"/>
                 <ColumnDefinition Width="1.1*"/>
                 <ColumnDefinition Width="1.1*"/>
             </Grid.ColumnDefinitions>
@@ -92,7 +92,7 @@
                     <!-- Bouncing arrow indicator (points at active category) -->
                     <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
                         <Polygon Name="CategoryArrow"
-                                 Points="15,0 0,10 15,20"
+                                 Points="0,0 15,10 0,20"
                                  Classes="balatro-triangle balatro-bounce-horizontal"
                                  Canvas.Left="-20"
                                  Canvas.Top="0"

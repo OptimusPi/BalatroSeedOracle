@@ -141,9 +141,9 @@ namespace BalatroSeedOracle.Behaviors
                 var originalSource = AssociatedObject.Source;
                 DebugLogger.Log("CardFlip", $"Cached original source: {originalSource != null}");
 
-                // Get deck back sprite at actual sheet size (71x95) - Image control will scale to fit display size
-                // NOTE: GetDeckImage parameters are sprite sheet grid dimensions (crop size), NOT output size!
-                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 71, 95);
+                // Get deck back sprite at DISPLAY size (64x85) to match actual card container size
+                // This prevents cropping that occurs when a 71x95 sprite is forced into 64x85 container
+                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 64, 85);
                 DebugLogger.Log("CardFlip", $"Got deck back sprite: {deckBackSprite != null}");
 
                 if (deckBackSprite == null || originalSource == null)
@@ -154,8 +154,9 @@ namespace BalatroSeedOracle.Behaviors
                     return;
                 }
 
-                // Find ALL overlay images (Edition, Stickers, SoulFace) to hide during flip
+                // Find ALL overlay images (Edition, Stickers, SoulFace) and cache their visibility state
                 var overlayImages = new List<Image>();
+                var overlayVisibility = new Dictionary<Image, bool>();
                 if (AssociatedObject.Parent is Grid parentGrid)
                 {
                     foreach (var child in parentGrid.Children)
@@ -163,6 +164,7 @@ namespace BalatroSeedOracle.Behaviors
                         if (child is Image img && img != AssociatedObject)
                         {
                             overlayImages.Add(img);
+                            overlayVisibility[img] = img.IsVisible; // Cache original visibility
                         }
                     }
                 }
@@ -259,12 +261,12 @@ namespace BalatroSeedOracle.Behaviors
                 DebugLogger.Log("CardFlip", "Phase 3: Flipping to edge");
                 await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
 
-                // At the midpoint, swap back to joker sprite and restore ALL overlays
+                // At the midpoint, swap back to joker sprite and restore overlays to ORIGINAL visibility
                 DebugLogger.Log("CardFlip", "Midpoint: Swapping to joker sprite");
                 AssociatedObject.Source = originalSource;
                 foreach (var overlay in overlayImages)
                 {
-                    overlay.IsVisible = true;
+                    overlay.IsVisible = overlayVisibility[overlay]; // Restore cached visibility state
                 }
 
                 // Execute Phase 4: Flip from edge to show joker with new enhancement

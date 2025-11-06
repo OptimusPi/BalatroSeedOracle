@@ -42,7 +42,7 @@
         <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
         <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>   <!-- Left: Category Buttons -->
+                <ColumnDefinition Width="115"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
             </Grid.ColumnDefinitions>
@@ -93,7 +93,7 @@
                     <!-- Bouncing arrow indicator (points at active category) -->
                     <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
                         <Polygon Name="CategoryArrow"
-                                 Points="15,0 0,10 15,20"
+                                 Points="0,0 15,10 0,20"
                                  Classes="balatro-triangle balatro-bounce-horizontal"
                                  Canvas.Left="-20"
                                  Canvas.Top="0"
