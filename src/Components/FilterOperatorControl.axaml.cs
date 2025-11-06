@@ -45,7 +45,7 @@ namespace BalatroSeedOracle.Components
                     {
                         containerBorder.BorderBrush = operatorItem.OperatorType == "OR"
                             ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
-                            : Application.Current?.FindResource("Purple") as Avalonia.Media.IBrush;
+                            : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
                     }
 
                     // Set the header background based on operator type
@@ -53,7 +53,7 @@ namespace BalatroSeedOracle.Components
                     {
                         headerBorder.Background = operatorItem.OperatorType == "OR"
                             ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
-                            : Application.Current?.FindResource("Purple") as Avalonia.Media.IBrush;
+                            : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
                     }
 
                     // Subscribe to Children collection changes to update fanned layout
