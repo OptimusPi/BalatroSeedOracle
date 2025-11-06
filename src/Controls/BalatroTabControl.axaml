@@ -8,14 +8,14 @@
             <ControlTemplate>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>   <!-- Triangle indicator space -->
+                        <RowDefinition Height="12"/>   <!-- Triangle indicator space -->
                         <RowDefinition Height="*"/>    <!-- TabControl -->
                     </Grid.RowDefinitions>
 
                     <!-- Triangle indicator - positioned automatically above selected tab -->
                     <Canvas Grid.Row="0" Name="PART_TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False">
                         <Polygon Name="PART_TriangleIndicator"
-                                 Points="0,0 16,0 8,12"
+                                 Points="0,0 12,0 6,8"
                                  Classes="balatro-triangle balatro-bounce-vertical"
                                  Canvas.Left="0"
                                  Canvas.Top="0"/>
@@ -29,12 +29,13 @@
                             <!-- Override TabItem Template to be fully rounded Balatro buttons with shadows -->
                             <Style Selector="TabItem">
                                 <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="FontSize" Value="10"/>
                                 <Setter Property="Background" Value="{StaticResource Red}"/>
                                 <Setter Property="Foreground" Value="{StaticResource White}"/>
-                                <Setter Property="Padding" Value="6,0"/>
-                                <Setter Property="Margin" Value="4,0"/>
-                                <Setter Property="CornerRadius" Value="6"/>
+                                <Setter Property="Padding" Value="8,2"/>
+                                <Setter Property="Margin" Value="3,0"/>
+                                <Setter Property="CornerRadius" Value="4"/>
+                                <Setter Property="MinHeight" Value="24"/>
                                 <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <ControlTemplate>
@@ -42,17 +43,17 @@
                                             <!-- Dark drop shadow - creates 3D effect -->
                                             <Border Name="DropShadow"
                                                     Background="{StaticResource TransparentDark3}"
-                                                    CornerRadius="6"
+                                                    CornerRadius="4"
                                                     Margin="1,1,0,0"/>
                                             <!-- Dark bottom shadow -->
                                             <Border Name="BottomShadow"
                                                     Background="{StaticResource HoverShadow}"
-                                                    CornerRadius="6"
+                                                    CornerRadius="4"
                                                     Margin="0,1,0,0"/>
                                             <!-- Main tab face -->
                                             <Border Name="TabFace"
                                                     Background="{TemplateBinding Background}"
-                                                    CornerRadius="6"
+                                                    CornerRadius="4"
                                                     Padding="{TemplateBinding Padding}"
                                                     Margin="0,0,0,1">
                                                 <ContentPresenter Name="PART_ContentPresenter"
