@@ -110,7 +110,13 @@ namespace BalatroSeedOracle.Behaviors
                     await Task.Delay(StaggerDelay);
                 }
 
-                // Cache the original sprite source BEFORE animation
+                // CRITICAL: Wait for bindings to update before caching the source
+                // When edition/seal/sticker changes, FlipTrigger++ happens immediately,
+                // but the ItemImage binding takes a few milliseconds to update.
+                // We need to cache the NEW source (with new enhancement), not the old one!
+                await Task.Delay(50); // Small delay to let ItemImage binding update
+
+                // Cache the NEW sprite source (now has updated enhancement/seal)
                 var originalSource = AssociatedObject.Source;
 
                 // Get deck back sprite
