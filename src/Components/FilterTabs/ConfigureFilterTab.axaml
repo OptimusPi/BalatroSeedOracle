@@ -161,7 +161,7 @@
                                           BlurRadius="30"
                                           Opacity="1.0"/>
                     </Border.Effect>
-                    <TextBlock Text="ADD TO FAVORITES"
+                    <TextBlock Text="Add Favorite"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="28"
                                FontWeight="ExtraBold"
