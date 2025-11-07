@@ -1,26 +1,32 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nav="using:BalatroSeedOracle.Controls.Navigation"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              x:Class="BalatroSeedOracle.Components.Shared.FilterCategoryNav"
              x:DataType="vm:FilterTabViewModelBase"
              x:CompileBindings="True">
 
+    <UserControl.Resources>
+        <x:Double x:Key="FilterNavControlWidth">160</x:Double>
+    </UserControl.Resources>
+
     <Grid RowDefinitions="Auto,8,Auto,8,*">
-        <!-- Filter Name Display -->
+        <!-- Filter Name Display - width matches nav buttons -->
         <Border Grid.Row="0"
                 Background="{StaticResource DarkBackground}"
                 BorderThickness="0"
                 CornerRadius="12"
-                Padding="12,8">
+                Padding="8,6"
+                Width="{StaticResource FilterNavControlWidth}">
             <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
                        FontFamily="{StaticResource BalatroFont}"
-                       FontSize="14"
+                       FontSize="13"
                        Foreground="{StaticResource Gold}"
                        HorizontalAlignment="Center"
                        TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <!-- Search Box - same width as nav buttons -->
+        <!-- Search Box - width matches nav buttons -->
         <TextBox Name="SearchBox"
                  Grid.Row="2"
                  Watermark="Search items..."
@@ -29,10 +35,11 @@
                  BorderThickness="0"
                  CornerRadius="8"
                  Foreground="{StaticResource White}"
-                 Padding="12,8"
+                 Padding="8,6"
                  VerticalContentAlignment="Center"
                  HorizontalAlignment="Stretch"
-                 FontSize="13">
+                 Width="{StaticResource FilterNavControlWidth}"
+                 FontSize="12">
             <TextBox.Styles>
                 <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
                     <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
@@ -40,60 +47,69 @@
             </TextBox.Styles>
         </TextBox>
 
-        <!-- Category buttons with bouncing arrow indicator adorner -->
-        <Grid Grid.Row="4">
-            <!-- Category button stack -->
-            <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                <Button Content="Favorites"
-                        Classes="nav-button special"
-                        Click="OnCategoryClick"
-                        Tag="Favorites"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Joker"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Joker"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Consumable"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Consumable"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Skip Tags"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="SkipTag"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Boss Blind"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Boss"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Voucher"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="Voucher"
-                        HorizontalAlignment="Stretch"/>
-                <Button Content="Standard Card"
-                        Classes="nav-button"
-                        Click="OnCategoryClick"
-                        Tag="StandardCard"
-                        HorizontalAlignment="Stretch"/>
-            </StackPanel>
-
-            <!-- Arrow indicator adorner - overlays above buttons -->
-            <Canvas Name="TriangleCanvas"
-                    ClipToBounds="False"
-                    IsHitTestVisible="False"
-                    ZIndex="100">
-                <Polygon Name="CategoryArrow"
-                         Points="0,0 15,10 0,20"
-                         Classes="balatro-triangle balatro-bounce-horizontal"
-                         Canvas.Left="-20"
-                         Canvas.Top="0"
-                         IsVisible="True"/>
-            </Canvas>
-        </Grid>
+        <!-- Category buttons with intrinsic selection arrow -->
+        <StackPanel Grid.Row="4"
+                    Spacing="4"
+                    Name="CategoryNav"
+                    DragDrop.AllowDrop="True"
+                    Width="{StaticResource FilterNavControlWidth}">
+            <nav:SelectableCategoryButton
+                Content="Favorites"
+                Classes="nav-button special"
+                Category="Favorites"
+                IsSelected="{Binding IsFavoritesCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="Favorites"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Joker"
+                Classes="nav-button"
+                Category="Joker"
+                IsSelected="{Binding IsJokerCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="Joker"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Consumable"
+                Classes="nav-button"
+                Category="Consumable"
+                IsSelected="{Binding IsConsumableCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="Consumable"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Skip Tags"
+                Classes="nav-button"
+                Category="SkipTag"
+                IsSelected="{Binding IsSkipTagCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="SkipTag"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Boss Blind"
+                Classes="nav-button"
+                Category="Boss"
+                IsSelected="{Binding IsBossCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="Boss"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Voucher"
+                Classes="nav-button"
+                Category="Voucher"
+                IsSelected="{Binding IsVoucherCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="Voucher"
+                Width="{StaticResource FilterNavControlWidth}"/>
+            <nav:SelectableCategoryButton
+                Content="Standard Card"
+                Classes="nav-button"
+                Category="StandardCard"
+                IsSelected="{Binding IsStandardCardCategorySelected}"
+                Command="{Binding SelectCategoryCommand}"
+                CommandParameter="StandardCard"
+                Width="{StaticResource FilterNavControlWidth}"/>
+        </StackPanel>
 
         <!-- Favorites drop overlay -->
         <Border Grid.Row="4"

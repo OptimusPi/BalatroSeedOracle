@@ -1,0 +1,86 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:nav="using:BalatroSeedOracle.Controls.Navigation">
+
+    <!-- SelectableCategoryButton Style - Arrow is PART OF THE BUTTON -->
+    <Style Selector="nav|SelectableCategoryButton">
+        <!-- Default state matches Balatro nav buttons -->
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource White}"/>
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="Margin" Value="0,1"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="MaxWidth" Value="160"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Focusable" Value="False"/>
+        
+        <!-- Custom template with built-in arrow indicator -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <!-- Button content area -->
+                    <Border Name="PART_ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+
+                    <!-- Selection arrow overlays the left edge without affecting layout width -->
+                    <Canvas Name="SelectionArrowHost"
+                            Width="20"
+                            Height="44"
+                            IsHitTestVisible="False"
+                            HorizontalAlignment="Left"
+                            Margin="-20,0,0,0">
+                        <Polygon Name="SelectionArrow"
+                                 Points="0,0 15,10 0,20"
+                                 Classes="balatro-triangle nav-selection-arrow balatro-bounce-horizontal"
+                                 IsVisible="False"
+                                 Canvas.Left="2"
+                                 Canvas.Top="12"/>
+                    </Canvas>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- When selected, show the arrow with bouncing animation -->
+    <Style Selector="nav|SelectableCategoryButton:selected /template/ Polygon#SelectionArrow">
+        <Setter Property="IsVisible" Value="True"/>
+    </Style>
+
+    <!-- Hover state -->
+    <Style Selector="nav|SelectableCategoryButton:pointerover /template/ Border#PART_ButtonBorder">
+        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+    </Style>
+
+    <Style Selector="nav|SelectableCategoryButton:pressed /template/ Border#PART_ButtonBorder">
+        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+    </Style>
+    
+    <!-- Special style for the Favorites button -->
+    <Style Selector="nav|SelectableCategoryButton.special /template/ Border#PART_ButtonBorder">
+    <Setter Property="Background" Value="{StaticResource Gold}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="nav|SelectableCategoryButton.special:pointerover /template/ Border#PART_ButtonBorder">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+    </Style>
+    <Style Selector="nav|SelectableCategoryButton.special:selected /template/ Polygon#SelectionArrow">
+        <Setter Property="Fill" Value="{StaticResource BrightGold}"/>
+    </Style>
+    
+</Styles>
