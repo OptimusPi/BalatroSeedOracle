@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.Shared.FilterCategoryNav"
+             x:DataType="vm:FilterTabViewModelBase"
+             x:CompileBindings="True">
+
+    <Grid RowDefinitions="Auto,8,Auto,8,*">
+        <!-- Filter Name Display -->
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkBackground}"
+                BorderThickness="0"
+                CornerRadius="12"
+                Padding="12,8">
+            <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="14"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+        </Border>
+
+        <!-- Search Box - same width as nav buttons -->
+        <TextBox Name="SearchBox"
+                 Grid.Row="2"
+                 Watermark="Search items..."
+                 Text="{Binding SearchFilter, Mode=TwoWay}"
+                 Background="{StaticResource DarkBackground}"
+                 BorderThickness="0"
+                 CornerRadius="8"
+                 Foreground="{StaticResource White}"
+                 Padding="12,8"
+                 VerticalContentAlignment="Center"
+                 HorizontalAlignment="Stretch"
+                 FontSize="13">
+            <TextBox.Styles>
+                <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+                    <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+                </Style>
+            </TextBox.Styles>
+        </TextBox>
+
+        <!-- Category buttons with bouncing arrow indicator adorner -->
+        <Grid Grid.Row="4">
+            <!-- Category button stack -->
+            <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                <Button Content="Favorites"
+                        Classes="nav-button special"
+                        Click="OnCategoryClick"
+                        Tag="Favorites"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Joker"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="Joker"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Consumable"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="Consumable"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Skip Tags"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="SkipTag"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Boss Blind"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="Boss"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Voucher"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="Voucher"
+                        HorizontalAlignment="Stretch"/>
+                <Button Content="Standard Card"
+                        Classes="nav-button"
+                        Click="OnCategoryClick"
+                        Tag="StandardCard"
+                        HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <!-- Arrow indicator adorner - overlays above buttons -->
+            <Canvas Name="TriangleCanvas"
+                    ClipToBounds="False"
+                    IsHitTestVisible="False"
+                    ZIndex="100">
+                <Polygon Name="CategoryArrow"
+                         Points="0,0 15,10 0,20"
+                         Classes="balatro-triangle balatro-bounce-horizontal"
+                         Canvas.Left="-20"
+                         Canvas.Top="0"
+                         IsVisible="True"/>
+            </Canvas>
+        </Grid>
+
+        <!-- Favorites drop overlay -->
+        <Border Grid.Row="4"
+                Name="FavoritesDropOverlay"
+                Background="{StaticResource Gold}"
+                BorderBrush="#FFFFFF"
+                BorderThickness="3"
+                CornerRadius="8"
+                IsVisible="False"
+                IsHitTestVisible="False"
+                ZIndex="200">
+            <Border.Styles>
+                <Style Selector="Border[IsVisible=True]">
+                    <Style.Animations>
+                        <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                            <KeyFrame Cue="0%">
+                                <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                <Setter Property="Background" Value="{StaticResource Gold}"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="50%">
+                                <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                <Setter Property="Background" Value="{StaticResource Gold}"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="100%">
+                                <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                <Setter Property="Background" Value="{StaticResource Gold}"/>
+                            </KeyFrame>
+                        </Animation>
+                    </Style.Animations>
+                </Style>
+            </Border.Styles>
+            <Border.Effect>
+                <DropShadowEffect Color="{StaticResource GoldColor}"
+                                  OffsetX="0"
+                                  OffsetY="0"
+                                  BlurRadius="30"
+                                  Opacity="1.0"/>
+            </Border.Effect>
+            <TextBlock Text="Add Favorite"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="28"
+                       FontWeight="ExtraBold"
+                       Foreground="{StaticResource White}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                </TextBlock.Effect>
+            </TextBlock>
+        </Border>
+    </Grid>
+</UserControl>

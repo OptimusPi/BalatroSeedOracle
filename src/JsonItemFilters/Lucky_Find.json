@@ -1,11 +1,11 @@
 {
   "name": "Lucky Find",
-  "author": "pifreak",
   "description": "Created with visual filter builder",
-  "dateCreated": "2025-11-02T19:49:36.1335176-06:00",
-  "deck": "Red",
-  "stake": "white",
+  "author": "pifreak",
+  "dateCreated": "2025-11-07T00:34:18.8170625-06:00",
   "must": [],
   "should": [],
-  "mustNot": []
+  "mustNot": [],
+  "deck": "Red",
+  "stake": "white"
 }

@@ -97,6 +97,12 @@ namespace BalatroSeedOracle.Models
         {
             get
             {
+                // Editions (Foil, Holographic, Polychrome, Negative) are ONLY for Jokers!
+                if (_type != "Joker" && _type != "SoulJoker")
+                {
+                    return null;
+                }
+
                 if (string.IsNullOrEmpty(Edition) || Edition == "None")
                 {
                     Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition is null/empty/None");
@@ -131,6 +137,10 @@ namespace BalatroSeedOracle.Models
         {
             get
             {
+                // Stickers (Eternal, Perishable, Rental) are ONLY for Jokers!
+                if (_type != "Joker" && _type != "SoulJoker")
+                    return null;
+
                 if (Stickers == null || !Stickers.Contains("eternal"))
                     return null;
                 return Services.SpriteService.Instance.GetStickerImage("eternal");
@@ -141,6 +151,10 @@ namespace BalatroSeedOracle.Models
         {
             get
             {
+                // Stickers (Eternal, Perishable, Rental) are ONLY for Jokers!
+                if (_type != "Joker" && _type != "SoulJoker")
+                    return null;
+
                 if (Stickers == null || !Stickers.Contains("perishable"))
                     return null;
                 return Services.SpriteService.Instance.GetStickerImage("perishable");
@@ -151,6 +165,10 @@ namespace BalatroSeedOracle.Models
         {
             get
             {
+                // Stickers (Eternal, Perishable, Rental) are ONLY for Jokers!
+                if (_type != "Joker" && _type != "SoulJoker")
+                    return null;
+
                 if (Stickers == null || !Stickers.Contains("rental"))
                     return null;
                 return Services.SpriteService.Instance.GetStickerImage("rental");

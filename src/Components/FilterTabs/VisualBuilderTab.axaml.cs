@@ -1092,32 +1092,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         // No pagination - categories are now directly clickable in left nav
 
-        private void OnCategoryClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is string category)
-            {
-                // WORKAROUND FOR AVALONIA ISSUE #15593 - Populate from code-behind
-                try
-                {
-                    var vm =
-                        DataContext
-                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                    if (vm != null)
-                    {
-                        // Disable reactive updates temporarily
-                        vm.SetCategory(category);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError(
-                        "VisualBuilderTab",
-                        $"Category click failed: {ex.Message}"
-                    );
-                }
-            }
-        }
-
         private void OnClearSearch(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;

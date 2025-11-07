@@ -146,9 +146,9 @@
                                    ClipToBounds="False"/>
 
             <!-- 🎨 AUDIO VISUALIZER WIDGET - Show/hide on paint palette button click -->
-            <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
-                                                    IsVisible="{Binding IsVisualizerWidgetVisible}"
-                                                    ClipToBounds="False"/>
+            <components:AudioVisualizerWidget x:Name="AudioVisualizerWidget"
+                                            IsVisible="{Binding IsVisualizerWidgetVisible}"
+                                            ClipToBounds="False"/>
 
             <!-- 🎵 MUSIC MIXER WIDGET - 8-track volume and mute controls -->
             <components:MusicMixerWidget x:Name="MusicMixerWidget"

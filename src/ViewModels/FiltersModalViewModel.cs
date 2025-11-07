@@ -76,6 +76,9 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isJsonTabVisible = false;
 
         [ObservableProperty]
+        private bool _isPreferredDeckTabVisible = false;
+
+        [ObservableProperty]
         private bool _isTestTabVisible = false;
 
         [ObservableProperty]
@@ -672,7 +675,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save</param>
+        /// <param name="tabIndex">0=Configure Filter, 1=Configure Score, 2=Preferred Deck, 3=JSON Editor, 4=Save</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log(
@@ -684,6 +687,7 @@ namespace BalatroSeedOracle.ViewModels
             IsLoadSaveTabVisible = false;
             IsVisualTabVisible = false;
             IsJsonTabVisible = false;
+            IsPreferredDeckTabVisible = false;
             IsTestTabVisible = false;
             IsSaveTabVisible = false;
 
@@ -702,10 +706,14 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("FiltersModalViewModel", "Configure Score tab visible, all others hidden");
                     break;
                 case 2:
+                    IsPreferredDeckTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Preferred Deck tab visible, all others hidden");
+                    break;
+                case 3:
                     IsJsonTabVisible = true;
                     DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible, all others hidden");
                     break;
-                case 3:
+                case 4:
                     IsSaveTabVisible = true;
                     // Refresh Save tab data when it becomes visible
                     RefreshSaveTabData();
@@ -716,7 +724,7 @@ namespace BalatroSeedOracle.ViewModels
             // Log final state
             DebugLogger.Log(
                 "FiltersModalViewModel",
-                $"Final visibility state - Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}"
+                $"Final visibility state - Visual:{IsVisualTabVisible} PreferredDeck:{IsPreferredDeckTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}"
             );
         }
 
@@ -1146,23 +1154,33 @@ namespace BalatroSeedOracle.ViewModels
         {
             TabItems.Clear();
 
+            // Get required services for filter tabs
+            var filterItemDataService = ServiceHelper.GetService<Services.IFilterItemDataService>();
+            var filterItemFilterService = ServiceHelper.GetService<Services.IFilterItemFilterService>();
+
+            if (filterItemDataService == null || filterItemFilterService == null)
+            {
+                DebugLogger.LogError("FiltersModal", "Failed to retrieve required filter tab services");
+                return;
+            }
+
             // Create a single VisualBuilderTabViewModel instance to share between the two new tabs
-            var visualBuilderViewModel = new FilterTabs.VisualBuilderTabViewModel(this);
+            var visualBuilderViewModel = new FilterTabs.VisualBuilderTabViewModel(this, filterItemDataService, filterItemFilterService);
             VisualBuilderTab = visualBuilderViewModel; // Store reference for other components
 
-            // Tab 1: Configure Filter (MUST and MUST NOT zones only)
-            var configureFilterTab = new Components.FilterTabs.ConfigureFilterTab
-            {
-                DataContext = visualBuilderViewModel, // Share the same ViewModel!
-            };
-            TabItems.Add(new TabItemViewModel("CONFIGURE FILTER", configureFilterTab));
-
-            // Tab 2: Configure Score (SHOULD items in a row-based UI)
+            // Tab 1: Build Filter (unified tab with OR/AND/SHOULD zones)
             var configureScoreTab = new Components.FilterTabs.ConfigureScoreTab
             {
                 DataContext = visualBuilderViewModel, // Share the same ViewModel!
             };
-            TabItems.Add(new TabItemViewModel("CONFIGURE SCORE", configureScoreTab));
+            TabItems.Add(new TabItemViewModel("BUILD FILTER", configureScoreTab));
+
+            // Tab 2: Preferred Deck (Deck and Stake selector)
+            var preferredDeckTab = new Components.FilterTabs.PreferredDeckTab
+            {
+                DataContext = this, // Use FiltersModalViewModel for deck/stake properties
+            };
+            TabItems.Add(new TabItemViewModel("PREFERRED DECK", preferredDeckTab));
 
             // JSON Editor tab
             var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
@@ -1199,7 +1217,7 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
 
             // Ensure initial tab content and visibility are set
-            // Order now: 0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save
+            // Order now: 0=Configure Filter, 1=Configure Score, 2=Preferred Deck, 3=JSON Editor, 4=Save
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }
@@ -1739,6 +1757,17 @@ namespace BalatroSeedOracle.ViewModels
                 visualVm.IsMustExpanded = visualVm.SelectedMust.Count > 0;
                 visualVm.IsShouldExpanded = visualVm.SelectedShould.Count > 0;
                 visualVm.IsCantExpanded = visualVm.SelectedMustNot.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// Trigger auto-save across all filter tabs (called when deck/stake changes)
+        /// </summary>
+        public void TriggerAutoSave()
+        {
+            if (VisualBuilderTab is FilterTabs.FilterTabViewModelBase visualVm)
+            {
+                visualVm.TriggerAutoSave();
             }
         }
     }

@@ -496,25 +496,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 scoreListOverlay.IsVisible = false;
         }
 
-        private void OnCategoryClick(object? sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is string category)
-            {
-                try
-                {
-                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                    if (vm != null)
-                    {
-                        vm.SetCategory(category);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("ConfigureScoreTab", $"Category click failed: {ex.Message}");
-                }
-            }
-        }
-
         #region Drop Zone Handlers
 
         private void OnScoreListDragOver(object? sender, DragEventArgs e)

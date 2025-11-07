@@ -5,6 +5,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:shared="using:BalatroSeedOracle.Components.Shared"
              x:Class="BalatroSeedOracle.Components.FilterTabs.ConfigureScoreTab"
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True">
@@ -23,80 +24,8 @@
                 <ColumnDefinition Width="1.1*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
-                <Border Grid.Row="0"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="12"
-                        Padding="12,8">
-                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
-                               Foreground="{StaticResource Gold}"
-                               HorizontalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"/>
-                </Border>
-
-                <Border Grid.Row="2"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="8"
-                        Padding="8,4">
-                    <TextBox Name="SearchBox"
-                             Watermark="Search items..."
-                             Text="{Binding SearchFilter, Mode=TwoWay}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource White}"
-                             Padding="4"
-                             VerticalContentAlignment="Center"
-                             FontSize="13">
-                        <TextBox.Styles>
-                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
-                            </Style>
-                        </TextBox.Styles>
-                    </TextBox>
-                </Border>
-
-                <StackPanel Grid.Row="4" Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                    <Button Content="Favorites"
-                            Classes="nav-button special"
-                            Click="OnCategoryClick"
-                            Tag="Favorites"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Joker"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Joker"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Consumable"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Consumable"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Skip Tags"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="SkipTag"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Boss Blind"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Boss"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Voucher"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Voucher"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Standard Card"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="StandardCard"
-                            HorizontalAlignment="Stretch"/>
-                </StackPanel>
-            </Grid>
+            <!-- LEFT COLUMN - Category Navigation -->
+            <shared:FilterCategoryNav Grid.Column="0" Margin="0,0,8,0" DataContext="{Binding}"/>
 
             <Grid Grid.Column="1" Margin="8,0">
                 <Border Name="ItemGridBorder"
@@ -114,160 +43,166 @@
 
                         <!-- Edition/Sticker/Seal Toolbar - Single horizontal row with sprite icons -->
                         <WrapPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,4">
-                            <!-- Edition Buttons -->
-                            <Button Command="{Binding SetEditionCommand}"
-                                    CommandParameter="None"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
-                                    ToolTip.Tip="None"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                            <!-- Edition Buttons (JOKERS ONLY) -->
+                            <WrapPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
+                                <Button Command="{Binding SetEditionCommand}"
+                                        CommandParameter="None"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                        ToolTip.Tip="None"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetEditionCommand}"
-                                    CommandParameter="Foil"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
-                                    ToolTip.Tip="Foil (+50 chips)"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetEditionCommand}"
+                                        CommandParameter="Foil"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
+                                        ToolTip.Tip="Foil (+50 chips)"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetEditionCommand}"
-                                    CommandParameter="Holo"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
-                                    ToolTip.Tip="Holographic (+10 mult)"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetEditionCommand}"
+                                        CommandParameter="Holo"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
+                                        ToolTip.Tip="Holographic (+10 mult)"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetEditionCommand}"
-                                    CommandParameter="Polychrome"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
-                                    ToolTip.Tip="Polychrome (x1.5 mult)"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetEditionCommand}"
+                                        CommandParameter="Polychrome"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
+                                        ToolTip.Tip="Polychrome (x1.5 mult)"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetEditionCommand}"
-                                    CommandParameter="Negative"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
-                                    ToolTip.Tip="Negative (+1 joker slot)"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,8,0">
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetEditionCommand}"
+                                        CommandParameter="Negative"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
+                                        ToolTip.Tip="Negative (+1 joker slot)"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,8,0">
+                                    <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
+                                           Stretch="Uniform"/>
+                                </Button>
+                            </WrapPanel>
 
-                            <!-- Sticker Buttons -->
-                            <Button Command="{Binding ToggleStickerPerishableCommand}"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding StickerPerishable}"
-                                    ToolTip.Tip="Perishable"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=perishable}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                            <!-- Sticker Buttons (JOKERS ONLY) -->
+                            <WrapPanel Orientation="Horizontal" IsVisible="{Binding ShowStickerButtons}">
+                                <Button Command="{Binding ToggleStickerPerishableCommand}"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding StickerPerishable}"
+                                        ToolTip.Tip="Perishable"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=perishable}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding ToggleStickerEternalCommand}"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding StickerEternal}"
-                                    ToolTip.Tip="Eternal"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=eternal}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding ToggleStickerEternalCommand}"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding StickerEternal}"
+                                        ToolTip.Tip="Eternal"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=eternal}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding ToggleStickerRentalCommand}"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding StickerRental}"
-                                    ToolTip.Tip="Rental"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,8,0">
-                                <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding ToggleStickerRentalCommand}"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding StickerRental}"
+                                        ToolTip.Tip="Rental"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,8,0">
+                                    <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
+                                           Stretch="Uniform"/>
+                                </Button>
+                            </WrapPanel>
 
-                            <!-- Seal Buttons (StandardCard only) -->
-                            <Button Command="{Binding SetSealCommand}"
-                                    CommandParameter="None"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
-                                    ToolTip.Tip="No Seal"
-                                    Width="32" Height="32"
-                                    Padding="4"
-                                    Margin="0,0,2,0">
-                                <TextBlock Text="—" FontSize="16" Foreground="{StaticResource LightGrey}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Button>
+                            <!-- Seal Buttons (STANDARD CARDS ONLY) -->
+                            <WrapPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
+                                <Button Command="{Binding SetSealCommand}"
+                                        CommandParameter="None"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                        ToolTip.Tip="No Seal"
+                                        Width="32" Height="32"
+                                        Padding="4"
+                                        Margin="0,0,2,0">
+                                    <TextBlock Text="—" FontSize="16" Foreground="{StaticResource LightGrey}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
 
-                            <Button Command="{Binding SetSealCommand}"
-                                    CommandParameter="Purple"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
-                                    ToolTip.Tip="Purple Seal"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetSealCommand}"
+                                        CommandParameter="Purple"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
+                                        ToolTip.Tip="Purple Seal"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetSealCommand}"
-                                    CommandParameter="Gold"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
-                                    ToolTip.Tip="Gold Seal"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetSealCommand}"
+                                        CommandParameter="Gold"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
+                                        ToolTip.Tip="Gold Seal"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetSealCommand}"
-                                    CommandParameter="Red"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
-                                    ToolTip.Tip="Red Seal"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,2,0">
-                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetSealCommand}"
+                                        CommandParameter="Red"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
+                                        ToolTip.Tip="Red Seal"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,2,0">
+                                    <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
+                                           Stretch="Uniform"/>
+                                </Button>
 
-                            <Button Command="{Binding SetSealCommand}"
-                                    CommandParameter="Blue"
-                                    Classes="icon-button"
-                                    Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
-                                    ToolTip.Tip="Blue Seal"
-                                    Width="32" Height="32"
-                                    Padding="2"
-                                    Margin="0,0,0,0">
-                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
-                                       Stretch="Uniform"/>
-                            </Button>
+                                <Button Command="{Binding SetSealCommand}"
+                                        CommandParameter="Blue"
+                                        Classes="icon-button"
+                                        Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
+                                        ToolTip.Tip="Blue Seal"
+                                        Width="32" Height="32"
+                                        Padding="2"
+                                        Margin="0,0,0,0">
+                                    <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
+                                           Stretch="Uniform"/>
+                                </Button>
+                            </WrapPanel>
                         </WrapPanel>
 
                         <!-- Item Shelf ScrollViewer -->
@@ -277,7 +212,7 @@
                                       HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
+                                <DataTemplate DataType="models:FilterItemGroup">
                                     <StackPanel Margin="0,0,0,16">
                                         <Border Background="{StaticResource DarkBackground}"
                                                 BorderThickness="0"
@@ -307,6 +242,7 @@
                                                                 IsHitTestVisible="False">
                                                             <StackPanel Spacing="2">
                                                                 <Grid Width="48" Height="64">
+                                                                    <!-- Base card image with flip behavior -->
                                                                     <Image Source="{Binding ItemImage}"
                                                                            Width="48"
                                                                            Height="64"
@@ -317,17 +253,61 @@
                                                                             <behaviors:CardFlipOnTriggerBehavior
                                                                                 DeckName="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).SelectedDeck}"
                                                                                 FlipTrigger="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).FlipAnimationTrigger}"
-                                                                                StaggerDelay="{Binding StaggerDelay}"/>
+                                                                                StaggerDelay="{Binding StaggerDelay}"
+                                                                                ImageWidth="48"
+                                                                                ImageHeight="64"/>
                                                                         </i:Interaction.Behaviors>
                                                                     </Image>
 
-                                                                    <Image Source="{Binding SoulFaceImage}"
+                                                                    <!-- Soul face overlay (legendary jokers) - HIDE during flip -->
+                                                                    <Image Name="SoulFaceOverlay"
+                                                                           Source="{Binding SoulFaceImage}"
                                                                            Width="48"
                                                                            Height="64"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <!-- Edition overlay (Foil, Holographic, Polychrome, Negative) - KEEP VISIBLE during flip -->
+                                                                    <Image Name="EditionOverlay"
+                                                                           Source="{Binding EditionImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <!-- Eternal sticker overlay - KEEP VISIBLE during flip -->
+                                                                    <Image Name="EternalStickerOverlay"
+                                                                           Source="{Binding EternalStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <!-- Perishable sticker overlay - KEEP VISIBLE during flip -->
+                                                                    <Image Name="PerishableStickerOverlay"
+                                                                           Source="{Binding PerishableStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+                                                                    <!-- Rental sticker overlay - KEEP VISIBLE during flip -->
+                                                                    <Image Name="RentalStickerOverlay"
+                                                                           Source="{Binding RentalStickerImage}"
+                                                                           Width="48"
+                                                                           Height="64"
+                                                                           Stretch="Uniform"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                                                 </Grid>
 
                                                                 <TextBlock Text="{Binding DisplayName}"
