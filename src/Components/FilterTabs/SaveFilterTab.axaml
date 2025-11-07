@@ -20,6 +20,10 @@
                 <RowDefinition Height="10"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Description -->
                 <RowDefinition Height="20"/>    <!-- Spacer -->
+                <RowDefinition Height="Auto"/>  <!-- Preferred Deck & Stake -->
+                <RowDefinition Height="20"/>    <!-- Spacer -->
+                <RowDefinition Height="Auto"/>  <!-- Current Filter Info -->
+                <RowDefinition Height="20"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Action Buttons -->
                 <RowDefinition Height="*"/>     <!-- Status -->
             </Grid.RowDefinitions>
@@ -60,8 +64,46 @@
                          Height="60"/>
             </StackPanel>
 
+            <!-- Preferred Deck & Stake -->
+            <StackPanel Grid.Row="6">
+                <TextBlock Text="Preferred Deck &amp; Stake"
+                           FontSize="14"
+                           Foreground="{StaticResource White}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Margin="0,0,0,5"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="(Deck/stake this filter was designed for)"
+                           FontSize="10"
+                           Foreground="{StaticResource LightGrey}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Deck Selector -->
+                <controls:SpinnerControl Label="Deck"
+                                        SpinnerType="deck"
+                                        Value="{Binding SelectedDeckIndex}"
+                                        Minimum="0"
+                                        Maximum="14"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding DeckDisplayValues}"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,0,0,8"/>
+
+                <!-- Stake Selector -->
+                <controls:SpinnerControl Label="Stake"
+                                        SpinnerType="stake"
+                                        Value="{Binding SelectedStakeIndex}"
+                                        Minimum="0"
+                                        Maximum="7"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding StakeDisplayValues}"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,0,0,0"/>
+            </StackPanel>
+
             <!-- Action Buttons -->
-            <StackPanel Grid.Row="6"
+            <StackPanel Grid.Row="10"
                         Orientation="Vertical"
                         Spacing="10">
                 <Button Content="💾 SAVE"
@@ -80,9 +122,9 @@
                         Height="35"
                         FontSize="13"/>
             </StackPanel>
-
+            
             <!-- Status Area -->
-            <Border Grid.Row="7"
+            <Border Grid.Row="11"
                     Background="{StaticResource DarkBackground}"
                     BorderThickness="1"
                     BorderBrush="{StaticResource ModalBorder}"

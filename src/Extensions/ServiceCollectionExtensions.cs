@@ -23,10 +23,6 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SoundEffectsService>(); // UI sound effects (card hover, button clicks, etc.)
             // FavoritesService uses a private constructor and singleton Instance
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-
-            // Filter Tab Services (refactoring - eliminate ~1,920 lines of duplicate code)
-            services.AddSingleton<IFilterItemDataService, FilterItemDataService>();
-            services.AddSingleton<IFilterItemFilterService, FilterItemFilterService>();
             // ClipboardService is static, no DI registration needed
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
@@ -40,8 +36,8 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<AnalyzeModalViewModel>();
             services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<CreditsModalViewModel>();
+            services.AddTransient<ComprehensiveFiltersModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
-            services.AddTransient<AudioVisualizerWidgetViewModel>(); // Simplified visualizer widget
             services.AddTransient<MusicMixerWidgetViewModel>();
 
             // Filter Tab ViewModels

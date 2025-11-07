@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
@@ -27,19 +29,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         ScoreEdit       // Editing score list - expand to full column
     }
 
-    /// <summary>
-    /// ViewModel for Visual Builder tab.
-    /// Refactored to use FilterTabViewModelBase - eliminates ~800 lines of duplicate code.
-    /// Retains all tab-specific features: edition/sticker/seal buttons, clause editing, flip animations.
-    /// </summary>
-    public partial class VisualBuilderTabViewModel : FilterTabViewModelBase
+    public partial class VisualBuilderTabViewModel : ObservableObject
     {
-        // Auto-save status properties (tab-specific)
+        private readonly FiltersModalViewModel? _parentViewModel;
+
+        // Auto-save debouncing
+        private CancellationTokenSource? _autoSaveCts;
+        private const int AutoSaveDebounceMs = 500;
+
         [ObservableProperty]
         private string _autoSaveStatus = "";
 
         [ObservableProperty]
         private bool _isAutoSaving = false;
+
+        [ObservableProperty]
+        private string _searchFilter = "";
+
+        [ObservableProperty]
+        private bool _isLoading = true;
 
         // Phase 2: UI State Management
         [ObservableProperty]
@@ -82,7 +90,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isDragging = false; // Track if user is dragging a card
 
-        // Hover state tracking for drop-zones
+        // Hover state tracking for drop-zones (used to show indicators only when hovering over collapsed zones)
         [ObservableProperty]
         private bool _isMustHovered = false;
 
@@ -92,12 +100,75 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isCantHovered = false;
 
+        // Expose parent's FilterName for display
+        public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
+
         // Expose parent's SelectedDeck for flip animation
         public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+
+        // Available items
+        public ObservableCollection<FilterItem> AllJokers { get; }
+        public ObservableCollection<FilterItem> AllTags { get; }
+        public ObservableCollection<FilterItem> AllVouchers { get; }
+        public ObservableCollection<FilterItem> AllTarots { get; }
+        public ObservableCollection<FilterItem> AllPlanets { get; }
+        public ObservableCollection<FilterItem> AllSpectrals { get; }
+        public ObservableCollection<FilterItem> AllBosses { get; }
+        public ObservableCollection<FilterItem> AllWildcards { get; }
+        public ObservableCollection<FilterItem> AllStandardCards { get; }
+
+        // Filtered items (based on search)
+        public ObservableCollection<FilterItem> FilteredJokers { get; }
+        public ObservableCollection<FilterItem> FilteredTags { get; }
+        public ObservableCollection<FilterItem> FilteredVouchers { get; }
+        public ObservableCollection<FilterItem> FilteredTarots { get; }
+        public ObservableCollection<FilterItem> FilteredPlanets { get; }
+        public ObservableCollection<FilterItem> FilteredSpectrals { get; }
+        public ObservableCollection<FilterItem> FilteredBosses { get; }
+        public ObservableCollection<FilterItem> FilteredWildcards { get; }
+        public ObservableCollection<FilterItem> FilteredStandardCards { get; }
+
+        public ObservableCollection<FilterItem> FilteredItems { get; }
+
+        // Main category selection (6 main categories)
+        [ObservableProperty]
+        private string _selectedMainCategory = "Joker";
 
         // Subcategory tracking within each main category
         [ObservableProperty]
         private string _selectedCategory = "Legendary";
+
+        // Grouped items for the new UI
+        public class ItemGroup : ObservableObject
+        {
+            public string GroupName { get; set; } = "";
+            public ObservableCollection<FilterItem> Items { get; set; } = new();
+
+            // Vouchers: 8 wide (580px), Others: 5 wide (380px)
+            public double ShelfMaxWidth => GroupName == "Vouchers" ? 580 : 380;
+        }
+
+        [ObservableProperty]
+        private ObservableCollection<ItemGroup> _groupedItems = new();
+
+        // Helper button visibility properties
+        [ObservableProperty]
+        private bool _isJokerCategorySelected = true;
+
+        [ObservableProperty]
+        private bool _isConsumableCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isSkipTagCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isBossCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isVoucherCategorySelected = false;
+
+        [ObservableProperty]
+        private bool _isStandardCardCategorySelected = false;
 
         // Phase 3: Edition/Sticker/Seal selectors (apply to ALL items in shelf)
         [ObservableProperty]
@@ -116,6 +187,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
         // Flip Animation Trigger - incremented whenever edition/sticker/seal changes
+        // Cards watch this property and flip when it changes
         [ObservableProperty]
         private int _flipAnimationTrigger = 0;
 
@@ -130,15 +202,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _currentSeal = "None";
 
         // Computed properties for button visibility based on category
-        // Editions (Foil, Holographic, Polychrome, Negative) - JOKERS ONLY
-        public bool ShowEditionButtons => SelectedMainCategory == "Joker";
-        // Stickers (Eternal, Perishable, Rental) - JOKERS ONLY
+        public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
-        // Seals (Red, Blue, Gold, Purple) - STANDARD CARDS ONLY
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
-        // Enhancements (Bonus, Mult, Wild, Lucky, Glass, Steel, Stone, Gold) - STANDARD CARDS ONLY
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
         public bool SupportsFlipAnimation => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+
+        // Notify property changes when category changes
+        partial void OnSelectedMainCategoryChanged(string value)
+        {
+            OnPropertyChanged(nameof(ShowEditionButtons));
+            OnPropertyChanged(nameof(ShowStickerButtons));
+            OnPropertyChanged(nameof(ShowSealButtons));
+            OnPropertyChanged(nameof(ShowEnhancementButtons));
+            OnPropertyChanged(nameof(SupportsFlipAnimation));
+
+            // Reset edition/sticker/seal state when switching categories
+            // Cards should start fresh with no enhancements
+            SelectedEdition = "None";
+            SelectedSeal = "None";
+            StickerPerishable = false;
+            StickerEternal = false;
+            StickerRental = false;
+
+            DebugLogger.Log("VisualBuilderTab", $"Category changed to: {value} - reset all editions/stickers/seals");
+        }
 
         // Display name for current category
         public string CurrentCategoryDisplay =>
@@ -185,25 +273,109 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
-        public VisualBuilderTabViewModel(
-            FiltersModalViewModel? parentViewModel,
-            IFilterItemDataService dataService,
-            IFilterItemFilterService filterService)
-            : base(parentViewModel, dataService, filterService)
+        public VisualBuilderTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {
+            _parentViewModel = parentViewModel;
+
+            // Subscribe to parent's property changes to update FilterName
+            if (_parentViewModel != null)
+            {
+                _parentViewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
+                    {
+                        OnPropertyChanged(nameof(FilterName));
+                    }
+                };
+            }
+
+            // Initialize collections
+            AllJokers = new ObservableCollection<FilterItem>();
+            AllTags = new ObservableCollection<FilterItem>();
+            AllVouchers = new ObservableCollection<FilterItem>();
+            AllTarots = new ObservableCollection<FilterItem>();
+            AllPlanets = new ObservableCollection<FilterItem>();
+            AllSpectrals = new ObservableCollection<FilterItem>();
+            AllBosses = new ObservableCollection<FilterItem>();
+            AllWildcards = new ObservableCollection<FilterItem>();
+            AllStandardCards = new ObservableCollection<FilterItem>();
+
+            FilteredJokers = new ObservableCollection<FilterItem>();
+            FilteredTags = new ObservableCollection<FilterItem>();
+            FilteredVouchers = new ObservableCollection<FilterItem>();
+            FilteredTarots = new ObservableCollection<FilterItem>();
+            FilteredPlanets = new ObservableCollection<FilterItem>();
+            FilteredSpectrals = new ObservableCollection<FilterItem>();
+            FilteredBosses = new ObservableCollection<FilterItem>();
+            FilteredWildcards = new ObservableCollection<FilterItem>();
+            FilteredStandardCards = new ObservableCollection<FilterItem>();
+
+            FilteredItems = new ObservableCollection<FilterItem>();
+            GroupedItems = new ObservableCollection<ItemGroup>();
+
             // Initialize categories with proper data template approach
             Categories = new ObservableCollection<CategoryViewModel>
             {
-                new() { Name = "Legendary", DisplayName = "Legendary", Items = FilteredJokers },
-                new() { Name = "Rare", DisplayName = "Rare", Items = FilteredJokers },
-                new() { Name = "Uncommon", DisplayName = "Uncommon", Items = FilteredJokers },
-                new() { Name = "Common", DisplayName = "Common", Items = FilteredJokers },
-                new() { Name = "Voucher", DisplayName = "Voucher", Items = FilteredVouchers },
-                new() { Name = "Tarot", DisplayName = "Tarot", Items = FilteredTarots },
-                new() { Name = "Planet", DisplayName = "Planet", Items = FilteredPlanets },
-                new() { Name = "Spectral", DisplayName = "Spectral", Items = FilteredSpectrals },
-                new() { Name = "Tag", DisplayName = "Tag", Items = FilteredTags },
-                new() { Name = "Boss", DisplayName = "Boss", Items = FilteredBosses },
+                new()
+                {
+                    Name = "Legendary",
+                    DisplayName = "Legendary",
+                    Items = FilteredJokers,
+                },
+                new()
+                {
+                    Name = "Rare",
+                    DisplayName = "Rare",
+                    Items = FilteredJokers,
+                },
+                new()
+                {
+                    Name = "Uncommon",
+                    DisplayName = "Uncommon",
+                    Items = FilteredJokers,
+                },
+                new()
+                {
+                    Name = "Common",
+                    DisplayName = "Common",
+                    Items = FilteredJokers,
+                },
+                new()
+                {
+                    Name = "Voucher",
+                    DisplayName = "Voucher",
+                    Items = FilteredVouchers,
+                },
+                new()
+                {
+                    Name = "Tarot",
+                    DisplayName = "Tarot",
+                    Items = FilteredTarots,
+                },
+                new()
+                {
+                    Name = "Planet",
+                    DisplayName = "Planet",
+                    Items = FilteredPlanets,
+                },
+                new()
+                {
+                    Name = "Spectral",
+                    DisplayName = "Spectral",
+                    Items = FilteredSpectrals,
+                },
+                new()
+                {
+                    Name = "Tag",
+                    DisplayName = "Tag",
+                    Items = FilteredTags,
+                },
+                new()
+                {
+                    Name = "Boss",
+                    DisplayName = "Boss",
+                    Items = FilteredBosses,
+                },
             };
 
             // Initialize Operator Tray with permanent OR and AND operators
@@ -261,47 +433,209 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     RefreshFilteredItems();
                 }
-                else if (e.PropertyName == nameof(SelectedMainCategory))
+                else if (e.PropertyName == nameof(SearchFilter))
                 {
-                    // Notify computed properties when main category changes
-                    OnPropertyChanged(nameof(ShowEditionButtons));
-                    OnPropertyChanged(nameof(ShowStickerButtons));
-                    OnPropertyChanged(nameof(ShowSealButtons));
-                    OnPropertyChanged(nameof(ShowEnhancementButtons));
-                    OnPropertyChanged(nameof(SupportsFlipAnimation));
-
-                    // Reset edition/sticker/seal state when switching categories
-                    SelectedEdition = "None";
-                    SelectedSeal = "None";
-                    StickerPerishable = false;
-                    StickerEternal = false;
-                    StickerRental = false;
-
-                    DebugLogger.Log("VisualBuilderTab", $"Category changed to: {SelectedMainCategory} - reset all editions/stickers/seals");
+                    // When search text changes, rebuild filtered collections from All*
+                    ApplyFilter();
                 }
             };
+
+            // Initialize data asynchronously without blocking UI
+            // Fire and forget is OK here - data will populate when ready
+            _ = Task.Run(LoadGameDataAsync);
         }
 
-        #region Category-Specific GroupedItems Override
+        public void SetCategory(string category)
+        {
+            // Auto-clear search when switching tabs for clean navigation
+            SearchFilter = "";
+            SelectedMainCategory = category;
+
+            // Update visibility flags
+            IsJokerCategorySelected = category == "Joker";
+            IsConsumableCategorySelected = category == "Consumable";
+            IsSkipTagCategorySelected = category == "SkipTag";
+            IsBossCategorySelected = category == "Boss";
+            IsVoucherCategorySelected = category == "Voucher";
+            IsStandardCardCategorySelected = category == "StandardCard";
+
+            // Rebuild grouped items
+            RebuildGroupedItems();
+
+            OnPropertyChanged(nameof(CurrentCategoryDisplay));
+
+            // Ensure collections are populated when switching categories
+            if (FilteredJokers.Count == 0)
+            {
+                ApplyFilter();
+            }
+        }
+
+        private void RebuildGroupedItems()
+        {
+            GroupedItems.Clear();
+
+            switch (SelectedMainCategory)
+            {
+                case "Favorites":
+                    // Section 1: Favorite Items (user's frequently used items)
+                    var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
+                    AddGroup("Favorite Items", favoriteItems);
+
+                    // Section 2: Wildcards (ALL wildcards in one place)
+                    AddGroup("Wildcards", FilteredWildcards);
+                    break;
+
+                case "Joker":
+                    // Add groups: Legendary, Rare, Uncommon, Common
+                    AddGroup("Legendary Jokers", FilteredJokers.Where(j => j.Type == "SoulJoker"));
+                    AddGroup(
+                        "Rare Jokers",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare")
+                    );
+                    AddGroup(
+                        "Uncommon Jokers",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon")
+                    );
+                    AddGroup(
+                        "Common Jokers",
+                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common")
+                    );
+                    break;
+
+                case "Consumable":
+                    AddGroup("Tarot Cards", FilteredTarots);
+                    AddGroup("Planet Cards", FilteredPlanets);
+                    AddGroup("Spectral Cards", FilteredSpectrals);
+                    break;
+
+                case "SkipTag":
+                    // For now, just show all tags (ante filtering can be added later)
+                    AddGroup("Skip Tags - Any Ante", FilteredTags);
+                    break;
+
+                case "Boss":
+                    // For now, show all bosses (regular/finisher split can be added later)
+                    AddGroup("Boss Blinds", FilteredBosses);
+                    break;
+
+                case "Voucher":
+                    // Organize vouchers to match sprite sheet layout: 8 columns wide with base/upgrade rows
+                    var voucherPairs = GetVoucherPairs();
+                    var organizedVouchers = new List<FilterItem>();
+
+                    // First 8 pairs (row 0 bases, then row 1 upgrades)
+                    var firstSet = voucherPairs.Take(8).ToList();
+
+                    // Add all 8 base vouchers from row 0
+                    foreach (var (baseName, _) in firstSet)
+                    {
+                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                        if (baseVoucher != null)
+                            organizedVouchers.Add(baseVoucher);
+                    }
+
+                    // Add all 8 upgrade vouchers from row 1
+                    foreach (var (_, upgradeName) in firstSet)
+                    {
+                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                        if (upgradeVoucher != null)
+                            organizedVouchers.Add(upgradeVoucher);
+                    }
+
+                    // Second 8 pairs (row 2 bases, then row 3 upgrades)
+                    var secondSet = voucherPairs.Skip(8).Take(8).ToList();
+
+                    // Add all 8 base vouchers from row 2
+                    foreach (var (baseName, _) in secondSet)
+                    {
+                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                        if (baseVoucher != null)
+                            organizedVouchers.Add(baseVoucher);
+                    }
+
+                    // Add all 8 upgrade vouchers from row 3
+                    foreach (var (_, upgradeName) in secondSet)
+                    {
+                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                        if (upgradeVoucher != null)
+                            organizedVouchers.Add(upgradeVoucher);
+                    }
+
+                    // Add any remaining vouchers that weren't in the pairs
+                    var remainingVouchers = FilteredVouchers.Except(organizedVouchers);
+                    organizedVouchers.AddRange(remainingVouchers);
+
+                    AddGroup("Vouchers", organizedVouchers);
+                    break;
+
+                case "StandardCard":
+                    // Standard playing cards organized by suit and enhancement
+                    AddGroup("Hearts", FilteredStandardCards.Where(c => c.Category == "Hearts"));
+                    AddGroup("Spades", FilteredStandardCards.Where(c => c.Category == "Spades"));
+                    AddGroup("Diamonds", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
+                    AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
+                    AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
+                    AddGroup("Bonus Cards", FilteredStandardCards.Where(c => c.Category == "Bonus"));
+                    AddGroup("Glass Cards", FilteredStandardCards.Where(c => c.Category == "Glass"));
+                    AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
+                    AddGroup("Steel Cards", FilteredStandardCards.Where(c => c.Category == "Steel"));
+                    AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
+                    break;
+            }
+        }
+
+        private void AddGroup(string groupName, IEnumerable<FilterItem> items)
+        {
+            // Assign stagger delays for flip animation (20ms between each card for smooth wave effect)
+            int delayCounter = 0;
+            var itemsList = items.ToList();
+            foreach (var item in itemsList)
+            {
+                item.StaggerDelay = delayCounter * 20; // 20ms stagger between cards
+                delayCounter++;
+            }
+
+            var group = new ItemGroup
+            {
+                GroupName = groupName,
+                Items = new ObservableCollection<FilterItem>(itemsList),
+            };
+            GroupedItems.Add(group);
+        }
 
         /// <summary>
-        /// Override RebuildGroupedItems to add stagger delays for flip animation
+        /// Get vouchers organized into pairs (base + upgrade) matching sprite sheet layout.
+        /// Returns 8-column pairs where each pair has base voucher followed by upgrade voucher.
         /// </summary>
-        protected override void RebuildGroupedItems()
+        private List<(string baseName, string upgradeName)> GetVoucherPairs()
         {
-            // Call base implementation
-            base.RebuildGroupedItems();
-
-            // Apply stagger delays for flip animation (20ms between each card for smooth wave effect)
-            foreach (var group in GroupedItems)
+            return new List<(string, string)>
             {
-                int delayCounter = 0;
-                foreach (var item in group.Items)
-                {
-                    item.StaggerDelay = delayCounter * 20; // 20ms stagger between cards
-                    delayCounter++;
-                }
-            }
+                // Row 0 -> Row 1 pairs (8 pairs)
+                ("overstock", "overstockplus"),
+                ("tarotmerchant", "tarottycoon"),
+                ("planetmerchant", "planettycoon"),
+                ("clearancesale", "liquidation"),
+                ("hone", "glowup"),
+                ("grabber", "nachotong"),
+                ("wasteful", "recyclomancy"),
+                ("blank", "antimatter"),
+
+                // Row 2 -> Row 3 pairs (8 pairs)
+                ("rerollsurplus", "rerollglut"),
+                ("seedmoney", "moneytree"),
+                ("crystalball", "omenglobe"),
+                ("telescope", "observatory"),
+                ("magictrick", "illusion"),
+                ("hieroglyph", "petroglyph"),
+                ("directorscut", "retcon"),
+                ("paintbrush", "palette"),
+            };
         }
 
         private void RefreshFilteredItems()
@@ -317,15 +651,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var allCollections = new[]
                 {
-                    AllJokers, AllVouchers, AllTarots, AllPlanets, AllSpectrals, AllTags, AllBosses,
+                    AllJokers,
+                    AllVouchers,
+                    AllTarots,
+                    AllPlanets,
+                    AllSpectrals,
+                    AllTags,
+                    AllBosses,
                 };
 
                 foreach (var collection in allCollections)
                 {
                     foreach (var item in collection)
                     {
-                        if (item.Name?.Contains(SearchFilter, StringComparison.OrdinalIgnoreCase) == true ||
-                            item.DisplayName?.Contains(SearchFilter, StringComparison.OrdinalIgnoreCase) == true)
+                        if (
+                            item.Name?.Contains(SearchFilter, StringComparison.OrdinalIgnoreCase)
+                                == true
+                            || item.DisplayName?.Contains(
+                                SearchFilter,
+                                StringComparison.OrdinalIgnoreCase
+                            ) == true
+                        )
                         {
                             searchResults.Add(item);
                         }
@@ -343,7 +689,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "Favorites" => FilteredJokers.Where(j => j.IsFavorite == true),
                 "Legendary" => FilteredJokers.Where(j => j.Type == "SoulJoker"),
                 "Rare" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare"),
-                "Uncommon" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon"),
+                "Uncommon" => FilteredJokers.Where(j =>
+                    j.Type == "Joker" && j.Category == "Uncommon"
+                ),
                 "Common" => FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common"),
                 "Voucher" => FilteredVouchers,
                 "Tarot" => FilteredTarots,
@@ -363,8 +711,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Also rebuild grouped items after filtering
             RebuildGroupedItems();
         }
-
-        #endregion
 
         #region Commands
 
@@ -393,10 +739,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMust.Add(item);
 
+            // Sync with parent ViewModel if available
             if (_parentViewModel != null)
             {
+                // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
                     SyncOperatorToParent(operatorItem, "Must");
@@ -420,6 +769,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -427,10 +778,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedShould.Add(item);
 
+            // Sync with parent ViewModel if available
             if (_parentViewModel != null)
             {
+                // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
                     SyncOperatorToParent(operatorItem, "Should");
@@ -445,6 +799,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemName = item.Name,
                     };
 
+                    // Phase 3: Apply currently selected edition/stickers/seal
                     ApplyEditionStickersSeal(itemConfig, item);
 
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
@@ -453,6 +808,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to SHOULD");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -460,10 +817,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMustNot.Add(item);
 
+            // Sync with parent ViewModel if available
             if (_parentViewModel != null)
             {
+                // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
                     SyncOperatorToParent(operatorItem, "MustNot");
@@ -478,6 +838,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         ItemName = item.Name,
                     };
 
+                    // Phase 3: Apply currently selected edition/stickers/seal
                     ApplyEditionStickersSeal(itemConfig, item);
 
                     _parentViewModel.ItemConfigs[itemKey] = itemConfig;
@@ -486,6 +847,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -495,12 +858,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedMust.Remove(item);
 
+            // Sync with parent ViewModel - remove from parent collections
             if (_parentViewModel != null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMust);
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -510,12 +876,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedShould.Remove(item);
 
+            // Sync with parent ViewModel - remove from parent collections
             if (_parentViewModel != null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedShould);
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -525,12 +894,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedMustNot.Remove(item);
 
+            // Sync with parent ViewModel - remove from parent collections
             if (_parentViewModel != null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
+
+            // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
         }
 
@@ -538,6 +910,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
+            // Enter clause editing mode on first item
             if (OrTrayItems.Count == 0)
             {
                 CurrentEditingState = EditingState.ClauseEdit;
@@ -545,8 +918,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 DebugLogger.Log("VisualBuilderTab", "Entered OR clause editing mode");
             }
 
+            // Add to OR tray
             OrTrayItems.Add(item);
 
+            // Create ItemConfig and apply current edition/sticker/seal settings
             if (_parentViewModel != null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
@@ -570,6 +945,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item == null) return;
 
+            // Enter clause editing mode on first item
             if (AndTrayItems.Count == 0)
             {
                 CurrentEditingState = EditingState.ClauseEdit;
@@ -577,8 +953,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 DebugLogger.Log("VisualBuilderTab", "Entered AND clause editing mode");
             }
 
+            // Add to AND tray
             AndTrayItems.Add(item);
 
+            // Create ItemConfig and apply current edition/sticker/seal settings
             if (_parentViewModel != null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
@@ -603,6 +981,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item == null) return;
 
             OrTrayItems.Remove(item);
+
+            // Also remove from SelectedShould
             RemoveFromShould(item);
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from OR tray");
@@ -613,11 +993,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (item == null) return;
 
             AndTrayItems.Remove(item);
+
+            // Also remove from SelectedShould
             RemoveFromShould(item);
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from AND tray");
         }
 
+        /// <summary>
+        /// Commits OR clause to SHOULD list as a grouped clause with Children
+        /// </summary>
         private void CommitOrClause()
         {
             if (OrTrayItems.Count == 0)
@@ -626,6 +1011,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
+            // Create grouped ItemConfig with OperatorType="Or" and Children
             var groupedConfig = new ItemConfig
             {
                 ItemKey = $"or_clause_{Guid.NewGuid():N}",
@@ -636,10 +1022,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Children = new List<ItemConfig>()
             };
 
+            // Add each item in OR tray as a child
             if (_parentViewModel != null)
             {
                 foreach (var item in OrTrayItems.ToList())
                 {
+                    // Find the ItemConfig for this item
                     var existingConfig = _parentViewModel.ItemConfigs
                         .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
 
@@ -650,32 +1038,43 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("OR")
             {
                 DisplayName = $"OR ({OrTrayItems.Count} items)"
             };
 
+            // Add tray items as children to the operator item
             foreach (var item in OrTrayItems.ToList())
             {
                 operatorItem.Children.Add(item);
             }
 
+            // Add to local SelectedShould for UI binding
             SelectedShould.Add(operatorItem);
 
+            // Add grouped config to parent for persistence
             if (_parentViewModel != null)
             {
                 _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
                 _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
             }
 
+            // Clear OR tray
             OrTrayItems.Clear();
+
+            // Exit clause editing mode
             CurrentEditingState = EditingState.Default;
             EditingClauseType = "";
 
             DebugLogger.Log("VisualBuilderTab", $"Committed OR clause with {groupedConfig.Children.Count} children to SHOULD");
+
             NotifyJsonEditorOfChanges();
         }
 
+        /// <summary>
+        /// Commits AND clause to SHOULD list as a grouped clause with Children
+        /// </summary>
         private void CommitAndClause()
         {
             if (AndTrayItems.Count == 0)
@@ -684,6 +1083,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
+            // Create grouped ItemConfig with OperatorType="And" and Children
             var groupedConfig = new ItemConfig
             {
                 ItemKey = $"and_clause_{Guid.NewGuid():N}",
@@ -693,10 +1093,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Children = new List<ItemConfig>()
             };
 
+            // Add each item in AND tray as a child
             if (_parentViewModel != null)
             {
                 foreach (var item in AndTrayItems.ToList())
                 {
+                    // Find the ItemConfig for this item
                     var existingConfig = _parentViewModel.ItemConfigs
                         .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
 
@@ -707,55 +1109,80 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("AND")
             {
                 DisplayName = $"AND ({AndTrayItems.Count} items)"
             };
 
+            // Add tray items as children to the operator item
             foreach (var item in AndTrayItems.ToList())
             {
                 operatorItem.Children.Add(item);
             }
 
+            // Add to local SelectedShould for UI binding
             SelectedShould.Add(operatorItem);
 
+            // Add grouped config to parent for persistence
             if (_parentViewModel != null)
             {
                 _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
                 _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
             }
 
+            // Clear AND tray
             AndTrayItems.Clear();
+
+            // Exit clause editing mode
             CurrentEditingState = EditingState.Default;
             EditingClauseType = "";
 
             DebugLogger.Log("VisualBuilderTab", $"Committed AND clause with {groupedConfig.Children.Count} children to SHOULD");
+
             NotifyJsonEditorOfChanges();
         }
 
+        /// <summary>
+        /// Removes an item from the parent's collections and ItemConfigs
+        /// </summary>
         private void RemoveItemFromParent(FilterItem item, ObservableCollection<string> parentCollection)
         {
-            if (_parentViewModel == null) return;
+            if (_parentViewModel == null)
+                return;
 
+            // Find the item key in parent's ItemConfigs
             var itemKey = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
                 kvp.Value.ItemName == item.Name &&
                 kvp.Value.ItemType == item.Type).Key;
 
             if (!string.IsNullOrEmpty(itemKey))
             {
+                // Remove from parent's collection
                 parentCollection.Remove(itemKey);
+
+                // Remove from parent's ItemConfigs
                 _parentViewModel.ItemConfigs.Remove(itemKey);
+
                 DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from parent collection");
             }
         }
 
+        /// <summary>
+        /// Syncs a FilterOperatorItem to the parent's collections as a single operator with nested children.
+        /// Creates a single ItemConfig with OperatorType and Children properties.
+        /// </summary>
         private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
         {
-            if (_parentViewModel == null) return;
+            if (_parentViewModel == null)
+                return;
 
-            DebugLogger.Log("VisualBuilderTab",
-                $"Syncing {operatorItem.OperatorType} operator with {operatorItem.Children.Count} children to {targetZone}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Syncing {operatorItem.OperatorType} operator with {operatorItem.Children.Count} children to {targetZone}"
+            );
 
+            // Create a single ItemConfig representing the operator with its children
             var itemKey = _parentViewModel.GenerateNextItemKey();
             var operatorConfig = new ItemConfig
             {
@@ -767,18 +1194,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Children = new List<ItemConfig>(),
             };
 
+            // Convert each child FilterItem to an ItemConfig
             foreach (var child in operatorItem.Children)
             {
                 var childConfig = new ItemConfig
                 {
                     ItemType = child.Type,
                     ItemName = child.Name,
+                    // Preserve any additional properties if needed
                 };
                 operatorConfig.Children.Add(childConfig);
             }
 
+            // Store the operator config
             _parentViewModel.ItemConfigs[itemKey] = operatorConfig;
 
+            // Add to the zone where the user dropped it
             var targetCollection = targetZone switch
             {
                 "Must" => _parentViewModel.SelectedMust,
@@ -793,10 +1224,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        /// <summary>
+        /// Notifies the JSON Editor tab to auto-update when Visual Builder changes
+        /// </summary>
         private void NotifyJsonEditorOfChanges()
         {
             if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
             {
+                // Trigger the JSON generation automatically
                 jsonEditorVm.AutoGenerateFromVisual();
             }
         }
@@ -805,10 +1240,615 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
+        private async Task LoadGameDataAsync()
+        {
+            try
+            {
+                await Task.Run(() => LoadGameData());
+
+                // Apply filter and update loading state on UI thread
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ApplyFilter();
+                    IsLoading = false;
+                });
+            }
+            catch
+            {
+                // Even on error, clear loading state
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsLoading = false;
+                });
+                throw;
+            }
+        }
+
+        private void LoadGameData()
+        {
+            // Ensure UI thread safety for collection initialization
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(LoadGameData);
+                return;
+            }
+
+            // Load from BalatroData with sprites
+            try
+            {
+                var spriteService = SpriteService.Instance;
+
+                // Load ALL WILDCARDS FIRST - they will ONLY appear in Specials category
+                var allWildcards = new[]
+                {
+                    ("Wildcard_Joker", "Any Joker", "Joker"),
+                    ("Wildcard_JokerCommon", "Any Common Joker", "Joker"),
+                    ("Wildcard_JokerUncommon", "Any Uncommon Joker", "Joker"),
+                    ("Wildcard_JokerRare", "Any Rare Joker", "Joker"),
+                    ("Wildcard_JokerLegendary", "Any Legendary Joker", "SoulJoker"),
+                    ("Wildcard_Tarot", "Any Tarot", "Tarot"),
+                    ("Wildcard_Planet", "Any Planet", "Planet"),
+                    ("Wildcard_Spectral", "Any Spectral", "Spectral"),
+                };
+                foreach (var (name, displayName, type) in allWildcards)
+                {
+                    AllWildcards.Add(
+                        new FilterItem
+                        {
+                            Name = name,
+                            Type = type,
+                            Category = "Wildcard",
+                            DisplayName = displayName,
+                            ItemImage = type switch
+                            {
+                                "Joker" or "SoulJoker" => spriteService.GetJokerImage(name),
+                                "Tarot" => spriteService.GetTarotImage(name),
+                                "Planet" => spriteService.GetPlanetCardImage(name),
+                                "Spectral" => spriteService.GetSpectralImage(name),
+                                _ => null
+                            }
+                        }
+                    );
+                }
+
+                // Load favorites (from FavoritesService)
+                var favoritesService = ServiceHelper.GetService<FavoritesService>();
+                var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
+
+                foreach (var favoriteName in favoriteNames)
+                {
+                    var item = new FilterItem
+                    {
+                        Name = favoriteName,
+                        Type = "Joker",
+                        Category = "Favorite",
+                        IsFavorite = true,
+                        DisplayName = BalatroData.GetDisplayNameFromSprite(favoriteName),
+                        ItemImage = spriteService.GetJokerImage(favoriteName),
+                    };
+                    AllJokers.Add(item);
+                }
+
+                // Load Soul Jokers SECOND (after wildcards)
+                var legendaryJokers = new[] { "Triboulet", "Yorick", "Chicot", "Perkeo", "Canio" };
+                foreach (var legendaryName in legendaryJokers)
+                {
+                    var item = new FilterItem
+                    {
+                        Name = legendaryName,
+                        Type = "SoulJoker",
+                        Category = "Legendary",
+                        DisplayName = BalatroData.GetDisplayNameFromSprite(legendaryName),
+                        ItemImage = spriteService.GetJokerImage(legendaryName),
+                    };
+                    AllJokers.Add(item);
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Loaded legendary {legendaryName}: Image={item.ItemImage != null}, ItemKey={item.ItemKey}"
+                    );
+                }
+
+                // Load Regular Jokers from BalatroData
+                if (BalatroData.Jokers?.Keys != null)
+                {
+                    foreach (var jokerName in BalatroData.Jokers.Keys)
+                    {
+                        // Skip if already added from favorites or legendaries
+                        if (AllJokers.Any(j => j.Name == jokerName))
+                            continue;
+
+                        // Determine actual rarity from BalatroData.JokersByRarity
+                        string rarity = "Common"; // Default
+                        foreach (var rarityKvp in BalatroData.JokersByRarity)
+                        {
+                            if (rarityKvp.Value.Contains(jokerName.ToLower()))
+                            {
+                                rarity = rarityKvp.Key;
+                                break;
+                            }
+                        }
+
+                        var item = new FilterItem
+                        {
+                            Name = jokerName,
+                            Type = "Joker",
+                            Category = rarity, // Actual rarity from BalatroData
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(jokerName),
+                            ItemImage = spriteService.GetJokerImage(jokerName),
+                        };
+                        AllJokers.Add(item);
+                    }
+                }
+
+                // Load Tags from BalatroData
+                if (BalatroData.Tags?.Keys != null)
+                {
+                    foreach (var tagName in BalatroData.Tags.Keys)
+                    {
+                        var item = new FilterItem
+                        {
+                            Name = tagName,
+                            Type = "SmallBlindTag",
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(tagName),
+                            ItemImage = spriteService.GetTagImage(tagName),
+                        };
+                        AllTags.Add(item);
+                    }
+                }
+
+                // Load Vouchers from BalatroData
+                if (BalatroData.Vouchers?.Keys != null)
+                {
+                    foreach (var voucherName in BalatroData.Vouchers.Keys)
+                    {
+                        var item = new FilterItem
+                        {
+                            Name = voucherName,
+                            Type = "Voucher",
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(voucherName),
+                            ItemImage = spriteService.GetVoucherImage(voucherName),
+                        };
+                        AllVouchers.Add(item);
+                    }
+                }
+
+                // Load Tarots from BalatroData
+                if (BalatroData.TarotCards?.Keys != null)
+                {
+                    foreach (var tarotName in BalatroData.TarotCards.Keys)
+                    {
+                        // Skip old wildcard entries - we have Wildcard_ prefixed ones now
+                        if (tarotName == "any" || tarotName == "*")
+                            continue;
+
+                        var item = new FilterItem
+                        {
+                            Name = tarotName,
+                            Type = "Tarot",
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(tarotName),
+                            ItemImage = spriteService.GetTarotImage(tarotName),
+                        };
+                        AllTarots.Add(item);
+                    }
+                }
+
+                // Load Planets from BalatroData
+                try
+                {
+                    if (BalatroData.PlanetCards?.Keys != null)
+                    {
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Loading {BalatroData.PlanetCards.Keys.Count} planets"
+                        );
+                        foreach (var planetName in BalatroData.PlanetCards.Keys)
+                        {
+                            try
+                            {
+                                // Skip duplicate "Any Planet" wildcards
+                                if (
+                                    planetName == "any"
+                                    || planetName == "*"
+                                    || planetName == "anyplanet"
+                                )
+                                    continue;
+
+                                var item = new FilterItem
+                                {
+                                    Name = planetName,
+                                    Type = "Planet",
+                                    DisplayName = BalatroData.GetDisplayNameFromSprite(planetName),
+                                    ItemImage = spriteService.GetPlanetCardImage(planetName),
+                                };
+                                AllPlanets.Add(item);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    "VisualBuilderTab",
+                                    $"Error loading planet {planetName}: {ex.Message}"
+                                );
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError(
+                        "VisualBuilderTab",
+                        $"Error loading planets: {ex.Message}"
+                    );
+                }
+
+                // Load Spectrals from BalatroData
+                if (BalatroData.SpectralCards?.Keys != null)
+                {
+                    foreach (var spectralName in BalatroData.SpectralCards.Keys)
+                    {
+                        // Skip old wildcard entries - we have Wildcard_ prefixed ones now
+                        if (spectralName == "any" || spectralName == "*")
+                            continue;
+
+                        var item = new FilterItem
+                        {
+                            Name = spectralName,
+                            Type = "Spectral",
+                            DisplayName = BalatroData.GetDisplayNameFromSprite(spectralName),
+                            ItemImage = spriteService.GetSpectralImage(spectralName),
+                        };
+                        AllSpectrals.Add(item);
+                    }
+                }
+
+                // Load Boss Blinds from BalatroData
+                try
+                {
+                    if (BalatroData.BossBlinds?.Keys != null)
+                    {
+                        foreach (var bossName in BalatroData.BossBlinds.Keys)
+                        {
+                            try
+                            {
+                                var item = new FilterItem
+                                {
+                                    Name = bossName,
+                                    Type = "Boss",
+                                    DisplayName = BalatroData.GetDisplayNameFromSprite(bossName),
+                                    ItemImage = spriteService.GetBossImage(bossName),
+                                };
+                                AllBosses.Add(item);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    "VisualBuilderTab",
+                                    $"Error loading boss {bossName}: {ex.Message}"
+                                );
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Error loading bosses: {ex.Message}");
+                }
+
+                // Load Standard Playing Cards (52 base cards + enhanced variants)
+                try
+                {
+                    var suits = new[] { "Hearts", "Spades", "Diamonds", "Clubs" };
+                    var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
+
+                    // Generate base 52 cards (Type A - Normal cards with no enhancement)
+                    foreach (var suit in suits)
+                    {
+                        foreach (var rank in ranks)
+                        {
+                            var displayName = rank == "Ace" ? $"Ace of {suit}" : $"{rank} of {suit}";
+                            var item = new FilterItem
+                            {
+                                Name = $"{rank}_{suit}",
+                                Type = "StandardCard",
+                                Category = suit,
+                                DisplayName = displayName,
+                                Rank = rank,
+                                Suit = suit,
+                                Enhancement = null,
+                                ItemImage = spriteService.GetPlayingCardImage(suit, rank),
+                            };
+                            AllStandardCards.Add(item);
+                        }
+                    }
+
+                    // Generate enhanced variants (Type B1 and B2)
+                    var enhancements = new[] { "Mult", "Bonus", "Glass", "Gold", "Steel" };
+                    foreach (var enhancement in enhancements)
+                    {
+                        foreach (var rank in ranks)
+                        {
+                            var suit = "Hearts"; // Use Hearts as default suit for enhanced cards
+                            var displayName = $"{enhancement} {rank}";
+                            if (rank == "Ace")
+                                displayName = $"{enhancement} Ace";
+
+                            var item = new FilterItem
+                            {
+                                Name = $"{enhancement}_{rank}_{suit}",
+                                Type = "StandardCard",
+                                Category = enhancement,
+                                DisplayName = displayName,
+                                Rank = rank,
+                                Suit = suit,
+                                Enhancement = enhancement,
+                                ItemImage = spriteService.GetPlayingCardImage(suit, rank, enhancement),
+                            };
+                            AllStandardCards.Add(item);
+                        }
+                    }
+
+                    // Add Stone card (special case with no rank/suit)
+                    var stoneCard = new FilterItem
+                    {
+                        Name = "Stone",
+                        Type = "StandardCard",
+                        Category = "Stone",
+                        DisplayName = "Stone Card",
+                        Rank = null,
+                        Suit = null,
+                        Enhancement = "Stone",
+                        ItemImage = spriteService.GetPlayingCardImage("Hearts", "Ace", "Stone"),
+                    };
+                    AllStandardCards.Add(stoneCard);
+
+                    DebugLogger.Log("VisualBuilderTab", $"Loaded {AllStandardCards.Count} standard playing cards");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Error loading standard cards: {ex.Message}");
+                }
+
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers, {AllTarots.Count} tarots, {AllPlanets.Count} planets, {AllSpectrals.Count} spectrals, {AllBosses.Count} bosses, {AllStandardCards.Count} standard cards with images"
+                );
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Joker types: {string.Join(", ", AllJokers.Take(5).Select(j => $"{j.Name}:{j.Type}:{j.Category}"))}"
+                );
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Error loading data: {ex.Message}");
+
+                // Fallback to sample data
+                var spriteService = SpriteService.Instance;
+                AllJokers.Add(
+                    new FilterItem
+                    {
+                        Name = "Joker",
+                        Type = "Joker",
+                        ItemImage = spriteService.GetJokerImage("Joker"),
+                    }
+                );
+                AllTags.Add(
+                    new FilterItem
+                    {
+                        Name = "Negative Tag",
+                        Type = "SmallBlindTag",
+                        ItemImage = spriteService.GetTagImage("Negative Tag"),
+                    }
+                );
+                AllVouchers.Add(
+                    new FilterItem
+                    {
+                        Name = "Overstock",
+                        Type = "Voucher",
+                        ItemImage = spriteService.GetVoucherImage("Overstock"),
+                    }
+                );
+            }
+
+            // Ensure filtered lists and UI are refreshed after data loads
+            ApplyFilter();
+        }
+
+        private string FormatDisplayName(string name)
+        {
+            // Convert snake_case to Title Case for display
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            // Replace underscores with spaces and capitalize each word
+            var words = name.Replace('_', ' ').Split(' ');
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length > 0)
+                {
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+                }
+            }
+            return string.Join(" ", words);
+        }
+
+        // Copied from original FiltersModal
+        private List<string> GeneratePlayingCardsList()
+        {
+            var cards = new List<string>();
+            var suits = new[] { "Hearts", "Diamonds", "Clubs", "Spades" };
+            var ranks = new[]
+            {
+                "Ace",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "Jack",
+                "Queen",
+                "King",
+            };
+
+            foreach (var suit in suits)
+            {
+                foreach (var rank in ranks)
+                {
+                    cards.Add($"{rank} of {suit}");
+                }
+            }
+
+            return cards;
+        }
+
+        private void ApplyFilter()
+        {
+            // Ensure UI thread safety for all collection modifications
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(ApplyFilter);
+                return;
+            }
+
+            FilteredJokers.Clear();
+            FilteredTags.Clear();
+            FilteredVouchers.Clear();
+            FilteredTarots.Clear();
+            FilteredPlanets.Clear();
+            FilteredSpectrals.Clear();
+            FilteredBosses.Clear();
+            FilteredWildcards.Clear();
+            FilteredStandardCards.Clear();
+
+            var filter = SearchFilter.ToLowerInvariant();
+
+            DebugLogger.Log("VisualBuilderTab", $"ApplyFilter called - AllJokers count: {AllJokers.Count}, filter: '{filter}'");
+
+            foreach (var joker in AllJokers)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || joker.Name.ToLowerInvariant().Contains(filter)
+                    || joker.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredJokers.Add(joker);
+                }
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}");
+
+            foreach (var tag in AllTags)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || tag.Name.ToLowerInvariant().Contains(filter)
+                    || tag.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredTags.Add(tag);
+                }
+            }
+
+            foreach (var voucher in AllVouchers)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || voucher.Name.ToLowerInvariant().Contains(filter)
+                    || voucher.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredVouchers.Add(voucher);
+                }
+            }
+
+            foreach (var tarot in AllTarots)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || tarot.Name.ToLowerInvariant().Contains(filter)
+                    || tarot.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredTarots.Add(tarot);
+                }
+            }
+
+            foreach (var planet in AllPlanets)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || planet.Name.ToLowerInvariant().Contains(filter)
+                    || planet.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredPlanets.Add(planet);
+                }
+            }
+
+            foreach (var spectral in AllSpectrals)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || spectral.Name.ToLowerInvariant().Contains(filter)
+                    || spectral.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredSpectrals.Add(spectral);
+                }
+            }
+
+            foreach (var boss in AllBosses)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || boss.Name.ToLowerInvariant().Contains(filter)
+                    || boss.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredBosses.Add(boss);
+                }
+            }
+
+            foreach (var wildcard in AllWildcards)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || wildcard.Name.ToLowerInvariant().Contains(filter)
+                    || wildcard.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredWildcards.Add(wildcard);
+                }
+            }
+
+            foreach (var card in AllStandardCards)
+            {
+                if (
+                    string.IsNullOrEmpty(filter)
+                    || card.Name.ToLowerInvariant().Contains(filter)
+                    || card.DisplayName.ToLowerInvariant().Contains(filter)
+                )
+                {
+                    FilteredStandardCards.Add(card);
+                }
+            }
+
+            // Update unified FilteredItems for current category
+            RefreshFilteredItems();
+        }
+
         public void UpdateItemConfig(string itemKey, ItemConfig config)
         {
             ItemConfigs[itemKey] = config;
 
+            // Sync with parent ViewModel if available
             if (_parentViewModel != null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
             {
                 _parentViewModel.ItemConfigs[itemKey] = config;
@@ -819,10 +1859,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public void RemoveItem(FilterItem item)
         {
+            // Find which zone the item is in and get its index BEFORE removing
             string? sourceZone = null;
             string? itemKeyToRemove = null;
             int itemIndex = -1;
 
+            // Check MUST zone
             itemIndex = SelectedMust.IndexOf(item);
             if (itemIndex >= 0)
             {
@@ -833,6 +1875,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
                 SelectedMust.RemoveAt(itemIndex);
             }
+            // Check SHOULD zone
             else
             {
                 itemIndex = SelectedShould.IndexOf(item);
@@ -845,6 +1888,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                     SelectedShould.RemoveAt(itemIndex);
                 }
+                // Check MUSTNOT zone
                 else
                 {
                     itemIndex = SelectedMustNot.IndexOf(item);
@@ -860,11 +1904,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Remove associated config and sync with parent
             if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel != null)
             {
                 ItemConfigs.Remove(itemKeyToRemove);
                 _parentViewModel.ItemConfigs.Remove(itemKeyToRemove);
 
+                // Remove from parent's zone collections (only the specific zone)
                 if (sourceZone == "MUST")
                 {
                     _parentViewModel.SelectedMust.Remove(itemKeyToRemove);
@@ -884,22 +1930,78 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #endregion
 
-        #region Auto-Save Override
+        #region Auto-Save Functionality
 
-        protected override async Task PerformAutoSave()
+        /// <summary>
+        /// Handles collection changes in drop zones and triggers debounced auto-save
+        /// </summary>
+        private void OnZoneCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_parentViewModel == null) return;
+            // Trigger debounced auto-save
+            TriggerAutoSave();
+        }
+
+        /// <summary>
+        /// Triggers a debounced auto-save operation.
+        /// Cancels any pending save and schedules a new one after the debounce delay.
+        /// </summary>
+        private void TriggerAutoSave()
+        {
+            // Cancel any pending auto-save
+            _autoSaveCts?.Cancel();
+            _autoSaveCts?.Dispose();
+            _autoSaveCts = new CancellationTokenSource();
+
+            var token = _autoSaveCts.Token;
+
+            // Schedule auto-save after debounce delay
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(AutoSaveDebounceMs, token);
+
+                    // If not cancelled, perform the save
+                    if (!token.IsCancellationRequested)
+                    {
+                        await PerformAutoSave();
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Expected when debounce is cancelled
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("VisualBuilderTab", $"Auto-save error: {ex.Message}");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Performs the actual auto-save operation by calling the parent's SaveFilterTab logic
+        /// </summary>
+        private async Task PerformAutoSave()
+        {
+            if (_parentViewModel == null)
+            {
+                DebugLogger.Log("VisualBuilderTab", "Auto-save skipped: no parent ViewModel");
+                return;
+            }
 
             try
             {
+                // Update UI to show saving status
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsAutoSaving = true;
                     AutoSaveStatus = "Auto-saving...";
                 });
 
+                // Get the filter name from parent
                 var filterName = _parentViewModel.FilterName;
 
+                // Skip auto-save if filter name is empty (unsaved filter)
                 if (string.IsNullOrWhiteSpace(filterName))
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
@@ -911,7 +2013,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
+                // Build config from current state using parent's method
                 var config = _parentViewModel.BuildConfigFromCurrentState();
+
+                // Get configuration service
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
 
@@ -921,11 +2026,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
+                // Generate filter file path (normalized with underscores)
                 var filePath = filterService.GenerateFilterFileName(filterName);
 
+                // Check if there's an old file with spaces instead of underscores and delete it
                 if (filterName.Contains(' '))
                 {
-                    var oldFilePath = Path.Combine(configService.GetFiltersDirectory(), $"{filterName}.json");
+                    var oldFilePath = Path.Combine(
+                        configService.GetFiltersDirectory(),
+                        $"{filterName}.json"
+                    );
                     if (File.Exists(oldFilePath) && oldFilePath != filePath)
                     {
                         try
@@ -940,8 +2050,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 }
 
+                // Save the filter
                 var success = await configService.SaveFilterAsync(filePath, config);
 
+                // Update UI with result
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsAutoSaving = false;
@@ -950,9 +2062,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         AutoSaveStatus = "Auto-saved";
                         DebugLogger.Log("VisualBuilderTab", $"Auto-saved filter: {filterName}");
 
+                        // Clear the status after 2 seconds
                         Task.Delay(2000).ContinueWith(_ =>
                         {
-                            Dispatcher.UIThread.InvokeAsync(() => AutoSaveStatus = "");
+                            Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                AutoSaveStatus = "";
+                            });
                         });
                     }
                     else
@@ -978,6 +2094,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Phase 2: State Transition Methods
 
+        /// <summary>
+        /// Automatically invoked when CurrentEditingState changes (via [ObservableProperty])
+        /// Notifies all computed state properties to update bindings
+        /// </summary>
         partial void OnCurrentEditingStateChanged(EditingState value)
         {
             OnPropertyChanged(nameof(IsDefaultState));
@@ -993,6 +2113,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             DebugLogger.Log("VisualBuilderTab", $"State changed to: {value}");
         }
 
+        /// <summary>
+        /// Transitions to Default state - normal view with all sections visible
+        /// </summary>
         [RelayCommand]
         public void EnterDefaultState()
         {
@@ -1000,24 +2123,36 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             IsDragging = false;
         }
 
+        /// <summary>
+        /// Transitions to DragActive state - user is dragging an item
+        /// </summary>
         public void EnterDragActiveState()
         {
             CurrentEditingState = EditingState.DragActive;
             IsDragging = true;
         }
 
+        /// <summary>
+        /// Transitions to ClauseEdit state - expand OR/AND clause to full column
+        /// </summary>
         [RelayCommand]
         public void EnterClauseEditState()
         {
             CurrentEditingState = EditingState.ClauseEdit;
         }
 
+        /// <summary>
+        /// Transitions to ScoreEdit state - expand score list to full column
+        /// </summary>
         [RelayCommand]
         public void EnterScoreEditState()
         {
             CurrentEditingState = EditingState.ScoreEdit;
         }
 
+        /// <summary>
+        /// Exits any editing state and returns to Default
+        /// </summary>
         [RelayCommand]
         public void ExitEditingState()
         {
@@ -1028,9 +2163,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Phase 3: Edition/Sticker/Seal Commands
 
+        /// <summary>
+        /// Sets the edition for ALL items in shelf (GroupedItems) AND drop zones
+        /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
         {
+            // Don't trigger animation if edition didn't actually change
             if (SelectedEdition == edition)
             {
                 DebugLogger.Log("VisualBuilderTab", $"Edition already set to '{edition}' - skipping animation");
@@ -1039,6 +2178,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedEdition = edition;
 
+            // Apply to ALL items in the shelf
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
@@ -1046,11 +2186,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         config.Edition = edition == "None" ? null : edition.ToLower();
+                        // CRITICAL: Also update item.Edition to trigger property change notification for EditionImage binding
                         item.Edition = config.Edition;
                     }
                 }
             }
 
+            // Apply to all existing items in drop zones
             if (_parentViewModel != null)
             {
                 foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
@@ -1063,59 +2205,82 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
             {
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
+        /// <summary>
+        /// Toggles Perishable sticker for all items in drop zones AND future items
+        /// </summary>
         [RelayCommand]
         public void ToggleStickerPerishable()
         {
             StickerPerishable = !StickerPerishable;
+
+            // Apply to all existing items
             ApplyStickersToAllItems();
 
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
             {
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
+        /// <summary>
+        /// Toggles Eternal sticker for all items in drop zones AND future items (respects CanBeEternal logic)
+        /// </summary>
         [RelayCommand]
         public void ToggleStickerEternal()
         {
             StickerEternal = !StickerEternal;
+
+            // Apply to all existing items
             ApplyStickersToAllItems();
 
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
             {
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
+        /// <summary>
+        /// Toggles Rental sticker for all items in drop zones AND future items
+        /// </summary>
         [RelayCommand]
         public void ToggleStickerRental()
         {
             StickerRental = !StickerRental;
+
+            // Apply to all existing items
             ApplyStickersToAllItems();
 
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
             {
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
+        /// <summary>
+        /// Sets the seal for all StandardCard items in shelf AND drop zones
+        /// </summary>
         [RelayCommand]
         public void SetSeal(string seal)
         {
+            // Don't trigger animation if seal didn't actually change
             if (SelectedSeal == seal)
             {
                 DebugLogger.Log("VisualBuilderTab", $"Seal already set to '{seal}' - skipping animation");
@@ -1126,12 +2291,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             if (_parentViewModel == null) return;
 
+            // Apply to ALL items in the shelf
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
+                        // Only apply seal to StandardCards
                         if (config.ItemType == "StandardCard")
                         {
                             config.Seal = seal == "None" ? null : seal;
@@ -1140,10 +2307,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Apply to all existing items in drop zones
             foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
             {
                 if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                 {
+                    // Only apply seal to StandardCards
                     if (config.ItemType == "StandardCard")
                     {
                         config.Seal = seal == "None" ? null : seal;
@@ -1153,14 +2322,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             TriggerAutoSave();
 
+            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
             {
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} (FlipTrigger={FlipAnimationTrigger})");
+            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
         }
 
+        /// <summary>
+        /// Checks if an item can have the Eternal sticker based on CanBeEternal logic
+        /// Jokers, Consumables, and Vouchers can be eternal; Tags cannot
+        /// </summary>
         public bool CanItemBeEternal(FilterItem item)
         {
             return item.Type switch
@@ -1175,17 +2349,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             };
         }
 
+        /// <summary>
+        /// Applies stickers to all items in shelf AND drop zones
+        /// Respects Eternal restrictions for specific jokers and Soul Jokers
+        /// </summary>
         private void ApplyStickersToAllItems()
         {
             if (_parentViewModel == null) return;
 
+            // Jokers that CANNOT be Eternal (from Balatro game logic)
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
                 "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                // Soul Jokers also cannot be Eternal
                 "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
             };
 
+            // Apply to ALL items in the shelf
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
@@ -1193,11 +2374,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         ApplyStickerLogic(config, item.Name, eternalRestrictedJokers);
+                        // CRITICAL: Also update item.Stickers to trigger property change notifications for sticker image bindings
                         item.Stickers = config.Stickers;
                     }
                 }
             }
 
+            // Apply to all existing items in drop zones
             foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
             {
                 if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
@@ -1209,16 +2392,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             TriggerAutoSave();
         }
 
+        /// <summary>
+        /// Helper method to apply sticker logic with Eternal restrictions
+        /// </summary>
         private void ApplyStickerLogic(ItemConfig config, string itemName, HashSet<string> eternalRestrictedJokers)
         {
+            // Build sticker list based on current toggles
             var stickers = new List<string>();
 
+            // Perishable and Eternal are mutually exclusive
             if (StickerPerishable)
             {
                 stickers.Add("perishable");
             }
             else if (StickerEternal)
             {
+                // Check if item type can be eternal
                 bool canTypeBeEternal = config.ItemType switch
                 {
                     "Joker" or "SoulJoker" => true,
@@ -1230,6 +2419,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     _ => false
                 };
 
+                // Check if specific joker is restricted from Eternal
                 bool isRestrictedJoker = (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
                     && eternalRestrictedJokers.Contains(itemName);
 
@@ -1239,36 +2429,48 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Rental can combine with Eternal but not Perishable
             if (StickerRental && !StickerPerishable)
             {
                 stickers.Add("rental");
             }
 
+            // Apply stickers (or clear if none selected)
             config.Stickers = stickers.Any() ? stickers : null;
         }
 
+        /// <summary>
+        /// Applies the currently selected edition, stickers, and seal to an ItemConfig
+        /// Called when an item is added to a drop zone
+        /// Respects Eternal restrictions for specific jokers
+        /// </summary>
         private void ApplyEditionStickersSeal(ItemConfig config, FilterItem item)
         {
+            // Apply Edition (if not None)
             if (SelectedEdition != "None")
             {
                 config.Edition = SelectedEdition.ToLower();
             }
 
+            // Apply Stickers with Eternal restrictions
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
                 "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                // Soul Jokers also cannot be Eternal
                 "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
             };
 
             var stickers = new List<string>();
 
+            // Perishable and Eternal are mutually exclusive
             if (StickerPerishable)
             {
                 stickers.Add("perishable");
             }
             else if (StickerEternal && CanItemBeEternal(item))
             {
+                // Check if specific joker is restricted from Eternal
                 bool isRestrictedJoker = (item.Type == "Joker" || item.Type == "SoulJoker")
                     && eternalRestrictedJokers.Contains(item.Name);
 
@@ -1278,6 +2480,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
+            // Rental can combine with Eternal but not Perishable
             if (StickerRental && !StickerPerishable)
             {
                 stickers.Add("rental");
@@ -1288,6 +2491,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Stickers = stickers;
             }
 
+            // Apply Seal (for StandardCards only)
             if (item.Type == "StandardCard" && SelectedSeal != "None")
             {
                 config.Seal = SelectedSeal;

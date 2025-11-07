@@ -6,7 +6,6 @@
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:components="using:BalatroSeedOracle.Components"
-             xmlns:shared="using:BalatroSeedOracle.Components.Shared"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True">
@@ -48,8 +47,131 @@
                 <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - Category Navigation -->
-            <shared:FilterCategoryNav Grid.Column="0" Margin="0,0,8,0" DataContext="{Binding}"/>
+            <!-- LEFT COLUMN - Filter Name + Search + Categories (Operator Tray moved to center column) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
+                <!-- Filter Name Display (Auto-Save Status removed - was causing layout shift) -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12,8">
+                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </Border>
+
+                <!-- Search bar -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="8,4"
+                        Margin="0">
+                    <TextBox Name="SearchBox"
+                             Watermark="Search items..."
+                             Text="{Binding SearchFilter, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{StaticResource White}"
+                             Padding="4"
+                             VerticalContentAlignment="Center"
+                             FontSize="13">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
+                </Border>
+
+                <!-- Category buttons with bouncing arrow indicator -->
+                <Grid Grid.Row="4">
+                    <!-- Bouncing arrow indicator (points at active category) -->
+                    <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
+                        <Polygon Name="CategoryArrow"
+                                 Points="0,0 15,10 0,20"
+                                 Classes="balatro-triangle balatro-bounce-horizontal"
+                                 Canvas.Left="-20"
+                                 Canvas.Top="0"
+                                 IsVisible="True"/>
+                    </Canvas>
+
+                    <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                        <!-- Category buttons without section headers -->
+                        <Button Content="Favorites"
+                            Classes="nav-button special"
+                            Click="OnCategoryClick"
+                            Tag="Favorites"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Joker"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Joker"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Consumable"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Consumable"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Skip Tags"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="SkipTag"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Boss Blind"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Boss"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Voucher"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="Voucher"
+                            HorizontalAlignment="Stretch"/>
+                    <Button Content="Standard Card"
+                            Classes="nav-button"
+                            Click="OnCategoryClick"
+                            Tag="StandardCard"
+                            HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Favorites drop overlay - covers category nav area only -->
+                <Border Grid.Row="4"
+                        Name="FavoritesDropOverlay"
+                        Background="{StaticResource SemiTransparentGold}"
+                        BorderBrush="#FFFFFF"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource GoldColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <!-- Balatro-style drop zone - BIG and prominent text -->
+                    <TextBlock Text="ADD TO FAVORITES"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="28"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
 
             <!-- CENTER COLUMN - Grouped Scrollable Items -->
             <Grid Grid.Column="1" Margin="8,0">
@@ -65,7 +187,7 @@
                                   HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:FilterItemGroup">
+                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
                                     <StackPanel Margin="0,0,0,16">
                                         <!-- Subcategory Header -->
                                         <Border Background="{StaticResource DarkBackground}"

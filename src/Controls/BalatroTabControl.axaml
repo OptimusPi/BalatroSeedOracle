@@ -35,8 +35,7 @@
                                 <Setter Property="Padding" Value="8,2"/>
                                 <Setter Property="Margin" Value="3,0"/>
                                 <Setter Property="CornerRadius" Value="4"/>
-                                <Setter Property="MinWidth" Value="180"/>
-                                <Setter Property="MinHeight" Value="32"/>
+                                <Setter Property="MinHeight" Value="24"/>
                                 <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <ControlTemplate>
