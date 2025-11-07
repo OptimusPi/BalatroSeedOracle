@@ -48,6 +48,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Score rows collection (replaces SHOULD zone)
         public ObservableCollection<ScoreRow> ScoreRows { get; } = new();
 
+        // Minimum score filter properties
+        [ObservableProperty]
+        private string _minimumScore = "100000";
+
+        [ObservableProperty]
+        private bool _enableMinimumScore = false;
+
         public ConfigureScoreTabViewModel(
             FiltersModalViewModel? parentViewModel,
             IFilterItemDataService dataService,

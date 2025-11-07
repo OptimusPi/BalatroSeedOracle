@@ -10,6 +10,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -38,6 +39,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private string _selectedMainCategory = "Joker";
+
+        [ObservableProperty]
+        private bool _isFavoritesCategorySelected = false;
 
         [ObservableProperty]
         private bool _isJokerCategorySelected = true;
@@ -284,9 +288,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public virtual void SetCategory(string category)
         {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                return;
+            }
+
             SearchFilter = "";
             SelectedMainCategory = category;
 
+            IsFavoritesCategorySelected = category == "Favorites";
             IsJokerCategorySelected = category == "Joker";
             IsConsumableCategorySelected = category == "Consumable";
             IsSkipTagCategorySelected = category == "SkipTag";
@@ -470,5 +480,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         #endregion
+
+        [RelayCommand]
+        private void SelectCategory(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                return;
+            }
+
+            SetCategory(category);
+        }
     }
 }

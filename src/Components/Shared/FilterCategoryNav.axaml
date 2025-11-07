@@ -52,7 +52,7 @@
                     Spacing="4"
                     Name="CategoryNav"
                     DragDrop.AllowDrop="True"
-                    Width="{StaticResource FilterNavControlWidth}">
+                    HorizontalAlignment="Stretch">
             <nav:SelectableCategoryButton
                 Content="Favorites"
                 Classes="nav-button special"

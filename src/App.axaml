@@ -97,9 +97,7 @@
         <Color x:Key="GreenColor">#35bd86</Color>
         <Color x:Key="RedColor">#ff4c40</Color>
         <Color x:Key="OrangeColor">#ff9800</Color>
-
-        <!-- Dramatic backdrop overlay for drag operations -->
-        <SolidColorBrush x:Key="DragBackdropOverlay">#80000000</SolidColorBrush>
+        <Color x:Key="PureBlackColor">#000000</Color>
 
         <!-- Additional colors for UI elements -->
         <SolidColorBrush x:Key="NeonGreen">#00FF88</SolidColorBrush>
@@ -168,6 +166,7 @@
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/PopupStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroSliderStyles.axaml" />
+    <StyleInclude Source="avares://BalatroSeedOracle/Controls/Navigation/SelectableCategoryButton.axaml" />
 
         <Style Selector="TextBlock.balatro-triangle">
             <Setter Property="Foreground" Value="{StaticResource Red}"/>

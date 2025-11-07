@@ -1169,11 +1169,11 @@ namespace BalatroSeedOracle.ViewModels
             VisualBuilderTab = visualBuilderViewModel; // Store reference for other components
 
             // Tab 1: Build Filter (unified tab with OR/AND/SHOULD zones)
-            var configureScoreTab = new Components.FilterTabs.ConfigureScoreTab
+            var visualBuilderTab = new Components.FilterTabs.VisualBuilderTab
             {
                 DataContext = visualBuilderViewModel, // Share the same ViewModel!
             };
-            TabItems.Add(new TabItemViewModel("BUILD FILTER", configureScoreTab));
+            TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
             // Tab 2: Preferred Deck (Deck and Stake selector)
             var preferredDeckTab = new Components.FilterTabs.PreferredDeckTab

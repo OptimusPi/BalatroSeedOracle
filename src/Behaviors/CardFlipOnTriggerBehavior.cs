@@ -29,6 +29,8 @@ namespace BalatroSeedOracle.Behaviors
     /// </summary>
     public class CardFlipOnTriggerBehavior : Behavior<Image>
     {
+        private const int BindingUpdateDelayMs = 50;
+
         private bool _isAnimating;
         private int _lastTriggerValue = -1;
         private CancellationTokenSource? _animationCts;
@@ -159,13 +161,9 @@ namespace BalatroSeedOracle.Behaviors
                     await Task.Delay(StaggerDelay, cancellationToken);
                 }
 
-                // CRITICAL: Wait for bindings to update before caching the source
-                // When edition/seal/sticker changes, FlipTrigger++ happens immediately,
-                // but the ItemImage binding takes a few milliseconds to update.
-                // We need to cache the NEW source (with new enhancement), not the old one!
-                await Task.Delay(50, cancellationToken);
+                // Give the binding a moment to apply the latest sprite before we cache it.
+                await Task.Delay(BindingUpdateDelayMs, cancellationToken);
 
-                // Cache the NEW sprite source (now has updated enhancement/seal)
                 var originalSource = AssociatedObject.Source;
                 DebugLogger.Log("CardFlip", $"Cached original source: {originalSource != null}");
 
