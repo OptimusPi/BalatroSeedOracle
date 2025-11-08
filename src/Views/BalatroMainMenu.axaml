@@ -8,6 +8,7 @@
              xmlns:views="using:BalatroSeedOracle.Views"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
@@ -314,10 +315,7 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding ToggleWidgetsVisibilityCommand}"
                                     ToolTip.Tip="Show or hide widgets">
-                                <TextBlock Text="🎨"
-                                           FontFamily="Segoe UI Symbol"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                <iconPacks:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Button>
 
                             <!-- Pause/Resume Animation Button (square like language buttons) -->

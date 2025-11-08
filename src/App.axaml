@@ -168,6 +168,10 @@
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroSliderStyles.axaml" />
     <StyleInclude Source="avares://BalatroSeedOracle/Controls/Navigation/SelectableCategoryButton.axaml" />
 
+        <!-- IconPacks styles -->
+        <StyleInclude Source="avares://IconPacks.Avalonia.Material/Material.axaml" />
+        <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" />
+
         <Style Selector="TextBlock.balatro-triangle">
             <Setter Property="Foreground" Value="{StaticResource Red}"/>
             <Setter Property="Text" Value="▼"/>
