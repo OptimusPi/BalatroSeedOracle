@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 {
     /// <summary>
     /// Configure Filter Tab - Visual builder without SHOULD zone
-    /// Reuses VisualBuilderTabViewModel but hides SHOULD UI
+    /// Uses ConfigureFilterTabViewModel (simplified version without SHOULD zone)
     /// </summary>
     public partial class ConfigureFilterTab : UserControl
     {
@@ -40,11 +40,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             InitializeComponent();
 
             // Only set DataContext if not already set by parent (e.g., from FiltersModalViewModel)
-            // This allows both tab instances to share the same VisualBuilderTabViewModel
+            // Use ConfigureFilterTabViewModel (simplified version without SHOULD zone)
             if (DataContext == null)
             {
                 DataContext =
-                    ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+                    ServiceHelper.GetRequiredService<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
             }
 
             // Setup drop zones AFTER the control is attached to visual tree
@@ -53,7 +53,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Subscribe to ViewModel PropertyChanged for arrow positioning
             this.DataContextChanged += (s, e) =>
             {
-                if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                if (DataContext is ViewModels.FilterTabs.ConfigureFilterTabViewModel vm)
                 {
                     vm.PropertyChanged += OnViewModelPropertyChanged;
                     UpdateArrowPosition(vm.SelectedMainCategory); // Set initial position
@@ -209,9 +209,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
 
-                    // Phase 2: Transition to DragActive state
-                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                    vm?.EnterDragActiveState();
+                    // Note: ConfigureFilterTabViewModel doesn't have EnterDragActiveState
+                    // (that's specific to VisualBuilderTabViewModel's state system)
 
                     // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
                     // Capturing to sender (the small image) would prevent us from getting events outside its bounds
@@ -226,10 +225,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("ConfigureFilterTab", $"Drag operation failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
-
-                // Phase 2: Return to Default state on error
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                vm?.EnterDefaultState();
             }
         }
 
@@ -277,7 +272,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return; // Not left click, ignore
                 }
 
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm == null)
                     return;
 
@@ -341,9 +336,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     // Show overlays for OTHER drop zones (not the source)
                     ShowDropZoneOverlays(_sourceDropZone);
-
-                    // Phase 2: Transition to DragActive state
-                    vm?.EnterDragActiveState();
                 }
             }
             catch (Exception ex)
@@ -351,10 +343,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("ConfigureFilterTab", $"Drop zone drag failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
-
-                // Phase 2: Return to Default state on error
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                vm?.EnterDefaultState();
             }
         }
 
@@ -460,7 +448,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Models.FilterOperatorItem? FindOperatorAtPosition(
             Avalonia.Point cursorPos,
             string zoneName,
-            ViewModels.FilterTabs.VisualBuilderTabViewModel vm
+            ViewModels.FilterTabs.ConfigureFilterTabViewModel vm
         )
         {
             if (_topLevel == null)
@@ -513,7 +501,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 var vm =
                     DataContext
-                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    as BalatroSeedOracle.ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm == null)
                 {
                     DebugLogger.Log("ConfigureFilterTab", "Drop failed - no ViewModel");
@@ -965,7 +953,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void ShowItemConfigPopup(Models.FilterItem item, Control? sourceControl)
         {
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null)
                 return;
 
@@ -1018,7 +1006,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     var vm =
                         DataContext
-                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                        as BalatroSeedOracle.ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                     if (vm != null)
                     {
                         // Disable reactive updates temporarily
@@ -1335,10 +1323,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Hide all drop zone overlays when drag ends
                 HideAllDropZoneOverlays();
-
-                // Phase 2: Return to Default state when drag ends
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                vm?.EnterDefaultState();
             }
             catch (Exception ex)
             {
@@ -1427,7 +1411,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (_isDragging || _isAnimating)
                 return;
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || vm.TrayOrOperator.Children.Count == 0)
                 return;
 
@@ -1469,7 +1453,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (_isDragging || _isAnimating)
                 return;
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || vm.TrayAndOperator.Children.Count == 0)
                 return;
 
@@ -1573,7 +1557,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 border.BorderThickness = new Avalonia.Thickness(2);
             }
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || _draggedItem == null)
                 return;
 
@@ -1667,7 +1651,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 border.BorderThickness = new Avalonia.Thickness(2);
             }
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || _draggedItem == null)
                 return;
 
@@ -1697,9 +1681,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory))
+            if (e.PropertyName == nameof(ViewModels.FilterTabs.ConfigureFilterTabViewModel.SelectedMainCategory))
             {
-                var vm = sender as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = sender as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm != null)
                 {
                     UpdateArrowPosition(vm.SelectedMainCategory);

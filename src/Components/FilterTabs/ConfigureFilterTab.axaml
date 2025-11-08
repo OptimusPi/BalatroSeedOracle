@@ -7,7 +7,7 @@
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.FilterTabs.ConfigureFilterTab"
-             x:DataType="vm:VisualBuilderTabViewModel"
+             x:DataType="vm:ConfigureFilterTabViewModel"
              x:CompileBindings="True">
 
     <UserControl.Styles>
@@ -374,7 +374,7 @@
                                       HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
+                                <DataTemplate DataType="vm:ConfigureFilterTabViewModel+ItemGroup">
                                     <StackPanel Margin="0,0,0,16">
                                         <Border Background="{StaticResource DarkBackground}"
                                                 BorderThickness="0"
@@ -389,7 +389,7 @@
                                                        TextAlignment="Left"/>
                                         </Border>
 
-                                        <ItemsControl ItemsSource="{Binding Items}" MaxWidth="{Binding ShelfMaxWidth}" HorizontalAlignment="Left">
+                                        <ItemsControl ItemsSource="{Binding Items}" HorizontalAlignment="Left">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem">
                                                     <Grid Margin="0,2" Width="70" Height="110">
@@ -412,8 +412,8 @@
                                                                            VerticalAlignment="Center">
                                                                         <i:Interaction.Behaviors>
                                                                             <behaviors:CardFlipOnTriggerBehavior
-                                                                                DeckName="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).SelectedDeck}"
-                                                                                FlipTrigger="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).FlipAnimationTrigger}"
+                                                                                DeckName="{Binding $parent[UserControl].((vm:ConfigureFilterTabViewModel)DataContext).SelectedDeck}"
+                                                                                FlipTrigger="{Binding $parent[UserControl].((vm:ConfigureFilterTabViewModel)DataContext).FlipAnimationTrigger}"
                                                                                 StaggerDelay="{Binding StaggerDelay}"/>
                                                                         </i:Interaction.Behaviors>
                                                                     </Image>

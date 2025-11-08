@@ -36,12 +36,12 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<AnalyzeModalViewModel>();
             services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<CreditsModalViewModel>();
-            services.AddTransient<ComprehensiveFiltersModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();
 
             // Filter Tab ViewModels
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
 

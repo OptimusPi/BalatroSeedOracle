@@ -60,6 +60,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
+        // Expose parent's SelectedDeck for flip animation
+        public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+
         // Available items (reuse same collections structure as VisualBuilderTab)
         public ObservableCollection<FilterItem> AllJokers { get; }
         public ObservableCollection<FilterItem> AllTags { get; }
@@ -116,6 +119,34 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private bool _isStandardCardCategorySelected = false;
+
+        // Edition/Sticker/Seal selectors (apply to ALL items in shelf)
+        [ObservableProperty]
+        private string _selectedEdition = "None"; // None, Foil, Holo, Polychrome, Negative
+
+        [ObservableProperty]
+        private bool _stickerPerishable = false;
+
+        [ObservableProperty]
+        private bool _stickerEternal = false;
+
+        [ObservableProperty]
+        private bool _stickerRental = false;
+
+        [ObservableProperty]
+        private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
+
+        // Flip Animation Trigger - incremented whenever edition/sticker/seal changes
+        [ObservableProperty]
+        private int _flipAnimationTrigger = 0;
+
+        // Computed properties for button visibility based on category
+        public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+        public bool ShowStickerButtons => SelectedMainCategory == "Joker";
+        public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
+        public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
+        // Card flip animation only for Jokers (including Soul Jokers) and Standard Cards
+        public bool SupportsFlipAnimation => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
 
         // Operator Tray - permanent OR and AND operators
         public FilterOperatorItem TrayOrOperator { get; }
@@ -197,6 +228,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             RemoveFromMustCommand = new RelayCommand<FilterItem>(RemoveFromMust);
             RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
 
+            // Edition/Seal/Sticker commands
+            SetEditionCommand = new RelayCommand<string>(SetEdition);
+            SetSealCommand = new RelayCommand<string>(SetSeal);
+            ToggleStickerPerishableCommand = new RelayCommand(ToggleStickerPerishable);
+            ToggleStickerEternalCommand = new RelayCommand(ToggleStickerEternal);
+            ToggleStickerRentalCommand = new RelayCommand(ToggleStickerRental);
+
             // Simple property change handling
             PropertyChanged += (s, e) =>
             {
@@ -221,6 +259,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             IsBossCategorySelected = category == "Boss";
             IsVoucherCategorySelected = category == "Voucher";
             IsStandardCardCategorySelected = category == "StandardCard";
+
+            // Notify property changes for button visibility
+            OnPropertyChanged(nameof(ShowEditionButtons));
+            OnPropertyChanged(nameof(ShowStickerButtons));
+            OnPropertyChanged(nameof(ShowSealButtons));
+            OnPropertyChanged(nameof(ShowEnhancementButtons));
+            OnPropertyChanged(nameof(SupportsFlipAnimation));
+
+            // Reset edition/sticker/seal state when switching categories
+            SelectedEdition = "None";
+            SelectedSeal = "None";
+            StickerPerishable = false;
+            StickerEternal = false;
+            StickerRental = false;
 
             RebuildGroupedItems();
 
@@ -350,6 +402,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ICommand AddToMustNotCommand { get; }
         public ICommand RemoveFromMustCommand { get; }
         public ICommand RemoveFromMustNotCommand { get; }
+        public ICommand SetEditionCommand { get; }
+        public ICommand SetSealCommand { get; }
+        public ICommand ToggleStickerPerishableCommand { get; }
+        public ICommand ToggleStickerEternalCommand { get; }
+        public ICommand ToggleStickerRentalCommand { get; }
 
         #endregion
 
@@ -505,9 +562,99 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        private void SetEdition(string? edition)
+        {
+            if (string.IsNullOrEmpty(edition)) return;
+
+            SelectedEdition = edition;
+
+            // Only trigger flip animation for Jokers (including Soul Jokers) and Standard Cards
+            if (SupportsFlipAnimation)
+            {
+                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
+            }
+
+            DebugLogger.Log("ConfigureFilterTab", $"Edition set to: {edition}");
+        }
+
+        private void SetSeal(string? seal)
+        {
+            if (string.IsNullOrEmpty(seal)) return;
+
+            SelectedSeal = seal;
+
+            // Only trigger flip animation for Standard Cards (seals only apply to standard cards)
+            if (SupportsFlipAnimation && SelectedMainCategory == "StandardCard")
+            {
+                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
+            }
+
+            DebugLogger.Log("ConfigureFilterTab", $"Seal set to: {seal}");
+        }
+
+        private void ToggleStickerPerishable()
+        {
+            StickerPerishable = !StickerPerishable;
+
+            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
+            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
+            {
+                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
+            }
+
+            DebugLogger.Log("ConfigureFilterTab", $"Perishable sticker toggled: {StickerPerishable}");
+        }
+
+        private void ToggleStickerEternal()
+        {
+            StickerEternal = !StickerEternal;
+
+            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
+            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
+            {
+                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
+            }
+
+            DebugLogger.Log("ConfigureFilterTab", $"Eternal sticker toggled: {StickerEternal}");
+        }
+
+        private void ToggleStickerRental()
+        {
+            StickerRental = !StickerRental;
+
+            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
+            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
+            {
+                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
+            }
+
+            DebugLogger.Log("ConfigureFilterTab", $"Rental sticker toggled: {StickerRental}");
+        }
+
         #endregion
 
         #region Helper Methods
+
+        /// <summary>
+        /// Update an item's configuration (called from popup dialog)
+        /// </summary>
+        public void UpdateItemConfig(string itemKey, ItemConfig config)
+        {
+            if (ItemConfigs.ContainsKey(itemKey))
+            {
+                ItemConfigs[itemKey] = config;
+                DebugLogger.Log("ConfigureFilterTab", $"Updated config for item: {itemKey}");
+
+                // Also update parent's ItemConfigs if available
+                if (_parentViewModel != null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
+                {
+                    _parentViewModel.ItemConfigs[itemKey] = config;
+                }
+
+                // Trigger auto-sync to JSON Editor
+                NotifyJsonEditorOfChanges();
+            }
+        }
 
         private async Task LoadGameDataAsync()
         {
