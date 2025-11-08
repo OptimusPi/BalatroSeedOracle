@@ -555,6 +555,7 @@ namespace BalatroSeedOracle.Views
                 Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterName} ({filterId}.json)");
             }
 
+            // Back to the REAL FiltersModal with visual item shelf and card display!
             var filtersModal = new Modals.FiltersModal();
 
             // Load the filter data FIRST if provided

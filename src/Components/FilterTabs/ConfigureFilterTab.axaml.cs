@@ -18,30 +18,34 @@ using BalatroSeedOracle.Services;
 namespace BalatroSeedOracle.Components.FilterTabs
 {
     /// <summary>
-    /// PROPER MVVM Visual Builder Tab - zero business logic, pure view
-    /// ViewModel set via XAML binding, not code-behind
+    /// Configure Filter Tab - Visual builder without SHOULD zone
+    /// Uses ConfigureFilterTabViewModel (simplified version without SHOULD zone)
     /// </summary>
-    public partial class VisualBuilderTab : UserControl
+    public partial class ConfigureFilterTab : UserControl
     {
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
-        private TranslateTransform? _adornerTransform; // Transform for positioning the ghost (allows sway to work)
+        private TranslateTransform? _adornerTransform;
         private AdornerLayer? _adornerLayer;
         private TopLevel? _topLevel;
         private bool _isDragging = false;
-        private bool _isAnimating = false; // Track if rubber-band animation is playing
-        private bool _isDraggingTray = false; // Track if we're dragging an operator tray (disables drop acceptance on trays)
+        private bool _isAnimating = false;
+        private bool _isDraggingTray = false;
         private Avalonia.Point _dragStartPosition;
-        private Control? _originalDragSource; // Store the original control to animate back to
-        private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
+        private Control? _originalDragSource;
+        private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, MustNotDropZone, or null for shelf)
 
-        public VisualBuilderTab()
+        public ConfigureFilterTab()
         {
             InitializeComponent();
 
-            // Set DataContext to the VisualBuilderTabViewModel
-            DataContext =
-                ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+            // Only set DataContext if not already set by parent (e.g., from FiltersModalViewModel)
+            // Use ConfigureFilterTabViewModel (simplified version without SHOULD zone)
+            if (DataContext == null)
+            {
+                DataContext =
+                    ServiceHelper.GetRequiredService<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
+            }
 
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
@@ -49,7 +53,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Subscribe to ViewModel PropertyChanged for arrow positioning
             this.DataContextChanged += (s, e) =>
             {
-                if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                if (DataContext is ViewModels.FilterTabs.ConfigureFilterTabViewModel vm)
                 {
                     vm.PropertyChanged += OnViewModelPropertyChanged;
                     UpdateArrowPosition(vm.SelectedMainCategory); // Set initial position
@@ -59,14 +63,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void SetupDropZones()
         {
-            // Find drop zones - we'll check them manually via hit testing
+            // Find drop zones - only MUST and MUST NOT (no SHOULD!)
             var mustZone = this.FindControl<Border>("MustDropZone");
-            var shouldZone = this.FindControl<Border>("ShouldDropZone");
             var mustNotZone = this.FindControl<Border>("MustNotDropZone");
 
             DebugLogger.Log(
-                "VisualBuilderTab",
-                $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}"
+                "ConfigureFilterTab",
+                $"Drop zones found - Must: {mustZone != null}, MustNot: {mustNotZone != null}"
             );
 
             // Setup operator tray drop zones
@@ -79,14 +82,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 topLevel.PointerMoved += OnPointerMovedManualDrag;
                 topLevel.PointerReleased += OnPointerReleasedManualDrag;
                 DebugLogger.Log(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     "Manual drag pointer handlers attached to TopLevel"
                 );
             }
             else
             {
                 DebugLogger.LogError(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     "Failed to attach pointer handlers - no TopLevel"
                 );
             }
@@ -102,7 +105,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 trayOrBorder.AddHandler(DragDrop.DragOverEvent, OnTrayOrDragOver);
                 trayOrBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayOrDragLeave);
                 trayOrBorder.AddHandler(DragDrop.DropEvent, OnTrayOrDrop);
-                DebugLogger.Log("VisualBuilderTab", "OR Tray drag/drop handlers attached");
+                DebugLogger.Log("ConfigureFilterTab", "OR Tray drag/drop handlers attached");
             }
 
             if (trayAndBorder != null)
@@ -110,7 +113,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 trayAndBorder.AddHandler(DragDrop.DragOverEvent, OnTrayAndDragOver);
                 trayAndBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayAndDragLeave);
                 trayAndBorder.AddHandler(DragDrop.DropEvent, OnTrayAndDrop);
-                DebugLogger.Log("VisualBuilderTab", "AND Tray drag/drop handlers attached");
+                DebugLogger.Log("ConfigureFilterTab", "AND Tray drag/drop handlers attached");
             }
         }
 
@@ -189,7 +192,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
 
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"🎯 MANUAL DRAG START for item: {item.Name}"
                     );
 
@@ -206,17 +209,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
 
+                    // Note: ConfigureFilterTabViewModel doesn't have EnterDragActiveState
+                    // (that's specific to VisualBuilderTabViewModel's state system)
+
                     // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
                     // Capturing to sender (the small image) would prevent us from getting events outside its bounds
                 }
                 else
                 {
-                    DebugLogger.Log("VisualBuilderTab", "No item found for drag operation");
+                    DebugLogger.Log("ConfigureFilterTab", "No item found for drag operation");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Drag operation failed: {ex.Message}");
+                DebugLogger.LogError("ConfigureFilterTab", $"Drag operation failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
             }
@@ -239,7 +245,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item == null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"No item found for drop zone drag - sender type: {sender?.GetType().Name}");
+                    DebugLogger.Log("ConfigureFilterTab", $"No item found for drop zone drag - sender type: {sender?.GetType().Name}");
                     return;
                 }
 
@@ -247,14 +253,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var pointerPoint = e.GetCurrentPoint(control);
 
                 DebugLogger.Log(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Drop zone item pressed - Left: {pointerPoint.Properties.IsLeftButtonPressed}, Right: {pointerPoint.Properties.IsRightButtonPressed}, Middle: {pointerPoint.Properties.IsMiddleButtonPressed}"
                 );
 
                 // RIGHT-CLICK: Open config popup
                 if (pointerPoint.Properties.IsRightButtonPressed)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"Opening config popup for {item.Name}");
+                    DebugLogger.Log("ConfigureFilterTab", $"Opening config popup for {item.Name}");
                     ShowItemConfigPopup(item, control);
                     e.Handled = true;
                     return;
@@ -266,36 +272,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return; // Not left click, ignore
                 }
 
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm == null)
                     return;
 
                 // Figure out which drop zone this item is in by checking which collection contains it
-                // NOTE: We do NOT remove the item here! This allows:
-                // 1. Dragging duplicates (same item with different config to same zone)
-                // 2. Cancelling drag with rubber-band animation
-                // We only remove when successfully dropped to a DIFFERENT zone
+                // NOTE: No SHOULD zone in this tab!
                 if (vm.SelectedMust.Contains(item))
                 {
                     _sourceDropZone = "MustDropZone";
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"Drag initiated from Must zone: {item.Name}"
-                    );
-                }
-                else if (vm.SelectedShould.Contains(item))
-                {
-                    _sourceDropZone = "ShouldDropZone";
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"Drag initiated from Should zone: {item.Name}"
                     );
                 }
                 else if (vm.SelectedMustNot.Contains(item))
                 {
                     _sourceDropZone = "MustNotDropZone";
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"Drag initiated from MustNot zone: {item.Name}"
                     );
                 }
@@ -334,7 +329,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     {
                         returnOverlay.IsVisible = true;
                         DebugLogger.Log(
-                            "VisualBuilderTab",
+                            "ConfigureFilterTab",
                             "✅ Showing return overlay immediately on drag start"
                         );
                     }
@@ -345,7 +340,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Drop zone drag failed: {ex.Message}");
+                DebugLogger.LogError("ConfigureFilterTab", $"Drop zone drag failed: {ex.Message}");
                 RemoveDragAdorner();
                 _isDragging = false;
             }
@@ -372,10 +367,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                 }
 
-                // Check if we're over a drop zone and provide visual feedback
-                var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
-                var returnOverlay = this.FindControl<Border>("ReturnOverlay");
-                var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
+                // Provide visual feedback for operator tray borders (highlight when hovering)
                 var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
                 var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
 
@@ -384,12 +376,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var cursorPos = e.GetPosition(_topLevel);
 
                 // Check if over operator tray (only allow non-operators to be dropped)
-                bool isOverTray = false;
                 if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
                 {
                     if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
                     {
-                        isOverTray = true;
                         // Highlight OR tray
                         if (trayOrBorder != null)
                             trayOrBorder.BorderThickness = new Avalonia.Thickness(3);
@@ -398,7 +388,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                     else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
                     {
-                        isOverTray = true;
                         // Highlight AND tray
                         if (trayAndBorder != null)
                             trayAndBorder.BorderThickness = new Avalonia.Thickness(3);
@@ -415,35 +404,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                 }
 
-                // Check if over item grid (return to shelf)
-                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel) && !isOverTray)
-                {
-                    // Show return overlay if dragging FROM drop zones (sourceDropZone != null)
-                    if (returnOverlay != null && _sourceDropZone != null)
-                    {
-                        returnOverlay.IsVisible = true;
-                    }
-                    // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
-                }
-                // Check if over drop zone container
-                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
-                {
-                    // Hide return overlay when over drop zones
-                    if (returnOverlay != null) returnOverlay.IsVisible = false;
-                    // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
-                    // Zones stay always visible - no accordion-style expansion during drag
-                }
-                else
-                {
-                    // Not over any drop zone or return area
-                    // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
-                    if (returnOverlay != null) returnOverlay.IsVisible = false;
-                }
+                // NOTE: Drop zone overlays remain visible throughout the entire drag operation
+                // They are shown in OnItemPointerPressed/OnDropZoneItemPointerPressed
+                // and hidden only in RemoveDragAdorner when the drag completes
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Error in OnPointerMovedManualDrag: {ex.Message}"
                 );
             }
@@ -480,18 +448,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Models.FilterOperatorItem? FindOperatorAtPosition(
             Avalonia.Point cursorPos,
             string zoneName,
-            ViewModels.FilterTabs.VisualBuilderTabViewModel vm
+            ViewModels.FilterTabs.ConfigureFilterTabViewModel vm
         )
         {
             if (_topLevel == null)
                 return null;
 
-            // Get the appropriate collection based on zone
+            // Get the appropriate collection based on zone (NO SHOULD!)
             System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection =
                 zoneName switch
                 {
                     "MustDropZone" => vm.SelectedMust,
-                    "ShouldDropZone" => vm.SelectedShould,
                     "MustNotDropZone" => vm.SelectedMustNot,
                     _ => null,
                 };
@@ -522,30 +489,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             return null;
         }
 
-        private void RemoveDragOverClassExcept(Border? exceptZone)
-        {
-            var mustZone = this.FindControl<Border>("MustDropZone");
-            var shouldZone = this.FindControl<Border>("ShouldDropZone");
-            var mustNotZone = this.FindControl<Border>("MustNotDropZone");
-            var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
-            var returnOverlay = this.FindControl<Border>("ReturnOverlay");
-
-            // Keep overlay visible when dragging from drop zones
-            // If dragging from shelf (_sourceDropZone == null), hide it normally
-            if (returnOverlay != null && exceptZone != itemGridBorder && _sourceDropZone == null)
-            {
-                returnOverlay.IsVisible = false;
-            }
-
-            if (mustZone != exceptZone)
-                mustZone?.Classes.Remove("drag-over");
-            if (shouldZone != exceptZone)
-                shouldZone?.Classes.Remove("drag-over");
-            if (mustNotZone != exceptZone)
-                mustNotZone?.Classes.Remove("drag-over");
-            if (itemGridBorder != exceptZone)
-                itemGridBorder?.Classes.Remove("drag-over");
-        }
 
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
         {
@@ -554,31 +497,27 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                DebugLogger.Log("VisualBuilderTab", "Manual drag operation released");
-
-                // Remove all visual feedback
-                RemoveDragOverClassExcept(null);
+                DebugLogger.Log("ConfigureFilterTab", "Manual drag operation released");
 
                 var vm =
                     DataContext
-                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    as BalatroSeedOracle.ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm == null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", "Drop failed - no ViewModel");
+                    DebugLogger.Log("ConfigureFilterTab", "Drop failed - no ViewModel");
                     return;
                 }
 
                 // Get cursor position and find which zone we dropped on
                 if (_topLevel == null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", "Drop failed - no TopLevel");
+                    DebugLogger.Log("ConfigureFilterTab", "Drop failed - no TopLevel");
                     return;
                 }
 
                 var cursorPos = e.GetPosition(_topLevel);
 
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
-                var returnOverlay = this.FindControl<Border>("ReturnOverlay");
                 var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
                 var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
                 var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
@@ -591,7 +530,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (_draggedItem is not FilterOperatorItem && IsPointOverControl(cursorPos, categoryNav, _topLevel))
                 {
                     // Add to favorites
-                    DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into Favorites");
+                    DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into Favorites");
 
                     var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
                     if (favoritesService != null)
@@ -608,7 +547,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             // For now, switching categories will show the new favorite
                         }
 
-                        DebugLogger.Log("VisualBuilderTab", $"✅ {_draggedItem.Name} added to favorites");
+                        DebugLogger.Log("ConfigureFilterTab", $"✅ {_draggedItem.Name} added to favorites");
                     }
 
                     return; // Early exit - handled
@@ -620,7 +559,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
                     {
                         // Drop into OR tray
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into OR tray");
+                        DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into OR tray");
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -642,7 +581,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
                     {
                         // Drop into AND tray
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into AND tray");
+                        DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into AND tray");
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -669,50 +608,38 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     targetZone = itemGridBorder;
                     zoneName = "ItemGridBorder";
                 }
-                // Check if over drop zone container - determine which third
+                // Check if over drop zone container - determine which half (NO SHOULD!)
                 else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
                 {
                     // Get position within the drop zone container
                     var localPos = e.GetPosition(dropZoneContainer);
                     var containerHeight = dropZoneContainer.Bounds.Height;
 
-                    // Divide into thirds
-                    var thirdHeight = containerHeight / 3.0;
+                    // Divide into halves
+                    var halfHeight = containerHeight / 2.0;
 
-                    if (localPos.Y < thirdHeight)
+                    if (localPos.Y < halfHeight)
                     {
-                        // Top third - MUST
+                        // Top half - MUST
                         zoneName = "MustDropZone";
                         targetZone = this.FindControl<Border>("MustDropZone");
                     }
-                    else if (localPos.Y < thirdHeight * 2)
-                    {
-                        // Middle third - SHOULD
-                        zoneName = "ShouldDropZone";
-                        targetZone = this.FindControl<Border>("ShouldDropZone");
-                    }
                     else
                     {
-                        // Bottom third - CAN'T
+                        // Bottom half - BANNED
                         zoneName = "MustNotDropZone";
                         targetZone = this.FindControl<Border>("MustNotDropZone");
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Third={thirdHeight:F1}, Zone={zoneName}");
+                    DebugLogger.Log("ConfigureFilterTab", $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Half={halfHeight:F1}, Zone={zoneName}");
                 }
 
                 if (targetZone != null && zoneName != null)
                 {
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"✅ Dropping {_draggedItem.Name} into {zoneName}"
                     );
-
-                    // Hide overlay after drop
-                    if (returnOverlay != null)
-                    {
-                        returnOverlay.IsVisible = false;
-                    }
 
                     // SPECIAL CASE: ItemGridBorder (return to shelf) - remove from drop zone if dragging from one
                     if (zoneName == "ItemGridBorder")
@@ -720,17 +647,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         if (_sourceDropZone != null)
                         {
                             DebugLogger.Log(
-                                "VisualBuilderTab",
+                                "ConfigureFilterTab",
                                 $"↩️ RETURNING {_draggedItem.Name} from {_sourceDropZone} to shelf"
                             );
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":
                                     vm.SelectedMust.Remove(_draggedItem);
-                                    vm.IsDragging = false;
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.SelectedShould.Remove(_draggedItem);
                                     vm.IsDragging = false;
                                     break;
                                 case "MustNotDropZone":
@@ -744,7 +667,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         else
                         {
                             DebugLogger.Log(
-                                "VisualBuilderTab",
+                                "ConfigureFilterTab",
                                 "Can't trash item from shelf (it was never added)"
                             );
                         }
@@ -753,16 +676,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else if (_sourceDropZone != null && zoneName == _sourceDropZone)
                     {
                         DebugLogger.Log(
-                            "VisualBuilderTab",
+                            "ConfigureFilterTab",
                             $"Dropped to same zone - canceling (item stays where it was)"
                         );
                         // Item stays in original zone, collapse to that zone
                         switch (zoneName)
                         {
                             case "MustDropZone":
-                                vm.IsDragging = false;
-                                break;
-                            case "ShouldDropZone":
                                 vm.IsDragging = false;
                                 break;
                             case "MustNotDropZone":
@@ -776,16 +696,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         if (_sourceDropZone != null)
                         {
                             DebugLogger.Log(
-                                "VisualBuilderTab",
+                                "ConfigureFilterTab",
                                 $"Removing {_draggedItem.Name} from {_sourceDropZone}"
                             );
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":
                                     vm.SelectedMust.Remove(_draggedItem);
-                                    break;
-                                case "ShouldDropZone":
-                                    vm.SelectedShould.Remove(_draggedItem);
                                     break;
                                 case "MustNotDropZone":
                                     vm.SelectedMustNot.Remove(_draggedItem);
@@ -810,7 +727,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             if (isTrayOperator)
                             {
                                 DebugLogger.Log(
-                                    "VisualBuilderTab",
+                                    "ConfigureFilterTab",
                                     $"📦 Adding {_draggedItem.Name} to {targetOperator.OperatorType} tray operator"
                                 );
                                 // Add to operator's children (top shelf staging area only)
@@ -818,9 +735,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             }
                             else
                             {
-                                // Operator is in a drop zone (MUST/SHOULD/MUSTNOT) - treat as regular drop
+                                // Operator is in a drop zone (MUST/MUSTNOT) - treat as regular drop
                                 DebugLogger.Log(
-                                    "VisualBuilderTab",
+                                    "ConfigureFilterTab",
                                     $"⚠️ Operator in drop zone is READ-ONLY - dropping {_draggedItem.Name} next to it instead"
                                 );
                                 // Fall through to regular zone add logic below
@@ -834,7 +751,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             if (_draggedItem is Models.FilterOperatorItem operatorItem)
                             {
                                 DebugLogger.Log(
-                                    "VisualBuilderTab",
+                                    "ConfigureFilterTab",
                                     $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
                                 );
 
@@ -885,7 +802,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     }
 
                                     itemToAdd = operatorCopy;
-                                    DebugLogger.Log("VisualBuilderTab", $"Created operator copy with {operatorCopy.Children.Count} deep-copied children");
+                                    DebugLogger.Log("ConfigureFilterTab", $"Created operator copy with {operatorCopy.Children.Count} deep-copied children");
                                 }
 
                                 // Add operator to zone (operators can't go inside operators)
@@ -893,10 +810,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 {
                                     case "MustDropZone":
                                         vm.AddToMustCommand.Execute(itemToAdd);
-                                        vm.IsDragging = false;
-                                        break;
-                                    case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
                                     case "MustNotDropZone":
@@ -910,7 +823,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 {
                                     operatorItem.Children.Clear();
                                     DebugLogger.Log(
-                                        "VisualBuilderTab",
+                                        "ConfigureFilterTab",
                                         $"Cleared tray operator {operatorItem.OperatorType} children after copying"
                                     );
                                 }
@@ -924,10 +837,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         vm.AddToMustCommand.Execute(_draggedItem);
                                         vm.IsDragging = false;
                                         break;
-                                    case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(_draggedItem);
-                                        vm.IsDragging = false;
-                                        break;
                                     case "MustNotDropZone":
                                         vm.AddToMustNotCommand.Execute(_draggedItem);
                                         vm.IsDragging = false;
@@ -939,7 +848,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 else
                 {
-                    DebugLogger.Log("VisualBuilderTab", "Drop cancelled - not over any drop zone");
+                    DebugLogger.Log("ConfigureFilterTab", "Drop cancelled - not over any drop zone");
 
                     // IMPORTANT: Stop dragging BEFORE animation to prevent glitchy cursor following!
                     _isDragging = false;
@@ -948,7 +857,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (_sourceDropZone != null)
                     {
                         DebugLogger.Log(
-                            "VisualBuilderTab",
+                            "ConfigureFilterTab",
                             $"Drag from {_sourceDropZone} cancelled - item stays in original zone"
                         );
 
@@ -961,7 +870,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     {
                         // Item came from shelf - just animate back
                         DebugLogger.Log(
-                            "VisualBuilderTab",
+                            "ConfigureFilterTab",
                             "Returning to shelf with rubber band animation"
                         );
                         await AnimateGhostBackToOrigin();
@@ -1032,7 +941,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Error animating ghost back: {ex.Message}"
                 );
             }
@@ -1042,11 +951,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        // REMOVED: Double-click handler - right-click is the only way to configure items
-
         private void ShowItemConfigPopup(Models.FilterItem item, Control? sourceControl)
         {
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null)
                 return;
 
@@ -1090,8 +997,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             popup.IsOpen = true;
         }
 
-        // No pagination - categories are now directly clickable in left nav
-
         private void OnCategoryClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string category)
@@ -1101,7 +1006,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     var vm =
                         DataContext
-                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                        as BalatroSeedOracle.ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                     if (vm != null)
                     {
                         // Disable reactive updates temporarily
@@ -1111,157 +1016,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 catch (Exception ex)
                 {
                     DebugLogger.LogError(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"Category click failed: {ex.Message}"
                     );
                 }
-            }
-        }
-
-        private void OnClearSearch(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm != null)
-            {
-                vm.SearchFilter = "";
-            }
-        }
-
-        private void OnClearAll(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm != null)
-            {
-                vm.SelectedMust.Clear();
-                vm.SelectedShould.Clear();
-                vm.SelectedMustNot.Clear();
-            }
-        }
-
-        private void OnFavoritesClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm != null)
-            {
-                // Show favorites by setting category to "Joker" and then filtering for favorites
-                vm.SetCategory("Joker");
-                vm.SelectedCategory = "Favorites";
-                DebugLogger.Log("VisualBuilderTab", "Showing favorites");
-            }
-        }
-
-        private async void OnStartOverClick(
-            object? sender,
-            Avalonia.Interactivity.RoutedEventArgs e
-        )
-        {
-            // Get Balatro color resources from App.axaml
-            var darkBg =
-                Application.Current?.FindResource("DarkBackground")
-                as Avalonia.Media.SolidColorBrush;
-            var modalGrey =
-                Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
-            var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
-            var white =
-                Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
-
-            // Show confirmation dialog with Balatro-style colors
-            var dialog = new Window
-            {
-                Width = 400,
-                Height = 200,
-                CanResize = false,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background =
-                    darkBg
-                    ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
-                Title = "Start Over?",
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
-                SystemDecorations = SystemDecorations.Full,
-            };
-
-            var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 20 };
-
-            var label = new TextBlock
-            {
-                Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
-                FontSize = 16,
-                Foreground = white,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center,
-            };
-
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Spacing = 15,
-            };
-
-            var cancelButton = new Button
-            {
-                Content = "Cancel",
-                Width = 120,
-                Height = 45,
-                FontSize = 16,
-                Background = modalGrey,
-                Foreground = white,
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            };
-
-            var confirmButton = new Button
-            {
-                Content = "YES, START OVER",
-                Width = 180,
-                Height = 45,
-                FontSize = 16,
-                Background = red,
-                Foreground = white,
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            };
-
-            cancelButton.Click += (s, ev) => dialog.Close();
-            confirmButton.Click += (s, ev) =>
-            {
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                if (vm != null)
-                {
-                    // Clear all drop zones
-                    vm.SelectedMust.Clear();
-                    vm.SelectedShould.Clear();
-                    vm.SelectedMustNot.Clear();
-
-                    // Clear operator tray
-                    vm.TrayOrOperator.Children.Clear();
-                    vm.TrayAndOperator.Children.Clear();
-
-                    // Reset search filter
-                    vm.SearchFilter = "";
-
-                    // Reset to first category (Joker)
-                    vm.SetCategory("Joker");
-                }
-                dialog.Close();
-            };
-
-            buttonPanel.Children.Add(cancelButton);
-            buttonPanel.Children.Add(confirmButton);
-
-            panel.Children.Add(label);
-            panel.Children.Add(buttonPanel);
-
-            dialog.Content = panel;
-
-            var owner = Avalonia.Application.Current?.ApplicationLifetime
-                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (owner != null)
-            {
-                await dialog.ShowDialog(owner);
             }
         }
 
@@ -1272,7 +1030,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {
-            DebugLogger.Log("VisualBuilderTab", $"Creating drag adorner for item: {item?.Name}");
+            DebugLogger.Log("ConfigureFilterTab", $"Creating drag adorner for item: {item?.Name}");
 
             try
             {
@@ -1299,28 +1057,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"🔍 ADORNER SEARCH [{timestamp}] TopLevel type: {_topLevel.GetType().Name}"
                     );
 
                     // First try standard GetAdornerLayer
                     _adornerLayer = AdornerLayer.GetAdornerLayer(_topLevel);
                     DebugLogger.Log(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"GetAdornerLayer result: {_adornerLayer != null}"
                     );
 
                     if (_adornerLayer == null && _topLevel is Window window)
                     {
                         DebugLogger.Log(
-                            "VisualBuilderTab",
+                            "ConfigureFilterTab",
                             $"Window.Content type: {window.Content?.GetType().Name ?? "null"}"
                         );
 
                         if (window.Content is Panel panel)
                         {
                             DebugLogger.Log(
-                                "VisualBuilderTab",
+                                "ConfigureFilterTab",
                                 $"Panel has {panel.Children.Count} children"
                             );
 
@@ -1328,7 +1086,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             foreach (var child in panel.Children)
                             {
                                 DebugLogger.Log(
-                                    "VisualBuilderTab",
+                                    "ConfigureFilterTab",
                                     $"Panel child: {child.GetType().Name}"
                                 );
 
@@ -1336,7 +1094,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 {
                                     _adornerLayer = layer;
                                     DebugLogger.Log(
-                                        "VisualBuilderTab",
+                                        "ConfigureFilterTab",
                                         "✅ Found AdornerLayer in MainWindow Panel"
                                     );
                                     break;
@@ -1349,7 +1107,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (_adornerLayer == null)
                 {
                     DebugLogger.LogError(
-                        "VisualBuilderTab",
+                        "ConfigureFilterTab",
                         $"Failed to find adorner layer! TopLevel: {_topLevel != null}"
                     );
                     return;
@@ -1433,7 +1191,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else
                     {
                         // Fallback for missing image - show placeholder
-                        DebugLogger.LogError("VisualBuilderTab", $"Item {item?.Name ?? "unknown"} has no image!");
+                        DebugLogger.LogError("ConfigureFilterTab", $"Item {item?.Name ?? "unknown"} has no image!");
                     }
 
                     // Soul face overlay for legendary jokers
@@ -1522,14 +1280,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 DebugLogger.Log(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Ghost image created at ({startPosition.X}, {startPosition.Y}) with sway animation triggered"
                 );
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Failed to create drag adorner: {ex.Message}"
                 );
             }
@@ -1560,7 +1318,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _dragAdorner = null;
                     _adornerLayer = null;
                     _topLevel = null;
-                    DebugLogger.Log("VisualBuilderTab", "Ghost image removed and disposed");
+                    DebugLogger.Log("ConfigureFilterTab", "Ghost image removed and disposed");
                 }
 
                 // Hide all drop zone overlays when drag ends
@@ -1569,7 +1327,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    "VisualBuilderTab",
+                    "ConfigureFilterTab",
                     $"Failed to remove drag adorner: {ex.Message}"
                 );
             }
@@ -1586,16 +1344,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (backdrop != null)
                 backdrop.IsVisible = true;
 
-            // Show ALL drop zone overlays so user can see where to drop
+            // Show ALL drop zone overlays so user can see where to drop (NO SHOULD!)
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-            var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
             var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
 
             // Show all overlays except the source zone (if dragging from a zone)
             if (mustOverlay != null)
                 mustOverlay.IsVisible = (excludeZone != "MustDropZone");
-            if (shouldOverlay != null)
-                shouldOverlay.IsVisible = (excludeZone != "ShouldDropZone");
             if (mustNotOverlay != null)
                 mustNotOverlay.IsVisible = (excludeZone != "MustNotDropZone");
 
@@ -1618,10 +1373,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
             if (mustOverlay != null)
                 mustOverlay.IsVisible = false;
-
-            var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-            if (shouldOverlay != null)
-                shouldOverlay.IsVisible = false;
 
             var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
             if (mustNotOverlay != null)
@@ -1650,138 +1401,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             base.OnDetachedFromVisualTree(e);
         }
 
-        /// <summary>
-        /// Handle MUST zone label click - zones are always expanded now
-        /// </summary>
-        private void OnMustLabelClick(object? sender, PointerPressedEventArgs e)
-        {
-            // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "MUST zone label clicked (zones always expanded)");
-        }
-
-        /// <summary>
-        /// Handle pointer entering MUST drop zone - show overlay only during drag
-        /// </summary>
-        private void OnMustZonePointerEntered(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsMustHovered = true;
-            }
-
-            // Show overlay only if we're currently dragging
-            if (_isDragging)
-            {
-                var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-                if (mustOverlay != null)
-                    mustOverlay.IsVisible = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle pointer leaving MUST drop zone - hide overlay
-        /// </summary>
-        private void OnMustZonePointerExited(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsMustHovered = false;
-            }
-
-            // Hide overlay when leaving zone
-            var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-            if (mustOverlay != null)
-                mustOverlay.IsVisible = false;
-        }
-
-        /// <summary>
-        /// Handle SHOULD zone label click - zones are always expanded now
-        /// </summary>
-        private void OnShouldLabelClick(object? sender, PointerPressedEventArgs e)
-        {
-            // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "SHOULD zone label clicked (zones always expanded)");
-        }
-
-        /// <summary>
-        /// Handle pointer entering SHOULD drop zone - show overlay only during drag
-        /// </summary>
-        private void OnShouldZonePointerEntered(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsShouldHovered = true;
-            }
-
-            // Show overlay only if we're currently dragging
-            if (_isDragging)
-            {
-                var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-                if (shouldOverlay != null)
-                    shouldOverlay.IsVisible = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle pointer leaving SHOULD drop zone - hide overlay
-        /// </summary>
-        private void OnShouldZonePointerExited(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsShouldHovered = false;
-            }
-
-            // Hide overlay when leaving zone
-            var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-            if (shouldOverlay != null)
-                shouldOverlay.IsVisible = false;
-        }
-
-        /// <summary>
-        /// Handle CAN'T zone label click - expand CAN'T, collapse others
-        /// </summary>
-        private void OnCantLabelClick(object? sender, PointerPressedEventArgs e)
-        {
-            // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "CAN'T zone label clicked (zones always expanded)");
-        }
-
-        /// <summary>
-        /// Handle pointer entering CAN'T drop zone - show overlay only during drag
-        /// </summary>
-        private void OnCantZonePointerEntered(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsCantHovered = true;
-            }
-
-            // Show overlay only if we're currently dragging
-            if (_isDragging)
-            {
-                var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-                if (mustNotOverlay != null)
-                    mustNotOverlay.IsVisible = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle pointer leaving CAN'T drop zone - hide overlay
-        /// </summary>
-        private void OnCantZonePointerExited(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsCantHovered = false;
-            }
-
-            // Hide overlay when leaving zone
-            var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-            if (mustNotOverlay != null)
-                mustNotOverlay.IsVisible = false;
-        }
-
         #region Operator Tray Handlers
 
         /// <summary>
@@ -1792,7 +1411,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (_isDragging || _isAnimating)
                 return;
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || vm.TrayOrOperator.Children.Count == 0)
                 return;
 
@@ -1818,7 +1437,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children");
+            DebugLogger.Log("ConfigureFilterTab", $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children");
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1834,7 +1453,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (_isDragging || _isAnimating)
                 return;
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || vm.TrayAndOperator.Children.Count == 0)
                 return;
 
@@ -1860,7 +1479,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children");
+            DebugLogger.Log("ConfigureFilterTab", $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children");
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1938,14 +1557,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 border.BorderThickness = new Avalonia.Thickness(2);
             }
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || _draggedItem == null)
                 return;
 
             // Only allow regular FilterItems (not operators)
             if (_draggedItem is not FilterOperatorItem)
             {
-                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to OR tray");
+                DebugLogger.Log("ConfigureFilterTab", $"Adding {_draggedItem.Name} to OR tray");
 
                 // Add a COPY of the item to the tray (so users can add same item multiple times)
                 var itemCopy = new Models.FilterItem
@@ -2032,14 +1651,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 border.BorderThickness = new Avalonia.Thickness(2);
             }
 
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+            var vm = DataContext as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
             if (vm == null || _draggedItem == null)
                 return;
 
             // Only allow regular FilterItems (not operators)
             if (_draggedItem is not FilterOperatorItem)
             {
-                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to AND tray");
+                DebugLogger.Log("ConfigureFilterTab", $"Adding {_draggedItem.Name} to AND tray");
 
                 // Add a COPY of the item to the tray (so users can add same item multiple times)
                 var itemCopy = new Models.FilterItem
@@ -2062,9 +1681,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory))
+            if (e.PropertyName == nameof(ViewModels.FilterTabs.ConfigureFilterTabViewModel.SelectedMainCategory))
             {
-                var vm = sender as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm = sender as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm != null)
                 {
                     UpdateArrowPosition(vm.SelectedMainCategory);

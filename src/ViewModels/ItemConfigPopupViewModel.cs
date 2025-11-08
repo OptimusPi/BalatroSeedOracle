@@ -132,11 +132,8 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
         // Determine visibility based on item type
         AntesVisible = true;
-        // Editions (Foil, Holographic, Polychrome, Negative) - JOKERS ONLY
-        EditionVisible = config.ItemType == "Joker";
-        // Seals (Red, Blue, Gold, Purple) - STANDARD CARDS ONLY (not jokers!)
+        EditionVisible = config.ItemType == "Joker" || config.ItemType == "StandardCard";
         SealVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
-        // Enhancements (Bonus, Mult, Wild, etc) - STANDARD CARDS ONLY
         EnhancementVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         RankVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         SuitVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";

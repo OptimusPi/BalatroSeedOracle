@@ -79,34 +79,6 @@ namespace BalatroSeedOracle.Behaviors
             set => SetValue(StaggerDelayProperty, value);
         }
 
-        /// <summary>
-        /// Image width for the deck back sprite (varies by card type)
-        /// </summary>
-        public static readonly StyledProperty<double> ImageWidthProperty = AvaloniaProperty.Register<
-            CardFlipOnTriggerBehavior,
-            double
-        >(nameof(ImageWidth), 64.0);
-
-        public double ImageWidth
-        {
-            get => GetValue(ImageWidthProperty);
-            set => SetValue(ImageWidthProperty, value);
-        }
-
-        /// <summary>
-        /// Image height for the deck back sprite (varies by card type)
-        /// </summary>
-        public static readonly StyledProperty<double> ImageHeightProperty = AvaloniaProperty.Register<
-            CardFlipOnTriggerBehavior,
-            double
-        >(nameof(ImageHeight), 85.0);
-
-        public double ImageHeight
-        {
-            get => GetValue(ImageHeightProperty);
-            set => SetValue(ImageHeightProperty, value);
-        }
-
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -167,9 +139,10 @@ namespace BalatroSeedOracle.Behaviors
                 var originalSource = AssociatedObject.Source;
                 DebugLogger.Log("CardFlip", $"Cached original source: {originalSource != null}");
 
-                // Get deck back sprite at EXACT display size - same as the card container
-                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, (int)ImageWidth, (int)ImageHeight);
-                DebugLogger.Log("CardFlip", $"Got deck back sprite: {deckBackSprite != null} (size: {ImageWidth}x{ImageHeight})");
+                // Get deck back sprite at DISPLAY size (64x85) to match actual card container size
+                // This prevents cropping that occurs when a 71x95 sprite is forced into 64x85 container
+                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 64, 85);
+                DebugLogger.Log("CardFlip", $"Got deck back sprite: {deckBackSprite != null}");
 
                 if (deckBackSprite == null || originalSource == null)
                 {
@@ -267,17 +240,12 @@ namespace BalatroSeedOracle.Behaviors
                 DebugLogger.Log("CardFlip", "Phase 1: Flipping to edge");
                 await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
 
-                // At the midpoint (card is edge-on), swap to deck back
-                // Hide ONLY soul face overlay - keep edition/sticker overlays visible on deck back!
-                DebugLogger.Log("CardFlip", "Midpoint: Swapping to deck back sprite (keeping edition/stickers visible)");
+                // At the midpoint (card is edge-on), swap to deck back and hide ALL overlays
+                DebugLogger.Log("CardFlip", "Midpoint: Swapping to deck back sprite");
                 AssociatedObject.Source = deckBackSprite;
                 foreach (var overlay in overlayImages)
                 {
-                    // Only hide soul face - edition/sticker overlays stay visible on deck back
-                    if (overlay.Name == "SoulFaceOverlay")
-                    {
-                        overlay.IsVisible = false;
-                    }
+                    overlay.IsVisible = false;
                 }
 
                 // Execute Phase 2: Flip from edge to show deck back
