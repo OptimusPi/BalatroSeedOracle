@@ -1146,17 +1146,16 @@ namespace BalatroSeedOracle.ViewModels
         {
             TabItems.Clear();
 
-            // Create a single VisualBuilderTabViewModel instance to share between the two new tabs
+            // Create the proper VisualBuilderTabViewModel for the visual builder
             var visualBuilderViewModel = new FilterTabs.VisualBuilderTabViewModel(this);
             VisualBuilderTab = visualBuilderViewModel; // Store reference for other components
 
-            // Single Tab: Configure Filter (MUST and MUST NOT zones only)
-            // We're keeping ONLY ConfigureFilterTab, removing the scoring tab
-            var configureFilterTab = new Components.FilterTabs.ConfigureFilterTab
+            // Create the VISUAL BUILDER tab with the actual visual item shelf!
+            var visualBuilderTab = new Components.FilterTabs.VisualBuilderTab
             {
-                DataContext = visualBuilderViewModel, // Share the same ViewModel!
+                DataContext = visualBuilderViewModel,
             };
-            TabItems.Add(new TabItemViewModel("CONFIGURE FILTER", configureFilterTab));
+            TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
             // JSON Editor tab
             var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
