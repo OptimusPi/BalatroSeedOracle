@@ -201,6 +201,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _currentSeal = "None";
 
+        // Preferred Deck/Stake selection for previews
+        [ObservableProperty]
+        private int _selectedDeckIndex = 0;
+
+        [ObservableProperty]
+        private int _selectedStakeIndex = 0;
+
         // Computed properties for button visibility based on category
         public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
@@ -257,9 +264,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             public ObservableCollection<FilterItem> Items { get; set; } = new();
         }
 
-        // Operator Tray - permanent OR and AND operators at the top of the shelf
-        public FilterOperatorItem TrayOrOperator { get; }
-        public FilterOperatorItem TrayAndOperator { get; }
+        // Unified Operator Tray - single tray that toggles between OR and AND modes
+        public FilterOperatorItem UnifiedOperator { get; }
 
         // Selected items - these should sync with parent
         public ObservableCollection<FilterItem> SelectedMust { get; }
@@ -378,16 +384,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 },
             };
 
-            // Initialize Operator Tray with permanent OR and AND operators
-            TrayOrOperator = new FilterOperatorItem("OR")
+            // Initialize Unified Operator Tray starting in OR mode
+            UnifiedOperator = new FilterOperatorItem("OR")
             {
                 DisplayName = "OR",
-                Type = "Operator",
-                Category = "Operator",
-            };
-            TrayAndOperator = new FilterOperatorItem("AND")
-            {
-                DisplayName = "AND",
                 Type = "Operator",
                 Category = "Operator",
             };
@@ -425,6 +425,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             CommitOrClauseCommand = new RelayCommand(CommitOrClause);
             CommitAndClauseCommand = new RelayCommand(CommitAndClause);
+
+            ToggleOperatorCommand = new RelayCommand(ToggleOperator);
+            ClearTrayCommand = new RelayCommand(ClearTray);
+
+            // NOTE: SetEditionCommand and SetStickerCommand are auto-generated via [RelayCommand] attributes on their methods
 
             // Simple property change handling
             PropertyChanged += (s, e) =>
@@ -702,11 +707,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _ => FilteredJokers.Where(j => j.Type == "Joker"),
             };
 
+            DebugLogger.Log("VisualBuilderTab", $"RefreshFilteredItems: SelectedCategory={SelectedCategory}, sourceCollection count={sourceCollection.Count()}");
+            foreach (var item in sourceCollection.Take(3))
+            {
+                DebugLogger.Log("VisualBuilderTab", $"  - {item.Name}: Type={item.Type}, Category={item.Category}");
+            }
+
             FilteredItems.Clear();
             foreach (var item in sourceCollection)
             {
                 FilteredItems.Add(item);
             }
+            DebugLogger.Log("VisualBuilderTab", $"FilteredItems populated: {FilteredItems.Count} items");
 
             // Also rebuild grouped items after filtering
             RebuildGroupedItems();
@@ -730,6 +742,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Commit clause commands
         public ICommand CommitOrClauseCommand { get; }
         public ICommand CommitAndClauseCommand { get; }
+
+        // Unified Operator commands
+        public ICommand ToggleOperatorCommand { get; }
+        public ICommand ClearTrayCommand { get; }
+
+        // Edition commands (SetEditionCommand is auto-generated from the [RelayCommand] attribute)
 
         #endregion
 
@@ -766,6 +784,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
+                    // If this is the unified operator, use it as-is with its children
+                    if (operatorItem == UnifiedOperator)
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                    }
+
                     SyncOperatorToParent(operatorItem, "Must");
                 }
                 else
@@ -823,6 +847,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
+                    // If this is the unified operator, use it as-is with its children
+                    if (operatorItem == UnifiedOperator)
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                    }
+
                     SyncOperatorToParent(operatorItem, "Should");
                 }
                 else
@@ -880,6 +910,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
                 {
+                    // If this is the unified operator, use it as-is with its children
+                    if (operatorItem == UnifiedOperator)
+                    {
+                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                    }
+
                     SyncOperatorToParent(operatorItem, "MustNot");
                 }
                 else
@@ -1198,6 +1234,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
+        /// Toggles the unified operator between OR and AND modes
+        /// </summary>
+        private void ToggleOperator()
+        {
+            if (UnifiedOperator.OperatorType == "OR")
+            {
+                UnifiedOperator.OperatorType = "AND";
+                UnifiedOperator.DisplayName = "AND";
+                DebugLogger.Log("VisualBuilderTab", "Toggled operator to AND mode");
+            }
+            else
+            {
+                UnifiedOperator.OperatorType = "OR";
+                UnifiedOperator.DisplayName = "OR";
+                DebugLogger.Log("VisualBuilderTab", "Toggled operator to OR mode");
+            }
+
+            // Notify property changes for UI binding
+            OnPropertyChanged(nameof(UnifiedOperator));
+        }
+
+        /// <summary>
+        /// Clears all items from the unified tray
+        /// </summary>
+        private void ClearTray()
+        {
+            UnifiedOperator.Children.Clear();
+            DebugLogger.Log("VisualBuilderTab", "Cleared unified tray");
+        }
+
+        /// <summary>
         /// Removes an item from the parent's collections and ItemConfigs
         /// </summary>
         private void RemoveItemFromParent(FilterItem item, ObservableCollection<string> parentCollection)
@@ -1372,24 +1439,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
                 }
 
-                // Load favorites (from FavoritesService)
-                var favoritesService = ServiceHelper.GetService<FavoritesService>();
-                var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
-
-                foreach (var favoriteName in favoriteNames)
-                {
-                    var item = new FilterItem
-                    {
-                        Name = favoriteName,
-                        Type = "Joker",
-                        Category = "Favorite",
-                        IsFavorite = true,
-                        DisplayName = BalatroData.GetDisplayNameFromSprite(favoriteName),
-                        ItemImage = spriteService.GetJokerImage(favoriteName),
-                    };
-                    AllJokers.Add(item);
-                }
-
                 // Load Soul Jokers SECOND (after wildcards)
                 var legendaryJokers = new[] { "Triboulet", "Yorick", "Chicot", "Perkeo", "Canio" };
                 foreach (var legendaryName in legendaryJokers)
@@ -1414,7 +1463,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     foreach (var jokerName in BalatroData.Jokers.Keys)
                     {
-                        // Skip if already added from favorites or legendaries
+                        // Skip if already added from legendaries
                         if (AllJokers.Any(j => j.Name == jokerName))
                             continue;
 
@@ -1433,10 +1482,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = jokerName,
                             Type = "Joker",
-                            Category = "Jokers", // Fixed for CategoryGroupedLayoutBehavior
+                            Category = rarity,  // Use actual rarity so shelf filtering works (Common/Uncommon/Rare)
                             DisplayName = BalatroData.GetDisplayNameFromSprite(jokerName),
                             ItemImage = spriteService.GetJokerImage(jokerName),
                         };
+                        DebugLogger.Log("VisualBuilderTab", $"Created regular joker: {jokerName} - Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}");
                         AllJokers.Add(item);
                     }
                 }
@@ -1669,6 +1719,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 catch (Exception ex)
                 {
                     DebugLogger.LogError("VisualBuilderTab", $"Error loading standard cards: {ex.Message}");
+                }
+
+                // Mark favorite items AFTER all items are loaded with their proper categories
+                // This ensures favorited items appear in BOTH Favorites AND their original category
+                var favoritesService = ServiceHelper.GetService<FavoritesService>();
+                var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
+
+                foreach (var favoriteName in favoriteNames)
+                {
+                    // Find the joker in AllJokers and mark it as favorite
+                    var joker = AllJokers.FirstOrDefault(j => j.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase));
+                    if (joker != null)
+                    {
+                        joker.IsFavorite = true;
+                        DebugLogger.Log("VisualBuilderTab", $"Marked {favoriteName} as favorite (Category={joker.Category})");
+                    }
                 }
 
                 DebugLogger.Log(

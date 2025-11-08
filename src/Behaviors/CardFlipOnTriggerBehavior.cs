@@ -289,7 +289,7 @@ namespace BalatroSeedOracle.Behaviors
 
         /// <summary>
         /// Helper method to run an Avalonia animation on a transform with cancellation support.
-        /// In Avalonia 11.x, we need to use the RunAsync extension method on the Animatable object (transform).
+        /// In Avalonia 11.x, we use the animation.RunAsync method with proper casting.
         /// </summary>
         private async Task RunAnimationAsync(
             ScaleTransform transform,
@@ -297,29 +297,17 @@ namespace BalatroSeedOracle.Behaviors
             CancellationToken cancellationToken
         )
         {
-            // Create a TaskCompletionSource to handle cancellation
-            var tcs = new TaskCompletionSource<bool>();
-
-            // Register cancellation callback
-            using var cancellationRegistration = cancellationToken.Register(() =>
+            try
             {
-                tcs.TrySetCanceled();
-            });
-
-            // Run the animation - in Avalonia 11.x, RunAsync returns a Task
-            var animationTask = animation.RunAsync(transform, CancellationToken.None);
-
-            // Wait for either the animation to complete or cancellation
-            var completedTask = await Task.WhenAny(animationTask, tcs.Task);
-
-            if (completedTask == tcs.Task)
-            {
-                // Cancellation was requested
-                cancellationToken.ThrowIfCancellationRequested();
+                // Run the animation directly - cast to Avalonia.Animation.Animatable if needed
+                var animationTask = animation.RunAsync((Avalonia.Animation.Animatable)transform, cancellationToken);
+                await animationTask;
             }
-
-            // Animation completed successfully
-            await animationTask;
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("CardFlip", $"Animation execution failed: {ex.Message}");
+                throw;
+            }
         }
 
         protected override void OnDetaching()

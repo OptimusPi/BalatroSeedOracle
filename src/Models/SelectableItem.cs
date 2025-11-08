@@ -70,12 +70,21 @@ namespace BalatroSeedOracle.Models
 
         public IImage? ItemImage
         {
-            get => _itemImage;
+            get
+            {
+                var result = _itemImage;
+                if (result == null)
+                {
+                    Helpers.DebugLogger.Log("ItemImage", $"GET for '{_name}' (Type={_type}): RETURNING NULL!");
+                }
+                return result;
+            }
             set
             {
                 if (_itemImage != value)
                 {
                     _itemImage = value;
+                    Helpers.DebugLogger.Log("ItemImage", $"SET for '{_name}' (Type={_type}): {(value != null ? "NOT NULL" : "NULL")}");
                     OnPropertyChanged();
                 }
             }

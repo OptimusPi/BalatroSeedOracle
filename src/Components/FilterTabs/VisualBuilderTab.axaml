@@ -39,8 +39,8 @@
     </UserControl.Styles>
 
     <Grid VerticalAlignment="Stretch">
-        <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
-        <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
+                <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
+                <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="115"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
@@ -548,123 +548,168 @@
                     <RowDefinition Height="1*"/>  <!-- CAN'T - Always expanded, equal height -->
                 </Grid.RowDefinitions>
 
-                <!-- OR/AND OPERATOR TRAYS at top of right column -->
+                <!-- UNIFIED OPERATOR TRAY at top of right column -->
                 <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="6"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- OR Operator Box with mini thumbnails -->
-                    <Border Grid.Column="0"
-                            Name="TrayOrOperator"
+                    <Border Name="UnifiedTray"
                             Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource Green}"
+                            BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
                             BorderThickness="2"
-                            CornerRadius="6"
-                            Padding="6"
-                            MinHeight="75"
+                            CornerRadius="8"
+                            Padding="0"
+                            MinHeight="90"
                             Cursor="Hand"
-                            PointerPressed="OnTrayOrPointerPressed"
+                            PointerPressed="OnUnifiedTrayPointerPressed"
                             DragDrop.AllowDrop="True">
-                        <StackPanel Spacing="2">
-                            <!-- OR Header -->
-                            <Border Background="{StaticResource Green}"
-                                    CornerRadius="3"
-                                    Padding="3,1">
-                                <TextBlock Text="OR"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"/>
+                        <Grid RowDefinitions="Auto,*">
+                            <!-- Header with toggle button and clear button -->
+                            <Border Grid.Row="0"
+                                    Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                                    CornerRadius="6,6,0,0"
+                                    Padding="6,4">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Toggle Button -->
+                                    <Button Grid.Column="0"
+                                            Command="{Binding ToggleOperatorCommand}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="4,2"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Toggle between OR and AND">
+                                        <TextBlock Text="⇄"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Button>
+
+                                    <!-- Operator Type Label -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding UnifiedOperator.OperatorType}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+
+                                    <!-- Clear Button -->
+                                    <Button Grid.Column="2"
+                                            Command="{Binding ClearTrayCommand}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="4,2"
+                                            Cursor="Hand"
+                                            ToolTip.Tip="Clear all cards">
+                                        <TextBlock Text="×"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource White}"/>
+                                    </Button>
+                                </Grid>
                             </Border>
 
-                            <!-- Mini thumbnails -->
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                          VerticalScrollBarVisibility="Disabled"
-                                          MaxHeight="30">
-                                <ItemsControl ItemsSource="{Binding TrayOrOperator.Children}">
+                            <!-- Card display area -->
+                            <Grid Grid.Row="1" Margin="8">
+                                <!-- Show "Edit Clause" overlay when empty -->
+                                <Border IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:EqualsZeroConverter.Instance}}"
+                                        Background="{StaticResource Purple}"
+                                        BorderBrush="#FFFFFF"
+                                        BorderThickness="2"
+                                        CornerRadius="6"
+                                        Padding="8"
+                                        Opacity="0.8">
+                                    <Border.Styles>
+                                        <Style Selector="Border">
+                                            <Style.Animations>
+                                                <Animation Duration="0:0:1.5" IterationCount="Infinite">
+                                                    <KeyFrame Cue="0%">
+                                                        <Setter Property="Opacity" Value="0.6"/>
+                                                    </KeyFrame>
+                                                    <KeyFrame Cue="50%">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </KeyFrame>
+                                                    <KeyFrame Cue="100%">
+                                                        <Setter Property="Opacity" Value="0.6"/>
+                                                    </KeyFrame>
+                                                </Animation>
+                                            </Style.Animations>
+                                        </Style>
+                                    </Border.Styles>
+                                    <TextBlock Text="EDIT CLAUSE"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource White}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                </Border>
+
+                                <!-- Less than 5 cards: side-by-side layout -->
+                                <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}"
+                                              IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Width="32" Height="44" Margin="2">
+                                            <Grid Width="54" Height="74" Margin="3">
+                                                <!-- Card image -->
                                                 <Image Source="{Binding ItemImage}"
+                                                       Width="48"
+                                                       Height="64"
                                                        Stretch="Uniform"/>
                                                 <Image Source="{Binding SoulFaceImage}"
+                                                       Width="48"
+                                                       Height="64"
                                                        Stretch="Uniform"
                                                        IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                            </ScrollViewer>
-                        </StackPanel>
+
+                                <!-- 5 or more cards: fanned layout using Canvas -->
+                                <Canvas IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
+                                        Height="70"
+                                        ClipToBounds="False">
+                                    <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- TODO: Need to compute Canvas.Left, Canvas.Top, and RenderTransform in code-behind -->
+                                                <Grid Width="48" Height="64">
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Width="48"
+                                                           Height="64"
+                                                           Stretch="Uniform"/>
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Width="48"
+                                                           Height="64"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
                     </Border>
 
-                    <!-- AND Operator Box with mini thumbnails -->
-                    <Border Grid.Column="2"
-                            Name="TrayAndOperator"
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource Blue}"
-                            BorderThickness="2"
-                            CornerRadius="6"
-                            Padding="6"
-                            MinHeight="75"
-                            Cursor="Hand"
-                            PointerPressed="OnTrayAndPointerPressed"
-                            DragDrop.AllowDrop="True">
-                        <StackPanel Spacing="2">
-                            <!-- AND Header -->
-                            <Border Background="{StaticResource Blue}"
-                                    CornerRadius="3"
-                                    Padding="3,1">
-                                <TextBlock Text="AND"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center"/>
-                            </Border>
-
-                            <!-- Mini thumbnails -->
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                          VerticalScrollBarVisibility="Disabled"
-                                          MaxHeight="30">
-                                <ItemsControl ItemsSource="{Binding TrayAndOperator.Children}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Width="32" Height="44" Margin="2">
-                                                <Image Source="{Binding ItemImage}"
-                                                       Stretch="Uniform"/>
-                                                <Image Source="{Binding SoulFaceImage}"
-                                                       Stretch="Uniform"
-                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- OR Tray Drop Overlay -->
-                    <Border Name="TrayOrDropOverlay"
-                            Grid.Column="0"
-                            Background="{StaticResource Green}"
+                    <!-- Unified Tray Drop Overlay -->
+                    <Border Name="UnifiedTrayDropOverlay"
+                            Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
                             BorderBrush="#FFFFFF"
                             BorderThickness="3"
-                            CornerRadius="6"
+                            CornerRadius="8"
                             IsVisible="False"
                             IsHitTestVisible="False"
                             ZIndex="200">
@@ -674,81 +719,20 @@
                                     <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                         <KeyFrame Cue="0%">
                                             <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Green}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="50%">
                                             <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="100%">
                                             <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Green}"/>
                                         </KeyFrame>
                                     </Animation>
                                 </Style.Animations>
                             </Style>
                         </Border.Styles>
-                        <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource GreenColor}"
-                                              OffsetX="0"
-                                              OffsetY="0"
-                                              BlurRadius="30"
-                                              Opacity="1.0"/>
-                        </Border.Effect>
-                        <TextBlock Text="DROP IN OR"
+                        <TextBlock Text="{Binding UnifiedOperator.OperatorType, StringFormat='ADD TO {0} CLAUSE'}"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="22"
-                                   FontWeight="ExtraBold"
-                                   Foreground="{StaticResource White}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   TextAlignment="Center">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                    </Border>
-
-                    <!-- AND Tray Drop Overlay -->
-                    <Border Name="TrayAndDropOverlay"
-                            Grid.Column="2"
-                            Background="{StaticResource Blue}"
-                            BorderBrush="#FFFFFF"
-                            BorderThickness="3"
-                            CornerRadius="6"
-                            IsVisible="False"
-                            IsHitTestVisible="False"
-                            ZIndex="200">
-                        <Border.Styles>
-                            <Style Selector="Border[IsVisible=True]">
-                                <Style.Animations>
-                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
-                                        <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
-                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
-                                        </KeyFrame>
-                                    </Animation>
-                                </Style.Animations>
-                            </Style>
-                        </Border.Styles>
-                        <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource BlueColor}"
-                                              OffsetX="0"
-                                              OffsetY="0"
-                                              BlurRadius="30"
-                                              Opacity="1.0"/>
-                        </Border.Effect>
-                        <TextBlock Text="DROP IN AND"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="22"
+                                   FontSize="18"
                                    FontWeight="ExtraBold"
                                    Foreground="{StaticResource White}"
                                    HorizontalAlignment="Center"
@@ -919,10 +903,7 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <!-- DEBUG: Show item count -->
                         <StackPanel Grid.Row="1">
-                            <TextBlock Text="{Binding SelectedMust.Count, StringFormat='Items: {0}'}"
-                                      Foreground="Red" FontSize="12" Margin="6,2"/>
                             <ItemsControl ItemsSource="{Binding SelectedMust}"
                                           Margin="6">
                             <ItemsControl.ItemsPanel>
@@ -1089,10 +1070,7 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <!-- DEBUG: Show item count -->
                         <StackPanel Grid.Row="1">
-                            <TextBlock Text="{Binding SelectedShould.Count, StringFormat='Items: {0}'}"
-                                      Foreground="Yellow" FontSize="12" Margin="6,2"/>
                             <ItemsControl ItemsSource="{Binding SelectedShould}"
                                           Margin="6">
                             <ItemsControl.ItemsPanel>

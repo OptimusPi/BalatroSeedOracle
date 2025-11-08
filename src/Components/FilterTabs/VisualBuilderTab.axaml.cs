@@ -115,23 +115,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void SetupOperatorTray()
         {
-            var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
-            var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
+            var unifiedTray = this.FindControl<Border>("UnifiedTray");
 
-            if (trayOrBorder != null)
+            if (unifiedTray != null)
             {
-                trayOrBorder.AddHandler(DragDrop.DragOverEvent, OnTrayOrDragOver);
-                trayOrBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayOrDragLeave);
-                trayOrBorder.AddHandler(DragDrop.DropEvent, OnTrayOrDrop);
-                DebugLogger.Log("VisualBuilderTab", "OR Tray drag/drop handlers attached");
-            }
-
-            if (trayAndBorder != null)
-            {
-                trayAndBorder.AddHandler(DragDrop.DragOverEvent, OnTrayAndDragOver);
-                trayAndBorder.AddHandler(DragDrop.DragLeaveEvent, OnTrayAndDragLeave);
-                trayAndBorder.AddHandler(DragDrop.DropEvent, OnTrayAndDrop);
-                DebugLogger.Log("VisualBuilderTab", "AND Tray drag/drop handlers attached");
+                unifiedTray.AddHandler(DragDrop.DragOverEvent, OnUnifiedTrayDragOver);
+                unifiedTray.AddHandler(DragDrop.DragLeaveEvent, OnUnifiedTrayDragLeave);
+                unifiedTray.AddHandler(DragDrop.DropEvent, OnUnifiedTrayDrop);
+                DebugLogger.Log("VisualBuilderTab", "Unified Tray drag/drop handlers attached");
             }
         }
 
@@ -397,42 +388,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
                 var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
-                var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
-                var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
+                var unifiedTray = this.FindControl<Border>("UnifiedTray");
 
                 if (_topLevel == null)
                     return;
                 var cursorPos = e.GetPosition(_topLevel);
 
-                // Check if over operator tray (only allow non-operators to be dropped)
+                // Check if over unified operator tray (only allow non-operators to be dropped)
                 bool isOverTray = false;
                 if (_draggedItem != null && _draggedItem is not FilterOperatorItem)
                 {
-                    if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
+                    if (IsPointOverControl(cursorPos, unifiedTray, _topLevel))
                     {
                         isOverTray = true;
-                        // Highlight OR tray
-                        if (trayOrBorder != null)
-                            trayOrBorder.BorderThickness = new Avalonia.Thickness(3);
-                        if (trayAndBorder != null)
-                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
-                    }
-                    else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
-                    {
-                        isOverTray = true;
-                        // Highlight AND tray
-                        if (trayAndBorder != null)
-                            trayAndBorder.BorderThickness = new Avalonia.Thickness(3);
-                        if (trayOrBorder != null)
-                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
+                        // Highlight unified tray
+                        if (unifiedTray != null)
+                            unifiedTray.BorderThickness = new Avalonia.Thickness(3);
                     }
                     else
                     {
-                        // Reset tray borders
-                        if (trayOrBorder != null)
-                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
-                        if (trayAndBorder != null)
-                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
+                        // Reset tray border
+                        if (unifiedTray != null)
+                            unifiedTray.BorderThickness = new Avalonia.Thickness(2);
                     }
                 }
 
@@ -601,8 +578,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
                 var returnOverlay = this.FindControl<Border>("ReturnOverlay");
                 var dropZoneContainer = this.FindControl<Grid>("DropZoneContainer");
-                var trayOrBorder = this.FindControl<Border>("TrayOrOperator");
-                var trayAndBorder = this.FindControl<Border>("TrayAndOperator");
+                var unifiedTray = this.FindControl<Border>("UnifiedTray");
 
                 Border? targetZone = null;
                 string? zoneName = null;
@@ -635,13 +611,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return; // Early exit - handled
                 }
 
-                // Check if dropped on operator tray (only for non-operators)
+                // Check if dropped on unified operator tray (only for non-operators)
                 if (_draggedItem is not FilterOperatorItem)
                 {
-                    if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
+                    if (IsPointOverControl(cursorPos, unifiedTray, _topLevel))
                     {
-                        // Drop into OR tray
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into OR tray");
+                        // Drop into unified tray
+                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into unified tray");
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -652,33 +628,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             ItemImage = _draggedItem.ItemImage,
                         };
 
-                        vm.TrayOrOperator.Children.Add(itemCopy);
+                        vm.UnifiedOperator.Children.Add(itemCopy);
 
                         // Reset tray border
-                        if (trayOrBorder != null)
-                            trayOrBorder.BorderThickness = new Avalonia.Thickness(2);
-
-                        return; // Early exit - handled
-                    }
-                    else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
-                    {
-                        // Drop into AND tray
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into AND tray");
-
-                        var itemCopy = new Models.FilterItem
-                        {
-                            Name = _draggedItem.Name,
-                            Type = _draggedItem.Type,
-                            Category = _draggedItem.Category,
-                            DisplayName = _draggedItem.DisplayName,
-                            ItemImage = _draggedItem.ItemImage,
-                        };
-
-                        vm.TrayAndOperator.Children.Add(itemCopy);
-
-                        // Reset tray border
-                        if (trayAndBorder != null)
-                            trayAndBorder.BorderThickness = new Avalonia.Thickness(2);
+                        if (unifiedTray != null)
+                            unifiedTray.BorderThickness = new Avalonia.Thickness(2);
 
                         return; // Early exit - handled
                     }
@@ -824,15 +778,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                         if (targetOperator != null && _draggedItem is not Models.FilterOperatorItem)
                         {
-                            // IMPORTANT: Only allow drops into TOP SHELF tray operators (TrayOrOperator, TrayAndOperator)
+                            // IMPORTANT: Only allow drops into TOP SHELF unified operator
                             // Operators already in drop zones are READ-ONLY to prevent accidental "disappearing" items
-                            bool isTrayOperator = (targetOperator == vm.TrayOrOperator || targetOperator == vm.TrayAndOperator);
+                            bool isUnifiedOperator = (targetOperator == vm.UnifiedOperator);
 
-                            if (isTrayOperator)
+                            if (isUnifiedOperator)
                             {
                                 DebugLogger.Log(
                                     "VisualBuilderTab",
-                                    $"📦 Adding {_draggedItem.Name} to {targetOperator.OperatorType} tray operator"
+                                    $"📦 Adding {_draggedItem.Name} to unified {targetOperator.OperatorType} operator"
                                 );
                                 // Add to operator's children (top shelf staging area only)
                                 targetOperator.Children.Add(_draggedItem);
@@ -859,12 +813,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
                                 );
 
-                                // Check if this is one of the tray operators
-                                bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
+                                // Check if this is the unified operator
+                                bool isUnifiedOperator = (operatorItem == vm.UnifiedOperator);
 
-                                // If it's a tray operator, create a COPY with its children
+                                // If it's the unified operator, create a COPY with its children
                                 Models.FilterItem itemToAdd = _draggedItem;
-                                if (isTrayOperator && operatorItem.Children.Count > 0)
+                                if (isUnifiedOperator && operatorItem.Children.Count > 0)
                                 {
                                     // Create a copy of the operator with deep copied children
                                     var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
@@ -926,13 +880,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         break;
                                 }
 
-                                // Clear the tray operator's children after copying them
-                                if (isTrayOperator)
+                                // Clear the unified operator's children after copying them
+                                if (isUnifiedOperator)
                                 {
                                     operatorItem.Children.Clear();
                                     DebugLogger.Log(
                                         "VisualBuilderTab",
-                                        $"Cleared tray operator {operatorItem.OperatorType} children after copying"
+                                        $"Cleared unified operator {operatorItem.OperatorType} children after copying"
                                     );
                                 }
                             }
@@ -1254,9 +1208,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     vm.SelectedShould.Clear();
                     vm.SelectedMustNot.Clear();
 
-                    // Clear operator tray
-                    vm.TrayOrOperator.Children.Clear();
-                    vm.TrayAndOperator.Children.Clear();
+                    // Clear unified operator tray
+                    vm.UnifiedOperator.Children.Clear();
 
                     // Reset search filter
                     vm.SearchFilter = "";
@@ -1803,26 +1756,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 mustNotOverlay.IsVisible = false;
         }
 
-        #region Operator Tray Handlers
+        #region Unified Operator Tray Handlers
 
         /// <summary>
-        /// Handle clicking on OR operator in tray - starts dragging the populated operator
+        /// Handle clicking on unified operator in tray - starts dragging the populated operator
         /// </summary>
-        private void OnTrayOrPointerPressed(object? sender, PointerPressedEventArgs e)
+        private void OnUnifiedTrayPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (_isDragging || _isAnimating)
                 return;
 
             var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm == null || vm.TrayOrOperator.Children.Count == 0)
+            if (vm == null || vm.UnifiedOperator.Children.Count == 0)
                 return;
 
             var pointerPoint = e.GetCurrentPoint(sender as Control);
             if (!pointerPoint.Properties.IsLeftButtonPressed)
                 return;
 
-            // Start dragging the OR operator with its children
-            _draggedItem = vm.TrayOrOperator;
+            // Start dragging the unified operator with its children
+            _draggedItem = vm.UnifiedOperator;
             _isDragging = true;
             _isDraggingTray = true; // Disable drop acceptance on trays while dragging
             _originalDragSource = sender as Control;
@@ -1839,7 +1792,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children");
+            DebugLogger.Log("VisualBuilderTab", $"Started dragging unified operator ({vm.UnifiedOperator.OperatorType}) with {vm.UnifiedOperator.Children.Count} children");
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1848,51 +1801,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle clicking on AND operator in tray - starts dragging the populated operator
+        /// Handle drag over unified tray - allow dropping items INTO the tray
         /// </summary>
-        private void OnTrayAndPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            if (_isDragging || _isAnimating)
-                return;
-
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm == null || vm.TrayAndOperator.Children.Count == 0)
-                return;
-
-            var pointerPoint = e.GetCurrentPoint(sender as Control);
-            if (!pointerPoint.Properties.IsLeftButtonPressed)
-                return;
-
-            // Start dragging the AND operator with its children
-            _draggedItem = vm.TrayAndOperator;
-            _isDragging = true;
-            _isDraggingTray = true; // Disable drop acceptance on trays while dragging
-            _originalDragSource = sender as Control;
-            _sourceDropZone = null;
-
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null && _originalDragSource != null)
-            {
-                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
-                _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
-            }
-            else
-            {
-                _dragStartPosition = e.GetPosition(this);
-            }
-
-            DebugLogger.Log("VisualBuilderTab", $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children");
-
-            CreateDragAdorner(_draggedItem, _dragStartPosition);
-            ShowDropZoneOverlays();
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Handle drag over OR tray - allow dropping items INTO the tray
-        /// </summary>
-        private void OnTrayOrDragOver(object? sender, DragEventArgs e)
+        private void OnUnifiedTrayDragOver(object? sender, DragEventArgs e)
         {
             // Keep drop zone overlays visible - hiding them creates erratic flickering
 
@@ -1934,9 +1845,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle drag leave from OR tray - reset visual state
+        /// Handle drag leave from unified tray - reset visual state
         /// </summary>
-        private void OnTrayOrDragLeave(object? sender, DragEventArgs e)
+        private void OnUnifiedTrayDragLeave(object? sender, DragEventArgs e)
         {
             // Overlays stay visible during drag - no need to restore
 
@@ -1949,9 +1860,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         /// <summary>
-        /// Handle dropping an item INTO the OR tray
+        /// Handle dropping an item INTO the unified tray
         /// </summary>
-        private void OnTrayOrDrop(object? sender, DragEventArgs e)
+        private void OnUnifiedTrayDrop(object? sender, DragEventArgs e)
         {
             // Reset visual feedback
             if (sender is Border border)
@@ -1966,7 +1877,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Only allow regular FilterItems (not operators)
             if (_draggedItem is not FilterOperatorItem)
             {
-                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to OR tray");
+                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to unified tray");
 
                 // Add a COPY of the item to the tray (so users can add same item multiple times)
                 var itemCopy = new Models.FilterItem
@@ -1978,101 +1889,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     ItemImage = _draggedItem.ItemImage,
                 };
 
-                vm.TrayOrOperator.Children.Add(itemCopy);
-                e.Handled = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle drag over AND tray - allow dropping items INTO the tray
-        /// </summary>
-        private void OnTrayAndDragOver(object? sender, DragEventArgs e)
-        {
-            // Keep drop zone overlays visible - hiding them creates erratic flickering
-
-            // DISABLE drop acceptance if we're currently dragging a tray (prevents confusing "aim while editing" UX)
-            if (_isDraggingTray)
-            {
-                e.DragEffects = DragDropEffects.None;
-                e.Handled = true;
-                return;
-            }
-
-            // Allow regular items OR operators being moved back from drop zones
-            if (_draggedItem != null)
-            {
-                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
-                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
-
-                if (canDrop)
-                {
-                    e.DragEffects = DragDropEffects.Copy;
-
-                    // ONLY highlight if dragging FROM a drop zone (editing an existing operator)
-                    // Do NOT highlight when dragging from shelf (building new operator)
-                    if (sender is Border border && !string.IsNullOrEmpty(_sourceDropZone))
-                    {
-                        border.BorderThickness = new Avalonia.Thickness(3);
-                    }
-                }
-                else
-                {
-                    e.DragEffects = DragDropEffects.None;
-                }
-            }
-            else
-            {
-                e.DragEffects = DragDropEffects.None;
-            }
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Handle drag leave from AND tray - reset visual state
-        /// </summary>
-        private void OnTrayAndDragLeave(object? sender, DragEventArgs e)
-        {
-            // Overlays stay visible during drag - no need to restore
-
-            // Reset border thickness
-            if (sender is Border border)
-            {
-                border.BorderThickness = new Avalonia.Thickness(2);
-            }
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Handle dropping an item INTO the AND tray
-        /// </summary>
-        private void OnTrayAndDrop(object? sender, DragEventArgs e)
-        {
-            // Reset visual feedback
-            if (sender is Border border)
-            {
-                border.BorderThickness = new Avalonia.Thickness(2);
-            }
-
-            var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-            if (vm == null || _draggedItem == null)
-                return;
-
-            // Only allow regular FilterItems (not operators)
-            if (_draggedItem is not FilterOperatorItem)
-            {
-                DebugLogger.Log("VisualBuilderTab", $"Adding {_draggedItem.Name} to AND tray");
-
-                // Add a COPY of the item to the tray (so users can add same item multiple times)
-                var itemCopy = new Models.FilterItem
-                {
-                    Name = _draggedItem.Name,
-                    Type = _draggedItem.Type,
-                    Category = _draggedItem.Category,
-                    DisplayName = _draggedItem.DisplayName,
-                    ItemImage = _draggedItem.ItemImage,
-                };
-
-                vm.TrayAndOperator.Children.Add(itemCopy);
+                vm.UnifiedOperator.Children.Add(itemCopy);
                 e.Handled = true;
             }
         }

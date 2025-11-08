@@ -61,6 +61,13 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        // Deck/Stake indices for DeckAndStakeSelector component
+        [ObservableProperty]
+        private int _selectedDeckIndex = 0;
+
+        [ObservableProperty]
+        private int _selectedStakeIndex = 0;
+
         // Item counts for preview
         public int MustHaveCount => SelectedFilter?.MustCount ?? 0;
         public int ShouldHaveCount => SelectedFilter?.ShouldCount ?? 0;
