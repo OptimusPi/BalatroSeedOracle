@@ -118,6 +118,8 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnDeleteConfirmationRequested(object? sender, string filterName)
         {
+            // Get the parent window to center the dialog in the app window
+            var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
             var result = await MessageBoxManager
                 .GetMessageBoxStandard(
                     "Delete Filter?",
@@ -125,7 +127,7 @@ namespace BalatroSeedOracle.Views.Modals
                     ButtonEnum.YesNo,
                     Icon.Warning
                 )
-                .ShowAsync();
+                .ShowWindowDialogAsync(parentWindow);
 
             if (result == ButtonResult.Yes && ViewModel != null)
             {

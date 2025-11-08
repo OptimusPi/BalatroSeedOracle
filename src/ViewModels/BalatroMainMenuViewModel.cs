@@ -85,6 +85,19 @@ namespace BalatroSeedOracle.ViewModels
         [NotifyCanExecuteChangedFor(nameof(ToolCommand))]
         private bool _isModalVisible = false;
 
+        partial void OnIsModalVisibleChanged(bool value)
+        {
+            // Hide widgets when a modal is open, restore previous state when closed
+            if (value)
+            {
+                AreWidgetsHidden = true;
+            }
+            else
+            {
+                AreWidgetsHidden = false;
+            }
+        }
+
         [ObservableProperty]
         private int _widgetCounter = 0;
 
@@ -93,6 +106,16 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private bool _isVibeOutMode = false;
+
+        // New: Hide/show all widgets
+        [ObservableProperty]
+        private bool _areWidgetsHidden = false;
+
+        [RelayCommand]
+        private void ToggleWidgetsVisibility()
+        {
+            AreWidgetsHidden = !AreWidgetsHidden;
+        }
 
         private double _previousVolume = 70;
 

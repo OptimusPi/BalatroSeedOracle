@@ -7,11 +7,16 @@
              xmlns:modals="using:BalatroSeedOracle.Views.Modals"
              xmlns:views="using:BalatroSeedOracle.Views"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
              Focusable="True"
              x:CompileBindings="True">
+
+    <UserControl.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    </UserControl.Resources>
 
     <UserControl.Styles>
         <!-- Modal panel style - Clean Balatro style (NO pixel borders!) -->
@@ -130,7 +135,7 @@
         </Popup>
         
         <!-- Desktop widgets layer - widgets use their own ZIndex bindings (hidden in Vibe Out Mode) -->
-        <Grid x:Name="DesktopCanvas" ClipToBounds="False" IsVisible="{Binding !IsVibeOutMode}">
+    <Grid x:Name="DesktopCanvas" ClipToBounds="False" IsVisible="{Binding AreWidgetsHidden, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}">
             <!-- Search Widgets will be added dynamically here -->
 
             <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
@@ -307,8 +312,8 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Command="{Binding ToggleVisualizerWidgetCommand}"
-                                    ToolTip.Tip="Visual Settings">
+                                    Command="{Binding ToggleWidgetsVisibilityCommand}"
+                                    ToolTip.Tip="Show or hide widgets">
                                 <TextBlock Text="🎨"
                                            FontFamily="Segoe UI Symbol"
                                            HorizontalAlignment="Center"
