@@ -1238,21 +1238,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ToggleOperator()
         {
-            if (UnifiedOperator.OperatorType == "OR")
-            {
-                UnifiedOperator.OperatorType = "AND";
-                UnifiedOperator.DisplayName = "AND";
-                DebugLogger.Log("VisualBuilderTab", "Toggled operator to AND mode");
-            }
-            else
-            {
-                UnifiedOperator.OperatorType = "OR";
-                UnifiedOperator.DisplayName = "OR";
-                DebugLogger.Log("VisualBuilderTab", "Toggled operator to OR mode");
-            }
-
-            // Notify property changes for UI binding
-            OnPropertyChanged(nameof(UnifiedOperator));
+            // Simply toggle the OperatorType - property change notification handles the rest
+            UnifiedOperator.OperatorType = (UnifiedOperator.OperatorType == "OR") ? "AND" : "OR";
+            DebugLogger.Log("VisualBuilderTab", $"Toggled operator to {UnifiedOperator.OperatorType} mode");
         }
 
         /// <summary>
@@ -1374,14 +1362,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsLoading = false;
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // Even on error, clear loading state
+                // CRITICAL-002 FIX: Handle exceptions gracefully instead of crashing app
+                DebugLogger.LogError("VisualBuilderTab", $"Failed to load game data: {ex.Message}\n{ex.StackTrace}");
+
+                // Even on error, clear loading state and show empty state
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
+                    // Set empty collections so UI doesn't crash
+                    GroupedItems.Clear();
                 });
-                throw;
+
+                // Don't rethrow - gracefully degrade to empty state
+                // User can still use other features of the modal
             }
         }
 
@@ -2307,17 +2302,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             SelectedEdition = edition;
+            string? editionValue = edition == "None" ? null : edition.ToLower();
 
-            // Apply to ALL items in the shelf
+            // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
+                    // CRITICAL FIX: Update item.Edition directly to trigger EditionImage binding update
+                    item.Edition = editionValue;
+
+                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
                     if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
-                        config.Edition = edition == "None" ? null : edition.ToLower();
-                        // CRITICAL: Also update item.Edition to trigger property change notification for EditionImage binding
-                        item.Edition = config.Edition;
+                        config.Edition = editionValue;
                     }
                 }
             }
@@ -2329,9 +2327,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                     {
-                        config.Edition = edition == "None" ? null : edition.ToLower();
+                        config.Edition = editionValue;
                     }
                 }
+
+                // Also update visual items in drop zones
+                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                {
+                    item.Edition = editionValue;
+                }
+
                 TriggerAutoSave();
             }
 
@@ -2418,39 +2423,54 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             SelectedSeal = seal;
+            string? sealValue = seal == "None" ? null : seal;
 
-            if (_parentViewModel == null) return;
-
-            // Apply to ALL items in the shelf
+            // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    // Only apply seal to StandardCards
+                    if (item.Type == "StandardCard")
                     {
-                        // Only apply seal to StandardCards
-                        if (config.ItemType == "StandardCard")
+                        // CRITICAL FIX: Update item.Seal directly to trigger binding update
+                        item.Seal = sealValue;
+
+                        // Also update ItemConfig if it exists (for when item gets dropped to zones)
+                        if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                         {
-                            config.Seal = seal == "None" ? null : seal;
+                            config.Seal = sealValue;
                         }
                     }
                 }
             }
 
             // Apply to all existing items in drop zones
-            foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+            if (_parentViewModel != null)
             {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
                 {
-                    // Only apply seal to StandardCards
-                    if (config.ItemType == "StandardCard")
+                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                     {
-                        config.Seal = seal == "None" ? null : seal;
+                        // Only apply seal to StandardCards
+                        if (config.ItemType == "StandardCard")
+                        {
+                            config.Seal = sealValue;
+                        }
                     }
                 }
-            }
 
-            TriggerAutoSave();
+                // Also update visual items in drop zones
+                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                {
+                    if (item.Type == "StandardCard")
+                    {
+                        item.Seal = sealValue;
+                    }
+                }
+
+                TriggerAutoSave();
+            }
 
             // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
@@ -2485,8 +2505,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ApplyStickersToAllItems()
         {
-            if (_parentViewModel == null) return;
-
             // Jokers that CANNOT be Eternal (from Balatro game logic)
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -2496,30 +2514,74 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
             };
 
-            // Apply to ALL items in the shelf
+            // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    // CRITICAL FIX: Update item.Stickers directly to trigger image binding update
+                    var stickers = new List<string>();
+
+                    // Perishable and Eternal are mutually exclusive
+                    if (StickerPerishable)
                     {
-                        ApplyStickerLogic(config, item.Name, eternalRestrictedJokers);
-                        // CRITICAL: Also update item.Stickers to trigger property change notifications for sticker image bindings
-                        item.Stickers = config.Stickers;
+                        stickers.Add("perishable");
+                    }
+                    else if (StickerEternal && CanItemBeEternal(item) && !eternalRestrictedJokers.Contains(item.Name))
+                    {
+                        stickers.Add("eternal");
+                    }
+
+                    if (StickerRental)
+                    {
+                        stickers.Add("rental");
+                    }
+
+                    item.Stickers = stickers.Count > 0 ? stickers : null;
+
+                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
+                    if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    {
+                        config.Stickers = item.Stickers;
                     }
                 }
             }
 
             // Apply to all existing items in drop zones
-            foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+            if (_parentViewModel != null)
             {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
                 {
-                    ApplyStickerLogic(config, config.ItemName, eternalRestrictedJokers);
+                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                    {
+                        ApplyStickerLogic(config, config.ItemName, eternalRestrictedJokers);
+                    }
                 }
-            }
 
-            TriggerAutoSave();
+                // Also update visual items in drop zones
+                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                {
+                    var stickers = new List<string>();
+
+                    if (StickerPerishable)
+                    {
+                        stickers.Add("perishable");
+                    }
+                    else if (StickerEternal && CanItemBeEternal(item) && !eternalRestrictedJokers.Contains(item.Name))
+                    {
+                        stickers.Add("eternal");
+                    }
+
+                    if (StickerRental)
+                    {
+                        stickers.Add("rental");
+                    }
+
+                    item.Stickers = stickers.Count > 0 ? stickers : null;
+                }
+
+                TriggerAutoSave();
+            }
         }
 
         /// <summary>

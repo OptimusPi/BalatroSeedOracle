@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -49,19 +50,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 DebugLogger.Log("VisualBuilderTab", $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}, MustNot: {vm.SelectedMustNot.Count}");
 
-                // Subscribe to collection changes for debugging
-                vm.SelectedMust.CollectionChanged += (s, e) =>
-                {
-                    DebugLogger.Log("VisualBuilderTab", $"SelectedMust CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMust.Count}");
-                };
-                vm.SelectedShould.CollectionChanged += (s, e) =>
-                {
-                    DebugLogger.Log("VisualBuilderTab", $"SelectedShould CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedShould.Count}");
-                };
-                vm.SelectedMustNot.CollectionChanged += (s, e) =>
-                {
-                    DebugLogger.Log("VisualBuilderTab", $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}");
-                };
+                // CRITICAL-001 FIX: Use named methods for event handlers so they can be unsubscribed
+                vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
+                vm.SelectedShould.CollectionChanged += OnShouldCollectionChanged;
+                vm.SelectedMustNot.CollectionChanged += OnMustNotCollectionChanged;
             }
 
             // Setup drop zones AFTER the control is attached to visual tree
@@ -583,29 +575,46 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 Border? targetZone = null;
                 string? zoneName = null;
 
-                // Check if dropped on Favorites (CategoryNav)
+                // HIGH-004 FIX: Check if dropped on Favorites (CategoryNav) with null safety
                 var categoryNav = this.FindControl<StackPanel>("CategoryNav");
                 if (_draggedItem is not FilterOperatorItem && IsPointOverControl(cursorPos, categoryNav, _topLevel))
                 {
-                    // Add to favorites
+                    // Validate item has a name before adding to favorites
+                    if (string.IsNullOrEmpty(_draggedItem?.Name))
+                    {
+                        DebugLogger.LogError("VisualBuilderTab", "Cannot add item with null/empty name to favorites");
+                        return;
+                    }
+
                     DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into Favorites");
 
                     var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
                     if (favoritesService != null)
                     {
-                        favoritesService.AddFavoriteItem(_draggedItem.Name);
-
-                        // Update the item's IsFavorite flag
-                        _draggedItem.IsFavorite = true;
-
-                        // Refresh the view to show it in Favorites category
-                        if (vm.SelectedMainCategory == "Favorites")
+                        try
                         {
-                            // TODO: Add public method to refresh view or make RebuildGroupedItems public
-                            // For now, switching categories will show the new favorite
-                        }
+                            favoritesService.AddFavoriteItem(_draggedItem.Name);
 
-                        DebugLogger.Log("VisualBuilderTab", $"✅ {_draggedItem.Name} added to favorites");
+                            // Update the item's IsFavorite flag
+                            _draggedItem.IsFavorite = true;
+
+                            // Refresh the view to show it in Favorites category
+                            if (vm?.SelectedMainCategory == "Favorites")
+                            {
+                                // Force refresh of Favorites category
+                                vm.SetCategory("Favorites");
+                            }
+
+                            DebugLogger.Log("VisualBuilderTab", $"✅ {_draggedItem.Name} added to favorites");
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugLogger.LogError("VisualBuilderTab", $"Failed to add favorite: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("VisualBuilderTab", "FavoritesService not available");
                     }
 
                     return; // Early exit - handled
@@ -1390,25 +1399,23 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Regular item - show card image
                     var imageGrid = new Grid { Width = 48, Height = 64 };
 
-                    // Main card image - ensure item and ItemImage are not null
-                    if (item?.ItemImage != null)
+                    // HIGH-003 FIX: Always add image with fallback for null sources
+                    var imageSource = item?.ItemImage;
+                    if (imageSource == null)
                     {
-                        imageGrid.Children.Add(
-                            new Image
-                            {
-                                Source = item.ItemImage,
-                                Width = 48,
-                                Height = 64,
-                                Stretch = Stretch.Uniform,
-                                Opacity = 0.8, // BALATRO-STYLE 80% OPACITY
-                            }
-                        );
+                        DebugLogger.LogError("VisualBuilderTab", $"Item {item?.Name ?? "unknown"} has no image - using transparent fallback");
                     }
-                    else
-                    {
-                        // Fallback for missing image - show placeholder
-                        DebugLogger.LogError("VisualBuilderTab", $"Item {item?.Name ?? "unknown"} has no image!");
-                    }
+
+                    imageGrid.Children.Add(
+                        new Image
+                        {
+                            Source = imageSource, // Can be null - Avalonia handles gracefully
+                            Width = 48,
+                            Height = 64,
+                            Stretch = Stretch.Uniform,
+                            Opacity = imageSource != null ? 0.8 : 0.3, // Dimmed if missing
+                        }
+                    );
 
                     // Soul face overlay for legendary jokers
                     if (item?.SoulFaceImage != null)
@@ -1612,6 +1619,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            // CRITICAL-001 FIX: Unsubscribe from ViewModel events to prevent memory leaks
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.PropertyChanged -= OnViewModelPropertyChanged;
+
+                // Unsubscribe collection change handlers
+                vm.SelectedMust.CollectionChanged -= OnMustCollectionChanged;
+                vm.SelectedShould.CollectionChanged -= OnShouldCollectionChanged;
+                vm.SelectedMustNot.CollectionChanged -= OnMustNotCollectionChanged;
+            }
+
             // Detach global pointer handlers
             if (_topLevel != null)
             {
@@ -1622,6 +1640,31 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Ensure cleanup on navigation away
             RemoveDragAdorner();
             base.OnDetachedFromVisualTree(e);
+        }
+
+        // Collection change handlers with stored references for unsubscription
+        private void OnMustCollectionChanged(object? s, NotifyCollectionChangedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"SelectedMust CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMust.Count}");
+            }
+        }
+
+        private void OnShouldCollectionChanged(object? s, NotifyCollectionChangedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"SelectedShould CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedShould.Count}");
+            }
+        }
+
+        private void OnMustNotCollectionChanged(object? s, NotifyCollectionChangedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}");
+            }
         }
 
         /// <summary>

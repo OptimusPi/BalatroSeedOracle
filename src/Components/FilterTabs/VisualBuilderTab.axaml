@@ -54,38 +54,16 @@
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"
-                        Padding="12,8">
+                        Padding="12,8"
+                        MaxHeight="56">
                     <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="14"
-                               
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"/>
-                </Border>
-
-                <!-- Search bar -->
-                <Border Grid.Row="2"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="8"
-                        Padding="8,4"
-                        Margin="0">
-                    <TextBox Name="SearchBox"
-                             Watermark="Search items..."
-                             Text="{Binding SearchFilter, Mode=TwoWay}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="{StaticResource White}"
-                             Padding="4"
-                             VerticalContentAlignment="Center"
-                             FontSize="13">
-                        <TextBox.Styles>
-                            <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-                                <Setter Property="Foreground" Value="{StaticResource LightGrey}"/>
-                            </Style>
-                        </TextBox.Styles>
-                    </TextBox>
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="110"/>
                 </Border>
 
                 <!-- Category buttons with bouncing arrow indicator -->
@@ -173,15 +151,48 @@
                 </Border>
             </Grid>
 
-            <!-- CENTER COLUMN - Edition/Sticker/Seal Buttons + Grouped Scrollable Items -->
+            <!-- CENTER COLUMN - Search Bar + Edition/Sticker/Seal Buttons + Grouped Scrollable Items -->
             <Grid Grid.Column="1" Margin="8,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/> <!-- Row 0: Edition/Sticker/Seal buttons -->
-                    <RowDefinition Height="*"/>    <!-- Row 1: Item shelf -->
+                    <RowDefinition Height="Auto"/> <!-- Row 0: Search bar + Settings button -->
+                    <RowDefinition Height="4"/>    <!-- Spacer -->
+                    <RowDefinition Height="Auto"/> <!-- Row 2: Edition/Sticker/Seal buttons -->
+                    <RowDefinition Height="*"/>    <!-- Row 3: Item shelf -->
                 </Grid.RowDefinitions>
 
+                <!-- Search Bar + Settings Button -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <!-- Search TextBox -->
+                    <Border Grid.Column="0"
+                            Background="{StaticResource DarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="8">
+                        <TextBox Text="{Binding SearchFilter, Mode=TwoWay}"
+                                 Watermark="Search items..."
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontFamily="{StaticResource BalatroFont}"
+                                 FontSize="12"
+                                 Foreground="{StaticResource LightGrey}"/>
+                    </Border>
+
+                    <!-- Settings Button -->
+                    <Button Grid.Column="1"
+                            Content="⚙"
+                            Width="36"
+                            Height="36"
+                            FontSize="18"
+                            Margin="4,0,0,0"
+                            Background="{StaticResource DarkBackground}"
+                            Foreground="{StaticResource LightGrey}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            ToolTip.Tip="Settings"/>
+                </Grid>
+
                 <!-- Edition/Sticker/Seal Toolbar - Single horizontal row with sprite icons -->
-                <WrapPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,4">
+                <WrapPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,4">
                     <!-- Edition Buttons (Jokers and Standard Cards only) -->
                     <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
                         <Button Command="{Binding SetEditionCommand}"
@@ -345,7 +356,7 @@
                 </WrapPanel>
 
                 <!-- ITEMS SHELF - Full height scrollable item list -->
-                <Border Grid.Row="1"
+                <Border Grid.Row="3"
                         Name="ItemGridBorder"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
@@ -549,8 +560,10 @@
                 </Grid.RowDefinitions>
 
                 <!-- UNIFIED OPERATOR TRAY at top of right column -->
-                <Grid Grid.Row="0">
-                    <Border Name="UnifiedTray"
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <!-- Unified Tray -->
+                    <Border Grid.Column="0"
+                            Name="UnifiedTray"
                             Background="{StaticResource DarkBackground}"
                             BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
                             BorderThickness="2"
@@ -561,91 +574,22 @@
                             PointerPressed="OnUnifiedTrayPointerPressed"
                             DragDrop.AllowDrop="True">
                         <Grid RowDefinitions="Auto,*">
-                            <!-- Header with toggle button and clear button -->
+                            <!-- Simple header - just shows OR/AND label -->
                             <Border Grid.Row="0"
                                     Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
                                     CornerRadius="6,6,0,0"
-                                    Padding="6,4">
-                                <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <!-- Toggle Button -->
-                                    <Button Grid.Column="0"
-                                            Command="{Binding ToggleOperatorCommand}"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Padding="4,2"
-                                            Cursor="Hand"
-                                            ToolTip.Tip="Toggle between OR and AND">
-                                        <TextBlock Text="⇄"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource White}"/>
-                                    </Button>
-
-                                    <!-- Operator Type Label -->
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding UnifiedOperator.OperatorType}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="12"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
-
-                                    <!-- Clear Button -->
-                                    <Button Grid.Column="2"
-                                            Command="{Binding ClearTrayCommand}"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Padding="4,2"
-                                            Cursor="Hand"
-                                            ToolTip.Tip="Clear all cards">
-                                        <TextBlock Text="×"
-                                                   FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource White}"/>
-                                    </Button>
-                                </Grid>
+                                    Padding="8,4">
+                                <TextBlock Text="{Binding UnifiedOperator.OperatorType}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                             </Border>
 
                             <!-- Card display area -->
                             <Grid Grid.Row="1" Margin="8">
-                                <!-- Show "Edit Clause" overlay when empty -->
-                                <Border IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:EqualsZeroConverter.Instance}}"
-                                        Background="{StaticResource Purple}"
-                                        BorderBrush="#FFFFFF"
-                                        BorderThickness="2"
-                                        CornerRadius="6"
-                                        Padding="8"
-                                        Opacity="0.8">
-                                    <Border.Styles>
-                                        <Style Selector="Border">
-                                            <Style.Animations>
-                                                <Animation Duration="0:0:1.5" IterationCount="Infinite">
-                                                    <KeyFrame Cue="0%">
-                                                        <Setter Property="Opacity" Value="0.6"/>
-                                                    </KeyFrame>
-                                                    <KeyFrame Cue="50%">
-                                                        <Setter Property="Opacity" Value="0.9"/>
-                                                    </KeyFrame>
-                                                    <KeyFrame Cue="100%">
-                                                        <Setter Property="Opacity" Value="0.6"/>
-                                                    </KeyFrame>
-                                                </Animation>
-                                            </Style.Animations>
-                                        </Style>
-                                    </Border.Styles>
-                                    <TextBlock Text="EDIT CLAUSE"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="14"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               TextAlignment="Center"/>
-                                </Border>
-
                                 <!-- Less than 5 cards: side-by-side layout -->
                                 <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}"
                                               IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
@@ -703,6 +647,27 @@
                             </Grid>
                         </Grid>
                     </Border>
+
+                    <!-- Toggle Button - OUTSIDE tray, on the right -->
+                    <Button Grid.Column="1"
+                            Command="{Binding ToggleOperatorCommand}"
+                            Width="40"
+                            Height="90"
+                            Margin="4,0,0,0"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Cursor="Hand"
+                            ToolTip.Tip="Toggle OR/AND"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center">
+                        <TextBlock Text="⇄"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"/>
+                    </Button>
 
                     <!-- Unified Tray Drop Overlay -->
                     <Border Name="UnifiedTrayDropOverlay"
