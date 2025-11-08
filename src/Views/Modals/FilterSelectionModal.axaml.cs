@@ -120,6 +120,12 @@ namespace BalatroSeedOracle.Views.Modals
         {
             // Get the parent window to center the dialog in the app window
             var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
+
+            if (parentWindow == null)
+            {
+                throw new InvalidOperationException("FilterSelectionModal must be shown from a Window context!");
+            }
+
             var result = await MessageBoxManager
                 .GetMessageBoxStandard(
                     "Delete Filter?",

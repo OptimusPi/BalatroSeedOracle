@@ -887,6 +887,46 @@ namespace BalatroSeedOracle.ViewModels
             ItemConfig itemConfig
         )
         {
+            // Handle AND/OR clause types with Children
+            if (itemConfig.ItemType == "Clause" && !string.IsNullOrEmpty(itemConfig.OperatorType))
+            {
+                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                {
+                    Type = itemConfig.OperatorType.ToLowerInvariant(), // "or" or "and"
+                    Score = itemConfig.Score,
+                    Label = itemConfig.Label,
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                };
+
+                // Add antes if configured
+                if (itemConfig.Antes?.Any() == true)
+                {
+                    operatorClause.Antes = itemConfig.Antes.ToArray();
+                }
+
+                // Add Mode for OR clauses (Max) or AND clauses (Sum/default)
+                if (!string.IsNullOrEmpty(itemConfig.Mode))
+                {
+                    operatorClause.Mode = itemConfig.Mode;
+                }
+
+                // Recursively convert child items to clauses
+                if (itemConfig.Children?.Any() == true)
+                {
+                    foreach (var child in itemConfig.Children)
+                    {
+                        var childClause = ConvertItemConfigToClause(child);
+                        if (childClause != null)
+                        {
+                            operatorClause.Clauses.Add(childClause);
+                        }
+                    }
+                }
+
+                return operatorClause;
+            }
+
+            // Regular item (not a clause operator)
             var clause = new MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Type = itemConfig.IsSoulJoker ? "SoulJoker" : itemConfig.ItemType,
@@ -1091,6 +1131,37 @@ namespace BalatroSeedOracle.ViewModels
         {
             var normalizedType = NormalizeItemType(clause.Type);
 
+            // Handle AND/OR clause operators with Children
+            if ((normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase) ||
+                 normalizedType.Equals("or", StringComparison.OrdinalIgnoreCase)) &&
+                clause.Clauses?.Count > 0)
+            {
+                var operatorConfig = new ItemConfig
+                {
+                    ItemKey = itemKey,
+                    ItemType = "Clause",
+                    ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
+                    OperatorType = normalizedType.Substring(0, 1).ToUpper() + normalizedType.Substring(1).ToLower(), // "And" or "Or"
+                    Mode = clause.Mode,
+                    Score = clause.Score,
+                    Label = clause.Label,
+                    Antes = clause.Antes?.ToList(),
+                    Children = new List<ItemConfig>()
+                };
+
+                // Recursively convert child clauses
+                int childIndex = 0;
+                foreach (var childClause in clause.Clauses)
+                {
+                    var childKey = $"{itemKey}_child_{++childIndex}";
+                    var childConfig = ConvertClauseToItemConfig(childClause, childKey);
+                    operatorConfig.Children.Add(childConfig);
+                }
+
+                return operatorConfig;
+            }
+
+            // Regular item (not a clause operator)
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemKey,

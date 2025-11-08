@@ -8,19 +8,33 @@ namespace BalatroSeedOracle.Models
     /// </summary>
     public class FilterOperatorItem : FilterItem
     {
-        public string OperatorType { get; set; } = "OR"; // "OR" or "AND"
+        private string _operatorType = "OR";
+        
+        public string OperatorType
+        {
+            get => _operatorType;
+            set
+            {
+                if (_operatorType != value)
+                {
+                    _operatorType = value;
+                    OnPropertyChanged();
+                    // Also update related properties
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
+        }
 
         /// <summary>
         /// Child items contained within this operator.
-        /// When serialized:
-        /// - OR operator → Multiple Should clauses
-        /// - AND operator → Single Must clause with all items
+        /// When serialized: Creates a clause with type="or" or type="and" and Clauses[] array.
+        /// Can be used in must[], should[], or mustNot[] arrays.
         /// </summary>
         public ObservableCollection<FilterItem> Children { get; set; } = new();
 
         public FilterOperatorItem(string operatorType)
         {
-            OperatorType = operatorType;
+            _operatorType = operatorType;
             Type = "Operator";
             Name = operatorType;
             DisplayName = operatorType;

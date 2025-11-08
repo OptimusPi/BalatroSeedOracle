@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
@@ -7,6 +8,7 @@ namespace BalatroSeedOracle.Converters
 {
     /// <summary>
     /// Converts operator type string ("OR" or "AND") to appropriate color brush
+    /// Uses the SAME colors as SHOULD (Green) and MUST (Blue) drop zones from App.axaml resources
     /// </summary>
     public class OperatorColorConverter : IValueConverter
     {
@@ -14,20 +16,21 @@ namespace BalatroSeedOracle.Converters
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is string operatorType)
+            if (value is not string operatorType)
+                throw new ArgumentException($"Expected string operatorType, got {value?.GetType().Name ?? "null"}");
+
+            var colorKey = operatorType switch
             {
-                if (operatorType == "OR")
-                {
-                    // Green: #2ECC71
-                    return new SolidColorBrush(Color.FromRgb(46, 204, 113));
-                }
-                else if (operatorType == "AND")
-                {
-                    // Blue: #3498DB
-                    return new SolidColorBrush(Color.FromRgb(52, 152, 219));
-                }
+                "OR" => "Green",   // Matches SHOULD zone
+                "AND" => "Blue",   // Matches MUST zone
+                _ => throw new ArgumentException($"Unknown operator type: {operatorType}")
+            };
+
+            if (Application.Current?.Resources.TryGetResource(colorKey, null, out var resource) == true && resource is IBrush brush)
+            {
+                return brush;
             }
-            return new SolidColorBrush(Color.FromRgb(128, 128, 128));
+            throw new InvalidOperationException($"Color resource '{colorKey}' not found in App.axaml! Fix your resources!");
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

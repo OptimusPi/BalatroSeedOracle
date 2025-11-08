@@ -81,26 +81,6 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            // CRITICAL FIX: STOP ambient sway when card is being hovered
-            // This prevents the seizure-inducing flicker when hovering between cards
-            // Walk up visual tree to find ResponsiveCard parent
-            var parent = AssociatedObject.Parent;
-            while (parent != null)
-            {
-                if (parent is Components.ResponsiveCard card)
-                {
-                    if (card.IsHovering)
-                    {
-                        // IMMEDIATELY reset rotation to 0 when hovering starts
-                        // This prevents jiggle caused by rotation moving hitbox edge
-                        ResetRotation();
-                        return; // Stop animation when hovering
-                    }
-                    break;
-                }
-                parent = parent.Parent;
-            }
-
             // Find the RotateTransform - either standalone or in a TransformGroup
             RotateTransform? rotateTransform = null;
 
@@ -117,6 +97,38 @@ namespace BalatroSeedOracle.Behaviors
             if (rotateTransform == null)
                 return;
 
+            // Find ResponsiveCard parent to check hover state
+            var parent = AssociatedObject.Parent;
+            Components.ResponsiveCard? card = null;
+            while (parent != null)
+            {
+                if (parent is Components.ResponsiveCard responsiveCard)
+                {
+                    card = responsiveCard;
+                    break;
+                }
+                parent = parent.Parent;
+            }
+
+            if (card != null && card.IsHovering)
+            {
+                // MAGNETIC TILT MODE (Balatro's hover.is state from card.lua:4374-4376)
+                // Card tilts toward mouse cursor - the "card is watching you" effect!
+
+                // For 2D rotation (Z-axis), we use the X offset to determine tilt direction
+                // Positive X (right) = clockwise tilt, Negative X (left) = counter-clockwise tilt
+                // We'll also add a slight Y influence for the "following" effect
+
+                // Combine X and Y offsets with X being dominant (80/20 split)
+                var combined_offset = card.HoverOffsetX * 0.8 + card.HoverOffsetY * 0.2;
+
+                // Scale to dramatic tilt angle (up to ±30 degrees at edges)
+                var max_tilt_degrees = 30.0;
+                rotateTransform.Angle = combined_offset * max_tilt_degrees;
+                return;
+            }
+
+            // AMBIENT MODE - Breathing motion when not hovering
             // Calculate elapsed time (like G.TIMERS.REAL in Balatro)
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
 
@@ -126,37 +138,13 @@ namespace BalatroSeedOracle.Behaviors
 
             // Tilt amount based on cos wave (creates breathing effect) from card.lua:4383
             // self.tilt_var.amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-            var tilt_amt =
+            var tilt_amt_ambient =
                 AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
 
             // Apply rotation (convert to degrees)
             // Balatro rotates in radians, we need degrees
-            rotateTransform.Angle = tilt_amt * UIConstants.CardRotationToDegrees; // Scale for visibility
+            rotateTransform.Angle = tilt_amt_ambient * UIConstants.CardRotationToDegrees;
         }
 
-        /// <summary>
-        /// Immediately reset rotation to 0 to prevent flicker/jiggle
-        /// </summary>
-        private void ResetRotation()
-        {
-            if (AssociatedObject == null)
-                return;
-
-            RotateTransform? rotateTransform = null;
-
-            if (AssociatedObject.RenderTransform is RotateTransform rotate)
-            {
-                rotateTransform = rotate;
-            }
-            else if (AssociatedObject.RenderTransform is TransformGroup group)
-            {
-                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
-            }
-
-            if (rotateTransform != null)
-            {
-                rotateTransform.Angle = 0;
-            }
-        }
     }
 }

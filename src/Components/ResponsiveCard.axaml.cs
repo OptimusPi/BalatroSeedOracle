@@ -41,6 +41,11 @@ namespace BalatroSeedOracle.Components
         // Hover state - used by BalatroCardSwayBehavior to stop ambient sway during hover
         public bool IsHovering { get; private set; }
 
+        // Hover offset - mouse position relative to card center, normalized to -1 to 1 range
+        // Used by BalatroCardSwayBehavior for magnetic tilt effect (Balatro's hover.is state)
+        public double HoverOffsetX { get; private set; }
+        public double HoverOffsetY { get; private set; }
+
         public static readonly StyledProperty<string> ItemNameProperty = AvaloniaProperty.Register<
             ResponsiveCard,
             string
@@ -290,14 +295,6 @@ namespace BalatroSeedOracle.Components
         {
             IsHovering = true; // Stop ambient sway, enable magnetic tilt
 
-            // CRITICAL FIX: Reset rotation to 0 immediately to prevent jiggle
-            // The ambient sway rotation causes hitbox edge to move away from mouse,
-            // triggering PointerExited, which rotates back, causing infinite loop
-            if (_cardRotateTransform != null)
-            {
-                _cardRotateTransform.Angle = 0;
-            }
-
             // Play Balatro-style hover "thud" animation
             PlayHoverThudAnimation();
         }
@@ -305,6 +302,8 @@ namespace BalatroSeedOracle.Components
         private void OnPointerExited(object? sender, PointerEventArgs e)
         {
             IsHovering = false; // Resume ambient sway, stop magnetic tilt
+            HoverOffsetX = 0;
+            HoverOffsetY = 0;
             // BalatroCardSwayBehavior handles the transition back to ambient sway
         }
 
@@ -447,6 +446,18 @@ namespace BalatroSeedOracle.Components
         private async void OnPointerMoved(object? sender, PointerEventArgs e)
         {
             var currentPoint = e.GetCurrentPoint(_cardBorder);
+
+            // Calculate hover offset for magnetic tilt (Balatro's hover.is state)
+            if (IsHovering && _cardBorder.Bounds.Width > 0 && _cardBorder.Bounds.Height > 0)
+            {
+                var pos = currentPoint.Position;
+                var centerX = _cardBorder.Bounds.Width / 2;
+                var centerY = _cardBorder.Bounds.Height / 2;
+
+                // Normalize to -1 to 1 range (Balatro style)
+                HoverOffsetX = (pos.X - centerX) / centerX;
+                HoverOffsetY = (pos.Y - centerY) / centerY;
+            }
 
             // Magnetic tilt is now handled by BalatroCardSwayBehavior ONLY
             // Removed duplicate tilt code that was causing jiggle between cards
