@@ -1711,6 +1711,39 @@ namespace BalatroSeedOracle.Services
             return CompositeImages(baseJoker, stickerOverlay, 142, 190);
         }
 
+        /// <summary>
+        /// Gets a composite image of a Joker with an edition overlay
+        /// </summary>
+        public IImage? GetJokerWithEditionImage(string edition)
+        {
+            ArgumentNullException.ThrowIfNull(edition);
+
+            // Get base joker image
+            var baseJoker = GetItemImage("Joker", "Joker");
+            if (baseJoker == null)
+            {
+                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for edition composite");
+                return null;
+            }
+
+            // Special case for "None" - just return the base joker
+            if (edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+            {
+                return baseJoker;
+            }
+
+            // Get edition overlay
+            var editionOverlay = GetEditionImage(edition);
+            if (editionOverlay == null)
+            {
+                DebugLogger.LogError("SpriteService", $"Failed to get edition overlay for: {edition}");
+                return baseJoker; // Return base joker if no overlay available
+            }
+
+            // Composite them together (142x190 pixels - standard joker size)
+            return CompositeImages(baseJoker, editionOverlay, 142, 190);
+        }
+
         // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)
 
         public IImage? GetBoosterImage(string packType)

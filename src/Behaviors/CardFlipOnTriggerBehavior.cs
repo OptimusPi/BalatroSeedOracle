@@ -238,7 +238,7 @@ namespace BalatroSeedOracle.Behaviors
 
                 // Execute Phase 1: Flip to edge while showing original sprite
                 DebugLogger.Log("CardFlip", "Phase 1: Flipping to edge");
-                await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+                await RunAnimationAsync(transform, flipToEdgeAnimation, cancellationToken);
 
                 // At the midpoint (card is edge-on), swap to deck back and hide ALL overlays
                 DebugLogger.Log("CardFlip", "Midpoint: Swapping to deck back sprite");
@@ -250,14 +250,14 @@ namespace BalatroSeedOracle.Behaviors
 
                 // Execute Phase 2: Flip from edge to show deck back
                 DebugLogger.Log("CardFlip", "Phase 2: Revealing deck back");
-                await flipFromEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+                await RunAnimationAsync(transform, flipFromEdgeAnimation, cancellationToken);
 
                 // Brief pause to show deck back
                 await Task.Delay(100, cancellationToken);
 
                 // Execute Phase 3: Flip to edge again
                 DebugLogger.Log("CardFlip", "Phase 3: Flipping to edge");
-                await flipToEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+                await RunAnimationAsync(transform, flipToEdgeAnimation, cancellationToken);
 
                 // At the midpoint, swap back to joker sprite and restore overlays to ORIGINAL visibility
                 DebugLogger.Log("CardFlip", "Midpoint: Swapping to joker sprite");
@@ -269,7 +269,7 @@ namespace BalatroSeedOracle.Behaviors
 
                 // Execute Phase 4: Flip from edge to show joker with new enhancement
                 DebugLogger.Log("CardFlip", "Phase 4: Revealing enhanced joker");
-                await flipFromEdgeAnimation.RunAsync(AssociatedObject, cancellationToken);
+                await RunAnimationAsync(transform, flipFromEdgeAnimation, cancellationToken);
 
                 DebugLogger.Log("CardFlip", "Animation completed successfully");
             }
@@ -285,6 +285,41 @@ namespace BalatroSeedOracle.Behaviors
             {
                 _isAnimating = false;
             }
+        }
+
+        /// <summary>
+        /// Helper method to run an Avalonia animation on a transform with cancellation support.
+        /// In Avalonia 11.x, we need to use the RunAsync extension method on the Animatable object (transform).
+        /// </summary>
+        private async Task RunAnimationAsync(
+            ScaleTransform transform,
+            Avalonia.Animation.Animation animation,
+            CancellationToken cancellationToken
+        )
+        {
+            // Create a TaskCompletionSource to handle cancellation
+            var tcs = new TaskCompletionSource<bool>();
+
+            // Register cancellation callback
+            using var cancellationRegistration = cancellationToken.Register(() =>
+            {
+                tcs.TrySetCanceled();
+            });
+
+            // Run the animation - in Avalonia 11.x, RunAsync returns a Task
+            var animationTask = animation.RunAsync(transform, CancellationToken.None);
+
+            // Wait for either the animation to complete or cancellation
+            var completedTask = await Task.WhenAny(animationTask, tcs.Task);
+
+            if (completedTask == tcs.Task)
+            {
+                // Cancellation was requested
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            // Animation completed successfully
+            await animationTask;
         }
 
         protected override void OnDetaching()

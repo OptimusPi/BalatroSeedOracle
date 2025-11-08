@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Extensions;
 
 namespace BalatroSeedOracle.Behaviors
 {

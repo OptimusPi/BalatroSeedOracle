@@ -573,17 +573,11 @@ namespace BalatroSeedOracle.Converters
             if (string.IsNullOrEmpty(edition))
                 return null;
 
-            // Special case for "None" - return regular joker sprite
-            if (edition.Equals("None", StringComparison.OrdinalIgnoreCase))
-            {
-                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
-                return spriteService.GetItemImage("Joker", "Joker");
-            }
-
             try
             {
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
-                return spriteService.GetEditionImage(edition);
+                // Use the new method that composites base Joker with edition overlay
+                return spriteService.GetJokerWithEditionImage(edition);
             }
             catch (Exception ex)
             {

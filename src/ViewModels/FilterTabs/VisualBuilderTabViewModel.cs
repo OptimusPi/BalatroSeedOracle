@@ -737,10 +737,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMust(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                Helpers.DebugLogger.Log("AddToMust", "Item is null, returning");
+                return;
+            }
+
+            Helpers.DebugLogger.Log("AddToMust", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}");
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMust.Add(item);
+
+            Helpers.DebugLogger.Log("AddToMust", $"SelectedMust count after add: {SelectedMust.Count}");
+
+            // Log all items in collection for debugging
+            for (int i = 0; i < SelectedMust.Count; i++)
+            {
+                var existingItem = SelectedMust[i];
+                Helpers.DebugLogger.Log("AddToMust", $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+            }
+
+            // Force UI refresh
+            OnPropertyChanged(nameof(SelectedMust));
 
             // Sync with parent ViewModel if available
             if (_parentViewModel != null)
@@ -776,10 +794,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToShould(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                Helpers.DebugLogger.Log("AddToShould", "Item is null, returning");
+                return;
+            }
+
+            Helpers.DebugLogger.Log("AddToShould", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}");
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedShould.Add(item);
+
+            Helpers.DebugLogger.Log("AddToShould", $"SelectedShould count after add: {SelectedShould.Count}");
+
+            // Log all items in collection for debugging
+            for (int i = 0; i < SelectedShould.Count; i++)
+            {
+                var existingItem = SelectedShould[i];
+                Helpers.DebugLogger.Log("AddToShould", $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+            }
+
+            // Force UI refresh
+            OnPropertyChanged(nameof(SelectedShould));
 
             // Sync with parent ViewModel if available
             if (_parentViewModel != null)
@@ -815,10 +851,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMustNot(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                Helpers.DebugLogger.Log("AddToMustNot", "Item is null, returning");
+                return;
+            }
+
+            Helpers.DebugLogger.Log("AddToMustNot", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}");
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMustNot.Add(item);
+
+            Helpers.DebugLogger.Log("AddToMustNot", $"SelectedMustNot count after add: {SelectedMustNot.Count}");
+
+            // Log all items in collection for debugging
+            for (int i = 0; i < SelectedMustNot.Count; i++)
+            {
+                var existingItem = SelectedMustNot[i];
+                Helpers.DebugLogger.Log("AddToMustNot", $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+            }
+
+            // Force UI refresh
+            OnPropertyChanged(nameof(SelectedMustNot));
 
             // Sync with parent ViewModel if available
             if (_parentViewModel != null)
@@ -1297,7 +1351,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = name,
                             Type = type,
-                            Category = "Wildcard",
+                            Category = type switch  // Fixed for CategoryGroupedLayoutBehavior
+                            {
+                                "Joker" or "SoulJoker" => "Jokers",
+                                "SmallBlindTag" or "BigBlindTag" => "Tags",
+                                "Voucher" => "Vouchers",
+                                "Boss" => "Bosses",
+                                _ => "Consumables"  // Tarot, Planet, Spectral
+                            },
                             DisplayName = displayName,
                             ItemImage = type switch
                             {
@@ -1337,7 +1398,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         Name = legendaryName,
                         Type = "SoulJoker",
-                        Category = "Legendary",
+                        Category = "Jokers",  // Fixed for CategoryGroupedLayoutBehavior
                         DisplayName = BalatroData.GetDisplayNameFromSprite(legendaryName),
                         ItemImage = spriteService.GetJokerImage(legendaryName),
                     };
@@ -1372,7 +1433,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = jokerName,
                             Type = "Joker",
-                            Category = rarity, // Actual rarity from BalatroData
+                            Category = "Jokers", // Fixed for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(jokerName),
                             ItemImage = spriteService.GetJokerImage(jokerName),
                         };
@@ -1389,6 +1450,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = tagName,
                             Type = "SmallBlindTag",
+                            Category = "Tags",  // Added for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(tagName),
                             ItemImage = spriteService.GetTagImage(tagName),
                         };
@@ -1405,6 +1467,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = voucherName,
                             Type = "Voucher",
+                            Category = "Vouchers",  // Added for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(voucherName),
                             ItemImage = spriteService.GetVoucherImage(voucherName),
                         };
@@ -1513,6 +1576,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 {
                                     Name = bossName,
                                     Type = "Boss",
+                                    Category = "Bosses",  // Added for CategoryGroupedLayoutBehavior
                                     DisplayName = BalatroData.GetDisplayNameFromSprite(bossName),
                                     ItemImage = spriteService.GetBossImage(bossName),
                                 };
@@ -2450,6 +2514,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (SelectedEdition != "None")
             {
                 config.Edition = SelectedEdition.ToLower();
+                item.Edition = config.Edition; // CRITICAL: Update item to trigger EditionImage binding
             }
 
             // Apply Stickers with Eternal restrictions
@@ -2489,6 +2554,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (stickers.Any())
             {
                 config.Stickers = stickers;
+                item.Stickers = config.Stickers; // CRITICAL: Update item to trigger sticker image bindings
             }
 
             // Apply Seal (for StandardCards only)

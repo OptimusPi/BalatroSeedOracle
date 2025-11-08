@@ -173,10 +173,180 @@
                 </Border>
             </Grid>
 
-            <!-- CENTER COLUMN - Grouped Scrollable Items -->
+            <!-- CENTER COLUMN - Edition/Sticker/Seal Buttons + Grouped Scrollable Items -->
             <Grid Grid.Column="1" Margin="8,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Row 0: Edition/Sticker/Seal buttons -->
+                    <RowDefinition Height="*"/>    <!-- Row 1: Item shelf -->
+                </Grid.RowDefinitions>
+
+                <!-- Edition/Sticker/Seal Toolbar - Single horizontal row with sprite icons -->
+                <WrapPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,4">
+                    <!-- Edition Buttons (Jokers and Standard Cards only) -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="None"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                ToolTip.Tip="None"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Foil"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
+                                ToolTip.Tip="Foil (+50 chips)"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Holo"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
+                                ToolTip.Tip="Holographic (+10 mult)"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Polychrome"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
+                                ToolTip.Tip="Polychrome (x1.5 mult)"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Negative"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
+                                ToolTip.Tip="Negative (+1 joker slot)"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,8,0">
+                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
+                                   Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Sticker Buttons (Jokers only) -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowStickerButtons}">
+                        <Button Command="{Binding ToggleStickerPerishableCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerPerishable}"
+                                ToolTip.Tip="Perishable"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=perishable}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding ToggleStickerEternalCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerEternal}"
+                                ToolTip.Tip="Eternal"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=eternal}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding ToggleStickerRentalCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerRental}"
+                                ToolTip.Tip="Rental"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,8,0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
+                                   Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Seal Buttons (StandardCard only) -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="None"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                ToolTip.Tip="No Seal"
+                                Width="32" Height="32"
+                                Padding="4"
+                                Margin="0,0,2,0">
+                            <TextBlock Text="—" FontSize="16" Foreground="{StaticResource LightGrey}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Purple"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
+                                ToolTip.Tip="Purple Seal"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Gold"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
+                                ToolTip.Tip="Gold Seal"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Red"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
+                                ToolTip.Tip="Red Seal"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,2,0">
+                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Blue"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
+                                ToolTip.Tip="Blue Seal"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,0,0">
+                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
+                                   Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+                </WrapPanel>
+
                 <!-- ITEMS SHELF - Full height scrollable item list -->
-                <Border Name="ItemGridBorder"
+                <Border Grid.Row="1"
+                        Name="ItemGridBorder"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"
@@ -187,7 +357,7 @@
                                   HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding GroupedItems}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup">
+                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup" x:DataType="vm:VisualBuilderTabViewModel+ItemGroup">
                                     <StackPanel Margin="0,0,0,16">
                                         <!-- Subcategory Header -->
                                         <Border Background="{StaticResource DarkBackground}"
@@ -206,7 +376,7 @@
                                         <!-- Items in Group -->
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="models:FilterItem">
+                                                <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
                                                     <!-- SOLUTION: Grid with two overlapping layers -->
                                                     <Grid Margin="0,2" Width="54" Height="90">
                                                         <i:Interaction.Behaviors>
@@ -228,7 +398,14 @@
                                                                            Height="64"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"/>
+                                                                           VerticalAlignment="Center">
+                                                                        <i:Interaction.Behaviors>
+                                                                            <behaviors:CardFlipOnTriggerBehavior
+                                                                                DeckName="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).SelectedDeck}"
+                                                                                FlipTrigger="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).FlipAnimationTrigger}"
+                                                                                StaggerDelay="{Binding StaggerDelay}"/>
+                                                                        </i:Interaction.Behaviors>
+                                                                    </Image>
 
                                                                     <Image Source="{Binding EditionImage}"
                                                                            Width="48"
@@ -375,26 +552,110 @@
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="6"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- OR Operator Box - Fanned display -->
+                    <!-- OR Operator Box with mini thumbnails -->
                     <Border Grid.Column="0"
                             Name="TrayOrOperator"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{StaticResource Green}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Padding="6"
+                            MinHeight="75"
                             Cursor="Hand"
                             PointerPressed="OnTrayOrPointerPressed"
                             DragDrop.AllowDrop="True">
-                        <components:FilterOperatorControl DataContext="{Binding TrayOrOperator}"/>
+                        <StackPanel Spacing="2">
+                            <!-- OR Header -->
+                            <Border Background="{StaticResource Green}"
+                                    CornerRadius="3"
+                                    Padding="3,1">
+                                <TextBlock Text="OR"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Mini thumbnails -->
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          MaxHeight="30">
+                                <ItemsControl ItemsSource="{Binding TrayOrOperator.Children}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="32" Height="44" Margin="2">
+                                                <Image Source="{Binding ItemImage}"
+                                                       Stretch="Uniform"/>
+                                                <Image Source="{Binding SoulFaceImage}"
+                                                       Stretch="Uniform"
+                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
                     </Border>
 
-                    <!-- AND Operator Box - Fanned display -->
+                    <!-- AND Operator Box with mini thumbnails -->
                     <Border Grid.Column="2"
                             Name="TrayAndOperator"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{StaticResource Blue}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Padding="6"
+                            MinHeight="75"
                             Cursor="Hand"
                             PointerPressed="OnTrayAndPointerPressed"
                             DragDrop.AllowDrop="True">
-                        <components:FilterOperatorControl DataContext="{Binding TrayAndOperator}"/>
+                        <StackPanel Spacing="2">
+                            <!-- AND Header -->
+                            <Border Background="{StaticResource Blue}"
+                                    CornerRadius="3"
+                                    Padding="3,1">
+                                <TextBlock Text="AND"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Mini thumbnails -->
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          MaxHeight="30">
+                                <ItemsControl ItemsSource="{Binding TrayAndOperator.Children}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="32" Height="44" Margin="2">
+                                                <Image Source="{Binding ItemImage}"
+                                                       Stretch="Uniform"/>
+                                                <Image Source="{Binding SoulFaceImage}"
+                                                       Stretch="Uniform"
+                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
                     </Border>
 
                     <!-- OR Tray Drop Overlay -->
@@ -508,7 +769,7 @@
                         <RowDefinition Height="1*"/>  <!-- Bottom third - CAN'T -->
                     </Grid.RowDefinitions>
 
-                    <!-- MUST drop overlay -->
+                    <!-- MUST drop overlay - BLUE for AND operator -->
                     <Border Name="MustDropOverlay"
                             Grid.Row="0"
                             Classes="dropzone-overlay"
@@ -547,7 +808,7 @@
                         </TextBlock>
                     </Border>
 
-                    <!-- SHOULD drop overlay -->
+                    <!-- SHOULD drop overlay - GREEN for OR operator -->
                     <Border Name="ShouldDropOverlay"
                             Grid.Row="1"
                             Classes="dropzone-overlay"
@@ -647,41 +908,42 @@
                         <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Padding="8,4">
+                                Padding="8,0,8,4">
                             <TextBlock Text="MUST"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="16"
-                                       
+
                                        Foreground="{StaticResource Blue}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"/>
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ItemsControl Grid.Row="1"
-                                      ItemsSource="{Binding SelectedMust}"
-                                      Margin="6">
+                        <!-- DEBUG: Show item count -->
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="{Binding SelectedMust.Count, StringFormat='Items: {0}'}"
+                                      Foreground="Red" FontSize="12" Margin="6,2"/>
+                            <ItemsControl ItemsSource="{Binding SelectedMust}"
+                                          Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas/>
+                                    <WrapPanel Orientation="Horizontal"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
-                            <i:Interaction.Behaviors>
-                                <behaviors:CategoryGroupedLayoutBehavior/>
-                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:FilterItem">
+                                <DataTemplate>
                                     <!-- Render operator or regular card based on Type property -->
                                     <ContentControl Content="{Binding}">
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
-                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
                                                 <components:FilterOperatorControl/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
-                                            <DataTemplate DataType="models:FilterItem">
+                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
                                                 <Border Background="Transparent"
+                                                        Width="54"
                                                         Cursor="Hand"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
@@ -689,9 +951,9 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
+                                                    <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid>
+                                                        <Grid Width="48" Height="64">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
@@ -789,12 +1051,8 @@
                                     </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
                         </ItemsControl>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
@@ -820,41 +1078,42 @@
                         <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Padding="8,4">
+                                Padding="8,0,8,4">
                             <TextBlock Text="SHOULD"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="16"
-                                       
+
                                        Foreground="{StaticResource Green}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"/>
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ItemsControl Grid.Row="1"
-                                      ItemsSource="{Binding SelectedShould}"
-                                      Margin="6">
+                        <!-- DEBUG: Show item count -->
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="{Binding SelectedShould.Count, StringFormat='Items: {0}'}"
+                                      Foreground="Yellow" FontSize="12" Margin="6,2"/>
+                            <ItemsControl ItemsSource="{Binding SelectedShould}"
+                                          Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas/>
+                                    <WrapPanel Orientation="Horizontal"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
-                            <i:Interaction.Behaviors>
-                                <behaviors:CategoryGroupedLayoutBehavior/>
-                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:FilterItem">
+                                <DataTemplate>
                                     <!-- Render operator or regular card based on Type property -->
                                     <ContentControl Content="{Binding}">
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
-                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
                                                 <components:FilterOperatorControl/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
-                                            <DataTemplate DataType="models:FilterItem">
+                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
                                                 <Border Background="Transparent"
+                                                        Width="54"
                                                         Cursor="Hand"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
@@ -862,9 +1121,9 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
+                                                    <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid>
+                                                        <Grid Width="48" Height="64">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
@@ -962,13 +1221,9 @@
                                     </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
                         </ItemsControl>
-                    </Grid>
+                    </StackPanel>
+                </Grid>
                 </Border>
 
                 <!-- BANNED ITEMS Zone -->
@@ -993,11 +1248,11 @@
                         <!-- Top: Header Label -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
-                                Padding="8,4">
+                                Padding="8,0,8,4">
                             <TextBlock Text="BANNED"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="16"
-                                       
+
                                        Foreground="{StaticResource Red}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"/>
@@ -1009,25 +1264,23 @@
                                       Margin="6">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Canvas/>
+                                    <WrapPanel Orientation="Horizontal"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
-                            <i:Interaction.Behaviors>
-                                <behaviors:CategoryGroupedLayoutBehavior/>
-                            </i:Interaction.Behaviors>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="models:FilterItem">
+                                <DataTemplate>
                                     <!-- Render operator or regular card based on Type property -->
                                     <ContentControl Content="{Binding}">
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
-                                            <DataTemplate DataType="models:FilterOperatorItem">
+                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
                                                 <components:FilterOperatorControl/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
-                                            <DataTemplate DataType="models:FilterItem">
+                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
                                                 <Border Background="Transparent"
+                                                        Width="54"
                                                         Cursor="Hand"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
@@ -1035,9 +1288,9 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="54" Height="64" IsHitTestVisible="False">
+                                                    <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid>
+                                                        <Grid Width="48" Height="64">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
@@ -1135,11 +1388,6 @@
                                     </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
                         </ItemsControl>
                     </Grid>
                 </Border>

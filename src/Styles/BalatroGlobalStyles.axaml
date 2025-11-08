@@ -677,4 +677,32 @@
         <Setter Property="Background" Value="{StaticResource Red}"/>
     </Style>
 
+    <!-- Icon button style for edition/sticker/seal toolbar buttons -->
+    <Style Selector="Button.icon-button">
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="MinWidth" Value="32"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Focusable" Value="False"/>
+    </Style>
+
+    <Style Selector="Button.icon-button:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+        <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
+    </Style>
+
+    <Style Selector="Button.icon-button.active">
+        <Setter Property="Background" Value="{StaticResource Blue}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+    </Style>
+
+    <Style Selector="Button.icon-button.active:pointerover">
+        <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}"/>
+    </Style>
+
 </Styles>

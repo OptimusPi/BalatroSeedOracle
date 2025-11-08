@@ -43,6 +43,27 @@ namespace BalatroSeedOracle.Components.FilterTabs
             DataContext =
                 ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
 
+            DebugLogger.Log("VisualBuilderTab", $"DataContext set to: {DataContext?.GetType().Name ?? "null"}");
+
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                DebugLogger.Log("VisualBuilderTab", $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}, MustNot: {vm.SelectedMustNot.Count}");
+
+                // Subscribe to collection changes for debugging
+                vm.SelectedMust.CollectionChanged += (s, e) =>
+                {
+                    DebugLogger.Log("VisualBuilderTab", $"SelectedMust CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMust.Count}");
+                };
+                vm.SelectedShould.CollectionChanged += (s, e) =>
+                {
+                    DebugLogger.Log("VisualBuilderTab", $"SelectedShould CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedShould.Count}");
+                };
+                vm.SelectedMustNot.CollectionChanged += (s, e) =>
+                {
+                    DebugLogger.Log("VisualBuilderTab", $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}");
+                };
+            }
+
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
 
@@ -1370,7 +1391,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var operatorBorder = new Border
                     {
                         Background = darkBg,
-                        BorderBrush = operatorItem.OperatorType == "OR" ? blue : green,
+                        BorderBrush = operatorItem.OperatorType == "OR" ? green : blue,
                         BorderThickness = new Avalonia.Thickness(2),
                         CornerRadius = new CornerRadius(8),
                         Padding = new Avalonia.Thickness(8),
@@ -1382,7 +1403,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             {
                                 new Border
                                 {
-                                    Background = operatorItem.OperatorType == "OR" ? blue : green,
+                                    Background = operatorItem.OperatorType == "OR" ? green : blue,
                                     CornerRadius = new CornerRadius(4),
                                     Padding = new Avalonia.Thickness(6, 3),
                                     Child = new TextBlock
