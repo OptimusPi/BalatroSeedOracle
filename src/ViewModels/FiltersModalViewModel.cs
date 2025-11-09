@@ -53,6 +53,10 @@ namespace BalatroSeedOracle.ViewModels
         // Track original filter criteria hash to detect MUST/SHOULD/MUSTNOT changes
         private string? _originalCriteriaHash;
 
+        // Track original metadata to preserve on save (prevent overwriting author/date)
+        private DateTime? _originalDateCreated;
+        private string? _originalAuthor;
+
         [ObservableProperty]
         private string _filterName = "";
 
@@ -815,8 +819,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
-                DateCreated = DateTime.Now,
-                Author = author,
+                // BUG FIX: Preserve original DateCreated and Author when re-saving an existing filter
+                DateCreated = _originalDateCreated ?? DateTime.Now,
+                Author = _originalAuthor ?? author,
                 Deck = GetDeckName(SelectedDeckIndex),
                 Stake = GetStakeName(SelectedStakeIndex),
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
@@ -1003,6 +1008,10 @@ namespace BalatroSeedOracle.ViewModels
             // Load basic properties
             FilterName = config.Name ?? "Untitled";
             FilterDescription = config.Description ?? "";
+
+            // BUG FIX: Store original metadata to preserve on save
+            _originalDateCreated = config.DateCreated;
+            _originalAuthor = config.Author;
 
             // Load deck and stake
             if (!string.IsNullOrEmpty(config.Deck))
@@ -1201,6 +1210,10 @@ namespace BalatroSeedOracle.ViewModels
             ItemConfigs.Clear();
             _itemKeyCounter = 0;
             _instanceCounter = 0;
+
+            // BUG FIX: Clear original metadata when starting a new filter
+            _originalDateCreated = null;
+            _originalAuthor = null;
         }
 
         public string GenerateNextItemKey()
