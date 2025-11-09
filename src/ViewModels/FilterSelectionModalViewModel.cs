@@ -134,6 +134,20 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(ShowFilterTab));
             OnPropertyChanged(nameof(ShowScoreTab));
             OnPropertyChanged(nameof(ShowDeckTab));
+
+            // Update deck/stake indices for DeckSpinner display
+            if (value != null)
+            {
+                // Map deck name to index
+                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
+                SelectedDeckIndex = Array.FindIndex(decks, d => d.Equals(value.DeckName, StringComparison.OrdinalIgnoreCase));
+                if (SelectedDeckIndex < 0) SelectedDeckIndex = 0;
+
+                // Map stake name to index
+                var stakes = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
+                SelectedStakeIndex = Array.FindIndex(stakes, s => s.Equals(value.StakeName, StringComparison.OrdinalIgnoreCase));
+                if (SelectedStakeIndex < 0) SelectedStakeIndex = 0;
+            }
         }
 
         partial void OnActiveTabIndexChanged(int value)

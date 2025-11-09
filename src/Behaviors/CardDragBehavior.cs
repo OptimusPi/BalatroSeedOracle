@@ -26,7 +26,7 @@ namespace BalatroSeedOracle.Behaviors
         private bool _isHovering;
         private bool _isDragging;
         private TransformGroup? _transformGroup;
-        private RotateTransform? _rotateTransform;
+        private TranslateTransform? _translateTransform;
         private ScaleTransform? _scaleTransform;
         private Control? _visualChild; // The actual visual content that gets transformed
         private Control? _hitboxElement; // The hitbox element that receives pointer events
@@ -104,15 +104,15 @@ namespace BalatroSeedOracle.Behaviors
                 _visualChild = AssociatedObject;
             }
 
-            // Set up transform group with rotation and scale
-            _rotateTransform = new RotateTransform();
+            // Set up transform group with translation and scale
+            _translateTransform = new TranslateTransform();
             _scaleTransform = new ScaleTransform(
                 UIConstants.DefaultScaleFactor,
                 UIConstants.DefaultScaleFactor
             );
             _transformGroup = new TransformGroup();
             _transformGroup.Children.Add(_scaleTransform);
-            _transformGroup.Children.Add(_rotateTransform);
+            _transformGroup.Children.Add(_translateTransform);
 
             // Apply transforms to the VISUAL CHILD, not the parent container
             _visualChild.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
@@ -217,20 +217,21 @@ namespace BalatroSeedOracle.Behaviors
             if (
                 !IsEnabled
                 || AssociatedObject == null
-                || _rotateTransform == null
+                || _translateTransform == null
                 || _scaleTransform == null
             )
                 return;
 
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
 
-            // Calculate tilt based on current mode
-            double tiltAngle = 0;
-            double tiltAmount = 0;
+            // Calculate lean/translation based on current mode
+            double leanX = 0;
+            double leanY = 0;
+            double leanDistance = 0;
 
             if (_isDragging && _lastPointerPosition.HasValue && _pointerPressedPosition.HasValue)
             {
-                // DRAG MODE: Tilt based on drag offset (like Balatro's focus state)
+                // DRAG MODE: Lean based on drag offset (like Balatro's focus state)
                 var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
                 var centerX = bounds.Width / 2;
                 var centerY = bounds.Height / 2;
@@ -247,16 +248,18 @@ namespace BalatroSeedOracle.Behaviors
                     / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
-                tiltAmount =
+                leanDistance =
                     Math.Abs(offsetY + offsetX - 1 + dx + dy - 1)
-                    * UIConstants.CardTiltFactorRadians;
+                    * UIConstants.CardTiltFactorRadians
+                    * 15.0; // Convert tilt factor to pixel distance
 
-                // Tilt angle based on drag direction
-                tiltAngle = Math.Atan2(dy, dx);
+                // Lean towards drag direction
+                leanX = offsetX * leanDistance;
+                leanY = offsetY * leanDistance;
             }
             else if (_isHovering && _lastPointerPosition.HasValue)
             {
-                // HOVER MODE: Tilt towards cursor
+                // HOVER MODE: Lean towards cursor (magnetic effect)
                 var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
                 var centerX = bounds.Width / 2;
                 var centerY = bounds.Height / 2;
@@ -265,26 +268,36 @@ namespace BalatroSeedOracle.Behaviors
                 var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
-                tiltAmount = Math.Abs(offsetY + offsetX - 1) * UIConstants.CardTiltFactorRadians;
+                leanDistance =
+                    Math.Abs(offsetY + offsetX - 1)
+                    * UIConstants.CardTiltFactorRadians
+                    * 15.0; // Convert tilt factor to pixel distance
 
-                // Tilt angle towards cursor
-                tiltAngle = Math.Atan2(offsetY, offsetX);
+                // Lean towards cursor position
+                leanX = offsetX * leanDistance;
+                leanY = offsetY * leanDistance;
             }
             else
             {
-                // AMBIENT MODE: Breathing tilt (like BalatroCardSwayBehavior)
+                // AMBIENT MODE: Subtle breathing sway (like BalatroCardSwayBehavior)
                 // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
-                tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+                var swayAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-                tiltAmount =
+                var swayAmount =
                     UIConstants.CardAmbientTiltRadians
-                    * (0.5 + Math.Cos(tiltAngle))
-                    * UIConstants.CardTiltFactorRadians;
+                    * (0.5 + Math.Cos(swayAngle))
+                    * UIConstants.CardTiltFactorRadians
+                    * 5.0; // Convert to subtle pixel movement
+
+                // Subtle circular sway motion
+                leanX = Math.Sin(swayAngle) * swayAmount;
+                leanY = Math.Cos(swayAngle) * swayAmount * 0.5; // Less vertical movement
             }
 
-            // Apply rotation (convert radians to degrees)
-            _rotateTransform.Angle = tiltAmount * UIConstants.CardRotationToDegrees;
+            // Apply translation (lean effect)
+            _translateTransform.X = leanX;
+            _translateTransform.Y = leanY;
 
             // Apply juice effect (bounce/wiggle on pickup)
             if (_juiceStartTime.HasValue)
@@ -294,10 +307,10 @@ namespace BalatroSeedOracle.Behaviors
 
                 if (juiceElapsed < juiceDuration)
                 {
-                    // Calculate decay factor (cubic for scale, quadratic for rotation)
+                    // Calculate decay factor (cubic for scale, quadratic for translation wobble)
                     var progress = juiceElapsed / juiceDuration;
                     var decayScale = Math.Max(0, Math.Pow(1 - progress, 3));
-                    var decayRotation = Math.Max(0, Math.Pow(1 - progress, 2));
+                    var decayWobble = Math.Max(0, Math.Pow(1 - progress, 2));
 
                     // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
                     var scaleJuice =
@@ -307,12 +320,19 @@ namespace BalatroSeedOracle.Behaviors
                     _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor + scaleJuice;
                     _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor + scaleJuice;
 
-                    // Rotation wobble: r_amt * sin(FREQUENCY*t) * decay^2
-                    var rotationJuice =
-                        (JuiceAmount * UIConstants.CardJuiceRotationFactor)
+                    // Translation wobble: subtle X/Y oscillation instead of rotation
+                    var wobbleX =
+                        (JuiceAmount * UIConstants.CardJuiceRotationFactor * 10.0)
                         * Math.Sin(UIConstants.JuiceWobbleFrequency * juiceElapsed)
-                        * decayRotation;
-                    _rotateTransform.Angle += rotationJuice * UIConstants.CardRotationToDegrees; // Add to tilt rotation
+                        * decayWobble;
+                    var wobbleY =
+                        (JuiceAmount * UIConstants.CardJuiceRotationFactor * 5.0)
+                        * Math.Cos(UIConstants.JuiceWobbleFrequency * juiceElapsed * 0.7)
+                        * decayWobble;
+
+                    // Add wobble to lean (compound the effects)
+                    _translateTransform.X = leanX + wobbleX;
+                    _translateTransform.Y = leanY + wobbleY;
                 }
                 else
                 {
