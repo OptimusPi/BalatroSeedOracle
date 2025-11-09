@@ -162,11 +162,16 @@ namespace BalatroSeedOracle.Behaviors
             if (!props.IsLeftButtonPressed)
                 return;
 
-            // Ensure the widget moves to front as soon as it is interacted with
-            if (AssociatedObject.DataContext is ViewModels.BaseWidgetViewModel vm)
-            {
-                vm.BringToFront();
-            }
+            // CRITICAL: Always reset ALL drag state on new press to prevent stale values
+            _isDragging = false;
+            _pointerPressedPoint = new Point(double.NaN, double.NaN);
+            _dragStartPoint = new Point(double.NaN, double.NaN);
+            _pressOriginIsOnHandle = false;
+
+            Console.WriteLine($"[DragBehavior] PointerPressed at widget position ({X}, {Y})");
+
+            // DON'T call BringToFront here - it changes ZIndex which causes pointer capture loss!
+            // We'll bring to front when drag completes instead
 
             // PROPER MVVM: Check if clicking the configured drag handle class
             // Default is "widget-header" but can be customized via XAML property
@@ -188,25 +193,22 @@ namespace BalatroSeedOracle.Behaviors
                 // If not clicking the drag handle, clear state and exit (prevents ZOOP!)
                 if (!isOnDragHandle)
                 {
-                    _isDragging = false;
-                    _pressOriginIsOnHandle = false;
-                    _pointerPressedPoint = new Point(double.NaN, double.NaN);
+                    Console.WriteLine($"[DragBehavior] Not on drag handle, ignoring");
                     return;
                 }
                 else
                 {
                     _pressOriginIsOnHandle = true;
+                    Console.WriteLine($"[DragBehavior] On drag handle, ready to drag");
                 }
             }
-
-            // Reset drag state on new press
-            _isDragging = false;
 
             // Store press position - DON'T start dragging yet (wait for movement)
             var parent = AssociatedObject?.Parent as Visual;
             if (parent != null)
             {
                 _pointerPressedPoint = e.GetPosition(parent);
+                Console.WriteLine($"[DragBehavior] Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})");
             }
             else
             {
@@ -262,12 +264,11 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
+                    
+                    Console.WriteLine($"[DragBehavior] Starting drag from ({X}, {Y})");
 
-                    // Bring widget to front when dragging starts
-                    if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm)
-                    {
-                        vm.BringToFront();
-                    }
+                    // DON'T call BringToFront here - it causes pointer capture loss!
+                    // We'll bring to front when drag completes instead
 
                     // Calculate the initial offset from the widget's top-left corner to the mouse position
                     // This allows us to maintain the relative position during drag
@@ -302,6 +303,9 @@ namespace BalatroSeedOracle.Behaviors
                 // Use collision-aware grid snapping for ALL widgets (minimized and expanded)
                 if (AssociatedObject?.DataContext is ViewModels.BaseWidgetViewModel vm)
                 {
+                    // NOW bring widget to front after drag completes (won't cause capture loss)
+                    vm.BringToFront();
+
                     try
                     {
                         var positionService = ServiceHelper.GetService<WidgetPositionService>();
@@ -400,7 +404,13 @@ namespace BalatroSeedOracle.Behaviors
         private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
         {
             // Safety: ensure drag stops if pointer capture is lost
+            Console.WriteLine($"[DragBehavior] POINTER CAPTURE LOST at ({X}, {Y})");
             _isDragging = false;
+            
+            // CRITICAL: Clean up all drag state to prevent stuck behavior
+            _pointerPressedPoint = new Point(double.NaN, double.NaN);
+            _dragStartPoint = new Point(double.NaN, double.NaN);
+            _pressOriginIsOnHandle = false;
         }
     }
 }

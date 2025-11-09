@@ -163,7 +163,7 @@
         </Grid>
         
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
-        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}">
+        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" Background="Transparent" IsHitTestVisible="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -175,7 +175,8 @@
 
                         Foreground="{StaticResource White}"
                         HorizontalAlignment="Center"
-                        Margin="0,4,4,4"/>
+                        Margin="0,4,4,4"
+                        IsHitTestVisible="False"/>
 
             <!-- All Docks Container - Float off bottom of screen -->
             <StackPanel Grid.Row="1" 
@@ -183,7 +184,8 @@
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Bottom"
                         Margin="0,0,0,40"
-                        Spacing="20">
+                        Spacing="20"
+                        IsHitTestVisible="True">
                 
                 <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
                 <Grid>

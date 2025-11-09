@@ -106,7 +106,8 @@ namespace BalatroSeedOracle.ViewModels
         private void Expand()
         {
             IsMinimized = false;
-            BringToFront(); // Ensure expanded widget comes to front
+            // DON'T call BringToFront here - it causes pointer capture loss during drag events
+            // Widgets will naturally come to front when dragged (in OnPointerReleased)
             OnExpanded();
         }
 
