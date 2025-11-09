@@ -2809,15 +2809,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             else if (config.ItemType.Contains("Tarot"))
             {
-                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+                filterItem.ItemImage = ss.GetTarotImage(config.ItemName);
             }
             else if (config.ItemType.Contains("Spectral"))
             {
-                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+                filterItem.ItemImage = ss.GetSpectralImage(config.ItemName);
             }
             else if (config.ItemType.Contains("Planet"))
             {
-                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+                filterItem.ItemImage = ss.GetPlanetCardImage(config.ItemName);
             }
             else if (config.ItemType.Contains("Tag"))
             {
