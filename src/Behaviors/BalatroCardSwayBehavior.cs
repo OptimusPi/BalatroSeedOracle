@@ -48,7 +48,7 @@ namespace BalatroSeedOracle.Behaviors
 
             // Set up render transform if not already set
             // If there's already a TransformGroup (from ResponsiveCard setup), we'll use that
-            // Otherwise create a new RotateTransform
+            // Otherwise create a new TranslateTransform (NOT RotateTransform!)
             if (AssociatedObject.RenderTransform == null)
             {
                 AssociatedObject.RenderTransformOrigin = new RelativePoint(
@@ -56,7 +56,7 @@ namespace BalatroSeedOracle.Behaviors
                     0.5,
                     RelativeUnit.Relative
                 );
-                AssociatedObject.RenderTransform = new RotateTransform();
+                AssociatedObject.RenderTransform = new TranslateTransform();
             }
 
             // Start animation timer (60 FPS like Balatro)

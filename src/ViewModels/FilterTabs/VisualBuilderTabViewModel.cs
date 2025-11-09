@@ -2325,7 +2325,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // DO NOT update items already in drop zones - users configure those individually!
+            // Apply to all existing items in drop zones
+            if (_parentViewModel != null)
+            {
+                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                {
+                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                    {
+                        config.Edition = editionValue;
+                    }
+                }
+
+                // Also update visual items in drop zones
+                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                {
+                    if (item.Category == "Joker" || item.Category == "StandardCard")
+                    {
+                        item.Edition = editionValue;
+                    }
+                }
+
+                TriggerAutoSave();
+            }
 
             // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
