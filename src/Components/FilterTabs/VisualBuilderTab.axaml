@@ -623,14 +623,14 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <!-- TODO: Need to compute Canvas.Left, Canvas.Top, and RenderTransform in code-behind -->
-                                                <Grid Width="48" Height="64">
+                                                <Grid Width="40" Height="53">
                                                     <Image Source="{Binding ItemImage}"
-                                                           Width="48"
-                                                           Height="64"
+                                                           Width="40"
+                                                           Height="53"
                                                            Stretch="Uniform"/>
                                                     <Image Source="{Binding SoulFaceImage}"
-                                                           Width="48"
-                                                           Height="64"
+                                                           Width="40"
+                                                           Height="53"
                                                            Stretch="Uniform"
                                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                                 </Grid>
@@ -893,7 +893,7 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="48" Height="64">
+                                                        <Grid Width="40" Height="53">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
@@ -1060,7 +1060,7 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="48" Height="64">
+                                                        <Grid Width="40" Height="53">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
@@ -1227,7 +1227,7 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="54" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="48" Height="64">
+                                                        <Grid Width="40" Height="53">
                                                             <Image Source="{Binding ItemImage}"
                                                                    Width="48"
                                                                    Height="64"
