@@ -9,7 +9,7 @@
         <!-- Expansion animation on hover -->
         <Style Selector="Border#OperatorContainer:pointerover">
             <Setter Property="MinWidth" Value="220"/>
-            <Setter Property="MinHeight" Value="140"/>
+            <Setter Property="MinHeight" Value="160"/>
             <Setter Property="BorderThickness" Value="3"/>
         </Style>
 
@@ -18,7 +18,7 @@
             <Setter Property="BorderBrush" Value="#FFFFFF"/>
             <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="MinWidth" Value="220"/>
-            <Setter Property="MinHeight" Value="140"/>
+            <Setter Property="MinHeight" Value="160"/>
         </Style>
 
         <!-- Semi-transparent overlay for drop zone -->
@@ -73,11 +73,11 @@
             <Border
                 Grid.Row="1"
                 Name="ChildrenDropZone"
-                Padding="12"
+                Padding="8"
                 Background="{StaticResource DarkBackground}"
                 BorderThickness="0"
                 CornerRadius="0,0,6,6"
-                MinHeight="80"
+                MinHeight="100"
                 ClipToBounds="False"
                 DragDrop.AllowDrop="True">
 
@@ -86,7 +86,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         MinWidth="160"
-                        MinHeight="80"
+                        MinHeight="100"
                         ClipToBounds="False">
                     <ItemsControl
                         Name="ChildrenItemsControl"
