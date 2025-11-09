@@ -1483,22 +1483,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragAdorner = new Border
                 {
                     Background = Brushes.Transparent,
-                    Child = new StackPanel
-                    {
-                        Children =
-                        {
-                            cardContent, // Card with physics
-                            new TextBlock
-                            {
-                                Text = item?.DisplayName ?? "Unknown Item",
-                                Foreground = Brushes.White,
-                                FontSize = 14,
-                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                                Margin = new Avalonia.Thickness(0, 4, 0, 0),
-                                Opacity = 1,
-                            },
-                        },
-                    },
+                    Child = cardContent, // Just the card, no label (cleaner drag visual)
                 };
 
                 // Position the drag adorner (CardDragBehavior handles rotation/tilt)
