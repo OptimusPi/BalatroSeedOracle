@@ -1202,11 +1202,32 @@
                                                                    Foreground="{StaticResource White}"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- DeckAndStakeSelector component with two-way binding -->
-                                                    <components:DeckAndStakeSelector Grid.Row="1"
-                                                        DeckIndex="{Binding SelectedDeckIndex, Mode=TwoWay}"
-                                                        StakeIndex="{Binding SelectedStakeIndex, Mode=TwoWay}"
-                                                        Margin="20"/>
+                                                    <!-- Display-only: Deck name, stake, and description (NO ARROWS!) -->
+                                                    <StackPanel Grid.Row="1" Margin="20" Spacing="15" HorizontalAlignment="Center">
+                                                        <!-- Deck and Stake display -->
+                                                        <StackPanel Spacing="8">
+                                                            <TextBlock Text="{Binding SelectedDeckName}"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="18"
+                                                                       Foreground="{StaticResource Black}"
+                                                                       HorizontalAlignment="Center"/>
+
+                                                            <TextBlock Text="{Binding SelectedFilter.StakeName}"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="14"
+                                                                       Foreground="{StaticResource Blue}"
+                                                                       HorizontalAlignment="Center"/>
+                                                        </StackPanel>
+
+                                                        <!-- Deck description -->
+                                                        <TextBlock Text="{Binding SelectedDeckDescription}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="{StaticResource Black}"
+                                                                   TextWrapping="Wrap"
+                                                                   TextAlignment="Center"
+                                                                   MaxWidth="350"/>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
 
@@ -1361,11 +1382,11 @@
         </Style>
 
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource DarkRed}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Background" Value="{StaticResource DarkRed}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">
