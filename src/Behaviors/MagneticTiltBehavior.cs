@@ -93,6 +93,50 @@ namespace BalatroSeedOracle.Behaviors
             _isEnabled = true;
             _lastPointerPosition = e.GetPosition(AssociatedObject);
             _tiltTimer?.Start();
+
+            // BALATRO JUICE_UP EFFECT: Quick scale pulse on hover (card.lua:4307)
+            // self:juice_up(0.05, 0.03) - adds satisfying "pop" when hovering!
+            JuiceUp(0.05);
+        }
+
+        /// <summary>
+        /// Balatro's juice_up effect - quick scale pulse for tactile feedback
+        /// </summary>
+        private void JuiceUp(double scaleAmount)
+        {
+            if (AssociatedObject == null)
+                return;
+
+            // Find ScaleTransform
+            ScaleTransform? scaleTransform = null;
+
+            if (AssociatedObject.RenderTransform is ScaleTransform scale)
+            {
+                scaleTransform = scale;
+            }
+            else if (AssociatedObject.RenderTransform is TransformGroup group)
+            {
+                scaleTransform = group.Children.OfType<ScaleTransform>().FirstOrDefault();
+            }
+
+            if (scaleTransform != null)
+            {
+                // Quick scale pulse: 1.0 → 1.05 → 1.0
+                var originalScaleX = scaleTransform.ScaleX;
+                var originalScaleY = scaleTransform.ScaleY;
+                var targetScale = 1.0 + (scaleAmount * 0.4); // Balatro uses scale*0.4
+
+                // Pulse up
+                scaleTransform.ScaleX = targetScale;
+                scaleTransform.ScaleY = targetScale;
+
+                // Pulse back down after 50ms
+                Dispatcher.UIThread.Post(() =>
+                {
+                    scaleTransform.ScaleX = originalScaleX;
+                    scaleTransform.ScaleY = originalScaleY;
+                }, DispatcherPriority.Render);
+            }
         }
 
         private void OnPointerExited(object? sender, PointerEventArgs e)
