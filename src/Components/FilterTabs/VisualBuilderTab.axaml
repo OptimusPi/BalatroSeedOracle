@@ -397,7 +397,14 @@
                                                                 Cursor="Hand"
                                                                 ZIndex="0"
                                                                 ClipToBounds="False"
-                                                                IsHitTestVisible="False">
+                                                                IsHitTestVisible="False"
+                                                                RenderTransformOrigin="0.5,0.5">
+                                                            <Border.RenderTransform>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                            </Border.RenderTransform>
+                                                            <i:Interaction.Behaviors>
+                                                                <behaviors:MagneticTiltBehavior ScalePulseAmount="0.05"/>
+                                                            </i:Interaction.Behaviors>
                                                             <StackPanel Spacing="2">
                                                                 <Grid Height="90">
                                                                     <Image Source="{Binding ItemImage}"
@@ -580,15 +587,15 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Width="95" Height="126" Margin="3">
+                                            <Grid Width="71" Height="95" Margin="3">
                                                 <!-- Card image -->
                                                 <Image Source="{Binding ItemImage}"
-                                                       Width="85"
-                                                       Height="113"
+                                                       Width="71"
+                                                       Height="95"
                                                        Stretch="Uniform"/>
                                                 <Image Source="{Binding SoulFaceImage}"
-                                                       Width="85"
-                                                       Height="113"
+                                                       Width="71"
+                                                       Height="95"
                                                        Stretch="Uniform"
                                                        IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                             </Grid>
@@ -609,14 +616,14 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <!-- TODO: Need to compute Canvas.Left, Canvas.Top, and RenderTransform in code-behind -->
-                                                <Grid Width="71" Height="94">
+                                                <Grid Width="71" Height="95">
                                                     <Image Source="{Binding ItemImage}"
                                                            Width="71"
-                                                           Height="94"
+                                                           Height="95"
                                                            Stretch="Uniform"/>
                                                     <Image Source="{Binding SoulFaceImage}"
                                                            Width="71"
-                                                           Height="94"
+                                                           Height="95"
                                                            Stretch="Uniform"
                                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                                 </Grid>
@@ -879,10 +886,10 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="85" Height="113">
+                                                        <Grid Width="71" Height="95">
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -890,8 +897,8 @@
 
                                                             <!-- Edition overlay -->
                                                             <Image Source="{Binding EditionImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -900,8 +907,8 @@
 
                                                             <!-- Eternal sticker overlay -->
                                                             <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -910,8 +917,8 @@
 
                                                             <!-- Perishable sticker overlay -->
                                                             <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -920,8 +927,8 @@
 
                                                             <!-- Rental sticker overlay -->
                                                             <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -930,8 +937,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1046,10 +1053,10 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="85" Height="113">
+                                                        <Grid Width="71" Height="95">
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1057,8 +1064,8 @@
 
                                                             <!-- Edition overlay -->
                                                             <Image Source="{Binding EditionImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1067,8 +1074,8 @@
 
                                                             <!-- Eternal sticker overlay -->
                                                             <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1077,8 +1084,8 @@
 
                                                             <!-- Perishable sticker overlay -->
                                                             <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1087,8 +1094,8 @@
 
                                                             <!-- Rental sticker overlay -->
                                                             <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1097,8 +1104,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1213,10 +1220,10 @@
                                                     <!-- Just card image and label - no cream border! -->
                                                     <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
                                                         <!-- Card image with soul overlay -->
-                                                        <Grid Width="85" Height="113">
+                                                        <Grid Width="71" Height="95">
                                                             <Image Source="{Binding ItemImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1224,8 +1231,8 @@
 
                                                             <!-- Edition overlay -->
                                                             <Image Source="{Binding EditionImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1234,8 +1241,8 @@
 
                                                             <!-- Eternal sticker overlay -->
                                                             <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1244,8 +1251,8 @@
 
                                                             <!-- Perishable sticker overlay -->
                                                             <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1254,8 +1261,8 @@
 
                                                             <!-- Rental sticker overlay -->
                                                             <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"
@@ -1264,8 +1271,8 @@
 
                                                             <!-- Soul face overlay for legendary jokers -->
                                                             <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="85"
-                                                                   Height="113"
+                                                                   Width="71"
+                                                                   Height="95"
                                                                    Stretch="Uniform"
                                                                    HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center"

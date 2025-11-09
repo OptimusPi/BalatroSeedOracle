@@ -1428,8 +1428,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 else
                 {
-                    // Regular item - show card image (SMALLER for drag ghost)
-                    var imageGrid = new Grid { Width = 60, Height = 80 };
+                    // Regular item - show card image (native 1x Balatro sprite size)
+                    var imageGrid = new Grid { Width = 71, Height = 95 };
 
                     // HIGH-003 FIX: Always add image with fallback for null sources
                     var imageSource = item?.ItemImage;
@@ -1442,8 +1442,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         new Image
                         {
                             Source = imageSource, // Can be null - Avalonia handles gracefully
-                            Width = 60,
-                            Height = 80,
+                            Width = 71,
+                            Height = 95,
                             Stretch = Stretch.Uniform,
                             Opacity = imageSource != null ? 1.0 : 0.3, // NO transparency for valid images
                         }
@@ -1456,8 +1456,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             new Image
                             {
                                 Source = item.SoulFaceImage,
-                                Width = 60,
-                                Height = 80,
+                                Width = 71,
+                                Height = 95,
                                 Stretch = Stretch.Uniform,
                                 Opacity = 1.0,
                             }
