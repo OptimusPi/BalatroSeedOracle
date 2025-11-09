@@ -139,9 +139,8 @@ namespace BalatroSeedOracle.Behaviors
                 var originalSource = AssociatedObject.Source;
                 DebugLogger.Log("CardFlip", $"Cached original source: {originalSource != null}");
 
-                // Get deck back sprite at DISPLAY size (64x85) to match actual card container size
-                // This prevents cropping that occurs when a 71x95 sprite is forced into 64x85 container
-                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 64, 85);
+                // Get deck back sprite at FULL Balatro size (71x95) - cards have room now!
+                var deckBackSprite = SpriteService.Instance.GetDeckImage(DeckName, 71, 95);
                 DebugLogger.Log("CardFlip", $"Got deck back sprite: {deckBackSprite != null}");
 
                 if (deckBackSprite == null || originalSource == null)

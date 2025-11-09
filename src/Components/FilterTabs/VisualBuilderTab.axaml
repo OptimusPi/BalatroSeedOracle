@@ -387,26 +387,22 @@
                                         <!-- Items in Group -->
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
-                                                    <!-- SOLUTION: Grid with two overlapping layers -->
-                                                    <Grid Margin="0,2" Width="54" Height="90">
+                                                <DataTemplate DataType="models:FilterItem">
+                                                    <Grid Margin="0,2" Width="70" Height="110">
                                                         <i:Interaction.Behaviors>
-                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
                                                         </i:Interaction.Behaviors>
-                                                        <!-- Only regular FilterItem cards - operators removed -->
                                                         <Border Background="Transparent"
                                                                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                                                                 Cursor="Hand"
                                                                 ZIndex="0"
                                                                 ClipToBounds="False"
                                                                 IsHitTestVisible="False">
-                                                            <!-- Just the card sprite and label - no border wrapper! -->
                                                             <StackPanel Spacing="2">
-                                                                <!-- Card image with soul overlay -->
-                                                                <Grid Width="48" Height="64">
+                                                                <Grid Width="71" Height="95">
                                                                     <Image Source="{Binding ItemImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center">
@@ -419,67 +415,65 @@
                                                                     </Image>
 
                                                                     <Image Source="{Binding EditionImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                                     <Image Source="{Binding EternalStickerImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                                     <Image Source="{Binding PerishableStickerImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                                     <Image Source="{Binding RentalStickerImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                                                                     <Image Source="{Binding SoulFaceImage}"
-                                                                           Width="48"
-                                                                           Height="64"
+                                                                           Width="71"
+                                                                           Height="95"
                                                                            Stretch="Uniform"
                                                                            HorizontalAlignment="Center"
                                                                            VerticalAlignment="Center"
                                                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                                                 </Grid>
 
-                                                                <!-- Card name floating below -->
                                                                 <TextBlock Text="{Binding DisplayName}"
                                                                            Foreground="#FFFFFF"
                                                                            FontFamily="{StaticResource BalatroFont}"
-                                                                           FontSize="8"
+                                                                           FontSize="10"
                                                                            HorizontalAlignment="Center"
                                                                            TextAlignment="Center"
                                                                            TextWrapping="Wrap"
-                                                                           MaxWidth="54"/>
+                                                                           MaxWidth="70"/>
                                                             </StackPanel>
                                                         </Border>
 
-                                                        <!-- LAYER 2: Invisible hitbox that NEVER rotates (Z-Index 1, TOP) -->
                                                         <Border ZIndex="1"
                                                                 Background="Transparent"
                                                                 Cursor="Hand"
                                                                 IsHitTestVisible="True"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Width="54"
-                                                                Height="90"/>
+                                                                Width="70"
+                                                                Height="110"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
