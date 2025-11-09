@@ -2,9 +2,16 @@ name: Parcel Release
 
 on:
   push:
+    branches:
+      - main
+      - qa
     tags:
       - 'v*'
   workflow_dispatch:
+    # Only allow manual trigger from main/qa branches
+    branches:
+      - main
+      - qa
 
 jobs:
   build-and-package:

@@ -34,14 +34,6 @@
         <Setter Property="IsTabStop" Value="True" />
     </Style>
 
-    <!-- Button hover - enhanced shadow effects for red buttons -->
-    <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pointerover /template/ TextBlock">
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-    
     <!-- Prevent text selection/highlighting in all buttons -->
     <Style Selector="Button TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
