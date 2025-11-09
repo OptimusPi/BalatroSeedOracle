@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             mc:Ignorable="d" d:DesignWidth="95" d:DesignHeight="120"
+             x:Class="BalatroSeedOracle.Components.FilterItemCard"
+             x:DataType="models:FilterItem">
+
+    <!-- SELF-CONTAINED Balatro card component with ALL behaviors baked in -->
+    <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
+        <!-- Card image with all overlays and behaviors (71x95 native Balatro size) -->
+        <Border Background="Transparent"
+                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Border.RenderTransform>
+            <i:Interaction.Behaviors>
+                <behaviors:MagneticTiltBehavior ScalePulseAmount="0.05"/>
+            </i:Interaction.Behaviors>
+
+            <Grid Width="71" Height="95">
+                <!-- Base card image with CardFlipOnTriggerBehavior -->
+                <Image Name="BaseCardImage"
+                       Source="{Binding ItemImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsHitTestVisible="False"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Image.RenderTransform>
+                </Image>
+
+                <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
+                <Image Source="{Binding EditionImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Eternal sticker overlay -->
+                <Image Source="{Binding EternalStickerImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Perishable sticker overlay -->
+                <Image Source="{Binding PerishableStickerImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Rental sticker overlay -->
+                <Image Source="{Binding RentalStickerImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Soul face overlay for legendary jokers -->
+                <Image Source="{Binding SoulFaceImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+            </Grid>
+        </Border>
+
+        <!-- Card name label -->
+        <TextBlock Text="{Binding DisplayName}"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="10"
+                   Foreground="#FFFFFF"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   MaxWidth="95"/>
+    </StackPanel>
+</UserControl>

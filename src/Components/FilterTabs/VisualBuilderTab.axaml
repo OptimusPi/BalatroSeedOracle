@@ -387,79 +387,19 @@
                                         <!-- Items in Group -->
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="models:FilterItem">
+                                                <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
                                                     <Grid Margin="1,2" Height="120">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
                                                         </i:Interaction.Behaviors>
-                                                        <Border Background="Transparent"
-                                                                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
-                                                                Cursor="Hand"
-                                                                ZIndex="0"
-                                                                ClipToBounds="False"
-                                                                IsHitTestVisible="False"
-                                                                RenderTransformOrigin="0.5,0.5">
-                                                            <Border.RenderTransform>
-                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                                            </Border.RenderTransform>
-                                                            <i:Interaction.Behaviors>
-                                                                <behaviors:MagneticTiltBehavior ScalePulseAmount="0.05"/>
-                                                            </i:Interaction.Behaviors>
-                                                            <StackPanel Spacing="2">
-                                                                <Grid Height="90">
-                                                                    <Image Source="{Binding ItemImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center">
-                                                                        <i:Interaction.Behaviors>
-                                                                            <behaviors:CardFlipOnTriggerBehavior
-                                                                                DeckName="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).SelectedDeck}"
-                                                                                FlipTrigger="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).FlipAnimationTrigger}"
-                                                                                StaggerDelay="{Binding StaggerDelay}"/>
-                                                                        </i:Interaction.Behaviors>
-                                                                    </Image>
 
-                                                                    <Image Source="{Binding EditionImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                        <!-- Self-contained FilterItemCard with all behaviors baked in -->
+                                                        <components:FilterItemCard DataContext="{Binding}"
+                                                                                   FlipTrigger="{Binding $parent[UserControl].DataContext.FlipAnimationTrigger}"
+                                                                                   StaggerDelay="{Binding StaggerDelay}"
+                                                                                   DeckName="Red"/>
 
-                                                                    <Image Source="{Binding EternalStickerImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                                    <Image Source="{Binding PerishableStickerImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                                    <Image Source="{Binding RentalStickerImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-
-                                                                    <Image Source="{Binding SoulFaceImage}"
-                                                                           Stretch="Uniform"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                                </Grid>
-
-                                                                <TextBlock Text="{Binding DisplayName}"
-                                                                           Foreground="#FFFFFF"
-                                                                           FontFamily="{StaticResource BalatroFont}"
-                                                                           FontSize="10"
-                                                                           HorizontalAlignment="Center"
-                                                                           TextAlignment="Center"
-                                                                           TextWrapping="Wrap"/>
-                                                            </StackPanel>
-                                                        </Border>
-
+                                                        <!-- Hitbox overlay for pointer events -->
                                                         <Border ZIndex="1"
                                                                 Background="Transparent"
                                                                 Cursor="Hand"
@@ -883,101 +823,33 @@
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                     </i:Interaction.Behaviors>
 
-                                                    <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
-                                                        <!-- Card image with soul overlay -->
-                                                        <Grid Width="71" Height="95">
-                                                            <Image Source="{Binding ItemImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsHitTestVisible="False"/>
+                                                    <!-- Reusable FilterItemCard component with Remove button -->
+                                                    <Grid Width="95" IsHitTestVisible="False">
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
 
-                                                            <!-- Edition overlay -->
-                                                            <Image Source="{Binding EditionImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Eternal sticker overlay -->
-                                                            <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Perishable sticker overlay -->
-                                                            <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Rental sticker overlay -->
-                                                            <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Soul face overlay for legendary jokers -->
-                                                            <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Hover-only Remove Button -->
-                                                            <Button Content="×"
-                                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Background="{StaticResource Red}"
-                                                                    Foreground="White"
-                                                                    FontSize="12"
-                                                                    Width="18"
-                                                                    Height="18"
-                                                                    CornerRadius="9"
-                                                                    Padding="0"
-                                                                    HorizontalAlignment="Right"
-                                                                    VerticalAlignment="Top"
-                                                                    Margin="0,-6,-6,0"
-                                                                    IsVisible="False"
-                                                                    Name="RemoveButton">
-                                                                <Button.Styles>
-                                                                    <Style Selector="Button:pointerover">
-                                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                                    </Style>
-                                                                </Button.Styles>
-                                                            </Button>
-                                                        </Grid>
-
-                                                        <!-- Card name floating below -->
-                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="7"
-                                                                   Foreground="#FFFFFF"
-                                                                   TextAlignment="Center"
-                                                                   TextWrapping="Wrap"
-                                                                   MaxWidth="95"/>
-                                                    </StackPanel>
+                                                        <!-- Hover-only Remove Button -->
+                                                        <Button Content="×"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                FontSize="12"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                IsVisible="False"
+                                                                Name="RemoveButton">
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
                                                 </Border>
                                             </DataTemplate>
                                         </ContentControl.DataTemplates>
@@ -1050,101 +922,33 @@
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                     </i:Interaction.Behaviors>
 
-                                                    <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
-                                                        <!-- Card image with soul overlay -->
-                                                        <Grid Width="71" Height="95">
-                                                            <Image Source="{Binding ItemImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsHitTestVisible="False"/>
+                                                    <!-- Reusable FilterItemCard component with Remove button -->
+                                                    <Grid Width="95" IsHitTestVisible="False">
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
 
-                                                            <!-- Edition overlay -->
-                                                            <Image Source="{Binding EditionImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Eternal sticker overlay -->
-                                                            <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Perishable sticker overlay -->
-                                                            <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Rental sticker overlay -->
-                                                            <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Soul face overlay for legendary jokers -->
-                                                            <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Hover-only Remove Button -->
-                                                            <Button Content="×"
-                                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Background="{StaticResource Red}"
-                                                                    Foreground="White"
-                                                                    FontSize="12"
-                                                                    Width="18"
-                                                                    Height="18"
-                                                                    CornerRadius="9"
-                                                                    Padding="0"
-                                                                    HorizontalAlignment="Right"
-                                                                    VerticalAlignment="Top"
-                                                                    Margin="0,-6,-6,0"
-                                                                    IsVisible="False"
-                                                                    Name="RemoveButton">
-                                                                <Button.Styles>
-                                                                    <Style Selector="Button:pointerover">
-                                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                                    </Style>
-                                                                </Button.Styles>
-                                                            </Button>
-                                                        </Grid>
-
-                                                        <!-- Card name floating below -->
-                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="7"
-                                                                   Foreground="#FFFFFF"
-                                                                   TextAlignment="Center"
-                                                                   TextWrapping="Wrap"
-                                                                   MaxWidth="95"/>
-                                                    </StackPanel>
+                                                        <!-- Hover-only Remove Button -->
+                                                        <Button Content="×"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                FontSize="12"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                IsVisible="False"
+                                                                Name="RemoveButton">
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
                                                 </Border>
                                             </DataTemplate>
                                         </ContentControl.DataTemplates>
@@ -1217,101 +1021,33 @@
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                     </i:Interaction.Behaviors>
 
-                                                    <!-- Just card image and label - no cream border! -->
-                                                    <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
-                                                        <!-- Card image with soul overlay -->
-                                                        <Grid Width="71" Height="95">
-                                                            <Image Source="{Binding ItemImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsHitTestVisible="False"/>
+                                                    <!-- Reusable FilterItemCard component with Remove button -->
+                                                    <Grid Width="95" IsHitTestVisible="False">
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
 
-                                                            <!-- Edition overlay -->
-                                                            <Image Source="{Binding EditionImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Eternal sticker overlay -->
-                                                            <Image Source="{Binding EternalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Perishable sticker overlay -->
-                                                            <Image Source="{Binding PerishableStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Rental sticker overlay -->
-                                                            <Image Source="{Binding RentalStickerImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Soul face overlay for legendary jokers -->
-                                                            <Image Source="{Binding SoulFaceImage}"
-                                                                   Width="71"
-                                                                   Height="95"
-                                                                   Stretch="Uniform"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                   IsHitTestVisible="False"/>
-
-                                                            <!-- Hover-only Remove Button -->
-                                                            <Button Content="×"
-                                                                    Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Background="{StaticResource Red}"
-                                                                    Foreground="White"
-                                                                    FontSize="12"
-                                                                    Width="18"
-                                                                    Height="18"
-                                                                    CornerRadius="9"
-                                                                    Padding="0"
-                                                                    HorizontalAlignment="Right"
-                                                                    VerticalAlignment="Top"
-                                                                    Margin="0,-6,-6,0"
-                                                                    IsVisible="False"
-                                                                    Name="RemoveButton">
-                                                                <Button.Styles>
-                                                                    <Style Selector="Button:pointerover">
-                                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                                    </Style>
-                                                                </Button.Styles>
-                                                            </Button>
-                                                        </Grid>
-
-                                                        <!-- Card name floating below -->
-                                                        <TextBlock Text="{Binding DisplayName}"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="7"
-                                                                   Foreground="#FFFFFF"
-                                                                   TextAlignment="Center"
-                                                                   TextWrapping="Wrap"
-                                                                   MaxWidth="95"/>
-                                                    </StackPanel>
+                                                        <!-- Hover-only Remove Button -->
+                                                        <Button Content="×"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                FontSize="12"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                IsVisible="False"
+                                                                Name="RemoveButton">
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
                                                 </Border>
                                             </DataTemplate>
                                         </ContentControl.DataTemplates>
