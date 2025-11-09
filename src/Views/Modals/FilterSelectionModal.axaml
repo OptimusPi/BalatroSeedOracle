@@ -1202,32 +1202,14 @@
                                                                    Foreground="{StaticResource White}"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Display-only: Deck name, stake, and description (NO ARROWS!) -->
-                                                    <StackPanel Grid.Row="1" Margin="20" Spacing="15" HorizontalAlignment="Center">
-                                                        <!-- Deck and Stake display -->
-                                                        <StackPanel Spacing="8">
-                                                            <TextBlock Text="{Binding SelectedDeckName}"
-                                                                       FontFamily="{StaticResource BalatroFont}"
-                                                                       FontSize="18"
-                                                                       Foreground="{StaticResource Black}"
-                                                                       HorizontalAlignment="Center"/>
-
-                                                            <TextBlock Text="{Binding SelectedFilter.StakeName}"
-                                                                       FontFamily="{StaticResource BalatroFont}"
-                                                                       FontSize="14"
-                                                                       Foreground="{StaticResource Blue}"
-                                                                       HorizontalAlignment="Center"/>
-                                                        </StackPanel>
-
-                                                        <!-- Deck description -->
-                                                        <TextBlock Text="{Binding SelectedDeckDescription}"
-                                                                   FontFamily="{StaticResource BalatroFont}"
-                                                                   FontSize="13"
-                                                                   Foreground="{StaticResource Black}"
-                                                                   TextWrapping="Wrap"
-                                                                   TextAlignment="Center"
-                                                                   MaxWidth="350"/>
-                                                    </StackPanel>
+                                                    <!-- Display-only: Deck sprite with stake seal (NO ARROWS!) -->
+                                                    <components:DeckSpinner Grid.Row="1"
+                                                        ShowArrows="False"
+                                                        SelectedDeckIndex="{Binding SelectedDeckIndex}"
+                                                        StakeIndex="{Binding SelectedStakeIndex}"
+                                                        Margin="20"
+                                                        HorizontalAlignment="Center"
+                                                        IsHitTestVisible="False"/>
                                                 </Grid>
                                             </Border>
 
