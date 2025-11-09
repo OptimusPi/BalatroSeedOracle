@@ -53,22 +53,6 @@
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Padding="{TemplateBinding Padding}"
                             Margin="0,0,0,4">
-                        <ContentPresenter Name="PART_ContentPresenter"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}">
-                            <ContentPresenter.Styles>
-                                <Style Selector="TextBlock">
-                                    <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
-                                    <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
-                                    <Setter Property="FontWeight" Value="{Binding $parent[Button].FontWeight}"/>
-                                    <Setter Property="FontFamily" Value="{Binding $parent[Button].FontFamily}"/>
-                                    <!-- REMOVED IsHitTestVisible to prevent text selection bug -->
-                                    <Setter Property="Background" Value="Transparent"/>
-                                </Style>
-                            </ContentPresenter.Styles>
-                        </ContentPresenter>
                     </Border>
                 </Grid>
             </ControlTemplate>
@@ -84,15 +68,12 @@
     </Style>
     
     <!-- Prevent text selection/highlighting in all buttons -->
-    <!-- TEMPORARILY DISABLED TO TEST
     <Style Selector="Button TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="SelectionBrush" Value="Transparent" />
     </Style>
-    -->
     <!-- REMOVED - These were causing text selection issues
     <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="IsHitTestVisible" Value="True" />
