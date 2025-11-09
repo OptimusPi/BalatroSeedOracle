@@ -32,31 +32,6 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsTabStop" Value="True" />
-        <!-- Transitions removed - cause infinite loops during rapid clicking -->
-        <Setter Property="Template">
-            <ControlTemplate TargetType="Button">
-                <Grid>
-                    <!-- Dark drop shadow - creates 3D effect -->
-                    <Border Name="DropShadow"
-                            Background="{StaticResource TransparentDark3}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Margin="2,2,0,0"/>
-                    <!-- Dark bottom shadow -->
-                    <Border Name="BottomShadow"
-                            Background="{StaticResource HoverShadow}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Margin="0,4,0,0"/>
-                    <!-- Main button face -->
-                    <Border Name="ButtonFace"
-                            Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="{TemplateBinding Padding}"
-                            Margin="0,0,0,4">
-                    </Border>
-                </Grid>
-            </ControlTemplate>
-        </Setter>
     </Style>
 
     <!-- Button hover - enhanced shadow effects for red buttons -->
