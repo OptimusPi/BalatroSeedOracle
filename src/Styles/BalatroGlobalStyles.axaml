@@ -18,7 +18,7 @@
     <!-- ALL Buttons get Balatro styling by default (except window chrome buttons) -->
     <Style Selector="Button:not(.SystemCaptionButton)">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-        
+
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="Background" Value="{StaticResource ModalGrey}" /> <!-- Default gray like in Balatro -->
@@ -32,29 +32,55 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsTabStop" Value="True" />
+        <!-- Transitions removed - cause infinite loops during rapid clicking -->
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Grid>
+                    <!-- Dark drop shadow - creates 3D effect -->
+                    <Border Name="DropShadow"
+                            Background="{StaticResource TransparentDark3}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="2,2,0,0"/>
+                    <!-- Dark bottom shadow -->
+                    <Border Name="BottomShadow"
+                            Background="{StaticResource HoverShadow}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0,4,0,0"/>
+                    <!-- Main button face -->
+                    <Border Name="ButtonFace"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="0,0,0,4">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                                          TextBlock.FontSize="{TemplateBinding FontSize}"
+                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                          TextBlock.FontFamily="{TemplateBinding FontFamily}"/>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
     </Style>
 
-    <!-- Prevent text selection/highlighting in all buttons -->
+    <!-- Prevent text selection in all buttons -->
     <Style Selector="Button TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="IsTabStop" Value="False" />
-    </Style>
-    <!-- REMOVED - These were causing text selection issues
-    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
     <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter TextBlock">
         <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="Background" Value="Transparent" />
     </Style>
-    <Style Selector="Button:not(.SystemCaptionButton) /template/ Border#ButtonFace TextBlock">
-        <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="Background" Value="Transparent" />
+
+    <!-- Enhanced red button hover shadow using exact color (precise resource) -->
+    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
+        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
     </Style>
-    -->
-    
+
     <!-- Button disabled state -->
     <Style Selector="Button:not(.SystemCaptionButton):disabled">
         <Setter Property="Opacity" Value="0.6" />
@@ -62,7 +88,7 @@
     <Style Selector="Button:not(.SystemCaptionButton):disabled /template/ Border#ButtonFace">
         <Setter Property="Background" Value="{StaticResource ModalBorder}" />
     </Style>
-    
+
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
@@ -510,32 +536,6 @@
     <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
-    </Style>
-
-    <!-- Button pressed state - move down and hide shadows like back-button -->
-    <Style Selector="Button:not(.SystemCaptionButton):pressed">
-        <Setter Property="RenderTransform" Value="translateY(3px)"/>
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
-        <Setter Property="IsVisible" Value="False"/>
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#BottomShadow">
-        <Setter Property="IsVisible" Value="False"/>
-    </Style>
-
-    <!-- Keep text white when button is pressed - MORE SPECIFIC SELECTORS TO PREVENT BLACK TEXT -->
-    <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ ContentPresenter">
-        <Setter Property="TextBlock.Foreground" Value="{StaticResource White}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):pressed TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-    </Style>
-    <!-- FORCE white text for orange buttons specifically when pressed -->
-    <Style Selector="Button.btn-orange:pressed TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-    </Style>
-    <Style Selector="Button.btn-back:pressed TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource White}" />
     </Style>
 
     <!-- Disable keyboard navigation for main menu colored buttons -->
