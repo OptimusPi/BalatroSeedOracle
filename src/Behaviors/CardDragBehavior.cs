@@ -257,43 +257,45 @@ namespace BalatroSeedOracle.Behaviors
                 leanX = offsetX * leanDistance;
                 leanY = offsetY * leanDistance;
             }
-            else if (_isHovering && _lastPointerPosition.HasValue)
-            {
-                // HOVER MODE: Lean towards cursor (magnetic effect)
-                var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
-                var centerX = bounds.Width / 2;
-                var centerY = bounds.Height / 2;
+            // DISABLED: Hover lean causes jiggle/hallucination
+            // else if (_isHovering && _lastPointerPosition.HasValue)
+            // {
+            //     // HOVER MODE: Lean towards cursor (magnetic effect)
+            //     var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
+            //     var centerX = bounds.Width / 2;
+            //     var centerY = bounds.Height / 2;
 
-                var offsetX = (_lastPointerPosition.Value.X - centerX) / bounds.Width;
-                var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
+            //     var offsetX = (_lastPointerPosition.Value.X - centerX) / bounds.Width;
+            //     var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
 
-                // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
-                leanDistance =
-                    Math.Abs(offsetY + offsetX - 1)
-                    * UIConstants.CardTiltFactorRadians
-                    * 15.0; // Convert tilt factor to pixel distance
+            //     // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
+            //     leanDistance =
+            //         Math.Abs(offsetY + offsetX - 1)
+            //         * UIConstants.CardTiltFactorRadians
+            //         * 15.0; // Convert tilt factor to pixel distance
 
-                // Lean towards cursor position
-                leanX = offsetX * leanDistance;
-                leanY = offsetY * leanDistance;
-            }
-            else
-            {
-                // AMBIENT MODE: Subtle breathing sway (like BalatroCardSwayBehavior)
-                // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
-                var swayAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+            //     // Lean towards cursor position
+            //     leanX = offsetX * leanDistance;
+            //     leanY = offsetY * leanDistance;
+            // }
+            // DISABLED: Ambient sway causes circular translation
+            // else
+            // {
+            //     // AMBIENT MODE: Subtle breathing sway (like BalatroCardSwayBehavior)
+            //     // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
+            //     var swayAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
-                // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-                var swayAmount =
-                    UIConstants.CardAmbientTiltRadians
-                    * (0.5 + Math.Cos(swayAngle))
-                    * UIConstants.CardTiltFactorRadians
-                    * 5.0; // Convert to subtle pixel movement
+            //     // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
+            //     var swayAmount =
+            //         UIConstants.CardAmbientTiltRadians
+            //         * (0.5 + Math.Cos(swayAngle))
+            //         * UIConstants.CardTiltFactorRadians
+            //         * 5.0; // Convert to subtle pixel movement
 
-                // Subtle circular sway motion
-                leanX = Math.Sin(swayAngle) * swayAmount;
-                leanY = Math.Cos(swayAngle) * swayAmount * 0.5; // Less vertical movement
-            }
+            //     // Subtle circular sway motion
+            //     leanX = Math.Sin(swayAngle) * swayAmount;
+            //     leanY = Math.Cos(swayAngle) * swayAmount * 0.5; // Less vertical movement
+            // }
 
             // Apply translation (lean effect)
             _translateTransform.X = leanX;
