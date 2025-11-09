@@ -660,8 +660,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var localPos = e.GetPosition(dropZoneContainer);
                     var containerHeight = dropZoneContainer.Bounds.Height;
 
-                    // Divide into thirds
-                    var thirdHeight = containerHeight / 3.0;
+                    // Divide into thirds (account for 8px total spacers: 4px + 4px between zones)
+                    var thirdHeight = (containerHeight - 8) / 3.0;
 
                     if (localPos.Y < thirdHeight)
                     {
