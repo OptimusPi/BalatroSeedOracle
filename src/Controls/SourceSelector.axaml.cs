@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using BalatroSeedOracle.ViewModels;
 
@@ -8,12 +9,25 @@ namespace BalatroSeedOracle.Controls
     {
         private SourceSelectorViewModel? _viewModel;
 
+        // Bindable property for MVVM
+        public static readonly StyledProperty<string> SelectedSourceTagProperty =
+            AvaloniaProperty.Register<SourceSelector, string>(nameof(SelectedSourceTag), defaultValue: "");
+
+        public string SelectedSourceTag
+        {
+            get => GetValue(SelectedSourceTagProperty);
+            set => SetValue(SelectedSourceTagProperty, value);
+        }
+
         public event EventHandler<string>? SourceChanged;
 
         public SourceSelector()
         {
             InitializeComponent();
             InitializeViewModel();
+
+            // Wire up property changes
+            this.GetObservable(SelectedSourceTagProperty).Subscribe(OnSelectedSourceTagChanged);
         }
 
         private void InitializeViewModel()
@@ -22,10 +36,29 @@ namespace BalatroSeedOracle.Controls
             DataContext = _viewModel;
 
             // Forward ViewModel events to maintain API compatibility
-            _viewModel.SourceChanged += (s, e) => SourceChanged?.Invoke(this, e);
+            _viewModel.SourceChanged += OnViewModelSourceChanged;
         }
 
-        // Public API - delegates to ViewModel
+        private void OnViewModelSourceChanged(object? sender, string sourceTag)
+        {
+            // Update the property without triggering a loop
+            if (SelectedSourceTag != sourceTag)
+            {
+                SetCurrentValue(SelectedSourceTagProperty, sourceTag);
+            }
+            SourceChanged?.Invoke(this, sourceTag);
+        }
+
+        private void OnSelectedSourceTagChanged(string sourceTag)
+        {
+            // Update ViewModel when property changes externally
+            if (_viewModel != null && _viewModel.GetSelectedSource() != sourceTag)
+            {
+                _viewModel.SetSelectedSource(sourceTag);
+            }
+        }
+
+        // Public API - delegates to ViewModel (kept for backward compatibility)
         public string GetSelectedSource()
         {
             return _viewModel?.GetSelectedSource() ?? "";

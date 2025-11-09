@@ -234,7 +234,7 @@
                                Foreground="{StaticResource ModalBorder}"/>
 
                     <!-- Embedded selector control -->
-                    <controls:SourceSelector x:Name="SourceSelector"/>
+                    <controls:SourceSelector SelectedSourceTag="{Binding SelectedSource, Mode=TwoWay}"/>
 
                     <!-- Advanced options -->
                     <Expander Header="Advanced Source Options" IsExpanded="False">

@@ -1331,5 +1331,26 @@
 
             </Grid>
         </Grid>
+
+        <!-- ItemConfigPopup Overlay - replaces Primitives.Popup -->
+        <Grid Name="PopupOverlay"
+              IsVisible="False"
+              Background="#80000000"
+              ZIndex="1000"
+              PointerPressed="OnOverlayBackgroundClick">
+            <Border Background="{StaticResource ItemConfigMediumBg}"
+                    BorderBrush="{StaticResource ItemConfigDarkBg}"
+                    BorderThickness="3"
+                    CornerRadius="8"
+                    Padding="0"
+                    BoxShadow="{StaticResource DeepBoxShadow}"
+                    MaxWidth="320"
+                    MaxHeight="600"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    PointerPressed="OnPopupContentClick">
+                <ContentControl Name="PopupContent"/>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

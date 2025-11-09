@@ -1044,34 +1044,66 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Create the View
             var configPopup = new Controls.ItemConfigPopup { DataContext = popupViewModel };
 
-            var popup = new Avalonia.Controls.Primitives.Popup
-            {
-                Child = configPopup,
-                Placement = Avalonia.Controls.PlacementMode.Pointer,
-                PlacementTarget = sourceControl,
-                IsLightDismissEnabled = true,
-                // REMOVED: OverlayInputPassThroughElement was causing ALL clicks to pass through popup!
-                // This made the popup completely non-interactive - buttons/radiobuttons didn't work
-            };
+            // Find overlay controls
+            var overlay = this.FindControl<Grid>("PopupOverlay");
+            var popupContent = this.FindControl<ContentControl>("PopupContent");
 
+            if (overlay == null || popupContent == null)
+            {
+                DebugLogger.LogError("VisualBuilderTab", "Could not find PopupOverlay or PopupContent controls");
+                return;
+            }
+
+            // Set up event handlers
             popupViewModel.ConfigApplied += (appliedConfig) =>
             {
                 vm.UpdateItemConfig(item.ItemKey, appliedConfig);
-                popup.IsOpen = false;
+                overlay.IsVisible = false;
+                popupContent.Content = null;
             };
 
             popupViewModel.Cancelled += () =>
             {
-                popup.IsOpen = false;
+                overlay.IsVisible = false;
+                popupContent.Content = null;
             };
 
             popupViewModel.DeleteRequested += () =>
             {
                 vm.RemoveItem(item);
-                popup.IsOpen = false;
+                overlay.IsVisible = false;
+                popupContent.Content = null;
             };
 
-            popup.IsOpen = true;
+            // Show the overlay with the popup
+            popupContent.Content = configPopup;
+            overlay.IsVisible = true;
+        }
+
+        /// <summary>
+        /// Handle clicks on the overlay background (dismiss popup)
+        /// </summary>
+        private void OnOverlayBackgroundClick(object? sender, PointerPressedEventArgs e)
+        {
+            var overlay = this.FindControl<Grid>("PopupOverlay");
+            var popupContent = this.FindControl<ContentControl>("PopupContent");
+
+            if (overlay != null && popupContent != null)
+            {
+                overlay.IsVisible = false;
+                popupContent.Content = null;
+            }
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle clicks on popup content (prevent dismissal)
+        /// </summary>
+        private void OnPopupContentClick(object? sender, PointerPressedEventArgs e)
+        {
+            // Stop propagation to prevent overlay background click
+            e.Handled = true;
         }
 
         // No pagination - categories are now directly clickable in left nav
