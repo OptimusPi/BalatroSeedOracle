@@ -155,38 +155,35 @@ namespace BalatroSeedOracle.Behaviors
             offsetX = Math.Clamp(offsetX, -1.0, 1.0);
             offsetY = Math.Clamp(offsetY, -1.0, 1.0);
 
-            // Calculate hover_offset like Balatro does
-            // In Balatro: hover_offset is the distance from card center (0-1 range normalized)
-            // self.tilt_var.amt = math.abs(self.hover_offset.y + self.hover_offset.x - 1)*tilt_factor
-            var hoverOffsetSum = Math.Abs(offsetY + offsetX);
-            var tiltAmount = hoverOffsetSum * TiltFactor;
+            // BALATRO FIX: Use TRANSLATION (lean toward mouse) instead of rotation!
+            // This creates the 3D perspective illusion WITHOUT rotating the collider
+            // The card moves/leans toward the mouse position
 
-            // Calculate rotation angle toward mouse
-            // The card tilts in the direction of the mouse position
-            var angle = Math.Atan2(offsetY, offsetX) * (180.0 / Math.PI);
+            // Calculate lean distance based on mouse offset
+            // Balatro uses hover_offset to calculate tilt_var which affects rendering position
+            var maxLeanDistance = MaxTiltAngle; // Reuse MaxTiltAngle as max lean distance in pixels
 
-            // Apply tilt amount as a scale on the angle
-            var finalAngle = angle * tiltAmount;
+            // Lean the card toward the mouse (translate X/Y based on mouse position)
+            var leanX = offsetX * maxLeanDistance * TiltFactor;
+            var leanY = offsetY * maxLeanDistance * TiltFactor;
 
-            // Clamp to max tilt angle
-            finalAngle = Math.Clamp(finalAngle, -MaxTiltAngle, MaxTiltAngle);
+            // Find TranslateTransform and apply the magnetic lean
+            TranslateTransform? translateTransform = null;
 
-            // Find RotateTransform and apply the magnetic tilt
-            RotateTransform? rotateTransform = null;
-
-            if (AssociatedObject.RenderTransform is RotateTransform rotate)
+            if (AssociatedObject.RenderTransform is TranslateTransform translate)
             {
-                rotateTransform = rotate;
+                translateTransform = translate;
             }
             else if (AssociatedObject.RenderTransform is TransformGroup group)
             {
-                // Look for RotateTransform in the group (should be second child in ResponsiveCard)
-                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+                // Look for TranslateTransform in the group (should be second child in ResponsiveCard)
+                translateTransform = group.Children.OfType<TranslateTransform>().FirstOrDefault();
             }
 
-            if (rotateTransform != null)
+            if (translateTransform != null)
             {
-                rotateTransform.Angle = finalAngle;
+                translateTransform.X = leanX;
+                translateTransform.Y = leanY;
             }
         }
 
@@ -195,22 +192,23 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            // Find RotateTransform and reset to 0
-            RotateTransform? rotateTransform = null;
+            // Find TranslateTransform and reset to 0
+            TranslateTransform? translateTransform = null;
 
-            if (AssociatedObject.RenderTransform is RotateTransform rotate)
+            if (AssociatedObject.RenderTransform is TranslateTransform translate)
             {
-                rotateTransform = rotate;
+                translateTransform = translate;
             }
             else if (AssociatedObject.RenderTransform is TransformGroup group)
             {
-                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+                translateTransform = group.Children.OfType<TranslateTransform>().FirstOrDefault();
             }
 
-            if (rotateTransform != null)
+            if (translateTransform != null)
             {
                 // Smoothly animate back to 0 (the ambient sway will take over)
-                rotateTransform.Angle = 0;
+                translateTransform.X = 0;
+                translateTransform.Y = 0;
             }
         }
     }

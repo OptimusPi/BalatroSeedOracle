@@ -53,7 +53,7 @@
             <Border.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    <RotateTransform Angle="0"/>
+                    <TranslateTransform X="0" Y="0"/>
                 </TransformGroup>
             </Border.RenderTransform>
             <i:Interaction.Behaviors>
@@ -109,7 +109,7 @@
                             <Image.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                    <RotateTransform Angle="0"/>
+                                    <TranslateTransform X="0" Y="0"/>
                                 </TransformGroup>
                             </Image.RenderTransform>
                         </Image>

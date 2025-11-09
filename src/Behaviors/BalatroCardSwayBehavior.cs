@@ -81,20 +81,20 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject == null)
                 return;
 
-            // Find the RotateTransform - either standalone or in a TransformGroup
-            RotateTransform? rotateTransform = null;
+            // Find the TranslateTransform - either standalone or in a TransformGroup
+            TranslateTransform? translateTransform = null;
 
-            if (AssociatedObject.RenderTransform is RotateTransform rotate)
+            if (AssociatedObject.RenderTransform is TranslateTransform translate)
             {
-                rotateTransform = rotate;
+                translateTransform = translate;
             }
             else if (AssociatedObject.RenderTransform is TransformGroup group)
             {
-                // Look for RotateTransform in the group (should be second child in ResponsiveCard)
-                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+                // Look for TranslateTransform in the group (should be second child in ResponsiveCard)
+                translateTransform = group.Children.OfType<TranslateTransform>().FirstOrDefault();
             }
 
-            if (rotateTransform == null)
+            if (translateTransform == null)
                 return;
 
             // Find ResponsiveCard parent to check hover state
@@ -112,19 +112,8 @@ namespace BalatroSeedOracle.Behaviors
 
             if (card != null && card.IsHovering)
             {
-                // MAGNETIC TILT MODE (Balatro's hover.is state from card.lua:4374-4376)
-                // Card tilts toward mouse cursor - the "card is watching you" effect!
-
-                // For 2D rotation (Z-axis), we use the X offset to determine tilt direction
-                // Positive X (right) = clockwise tilt, Negative X (left) = counter-clockwise tilt
-                // We'll also add a slight Y influence for the "following" effect
-
-                // Combine X and Y offsets with X being dominant (80/20 split)
-                var combined_offset = card.HoverOffsetX * 0.8 + card.HoverOffsetY * 0.2;
-
-                // Scale to dramatic tilt angle (up to ±30 degrees at edges)
-                var max_tilt_degrees = 30.0;
-                rotateTransform.Angle = combined_offset * max_tilt_degrees;
+                // When hovering, let MagneticTiltBehavior handle the lean
+                // Don't interfere with the magnetic lean effect
                 return;
             }
 
@@ -132,18 +121,18 @@ namespace BalatroSeedOracle.Behaviors
             // Calculate elapsed time (like G.TIMERS.REAL in Balatro)
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
 
-            // Balatro's ambient tilt formula from card.lua:4380
-            // local tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
+            // Balatro's ambient tilt formula from card.lua:4380-4383
+            // Creates circular breathing motion using cos/sin
             var tilt_angle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
-            // Tilt amount based on cos wave (creates breathing effect) from card.lua:4383
-            // self.tilt_var.amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-            var tilt_amt_ambient =
-                AmbientTilt * (0.5 + Math.Cos(tilt_angle)) * UIConstants.CardTiltFactorRadians;
+            // Calculate X and Y offsets for subtle circular sway (like breathing)
+            // Using cos/sin creates circular motion
+            var sway_x = AmbientTilt * Math.Cos(tilt_angle) * UIConstants.CardTiltFactorRadians * 2;
+            var sway_y = AmbientTilt * Math.Sin(tilt_angle) * UIConstants.CardTiltFactorRadians * 2;
 
-            // Apply rotation (convert to degrees)
-            // Balatro rotates in radians, we need degrees
-            rotateTransform.Angle = tilt_amt_ambient * UIConstants.CardRotationToDegrees;
+            // Apply translation (creates subtle circular breathing motion)
+            translateTransform.X = sway_x;
+            translateTransform.Y = sway_y;
         }
 
     }
