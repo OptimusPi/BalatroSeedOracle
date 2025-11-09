@@ -238,6 +238,11 @@ namespace BalatroSeedOracle.ViewModels
             SearchProgress = 0;
         }
 
+        /// <summary>
+        /// Get the search ID (public accessor to avoid reflection)
+        /// </summary>
+        public string GetSearchId() => _searchId;
+
         #endregion
 
         #region Private Methods - Business Logic

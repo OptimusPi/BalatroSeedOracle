@@ -1609,20 +1609,11 @@ namespace BalatroSeedOracle.Views
             {
                 if (child is SearchDesktopIcon icon)
                 {
-                    var searchIdProperty = icon.GetType()
-                        .GetField(
-                            "_searchId",
-                            System.Reflection.BindingFlags.NonPublic
-                                | System.Reflection.BindingFlags.Instance
-                        );
-                    if (searchIdProperty != null)
+                    // Use public SearchId property instead of reflection
+                    if (icon.SearchId == searchId)
                     {
-                        var iconSearchId = searchIdProperty.GetValue(icon) as string;
-                        if (iconSearchId == searchId)
-                        {
-                            iconToRemove = icon;
-                            break;
-                        }
+                        iconToRemove = icon;
+                        break;
                     }
                 }
             }

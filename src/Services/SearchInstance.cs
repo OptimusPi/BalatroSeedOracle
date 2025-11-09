@@ -716,8 +716,22 @@ namespace BalatroSeedOracle.Services
                             $"Filter modified since last search - invalidating database"
                         );
 
-                        // Dump seeds to fertilizer.txt before clearing database
-                        DumpSeedsToFertilizerAsync().GetAwaiter().GetResult();
+                        // Dump seeds to fertilizer.txt before clearing database (fire-and-forget)
+                        // Not critical for search to work, so we don't block on this operation
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await DumpSeedsToFertilizerAsync().ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    $"SearchInstance[{_searchId}]",
+                                    $"Failed to dump seeds to fertilizer: {ex.Message}"
+                                );
+                            }
+                        });
 
                         try
                         {

@@ -15,6 +15,11 @@ namespace BalatroSeedOracle.Views
     {
         private SearchDesktopIconViewModel? ViewModel => DataContext as SearchDesktopIconViewModel;
 
+        /// <summary>
+        /// Public accessor for SearchId to avoid reflection usage
+        /// </summary>
+        public string SearchId => ViewModel?.GetSearchId() ?? string.Empty;
+
         public SearchDesktopIcon()
         {
             InitializeComponent();

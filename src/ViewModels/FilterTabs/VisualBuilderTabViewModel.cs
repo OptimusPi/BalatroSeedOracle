@@ -2304,15 +2304,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedEdition = edition;
             string? editionValue = edition == "None" ? null : edition.ToLower();
 
-            // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
+            // Apply ONLY to items in the SHELF (GroupedItems), NOT to items in drop zones!
+            // This sets the "default edition" for items that will be dragged to zones
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
-                    // CRITICAL FIX: Update item.Edition directly to trigger EditionImage binding update
+                    // ONLY apply to Jokers and Standard Cards - skip other categories
+                    if (item.Category != "Joker" && item.Category != "StandardCard")
+                        continue;
+
+                    // Update item.Edition directly to trigger EditionImage binding update
                     item.Edition = editionValue;
 
-                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
+                    // Also update ItemConfig (for when this item gets dropped to a zone)
                     if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
                     {
                         config.Edition = editionValue;
@@ -2320,25 +2325,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // Apply to all existing items in drop zones
-            if (_parentViewModel != null)
-            {
-                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
-                {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                    {
-                        config.Edition = editionValue;
-                    }
-                }
-
-                // Also update visual items in drop zones
-                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
-                {
-                    item.Edition = editionValue;
-                }
-
-                TriggerAutoSave();
-            }
+            // DO NOT update items already in drop zones - users configure those individually!
 
             // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
             if (SupportsFlipAnimation)
