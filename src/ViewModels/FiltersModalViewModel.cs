@@ -1074,6 +1074,14 @@ namespace BalatroSeedOracle.ViewModels
 
             // Capture criteria hash after loading
             _originalCriteriaHash = ComputeCriteriaHash();
+
+            // CRITICAL FIX: Sync Visual Builder tab collections from loaded data!
+            // This populates the SelectedMust/Should/MustNot FilterItem collections
+            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+            {
+                visualVm.LoadFromParentCollections();
+                DebugLogger.Log("FiltersModalViewModel", "Synced Visual Builder tab from loaded config");
+            }
         }
 
         /// <summary>

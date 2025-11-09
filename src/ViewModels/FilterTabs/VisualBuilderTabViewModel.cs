@@ -2704,5 +2704,138 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         #endregion
+
+        #region Load/Save Sync
+
+        /// <summary>
+        /// Syncs Visual Builder collections from parent's ItemConfigs and Selected* collections
+        /// CRITICAL for loading filters into Visual Builder tab!
+        /// </summary>
+        public void LoadFromParentCollections()
+        {
+            if (_parentViewModel == null)
+                return;
+
+            DebugLogger.Log("VisualBuilderTab", "Loading from parent collections...");
+
+            // Clear current visual builder state
+            SelectedMust.Clear();
+            SelectedShould.Clear();
+            SelectedMustNot.Clear();
+
+            // Load MUST items
+            foreach (var itemKey in _parentViewModel.SelectedMust)
+            {
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    var filterItem = CreateFilterItemFromConfig(config);
+                    if (filterItem != null)
+                    {
+                        SelectedMust.Add(filterItem);
+                        DebugLogger.Log("VisualBuilderTab", $"Loaded MUST item: {filterItem.Name}");
+                    }
+                }
+            }
+
+            // Load SHOULD items
+            foreach (var itemKey in _parentViewModel.SelectedShould)
+            {
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    var filterItem = CreateFilterItemFromConfig(config);
+                    if (filterItem != null)
+                    {
+                        SelectedShould.Add(filterItem);
+                        DebugLogger.Log("VisualBuilderTab", $"Loaded SHOULD item: {filterItem.Name}");
+                    }
+                }
+            }
+
+            // Load MUSTNOT items
+            foreach (var itemKey in _parentViewModel.SelectedMustNot)
+            {
+                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                {
+                    var filterItem = CreateFilterItemFromConfig(config);
+                    if (filterItem != null)
+                    {
+                        SelectedMustNot.Add(filterItem);
+                        DebugLogger.Log("VisualBuilderTab", $"Loaded MUSTNOT item: {filterItem.Name}");
+                    }
+                }
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD, {SelectedMustNot.Count} MUSTNOT items");
+        }
+
+        private FilterItem? CreateFilterItemFromConfig(ItemConfig config)
+        {
+            var ss = Services.SpriteService.Instance;
+
+            // Determine category from ItemType
+            string category = config.ItemType switch
+            {
+                "Joker" or "SoulJoker" => "Joker",
+                "Tarot" or "TarotCard" => "Consumable",
+                "Spectral" or "SpectralCard" => "Consumable",
+                "Planet" or "PlanetCard" => "Consumable",
+                "Voucher" => "Voucher",
+                "SmallBlindTag" or "BigBlindTag" or "Tag" => "Tag",
+                "Boss" or "BossBlind" => "Boss",
+                "PlayingCard" or "StandardCard" => "StandardCard",
+                _ => config.ItemType
+            };
+
+            var filterItem = new FilterItem
+            {
+                Name = config.ItemName,
+                DisplayName = config.ItemName,
+                Type = config.ItemType,
+                Category = category,
+                ItemKey = config.ItemKey,
+                Edition = config.Edition,
+                Stickers = config.Stickers,
+                Antes = config.Antes?.ToArray()
+            };
+
+            // Get sprite image
+            if (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
+            {
+                filterItem.ItemImage = ss.GetJokerImage(config.ItemName);
+            }
+            else if (config.ItemType == "Voucher")
+            {
+                filterItem.ItemImage = ss.GetVoucherImage(config.ItemName);
+            }
+            else if (config.ItemType.Contains("Tarot"))
+            {
+                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+            }
+            else if (config.ItemType.Contains("Spectral"))
+            {
+                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+            }
+            else if (config.ItemType.Contains("Planet"))
+            {
+                filterItem.ItemImage = ss.GetConsumableImage(config.ItemName);
+            }
+            else if (config.ItemType.Contains("Tag"))
+            {
+                filterItem.ItemImage = ss.GetTagImage(config.ItemName);
+            }
+            else if (config.ItemType == "Boss")
+            {
+                filterItem.ItemImage = ss.GetBossImage(config.ItemName);
+            }
+            else if (config.ItemType == "PlayingCard" || config.ItemType == "StandardCard")
+            {
+                // TODO: Handle playing cards properly
+                filterItem.ItemImage = ss.GetSpecialImage("BlankCard");
+            }
+
+            return filterItem;
+        }
+
+        #endregion
     }
 }
