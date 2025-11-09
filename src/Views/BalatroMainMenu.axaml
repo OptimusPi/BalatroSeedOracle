@@ -163,7 +163,7 @@
         </Grid>
         
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
-        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" Background="Transparent" IsHitTestVisible="False">
+        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" Background="Transparent" IsHitTestVisible="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
