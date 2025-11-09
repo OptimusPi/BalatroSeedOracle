@@ -18,9 +18,7 @@
 
         <!-- Minimized State -->
         <StackPanel IsVisible="{Binding IsMinimized}"
-                    Spacing="4"
-                    PointerPressed="OnMinimizedIconPressed"
-                    PointerReleased="OnMinimizedIconReleased">
+                    Spacing="4">
             <i:Interaction.Behaviors>
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
@@ -31,7 +29,9 @@
                     CornerRadius="8"
                     Width="64" Height="64"
                     Classes="widget-header"
-                    Cursor="Hand">
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
                 <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="Mixer"

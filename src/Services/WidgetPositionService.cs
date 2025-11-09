@@ -314,18 +314,22 @@ namespace BalatroSeedOracle.Services
             // to allow widgets to position at their intended locations
             if (IsStartupMode)
             {
+                Console.WriteLine($"[WidgetPosition] Startup mode - widget at ({snappedX}, {snappedY})");
                 return (snappedX, snappedY);
             }
 
             // Check if the snapped position is occupied
             if (IsPositionOccupied(snappedX, snappedY, widget, widget.IsMinimized))
             {
+                Console.WriteLine($"[WidgetPosition] Position ({snappedX}, {snappedY}) occupied, finding alternative");
                 // Find the nearest available position
                 var (nearestX, nearestY) = FindNearestAvailablePosition(snappedX, snappedY, widget);
+                Console.WriteLine($"[WidgetPosition] Alternative position: ({nearestX}, {nearestY})");
 
                 return (nearestX, nearestY);
             }
 
+            Console.WriteLine($"[WidgetPosition] Position ({snappedX}, {snappedY}) available");
             return (snappedX, snappedY);
         }
 
