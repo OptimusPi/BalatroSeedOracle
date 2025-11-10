@@ -649,34 +649,31 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     return; // Early exit - handled
                 }
 
-                // Check if dropped on unified operator tray (only for non-operators)
-                if (_draggedItem is not FilterOperatorItem)
+                // Check if dropped on unified operator tray (only for FilterItem, NOT operators)
+                if (_draggedItem is FilterItem && IsPointOverControl(cursorPos, unifiedTray, _topLevel))
                 {
-                    if (IsPointOverControl(cursorPos, unifiedTray, _topLevel))
+                    // Drop into unified tray
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Dropped {_draggedItem.Name} into unified tray"
+                    );
+
+                    var itemCopy = new Models.FilterItem
                     {
-                        // Drop into unified tray
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Dropped {_draggedItem.Name} into unified tray"
-                        );
+                        Name = _draggedItem.Name,
+                        Type = _draggedItem.Type,
+                        Category = _draggedItem.Category,
+                        DisplayName = _draggedItem.DisplayName,
+                        ItemImage = _draggedItem.ItemImage,
+                    };
 
-                        var itemCopy = new Models.FilterItem
-                        {
-                            Name = _draggedItem.Name,
-                            Type = _draggedItem.Type,
-                            Category = _draggedItem.Category,
-                            DisplayName = _draggedItem.DisplayName,
-                            ItemImage = _draggedItem.ItemImage,
-                        };
+                    vm.UnifiedOperator.Children.Add(itemCopy);
 
-                        vm.UnifiedOperator.Children.Add(itemCopy);
+                    // Reset tray border
+                    if (unifiedTray != null)
+                        unifiedTray.BorderThickness = new Avalonia.Thickness(2);
 
-                        // Reset tray border
-                        if (unifiedTray != null)
-                            unifiedTray.BorderThickness = new Avalonia.Thickness(2);
-
-                        return; // Early exit - handled
-                    }
+                    return; // Early exit - handled
                 }
 
                 // Check if over the item grid first (return to shelf)
