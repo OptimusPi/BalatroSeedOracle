@@ -652,12 +652,17 @@ namespace BalatroSeedOracle.Views
         {
             var dialog = new Window
             {
-                Title = defaultName == null ? "Create New Filter" : "Copy Filter",
-                Width = 400,
-                Height = 200,
+                Width = 450,
+                Height = 250,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
+<<<<<<< Updated upstream
                 SystemDecorations = SystemDecorations.BorderOnly,
+=======
+                SystemDecorations = SystemDecorations.None,
+                Background = Avalonia.Media.Brushes.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+>>>>>>> Stashed changes
             };
 
             // Use provided default name, or generate a fun random filter name
@@ -692,23 +697,42 @@ namespace BalatroSeedOracle.Views
             string? result = null;
             var textBox = new TextBox
             {
-                Text = defaultText, // Pre-fill with default name
+                Text = defaultText,
                 Watermark = "Enter filter name...",
+<<<<<<< Updated upstream
                 Margin = new Thickness(20, 10),
+=======
+                Margin = new Thickness(0, 10, 0, 0),
+                FontSize = 18,
+                Padding = new Thickness(12, 8),
+                MinHeight = 45
+>>>>>>> Stashed changes
             };
 
             var okButton = new Button
             {
                 Content = "CREATE",
+<<<<<<< Updated upstream
                 Width = 100,
                 Margin = new Thickness(5),
+=======
+                Classes = { "btn-blue" },
+                MinWidth = 120,
+                Height = 45
+>>>>>>> Stashed changes
             };
 
             var cancelButton = new Button
             {
                 Content = "CANCEL",
+<<<<<<< Updated upstream
                 Width = 100,
                 Margin = new Thickness(5),
+=======
+                Classes = { "btn-red" },
+                MinWidth = 120,
+                Height = 45
+>>>>>>> Stashed changes
             };
 
             okButton.Click += (s, e) =>
@@ -723,24 +747,96 @@ namespace BalatroSeedOracle.Views
                 dialog.Close();
             };
 
+<<<<<<< Updated upstream
             var layout = new StackPanel { Spacing = 10, Margin = new Thickness(20) };
 
             layout.Children.Add(
                 new TextBlock { Text = "Filter Name:", FontWeight = FontWeight.Bold }
             );
             layout.Children.Add(textBox);
+=======
+            // Main container with border and rounded corners
+            var mainBorder = new Border
+            {
+                Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                BorderThickness = new Thickness(3),
+                CornerRadius = new CornerRadius(16)
+            };
+
+            var mainGrid = new Grid
+            {
+                RowDefinitions = new RowDefinitions("Auto,*,Auto")
+            };
+
+            // Title bar
+            var titleBar = new Border
+            {
+                [Grid.RowProperty] = 0,
+                Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(14, 14, 0, 0),
+                Padding = new Thickness(20, 12)
+            };
+
+            var titleText = new TextBlock
+            {
+                Text = defaultName == null ? "Create New Filter" : "Copy Filter",
+                FontSize = 24,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            titleBar.Child = titleText;
+            mainGrid.Children.Add(titleBar);
+
+            // Content area
+            var contentBorder = new Border
+            {
+                [Grid.RowProperty] = 1,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                Padding = new Thickness(24)
+            };
+
+            var contentStack = new StackPanel { Spacing = 8 };
+            contentStack.Children.Add(new TextBlock
+            {
+                Text = "Filter Name:",
+                FontSize = 16,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush
+            });
+            contentStack.Children.Add(textBox);
+
+            contentBorder.Child = contentStack;
+            mainGrid.Children.Add(contentBorder);
+
+            // Button area
+            var buttonBorder = new Border
+            {
+                [Grid.RowProperty] = 2,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(0, 0, 14, 14),
+                Padding = new Thickness(20, 12, 20, 20)
+            };
+>>>>>>> Stashed changes
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Center,
+<<<<<<< Updated upstream
                 Spacing = 10,
+=======
+                Spacing = 12
+>>>>>>> Stashed changes
             };
             buttonPanel.Children.Add(okButton);
             buttonPanel.Children.Add(cancelButton);
-            layout.Children.Add(buttonPanel);
 
-            dialog.Content = layout;
+            buttonBorder.Child = buttonPanel;
+            mainGrid.Children.Add(buttonBorder);
+
+            mainBorder.Child = mainGrid;
+            dialog.Content = mainBorder;
 
             await dialog.ShowDialog((Window)this.VisualRoot!);
             return result;

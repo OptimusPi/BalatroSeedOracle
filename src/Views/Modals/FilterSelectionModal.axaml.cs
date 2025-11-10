@@ -1,7 +1,10 @@
 using System;
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -118,7 +121,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnDeleteConfirmationRequested(object? sender, string filterName)
         {
-            // Get the parent window to center the dialog in the app window
+            // Get the parent window
             var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
 
             if (parentWindow == null)
@@ -128,16 +131,159 @@ namespace BalatroSeedOracle.Views.Modals
                 );
             }
 
-            var result = await MessageBoxManager
-                .GetMessageBoxStandard(
-                    "Delete Filter?",
-                    $"Are you sure you want to delete '{filterName}'?\n\nThis cannot be undone.",
-                    ButtonEnum.YesNo,
-                    Icon.Warning
-                )
-                .ShowWindowDialogAsync(parentWindow);
+            // Create styled confirmation dialog
+            var dialog = new Window
+            {
+                Width = 450,
+                Height = 220,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                SystemDecorations = SystemDecorations.None,
+                Background = Avalonia.Media.Brushes.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+            };
 
-            if (result == ButtonResult.Yes && ViewModel != null)
+            bool? result = null;
+
+            var yesButton = new Button
+            {
+                Content = "Yes",
+                Classes = { "btn-red" },
+                MinWidth = 120,
+                Height = 45
+            };
+
+            var noButton = new Button
+            {
+                Content = "No",
+                Classes = { "btn-blue" },
+                MinWidth = 120,
+                Height = 45
+            };
+
+            yesButton.Click += (s, ev) =>
+            {
+                result = true;
+                dialog.Close();
+            };
+
+            noButton.Click += (s, ev) =>
+            {
+                result = false;
+                dialog.Close();
+            };
+
+            // Main container
+            var mainBorder = new Border
+            {
+                Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                BorderThickness = new Thickness(3),
+                CornerRadius = new CornerRadius(16)
+            };
+
+            var mainGrid = new Grid
+            {
+                RowDefinitions = new RowDefinitions("Auto,*,Auto")
+            };
+
+            // Title bar
+            var titleBar = new Border
+            {
+                [Grid.RowProperty] = 0,
+                Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(14, 14, 0, 0),
+                Padding = new Thickness(20, 12)
+            };
+
+            titleBar.Child = new TextBlock
+            {
+                Text = "Delete Filter?",
+                FontSize = 24,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            mainGrid.Children.Add(titleBar);
+
+            // Content area
+            var contentBorder = new Border
+            {
+                [Grid.RowProperty] = 1,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                Padding = new Thickness(24)
+            };
+
+            var contentStack = new StackPanel { Spacing = 12 };
+
+            // Warning message with icon
+            var warningPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 12,
+                MaxWidth = 380 // Constrain width to prevent overflow
+            };
+
+            var warningIcon = new TextBlock
+            {
+                Text = "⚠",
+                FontSize = 32,
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B")),
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, 0, 0, 0)
+            };
+
+            var messageText = new TextBlock
+            {
+                Text = $"Are you sure you want to delete '{filterName}'?",
+                FontSize = 16,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 320 // Leave room for icon
+            };
+
+            warningPanel.Children.Add(warningIcon);
+            warningPanel.Children.Add(messageText);
+            contentStack.Children.Add(warningPanel);
+
+            contentStack.Children.Add(new TextBlock
+            {
+                Text = "This cannot be undone.",
+                FontSize = 14,
+                Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                FontStyle = FontStyle.Italic
+            });
+
+            contentBorder.Child = contentStack;
+            mainGrid.Children.Add(contentBorder);
+
+            // Button area
+            var buttonBorder = new Border
+            {
+                [Grid.RowProperty] = 2,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(0, 0, 14, 14),
+                Padding = new Thickness(20, 12, 20, 20)
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 12
+            };
+            buttonPanel.Children.Add(yesButton);
+            buttonPanel.Children.Add(noButton);
+
+            buttonBorder.Child = buttonPanel;
+            mainGrid.Children.Add(buttonBorder);
+
+            mainBorder.Child = mainGrid;
+            dialog.Content = mainBorder;
+
+            await dialog.ShowDialog(parentWindow);
+
+            if (result == true && ViewModel != null)
             {
                 await ViewModel.ConfirmDeleteAsync();
             }
