@@ -242,9 +242,6 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
         <Setter Property="Background" Value="{StaticResource BlueHover}" />
     </Style>
-    <Style Selector="Button.btn-blue:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource BlueHover}" />
-    </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:disabled">
         <Setter Property="Background" Value="{StaticResource ModalGrey}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
@@ -257,17 +254,11 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-orange:pointerover">
         <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
-    <Style Selector="Button.btn-orange:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
-    </Style>
-    
+
     <Style Selector="Button:not(.SystemCaptionButton).btn-green">
         <Setter Property="Background" Value="{StaticResource Green}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
-        <Setter Property="Background" Value="{StaticResource GreenHover}" />
-    </Style>
-    <Style Selector="Button.btn-green:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{StaticResource GreenHover}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:disabled">
@@ -296,10 +287,7 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
         <Setter Property="Background" Value="{StaticResource PurpleHover}" />
     </Style>
-    <Style Selector="Button.btn-purple:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
-    </Style>
-    
+
     <!-- Big back button style -->
     <Style Selector="Button.btn-back">
         <Setter Property="Background" Value="{StaticResource Orange}" />

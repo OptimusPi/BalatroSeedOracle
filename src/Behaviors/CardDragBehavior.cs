@@ -297,12 +297,21 @@ namespace BalatroSeedOracle.Behaviors
             //     leanY = Math.Cos(swayAngle) * swayAmount * 0.5; // Less vertical movement
             // }
 
-            // Apply translation (lean effect)
-            _translateTransform.X = leanX;
-            _translateTransform.Y = leanY;
+            // Apply translation (lean effect) - ONLY when not dragging
+            if (!_isDragging)
+            {
+                _translateTransform.X = leanX;
+                _translateTransform.Y = leanY;
+            }
+            else
+            {
+                // During drag: origin card stays put (no transform)
+                _translateTransform.X = 0;
+                _translateTransform.Y = 0;
+            }
 
-            // Apply juice effect (bounce/wiggle on pickup)
-            if (_juiceStartTime.HasValue)
+            // Apply juice effect (bounce/wiggle on pickup) - ONLY when not dragging
+            if (_juiceStartTime.HasValue && !_isDragging)
             {
                 var juiceElapsed = (DateTime.Now - _juiceStartTime.Value).TotalSeconds;
                 var juiceDuration = UIConstants.JuiceDurationSeconds;
