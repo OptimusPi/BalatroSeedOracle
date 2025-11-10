@@ -86,7 +86,8 @@ namespace BalatroSeedOracle.Services
 
             try
             {
-                await Task.Run(() =>
+                // Run on UI thread (Avalonia Bitmaps must be created on UI thread)
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     PreloadJokers(progress);
                     PreloadTags(progress);
