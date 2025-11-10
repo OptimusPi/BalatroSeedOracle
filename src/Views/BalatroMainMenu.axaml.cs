@@ -656,13 +656,9 @@ namespace BalatroSeedOracle.Views
                 Height = 250,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-<<<<<<< Updated upstream
-                SystemDecorations = SystemDecorations.BorderOnly,
-=======
                 SystemDecorations = SystemDecorations.None,
                 Background = Avalonia.Media.Brushes.Transparent,
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
->>>>>>> Stashed changes
             };
 
             // Use provided default name, or generate a fun random filter name
@@ -699,40 +695,26 @@ namespace BalatroSeedOracle.Views
             {
                 Text = defaultText,
                 Watermark = "Enter filter name...",
-<<<<<<< Updated upstream
-                Margin = new Thickness(20, 10),
-=======
                 Margin = new Thickness(0, 10, 0, 0),
                 FontSize = 18,
                 Padding = new Thickness(12, 8),
                 MinHeight = 45
->>>>>>> Stashed changes
             };
 
             var okButton = new Button
             {
                 Content = "CREATE",
-<<<<<<< Updated upstream
-                Width = 100,
-                Margin = new Thickness(5),
-=======
                 Classes = { "btn-blue" },
                 MinWidth = 120,
                 Height = 45
->>>>>>> Stashed changes
             };
 
             var cancelButton = new Button
             {
                 Content = "CANCEL",
-<<<<<<< Updated upstream
-                Width = 100,
-                Margin = new Thickness(5),
-=======
                 Classes = { "btn-red" },
                 MinWidth = 120,
                 Height = 45
->>>>>>> Stashed changes
             };
 
             okButton.Click += (s, e) =>
@@ -747,14 +729,6 @@ namespace BalatroSeedOracle.Views
                 dialog.Close();
             };
 
-<<<<<<< Updated upstream
-            var layout = new StackPanel { Spacing = 10, Margin = new Thickness(20) };
-
-            layout.Children.Add(
-                new TextBlock { Text = "Filter Name:", FontWeight = FontWeight.Bold }
-            );
-            layout.Children.Add(textBox);
-=======
             // Main container with border and rounded corners
             var mainBorder = new Border
             {
@@ -817,17 +791,12 @@ namespace BalatroSeedOracle.Views
                 CornerRadius = new CornerRadius(0, 0, 14, 14),
                 Padding = new Thickness(20, 12, 20, 20)
             };
->>>>>>> Stashed changes
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Center,
-<<<<<<< Updated upstream
-                Spacing = 10,
-=======
                 Spacing = 12
->>>>>>> Stashed changes
             };
             buttonPanel.Children.Add(okButton);
             buttonPanel.Children.Add(cancelButton);
