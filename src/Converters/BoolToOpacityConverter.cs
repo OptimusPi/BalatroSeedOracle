@@ -21,9 +21,9 @@ namespace BalatroSeedOracle.Converters
         {
             if (value is bool isDragging)
             {
-                // When dragging: 50% opacity (dimmed but still visible)
-                // When not dragging: 100% opacity (normal)
-                return isDragging ? 0.5 : 1.0;
+                // No opacity change during drag - nothing should be half invisible
+                // This is a safety issue for users with photosensitivity/epilepsy
+                return 1.0;
             }
             return 1.0; // Default to fully visible
         }

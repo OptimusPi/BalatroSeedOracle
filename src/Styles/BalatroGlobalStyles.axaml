@@ -77,6 +77,13 @@
         <Setter Property="Background" Value="{StaticResource ModalBorder}" />
     </Style>
 
+    <!-- TextBlocks inside buttons inherit Button properties -->
+    <Style Selector="Button TextBlock">
+        <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}" />
+        <Setter Property="FontFamily" Value="{Binding $parent[Button].FontFamily}" />
+        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
