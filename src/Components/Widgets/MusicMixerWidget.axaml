@@ -130,7 +130,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
 
                             <!-- Track Name -->
@@ -210,7 +210,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2"
                                        Text="Drums2"
@@ -282,7 +282,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2"
                                        Text="Bass1"
@@ -354,7 +354,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2" Text="Bass2" Foreground="White" FontSize="14" FontFamily="{StaticResource BalatroFont}" VerticalAlignment="Center" TextAlignment="Left"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
@@ -399,7 +399,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2" Text="Chords1" Foreground="White" FontSize="14" FontFamily="{StaticResource BalatroFont}" VerticalAlignment="Center" TextAlignment="Left"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
@@ -444,7 +444,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2" Text="Chords2" Foreground="White" FontSize="14" FontFamily="{StaticResource BalatroFont}" VerticalAlignment="Center" TextAlignment="Left"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
@@ -489,7 +489,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2" Text="Melody1" Foreground="White" FontSize="14" FontFamily="{StaticResource BalatroFont}" VerticalAlignment="Center" TextAlignment="Left"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
@@ -534,7 +534,7 @@
                                         <Setter Property="Background" Value="{StaticResource Gold}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="S" FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
                             <TextBlock Grid.Column="2" Text="Melody2" Foreground="White" FontSize="14" FontFamily="{StaticResource BalatroFont}" VerticalAlignment="Center" TextAlignment="Left"/>
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">

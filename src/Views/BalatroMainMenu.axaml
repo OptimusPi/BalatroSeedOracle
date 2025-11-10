@@ -255,40 +255,32 @@
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <Button Classes="btn-green"
                             Command="{Binding SeedSearchCommand}"
+                            Content="SEARCH"
+                            FontSize="36"
                             MinHeight="60"
-                            MinWidth="158">
-                        <TextBlock Text="SEARCH"
-                                   FontSize="36"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </Button>
+                            MinWidth="158"/>
 
                     <Button Classes="btn-blue"
                             Command="{Binding EditorCommand}"
+                            Content="DESIGNER"
+                            FontSize="28"
                             MinHeight="46"
-                            MinWidth="100">
-                        <TextBlock Text="DESIGNER"
-                                   FontSize="28"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </Button>
+                            MinWidth="100"/>
 
                     <Button Classes="btn-purple"
                             Command="{Binding AnalyzeCommand}"
+                            Content="ANALYZER"
+                            FontSize="28"
                             MinHeight="46"
-                            MinWidth="100">
-                        <TextBlock Text="ANALYZER"
-                                   FontSize="28"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </Button>
+                            MinWidth="100"/>
 
                     <!-- MODS button equivalent - MORE (orange) -->
                     <Button Classes="btn-orange"
                             Command="{Binding ToolCommand}"
+                            Content="SETTINGS"
+                            FontSize="36"
                             MinHeight="60"
-                            MinWidth="158">
-                        <TextBlock Text="SETTINGS"
-                                   FontSize="36"
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </Button>
+                            MinWidth="158"/>
                         </StackPanel>
                     </Border>
                 </Grid>

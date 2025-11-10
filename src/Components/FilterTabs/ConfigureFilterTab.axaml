@@ -23,7 +23,6 @@
         <Style Selector="Border.dropzone-overlay TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="28"/>
-            <Setter Property="FontWeight" Value="ExtraBold"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -177,7 +176,7 @@
                     <TextBlock Text="Add Favorite"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="28"
-                               FontWeight="ExtraBold"
+                              
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -384,7 +383,7 @@
                                             <TextBlock Text="{Binding GroupName}"
                                                        FontFamily="{StaticResource BalatroFont}"
                                                        FontSize="16"
-                                                       FontWeight="Normal"
+                                                      
                                                        Foreground="{StaticResource LightGrey}"
                                                        TextAlignment="Left"/>
                                         </Border>
@@ -533,7 +532,7 @@
                     <TextBlock Text="REMOVE FROM FILTER"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="24"
-                               FontWeight="ExtraBold"
+                              
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -704,7 +703,7 @@
                                                             Background="{StaticResource Red}"
                                                             Foreground="White"
                                                             FontSize="12"
-                                                            FontWeight="Bold"
+                                                           
                                                             Width="20"
                                                             Height="20"
                                                             CornerRadius="10"
@@ -845,7 +844,7 @@
                                                             Background="{StaticResource Red}"
                                                             Foreground="White"
                                                             FontSize="12"
-                                                            FontWeight="Bold"
+                                                           
                                                             Width="20"
                                                             Height="20"
                                                             CornerRadius="10"
