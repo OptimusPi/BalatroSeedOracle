@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -133,7 +134,19 @@ public partial class App : Application
             });
 
             var spriteService = Services.SpriteService.Instance;
+            var loadStartTime = DateTime.Now;
+
             await spriteService.PreloadAllSpritesAsync(progress);
+
+            // Ensure intro lasts at least π seconds (3.14)
+            var elapsed = (DateTime.Now - loadStartTime).TotalSeconds;
+            var minDuration = 3.14; // π seconds for intro
+            if (elapsed < minDuration)
+            {
+                var remainingMs = (int)((minDuration - elapsed) * 1000);
+                DebugLogger.Log("App", $"Intro minimum duration: waiting {remainingMs}ms to reach π seconds");
+                await Task.Delay(remainingMs);
+            }
 
             // Ensure final state is applied (progress = 1.0)
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
