@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -241,7 +241,8 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Check if MUST/SHOULD/MUSTNOT criteria changed (not just metadata like name/description)
                 var currentHash = ComputeCriteriaHash();
-                var criteriaChanged = _originalCriteriaHash == null || currentHash != _originalCriteriaHash;
+                var criteriaChanged =
+                    _originalCriteriaHash == null || currentHash != _originalCriteriaHash;
 
                 if (criteriaChanged)
                 {
@@ -409,10 +410,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Ensure WordLists directory exists
-                var wordListsDir = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "WordLists"
-                );
+                var wordListsDir = Path.Combine(Directory.GetCurrentDirectory(), "WordLists");
                 Directory.CreateDirectory(wordListsDir);
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
@@ -426,7 +424,9 @@ namespace BalatroSeedOracle.ViewModels
 
                     try
                     {
-                        using var connection = new DuckDB.NET.Data.DuckDBConnection($"Data Source={dbFile}");
+                        using var connection = new DuckDB.NET.Data.DuckDBConnection(
+                            $"Data Source={dbFile}"
+                        );
                         connection.Open();
 
                         using var cmd = connection.CreateCommand();
@@ -703,11 +703,17 @@ namespace BalatroSeedOracle.ViewModels
                     break;
                 case 1:
                     IsVisualTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "Configure Score tab visible, all others hidden");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        "Configure Score tab visible, all others hidden"
+                    );
                     break;
                 case 2:
                     IsJsonTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible, all others hidden");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        "JSON Editor tab visible, all others hidden"
+                    );
                     break;
                 case 3:
                     IsSaveTabVisible = true;
@@ -732,9 +738,13 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Find the Save tab and refresh its data
-                var saveTab = TabItems.FirstOrDefault(t => t.Content is Components.FilterTabs.SaveFilterTab);
-                if (saveTab?.Content is Components.FilterTabs.SaveFilterTab saveFilterTab &&
-                    saveFilterTab.DataContext is FilterTabs.SaveFilterTabViewModel saveVm)
+                var saveTab = TabItems.FirstOrDefault(t =>
+                    t.Content is Components.FilterTabs.SaveFilterTab
+                );
+                if (
+                    saveTab?.Content is Components.FilterTabs.SaveFilterTab saveFilterTab
+                    && saveFilterTab.DataContext is FilterTabs.SaveFilterTabViewModel saveVm
+                )
                 {
                     saveVm.PreFillFilterData();
                     DebugLogger.Log("FiltersModalViewModel", "Refreshed Save tab data");
@@ -742,7 +752,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error refreshing Save tab: {ex.Message}");
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error refreshing Save tab: {ex.Message}"
+                );
             }
         }
 
@@ -841,8 +854,10 @@ namespace BalatroSeedOracle.ViewModels
                 mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
                 shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
                 mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
-                DebugLogger.Log("FilterConfigurationService",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+                DebugLogger.Log(
+                    "FilterConfigurationService",
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                );
             }
             else
             {
@@ -900,7 +915,7 @@ namespace BalatroSeedOracle.ViewModels
                     Type = itemConfig.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Score = itemConfig.Score,
                     Label = itemConfig.Label,
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 };
 
                 // Add antes if configured
@@ -1080,7 +1095,10 @@ namespace BalatroSeedOracle.ViewModels
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
                 visualVm.LoadFromParentCollections();
-                DebugLogger.Log("FiltersModalViewModel", "Synced Visual Builder tab from loaded config");
+                DebugLogger.Log(
+                    "FiltersModalViewModel",
+                    "Synced Visual Builder tab from loaded config"
+                );
             }
         }
 
@@ -1149,21 +1167,27 @@ namespace BalatroSeedOracle.ViewModels
             var normalizedType = NormalizeItemType(clause.Type);
 
             // Handle AND/OR clause operators with Children
-            if ((normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase) ||
-                 normalizedType.Equals("or", StringComparison.OrdinalIgnoreCase)) &&
-                clause.Clauses?.Count > 0)
+            if (
+                (
+                    normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase)
+                    || normalizedType.Equals("or", StringComparison.OrdinalIgnoreCase)
+                )
+                && clause.Clauses?.Count > 0
+            )
             {
                 var operatorConfig = new ItemConfig
                 {
                     ItemKey = itemKey,
                     ItemType = "Clause",
                     ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
-                    OperatorType = normalizedType.Substring(0, 1).ToUpper() + normalizedType.Substring(1).ToLower(), // "And" or "Or"
+                    OperatorType =
+                        normalizedType.Substring(0, 1).ToUpper()
+                        + normalizedType.Substring(1).ToLower(), // "And" or "Or"
                     Mode = clause.Mode,
                     Score = clause.Score,
                     Label = clause.Label,
                     Antes = clause.Antes?.ToList(),
-                    Children = new List<ItemConfig>()
+                    Children = new List<ItemConfig>(),
                 };
 
                 // Recursively convert child clauses
@@ -1632,23 +1656,32 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Find JSON Editor tab by checking Content property (which is the view, with DataContext as ViewModel)
                 var jsonEditorTab = TabItems.FirstOrDefault(t =>
-                    t.Content is Components.FilterTabs.JsonEditorTab);
+                    t.Content is Components.FilterTabs.JsonEditorTab
+                );
 
-                if (jsonEditorTab?.Content is Components.FilterTabs.JsonEditorTab jsonEditorView &&
-                    jsonEditorView.DataContext is FilterTabs.JsonEditorTabViewModel jsonEditorVm)
+                if (
+                    jsonEditorTab?.Content is Components.FilterTabs.JsonEditorTab jsonEditorView
+                    && jsonEditorView.DataContext is FilterTabs.JsonEditorTabViewModel jsonEditorVm
+                )
                 {
-                    var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-                    });
+                    var json = System.Text.Json.JsonSerializer.Serialize(
+                        config,
+                        new System.Text.Json.JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        }
+                    );
                     jsonEditorVm.JsonContent = json;
                     DebugLogger.Log("FiltersModalViewModel", "Updated JSON editor from config");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error updating JSON editor: {ex.Message}");
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error updating JSON editor: {ex.Message}"
+                );
             }
         }
 
@@ -1705,12 +1738,18 @@ namespace BalatroSeedOracle.ViewModels
                         }
                     }
 
-                    DebugLogger.Log("FiltersModalViewModel", $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error updating Visual Builder: {ex.Message}");
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error updating Visual Builder: {ex.Message}"
+                );
             }
         }
 
@@ -1741,21 +1780,26 @@ namespace BalatroSeedOracle.ViewModels
                     ItemImage = effectiveType switch
                     {
                         "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName),
-                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(itemConfig.ItemName),
+                        "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
+                            itemConfig.ItemName
+                        ),
                         "Voucher" => spriteService.GetVoucherImage(itemConfig.ItemName),
                         "Tarot" => spriteService.GetTarotImage(itemConfig.ItemName),
                         "Planet" => spriteService.GetPlanetCardImage(itemConfig.ItemName),
                         "Spectral" => spriteService.GetSpectralImage(itemConfig.ItemName),
                         "Boss" => spriteService.GetBossImage(itemConfig.ItemName),
-                        _ => null
-                    }
+                        _ => null,
+                    },
                 };
 
                 return Task.FromResult<Models.FilterItem?>(filterItem);
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error converting ItemConfig to FilterItem: {ex.Message}");
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error converting ItemConfig to FilterItem: {ex.Message}"
+                );
                 return Task.FromResult<Models.FilterItem?>(null);
             }
         }
@@ -1774,7 +1818,7 @@ namespace BalatroSeedOracle.ViewModels
                 "Boss" => "Bosses",
                 "Voucher" => "Vouchers",
                 "Tarot" or "Planet" or "Spectral" => "Consumables",
-                _ => "Other"
+                _ => "Other",
             };
         }
 

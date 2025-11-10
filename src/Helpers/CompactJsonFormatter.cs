@@ -22,20 +22,19 @@ namespace BalatroSeedOracle.Helpers
             {
                 // Parse the JSON to ensure it's valid
                 var jsonDoc = JsonDocument.Parse(json);
-                
+
                 // Format with custom writer
                 using var stream = new System.IO.MemoryStream();
-                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-                {
-                    Indented = true
+                using var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Indented = true }
+                );
 
-                });
-                
                 WriteElement(jsonDoc.RootElement, writer);
                 writer.Flush();
-                
+
                 var formattedJson = Encoding.UTF8.GetString(stream.ToArray());
-                
+
                 // Post-process to compact short arrays onto single lines
                 return CompactArrays(formattedJson, maxArrayWidth);
             }
@@ -116,7 +115,7 @@ namespace BalatroSeedOracle.Helpers
                 {
                     // Try to compact the array
                     var (compactedArray, linesConsumed) = TryCompactArray(lines, i, maxWidth);
-                    
+
                     if (compactedArray != null)
                     {
                         result.AppendLine(compactedArray);
@@ -136,9 +135,10 @@ namespace BalatroSeedOracle.Helpers
         /// Attempts to compact an array onto a single line if it fits within maxWidth.
         /// </summary>
         private static (string? compactedLine, int linesConsumed) TryCompactArray(
-            string[] lines, 
-            int startIndex, 
-            int maxWidth)
+            string[] lines,
+            int startIndex,
+            int maxWidth
+        )
         {
             var indent = GetIndentation(lines[startIndex]);
             var arrayLines = new StringBuilder();
@@ -150,7 +150,7 @@ namespace BalatroSeedOracle.Helpers
             while (i < lines.Length)
             {
                 var line = lines[i].TrimStart();
-                
+
                 // Track nesting depth
                 if (line.Contains("[") || line.Contains("{"))
                 {
@@ -170,19 +170,22 @@ namespace BalatroSeedOracle.Helpers
             }
 
             var linesConsumed = i - startIndex;
-            
+
             // Don't compact arrays with nested objects/arrays
             if (hasNestedStructures)
                 return (null, 0);
 
             // Build the compacted line
-            var compacted = indent + arrayLines.ToString()
-                .Replace("\n", "")
-                .Replace("\r", "")
-                .Replace("  ", " ")
-                .Replace("[ ", "[")
-                .Replace(" ]", "]")
-                .Replace(" ,", ",");
+            var compacted =
+                indent
+                + arrayLines
+                    .ToString()
+                    .Replace("\n", "")
+                    .Replace("\r", "")
+                    .Replace("  ", " ")
+                    .Replace("[ ", "[")
+                    .Replace(" ]", "]")
+                    .Replace(" ,", ",");
 
             // Only use compacted version if it fits within maxWidth
             if (compacted.Length <= maxWidth)

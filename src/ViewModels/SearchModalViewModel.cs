@@ -225,7 +225,10 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<SearchResult> _filteredResults = new();
 
-        public SearchModalViewModel(SearchManager searchManager, UserProfileService userProfileService)
+        public SearchModalViewModel(
+            SearchManager searchManager,
+            UserProfileService userProfileService
+        )
         {
             _searchManager = searchManager;
             _userProfileService = userProfileService;
@@ -288,6 +291,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int MaxThreadCount { get; } = Environment.ProcessorCount; // Auto-detect CPU cores
+
         // BatchSize hardcoded to 3 for optimal performance (35^3 = 42,875 seeds per batch)
         public int BatchSize => 3;
 
@@ -438,7 +442,10 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // STOP mode: Don't save state, just stop
                         AddConsoleMessage("Stopping search (progress will NOT be saved)...");
-                        DebugLogger.Log("SearchModalViewModel", "Stopping search (NOT saving state)");
+                        DebugLogger.Log(
+                            "SearchModalViewModel",
+                            "Stopping search (NOT saving state)"
+                        );
 
                         // Stop without saving
                         _searchInstance.StopSearch();
@@ -983,7 +990,7 @@ namespace BalatroSeedOracle.ViewModels
             var consoleMessage = new Models.ConsoleMessage
             {
                 Text = formattedMessage,
-                CopyableText = null // No copy button for regular messages
+                CopyableText = null, // No copy button for regular messages
             };
             ConsoleOutput.Add(consoleMessage);
 
@@ -1016,7 +1023,7 @@ namespace BalatroSeedOracle.ViewModels
                     // Copy seed to clipboard using ClipboardService
                     await Services.ClipboardService.CopyToClipboardAsync(seed);
                     AddConsoleMessage($"Copied '{seed}' to clipboard");
-                })
+                }),
             };
             ConsoleOutput.Add(consoleMessage);
 
@@ -1438,7 +1445,10 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("SearchModalViewModel", $"Failed to apply search transition: {ex.Message}");
+                        DebugLogger.LogError(
+                            "SearchModalViewModel",
+                            $"Failed to apply search transition: {ex.Message}"
+                        );
                     }
                 });
             }
@@ -1448,10 +1458,12 @@ namespace BalatroSeedOracle.ViewModels
             var now = DateTime.Now;
             var canCheckResults = (now - _lastResultsLoad).TotalSeconds >= 0.5; // Reduced from 1.0s for snappier updates
 
-            if (canCheckResults &&
-                _searchInstance != null &&
-                _searchInstance.HasNewResultsSinceLastQuery &&
-                !_isLoadingResults)
+            if (
+                canCheckResults
+                && _searchInstance != null
+                && _searchInstance.HasNewResultsSinceLastQuery
+                && !_isLoadingResults
+            )
             {
                 _lastResultsLoad = now;
                 _isLoadingResults = true;
@@ -1461,12 +1473,15 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     try
                     {
-                        if (_searchInstance == null) return;
+                        if (_searchInstance == null)
+                            return;
 
                         var existingCount = SearchResults.Count;
 
                         // Query DuckDB for new results (runs on background thread)
-                        var newResults = await _searchInstance.GetResultsPageAsync(existingCount, 100).ConfigureAwait(false);
+                        var newResults = await _searchInstance
+                            .GetResultsPageAsync(existingCount, 100)
+                            .ConfigureAwait(false);
 
                         // Acknowledge that we've queried - resets invalidation flag
                         _searchInstance.AcknowledgeResultsQueried();
@@ -1474,9 +1489,10 @@ namespace BalatroSeedOracle.ViewModels
                         if (newResults != null && newResults.Count > 0)
                         {
                             // Inject tally labels from SearchInstance column names (seed, score, then tallies)
-                            var labels = _searchInstance.ColumnNames.Count > 2
-                                ? _searchInstance.ColumnNames.Skip(2).ToArray()
-                                : Array.Empty<string>();
+                            var labels =
+                                _searchInstance.ColumnNames.Count > 2
+                                    ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                                    : Array.Empty<string>();
 
                             // Add results on UI thread
                             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1498,7 +1514,10 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("SearchModalViewModel", $"Failed to load live results: {ex.Message}");
+                        DebugLogger.LogError(
+                            "SearchModalViewModel",
+                            $"Failed to load live results: {ex.Message}"
+                        );
                     }
                     finally
                     {
@@ -1554,7 +1573,9 @@ namespace BalatroSeedOracle.ViewModels
                 var now = DateTime.Now;
                 if ((now - _lastConsoleLog).TotalSeconds >= 5)
                 {
-                    AddConsoleMessage($"Progress: {e.PercentComplete:0.00}% (~{seedsPerSecond:N0} seeds/s) {e.ResultsFound} results");
+                    AddConsoleMessage(
+                        $"Progress: {e.PercentComplete:0.00}% (~{seedsPerSecond:N0} seeds/s) {e.ResultsFound} results"
+                    );
                     _lastConsoleLog = now;
                 }
 
@@ -1795,10 +1816,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!System.IO.File.Exists(dbPath))
                 {
-                    DebugLogger.Log(
-                        "SearchModalViewModel",
-                        $"No saved state found at: {dbPath}"
-                    );
+                    DebugLogger.Log("SearchModalViewModel", $"No saved state found at: {dbPath}");
                     ProgressPercent = 0.0;
                     return;
                 }
@@ -1809,7 +1827,8 @@ namespace BalatroSeedOracle.ViewModels
                     // Calculate progress percentage from saved batch
                     // BatchSize is hardcoded to 3, so total batches = 35^4 = 1,500,625
                     long totalBatches = (long)Math.Pow(35, BatchSize + 1);
-                    double progress = ((double)savedState.LastCompletedBatch / totalBatches) * 100.0;
+                    double progress =
+                        ((double)savedState.LastCompletedBatch / totalBatches) * 100.0;
 
                     ProgressPercent = progress;
                     AddConsoleMessage(
@@ -1861,7 +1880,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load start and end presets (or use defaults)
-                var startParams = LoadPresetParameters(settings.SearchTransitionStartPresetName, true);
+                var startParams = LoadPresetParameters(
+                    settings.SearchTransitionStartPresetName,
+                    true
+                );
                 var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName, false);
 
                 // Create transition
@@ -1869,15 +1891,20 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     StartParameters = startParams,
                     EndParameters = endParams,
-                    CurrentProgress = 0f
+                    CurrentProgress = 0f,
                 };
 
-                DebugLogger.Log("SearchModalViewModel",
-                    $"Search transition configured: Start='{settings.SearchTransitionStartPresetName ?? "Default Dark"}', End='{settings.SearchTransitionEndPresetName ?? "Default Normal"}'");
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Search transition configured: Start='{settings.SearchTransitionStartPresetName ?? "Default Dark"}', End='{settings.SearchTransitionEndPresetName ?? "Default Normal"}'"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to configure search transition: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to configure search transition: {ex.Message}"
+                );
                 ActiveSearchTransition = null;
             }
         }
@@ -1888,7 +1915,11 @@ namespace BalatroSeedOracle.ViewModels
         private Models.ShaderParameters LoadPresetParameters(string? presetName, bool isDarkPreset)
         {
             // If no preset name specified or it's a default preset, use built-in defaults
-            if (string.IsNullOrWhiteSpace(presetName) || presetName == "Default Dark" || presetName == "Default Normal")
+            if (
+                string.IsNullOrWhiteSpace(presetName)
+                || presetName == "Default Dark"
+                || presetName == "Default Normal"
+            )
             {
                 return isDarkPreset
                     ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
@@ -1907,7 +1938,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log("SearchModalViewModel", $"Preset '{presetName}' not found, using defaults");
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Preset '{presetName}' not found, using defaults"
+                    );
                     return isDarkPreset
                         ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
                         : Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
@@ -1915,7 +1949,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to load preset '{presetName}': {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load preset '{presetName}': {ex.Message}"
+                );
                 return isDarkPreset
                     ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
                     : Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
@@ -1927,15 +1964,24 @@ namespace BalatroSeedOracle.ViewModels
         /// Uses reflection to access private _shaderBackground field.
         /// Called when ActiveSearchTransition is set and search progress updates.
         /// </summary>
-        private void ApplyShaderParametersToMainMenu(Views.BalatroMainMenu mainMenu, Models.ShaderParameters parameters)
+        private void ApplyShaderParametersToMainMenu(
+            Views.BalatroMainMenu mainMenu,
+            Models.ShaderParameters parameters
+        )
         {
             try
             {
                 // Access private _shaderBackground field via reflection
-                var shaderBackgroundField = typeof(Views.BalatroMainMenu)
-                    .GetField("_shaderBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
+                    "_shaderBackground",
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
+                );
 
-                if (shaderBackgroundField?.GetValue(mainMenu) is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground)
+                if (
+                    shaderBackgroundField?.GetValue(mainMenu)
+                    is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground
+                )
                 {
                     // Apply all shader parameters
                     shaderBackground.SetTime(parameters.TimeSpeed);
@@ -1956,7 +2002,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to apply shader parameters: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to apply shader parameters: {ex.Message}"
+                );
             }
         }
 

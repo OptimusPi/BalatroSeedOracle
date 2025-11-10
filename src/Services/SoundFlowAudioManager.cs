@@ -48,12 +48,7 @@ namespace BalatroSeedOracle.Services
         };
 
         // Sound effect names
-        private readonly string[] _sfxNames =
-        {
-            "highlight1",
-            "paper1",
-            "button",
-        };
+        private readonly string[] _sfxNames = { "highlight1", "paper1", "button" };
 
         // Update loop
         private CancellationTokenSource? _cancellationTokenSource;
@@ -291,9 +286,7 @@ namespace BalatroSeedOracle.Services
 
                     _sfxPlayers[sfxName] = player;
 
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.flac"
-                    );
+                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.flac");
                 }
                 catch (Exception ex)
                 {
@@ -494,7 +487,9 @@ namespace BalatroSeedOracle.Services
         {
             if (!_sfxPlayers.TryGetValue(name, out var player))
             {
-                Console.WriteLine($"[SoundFlowAudioManager] ERROR: SFX '{name}' not found or not loaded");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] ERROR: SFX '{name}' not found or not loaded"
+                );
                 return;
             }
 
@@ -506,11 +501,15 @@ namespace BalatroSeedOracle.Services
                 // Stop any existing playback and restart from beginning
                 player.Stop();
                 player.Play();
-                Console.WriteLine($"[SoundFlowAudioManager] Playing SFX: {name} at volume {volume:F2}");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] Playing SFX: {name} at volume {volume:F2}"
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SoundFlowAudioManager] ERROR playing SFX '{name}': {ex.Message}");
+                Console.WriteLine(
+                    $"[SoundFlowAudioManager] ERROR playing SFX '{name}': {ex.Message}"
+                );
             }
         }
 

@@ -385,13 +385,30 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void HandleSoloToggle(string trackName, bool isSolo)
         {
-            var trackList = new[] { "Drums1", "Drums2", "Bass1", "Bass2", "Chords1", "Chords2", "Melody1", "Melody2" };
+            var trackList = new[]
+            {
+                "Drums1",
+                "Drums2",
+                "Bass1",
+                "Bass2",
+                "Chords1",
+                "Chords2",
+                "Melody1",
+                "Melody2",
+            };
 
             if (isSolo)
             {
                 // Save current mute states if this is the first solo
-                var anySoloActive = Drums1Solo || Drums2Solo || Bass1Solo || Bass2Solo ||
-                                   Chords1Solo || Chords2Solo || Melody1Solo || Melody2Solo;
+                var anySoloActive =
+                    Drums1Solo
+                    || Drums2Solo
+                    || Bass1Solo
+                    || Bass2Solo
+                    || Chords1Solo
+                    || Chords2Solo
+                    || Melody1Solo
+                    || Melody2Solo;
 
                 if (!anySoloActive)
                 {
@@ -417,8 +434,15 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 // Check if any tracks are still soloed
-                var anySoloActive = Drums1Solo || Drums2Solo || Bass1Solo || Bass2Solo ||
-                                   Chords1Solo || Chords2Solo || Melody1Solo || Melody2Solo;
+                var anySoloActive =
+                    Drums1Solo
+                    || Drums2Solo
+                    || Bass1Solo
+                    || Bass2Solo
+                    || Chords1Solo
+                    || Chords2Solo
+                    || Melody1Solo
+                    || Melody2Solo;
 
                 if (!anySoloActive)
                 {
@@ -462,7 +486,7 @@ namespace BalatroSeedOracle.ViewModels
                 "Chords2" => Chords2Solo,
                 "Melody1" => Melody1Solo,
                 "Melody2" => Melody2Solo,
-                _ => false
+                _ => false,
             };
         }
 
@@ -514,24 +538,81 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var settings = new MixerSettings
                 {
-                    Drums1 = new TrackSettings { Volume = Drums1Volume, Pan = Drums1Pan, Muted = Drums1Muted, Solo = Drums1Solo },
-                    Drums2 = new TrackSettings { Volume = Drums2Volume, Pan = Drums2Pan, Muted = Drums2Muted, Solo = Drums2Solo },
-                    Bass1 = new TrackSettings { Volume = Bass1Volume, Pan = Bass1Pan, Muted = Bass1Muted, Solo = Bass1Solo },
-                    Bass2 = new TrackSettings { Volume = Bass2Volume, Pan = Bass2Pan, Muted = Bass2Muted, Solo = Bass2Solo },
-                    Chords1 = new TrackSettings { Volume = Chords1Volume, Pan = Chords1Pan, Muted = Chords1Muted, Solo = Chords1Solo },
-                    Chords2 = new TrackSettings { Volume = Chords2Volume, Pan = Chords2Pan, Muted = Chords2Muted, Solo = Chords2Solo },
-                    Melody1 = new TrackSettings { Volume = Melody1Volume, Pan = Melody1Pan, Muted = Melody1Muted, Solo = Melody1Solo },
-                    Melody2 = new TrackSettings { Volume = Melody2Volume, Pan = Melody2Pan, Muted = Melody2Muted, Solo = Melody2Solo }
+                    Drums1 = new TrackSettings
+                    {
+                        Volume = Drums1Volume,
+                        Pan = Drums1Pan,
+                        Muted = Drums1Muted,
+                        Solo = Drums1Solo,
+                    },
+                    Drums2 = new TrackSettings
+                    {
+                        Volume = Drums2Volume,
+                        Pan = Drums2Pan,
+                        Muted = Drums2Muted,
+                        Solo = Drums2Solo,
+                    },
+                    Bass1 = new TrackSettings
+                    {
+                        Volume = Bass1Volume,
+                        Pan = Bass1Pan,
+                        Muted = Bass1Muted,
+                        Solo = Bass1Solo,
+                    },
+                    Bass2 = new TrackSettings
+                    {
+                        Volume = Bass2Volume,
+                        Pan = Bass2Pan,
+                        Muted = Bass2Muted,
+                        Solo = Bass2Solo,
+                    },
+                    Chords1 = new TrackSettings
+                    {
+                        Volume = Chords1Volume,
+                        Pan = Chords1Pan,
+                        Muted = Chords1Muted,
+                        Solo = Chords1Solo,
+                    },
+                    Chords2 = new TrackSettings
+                    {
+                        Volume = Chords2Volume,
+                        Pan = Chords2Pan,
+                        Muted = Chords2Muted,
+                        Solo = Chords2Solo,
+                    },
+                    Melody1 = new TrackSettings
+                    {
+                        Volume = Melody1Volume,
+                        Pan = Melody1Pan,
+                        Muted = Melody1Muted,
+                        Solo = Melody1Solo,
+                    },
+                    Melody2 = new TrackSettings
+                    {
+                        Volume = Melody2Volume,
+                        Pan = Melody2Pan,
+                        Muted = Melody2Muted,
+                        Solo = Melody2Solo,
+                    },
                 };
 
-                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(
+                    settings,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 File.WriteAllText(MIXER_SETTINGS_FILE, json);
 
-                DebugLogger.Log("MusicMixerWidgetViewModel", $"Mixer settings saved to {MIXER_SETTINGS_FILE}");
+                DebugLogger.Log(
+                    "MusicMixerWidgetViewModel",
+                    $"Mixer settings saved to {MIXER_SETTINGS_FILE}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"Failed to save mixer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"Failed to save mixer settings: {ex.Message}"
+                );
             }
         }
 
@@ -602,12 +683,18 @@ namespace BalatroSeedOracle.ViewModels
                     Melody2Muted = settings.Melody2.Muted;
                     Melody2Solo = settings.Melody2.Solo;
 
-                    DebugLogger.Log("MusicMixerWidgetViewModel", "Mixer settings loaded successfully");
+                    DebugLogger.Log(
+                        "MusicMixerWidgetViewModel",
+                        "Mixer settings loaded successfully"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"Failed to load mixer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"Failed to load mixer settings: {ex.Message}"
+                );
             }
         }
 

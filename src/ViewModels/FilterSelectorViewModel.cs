@@ -172,9 +172,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a PanelItem from a cached filter
         /// </summary>
-        private Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(
-            Services.CachedFilter cached
-        )
+        private Task<PanelItem?> CreateFilterPanelItemFromCacheAsync(Services.CachedFilter cached)
         {
             try
             {
@@ -470,8 +468,10 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Special handling for wildcard jokers - composite with base + mystery face overlay
-            if ((lowerType == "joker" || lowerType == "souljoker") &&
-                value.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            if (
+                (lowerType == "joker" || lowerType == "souljoker")
+                && value.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 var cardBase = _spriteService.GetJokerImage(value);
                 var mysteryFace = _spriteService.GetMysteryJokerFaceImage();

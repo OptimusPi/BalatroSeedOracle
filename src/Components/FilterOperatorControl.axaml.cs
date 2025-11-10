@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Specialized;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Models;
-using System;
-using System.Collections.Specialized;
-using System.Linq;
 
 namespace BalatroSeedOracle.Components
 {
@@ -43,17 +43,21 @@ namespace BalatroSeedOracle.Components
                     // Set the border color based on operator type
                     if (containerBorder != null)
                     {
-                        containerBorder.BorderBrush = operatorItem.OperatorType == "OR"
-                            ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
-                            : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
+                        containerBorder.BorderBrush =
+                            operatorItem.OperatorType == "OR"
+                                ? Application.Current?.FindResource("Green")
+                                    as Avalonia.Media.IBrush
+                                : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
                     }
 
                     // Set the header background based on operator type
                     if (headerBorder != null)
                     {
-                        headerBorder.Background = operatorItem.OperatorType == "OR"
-                            ? Application.Current?.FindResource("Green") as Avalonia.Media.IBrush
-                            : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
+                        headerBorder.Background =
+                            operatorItem.OperatorType == "OR"
+                                ? Application.Current?.FindResource("Green")
+                                    as Avalonia.Media.IBrush
+                                : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
                     }
 
                     // Subscribe to Children collection changes to update fanned layout
@@ -75,7 +79,11 @@ namespace BalatroSeedOracle.Components
                 return;
 
             // Add pointer handlers to enable dragging individual cards
-            itemsControl.AddHandler(PointerPressedEvent, OnCardPointerPressed, handledEventsToo: true);
+            itemsControl.AddHandler(
+                PointerPressedEvent,
+                OnCardPointerPressed,
+                handledEventsToo: true
+            );
         }
 
         private void OnHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -125,10 +133,13 @@ namespace BalatroSeedOracle.Components
                 return;
 
             // Wait for the visual tree to be FULLY rendered (Background priority runs after layout/render)
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                CalculateFannedPositions(operatorItem);
-            }, Avalonia.Threading.DispatcherPriority.Background);
+            Avalonia.Threading.Dispatcher.UIThread.Post(
+                () =>
+                {
+                    CalculateFannedPositions(operatorItem);
+                },
+                Avalonia.Threading.DispatcherPriority.Background
+            );
         }
 
         private void CalculateFannedPositions(FilterOperatorItem operatorItem)
@@ -142,9 +153,9 @@ namespace BalatroSeedOracle.Components
                 return;
 
             // Fanning parameters (poker hand style)
-            double baseAngle = -15.0;  // Start angle for first card
-            double angleDelta = count > 1 ? 30.0 / (count - 1) : 0;  // Spread across 30 degrees
-            double xOffset = 18.0;     // Horizontal spacing between cards
+            double baseAngle = -15.0; // Start angle for first card
+            double angleDelta = count > 1 ? 30.0 / (count - 1) : 0; // Spread across 30 degrees
+            double xOffset = 18.0; // Horizontal spacing between cards
             double cardWidth = 40.0;
 
             // Center the fan

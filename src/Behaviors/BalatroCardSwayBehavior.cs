@@ -134,6 +134,5 @@ namespace BalatroSeedOracle.Behaviors
             translateTransform.X = sway_x;
             translateTransform.Y = sway_y;
         }
-
     }
 }

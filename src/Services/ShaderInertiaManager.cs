@@ -25,7 +25,13 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Update a shader parameter using SetValue mode (instant, direct)
         /// </summary>
-        public float UpdateSetValue(string paramName, float triggerIntensity, float multiplier, float minValue, float maxValue)
+        public float UpdateSetValue(
+            string paramName,
+            float triggerIntensity,
+            float multiplier,
+            float minValue,
+            float maxValue
+        )
         {
             float value = triggerIntensity * multiplier;
             return Math.Clamp(value, minValue, maxValue);
@@ -45,7 +51,8 @@ namespace BalatroSeedOracle.Services
             float decayRate,
             float minValue,
             float maxValue,
-            float deltaTime = 0.016f) // Default 60 FPS
+            float deltaTime = 0.016f
+        ) // Default 60 FPS
         {
             // Get or create state for this parameter
             if (!_paramStates.TryGetValue(paramName, out var state))
@@ -54,7 +61,7 @@ namespace BalatroSeedOracle.Services
                 {
                     CurrentValue = 0f,
                     Velocity = 0f,
-                    DecayRate = decayRate
+                    DecayRate = decayRate,
                 };
                 _paramStates[paramName] = state;
             }

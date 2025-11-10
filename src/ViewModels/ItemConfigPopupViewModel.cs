@@ -62,15 +62,32 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private bool _sourcesVisible;
 
     // Individual ante properties for proper MVVM binding (can't use indexers in XAML)
-    [ObservableProperty] private bool _ante0 = true;
-    [ObservableProperty] private bool _ante1 = true;
-    [ObservableProperty] private bool _ante2 = true;
-    [ObservableProperty] private bool _ante3 = true;
-    [ObservableProperty] private bool _ante4 = true;
-    [ObservableProperty] private bool _ante5 = true;
-    [ObservableProperty] private bool _ante6 = true;
-    [ObservableProperty] private bool _ante7 = true;
-    [ObservableProperty] private bool _ante8 = true;
+    [ObservableProperty]
+    private bool _ante0 = true;
+
+    [ObservableProperty]
+    private bool _ante1 = true;
+
+    [ObservableProperty]
+    private bool _ante2 = true;
+
+    [ObservableProperty]
+    private bool _ante3 = true;
+
+    [ObservableProperty]
+    private bool _ante4 = true;
+
+    [ObservableProperty]
+    private bool _ante5 = true;
+
+    [ObservableProperty]
+    private bool _ante6 = true;
+
+    [ObservableProperty]
+    private bool _ante7 = true;
+
+    [ObservableProperty]
+    private bool _ante8 = true;
 
     [ObservableProperty]
     private string _selectedEdition = "none";
@@ -156,15 +173,33 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             {
                 switch (ante)
                 {
-                    case 0: Ante0 = true; break;
-                    case 1: Ante1 = true; break;
-                    case 2: Ante2 = true; break;
-                    case 3: Ante3 = true; break;
-                    case 4: Ante4 = true; break;
-                    case 5: Ante5 = true; break;
-                    case 6: Ante6 = true; break;
-                    case 7: Ante7 = true; break;
-                    case 8: Ante8 = true; break;
+                    case 0:
+                        Ante0 = true;
+                        break;
+                    case 1:
+                        Ante1 = true;
+                        break;
+                    case 2:
+                        Ante2 = true;
+                        break;
+                    case 3:
+                        Ante3 = true;
+                        break;
+                    case 4:
+                        Ante4 = true;
+                        break;
+                    case 5:
+                        Ante5 = true;
+                        break;
+                    case 6:
+                        Ante6 = true;
+                        break;
+                    case 7:
+                        Ante7 = true;
+                        break;
+                    case 8:
+                        Ante8 = true;
+                        break;
                 }
             }
         }
@@ -332,15 +367,24 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     private void Apply()
     {
         var antes = new List<int>();
-        if (Ante0) antes.Add(0);
-        if (Ante1) antes.Add(1);
-        if (Ante2) antes.Add(2);
-        if (Ante3) antes.Add(3);
-        if (Ante4) antes.Add(4);
-        if (Ante5) antes.Add(5);
-        if (Ante6) antes.Add(6);
-        if (Ante7) antes.Add(7);
-        if (Ante8) antes.Add(8);
+        if (Ante0)
+            antes.Add(0);
+        if (Ante1)
+            antes.Add(1);
+        if (Ante2)
+            antes.Add(2);
+        if (Ante3)
+            antes.Add(3);
+        if (Ante4)
+            antes.Add(4);
+        if (Ante5)
+            antes.Add(5);
+        if (Ante6)
+            antes.Add(6);
+        if (Ante7)
+            antes.Add(7);
+        if (Ante8)
+            antes.Add(8);
 
         var config = new ItemConfig
         {

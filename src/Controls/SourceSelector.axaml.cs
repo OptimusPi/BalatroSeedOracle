@@ -11,7 +11,10 @@ namespace BalatroSeedOracle.Controls
 
         // Bindable property for MVVM
         public static readonly StyledProperty<string> SelectedSourceTagProperty =
-            AvaloniaProperty.Register<SourceSelector, string>(nameof(SelectedSourceTag), defaultValue: "");
+            AvaloniaProperty.Register<SourceSelector, string>(
+                nameof(SelectedSourceTag),
+                defaultValue: ""
+            );
 
         public string SelectedSourceTag
         {

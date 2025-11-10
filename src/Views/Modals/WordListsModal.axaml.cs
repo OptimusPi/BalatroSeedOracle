@@ -160,10 +160,11 @@ tag"
                     if (fileInfo.Length > 1_000_000) // 1MB
                     {
                         var lines = File.ReadLines(filePath).Take(10000).ToList();
-                        _textEditor.Text = string.Join("\n", lines) +
-                            $"\n\n... (showing first {lines.Count:N0} lines only)\n" +
-                            $"Large file ({fileInfo.Length / 1024:N0} KB) - read-only preview.\n" +
-                            $"Use external text editor to view/edit full file.";
+                        _textEditor.Text =
+                            string.Join("\n", lines)
+                            + $"\n\n... (showing first {lines.Count:N0} lines only)\n"
+                            + $"Large file ({fileInfo.Length / 1024:N0} KB) - read-only preview.\n"
+                            + $"Use external text editor to view/edit full file.";
                         _textEditor.IsReadOnly = true;
                         UpdateStatus($"⚠ Large file - showing preview only (read-only)");
                     }

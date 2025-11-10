@@ -23,10 +23,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     /// </summary>
     public enum EditingState
     {
-        Default,        // Normal view - all sections visible at normal size
-        DragActive,     // User is dragging - show overlays
-        ClauseEdit,     // Editing OR/AND clause - expand to full column
-        ScoreEdit       // Editing score list - expand to full column
+        Default, // Normal view - all sections visible at normal size
+        DragActive, // User is dragging - show overlays
+        ClauseEdit, // Editing OR/AND clause - expand to full column
+        ScoreEdit, // Editing score list - expand to full column
     }
 
     public partial class VisualBuilderTabViewModel : ObservableObject
@@ -60,7 +60,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public bool IsScoreEditState => CurrentEditingState == EditingState.ScoreEdit;
 
         // Computed properties for layout control
-        public bool ShouldShowItemShelf => CurrentEditingState == EditingState.Default || CurrentEditingState == EditingState.DragActive;
+        public bool ShouldShowItemShelf =>
+            CurrentEditingState == EditingState.Default
+            || CurrentEditingState == EditingState.DragActive;
         public bool ShouldExpandClauses => CurrentEditingState == EditingState.ClauseEdit;
         public bool ShouldExpandScoreList => CurrentEditingState == EditingState.ScoreEdit;
         public bool ShouldCollapseClauses => CurrentEditingState == EditingState.ScoreEdit;
@@ -209,11 +211,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private int _selectedStakeIndex = 0;
 
         // Computed properties for button visibility based on category
-        public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+        public bool ShowEditionButtons =>
+            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
-        public bool SupportsFlipAnimation => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+        public bool SupportsFlipAnimation =>
+            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
 
         // Notify property changes when category changes
         partial void OnSelectedMainCategoryChanged(string value)
@@ -232,7 +236,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StickerEternal = false;
             StickerRental = false;
 
-            DebugLogger.Log("VisualBuilderTab", $"Category changed to: {value} - reset all editions/stickers/seals");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Category changed to: {value} - reset all editions/stickers/seals"
+            );
         }
 
         // Display name for current category
@@ -536,7 +543,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var (baseName, _) in firstSet)
                     {
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
+                        );
                         if (baseVoucher != null)
                             organizedVouchers.Add(baseVoucher);
                     }
@@ -545,7 +553,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var (_, upgradeName) in firstSet)
                     {
                         var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
+                        );
                         if (upgradeVoucher != null)
                             organizedVouchers.Add(upgradeVoucher);
                     }
@@ -557,7 +566,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var (baseName, _) in secondSet)
                     {
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
+                        );
                         if (baseVoucher != null)
                             organizedVouchers.Add(baseVoucher);
                     }
@@ -566,7 +576,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var (_, upgradeName) in secondSet)
                     {
                         var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase));
+                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
+                        );
                         if (upgradeVoucher != null)
                             organizedVouchers.Add(upgradeVoucher);
                     }
@@ -582,13 +593,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // Standard playing cards organized by suit and enhancement
                     AddGroup("Hearts", FilteredStandardCards.Where(c => c.Category == "Hearts"));
                     AddGroup("Spades", FilteredStandardCards.Where(c => c.Category == "Spades"));
-                    AddGroup("Diamonds", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
+                    AddGroup(
+                        "Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Diamonds")
+                    );
                     AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
                     AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
-                    AddGroup("Bonus Cards", FilteredStandardCards.Where(c => c.Category == "Bonus"));
-                    AddGroup("Glass Cards", FilteredStandardCards.Where(c => c.Category == "Glass"));
+                    AddGroup(
+                        "Bonus Cards",
+                        FilteredStandardCards.Where(c => c.Category == "Bonus")
+                    );
+                    AddGroup(
+                        "Glass Cards",
+                        FilteredStandardCards.Where(c => c.Category == "Glass")
+                    );
                     AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
-                    AddGroup("Steel Cards", FilteredStandardCards.Where(c => c.Category == "Steel"));
+                    AddGroup(
+                        "Steel Cards",
+                        FilteredStandardCards.Where(c => c.Category == "Steel")
+                    );
                     AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
@@ -630,7 +653,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ("grabber", "nachotong"),
                 ("wasteful", "recyclomancy"),
                 ("blank", "antimatter"),
-
                 // Row 2 -> Row 3 pairs (8 pairs)
                 ("rerollsurplus", "rerollglut"),
                 ("seedmoney", "moneytree"),
@@ -707,10 +729,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _ => FilteredJokers.Where(j => j.Type == "Joker"),
             };
 
-            DebugLogger.Log("VisualBuilderTab", $"RefreshFilteredItems: SelectedCategory={SelectedCategory}, sourceCollection count={sourceCollection.Count()}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"RefreshFilteredItems: SelectedCategory={SelectedCategory}, sourceCollection count={sourceCollection.Count()}"
+            );
             foreach (var item in sourceCollection.Take(3))
             {
-                DebugLogger.Log("VisualBuilderTab", $"  - {item.Name}: Type={item.Type}, Category={item.Category}");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"  - {item.Name}: Type={item.Type}, Category={item.Category}"
+                );
             }
 
             FilteredItems.Clear();
@@ -718,7 +746,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 FilteredItems.Add(item);
             }
-            DebugLogger.Log("VisualBuilderTab", $"FilteredItems populated: {FilteredItems.Count} items");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"FilteredItems populated: {FilteredItems.Count} items"
+            );
 
             // Also rebuild grouped items after filtering
             RebuildGroupedItems();
@@ -761,18 +792,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            Helpers.DebugLogger.Log("AddToMust", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}");
+            Helpers.DebugLogger.Log(
+                "AddToMust",
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}"
+            );
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMust.Add(item);
 
-            Helpers.DebugLogger.Log("AddToMust", $"SelectedMust count after add: {SelectedMust.Count}");
+            Helpers.DebugLogger.Log(
+                "AddToMust",
+                $"SelectedMust count after add: {SelectedMust.Count}"
+            );
 
             // Log all items in collection for debugging
             for (int i = 0; i < SelectedMust.Count; i++)
             {
                 var existingItem = SelectedMust[i];
-                Helpers.DebugLogger.Log("AddToMust", $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+                Helpers.DebugLogger.Log(
+                    "AddToMust",
+                    $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
+                );
             }
 
             // Force UI refresh
@@ -787,7 +827,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // If this is the unified operator, use it as-is with its children
                     if (operatorItem == UnifiedOperator)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children"
+                        );
                     }
 
                     SyncOperatorToParent(operatorItem, "Must");
@@ -824,18 +867,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            Helpers.DebugLogger.Log("AddToShould", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}");
+            Helpers.DebugLogger.Log(
+                "AddToShould",
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}"
+            );
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedShould.Add(item);
 
-            Helpers.DebugLogger.Log("AddToShould", $"SelectedShould count after add: {SelectedShould.Count}");
+            Helpers.DebugLogger.Log(
+                "AddToShould",
+                $"SelectedShould count after add: {SelectedShould.Count}"
+            );
 
             // Log all items in collection for debugging
             for (int i = 0; i < SelectedShould.Count; i++)
             {
                 var existingItem = SelectedShould[i];
-                Helpers.DebugLogger.Log("AddToShould", $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+                Helpers.DebugLogger.Log(
+                    "AddToShould",
+                    $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
+                );
             }
 
             // Force UI refresh
@@ -850,7 +902,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // If this is the unified operator, use it as-is with its children
                     if (operatorItem == UnifiedOperator)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children"
+                        );
                     }
 
                     SyncOperatorToParent(operatorItem, "Should");
@@ -887,18 +942,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            Helpers.DebugLogger.Log("AddToMustNot", $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}");
+            Helpers.DebugLogger.Log(
+                "AddToMustNot",
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}"
+            );
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMustNot.Add(item);
 
-            Helpers.DebugLogger.Log("AddToMustNot", $"SelectedMustNot count after add: {SelectedMustNot.Count}");
+            Helpers.DebugLogger.Log(
+                "AddToMustNot",
+                $"SelectedMustNot count after add: {SelectedMustNot.Count}"
+            );
 
             // Log all items in collection for debugging
             for (int i = 0; i < SelectedMustNot.Count; i++)
             {
                 var existingItem = SelectedMustNot[i];
-                Helpers.DebugLogger.Log("AddToMustNot", $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})");
+                Helpers.DebugLogger.Log(
+                    "AddToMustNot",
+                    $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
+                );
             }
 
             // Force UI refresh
@@ -913,7 +977,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // If this is the unified operator, use it as-is with its children
                     if (operatorItem == UnifiedOperator)
                     {
-                        DebugLogger.Log("VisualBuilderTab", $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children"
+                        );
                     }
 
                     SyncOperatorToParent(operatorItem, "MustNot");
@@ -944,7 +1011,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMust(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             SelectedMust.Remove(item);
 
@@ -962,7 +1030,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromShould(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             SelectedShould.Remove(item);
 
@@ -980,7 +1049,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMustNot(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             SelectedMustNot.Remove(item);
 
@@ -998,7 +1068,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToOrTray(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             // Enter clause editing mode on first item
             if (OrTrayItems.Count == 0)
@@ -1033,7 +1104,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToAndTray(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             // Enter clause editing mode on first item
             if (AndTrayItems.Count == 0)
@@ -1068,7 +1140,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromOrTray(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             OrTrayItems.Remove(item);
 
@@ -1080,7 +1153,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromAndTray(FilterItem? item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
             AndTrayItems.Remove(item);
 
@@ -1109,7 +1183,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ItemName = $"OR ({OrTrayItems.Count} items)",
                 OperatorType = "Or",
                 Mode = "Max",
-                Children = new List<ItemConfig>()
+                Children = new List<ItemConfig>(),
             };
 
             // Add each item in OR tray as a child
@@ -1118,8 +1192,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in OrTrayItems.ToList())
                 {
                     // Find the ItemConfig for this item
-                    var existingConfig = _parentViewModel.ItemConfigs
-                        .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
+                    var existingConfig = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
+                        kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
+                    );
 
                     if (existingConfig.Value != null)
                     {
@@ -1131,7 +1206,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("OR")
             {
-                DisplayName = $"OR ({OrTrayItems.Count} items)"
+                DisplayName = $"OR ({OrTrayItems.Count} items)",
             };
 
             // Add tray items as children to the operator item
@@ -1157,7 +1232,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             CurrentEditingState = EditingState.Default;
             EditingClauseType = "";
 
-            DebugLogger.Log("VisualBuilderTab", $"Committed OR clause with {groupedConfig.Children.Count} children to SHOULD");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Committed OR clause with {groupedConfig.Children.Count} children to SHOULD"
+            );
 
             NotifyJsonEditorOfChanges();
         }
@@ -1180,7 +1258,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ItemType = "Clause",
                 ItemName = $"AND ({AndTrayItems.Count} items)",
                 OperatorType = "And",
-                Children = new List<ItemConfig>()
+                Children = new List<ItemConfig>(),
             };
 
             // Add each item in AND tray as a child
@@ -1189,8 +1267,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in AndTrayItems.ToList())
                 {
                     // Find the ItemConfig for this item
-                    var existingConfig = _parentViewModel.ItemConfigs
-                        .FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type);
+                    var existingConfig = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
+                        kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
+                    );
 
                     if (existingConfig.Value != null)
                     {
@@ -1202,7 +1281,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Create FilterOperatorItem for UI display
             var operatorItem = new FilterOperatorItem("AND")
             {
-                DisplayName = $"AND ({AndTrayItems.Count} items)"
+                DisplayName = $"AND ({AndTrayItems.Count} items)",
             };
 
             // Add tray items as children to the operator item
@@ -1228,7 +1307,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             CurrentEditingState = EditingState.Default;
             EditingClauseType = "";
 
-            DebugLogger.Log("VisualBuilderTab", $"Committed AND clause with {groupedConfig.Children.Count} children to SHOULD");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Committed AND clause with {groupedConfig.Children.Count} children to SHOULD"
+            );
 
             NotifyJsonEditorOfChanges();
         }
@@ -1240,7 +1322,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Simply toggle the OperatorType - property change notification handles the rest
             UnifiedOperator.OperatorType = (UnifiedOperator.OperatorType == "OR") ? "AND" : "OR";
-            DebugLogger.Log("VisualBuilderTab", $"Toggled operator to {UnifiedOperator.OperatorType} mode");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Toggled operator to {UnifiedOperator.OperatorType} mode"
+            );
         }
 
         /// <summary>
@@ -1255,15 +1340,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Removes an item from the parent's collections and ItemConfigs
         /// </summary>
-        private void RemoveItemFromParent(FilterItem item, ObservableCollection<string> parentCollection)
+        private void RemoveItemFromParent(
+            FilterItem item,
+            ObservableCollection<string> parentCollection
+        )
         {
             if (_parentViewModel == null)
                 return;
 
             // Find the item key in parent's ItemConfigs
-            var itemKey = _parentViewModel.ItemConfigs.FirstOrDefault(kvp =>
-                kvp.Value.ItemName == item.Name &&
-                kvp.Value.ItemType == item.Type).Key;
+            var itemKey = _parentViewModel
+                .ItemConfigs.FirstOrDefault(kvp =>
+                    kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
+                )
+                .Key;
 
             if (!string.IsNullOrEmpty(itemKey))
             {
@@ -1365,7 +1455,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 // CRITICAL-002 FIX: Handle exceptions gracefully instead of crashing app
-                DebugLogger.LogError("VisualBuilderTab", $"Failed to load game data: {ex.Message}\n{ex.StackTrace}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Failed to load game data: {ex.Message}\n{ex.StackTrace}"
+                );
 
                 // Even on error, clear loading state and show empty state
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1413,13 +1506,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = name,
                             Type = type,
-                            Category = type switch  // Fixed for CategoryGroupedLayoutBehavior
+                            Category = type switch // Fixed for CategoryGroupedLayoutBehavior
                             {
                                 "Joker" or "SoulJoker" => "Jokers",
                                 "SmallBlindTag" or "BigBlindTag" => "Tags",
                                 "Voucher" => "Vouchers",
                                 "Boss" => "Bosses",
-                                _ => "Consumables"  // Tarot, Planet, Spectral
+                                _ => "Consumables", // Tarot, Planet, Spectral
                             },
                             DisplayName = displayName,
                             ItemImage = type switch
@@ -1428,8 +1521,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 "Tarot" => spriteService.GetTarotImage(name),
                                 "Planet" => spriteService.GetPlanetCardImage(name),
                                 "Spectral" => spriteService.GetSpectralImage(name),
-                                _ => null
-                            }
+                                _ => null,
+                            },
                         }
                     );
                 }
@@ -1442,7 +1535,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         Name = legendaryName,
                         Type = "SoulJoker",
-                        Category = "Jokers",  // Fixed for CategoryGroupedLayoutBehavior
+                        Category = "Jokers", // Fixed for CategoryGroupedLayoutBehavior
                         DisplayName = BalatroData.GetDisplayNameFromSprite(legendaryName),
                         ItemImage = spriteService.GetJokerImage(legendaryName),
                     };
@@ -1477,11 +1570,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = jokerName,
                             Type = "Joker",
-                            Category = rarity,  // Use actual rarity so shelf filtering works (Common/Uncommon/Rare)
+                            Category = rarity, // Use actual rarity so shelf filtering works (Common/Uncommon/Rare)
                             DisplayName = BalatroData.GetDisplayNameFromSprite(jokerName),
                             ItemImage = spriteService.GetJokerImage(jokerName),
                         };
-                        DebugLogger.Log("VisualBuilderTab", $"Created regular joker: {jokerName} - Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Created regular joker: {jokerName} - Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}"
+                        );
                         AllJokers.Add(item);
                     }
                 }
@@ -1495,7 +1591,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = tagName,
                             Type = "SmallBlindTag",
-                            Category = "Tags",  // Added for CategoryGroupedLayoutBehavior
+                            Category = "Tags", // Added for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(tagName),
                             ItemImage = spriteService.GetTagImage(tagName),
                         };
@@ -1512,7 +1608,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             Name = voucherName,
                             Type = "Voucher",
-                            Category = "Vouchers",  // Added for CategoryGroupedLayoutBehavior
+                            Category = "Vouchers", // Added for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(voucherName),
                             ItemImage = spriteService.GetVoucherImage(voucherName),
                         };
@@ -1621,7 +1717,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 {
                                     Name = bossName,
                                     Type = "Boss",
-                                    Category = "Bosses",  // Added for CategoryGroupedLayoutBehavior
+                                    Category = "Bosses", // Added for CategoryGroupedLayoutBehavior
                                     DisplayName = BalatroData.GetDisplayNameFromSprite(bossName),
                                     ItemImage = spriteService.GetBossImage(bossName),
                                 };
@@ -1646,14 +1742,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 try
                 {
                     var suits = new[] { "Hearts", "Spades", "Diamonds", "Clubs" };
-                    var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
+                    var ranks = new[]
+                    {
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "10",
+                        "Jack",
+                        "Queen",
+                        "King",
+                        "Ace",
+                    };
 
                     // Generate base 52 cards (Type A - Normal cards with no enhancement)
                     foreach (var suit in suits)
                     {
                         foreach (var rank in ranks)
                         {
-                            var displayName = rank == "Ace" ? $"Ace of {suit}" : $"{rank} of {suit}";
+                            var displayName =
+                                rank == "Ace" ? $"Ace of {suit}" : $"{rank} of {suit}";
                             var item = new FilterItem
                             {
                                 Name = $"{rank}_{suit}",
@@ -1689,7 +1801,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                 Rank = rank,
                                 Suit = suit,
                                 Enhancement = enhancement,
-                                ItemImage = spriteService.GetPlayingCardImage(suit, rank, enhancement),
+                                ItemImage = spriteService.GetPlayingCardImage(
+                                    suit,
+                                    rank,
+                                    enhancement
+                                ),
                             };
                             AllStandardCards.Add(item);
                         }
@@ -1709,11 +1825,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     };
                     AllStandardCards.Add(stoneCard);
 
-                    DebugLogger.Log("VisualBuilderTab", $"Loaded {AllStandardCards.Count} standard playing cards");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Loaded {AllStandardCards.Count} standard playing cards"
+                    );
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("VisualBuilderTab", $"Error loading standard cards: {ex.Message}");
+                    DebugLogger.LogError(
+                        "VisualBuilderTab",
+                        $"Error loading standard cards: {ex.Message}"
+                    );
                 }
 
                 // Mark favorite items AFTER all items are loaded with their proper categories
@@ -1724,11 +1846,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var favoriteName in favoriteNames)
                 {
                     // Find the joker in AllJokers and mark it as favorite
-                    var joker = AllJokers.FirstOrDefault(j => j.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase));
+                    var joker = AllJokers.FirstOrDefault(j =>
+                        j.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase)
+                    );
                     if (joker != null)
                     {
                         joker.IsFavorite = true;
-                        DebugLogger.Log("VisualBuilderTab", $"Marked {favoriteName} as favorite (Category={joker.Category})");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Marked {favoriteName} as favorite (Category={joker.Category})"
+                        );
                     }
                 }
 
@@ -1853,7 +1980,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var filter = SearchFilter.ToLowerInvariant();
 
-            DebugLogger.Log("VisualBuilderTab", $"ApplyFilter called - AllJokers count: {AllJokers.Count}, filter: '{filter}'");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"ApplyFilter called - AllJokers count: {AllJokers.Count}, filter: '{filter}'"
+            );
 
             foreach (var joker in AllJokers)
             {
@@ -1867,7 +1997,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"FilteredJokers after ApplyFilter: {FilteredJokers.Count}"
+            );
 
             foreach (var tag in AllTags)
             {
@@ -2007,7 +2140,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (itemIndex >= 0)
                 {
                     sourceZone = "SHOULD";
-                    if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedShould.Count)
+                    if (
+                        _parentViewModel != null
+                        && itemIndex < _parentViewModel.SelectedShould.Count
+                    )
                     {
                         itemKeyToRemove = _parentViewModel.SelectedShould[itemIndex];
                     }
@@ -2020,7 +2156,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (itemIndex >= 0)
                     {
                         sourceZone = "MUSTNOT";
-                        if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMustNot.Count)
+                        if (
+                            _parentViewModel != null
+                            && itemIndex < _parentViewModel.SelectedMustNot.Count
+                        )
                         {
                             itemKeyToRemove = _parentViewModel.SelectedMustNot[itemIndex];
                         }
@@ -2050,7 +2189,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Removed item: {item.Name} from {sourceZone ?? "UNKNOWN"} zone");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Removed item: {item.Name} from {sourceZone ?? "UNKNOWN"} zone"
+            );
         }
 
         #endregion
@@ -2147,7 +2289,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 if (configService == null || filterService == null)
                 {
-                    DebugLogger.LogError("VisualBuilderTab", "Auto-save failed: services not available");
+                    DebugLogger.LogError(
+                        "VisualBuilderTab",
+                        "Auto-save failed: services not available"
+                    );
                     return;
                 }
 
@@ -2166,11 +2311,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         try
                         {
                             File.Delete(oldFilePath);
-                            DebugLogger.Log("VisualBuilderTab", $"Deleted old filter file with spaces: {oldFilePath}");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"Deleted old filter file with spaces: {oldFilePath}"
+                            );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError("VisualBuilderTab", $"Failed to delete old filter file: {ex.Message}");
+                            DebugLogger.LogError(
+                                "VisualBuilderTab",
+                                $"Failed to delete old filter file: {ex.Message}"
+                            );
                         }
                     }
                 }
@@ -2188,13 +2339,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         DebugLogger.Log("VisualBuilderTab", $"Auto-saved filter: {filterName}");
 
                         // Clear the status after 2 seconds
-                        Task.Delay(2000).ContinueWith(_ =>
-                        {
-                            Dispatcher.UIThread.InvokeAsync(() =>
+                        Task.Delay(2000)
+                            .ContinueWith(_ =>
                             {
-                                AutoSaveStatus = "";
+                                Dispatcher.UIThread.InvokeAsync(() =>
+                                {
+                                    AutoSaveStatus = "";
+                                });
                             });
-                        });
                     }
                     else
                     {
@@ -2297,7 +2449,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Don't trigger animation if edition didn't actually change
             if (SelectedEdition == edition)
             {
-                DebugLogger.Log("VisualBuilderTab", $"Edition already set to '{edition}' - skipping animation");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Edition already set to '{edition}' - skipping animation"
+                );
                 return;
             }
 
@@ -2318,7 +2473,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     item.Edition = editionValue;
 
                     // Also update ItemConfig (for when this item gets dropped to a zone)
-                    if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    if (
+                        _parentViewModel != null
+                        && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
+                    )
                     {
                         config.Edition = editionValue;
                     }
@@ -2328,7 +2486,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items in drop zones
             if (_parentViewModel != null)
             {
-                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                foreach (
+                    var itemKey in _parentViewModel
+                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
+                        .Concat(_parentViewModel.SelectedMustNot)
+                )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                     {
@@ -2354,7 +2516,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+            );
         }
 
         /// <summary>
@@ -2374,7 +2539,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+            );
         }
 
         /// <summary>
@@ -2394,7 +2562,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+            );
         }
 
         /// <summary>
@@ -2414,7 +2585,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+            );
         }
 
         /// <summary>
@@ -2426,7 +2600,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Don't trigger animation if seal didn't actually change
             if (SelectedSeal == seal)
             {
-                DebugLogger.Log("VisualBuilderTab", $"Seal already set to '{seal}' - skipping animation");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"Seal already set to '{seal}' - skipping animation"
+                );
                 return;
             }
 
@@ -2445,7 +2622,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         item.Seal = sealValue;
 
                         // Also update ItemConfig if it exists (for when item gets dropped to zones)
-                        if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                        if (
+                            _parentViewModel != null
+                            && _parentViewModel.ItemConfigs.TryGetValue(
+                                item.ItemKey,
+                                out var config
+                            )
+                        )
                         {
                             config.Seal = sealValue;
                         }
@@ -2456,7 +2639,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items in drop zones
             if (_parentViewModel != null)
             {
-                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                foreach (
+                    var itemKey in _parentViewModel
+                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
+                        .Concat(_parentViewModel.SelectedMustNot)
+                )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                     {
@@ -2486,7 +2673,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 FlipAnimationTrigger++;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+            );
         }
 
         /// <summary>
@@ -2503,7 +2693,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "SmallBlindTag" or "BigBlindTag" => false,
                 "Boss" => false,
                 "StandardCard" => true,
-                _ => false
+                _ => false,
             };
         }
 
@@ -2516,10 +2706,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Jokers that CANNOT be Eternal (from Balatro game logic)
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
-                "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                "Cavendish",
+                "DietCola",
+                "GrosMichel",
+                "IceCream",
+                "InvisibleJoker",
+                "Luchador",
+                "MrBones",
+                "Popcorn",
+                "Ramen",
+                "Seltzer",
+                "TurtleBean",
                 // Soul Jokers also cannot be Eternal
-                "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
             };
 
             // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
@@ -2535,7 +2738,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         stickers.Add("perishable");
                     }
-                    else if (StickerEternal && CanItemBeEternal(item) && !eternalRestrictedJokers.Contains(item.Name))
+                    else if (
+                        StickerEternal
+                        && CanItemBeEternal(item)
+                        && !eternalRestrictedJokers.Contains(item.Name)
+                    )
                     {
                         stickers.Add("eternal");
                     }
@@ -2548,7 +2755,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     item.Stickers = stickers.Count > 0 ? stickers : null;
 
                     // Also update ItemConfig if it exists (for when item gets dropped to zones)
-                    if (_parentViewModel != null && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
+                    if (
+                        _parentViewModel != null
+                        && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
+                    )
                     {
                         config.Stickers = item.Stickers;
                     }
@@ -2558,7 +2768,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items in drop zones
             if (_parentViewModel != null)
             {
-                foreach (var itemKey in _parentViewModel.SelectedMust.Concat(_parentViewModel.SelectedShould).Concat(_parentViewModel.SelectedMustNot))
+                foreach (
+                    var itemKey in _parentViewModel
+                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
+                        .Concat(_parentViewModel.SelectedMustNot)
+                )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                     {
@@ -2575,7 +2789,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         stickers.Add("perishable");
                     }
-                    else if (StickerEternal && CanItemBeEternal(item) && !eternalRestrictedJokers.Contains(item.Name))
+                    else if (
+                        StickerEternal
+                        && CanItemBeEternal(item)
+                        && !eternalRestrictedJokers.Contains(item.Name)
+                    )
                     {
                         stickers.Add("eternal");
                     }
@@ -2595,7 +2813,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Helper method to apply sticker logic with Eternal restrictions
         /// </summary>
-        private void ApplyStickerLogic(ItemConfig config, string itemName, HashSet<string> eternalRestrictedJokers)
+        private void ApplyStickerLogic(
+            ItemConfig config,
+            string itemName,
+            HashSet<string> eternalRestrictedJokers
+        )
         {
             // Build sticker list based on current toggles
             var stickers = new List<string>();
@@ -2616,11 +2838,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     "StandardCard" => true,
                     "SmallBlindTag" or "BigBlindTag" => false,
                     "Boss" => false,
-                    _ => false
+                    _ => false,
                 };
 
                 // Check if specific joker is restricted from Eternal
-                bool isRestrictedJoker = (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
+                bool isRestrictedJoker =
+                    (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
                     && eternalRestrictedJokers.Contains(itemName);
 
                 if (canTypeBeEternal && !isRestrictedJoker)
@@ -2656,10 +2879,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply Stickers with Eternal restrictions
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Cavendish", "DietCola", "GrosMichel", "IceCream", "InvisibleJoker",
-                "Luchador", "MrBones", "Popcorn", "Ramen", "Seltzer", "TurtleBean",
+                "Cavendish",
+                "DietCola",
+                "GrosMichel",
+                "IceCream",
+                "InvisibleJoker",
+                "Luchador",
+                "MrBones",
+                "Popcorn",
+                "Ramen",
+                "Seltzer",
+                "TurtleBean",
                 // Soul Jokers also cannot be Eternal
-                "Perkeo", "Triboulet", "Yorick", "Chicot", "Canio"
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
             };
 
             var stickers = new List<string>();
@@ -2672,7 +2908,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             else if (StickerEternal && CanItemBeEternal(item))
             {
                 // Check if specific joker is restricted from Eternal
-                bool isRestrictedJoker = (item.Type == "Joker" || item.Type == "SoulJoker")
+                bool isRestrictedJoker =
+                    (item.Type == "Joker" || item.Type == "SoulJoker")
                     && eternalRestrictedJokers.Contains(item.Name);
 
                 if (!isRestrictedJoker)
@@ -2699,8 +2936,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Seal = SelectedSeal;
             }
 
-            DebugLogger.Log("VisualBuilderTab",
-                $"Applied edition={config.Edition}, stickers=[{string.Join(",", config.Stickers ?? new List<string>())}], seal={config.Seal} to {item.Name}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Applied edition={config.Edition}, stickers=[{string.Join(",", config.Stickers ?? new List<string>())}], seal={config.Seal} to {item.Name}"
+            );
         }
 
         #endregion
@@ -2746,7 +2985,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (filterItem != null)
                     {
                         SelectedShould.Add(filterItem);
-                        DebugLogger.Log("VisualBuilderTab", $"Loaded SHOULD item: {filterItem.Name}");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Loaded SHOULD item: {filterItem.Name}"
+                        );
                     }
                 }
             }
@@ -2760,12 +3002,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (filterItem != null)
                     {
                         SelectedMustNot.Add(filterItem);
-                        DebugLogger.Log("VisualBuilderTab", $"Loaded MUSTNOT item: {filterItem.Name}");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Loaded MUSTNOT item: {filterItem.Name}"
+                        );
                     }
                 }
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD, {SelectedMustNot.Count} MUSTNOT items");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD, {SelectedMustNot.Count} MUSTNOT items"
+            );
         }
 
         private FilterItem? CreateFilterItemFromConfig(ItemConfig config)
@@ -2783,7 +3031,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "SmallBlindTag" or "BigBlindTag" or "Tag" => "Tag",
                 "Boss" or "BossBlind" => "Boss",
                 "PlayingCard" or "StandardCard" => "StandardCard",
-                _ => config.ItemType
+                _ => config.ItemType,
             };
 
             var filterItem = new FilterItem
@@ -2795,7 +3043,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ItemKey = config.ItemKey,
                 Edition = config.Edition,
                 Stickers = config.Stickers,
-                Antes = config.Antes?.ToArray()
+                Antes = config.Antes?.ToArray(),
             };
 
             // Get sprite image

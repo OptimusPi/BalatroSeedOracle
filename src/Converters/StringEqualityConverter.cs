@@ -8,7 +8,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly StringEqualityConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is string str && parameter is string compareStr)
             {
@@ -17,7 +22,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is bool isChecked && isChecked && parameter is string str)
             {

@@ -1,5 +1,5 @@
-using Avalonia.Controls;
 using System.ComponentModel;
+using Avalonia.Controls;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
@@ -16,7 +16,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
         private void OnDataContextChanged(object? sender, System.EventArgs e)
         {
             // Unsubscribe from old ViewModel
-            if (sender is UserControl control && control.DataContext is INotifyPropertyChanged oldVm)
+            if (
+                sender is UserControl control
+                && control.DataContext is INotifyPropertyChanged oldVm
+            )
             {
                 oldVm.PropertyChanged -= OnViewModelPropertyChanged;
             }
@@ -39,10 +42,13 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 if (_consoleOutput != null)
                 {
                     // Scroll to end after UI renders the new text
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        _consoleOutput.CaretIndex = int.MaxValue;
-                    }, Avalonia.Threading.DispatcherPriority.Background);
+                    Avalonia.Threading.Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            _consoleOutput.CaretIndex = int.MaxValue;
+                        },
+                        Avalonia.Threading.DispatcherPriority.Background
+                    );
                 }
             }
         }

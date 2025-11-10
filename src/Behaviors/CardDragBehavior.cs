@@ -5,9 +5,9 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Constants;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Behaviors
 {

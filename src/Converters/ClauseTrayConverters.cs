@@ -14,26 +14,44 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly OperatorColorConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not string operatorType)
-                throw new ArgumentException($"Expected string operatorType, got {value?.GetType().Name ?? "null"}");
+                throw new ArgumentException(
+                    $"Expected string operatorType, got {value?.GetType().Name ?? "null"}"
+                );
 
             var colorKey = operatorType switch
             {
-                "OR" => "Green",   // Matches SHOULD zone
-                "AND" => "Blue",   // Matches MUST zone
-                _ => throw new ArgumentException($"Unknown operator type: {operatorType}")
+                "OR" => "Green", // Matches SHOULD zone
+                "AND" => "Blue", // Matches MUST zone
+                _ => throw new ArgumentException($"Unknown operator type: {operatorType}"),
             };
 
-            if (Application.Current?.Resources.TryGetResource(colorKey, null, out var resource) == true && resource is IBrush brush)
+            if (
+                Application.Current?.Resources.TryGetResource(colorKey, null, out var resource)
+                    == true
+                && resource is IBrush brush
+            )
             {
                 return brush;
             }
-            throw new InvalidOperationException($"Color resource '{colorKey}' not found in App.axaml! Fix your resources!");
+            throw new InvalidOperationException(
+                $"Color resource '{colorKey}' not found in App.axaml! Fix your resources!"
+            );
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -46,7 +64,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly LessThanFiveConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -55,7 +78,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -68,7 +96,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly GreaterThanFourConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -77,7 +110,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -90,7 +128,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly EqualsZeroConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -99,7 +142,12 @@ namespace BalatroSeedOracle.Converters
             return true;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }

@@ -23,8 +23,10 @@ namespace BalatroSeedOracle.Components
         /// Trigger value for flip animation wave effect.
         /// Bind this to a counter in ViewModel that increments when Edition/Sticker changes.
         /// </summary>
-        public static readonly StyledProperty<int> FlipTriggerProperty =
-            AvaloniaProperty.Register<FilterItemCard, int>(nameof(FlipTrigger), 0);
+        public static readonly StyledProperty<int> FlipTriggerProperty = AvaloniaProperty.Register<
+            FilterItemCard,
+            int
+        >(nameof(FlipTrigger), 0);
 
         public int FlipTrigger
         {
@@ -36,8 +38,10 @@ namespace BalatroSeedOracle.Components
         /// Stagger delay in milliseconds for wave flip animation.
         /// Each card in shelf should have a unique delay (0, 50, 100, 150...).
         /// </summary>
-        public static readonly StyledProperty<int> StaggerDelayProperty =
-            AvaloniaProperty.Register<FilterItemCard, int>(nameof(StaggerDelay), 0);
+        public static readonly StyledProperty<int> StaggerDelayProperty = AvaloniaProperty.Register<
+            FilterItemCard,
+            int
+        >(nameof(StaggerDelay), 0);
 
         public int StaggerDelay
         {
@@ -49,8 +53,10 @@ namespace BalatroSeedOracle.Components
         /// Deck name for flip animation back sprite (e.g., "Red", "Anaglyph").
         /// Defaults to "Red" deck.
         /// </summary>
-        public static readonly StyledProperty<string> DeckNameProperty =
-            AvaloniaProperty.Register<FilterItemCard, string>(nameof(DeckName), "Red");
+        public static readonly StyledProperty<string> DeckNameProperty = AvaloniaProperty.Register<
+            FilterItemCard,
+            string
+        >(nameof(DeckName), "Red");
 
         public string DeckName
         {
@@ -76,15 +82,18 @@ namespace BalatroSeedOracle.Components
                 // Bind behavior properties to our StyledProperties
                 flipBehavior.Bind(
                     CardFlipOnTriggerBehavior.FlipTriggerProperty,
-                    this.GetObservable(FlipTriggerProperty));
+                    this.GetObservable(FlipTriggerProperty)
+                );
 
                 flipBehavior.Bind(
                     CardFlipOnTriggerBehavior.StaggerDelayProperty,
-                    this.GetObservable(StaggerDelayProperty));
+                    this.GetObservable(StaggerDelayProperty)
+                );
 
                 flipBehavior.Bind(
                     CardFlipOnTriggerBehavior.DeckNameProperty,
-                    this.GetObservable(DeckNameProperty));
+                    this.GetObservable(DeckNameProperty)
+                );
 
                 // Attach behavior to the base image
                 var behaviors = Interaction.GetBehaviors(baseImage);

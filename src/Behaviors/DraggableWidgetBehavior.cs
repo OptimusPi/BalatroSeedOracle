@@ -208,7 +208,9 @@ namespace BalatroSeedOracle.Behaviors
             if (parent != null)
             {
                 _pointerPressedPoint = e.GetPosition(parent);
-                Console.WriteLine($"[DragBehavior] Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})");
+                Console.WriteLine(
+                    $"[DragBehavior] Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})"
+                );
             }
             else
             {
@@ -264,7 +266,7 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
-                    
+
                     Console.WriteLine($"[DragBehavior] Starting drag from ({X}, {Y})");
 
                     // DON'T call BringToFront here - it causes pointer capture loss!
@@ -406,7 +408,7 @@ namespace BalatroSeedOracle.Behaviors
             // Safety: ensure drag stops if pointer capture is lost
             Console.WriteLine($"[DragBehavior] POINTER CAPTURE LOST at ({X}, {Y})");
             _isDragging = false;
-            
+
             // CRITICAL: Clean up all drag state to prevent stuck behavior
             _pointerPressedPoint = new Point(double.NaN, double.NaN);
             _dragStartPoint = new Point(double.NaN, double.NaN);

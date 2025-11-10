@@ -207,7 +207,7 @@ namespace BalatroSeedOracle.Behaviors
                             {
                                 new Setter(
                                     ScaleTransform.ScaleXProperty,
-                                    0.85  // Gentle squeeze - stays visible!
+                                    0.85 // Gentle squeeze - stays visible!
                                 ),
                             },
                         },
@@ -229,13 +229,7 @@ namespace BalatroSeedOracle.Behaviors
                         new Avalonia.Animation.KeyFrame
                         {
                             Cue = new Cue(1),
-                            Setters =
-                            {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    1.0
-                                ),
-                            },
+                            Setters = { new Setter(ScaleTransform.ScaleXProperty, 1.0) },
                         },
                     },
                 };
@@ -302,7 +296,10 @@ namespace BalatroSeedOracle.Behaviors
             finally
             {
                 // Ensure transform is reset even if animation is interrupted
-                if (AssociatedObject != null && AssociatedObject.RenderTransform is ScaleTransform st)
+                if (
+                    AssociatedObject != null
+                    && AssociatedObject.RenderTransform is ScaleTransform st
+                )
                 {
                     st.ScaleX = UIConstants.DefaultScaleFactor;
                     st.ScaleY = UIConstants.DefaultScaleFactor;

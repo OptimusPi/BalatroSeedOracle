@@ -9,7 +9,7 @@ namespace BalatroSeedOracle.Models
     public class FilterOperatorItem : FilterItem
     {
         private string _operatorType = "OR";
-        
+
         public string OperatorType
         {
             get => _operatorType;

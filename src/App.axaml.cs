@@ -62,11 +62,16 @@ public partial class App : Application
         }
     }
 
-    private async void ShowLoadingWindowAndPreloadSprites(IClassicDesktopStyleApplicationLifetime desktop)
+    private async void ShowLoadingWindowAndPreloadSprites(
+        IClassicDesktopStyleApplicationLifetime desktop
+    )
     {
         try
         {
-            DebugLogger.LogImportant("App", "Starting shader-driven intro with sprite pre-loading...");
+            DebugLogger.LogImportant(
+                "App",
+                "Starting shader-driven intro with sprite pre-loading..."
+            );
 
             // Create main window FIRST (so we have access to shader background)
             var mainWindow = new Views.MainWindow();
@@ -80,7 +85,10 @@ public partial class App : Application
             var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
             if (mainMenu == null)
             {
-                DebugLogger.LogError("App", "Failed to find BalatroMainMenu - falling back to normal startup");
+                DebugLogger.LogError(
+                    "App",
+                    "Failed to find BalatroMainMenu - falling back to normal startup"
+                );
                 await PreloadSpritesWithoutTransition();
                 return;
             }
@@ -89,9 +97,11 @@ public partial class App : Application
             // User can customize these presets in Audio Settings Widget later
             var introTransition = new Models.VisualizerPresetTransition
             {
-                StartParameters = Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters(),
-                EndParameters = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters(),
-                CurrentProgress = 0f
+                StartParameters =
+                    Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters(),
+                EndParameters =
+                    Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters(),
+                CurrentProgress = 0f,
             };
 
             // Apply initial intro state to shader
@@ -105,7 +115,8 @@ public partial class App : Application
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     // Calculate overall progress (0.0 to 1.0)
-                    float overallProgress = update.total > 0 ? (float)update.current / update.total : 0f;
+                    float overallProgress =
+                        update.total > 0 ? (float)update.current / update.total : 0f;
 
                     // Update transition progress
                     introTransition.CurrentProgress = overallProgress;
@@ -114,7 +125,10 @@ public partial class App : Application
                     var interpolatedParams = introTransition.GetInterpolatedParameters();
                     ApplyShaderParametersToMainMenu(mainMenu, interpolatedParams);
 
-                    DebugLogger.Log("App", $"Intro transition: {overallProgress:P0} - {update.category} ({update.current}/{update.total})");
+                    DebugLogger.Log(
+                        "App",
+                        $"Intro transition: {overallProgress:P0} - {update.category} ({update.current}/{update.total})"
+                    );
                 });
             });
 
@@ -126,7 +140,10 @@ public partial class App : Application
             {
                 introTransition.CurrentProgress = 1.0f;
                 ApplyShaderParametersToMainMenu(mainMenu, introTransition.EndParameters);
-                DebugLogger.LogImportant("App", "Intro transition complete - normal shader state applied");
+                DebugLogger.LogImportant(
+                    "App",
+                    "Intro transition complete - normal shader state applied"
+                );
             });
 
             // Initialize background music with SoundFlow (8-track)
@@ -142,7 +159,10 @@ public partial class App : Application
                 DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
             }
 
-            DebugLogger.LogImportant("App", "Application ready! All sprites pre-loaded with shader intro.");
+            DebugLogger.LogImportant(
+                "App",
+                "Application ready! All sprites pre-loaded with shader intro."
+            );
         }
         catch (Exception ex)
         {
@@ -163,15 +183,23 @@ public partial class App : Application
     /// Applies shader parameters to BalatroMainMenu's shader background.
     /// Uses reflection to access private _shaderBackground field.
     /// </summary>
-    private void ApplyShaderParametersToMainMenu(Views.BalatroMainMenu mainMenu, Models.ShaderParameters parameters)
+    private void ApplyShaderParametersToMainMenu(
+        Views.BalatroMainMenu mainMenu,
+        Models.ShaderParameters parameters
+    )
     {
         try
         {
             // Access private _shaderBackground field via reflection
-            var shaderBackgroundField = typeof(Views.BalatroMainMenu)
-                .GetField("_shaderBackground", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
+                "_shaderBackground",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+            );
 
-            if (shaderBackgroundField?.GetValue(mainMenu) is Controls.BalatroShaderBackground shaderBackground)
+            if (
+                shaderBackgroundField?.GetValue(mainMenu)
+                is Controls.BalatroShaderBackground shaderBackground
+            )
             {
                 // Apply all shader parameters
                 shaderBackground.SetTime(parameters.TimeSpeed);

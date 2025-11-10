@@ -109,11 +109,14 @@ namespace BalatroSeedOracle.ViewModels
                 AmplitudeThreshold = 0.5f,
                 EffectName = "Pulse",
                 EffectIntensity = 1.0f,
-                DurationMs = 500
+                DurationMs = 500,
             };
 
             FrequencyBreakpoints.Add(newBreakpoint);
-            DebugLogger.Log("AudioVisualizerWidget", $"Added frequency breakpoint: {newBreakpoint.Name}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Added frequency breakpoint: {newBreakpoint.Name}"
+            );
         }
 
         /// <summary>
@@ -125,7 +128,10 @@ namespace BalatroSeedOracle.ViewModels
             if (breakpoint != null)
             {
                 FrequencyBreakpoints.Remove(breakpoint);
-                DebugLogger.Log("AudioVisualizerWidget", $"Removed frequency breakpoint: {breakpoint.Name}");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Removed frequency breakpoint: {breakpoint.Name}"
+                );
             }
         }
 
@@ -148,11 +154,14 @@ namespace BalatroSeedOracle.ViewModels
                 FrequencyTolerance = 5.0f,
                 MinDurationMs = 100,
                 EffectName = "ColorShift",
-                EffectIntensity = 1.0f
+                EffectIntensity = 1.0f,
             };
 
             MelodicBreakpoints.Add(newBreakpoint);
-            DebugLogger.Log("AudioVisualizerWidget", $"Added melodic breakpoint: {newBreakpoint.Name}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Added melodic breakpoint: {newBreakpoint.Name}"
+            );
         }
 
         /// <summary>
@@ -164,7 +173,10 @@ namespace BalatroSeedOracle.ViewModels
             if (breakpoint != null)
             {
                 MelodicBreakpoints.Remove(breakpoint);
-                DebugLogger.Log("AudioVisualizerWidget", $"Removed melodic breakpoint: {breakpoint.Name}");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Removed melodic breakpoint: {breakpoint.Name}"
+                );
             }
         }
 
@@ -203,7 +215,10 @@ namespace BalatroSeedOracle.ViewModels
         private void TestZoomPunch()
         {
             VisualizerEventManager.Instance.TriggerManualEffect("Zoom", (float)TestZoomPunchValue);
-            DebugLogger.Log("AudioVisualizerWidget", $"Testing Zoom Punch: {TestZoomPunchValue:F1}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Testing Zoom Punch: {TestZoomPunchValue:F1}"
+            );
         }
 
         /// <summary>
@@ -212,7 +227,10 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void TestContrast()
         {
-            VisualizerEventManager.Instance.TriggerManualEffect("Contrast", (float)TestContrastValue);
+            VisualizerEventManager.Instance.TriggerManualEffect(
+                "Contrast",
+                (float)TestContrastValue
+            );
             DebugLogger.Log("AudioVisualizerWidget", $"Testing Contrast: {TestContrastValue:F1}");
         }
 
@@ -243,7 +261,8 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Collection of available audio triggers (loaded from visualizer/audio_triggers/)
         /// </summary>
-        public ObservableCollection<AudioTriggerPoint> AvailableAudioTriggers { get; } = new ObservableCollection<AudioTriggerPoint>();
+        public ObservableCollection<AudioTriggerPoint> AvailableAudioTriggers { get; } =
+            new ObservableCollection<AudioTriggerPoint>();
 
         // Zoom Scale Mapping
         [ObservableProperty]
@@ -321,7 +340,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!Directory.Exists(audioTriggersDir))
                 {
-                    DebugLogger.Log("AudioVisualizerWidget", "Audio triggers directory not found, creating it");
+                    DebugLogger.Log(
+                        "AudioVisualizerWidget",
+                        "Audio triggers directory not found, creating it"
+                    );
                     Directory.CreateDirectory(audioTriggersDir);
                     return;
                 }
@@ -334,11 +356,18 @@ namespace BalatroSeedOracle.ViewModels
                     try
                     {
                         var json = await File.ReadAllTextAsync(file);
-                        var trigger = System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(json,
-                            new System.Text.Json.JsonSerializerOptions
-                            {
-                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-                            });
+                        var trigger =
+                            System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(
+                                json,
+                                new System.Text.Json.JsonSerializerOptions
+                                {
+                                    PropertyNamingPolicy = System
+                                        .Text
+                                        .Json
+                                        .JsonNamingPolicy
+                                        .CamelCase,
+                                }
+                            );
 
                         if (trigger != null && !string.IsNullOrEmpty(trigger.Name))
                         {
@@ -347,18 +376,24 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("AudioVisualizerWidget",
-                            $"Failed to load audio trigger from {Path.GetFileName(file)}: {ex.Message}");
+                        DebugLogger.LogError(
+                            "AudioVisualizerWidget",
+                            $"Failed to load audio trigger from {Path.GetFileName(file)}: {ex.Message}"
+                        );
                     }
                 }
 
-                DebugLogger.Log("AudioVisualizerWidget",
-                    $"Loaded {AvailableAudioTriggers.Count} audio triggers from {jsonFiles.Length} files");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Loaded {AvailableAudioTriggers.Count} audio triggers from {jsonFiles.Length} files"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget",
-                    $"Failed to load audio triggers: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load audio triggers: {ex.Message}"
+                );
             }
         }
 
@@ -956,7 +991,8 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// List of available preset names for dropdown selection
         /// </summary>
-        public ObservableCollection<string> AvailablePresetNames { get; } = new ObservableCollection<string> { "Default Dark", "Default Normal" };
+        public ObservableCollection<string> AvailablePresetNames { get; } =
+            new ObservableCollection<string> { "Default Dark", "Default Normal" };
 
         /// <summary>
         /// Selected start preset name for search transitions
@@ -985,7 +1021,9 @@ namespace BalatroSeedOracle.ViewModels
             // Save to user profile when changed
             if (_userProfileService != null)
             {
-                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionStartPresetName = value;
+                _userProfileService
+                    .GetProfile()
+                    .VisualizerSettings.SearchTransitionStartPresetName = value;
                 _userProfileService.SaveProfile();
             }
         }
@@ -995,7 +1033,8 @@ namespace BalatroSeedOracle.ViewModels
             // Save to user profile when changed
             if (_userProfileService != null)
             {
-                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName = value;
+                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName =
+                    value;
                 _userProfileService.SaveProfile();
             }
         }
@@ -1012,12 +1051,17 @@ namespace BalatroSeedOracle.ViewModels
                 SearchTransitionStartPresetName = settings.SearchTransitionStartPresetName;
                 SearchTransitionEndPresetName = settings.SearchTransitionEndPresetName;
 
-                DebugLogger.Log("AudioVisualizerWidget",
-                    $"Loaded search transition settings: Enabled={EnableSearchTransition}, Start={SearchTransitionStartPresetName}, End={SearchTransitionEndPresetName}");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Loaded search transition settings: Enabled={EnableSearchTransition}, Start={SearchTransitionStartPresetName}, End={SearchTransitionEndPresetName}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load search transition settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load search transition settings: {ex.Message}"
+                );
             }
         }
 
@@ -1045,11 +1089,17 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                DebugLogger.Log("AudioVisualizerWidget", $"Loaded {AvailablePresetNames.Count} preset names");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Loaded {AvailablePresetNames.Count} preset names"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset names: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load preset names: {ex.Message}"
+                );
             }
         }
 
@@ -1168,8 +1218,10 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             FrequencyBreakpoints.Add(breakpoint);
                         }
-                        DebugLogger.Log("AudioVisualizerWidget",
-                            $"Loaded {preset.FrequencyBreakpoints.Count} frequency breakpoints");
+                        DebugLogger.Log(
+                            "AudioVisualizerWidget",
+                            $"Loaded {preset.FrequencyBreakpoints.Count} frequency breakpoints"
+                        );
                     }
 
                     // Load melodic breakpoints
@@ -1180,8 +1232,10 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             MelodicBreakpoints.Add(breakpoint);
                         }
-                        DebugLogger.Log("AudioVisualizerWidget",
-                            $"Loaded {preset.MelodicBreakpoints.Count} melodic breakpoints");
+                        DebugLogger.Log(
+                            "AudioVisualizerWidget",
+                            $"Loaded {preset.MelodicBreakpoints.Count} melodic breakpoints"
+                        );
                     }
 
                     CurrentPresetName = preset.Name;
@@ -1219,12 +1273,18 @@ namespace BalatroSeedOracle.ViewModels
                         ["ZoomThump"] = ZoomThumpSource,
                         ["ColorSaturation"] = ColorSaturationSource,
                     },
-                    FrequencyBreakpoints = FrequencyBreakpoints.Count > 0
-                        ? new System.Collections.Generic.List<FrequencyBreakpoint>(FrequencyBreakpoints)
-                        : null,
-                    MelodicBreakpoints = MelodicBreakpoints.Count > 0
-                        ? new System.Collections.Generic.List<MelodicBreakpoint>(MelodicBreakpoints)
-                        : null,
+                    FrequencyBreakpoints =
+                        FrequencyBreakpoints.Count > 0
+                            ? new System.Collections.Generic.List<FrequencyBreakpoint>(
+                                FrequencyBreakpoints
+                            )
+                            : null,
+                    MelodicBreakpoints =
+                        MelodicBreakpoints.Count > 0
+                            ? new System.Collections.Generic.List<MelodicBreakpoint>(
+                                MelodicBreakpoints
+                            )
+                            : null,
                 };
 
                 var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };

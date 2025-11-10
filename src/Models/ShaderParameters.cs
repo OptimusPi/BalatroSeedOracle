@@ -51,7 +51,7 @@ namespace BalatroSeedOracle.Models
                 SaturationAmount2 = this.SaturationAmount2,
                 PixelSize = this.PixelSize,
                 SpinEase = this.SpinEase,
-                LoopCount = this.LoopCount
+                LoopCount = this.LoopCount,
             };
         }
     }

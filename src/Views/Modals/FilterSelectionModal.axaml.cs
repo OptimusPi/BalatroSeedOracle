@@ -123,7 +123,9 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (parentWindow == null)
             {
-                throw new InvalidOperationException("FilterSelectionModal must be shown from a Window context!");
+                throw new InvalidOperationException(
+                    "FilterSelectionModal must be shown from a Window context!"
+                );
             }
 
             var result = await MessageBoxManager

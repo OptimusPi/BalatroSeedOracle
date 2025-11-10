@@ -16,7 +16,8 @@ namespace BalatroSeedOracle.Constants
         /// - Zoom effects for responsive visuals
         /// - Dynamic loop count for performance tuning
         /// </summary>
-        public const string BALATRO_SHADER = @"
+        public const string BALATRO_SHADER =
+            @"
                     uniform float2 resolution;
                     uniform float time;
                     uniform float spin_time;

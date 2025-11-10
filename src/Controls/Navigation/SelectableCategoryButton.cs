@@ -13,14 +13,18 @@ namespace BalatroSeedOracle.Controls.Navigation
         /// <summary>
         /// Defines the IsSelected property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsSelectedProperty =
-            AvaloniaProperty.Register<SelectableCategoryButton, bool>(nameof(IsSelected));
+        public static readonly StyledProperty<bool> IsSelectedProperty = AvaloniaProperty.Register<
+            SelectableCategoryButton,
+            bool
+        >(nameof(IsSelected));
 
         /// <summary>
         /// Defines the Category property to identify which category this button represents.
         /// </summary>
-        public static readonly StyledProperty<string> CategoryProperty =
-            AvaloniaProperty.Register<SelectableCategoryButton, string>(nameof(Category), string.Empty);
+        public static readonly StyledProperty<string> CategoryProperty = AvaloniaProperty.Register<
+            SelectableCategoryButton,
+            string
+        >(nameof(Category), string.Empty);
 
         /// <summary>
         /// Gets or sets whether this button is selected.
@@ -43,7 +47,7 @@ namespace BalatroSeedOracle.Controls.Navigation
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            
+
             if (change.Property == IsSelectedProperty)
             {
                 // Update pseudoclass when selection changes

@@ -172,19 +172,28 @@ namespace BalatroSeedOracle.Views
             var window = this.VisualRoot as Window;
             if (window != null)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    if (enterFullscreen)
+                Avalonia.Threading.Dispatcher.UIThread.Post(
+                    () =>
                     {
-                        window.WindowState = WindowState.FullScreen;
-                        DebugLogger.Log("BalatroMainMenu", "Entered fullscreen for Vibe Out Mode");
-                    }
-                    else
-                    {
-                        window.WindowState = WindowState.Normal;
-                        DebugLogger.Log("BalatroMainMenu", "Exited fullscreen from Vibe Out Mode");
-                    }
-                }, Avalonia.Threading.DispatcherPriority.Render);
+                        if (enterFullscreen)
+                        {
+                            window.WindowState = WindowState.FullScreen;
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Entered fullscreen for Vibe Out Mode"
+                            );
+                        }
+                        else
+                        {
+                            window.WindowState = WindowState.Normal;
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Exited fullscreen from Vibe Out Mode"
+                            );
+                        }
+                    },
+                    Avalonia.Threading.DispatcherPriority.Render
+                );
             }
         }
 
@@ -442,13 +451,18 @@ namespace BalatroSeedOracle.Views
                             var newFilterId = await CreateNewFilterWithName(filterName);
                             if (!string.IsNullOrEmpty(newFilterId))
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirectAsync(newFilterId));
+                                await Dispatcher.UIThread.InvokeAsync(() =>
+                                    ShowFiltersModalDirectAsync(newFilterId)
+                                );
                             }
                         }
                         else
                         {
                             // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                            Helpers.DebugLogger.Log("BalatroMainMenu", "Create filter cancelled - staying in filter selection");
+                            Helpers.DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Create filter cancelled - staying in filter selection"
+                            );
                             // Do nothing - just let the dialog close and stay in FilterSelectionModal
                         }
                         break;
@@ -466,8 +480,11 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null)
                         {
                             // Get original filter name for default (using FilterService)
-                            var filterService = Helpers.ServiceHelper.GetRequiredService<IFilterService>();
-                            var originalName = await filterService.GetFilterNameAsync(result.FilterId);
+                            var filterService =
+                                Helpers.ServiceHelper.GetRequiredService<IFilterService>();
+                            var originalName = await filterService.GetFilterNameAsync(
+                                result.FilterId
+                            );
                             var defaultCopyName = string.IsNullOrEmpty(originalName)
                                 ? "Filter Copy"
                                 : $"{originalName} Copy";
@@ -475,7 +492,10 @@ namespace BalatroSeedOracle.Views
                             var copyName = await ShowFilterNameInputDialog(defaultCopyName);
                             if (!string.IsNullOrWhiteSpace(copyName))
                             {
-                                var clonedId = await filterService.CloneFilterAsync(result.FilterId, copyName);
+                                var clonedId = await filterService.CloneFilterAsync(
+                                    result.FilterId,
+                                    copyName
+                                );
                                 if (!string.IsNullOrEmpty(clonedId))
                                 {
                                     await Dispatcher.UIThread.InvokeAsync(() =>
@@ -486,7 +506,10 @@ namespace BalatroSeedOracle.Views
                             else
                             {
                                 // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                                Helpers.DebugLogger.Log("BalatroMainMenu", "Copy filter cancelled - staying in filter selection");
+                                Helpers.DebugLogger.Log(
+                                    "BalatroMainMenu",
+                                    "Copy filter cancelled - staying in filter selection"
+                                );
                                 // Do nothing - just let the dialog close and stay in FilterSelectionModal
                             }
                         }
@@ -517,87 +540,107 @@ namespace BalatroSeedOracle.Views
                 // If no filterId provided (Create New), prompt for filter name first
                 if (string.IsNullOrEmpty(filterId))
                 {
-                var filterName = await ShowFilterNameInputDialog();
-                if (string.IsNullOrEmpty(filterName))
-                {
-                    Helpers.DebugLogger.Log("BalatroMainMenu", "Filter creation cancelled by user");
-                    return; // User cancelled
+                    var filterName = await ShowFilterNameInputDialog();
+                    if (string.IsNullOrEmpty(filterName))
+                    {
+                        Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            "Filter creation cancelled by user"
+                        );
+                        return; // User cancelled
+                    }
+
+                    // Create new filter file with user's chosen name
+                    var filtersDir = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        "JsonItemFilters"
+                    );
+                    System.IO.Directory.CreateDirectory(filtersDir);
+
+                    // Sanitize filename
+                    var sanitizedName = string.Join(
+                        "_",
+                        filterName.Split(System.IO.Path.GetInvalidFileNameChars())
+                    );
+                    filterId = sanitizedName;
+                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                    // Create default empty filter in NEW MotelyJsonConfig format
+                    var defaultFilter = new
+                    {
+                        name = filterName,
+                        description = "Created with visual filter builder",
+                        author = "pifreak",
+                        dateCreated = DateTime.UtcNow.ToString("O"),
+                        deck = "Red",
+                        stake = "White",
+                        must = new object[] { },
+                        should = new object[] { },
+                        mustNot = new object[] { },
+                    };
+                    var jsonContent = System.Text.Json.JsonSerializer.Serialize(
+                        defaultFilter,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                    );
+                    System.IO.File.WriteAllText(
+                        filterPath,
+                        Helpers.CompactJsonFormatter.Format(jsonContent)
+                    );
+
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"✅ Created new filter: {filterName} ({filterId}.json)"
+                    );
                 }
 
-                // Create new filter file with user's chosen name
-                var filtersDir = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "JsonItemFilters"
-                );
-                System.IO.Directory.CreateDirectory(filtersDir);
+                // Back to the REAL FiltersModal with visual item shelf and card display!
+                var filtersModal = new Modals.FiltersModal();
 
-                // Sanitize filename
-                var sanitizedName = string.Join("_", filterName.Split(System.IO.Path.GetInvalidFileNameChars()));
-                filterId = sanitizedName;
-                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
-
-                // Create default empty filter in NEW MotelyJsonConfig format
-                var defaultFilter = new
+                // Load the filter data FIRST if provided
+                if (!string.IsNullOrEmpty(filterId) && filtersModal.ViewModel != null)
                 {
-                    name = filterName,
-                    description = "Created with visual filter builder",
-                    author = "pifreak",
-                    dateCreated = DateTime.UtcNow.ToString("O"),
-                    deck = "Red",
-                    stake = "White",
-                    must = new object[] { },
-                    should = new object[] { },
-                    mustNot = new object[] { }
-                };
-                var jsonContent = System.Text.Json.JsonSerializer.Serialize(defaultFilter, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                System.IO.File.WriteAllText(filterPath, Helpers.CompactJsonFormatter.Format(jsonContent));
+                    var filtersDir = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        "JsonItemFilters"
+                    );
+                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterName} ({filterId}.json)");
-            }
+                    filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
-            // Back to the REAL FiltersModal with visual item shelf and card display!
-            var filtersModal = new Modals.FiltersModal();
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"🔄 Loading filter for editing: {filterPath}"
+                    );
 
-            // Load the filter data FIRST if provided
-            if (!string.IsNullOrEmpty(filterId) && filtersModal.ViewModel != null)
-            {
-                var filtersDir = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "JsonItemFilters"
-                );
-                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+                    await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(
+                        null
+                    );
 
-                filtersModal.ViewModel.CurrentFilterPath = filterPath;
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"✅ Filter loaded for editing: {filterId}"
+                    );
+                }
 
-                Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"🔄 Loading filter for editing: {filterPath}"
+                // DEBUG ASSERT: Filter must ALWAYS be loaded when showing designer
+                System.Diagnostics.Debug.Assert(
+                    filtersModal.ViewModel != null && !string.IsNullOrEmpty(filterId),
+                    "Filter Designer opened without a valid filter! FilterId must be provided."
                 );
 
-                await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
-
-                Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"✅ Filter loaded for editing: {filterId}"
-                );
-            }
-
-            // DEBUG ASSERT: Filter must ALWAYS be loaded when showing designer
-            System.Diagnostics.Debug.Assert(
-                filtersModal.ViewModel != null && !string.IsNullOrEmpty(filterId),
-                "Filter Designer opened without a valid filter! FilterId must be provided."
-            );
-
-            // THEN show the modal with loaded content
-            var modal = new StandardModal("🎨 FILTER DESIGNER");
-            modal.SetContent(filtersModal);
-            modal.BackClicked += (s, e) => HideModalContent();
-            // Keep backdrop visible during transition to prevent flicker
-            ShowModalContent(modal, keepBackdrop: true);
+                // THEN show the modal with loaded content
+                var modal = new StandardModal("🎨 FILTER DESIGNER");
+                modal.SetContent(filtersModal);
+                modal.BackClicked += (s, e) => HideModalContent();
+                // Keep backdrop visible during transition to prevent flicker
+                ShowModalContent(modal, keepBackdrop: true);
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowFiltersModalDirectAsync failed: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"ShowFiltersModalDirectAsync failed: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -614,7 +657,7 @@ namespace BalatroSeedOracle.Views
                 Height = 200,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                SystemDecorations = SystemDecorations.BorderOnly
+                SystemDecorations = SystemDecorations.BorderOnly,
             };
 
             // Use provided default name, or generate a fun random filter name
@@ -627,9 +670,21 @@ namespace BalatroSeedOracle.Views
             {
                 var randomNames = new[]
                 {
-                    "Epic Filter", "Lucky Find", "Mega Search", "Sweet Combo", "Power Play",
-                    "Golden Run", "Chaos Filter", "Master Build", "Pro Strat", "Wildcard Hunt",
-                    "Dream Seed", "Perfect Setup", "Boss Crusher", "Money Maker", "Victory Path"
+                    "Epic Filter",
+                    "Lucky Find",
+                    "Mega Search",
+                    "Sweet Combo",
+                    "Power Play",
+                    "Golden Run",
+                    "Chaos Filter",
+                    "Master Build",
+                    "Pro Strat",
+                    "Wildcard Hunt",
+                    "Dream Seed",
+                    "Perfect Setup",
+                    "Boss Crusher",
+                    "Money Maker",
+                    "Victory Path",
                 };
                 defaultText = randomNames[new Random().Next(randomNames.Length)];
             }
@@ -639,21 +694,21 @@ namespace BalatroSeedOracle.Views
             {
                 Text = defaultText, // Pre-fill with default name
                 Watermark = "Enter filter name...",
-                Margin = new Thickness(20, 10)
+                Margin = new Thickness(20, 10),
             };
 
             var okButton = new Button
             {
                 Content = "CREATE",
                 Width = 100,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
             };
 
             var cancelButton = new Button
             {
                 Content = "CANCEL",
                 Width = 100,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
             };
 
             okButton.Click += (s, e) =>
@@ -668,24 +723,18 @@ namespace BalatroSeedOracle.Views
                 dialog.Close();
             };
 
-            var layout = new StackPanel
-            {
-                Spacing = 10,
-                Margin = new Thickness(20)
-            };
+            var layout = new StackPanel { Spacing = 10, Margin = new Thickness(20) };
 
-            layout.Children.Add(new TextBlock
-            {
-                Text = "Filter Name:",
-                FontWeight = FontWeight.Bold
-            });
+            layout.Children.Add(
+                new TextBlock { Text = "Filter Name:", FontWeight = FontWeight.Bold }
+            );
             layout.Children.Add(textBox);
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Spacing = 10
+                Spacing = 10,
             };
             buttonPanel.Children.Add(okButton);
             buttonPanel.Children.Add(cancelButton);
@@ -726,13 +775,13 @@ namespace BalatroSeedOracle.Views
                     stake = "White",
                     must = new object[] { },
                     should = new object[] { },
-                    mustNot = new object[] { }
+                    mustNot = new object[] { },
                 };
 
-                var json = System.Text.Json.JsonSerializer.Serialize(minimalFilter, new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    minimalFilter,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                );
 
                 await System.IO.File.WriteAllTextAsync(filterPath, json);
 
@@ -741,7 +790,10 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("BalatroMainMenu", $"Failed to create filter: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to create filter: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -898,7 +950,11 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
         /// </summary>
-        public void ShowModalContent(UserControl content, string? title = null, bool keepBackdrop = false)
+        public void ShowModalContent(
+            UserControl content,
+            string? title = null,
+            bool keepBackdrop = false
+        )
         {
             if (_modalContainer == null || _modalOverlay == null || _modalContentWrapper == null)
                 return;
@@ -987,82 +1043,89 @@ namespace BalatroSeedOracle.Views
                 )
                     return;
 
-            var oldContent = _modalContentWrapper.Content as Control;
-            if (oldContent == null)
-                return;
+                var oldContent = _modalContentWrapper.Content as Control;
+                if (oldContent == null)
+                    return;
 
-            // Gravity fall with bounce - modal falls completely out of view
-            var fallAnimation = new Avalonia.Animation.Animation
-            {
-                Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs), // Smooth gravity fall
-                Easing = new ExponentialEaseIn(), // Gravity acceleration
-                Children =
+                // Gravity fall with bounce - modal falls completely out of view
+                var fallAnimation = new Avalonia.Animation.Animation
                 {
-                    new Avalonia.Animation.KeyFrame
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs), // Smooth gravity fall
+                    Easing = new ExponentialEaseIn(), // Gravity acceleration
+                    Children =
                     {
-                        Cue = new Cue(0),
-                        Setters =
+                        new Avalonia.Animation.KeyFrame
                         {
-                            new Setter(TranslateTransform.YProperty, 0d),
-                            new Setter(OpacityProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 1.0d),
-                            new Setter(ScaleTransform.ScaleXProperty, 1.0d),
-                            new Setter(RotateTransform.AngleProperty, 0d),
+                            Cue = new Cue(0),
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 0d),
+                                new Setter(OpacityProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
+                                new Setter(RotateTransform.AngleProperty, 0d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.3), // Start rotating as it falls
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 100d),
+                                new Setter(OpacityProperty, 0.9d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.98d),
+                                new Setter(RotateTransform.AngleProperty, 2d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.7), // Accelerating
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 400d),
+                                new Setter(OpacityProperty, 0.5d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.9d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.95d),
+                                new Setter(RotateTransform.AngleProperty, 5d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(1), // Completely out of view
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 1200d), // Way off screen
+                                new Setter(OpacityProperty, 0.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.7d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.85d),
+                                new Setter(RotateTransform.AngleProperty, 8d),
+                            },
                         },
                     },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(0.3), // Start rotating as it falls
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 100d),
-                            new Setter(OpacityProperty, 0.9d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.98d),
-                            new Setter(RotateTransform.AngleProperty, 2d),
-                        },
-                    },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(0.7), // Accelerating
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 400d),
-                            new Setter(OpacityProperty, 0.5d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.9d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.95d),
-                            new Setter(RotateTransform.AngleProperty, 5d),
-                        },
-                    },
-                    new Avalonia.Animation.KeyFrame
-                    {
-                        Cue = new Cue(1), // Completely out of view
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.YProperty, 1200d), // Way off screen
-                            new Setter(OpacityProperty, 0.0d),
-                            new Setter(ScaleTransform.ScaleYProperty, 0.7d),
-                            new Setter(ScaleTransform.ScaleXProperty, 0.85d),
-                            new Setter(RotateTransform.AngleProperty, 8d),
-                        },
-                    },
-                },
-            };
+                };
 
-            var transformGroup = new TransformGroup();
-            transformGroup.Children.Add(new ScaleTransform(1, 1));
-            transformGroup.Children.Add(new RotateTransform(0));
-            transformGroup.Children.Add(new TranslateTransform(0, 0));
-            oldContent.RenderTransform = transformGroup;
-            oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                var transformGroup = new TransformGroup();
+                transformGroup.Children.Add(new ScaleTransform(1, 1));
+                transformGroup.Children.Add(new RotateTransform(0));
+                transformGroup.Children.Add(new TranslateTransform(0, 0));
+                oldContent.RenderTransform = transformGroup;
+                oldContent.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
 
-            await fallAnimation.RunAsync(oldContent);
+                await fallAnimation.RunAsync(oldContent);
 
-            _modalContentWrapper.Content = null;
-            await ShowModalWithAnimationAsync(newContent, title);
+                _modalContentWrapper.Content = null;
+                await ShowModalWithAnimationAsync(newContent, title);
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("BalatroMainMenu", $"TransitionToNewModalAsync failed: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"TransitionToNewModalAsync failed: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -1074,7 +1137,11 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                if (_modalContainer == null || _modalContentWrapper == null || _modalOverlay == null)
+                if (
+                    _modalContainer == null
+                    || _modalContentWrapper == null
+                    || _modalOverlay == null
+                )
                     return;
 
                 _modalContentWrapper.Content = content;
@@ -1140,7 +1207,10 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowModalWithAnimationAsync failed: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"ShowModalWithAnimationAsync failed: {ex.Message}"
+                );
                 throw;
             }
         }
@@ -1498,7 +1568,10 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows the search modal for an existing search instance
         /// </summary>
-        public async Task ShowSearchModalForInstanceAsync(string searchId, string? configPath = null)
+        public async Task ShowSearchModalForInstanceAsync(
+            string searchId,
+            string? configPath = null
+        )
         {
             try
             {

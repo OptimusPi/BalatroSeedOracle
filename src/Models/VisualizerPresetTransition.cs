@@ -60,7 +60,11 @@ namespace BalatroSeedOracle.Models
                 // Colors (LERP RGBA components)
                 MainColor = LerpColor(StartParameters.MainColor, EndParameters.MainColor, t),
                 AccentColor = LerpColor(StartParameters.AccentColor, EndParameters.AccentColor, t),
-                BackgroundColor = LerpColor(StartParameters.BackgroundColor, EndParameters.BackgroundColor, t),
+                BackgroundColor = LerpColor(
+                    StartParameters.BackgroundColor,
+                    EndParameters.BackgroundColor,
+                    t
+                ),
 
                 // Effect parameters
                 Contrast = Lerp(StartParameters.Contrast, EndParameters.Contrast, t),
@@ -68,11 +72,19 @@ namespace BalatroSeedOracle.Models
                 ParallaxX = Lerp(StartParameters.ParallaxX, EndParameters.ParallaxX, t),
                 ParallaxY = Lerp(StartParameters.ParallaxY, EndParameters.ParallaxY, t),
                 ZoomScale = Lerp(StartParameters.ZoomScale, EndParameters.ZoomScale, t),
-                SaturationAmount = Lerp(StartParameters.SaturationAmount, EndParameters.SaturationAmount, t),
-                SaturationAmount2 = Lerp(StartParameters.SaturationAmount2, EndParameters.SaturationAmount2, t),
+                SaturationAmount = Lerp(
+                    StartParameters.SaturationAmount,
+                    EndParameters.SaturationAmount,
+                    t
+                ),
+                SaturationAmount2 = Lerp(
+                    StartParameters.SaturationAmount2,
+                    EndParameters.SaturationAmount2,
+                    t
+                ),
                 PixelSize = Lerp(StartParameters.PixelSize, EndParameters.PixelSize, t),
                 SpinEase = Lerp(StartParameters.SpinEase, EndParameters.SpinEase, t),
-                LoopCount = Lerp(StartParameters.LoopCount, EndParameters.LoopCount, t)
+                LoopCount = Lerp(StartParameters.LoopCount, EndParameters.LoopCount, t),
             };
         }
 

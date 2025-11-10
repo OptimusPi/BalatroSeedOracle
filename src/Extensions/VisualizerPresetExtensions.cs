@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Extensions
                 SaturationAmount2 = preset.AudioIntensity * 0.3f,
                 PixelSize = 1440.0f, // Default pixel size (higher = less pixelation)
                 SpinEase = 0.5f,
-                LoopCount = 5.0f
+                LoopCount = 5.0f,
             };
 
             return parameters;
@@ -65,7 +65,7 @@ namespace BalatroSeedOracle.Extensions
                 SaturationAmount2 = 0f,
                 PixelSize = 200.0f, // Heavy pixelation (lower = more pixelated)
                 SpinEase = 0.5f,
-                LoopCount = 2.0f // Fewer loops = simpler pattern
+                LoopCount = 2.0f, // Fewer loops = simpler pattern
             };
         }
 
@@ -92,7 +92,7 @@ namespace BalatroSeedOracle.Extensions
                 SaturationAmount2 = 0f,
                 PixelSize = 1440.0f, // No pixelation
                 SpinEase = 0.5f,
-                LoopCount = 5.0f
+                LoopCount = 5.0f,
             };
         }
 
@@ -111,15 +111,15 @@ namespace BalatroSeedOracle.Extensions
             // Predefined color palette
             return colorIndex.Value switch
             {
-                0 => new SKColor(255, 76, 64),   // Red
-                1 => new SKColor(0, 147, 255),   // Blue
-                2 => new SKColor(0, 255, 0),     // Green
-                3 => new SKColor(255, 215, 0),   // Gold
+                0 => new SKColor(255, 76, 64), // Red
+                1 => new SKColor(0, 147, 255), // Blue
+                2 => new SKColor(0, 255, 0), // Green
+                3 => new SKColor(255, 215, 0), // Gold
                 4 => new SKColor(255, 105, 180), // Hot Pink
-                5 => new SKColor(138, 43, 226),  // Blue Violet
-                6 => new SKColor(255, 140, 0),   // Dark Orange
-                7 => new SKColor(0, 255, 255),   // Cyan
-                _ => new SKColor(255, 76, 64)    // Default Red
+                5 => new SKColor(138, 43, 226), // Blue Violet
+                6 => new SKColor(255, 140, 0), // Dark Orange
+                7 => new SKColor(0, 255, 255), // Cyan
+                _ => new SKColor(255, 76, 64), // Default Red
             };
         }
     }

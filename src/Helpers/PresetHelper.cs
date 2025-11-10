@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Helpers
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         };
 
         static PresetHelper()

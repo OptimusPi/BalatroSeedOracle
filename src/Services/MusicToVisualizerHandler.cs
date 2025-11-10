@@ -47,7 +47,10 @@ namespace BalatroSeedOracle.Services
             eventManager.BeatDetected += OnBeatDetected;
             eventManager.DropDetected += OnDropDetected;
 
-            DebugLogger.Log("MusicToVisualizerHandler", "Subscribed to VisualizerEventManager events");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                "Subscribed to VisualizerEventManager events"
+            );
         }
 
         // Shader parameters (controllable via settings)
@@ -355,7 +358,10 @@ namespace BalatroSeedOracle.Services
             if (_shaderBuilder != null)
                 return;
 
-            var effect = SKRuntimeEffect.CreateShader(ShaderConstants.BALATRO_SHADER, out var error);
+            var effect = SKRuntimeEffect.CreateShader(
+                ShaderConstants.BALATRO_SHADER,
+                out var error
+            );
             if (effect != null)
             {
                 _shaderBuilder = new SKRuntimeShaderBuilder(effect);
@@ -519,7 +525,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnSeedFound(object? sender, SeedFoundEventArgs e)
         {
-            DebugLogger.Log("MusicToVisualizerHandler", $"Seed found event: {e.Seed} (score={e.Score})");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                $"Seed found event: {e.Seed} (score={e.Score})"
+            );
             _eventZoomPunch += 15.0f;
             _eventContrastBoost += 2.0f;
         }
@@ -529,8 +538,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnHighScore(object? sender, HighScoreEventArgs e)
         {
-            DebugLogger.Log("MusicToVisualizerHandler",
-                $"High score event: {e.Seed} (score={e.Score}, PR={e.IsPersonalRecord})");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                $"High score event: {e.Seed} (score={e.Score}, PR={e.IsPersonalRecord})"
+            );
             _eventZoomPunch += e.IsPersonalRecord ? 30.0f : 20.0f;
             _eventContrastBoost += e.IsPersonalRecord ? 4.0f : 3.0f;
         }
@@ -540,8 +551,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnSearchComplete(object? sender, SearchCompleteEventArgs e)
         {
-            DebugLogger.Log("MusicToVisualizerHandler",
-                $"Search complete event: {e.MatchesFound}/{e.TotalSearched} in {e.Duration.TotalSeconds:F1}s");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                $"Search complete event: {e.MatchesFound}/{e.TotalSearched} in {e.Duration.TotalSeconds:F1}s"
+            );
             _eventZoomPunch += 10.0f;
             _eventEffectIntensity += 0.5f;
         }
@@ -551,8 +564,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnFrequencyBreakpointHit(object? sender, FrequencyBreakpointEventArgs e)
         {
-            DebugLogger.Log("MusicToVisualizerHandler",
-                $"Frequency breakpoint hit: {e.BreakpointName} - {e.EffectName} @ {e.EffectIntensity}");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                $"Frequency breakpoint hit: {e.BreakpointName} - {e.EffectName} @ {e.EffectIntensity}"
+            );
 
             // Apply effect based on effect name
             switch (e.EffectName.ToLowerInvariant())
@@ -588,8 +603,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private void OnDropDetected(object? sender, DropDetectedEventArgs e)
         {
-            DebugLogger.Log("MusicToVisualizerHandler",
-                $"Drop detected: intensity={e.Intensity:F2}, freq={e.FrequencyHz}Hz");
+            DebugLogger.Log(
+                "MusicToVisualizerHandler",
+                $"Drop detected: intensity={e.Intensity:F2}, freq={e.FrequencyHz}Hz"
+            );
             _eventZoomPunch += e.Intensity * 25.0f;
             _eventContrastBoost += e.Intensity * 3.0f;
         }

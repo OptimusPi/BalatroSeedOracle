@@ -311,7 +311,6 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-
         private void AddSearchResult(SearchResult result)
         {
             if (!_dbInitialized)
@@ -330,7 +329,9 @@ namespace BalatroSeedOracle.Services
                     for (int i = 0; i < tallyCount; i++)
                     {
                         int val =
-                            (result.Scores != null && i < result.Scores.Length) ? result.Scores[i] : 0;
+                            (result.Scores != null && i < result.Scores.Length)
+                                ? result.Scores[i]
+                                : 0;
                         row.AppendValue(val);
                     }
                     row.EndRow();
@@ -623,7 +624,9 @@ namespace BalatroSeedOracle.Services
 
                 // Ensure WordLists directory exists
                 var wordListsDir = Path.Combine(
-                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? ".",
+                    Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) ?? ".",
                     "WordLists"
                 );
                 Directory.CreateDirectory(wordListsDir);
@@ -767,7 +770,9 @@ namespace BalatroSeedOracle.Services
                 ConfigPath = configPath;
                 // Filter must have a name - throw exception if missing
                 if (string.IsNullOrWhiteSpace(filterConfig.Name))
-                    throw new InvalidOperationException("Filter config must have a valid Name property");
+                    throw new InvalidOperationException(
+                        "Filter config must have a valid Name property"
+                    );
                 FilterName = filterConfig.Name;
                 _searchStartTime = DateTime.UtcNow;
                 _isRunning = true;
@@ -860,7 +865,10 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Only catch setup exceptions
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to start: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to start: {ex.Message}"
+                );
                 _isRunning = false;
                 throw;
             }
@@ -1060,12 +1068,7 @@ namespace BalatroSeedOracle.Services
             };
 
             // Call the main search method with the file path
-            StartSearchFromFile(
-                criteria.ConfigPath,
-                searchConfig,
-                progress,
-                cancellationToken
-            );
+            StartSearchFromFile(criteria.ConfigPath, searchConfig, progress, cancellationToken);
         }
 
         /// <summary>
@@ -1097,10 +1100,7 @@ namespace BalatroSeedOracle.Services
             );
 
             // DEBUG: Log what was provided
-            DebugLogger.LogImportant(
-                $"SearchInstance[{_searchId}]",
-                $"IN-MEMORY CONFIG:"
-            );
+            DebugLogger.LogImportant($"SearchInstance[{_searchId}]", $"IN-MEMORY CONFIG:");
             DebugLogger.LogImportant(
                 $"SearchInstance[{_searchId}]",
                 $"  Config.Name: '{config.Name}'"
@@ -1155,12 +1155,7 @@ namespace BalatroSeedOracle.Services
             };
 
             // Call the main search method with the config object (synchronous fire-and-forget)
-            StartSearchFromConfig(
-                config,
-                searchConfig,
-                progress,
-                cancellationToken
-            );
+            StartSearchFromConfig(config, searchConfig, progress, cancellationToken);
 
             // Return completed task immediately (fire-and-forget pattern by design)
             return Task.CompletedTask;
@@ -1284,7 +1279,10 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Only catch setup exceptions
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to start: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to start: {ex.Message}"
+                );
                 _isRunning = false;
                 throw;
             }
@@ -1360,12 +1358,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                await RunSearchInProcess(
-                    filterConfig,
-                    searchCriteria,
-                    progress,
-                    cancellationToken
-                ).ConfigureAwait(false);
+                await RunSearchInProcess(filterConfig, searchCriteria, progress, cancellationToken)
+                    .ConfigureAwait(false);
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
             }
             catch (OperationCanceledException)
@@ -1569,7 +1563,9 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        var typeText = string.IsNullOrEmpty(clause.Type) ? "<missing>" : clause.Type;
+                        var typeText = string.IsNullOrEmpty(clause.Type)
+                            ? "<missing>"
+                            : clause.Type;
                         var valueText = !string.IsNullOrEmpty(clause.Value)
                             ? clause.Value
                             : (
@@ -1613,7 +1609,9 @@ namespace BalatroSeedOracle.Services
 
                 if (clausesByCategory.Count == 0)
                 {
-                    throw new Exception("Cannot search with an empty filter! Please add at least one item to Must, Should, or MustNot zones in the Visual Builder.");
+                    throw new Exception(
+                        "Cannot search with an empty filter! Please add at least one item to Must, Should, or MustNot zones in the Visual Builder."
+                    );
                 }
 
                 // Create scoring config (only SHOULD clauses for scoring)
@@ -1783,7 +1781,10 @@ namespace BalatroSeedOracle.Services
                     var primaryClauses = clausesByCategory[primaryCategory];
 
                     // CRITICAL FIX: And/Or categories need MotelyCompositeFilterDesc, not SpecializedFilterFactory
-                    if (primaryCategory == FilterCategory.And || primaryCategory == FilterCategory.Or)
+                    if (
+                        primaryCategory == FilterCategory.And
+                        || primaryCategory == FilterCategory.Or
+                    )
                     {
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -1791,17 +1792,28 @@ namespace BalatroSeedOracle.Services
                         );
 
                         var compositeFilter = new MotelyCompositeFilterDesc(primaryClauses);
-                        var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter)
-                            .WithThreadCount(criteria.ThreadCount)
-                            .WithBatchCharacterCount(criteria.BatchSize)
-                            .WithStartBatchIndex((long)criteria.StartBatch);
+                        var compositeSettings =
+                            new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(
+                                compositeFilter
+                            )
+                                .WithThreadCount(criteria.ThreadCount)
+                                .WithBatchCharacterCount(criteria.BatchSize)
+                                .WithStartBatchIndex((long)criteria.StartBatch);
 
                         if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                            compositeSettings = compositeSettings.WithEndBatchIndex((long)criteria.EndBatch);
+                            compositeSettings = compositeSettings.WithEndBatchIndex(
+                                (long)criteria.EndBatch
+                            );
 
-                        if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck deck))
+                        if (
+                            !string.IsNullOrEmpty(criteria.Deck)
+                            && Enum.TryParse(criteria.Deck, true, out MotelyDeck deck)
+                        )
                             compositeSettings = compositeSettings.WithDeck(deck);
-                        if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake stake))
+                        if (
+                            !string.IsNullOrEmpty(criteria.Stake)
+                            && Enum.TryParse(criteria.Stake, true, out MotelyStake stake)
+                        )
                             compositeSettings = compositeSettings.WithStake(stake);
 
                         compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
@@ -1813,10 +1825,11 @@ namespace BalatroSeedOracle.Services
                     else
                     {
                         // Regular specialized filter for other categories
-                        var filterDesc = Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(
-                            primaryCategory,
-                            primaryClauses
-                        );
+                        var filterDesc =
+                            Motely.Utils.SpecializedFilterFactory.CreateSpecializedFilter(
+                                primaryCategory,
+                                primaryClauses
+                            );
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
                             $"Optimized single-category filter: {primaryCategory} with {primaryClauses.Count} clauses"
@@ -1831,7 +1844,9 @@ namespace BalatroSeedOracle.Services
 
                         // Only set EndBatch if specified (ulong.MaxValue means infinite)
                         if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                            searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
+                            searchSettings = searchSettings.WithEndBatchIndex(
+                                (long)criteria.EndBatch
+                            );
 
                         searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
 
@@ -1916,16 +1931,27 @@ namespace BalatroSeedOracle.Services
 
                     // Calculate ETA based on progress percentage and elapsed time
                     TimeSpan? estimatedTimeRemaining = null;
-                    if (progressPercent > 0 && progressPercent < 100 && elapsed.TotalMilliseconds > 0)
+                    if (
+                        progressPercent > 0
+                        && progressPercent < 100
+                        && elapsed.TotalMilliseconds > 0
+                    )
                     {
                         // Total time = elapsed / (progress / 100)
                         // Time remaining = total time - elapsed
-                        double totalEstimatedMs = elapsed.TotalMilliseconds / (progressPercent / 100.0);
+                        double totalEstimatedMs =
+                            elapsed.TotalMilliseconds / (progressPercent / 100.0);
                         double remainingMs = totalEstimatedMs - elapsed.TotalMilliseconds;
 
-                        if (remainingMs > 0 && !double.IsNaN(remainingMs) && !double.IsInfinity(remainingMs))
+                        if (
+                            remainingMs > 0
+                            && !double.IsNaN(remainingMs)
+                            && !double.IsInfinity(remainingMs)
+                        )
                         {
-                            estimatedTimeRemaining = TimeSpan.FromMilliseconds(Math.Min(remainingMs, TimeSpan.MaxValue.TotalMilliseconds));
+                            estimatedTimeRemaining = TimeSpan.FromMilliseconds(
+                                Math.Min(remainingMs, TimeSpan.MaxValue.TotalMilliseconds)
+                            );
                         }
                     }
 

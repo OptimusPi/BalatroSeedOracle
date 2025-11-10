@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels.Controls
 {
@@ -123,7 +123,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 "TotalScore" => SortDescending
                     ? AllResults.OrderByDescending(r => r.TotalScore)
                     : AllResults.OrderBy(r => r.TotalScore),
-                _ => AllResults.OrderByDescending(r => r.TotalScore)
+                _ => AllResults.OrderByDescending(r => r.TotalScore),
             };
 
             // Preserve collection instance to maintain bindings
@@ -170,7 +170,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             {
                 0 => "No results",
                 1 => "1 result",
-                _ => $"{AllResults.Count:N0} results"
+                _ => $"{AllResults.Count:N0} results",
             };
         }
 
@@ -184,7 +184,8 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             var highestScore = AllResults.Max(r => r.TotalScore);
             var averageScore = AllResults.Average(r => r.TotalScore);
-            StatsText = $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {AllResults.Count}";
+            StatsText =
+                $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {AllResults.Count}";
         }
 
         private void UpdatePaginationButtons()
@@ -202,7 +203,8 @@ namespace BalatroSeedOracle.ViewModels.Controls
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(seed)) return;
+                if (string.IsNullOrWhiteSpace(seed))
+                    return;
 
                 await ClipboardService.CopyToClipboardAsync(seed);
 
@@ -214,32 +216,39 @@ namespace BalatroSeedOracle.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SortableResultsGridViewModel", $"CopySeedAsync failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "SortableResultsGridViewModel",
+                    $"CopySeedAsync failed: {ex.Message}"
+                );
                 throw;
             }
         }
 
         private void SearchSimilar(SearchResult? result)
         {
-            if (result == null) return;
+            if (result == null)
+                return;
             SearchSimilarRequested?.Invoke(this, result);
         }
 
         private void AddToFavorites(SearchResult? result)
         {
-            if (result == null) return;
+            if (result == null)
+                return;
             AddToFavoritesRequested?.Invoke(this, result);
         }
 
         private void ExportSeed(SearchResult? result)
         {
-            if (result == null) return;
+            if (result == null)
+                return;
             ExportSeedRequested?.Invoke(this, result);
         }
 
         private void Analyze(SearchResult? result)
         {
-            if (result == null) return;
+            if (result == null)
+                return;
             AnalyzeRequested?.Invoke(this, result);
         }
 
@@ -288,6 +297,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
         }
 
         public IEnumerable<SearchResult> GetAllResults() => AllResults.ToList();
+
         public IEnumerable<SearchResult> GetDisplayedResults() => DisplayedResults.ToList();
     }
 }

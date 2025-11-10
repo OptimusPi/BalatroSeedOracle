@@ -38,7 +38,7 @@ namespace BalatroSeedOracle.Components
         private void OnMinimizedIconPressed(object? sender, PointerPressedEventArgs e)
         {
             _iconPressedPosition = e.GetPosition((Control)sender!);
-            
+
             if (DataContext is AudioMixerWidgetViewModel vm)
             {
                 vm.BringToFront();

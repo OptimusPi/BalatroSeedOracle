@@ -38,7 +38,8 @@ namespace BalatroSeedOracle.Components
             {
                 _carouselItems.Bind(
                     ItemsControl.ItemsSourceProperty,
-                    this.GetObservable(ItemsSourceProperty));
+                    this.GetObservable(ItemsSourceProperty)
+                );
             }
         }
     }

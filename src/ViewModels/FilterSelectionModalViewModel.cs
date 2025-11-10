@@ -51,7 +51,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             get
             {
-                if (SelectedFilter == null) return "";
+                if (SelectedFilter == null)
+                    return "";
                 var deckName = SelectedFilter.DeckName;
                 if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
                 {
@@ -139,14 +140,49 @@ namespace BalatroSeedOracle.ViewModels
             if (value != null)
             {
                 // Map deck name to index
-                var decks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic" };
-                SelectedDeckIndex = Array.FindIndex(decks, d => d.Equals(value.DeckName, StringComparison.OrdinalIgnoreCase));
-                if (SelectedDeckIndex < 0) SelectedDeckIndex = 0;
+                var decks = new[]
+                {
+                    "Red",
+                    "Blue",
+                    "Yellow",
+                    "Green",
+                    "Black",
+                    "Magic",
+                    "Nebula",
+                    "Ghost",
+                    "Abandoned",
+                    "Checkered",
+                    "Zodiac",
+                    "Painted",
+                    "Anaglyph",
+                    "Plasma",
+                    "Erratic",
+                };
+                SelectedDeckIndex = Array.FindIndex(
+                    decks,
+                    d => d.Equals(value.DeckName, StringComparison.OrdinalIgnoreCase)
+                );
+                if (SelectedDeckIndex < 0)
+                    SelectedDeckIndex = 0;
 
                 // Map stake name to index
-                var stakes = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
-                SelectedStakeIndex = Array.FindIndex(stakes, s => s.Equals(value.StakeName, StringComparison.OrdinalIgnoreCase));
-                if (SelectedStakeIndex < 0) SelectedStakeIndex = 0;
+                var stakes = new[]
+                {
+                    "white",
+                    "red",
+                    "green",
+                    "black",
+                    "blue",
+                    "purple",
+                    "orange",
+                    "gold",
+                };
+                SelectedStakeIndex = Array.FindIndex(
+                    stakes,
+                    s => s.Equals(value.StakeName, StringComparison.OrdinalIgnoreCase)
+                );
+                if (SelectedStakeIndex < 0)
+                    SelectedStakeIndex = 0;
             }
         }
 
@@ -270,7 +306,8 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 // Get FilterService to perform the deletion
-                var filterService = Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
+                var filterService =
+                    Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
                 var filtersDir = System.IO.Path.Combine(
                     System.IO.Directory.GetCurrentDirectory(),
                     "JsonItemFilters"
@@ -330,7 +367,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSelectionModalViewModel", $"ConfirmDeleteAsync failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterSelectionModalViewModel",
+                    $"ConfirmDeleteAsync failed: {ex.Message}"
+                );
                 throw;
             }
         }

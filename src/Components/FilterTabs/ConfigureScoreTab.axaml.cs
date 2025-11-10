@@ -39,7 +39,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // This allows both tab instances to share the same VisualBuilderTabViewModel
             if (DataContext == null)
             {
-                DataContext = ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+                DataContext =
+                    ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
             }
 
             // Setup drop zone handling after visual tree is ready
@@ -137,7 +138,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var topLevel = TopLevel.GetTopLevel(this);
                     if (topLevel != null && _originalDragSource != null)
                     {
-                        var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                        var sourcePos = _originalDragSource.TranslatePoint(
+                            new Avalonia.Point(0, 0),
+                            topLevel
+                        );
                         _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
                     }
                     else
@@ -145,7 +149,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _dragStartPosition = e.GetPosition(this);
                     }
 
-                    DebugLogger.Log("ConfigureScoreTab", $"Manual drag start for item: {item.Name}");
+                    DebugLogger.Log(
+                        "ConfigureScoreTab",
+                        $"Manual drag start for item: {item.Name}"
+                    );
 
                     // Hide original during drag
                     item.IsBeingDragged = true;
@@ -157,7 +164,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     ShowDropOverlay();
 
                     // Phase 2: Transition to DragActive state
-                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    var vm =
+                        DataContext
+                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                     vm?.EnterDragActiveState();
                 }
             }
@@ -168,7 +177,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _isDragging = false;
 
                 // Phase 2: Return to Default state on error
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm =
+                    DataContext
+                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 vm?.EnterDefaultState();
             }
         }
@@ -194,7 +205,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ConfigureScoreTab", $"Error in OnPointerMovedManualDrag: {ex.Message}");
+                DebugLogger.LogError(
+                    "ConfigureScoreTab",
+                    $"Error in OnPointerMovedManualDrag: {ex.Message}"
+                );
             }
         }
 
@@ -207,7 +221,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 DebugLogger.Log("ConfigureScoreTab", "Manual drag operation released");
 
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm =
+                    DataContext
+                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 if (vm == null)
                 {
                     DebugLogger.Log("ConfigureScoreTab", "Drop failed - no ViewModel");
@@ -242,12 +258,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 else if (IsPointOverControl(cursorPos, scoreListZone, _topLevel))
                 {
                     // Add to SHOULD collection (score columns)
-                    DebugLogger.Log("ConfigureScoreTab", $"Adding {_draggedItem.Name} to score columns");
+                    DebugLogger.Log(
+                        "ConfigureScoreTab",
+                        $"Adding {_draggedItem.Name} to score columns"
+                    );
                     vm.AddToShouldCommand.Execute(_draggedItem);
                 }
                 else
                 {
-                    DebugLogger.Log("ConfigureScoreTab", "Drop cancelled - not over any valid zone");
+                    DebugLogger.Log(
+                        "ConfigureScoreTab",
+                        "Drop cancelled - not over any valid zone"
+                    );
                 }
             }
             finally
@@ -275,7 +297,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (!controlPos.HasValue)
                     return false;
 
-                var bounds = new Avalonia.Rect(controlPos.Value, new Avalonia.Size(control.Bounds.Width, control.Bounds.Height));
+                var bounds = new Avalonia.Rect(
+                    controlPos.Value,
+                    new Avalonia.Size(control.Bounds.Width, control.Bounds.Height)
+                );
                 return bounds.Contains(point);
             }
             catch
@@ -310,7 +335,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Find AdornerLayer
                 if (_topLevel != null)
                 {
-                    _adornerLayer = Avalonia.Controls.Primitives.AdornerLayer.GetAdornerLayer(_topLevel);
+                    _adornerLayer = Avalonia.Controls.Primitives.AdornerLayer.GetAdornerLayer(
+                        _topLevel
+                    );
 
                     if (_adornerLayer == null && _topLevel is Window window)
                     {
@@ -321,7 +348,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 if (child is Avalonia.Controls.Primitives.AdornerLayer layer)
                                 {
                                     _adornerLayer = layer;
-                                    DebugLogger.Log("ConfigureScoreTab", "Found AdornerLayer in MainWindow Panel");
+                                    DebugLogger.Log(
+                                        "ConfigureScoreTab",
+                                        "Found AdornerLayer in MainWindow Panel"
+                                    );
                                     break;
                                 }
                             }
@@ -331,7 +361,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (_adornerLayer == null)
                 {
-                    DebugLogger.LogError("ConfigureScoreTab", $"Failed to find adorner layer! TopLevel: {_topLevel != null}");
+                    DebugLogger.LogError(
+                        "ConfigureScoreTab",
+                        $"Failed to find adorner layer! TopLevel: {_topLevel != null}"
+                    );
                     return;
                 }
 
@@ -340,27 +373,31 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item?.ItemImage != null)
                 {
-                    imageGrid.Children.Add(new Image
-                    {
-                        Source = item.ItemImage,
-                        Width = 48,
-                        Height = 64,
-                        Stretch = Avalonia.Media.Stretch.Uniform,
-                        Opacity = 0.8,
-                    });
+                    imageGrid.Children.Add(
+                        new Image
+                        {
+                            Source = item.ItemImage,
+                            Width = 48,
+                            Height = 64,
+                            Stretch = Avalonia.Media.Stretch.Uniform,
+                            Opacity = 0.8,
+                        }
+                    );
                 }
 
                 // Soul face overlay for legendary jokers
                 if (item?.SoulFaceImage != null)
                 {
-                    imageGrid.Children.Add(new Image
-                    {
-                        Source = item.SoulFaceImage,
-                        Width = 48,
-                        Height = 64,
-                        Stretch = Avalonia.Media.Stretch.Uniform,
-                        Opacity = 1.0,
-                    });
+                    imageGrid.Children.Add(
+                        new Image
+                        {
+                            Source = item.SoulFaceImage,
+                            Width = 48,
+                            Height = 64,
+                            Stretch = Avalonia.Media.Stretch.Uniform,
+                            Opacity = 1.0,
+                        }
+                    );
                 }
 
                 var cardContent = new Border
@@ -402,11 +439,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 _adornerLayer.Children.Add(_dragAdorner);
 
-                DebugLogger.Log("ConfigureScoreTab", $"Ghost image created at ({startPosition.X}, {startPosition.Y})");
+                DebugLogger.Log(
+                    "ConfigureScoreTab",
+                    $"Ghost image created at ({startPosition.X}, {startPosition.Y})"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ConfigureScoreTab", $"Failed to create drag adorner: {ex.Message}");
+                DebugLogger.LogError(
+                    "ConfigureScoreTab",
+                    $"Failed to create drag adorner: {ex.Message}"
+                );
             }
         }
 
@@ -441,12 +484,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 HideAllDropZoneOverlays();
 
                 // Phase 2: Return to Default state when drag ends
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm =
+                    DataContext
+                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 vm?.EnterDefaultState();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ConfigureScoreTab", $"Failed to remove drag adorner: {ex.Message}");
+                DebugLogger.LogError(
+                    "ConfigureScoreTab",
+                    $"Failed to remove drag adorner: {ex.Message}"
+                );
             }
         }
 
@@ -502,7 +550,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 try
                 {
-                    var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    var vm =
+                        DataContext
+                        as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                     if (vm != null)
                     {
                         vm.SetCategory(category);
@@ -510,7 +560,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("ConfigureScoreTab", $"Category click failed: {ex.Message}");
+                    DebugLogger.LogError(
+                        "ConfigureScoreTab",
+                        $"Category click failed: {ex.Message}"
+                    );
                 }
             }
         }

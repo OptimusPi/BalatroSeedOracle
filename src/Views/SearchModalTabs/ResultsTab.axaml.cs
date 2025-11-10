@@ -47,7 +47,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
                         if (topLevel == null)
                         {
-                            DebugLogger.LogError("ResultsTab", "Could not get TopLevel for file picker");
+                            DebugLogger.LogError(
+                                "ResultsTab",
+                                "Could not get TopLevel for file picker"
+                            );
                             return;
                         }
 
@@ -57,18 +60,19 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             {
                                 Title = "Export Search Results to Excel",
                                 DefaultExtension = "xlsx",
-                                SuggestedFileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                                SuggestedFileName =
+                                    $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
                                 FileTypeChoices = new[]
                                 {
                                     new Avalonia.Platform.Storage.FilePickerFileType("Excel Files")
                                     {
-                                        Patterns = new[] { "*.xlsx" }
+                                        Patterns = new[] { "*.xlsx" },
                                     },
                                     new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
                                     {
-                                        Patterns = new[] { "*.csv" }
-                                    }
-                                }
+                                        Patterns = new[] { "*.csv" },
+                                    },
+                                },
                             }
                         );
 
@@ -90,7 +94,11 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             var worksheet = workbook.Worksheets.Add("Search Results");
 
                             // CRITICAL: Build headers with all columns
-                            var headers = new System.Collections.Generic.List<string> { "SEED", "TOTALSCORE" };
+                            var headers = new System.Collections.Generic.List<string>
+                            {
+                                "SEED",
+                                "TOTALSCORE",
+                            };
                             headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
 
                             // Write headers
@@ -136,7 +144,9 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             var header = "SEED,TOTALSCORE";
                             if (labels.Length > 0)
                             {
-                                header += "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                                header +=
+                                    ","
+                                    + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
                             }
 
                             var csv = new System.Text.StringBuilder();

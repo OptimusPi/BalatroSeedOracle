@@ -109,7 +109,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             try
             {
                 // Try to get filter name from parent's loaded config
-                if (_parentViewModel.LoadedConfig != null && !string.IsNullOrWhiteSpace(_parentViewModel.LoadedConfig.Name))
+                if (
+                    _parentViewModel.LoadedConfig != null
+                    && !string.IsNullOrWhiteSpace(_parentViewModel.LoadedConfig.Name)
+                )
                 {
                     FilterName = _parentViewModel.LoadedConfig.Name;
                     FilterDescription = _parentViewModel.LoadedConfig.Description ?? "";
@@ -118,13 +121,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Fall back to loaded filter file name
                 else if (!string.IsNullOrWhiteSpace(_parentViewModel.CurrentFilterPath))
                 {
-                    FilterName = Path.GetFileNameWithoutExtension(_parentViewModel.CurrentFilterPath);
-                    DebugLogger.Log("SaveFilterTab", $"Pre-filled from CurrentFilterPath: {FilterName}");
+                    FilterName = Path.GetFileNameWithoutExtension(
+                        _parentViewModel.CurrentFilterPath
+                    );
+                    DebugLogger.Log(
+                        "SaveFilterTab",
+                        $"Pre-filled from CurrentFilterPath: {FilterName}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SaveFilterTab", $"Error pre-filling filter data: {ex.Message}");
+                DebugLogger.LogError(
+                    "SaveFilterTab",
+                    $"Error pre-filling filter data: {ex.Message}"
+                );
             }
         }
 
@@ -261,8 +272,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
                 shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
                 mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
-                DebugLogger.Log("SaveFilterTab",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot");
+                DebugLogger.Log(
+                    "SaveFilterTab",
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                );
             }
             else
             {
@@ -270,8 +283,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 mustKeys = _parentViewModel.SelectedMust;
                 shouldKeys = _parentViewModel.SelectedShould;
                 mustNotKeys = _parentViewModel.SelectedMustNot;
-                DebugLogger.Log("SaveFilterTab",
-                    $"Building config from parent collections: {mustKeys.Count()} must, {shouldKeys.Count()} should, {mustNotKeys.Count()} mustNot");
+                DebugLogger.Log(
+                    "SaveFilterTab",
+                    $"Building config from parent collections: {mustKeys.Count()} must, {shouldKeys.Count()} should, {mustNotKeys.Count()} mustNot"
+                );
             }
 
             var itemConfigs = _parentViewModel.ItemConfigs;
@@ -371,15 +386,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         FoundSeed = results.Seeds[0].ToString() ?? "Unknown";
                     }
 
-                    TestResultMessage = $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: Found seed {FoundSeed}", false);
                 }
                 else if (results.Success && results.Count == 0)
                 {
                     // NO MATCH STATE: Filter valid but no seeds found in search range
                     ShowTestError = true;
-                    TestResultMessage = $"⚠ NO MATCHES FOUND in {results.ElapsedTime:F1}s\nTry different deck/stake or wider search";
-                    UpdateStatus($"⚠ No matching seeds found (searched {criteria.EndBatch} batches)", true);
+                    TestResultMessage =
+                        $"⚠ NO MATCHES FOUND in {results.ElapsedTime:F1}s\nTry different deck/stake or wider search";
+                    UpdateStatus(
+                        $"⚠ No matching seeds found (searched {criteria.EndBatch} batches)",
+                        true
+                    );
                 }
                 else
                 {

@@ -88,12 +88,16 @@ namespace BalatroSeedOracle.Controls
             }
 
             // Check if we need to rebuild columns
-            bool needsRebuild = !_tallyColumnsInitialized || _initializedColumnCount != first!.Scores!.Length;
+            bool needsRebuild =
+                !_tallyColumnsInitialized || _initializedColumnCount != first!.Scores!.Length;
 
             // Also rebuild if we now have Labels when we didn't before
             if (_tallyColumnsInitialized && first.Labels != null && first.Labels.Length > 0)
             {
-                var existingColumns = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                var existingColumns = dataGrid
+                    .Columns.Skip(2)
+                    .Take(_initializedColumnCount)
+                    .ToList();
                 if (existingColumns.Any(c => c.Header?.ToString()?.StartsWith("TALLY") == true))
                 {
                     needsRebuild = true; // We have placeholder names, rebuild with real Labels
@@ -106,7 +110,10 @@ namespace BalatroSeedOracle.Controls
             // Clear existing tally columns (keep SEED and TOTALSCORE)
             if (_tallyColumnsInitialized)
             {
-                var columnsToRemove = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                var columnsToRemove = dataGrid
+                    .Columns.Skip(2)
+                    .Take(_initializedColumnCount)
+                    .ToList();
                 foreach (var col in columnsToRemove)
                 {
                     dataGrid.Columns.Remove(col);

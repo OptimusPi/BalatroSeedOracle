@@ -44,11 +44,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
             DataContext =
                 ServiceHelper.GetRequiredService<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
 
-            DebugLogger.Log("VisualBuilderTab", $"DataContext set to: {DataContext?.GetType().Name ?? "null"}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"DataContext set to: {DataContext?.GetType().Name ?? "null"}"
+            );
 
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                DebugLogger.Log("VisualBuilderTab", $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}, MustNot: {vm.SelectedMustNot.Count}");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}, MustNot: {vm.SelectedMustNot.Count}"
+                );
 
                 // CRITICAL-001 FIX: Use named methods for event handlers so they can be unsubscribed
                 vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
@@ -243,7 +249,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item == null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"No item found for drop zone drag - sender type: {sender?.GetType().Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"No item found for drop zone drag - sender type: {sender?.GetType().Name}"
+                    );
                     return;
                 }
 
@@ -416,10 +425,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                 }
                 // Check if over drop zone container
-                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
+                else if (
+                    dropZoneContainer != null
+                    && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel)
+                )
                 {
                     // Hide return overlay when over drop zones
-                    if (returnOverlay != null) returnOverlay.IsVisible = false;
+                    if (returnOverlay != null)
+                        returnOverlay.IsVisible = false;
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                     // Zones stay always visible - no accordion-style expansion during drag
                 }
@@ -427,7 +440,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     // Not over any drop zone or return area
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
-                    if (returnOverlay != null) returnOverlay.IsVisible = false;
+                    if (returnOverlay != null)
+                        returnOverlay.IsVisible = false;
                 }
             }
             catch (Exception ex)
@@ -577,16 +591,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // HIGH-004 FIX: Check if dropped on Favorites (CategoryNav) with null safety
                 var categoryNav = this.FindControl<StackPanel>("CategoryNav");
-                if (_draggedItem is not FilterOperatorItem && IsPointOverControl(cursorPos, categoryNav, _topLevel))
+                if (
+                    _draggedItem is not FilterOperatorItem
+                    && IsPointOverControl(cursorPos, categoryNav, _topLevel)
+                )
                 {
                     // Validate item has a name before adding to favorites
                     if (string.IsNullOrEmpty(_draggedItem?.Name))
                     {
-                        DebugLogger.LogError("VisualBuilderTab", "Cannot add item with null/empty name to favorites");
+                        DebugLogger.LogError(
+                            "VisualBuilderTab",
+                            "Cannot add item with null/empty name to favorites"
+                        );
                         return;
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into Favorites");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Dropped {_draggedItem.Name} into Favorites"
+                    );
 
                     var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
                     if (favoritesService != null)
@@ -605,11 +628,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 vm.SetCategory("Favorites");
                             }
 
-                            DebugLogger.Log("VisualBuilderTab", $"✅ {_draggedItem.Name} added to favorites");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"✅ {_draggedItem.Name} added to favorites"
+                            );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError("VisualBuilderTab", $"Failed to add favorite: {ex.Message}");
+                            DebugLogger.LogError(
+                                "VisualBuilderTab",
+                                $"Failed to add favorite: {ex.Message}"
+                            );
                         }
                     }
                     else
@@ -626,7 +655,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (IsPointOverControl(cursorPos, unifiedTray, _topLevel))
                     {
                         // Drop into unified tray
-                        DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into unified tray");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            $"Dropped {_draggedItem.Name} into unified tray"
+                        );
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -654,7 +686,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     zoneName = "ItemGridBorder";
                 }
                 // Check if over drop zone container - determine which third
-                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
+                else if (
+                    dropZoneContainer != null
+                    && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel)
+                )
                 {
                     // Get position within the drop zone container
                     var localPos = e.GetPosition(dropZoneContainer);
@@ -682,7 +717,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         targetZone = this.FindControl<Border>("MustNotDropZone");
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Third={thirdHeight:F1}, Zone={zoneName}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Third={thirdHeight:F1}, Zone={zoneName}"
+                    );
                 }
 
                 if (targetZone != null && zoneName != null)
@@ -830,7 +868,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 if (isUnifiedOperator && operatorItem.Children.Count > 0)
                                 {
                                     // Create a copy of the operator with deep copied children
-                                    var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
+                                    var operatorCopy = new Models.FilterOperatorItem(
+                                        operatorItem.OperatorType
+                                    )
                                     {
                                         DisplayName = operatorItem.DisplayName,
                                         Name = operatorItem.Name,
@@ -863,13 +903,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Rank = child.Rank,
                                             Suit = child.Suit,
                                             Enhancement = child.Enhancement,
-                                            Seal = child.Seal
+                                            Seal = child.Seal,
                                         };
                                         operatorCopy.Children.Add(childCopy);
                                     }
 
                                     itemToAdd = operatorCopy;
-                                    DebugLogger.Log("VisualBuilderTab", $"Created operator copy with {operatorCopy.Children.Count} deep-copied children");
+                                    DebugLogger.Log(
+                                        "VisualBuilderTab",
+                                        $"Created operator copy with {operatorCopy.Children.Count} deep-copied children"
+                                    );
                                 }
 
                                 // Add operator to zone (operators can't go inside operators)
@@ -1050,7 +1093,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             if (overlay == null || popupContent == null)
             {
-                DebugLogger.LogError("VisualBuilderTab", "Could not find PopupOverlay or PopupContent controls");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    "Could not find PopupOverlay or PopupContent controls"
+                );
                 return;
             }
 
@@ -1376,11 +1422,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (item is Models.FilterOperatorItem operatorItem)
                 {
                     // Special visual for operators - show a compact box with children count
-                    var blue = Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
-                    var green = Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
-                    var darkBg = Application.Current?.FindResource("DarkBackground") as IBrush ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
-                    var white = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
-                    var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily ?? Avalonia.Media.FontFamily.Default;
+                    var blue =
+                        Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
+                    var green =
+                        Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
+                    var darkBg =
+                        Application.Current?.FindResource("DarkBackground") as IBrush
+                        ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
+                    var white =
+                        Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
+                    var balatroFont =
+                        Application.Current?.FindResource("BalatroFont")
+                            as Avalonia.Media.FontFamily
+                        ?? Avalonia.Media.FontFamily.Default;
 
                     var operatorBorder = new Border
                     {
@@ -1405,10 +1459,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         Text = operatorItem.OperatorType,
                                         FontFamily = balatroFont,
                                         FontSize = 14,
-                                        FontWeight = FontWeight.Bold,
                                         Foreground = white,
                                         HorizontalAlignment = HorizontalAlignment.Center,
-                                    }
+                                    },
                                 },
                                 new TextBlock
                                 {
@@ -1418,8 +1471,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     Foreground = white,
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     Opacity = 0.7,
-                                }
-                            }
+                                },
+                            },
                         },
                         Opacity = 0.9,
                     };
@@ -1435,7 +1488,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var imageSource = item?.ItemImage;
                     if (imageSource == null)
                     {
-                        DebugLogger.LogError("VisualBuilderTab", $"Item {item?.Name ?? "unknown"} has no image - using transparent fallback");
+                        DebugLogger.LogError(
+                            "VisualBuilderTab",
+                            $"Item {item?.Name ?? "unknown"} has no image - using transparent fallback"
+                        );
                     }
 
                     imageGrid.Children.Add(
@@ -1664,7 +1720,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                DebugLogger.Log("VisualBuilderTab", $"SelectedMust CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMust.Count}");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"SelectedMust CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMust.Count}"
+                );
             }
         }
 
@@ -1672,7 +1731,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                DebugLogger.Log("VisualBuilderTab", $"SelectedShould CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedShould.Count}");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"SelectedShould CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedShould.Count}"
+                );
             }
         }
 
@@ -1680,7 +1742,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                DebugLogger.Log("VisualBuilderTab", $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}"
+                );
             }
         }
 
@@ -1734,7 +1799,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnShouldLabelClick(object? sender, PointerPressedEventArgs e)
         {
             // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "SHOULD zone label clicked (zones always expanded)");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                "SHOULD zone label clicked (zones always expanded)"
+            );
         }
 
         /// <summary>
@@ -1844,7 +1912,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null && _originalDragSource != null)
             {
-                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                var sourcePos = _originalDragSource.TranslatePoint(
+                    new Avalonia.Point(0, 0),
+                    topLevel
+                );
                 _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
             }
             else
@@ -1852,7 +1923,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"Started dragging unified operator ({vm.UnifiedOperator.OperatorType}) with {vm.UnifiedOperator.Children.Count} children");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Started dragging unified operator ({vm.UnifiedOperator.OperatorType}) with {vm.UnifiedOperator.Children.Count} children"
+            );
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1878,8 +1952,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Allow regular items OR operators being moved back from drop zones
             if (_draggedItem != null)
             {
-                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
-                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
+                bool canDrop =
+                    (_draggedItem is not FilterOperatorItem)
+                    || (
+                        _draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone)
+                    );
 
                 if (canDrop)
                 {
@@ -1958,9 +2035,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         #region Category Arrow Animation
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
-            if (e.PropertyName == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory))
+            if (
+                e.PropertyName
+                == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory)
+            )
             {
                 var vm = sender as ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 if (vm != null)
@@ -1973,24 +2056,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void UpdateArrowPosition(string category)
         {
             var arrow = this.FindControl<Avalonia.Controls.Shapes.Polygon>("CategoryArrow");
-            if (arrow == null) return;
+            if (arrow == null)
+                return;
 
             int index = GetCategoryIndex(category);
             double yPos = (index * 50) + 12;
             Canvas.SetTop(arrow, yPos);
         }
 
-        private int GetCategoryIndex(string category) => category switch
-        {
-            "Favorites" => 0,
-            "Joker" => 1,
-            "Consumable" => 2,
-            "SkipTag" => 3,
-            "Boss" => 4,
-            "Voucher" => 5,
-            "StandardCard" => 6,
-            _ => 0 // Default to Favorites
-        };
+        private int GetCategoryIndex(string category) =>
+            category switch
+            {
+                "Favorites" => 0,
+                "Joker" => 1,
+                "Consumable" => 2,
+                "SkipTag" => 3,
+                "Boss" => 4,
+                "Voucher" => 5,
+                "StandardCard" => 6,
+                _ => 0, // Default to Favorites
+            };
 
         #endregion
     }

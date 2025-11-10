@@ -21,8 +21,10 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// When true, modal uses auto sizing instead of fixed 1080x600
         /// </summary>
-        public static readonly StyledProperty<bool> SqueezeProperty =
-            AvaloniaProperty.Register<StandardModal, bool>(nameof(Squeeze), defaultValue: false);
+        public static readonly StyledProperty<bool> SqueezeProperty = AvaloniaProperty.Register<
+            StandardModal,
+            bool
+        >(nameof(Squeeze), defaultValue: false);
 
         public bool Squeeze
         {

@@ -1,5 +1,5 @@
-using BalatroSeedOracle.Services;
 using System;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Models;
 

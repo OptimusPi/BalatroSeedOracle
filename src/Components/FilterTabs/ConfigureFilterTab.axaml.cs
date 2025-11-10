@@ -245,7 +245,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item == null)
                 {
-                    DebugLogger.Log("ConfigureFilterTab", $"No item found for drop zone drag - sender type: {sender?.GetType().Name}");
+                    DebugLogger.Log(
+                        "ConfigureFilterTab",
+                        $"No item found for drop zone drag - sender type: {sender?.GetType().Name}"
+                    );
                     return;
                 }
 
@@ -489,7 +492,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             return null;
         }
 
-
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
         {
             if (!_isDragging || _draggedItem == null)
@@ -527,10 +529,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Check if dropped on Favorites (CategoryNav)
                 var categoryNav = this.FindControl<StackPanel>("CategoryNav");
-                if (_draggedItem is not FilterOperatorItem && IsPointOverControl(cursorPos, categoryNav, _topLevel))
+                if (
+                    _draggedItem is not FilterOperatorItem
+                    && IsPointOverControl(cursorPos, categoryNav, _topLevel)
+                )
                 {
                     // Add to favorites
-                    DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into Favorites");
+                    DebugLogger.Log(
+                        "ConfigureFilterTab",
+                        $"Dropped {_draggedItem.Name} into Favorites"
+                    );
 
                     var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
                     if (favoritesService != null)
@@ -547,7 +555,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             // For now, switching categories will show the new favorite
                         }
 
-                        DebugLogger.Log("ConfigureFilterTab", $"✅ {_draggedItem.Name} added to favorites");
+                        DebugLogger.Log(
+                            "ConfigureFilterTab",
+                            $"✅ {_draggedItem.Name} added to favorites"
+                        );
                     }
 
                     return; // Early exit - handled
@@ -559,7 +570,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (IsPointOverControl(cursorPos, trayOrBorder, _topLevel))
                     {
                         // Drop into OR tray
-                        DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into OR tray");
+                        DebugLogger.Log(
+                            "ConfigureFilterTab",
+                            $"Dropped {_draggedItem.Name} into OR tray"
+                        );
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -581,7 +595,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else if (IsPointOverControl(cursorPos, trayAndBorder, _topLevel))
                     {
                         // Drop into AND tray
-                        DebugLogger.Log("ConfigureFilterTab", $"Dropped {_draggedItem.Name} into AND tray");
+                        DebugLogger.Log(
+                            "ConfigureFilterTab",
+                            $"Dropped {_draggedItem.Name} into AND tray"
+                        );
 
                         var itemCopy = new Models.FilterItem
                         {
@@ -609,7 +626,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     zoneName = "ItemGridBorder";
                 }
                 // Check if over drop zone container - determine which half (NO SHOULD!)
-                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
+                else if (
+                    dropZoneContainer != null
+                    && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel)
+                )
                 {
                     // Get position within the drop zone container
                     var localPos = e.GetPosition(dropZoneContainer);
@@ -631,7 +651,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         targetZone = this.FindControl<Border>("MustNotDropZone");
                     }
 
-                    DebugLogger.Log("ConfigureFilterTab", $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Half={halfHeight:F1}, Zone={zoneName}");
+                    DebugLogger.Log(
+                        "ConfigureFilterTab",
+                        $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Half={halfHeight:F1}, Zone={zoneName}"
+                    );
                 }
 
                 if (targetZone != null && zoneName != null)
@@ -722,7 +745,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         {
                             // IMPORTANT: Only allow drops into TOP SHELF tray operators (TrayOrOperator, TrayAndOperator)
                             // Operators already in drop zones are READ-ONLY to prevent accidental "disappearing" items
-                            bool isTrayOperator = (targetOperator == vm.TrayOrOperator || targetOperator == vm.TrayAndOperator);
+                            bool isTrayOperator = (
+                                targetOperator == vm.TrayOrOperator
+                                || targetOperator == vm.TrayAndOperator
+                            );
 
                             if (isTrayOperator)
                             {
@@ -756,14 +782,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 );
 
                                 // Check if this is one of the tray operators
-                                bool isTrayOperator = (operatorItem == vm.TrayOrOperator || operatorItem == vm.TrayAndOperator);
+                                bool isTrayOperator = (
+                                    operatorItem == vm.TrayOrOperator
+                                    || operatorItem == vm.TrayAndOperator
+                                );
 
                                 // If it's a tray operator, create a COPY with its children
                                 Models.FilterItem itemToAdd = _draggedItem;
                                 if (isTrayOperator && operatorItem.Children.Count > 0)
                                 {
                                     // Create a copy of the operator with deep copied children
-                                    var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
+                                    var operatorCopy = new Models.FilterOperatorItem(
+                                        operatorItem.OperatorType
+                                    )
                                     {
                                         DisplayName = operatorItem.DisplayName,
                                         Name = operatorItem.Name,
@@ -796,13 +827,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Rank = child.Rank,
                                             Suit = child.Suit,
                                             Enhancement = child.Enhancement,
-                                            Seal = child.Seal
+                                            Seal = child.Seal,
                                         };
                                         operatorCopy.Children.Add(childCopy);
                                     }
 
                                     itemToAdd = operatorCopy;
-                                    DebugLogger.Log("ConfigureFilterTab", $"Created operator copy with {operatorCopy.Children.Count} deep-copied children");
+                                    DebugLogger.Log(
+                                        "ConfigureFilterTab",
+                                        $"Created operator copy with {operatorCopy.Children.Count} deep-copied children"
+                                    );
                                 }
 
                                 // Add operator to zone (operators can't go inside operators)
@@ -848,7 +882,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
                 else
                 {
-                    DebugLogger.Log("ConfigureFilterTab", "Drop cancelled - not over any drop zone");
+                    DebugLogger.Log(
+                        "ConfigureFilterTab",
+                        "Drop cancelled - not over any drop zone"
+                    );
 
                     // IMPORTANT: Stop dragging BEFORE animation to prevent glitchy cursor following!
                     _isDragging = false;
@@ -973,7 +1010,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             if (overlay == null || popupContent == null)
             {
-                DebugLogger.LogError("ConfigureFilterTab", "Could not find PopupOverlay or PopupContent controls");
+                DebugLogger.LogError(
+                    "ConfigureFilterTab",
+                    "Could not find PopupOverlay or PopupContent controls"
+                );
                 return;
             }
 
@@ -1151,11 +1191,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (item is Models.FilterOperatorItem operatorItem)
                 {
                     // Special visual for operators - show a compact box with children count
-                    var blue = Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
-                    var green = Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
-                    var darkBg = Application.Current?.FindResource("DarkBackground") as IBrush ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
-                    var white = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
-                    var balatroFont = Application.Current?.FindResource("BalatroFont") as Avalonia.Media.FontFamily ?? Avalonia.Media.FontFamily.Default;
+                    var blue =
+                        Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
+                    var green =
+                        Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
+                    var darkBg =
+                        Application.Current?.FindResource("DarkBackground") as IBrush
+                        ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
+                    var white =
+                        Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
+                    var balatroFont =
+                        Application.Current?.FindResource("BalatroFont")
+                            as Avalonia.Media.FontFamily
+                        ?? Avalonia.Media.FontFamily.Default;
 
                     var operatorBorder = new Border
                     {
@@ -1180,10 +1228,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         Text = operatorItem.OperatorType,
                                         FontFamily = balatroFont,
                                         FontSize = 14,
-                                        FontWeight = FontWeight.Bold,
                                         Foreground = white,
                                         HorizontalAlignment = HorizontalAlignment.Center,
-                                    }
+                                    },
                                 },
                                 new TextBlock
                                 {
@@ -1193,8 +1240,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     Foreground = white,
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     Opacity = 0.7,
-                                }
-                            }
+                                },
+                            },
                         },
                         Opacity = 0.9,
                     };
@@ -1223,7 +1270,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else
                     {
                         // Fallback for missing image - show placeholder
-                        DebugLogger.LogError("ConfigureFilterTab", $"Item {item?.Name ?? "unknown"} has no image!");
+                        DebugLogger.LogError(
+                            "ConfigureFilterTab",
+                            $"Item {item?.Name ?? "unknown"} has no image!"
+                        );
                     }
 
                     // Soul face overlay for legendary jokers
@@ -1461,7 +1511,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null && _originalDragSource != null)
             {
-                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                var sourcePos = _originalDragSource.TranslatePoint(
+                    new Avalonia.Point(0, 0),
+                    topLevel
+                );
                 _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
             }
             else
@@ -1469,7 +1522,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("ConfigureFilterTab", $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children");
+            DebugLogger.Log(
+                "ConfigureFilterTab",
+                $"Started dragging OR operator with {vm.TrayOrOperator.Children.Count} children"
+            );
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1503,7 +1559,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null && _originalDragSource != null)
             {
-                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                var sourcePos = _originalDragSource.TranslatePoint(
+                    new Avalonia.Point(0, 0),
+                    topLevel
+                );
                 _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
             }
             else
@@ -1511,7 +1570,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragStartPosition = e.GetPosition(this);
             }
 
-            DebugLogger.Log("ConfigureFilterTab", $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children");
+            DebugLogger.Log(
+                "ConfigureFilterTab",
+                $"Started dragging AND operator with {vm.TrayAndOperator.Children.Count} children"
+            );
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
             ShowDropZoneOverlays();
@@ -1537,8 +1599,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Allow regular items OR operators being moved back from drop zones
             if (_draggedItem != null)
             {
-                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
-                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
+                bool canDrop =
+                    (_draggedItem is not FilterOperatorItem)
+                    || (
+                        _draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone)
+                    );
 
                 if (canDrop)
                 {
@@ -1631,8 +1696,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Allow regular items OR operators being moved back from drop zones
             if (_draggedItem != null)
             {
-                bool canDrop = (_draggedItem is not FilterOperatorItem) ||
-                               (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
+                bool canDrop =
+                    (_draggedItem is not FilterOperatorItem)
+                    || (
+                        _draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone)
+                    );
 
                 if (canDrop)
                 {
@@ -1711,9 +1779,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         #region Category Arrow Animation
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
-            if (e.PropertyName == nameof(ViewModels.FilterTabs.ConfigureFilterTabViewModel.SelectedMainCategory))
+            if (
+                e.PropertyName
+                == nameof(ViewModels.FilterTabs.ConfigureFilterTabViewModel.SelectedMainCategory)
+            )
             {
                 var vm = sender as ViewModels.FilterTabs.ConfigureFilterTabViewModel;
                 if (vm != null)
@@ -1726,24 +1800,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void UpdateArrowPosition(string category)
         {
             var arrow = this.FindControl<Avalonia.Controls.Shapes.Polygon>("CategoryArrow");
-            if (arrow == null) return;
+            if (arrow == null)
+                return;
 
             int index = GetCategoryIndex(category);
             double yPos = (index * 50) + 12;
             Canvas.SetTop(arrow, yPos);
         }
 
-        private int GetCategoryIndex(string category) => category switch
-        {
-            "Favorites" => 0,
-            "Joker" => 1,
-            "Consumable" => 2,
-            "SkipTag" => 3,
-            "Boss" => 4,
-            "Voucher" => 5,
-            "StandardCard" => 6,
-            _ => 0 // Default to Favorites
-        };
+        private int GetCategoryIndex(string category) =>
+            category switch
+            {
+                "Favorites" => 0,
+                "Joker" => 1,
+                "Consumable" => 2,
+                "SkipTag" => 3,
+                "Boss" => 4,
+                "Voucher" => 5,
+                "StandardCard" => 6,
+                _ => 0, // Default to Favorites
+            };
 
         #endregion
     }

@@ -214,12 +214,14 @@ namespace BalatroSeedOracle.Services
         /// <param name="audioSource">Audio source index (1=Drums, 2=Bass, 3=Chords, 4=Melody)</param>
         public void TriggerBeatDetected(float intensity, int audioSource)
         {
-            DebugLogger.Log("VisualizerEventManager", $"Beat detected: intensity={intensity:F2}, source={audioSource}");
-            BeatDetected?.Invoke(this, new BeatDetectedEventArgs
-            {
-                Intensity = intensity,
-                AudioSource = audioSource
-            });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Beat detected: intensity={intensity:F2}, source={audioSource}"
+            );
+            BeatDetected?.Invoke(
+                this,
+                new BeatDetectedEventArgs { Intensity = intensity, AudioSource = audioSource }
+            );
         }
 
         /// <summary>
@@ -229,12 +231,14 @@ namespace BalatroSeedOracle.Services
         /// <param name="frequencyHz">Frequency in Hz</param>
         public void TriggerDropDetected(float intensity, float frequencyHz)
         {
-            DebugLogger.Log("VisualizerEventManager", $"Drop detected: intensity={intensity:F2}, frequency={frequencyHz}Hz");
-            DropDetected?.Invoke(this, new DropDetectedEventArgs
-            {
-                Intensity = intensity,
-                FrequencyHz = frequencyHz
-            });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Drop detected: intensity={intensity:F2}, frequency={frequencyHz}Hz"
+            );
+            DropDetected?.Invoke(
+                this,
+                new DropDetectedEventArgs { Intensity = intensity, FrequencyHz = frequencyHz }
+            );
         }
 
         /// <summary>
@@ -246,20 +250,31 @@ namespace BalatroSeedOracle.Services
         /// <param name="effectName">Effect to trigger</param>
         /// <param name="effectIntensity">Effect intensity</param>
         /// <param name="durationMs">Effect duration in milliseconds</param>
-        public void TriggerFrequencyBreakpoint(string breakpointId, string breakpointName, float amplitude,
-            string effectName, float effectIntensity, int durationMs)
+        public void TriggerFrequencyBreakpoint(
+            string breakpointId,
+            string breakpointName,
+            float amplitude,
+            string effectName,
+            float effectIntensity,
+            int durationMs
+        )
         {
-            DebugLogger.Log("VisualizerEventManager",
-                $"Frequency breakpoint hit: {breakpointName} (amplitude={amplitude:F2}, effect={effectName})");
-            FrequencyBreakpointHit?.Invoke(this, new FrequencyBreakpointEventArgs
-            {
-                BreakpointId = breakpointId,
-                BreakpointName = breakpointName,
-                Amplitude = amplitude,
-                EffectName = effectName,
-                EffectIntensity = effectIntensity,
-                DurationMs = durationMs
-            });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Frequency breakpoint hit: {breakpointName} (amplitude={amplitude:F2}, effect={effectName})"
+            );
+            FrequencyBreakpointHit?.Invoke(
+                this,
+                new FrequencyBreakpointEventArgs
+                {
+                    BreakpointId = breakpointId,
+                    BreakpointName = breakpointName,
+                    Amplitude = amplitude,
+                    EffectName = effectName,
+                    EffectIntensity = effectIntensity,
+                    DurationMs = durationMs,
+                }
+            );
         }
 
         /// <summary>
@@ -268,10 +283,11 @@ namespace BalatroSeedOracle.Services
         /// <param name="breakpoint">The frequency breakpoint that was hit</param>
         public void TriggerFrequencyBreakpoint(Models.FrequencyBreakpoint breakpoint)
         {
-            if (breakpoint == null) return;
+            if (breakpoint == null)
+                return;
 
             TriggerFrequencyBreakpoint(
-                string.Empty,  // No ID in the new model
+                string.Empty, // No ID in the new model
                 breakpoint.Name,
                 breakpoint.Threshold,
                 breakpoint.EffectName,
@@ -288,11 +304,7 @@ namespace BalatroSeedOracle.Services
         public void TriggerSeedFound(string seed, long score)
         {
             DebugLogger.Log("VisualizerEventManager", $"Seed found: {seed} (score={score})");
-            SeedFound?.Invoke(this, new SeedFoundEventArgs
-            {
-                Seed = seed,
-                Score = score
-            });
+            SeedFound?.Invoke(this, new SeedFoundEventArgs { Seed = seed, Score = score });
         }
 
         /// <summary>
@@ -303,14 +315,19 @@ namespace BalatroSeedOracle.Services
         /// <param name="isPersonalRecord">Whether this is a personal record</param>
         public void TriggerHighScore(string seed, long score, bool isPersonalRecord = false)
         {
-            DebugLogger.Log("VisualizerEventManager",
-                $"High score: {seed} (score={score}, PR={isPersonalRecord})");
-            HighScore?.Invoke(this, new HighScoreEventArgs
-            {
-                Seed = seed,
-                Score = score,
-                IsPersonalRecord = isPersonalRecord
-            });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"High score: {seed} (score={score}, PR={isPersonalRecord})"
+            );
+            HighScore?.Invoke(
+                this,
+                new HighScoreEventArgs
+                {
+                    Seed = seed,
+                    Score = score,
+                    IsPersonalRecord = isPersonalRecord,
+                }
+            );
         }
 
         /// <summary>
@@ -321,14 +338,19 @@ namespace BalatroSeedOracle.Services
         /// <param name="duration">Search duration</param>
         public void TriggerSearchComplete(int totalSearched, int matchesFound, TimeSpan duration)
         {
-            DebugLogger.Log("VisualizerEventManager",
-                $"Search complete: {matchesFound}/{totalSearched} matches in {duration.TotalSeconds:F1}s");
-            SearchComplete?.Invoke(this, new SearchCompleteEventArgs
-            {
-                TotalSearched = totalSearched,
-                MatchesFound = matchesFound,
-                Duration = duration
-            });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Search complete: {matchesFound}/{totalSearched} matches in {duration.TotalSeconds:F1}s"
+            );
+            SearchComplete?.Invoke(
+                this,
+                new SearchCompleteEventArgs
+                {
+                    TotalSearched = totalSearched,
+                    MatchesFound = matchesFound,
+                    Duration = duration,
+                }
+            );
         }
 
         /// <summary>
@@ -338,16 +360,22 @@ namespace BalatroSeedOracle.Services
         /// <param name="intensity">Effect intensity</param>
         public void TriggerManualEffect(string effectName, float intensity)
         {
-            DebugLogger.Log("VisualizerEventManager", $"Manual effect test: {effectName} @ {intensity:F2}");
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Manual effect test: {effectName} @ {intensity:F2}"
+            );
 
             // Route to appropriate event using FrequencyBreakpointHit
-            FrequencyBreakpointHit?.Invoke(this, new FrequencyBreakpointEventArgs
-            {
-                BreakpointName = "Manual Test",
-                EffectName = effectName,
-                EffectIntensity = intensity,
-                DurationMs = 500
-            });
+            FrequencyBreakpointHit?.Invoke(
+                this,
+                new FrequencyBreakpointEventArgs
+                {
+                    BreakpointName = "Manual Test",
+                    EffectName = effectName,
+                    EffectIntensity = intensity,
+                    DurationMs = 500,
+                }
+            );
         }
 
         #endregion

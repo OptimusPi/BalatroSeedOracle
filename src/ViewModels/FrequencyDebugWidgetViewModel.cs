@@ -45,8 +45,11 @@ namespace BalatroSeedOracle.ViewModels
             "Metadata"
         );
 
-        private static readonly JsonSerializerOptions JsonOptions =
-            new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, };
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
 
         [ObservableProperty]
         private int _selectedTrackIndex = 2; // Default to Drums1
@@ -352,10 +355,7 @@ namespace BalatroSeedOracle.ViewModels
                         HighAvgMax = metadata.HighAvgMax;
                         HighPeakMax = metadata.HighPeakMax;
 
-                        DebugLogger.Log(
-                            "FrequencyDebugWidget",
-                            $"Loaded metadata for {trackName}"
-                        );
+                        DebugLogger.Log("FrequencyDebugWidget", $"Loaded metadata for {trackName}");
                     }
                 }
                 else
@@ -485,7 +485,7 @@ namespace BalatroSeedOracle.ViewModels
                     TrackName = trackName,
                     TrackId = trackName.ToLowerInvariant(),
                     FrequencyBand = frequencyBand,
-                    ThresholdValue = thresholdValue
+                    ThresholdValue = thresholdValue,
                 };
 
                 // Create trigger point directory if it doesn't exist
@@ -503,12 +503,17 @@ namespace BalatroSeedOracle.ViewModels
                 var json = JsonSerializer.Serialize(audioTrigger, JsonOptions);
                 File.WriteAllText(filePath, json);
 
-                DebugLogger.LogImportant("FrequencyDebugWidget",
-                    $"✅ Audio trigger saved: {triggerPointName} ({trackName} @ {frequencyBand} = {thresholdValue:F2})");
+                DebugLogger.LogImportant(
+                    "FrequencyDebugWidget",
+                    $"✅ Audio trigger saved: {triggerPointName} ({trackName} @ {frequencyBand} = {thresholdValue:F2})"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save audio trigger: {ex.Message}");
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to save audio trigger: {ex.Message}"
+                );
             }
         }
 

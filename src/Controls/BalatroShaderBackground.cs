@@ -276,7 +276,10 @@ namespace BalatroSeedOracle.Controls
                 if (_shaderBuilder != null)
                     return;
 
-                var effect = SKRuntimeEffect.CreateShader(ShaderConstants.BALATRO_SHADER, out var error);
+                var effect = SKRuntimeEffect.CreateShader(
+                    ShaderConstants.BALATRO_SHADER,
+                    out var error
+                );
                 if (effect != null)
                 {
                     _shaderBuilder = new SKRuntimeShaderBuilder(effect);

@@ -79,7 +79,7 @@ namespace BalatroSeedOracle.ViewModels
                 ("Chords1", "chords1"),
                 ("Chords2", "chords2"),
                 ("Melody1", "melody1"),
-                ("Melody2", "melody2")
+                ("Melody2", "melody2"),
             };
 
             foreach (var (name, id) in trackNames)
@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.ViewModels
                     Volume = 1.0f,
                     Pan = 0f,
                     Muted = false,
-                    Solo = false
+                    Solo = false,
                 };
 
                 // Wire up property changes to update audio manager
@@ -150,7 +150,10 @@ namespace BalatroSeedOracle.ViewModels
             // _audioManager.SetTrackVolume(track.TrackId, effectiveVolume);
             // _audioManager.SetTrackPan(track.TrackId, track.Pan);
 
-            DebugLogger.Log("AudioMixer", $"{track.TrackName}: Vol={effectiveVolume:F2}, Pan={track.Pan:F2}");
+            DebugLogger.Log(
+                "AudioMixer",
+                $"{track.TrackName}: Vol={effectiveVolume:F2}, Pan={track.Pan:F2}"
+            );
         }
 
         private void ApplyAllTracksToAudioManager()
@@ -175,7 +178,9 @@ namespace BalatroSeedOracle.ViewModels
                     presets.AddRange(files.Select(f => Path.GetFileNameWithoutExtension(f)));
                 }
 
-                AvailablePresets = new ObservableCollection<string>(presets.Distinct().OrderBy(p => p));
+                AvailablePresets = new ObservableCollection<string>(
+                    presets.Distinct().OrderBy(p => p)
+                );
             }
             catch (Exception ex)
             {
@@ -194,7 +199,7 @@ namespace BalatroSeedOracle.ViewModels
                 var preset = new MusicMixPreset
                 {
                     Name = presetName,
-                    Tracks = new Dictionary<string, TrackMixSettings>()
+                    Tracks = new Dictionary<string, TrackMixSettings>(),
                 };
 
                 foreach (var track in Tracks)
@@ -206,7 +211,7 @@ namespace BalatroSeedOracle.ViewModels
                         Volume = track.Volume,
                         Pan = track.Pan,
                         Muted = track.Muted,
-                        Solo = track.Solo
+                        Solo = track.Solo,
                     };
                 }
 
@@ -237,7 +242,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!File.Exists(filePath))
                 {
-                    DebugLogger.Log("AudioMixer", $"Preset '{presetName}' not found, using defaults");
+                    DebugLogger.Log(
+                        "AudioMixer",
+                        $"Preset '{presetName}' not found, using defaults"
+                    );
                     return;
                 }
 

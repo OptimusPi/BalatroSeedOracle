@@ -28,9 +28,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Returns the current filter name from the parent ViewModel for display in the editor header
         /// </summary>
-        public string FilterFileName => !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
-            ? $"📄 {_parentViewModel.FilterName}.json"
-            : "📄 filter.json";
+        public string FilterFileName =>
+            !string.IsNullOrWhiteSpace(_parentViewModel?.FilterName)
+                ? $"📄 {_parentViewModel.FilterName}.json"
+                : "📄 filter.json";
 
         public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
         {

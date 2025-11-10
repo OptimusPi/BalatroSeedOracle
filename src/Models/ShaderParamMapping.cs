@@ -60,6 +60,6 @@ namespace BalatroSeedOracle.Models
         /// Example: Each trigger hit adds velocity, which decays over time
         /// Creates bouncy, physics-based motion
         /// </summary>
-        AddInertia
+        AddInertia,
     }
 }

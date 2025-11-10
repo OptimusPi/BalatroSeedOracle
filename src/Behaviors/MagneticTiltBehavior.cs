@@ -118,14 +118,17 @@ namespace BalatroSeedOracle.Behaviors
 
                 // Schedule scale back to original after one frame (16ms)
                 // Using DispatcherPriority.Render ensures it happens on next render
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (scaleTransform != null)
+                Dispatcher.UIThread.Post(
+                    () =>
                     {
-                        scaleTransform.ScaleX = originalScaleX;
-                        scaleTransform.ScaleY = originalScaleY;
-                    }
-                }, DispatcherPriority.Render);
+                        if (scaleTransform != null)
+                        {
+                            scaleTransform.ScaleX = originalScaleX;
+                            scaleTransform.ScaleY = originalScaleY;
+                        }
+                    },
+                    DispatcherPriority.Render
+                );
             }
         }
     }

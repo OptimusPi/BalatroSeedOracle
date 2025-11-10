@@ -90,7 +90,11 @@ namespace BalatroSeedOracle.Behaviors
             if (AssociatedObject.RenderTransform == null)
             {
                 AssociatedObject.RenderTransform = new ScaleTransform();
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
             }
 
             // Watch for FlipTrigger changes
@@ -113,7 +117,10 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject == null || _isAnimating)
             {
-                DebugLogger.Log("CardFlip", $"Skipping flip - AssociatedObject={AssociatedObject != null}, _isAnimating={_isAnimating}");
+                DebugLogger.Log(
+                    "CardFlip",
+                    $"Skipping flip - AssociatedObject={AssociatedObject != null}, _isAnimating={_isAnimating}"
+                );
                 return;
             }
 
@@ -146,7 +153,10 @@ namespace BalatroSeedOracle.Behaviors
                 if (deckBackSprite == null || originalSource == null)
                 {
                     // Fallback: skip animation if sprites not available
-                    DebugLogger.LogError("CardFlip", $"Skipping animation - deckBack={deckBackSprite != null}, original={originalSource != null}");
+                    DebugLogger.LogError(
+                        "CardFlip",
+                        $"Skipping animation - deckBack={deckBackSprite != null}, original={originalSource != null}"
+                    );
                     _isAnimating = false;
                     return;
                 }
@@ -193,20 +203,14 @@ namespace BalatroSeedOracle.Behaviors
                         new KeyFrame
                         {
                             Cue = new Cue(0.0),
-                            Setters =
-                            {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0)
-                            }
+                            Setters = { new Setter(ScaleTransform.ScaleXProperty, 1.0) },
                         },
                         new KeyFrame
                         {
                             Cue = new Cue(1.0),
-                            Setters =
-                            {
-                                new Setter(ScaleTransform.ScaleXProperty, 0.0)
-                            }
-                        }
-                    }
+                            Setters = { new Setter(ScaleTransform.ScaleXProperty, 0.0) },
+                        },
+                    },
                 };
 
                 // Phase 2: Flip from edge to back (ScaleX: 0 -> 1)
@@ -219,20 +223,14 @@ namespace BalatroSeedOracle.Behaviors
                         new KeyFrame
                         {
                             Cue = new Cue(0.0),
-                            Setters =
-                            {
-                                new Setter(ScaleTransform.ScaleXProperty, 0.0)
-                            }
+                            Setters = { new Setter(ScaleTransform.ScaleXProperty, 0.0) },
                         },
                         new KeyFrame
                         {
                             Cue = new Cue(1.0),
-                            Setters =
-                            {
-                                new Setter(ScaleTransform.ScaleXProperty, 1.0)
-                            }
-                        }
-                    }
+                            Setters = { new Setter(ScaleTransform.ScaleXProperty, 1.0) },
+                        },
+                    },
                 };
 
                 // Execute Phase 1: Flip to edge while showing original sprite
@@ -299,7 +297,10 @@ namespace BalatroSeedOracle.Behaviors
             try
             {
                 // Run the animation directly - cast to Avalonia.Animation.Animatable if needed
-                var animationTask = animation.RunAsync((Avalonia.Animation.Animatable)transform, cancellationToken);
+                var animationTask = animation.RunAsync(
+                    (Avalonia.Animation.Animatable)transform,
+                    cancellationToken
+                );
                 await animationTask;
             }
             catch (Exception ex)

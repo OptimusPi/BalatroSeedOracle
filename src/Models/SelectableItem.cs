@@ -75,7 +75,10 @@ namespace BalatroSeedOracle.Models
                 var result = _itemImage;
                 if (result == null)
                 {
-                    Helpers.DebugLogger.Log("ItemImage", $"GET for '{_name}' (Type={_type}): RETURNING NULL!");
+                    Helpers.DebugLogger.Log(
+                        "ItemImage",
+                        $"GET for '{_name}' (Type={_type}): RETURNING NULL!"
+                    );
                 }
                 return result;
             }
@@ -84,7 +87,10 @@ namespace BalatroSeedOracle.Models
                 if (_itemImage != value)
                 {
                     _itemImage = value;
-                    Helpers.DebugLogger.Log("ItemImage", $"SET for '{_name}' (Type={_type}): {(value != null ? "NOT NULL" : "NULL")}");
+                    Helpers.DebugLogger.Log(
+                        "ItemImage",
+                        $"SET for '{_name}' (Type={_type}): {(value != null ? "NOT NULL" : "NULL")}"
+                    );
                     OnPropertyChanged();
                 }
             }
@@ -108,13 +114,19 @@ namespace BalatroSeedOracle.Models
             {
                 if (string.IsNullOrEmpty(Edition) || Edition == "None")
                 {
-                    Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition is null/empty/None");
+                    Helpers.DebugLogger.Log(
+                        "EditionImage",
+                        $"Item '{_name}': Edition is null/empty/None"
+                    );
                     return null;
                 }
 
                 // Get the edition overlay sprite (foil/holo/poly/negative)
                 var img = Services.SpriteService.Instance.GetEditionImage(Edition);
-                Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition='{Edition}', Image={img != null}");
+                Helpers.DebugLogger.Log(
+                    "EditionImage",
+                    $"Item '{_name}': Edition='{Edition}', Image={img != null}"
+                );
                 return img;
             }
         }

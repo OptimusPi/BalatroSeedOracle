@@ -54,7 +54,10 @@ namespace BalatroSeedOracle.Services
             }
 
             _triggers[trigger.Name] = trigger;
-            DebugLogger.Log("TriggerService", $"Registered trigger: {trigger.Name} (Type: {trigger.TriggerType})");
+            DebugLogger.Log(
+                "TriggerService",
+                $"Registered trigger: {trigger.Name} (Type: {trigger.TriggerType})"
+            );
         }
 
         /// <summary>
@@ -101,7 +104,10 @@ namespace BalatroSeedOracle.Services
             {
                 if (!Directory.Exists(_audioTriggersPath))
                 {
-                    DebugLogger.Log("TriggerService", "Audio triggers directory does not exist, creating it");
+                    DebugLogger.Log(
+                        "TriggerService",
+                        "Audio triggers directory does not exist, creating it"
+                    );
                     Directory.CreateDirectory(_audioTriggersPath);
                     return;
                 }
@@ -114,7 +120,10 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         var json = File.ReadAllText(file);
-                        var triggerPoint = JsonSerializer.Deserialize<AudioTriggerPoint>(json, JsonOptions);
+                        var triggerPoint = JsonSerializer.Deserialize<AudioTriggerPoint>(
+                            json,
+                            JsonOptions
+                        );
 
                         if (triggerPoint != null && !string.IsNullOrEmpty(triggerPoint.Name))
                         {
@@ -124,15 +133,24 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("TriggerService", $"Failed to load trigger from {Path.GetFileName(file)}: {ex.Message}");
+                        DebugLogger.LogError(
+                            "TriggerService",
+                            $"Failed to load trigger from {Path.GetFileName(file)}: {ex.Message}"
+                        );
                     }
                 }
 
-                DebugLogger.Log("TriggerService", $"Loaded {loadedCount} audio trigger points from {jsonFiles.Length} files");
+                DebugLogger.Log(
+                    "TriggerService",
+                    $"Loaded {loadedCount} audio trigger points from {jsonFiles.Length} files"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to load audio trigger points: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to load audio trigger points: {ex.Message}"
+                );
             }
         }
 
@@ -152,11 +170,17 @@ namespace BalatroSeedOracle.Services
                 // Register the trigger
                 RegisterTrigger(trigger);
 
-                DebugLogger.LogImportant("TriggerService", $"Saved audio trigger: {trigger.Name} to {fileName}");
+                DebugLogger.LogImportant(
+                    "TriggerService",
+                    $"Saved audio trigger: {trigger.Name} to {fileName}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to save trigger {trigger.Name}: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to save trigger {trigger.Name}: {ex.Message}"
+                );
             }
         }
 
@@ -179,7 +203,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to delete trigger {triggerName}: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to delete trigger {triggerName}: {ex.Message}"
+                );
             }
         }
 
@@ -187,7 +214,9 @@ namespace BalatroSeedOracle.Services
         /// Update all AudioTriggerPoint states from audio manager
         /// Should be called each frame
         /// </summary>
-        public void UpdateAudioTriggers(Dictionary<string, (double Low, double Mid, double High)> bandValues)
+        public void UpdateAudioTriggers(
+            Dictionary<string, (double Low, double Mid, double High)> bandValues
+        )
         {
             foreach (var trigger in GetTriggersByType("Audio").OfType<AudioTriggerPoint>())
             {
@@ -199,7 +228,7 @@ namespace BalatroSeedOracle.Services
                         "Low" => (float)bands.Low,
                         "Mid" => (float)bands.Mid,
                         "High" => (float)bands.High,
-                        _ => 0f
+                        _ => 0f,
                     };
 
                     trigger.UpdateState(currentValue);

@@ -315,7 +315,7 @@ namespace BalatroSeedOracle.Converters
             {
                 string str => str,
                 ItemConfig config => config.ItemName,
-                _ => null
+                _ => null,
             };
 
             if (string.IsNullOrEmpty(itemName))
@@ -364,7 +364,7 @@ namespace BalatroSeedOracle.Converters
             {
                 string str => str,
                 ItemConfig config => config.ItemName,
-                _ => null
+                _ => null,
             };
 
             if (string.IsNullOrEmpty(itemName))
@@ -581,12 +581,20 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("EditionSpriteConverter", $"Failed to get edition sprite for '{edition}': {ex.Message}");
+                DebugLogger.LogError(
+                    "EditionSpriteConverter",
+                    $"Failed to get edition sprite for '{edition}': {ex.Message}"
+                );
                 return null;
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -618,12 +626,20 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("StickerSpriteConverter", $"Failed to get sticker sprite for '{sticker}': {ex.Message}");
+                DebugLogger.LogError(
+                    "StickerSpriteConverter",
+                    $"Failed to get sticker sprite for '{sticker}': {ex.Message}"
+                );
                 return null;
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -644,7 +660,10 @@ namespace BalatroSeedOracle.Converters
         )
         {
             var seal = parameter as string ?? value as string;
-            if (string.IsNullOrEmpty(seal) || seal.Equals("None", StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrEmpty(seal)
+                || seal.Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
                 return null;
 
             try
@@ -654,12 +673,20 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SealSpriteConverter", $"Failed to get seal sprite for '{seal}': {ex.Message}");
+                DebugLogger.LogError(
+                    "SealSpriteConverter",
+                    $"Failed to get seal sprite for '{seal}': {ex.Message}"
+                );
                 return null;
             }
         }
 
-        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }

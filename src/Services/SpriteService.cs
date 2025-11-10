@@ -71,7 +71,9 @@ namespace BalatroSeedOracle.Services
             LoadAssets();
         }
 
-        public async Task PreloadAllSpritesAsync(IProgress<(string category, int current, int total)>? progress = null)
+        public async Task PreloadAllSpritesAsync(
+            IProgress<(string category, int current, int total)>? progress = null
+        )
         {
             if (_spritesPreloaded)
             {
@@ -105,17 +107,24 @@ namespace BalatroSeedOracle.Services
 
                 _spritesPreloaded = true;
                 var elapsed = DateTime.Now - startTime;
-                DebugLogger.LogImportant("SpriteService", $"Sprite pre-load complete in {elapsed.TotalSeconds:F2} seconds! Loaded {_preloadedSprites.Count} sprites.");
+                DebugLogger.LogImportant(
+                    "SpriteService",
+                    $"Sprite pre-load complete in {elapsed.TotalSeconds:F2} seconds! Loaded {_preloadedSprites.Count} sprites."
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error during sprite pre-load: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error during sprite pre-load: {ex.Message}"
+                );
             }
         }
 
         private void PreloadJokers(IProgress<(string category, int current, int total)>? progress)
         {
-            if (jokerPositions == null || jokerSheet == null) return;
+            if (jokerPositions == null || jokerSheet == null)
+                return;
 
             var jokers = jokerPositions.Keys.ToList();
             for (int i = 0; i < jokers.Count; i++)
@@ -135,14 +144,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload joker {jokers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload joker {jokers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadTags(IProgress<(string category, int current, int total)>? progress)
         {
-            if (tagPositions == null || tagSheet == null) return;
+            if (tagPositions == null || tagSheet == null)
+                return;
 
             var tags = tagPositions.Keys.ToList();
             for (int i = 0; i < tags.Count; i++)
@@ -162,14 +175,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload tag {tags[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload tag {tags[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadTarots(IProgress<(string category, int current, int total)>? progress)
         {
-            if (tarotPositions == null || tarotSheet == null) return;
+            if (tarotPositions == null || tarotSheet == null)
+                return;
 
             var tarots = tarotPositions.Keys.ToList();
             for (int i = 0; i < tarots.Count; i++)
@@ -189,14 +206,20 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload tarot {tarots[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload tarot {tarots[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
-        private void PreloadSpectrals(IProgress<(string category, int current, int total)>? progress)
+        private void PreloadSpectrals(
+            IProgress<(string category, int current, int total)>? progress
+        )
         {
-            if (spectralPositions == null || spectralSheet == null) return;
+            if (spectralPositions == null || spectralSheet == null)
+                return;
 
             var spectrals = spectralPositions.Keys.ToList();
             for (int i = 0; i < spectrals.Count; i++)
@@ -216,14 +239,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload spectral {spectrals[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload spectral {spectrals[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadPlanets(IProgress<(string category, int current, int total)>? progress)
         {
-            if (planetPositions == null || tarotSheet == null) return;
+            if (planetPositions == null || tarotSheet == null)
+                return;
 
             var planets = planetPositions.Keys.ToList();
             for (int i = 0; i < planets.Count; i++)
@@ -243,14 +270,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload planet {planets[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload planet {planets[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadVouchers(IProgress<(string category, int current, int total)>? progress)
         {
-            if (voucherPositions == null || voucherSheet == null) return;
+            if (voucherPositions == null || voucherSheet == null)
+                return;
 
             var vouchers = voucherPositions.Keys.ToList();
             for (int i = 0; i < vouchers.Count; i++)
@@ -270,14 +301,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload voucher {vouchers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload voucher {vouchers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadDecks(IProgress<(string category, int current, int total)>? progress)
         {
-            if (deckPositions == null || deckSheet == null) return;
+            if (deckPositions == null || deckSheet == null)
+                return;
 
             var decks = deckPositions.Keys.ToList();
             for (int i = 0; i < decks.Count; i++)
@@ -297,14 +332,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload deck {decks[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload deck {decks[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadStakes(IProgress<(string category, int current, int total)>? progress)
         {
-            if (stakePositions == null || stakeSheet == null) return;
+            if (stakePositions == null || stakeSheet == null)
+                return;
 
             var stakes = stakePositions.Keys.ToList();
             for (int i = 0; i < stakes.Count; i++)
@@ -324,14 +363,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload stake {stakes[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload stake {stakes[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadBosses(IProgress<(string category, int current, int total)>? progress)
         {
-            if (bossPositions == null || bossSheet == null) return;
+            if (bossPositions == null || bossSheet == null)
+                return;
 
             var bosses = bossPositions.Keys.ToList();
             for (int i = 0; i < bosses.Count; i++)
@@ -351,14 +394,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload boss {bosses[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload boss {bosses[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadBlinds(IProgress<(string category, int current, int total)>? progress)
         {
-            if (blindPositions == null || bossSheet == null) return;
+            if (blindPositions == null || bossSheet == null)
+                return;
 
             var blinds = blindPositions.Keys.ToList();
             for (int i = 0; i < blinds.Count; i++)
@@ -378,14 +425,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload blind {blinds[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload blind {blinds[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadStickers(IProgress<(string category, int current, int total)>? progress)
         {
-            if (stickerPositions == null || stickersSheet == null) return;
+            if (stickerPositions == null || stickersSheet == null)
+                return;
 
             var stickers = stickerPositions.Keys.ToList();
             for (int i = 0; i < stickers.Count; i++)
@@ -405,14 +456,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload sticker {stickers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload sticker {stickers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadBoosters(IProgress<(string category, int current, int total)>? progress)
         {
-            if (boosterPositions == null || boosterSheet == null) return;
+            if (boosterPositions == null || boosterSheet == null)
+                return;
 
             var boosters = boosterPositions.Keys.ToList();
             for (int i = 0; i < boosters.Count; i++)
@@ -432,7 +487,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload booster {boosters[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload booster {boosters[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -457,14 +515,20 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload edition {editions[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload edition {editions[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
-        private void PreloadEnhancements(IProgress<(string category, int current, int total)>? progress)
+        private void PreloadEnhancements(
+            IProgress<(string category, int current, int total)>? progress
+        )
         {
-            if (enhancementPositions == null || enhancersSheet == null) return;
+            if (enhancementPositions == null || enhancersSheet == null)
+                return;
 
             var enhancements = enhancementPositions.Keys.ToList();
             for (int i = 0; i < enhancements.Count; i++)
@@ -484,14 +548,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload enhancement {enhancements[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload enhancement {enhancements[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
         private void PreloadSeals(IProgress<(string category, int current, int total)>? progress)
         {
-            if (sealPositions == null || enhancersSheet == null) return;
+            if (sealPositions == null || enhancersSheet == null)
+                return;
 
             var seals = sealPositions.Keys.ToList();
             for (int i = 0; i < seals.Count; i++)
@@ -511,7 +579,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload seal {seals[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload seal {seals[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -1549,16 +1620,10 @@ namespace BalatroSeedOracle.Services
                 using (var ctx = renderTarget.CreateDrawingContext())
                 {
                     // Draw base image - accepts IImage (includes Bitmap and CroppedBitmap)
-                    ctx.DrawImage(
-                        baseImage,
-                        new Avalonia.Rect(0, 0, width, height)
-                    );
+                    ctx.DrawImage(baseImage, new Avalonia.Rect(0, 0, width, height));
 
                     // Draw overlay image on top - accepts IImage
-                    ctx.DrawImage(
-                        overlayImage,
-                        new Avalonia.Rect(0, 0, width, height)
-                    );
+                    ctx.DrawImage(overlayImage, new Avalonia.Rect(0, 0, width, height));
                 }
 
                 return renderTarget;
@@ -1594,7 +1659,9 @@ namespace BalatroSeedOracle.Services
             {
                 var enhancementImage = GetEnhancementImage(enhancement);
                 if (enhancementImage == null)
-                    throw new InvalidOperationException($"Enhancement '{enhancement}' image not found!");
+                    throw new InvalidOperationException(
+                        $"Enhancement '{enhancement}' image not found!"
+                    );
                 baseCard = enhancementImage;
             }
             else
@@ -1602,7 +1669,9 @@ namespace BalatroSeedOracle.Services
                 // Use blank card as base (StandardCard_Base in metadata)
                 var blankCard = GetSpecialImage("StandardCard_Base");
                 if (blankCard == null)
-                    throw new InvalidOperationException("StandardCard_Base image not found in special sprites!");
+                    throw new InvalidOperationException(
+                        "StandardCard_Base image not found in special sprites!"
+                    );
                 baseCard = blankCard;
             }
 
@@ -1613,7 +1682,9 @@ namespace BalatroSeedOracle.Services
             // Playing cards are 142x190 pixels
             var result = CompositeImages(baseCard, cardPattern, 142, 190);
             if (result == null)
-                throw new InvalidOperationException($"Failed to composite playing card {rank} of {suit}!");
+                throw new InvalidOperationException(
+                    $"Failed to composite playing card {rank} of {suit}!"
+                );
 
             return result;
         }
@@ -1695,7 +1766,10 @@ namespace BalatroSeedOracle.Services
             var baseJoker = GetItemImage("Joker", "Joker");
             if (baseJoker == null)
             {
-                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for sticker composite");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    "Failed to get base Joker image for sticker composite"
+                );
                 return null;
             }
 
@@ -1703,7 +1777,10 @@ namespace BalatroSeedOracle.Services
             var stickerOverlay = GetStickerImage(stickerType);
             if (stickerOverlay == null)
             {
-                DebugLogger.LogError("SpriteService", $"Failed to get sticker image for '{stickerType}'");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to get sticker image for '{stickerType}'"
+                );
                 return baseJoker; // Return just the joker if sticker not found
             }
 
@@ -1722,7 +1799,10 @@ namespace BalatroSeedOracle.Services
             var baseJoker = GetItemImage("Joker", "Joker");
             if (baseJoker == null)
             {
-                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for edition composite");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    "Failed to get base Joker image for edition composite"
+                );
                 return null;
             }
 
@@ -1736,7 +1816,10 @@ namespace BalatroSeedOracle.Services
             var editionOverlay = GetEditionImage(edition);
             if (editionOverlay == null)
             {
-                DebugLogger.LogError("SpriteService", $"Failed to get edition overlay for: {edition}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to get edition overlay for: {edition}"
+                );
                 return baseJoker; // Return base joker if no overlay available
             }
 
@@ -1783,10 +1866,14 @@ namespace BalatroSeedOracle.Services
         private IImage GetPlayingCardPattern(string suit, string rank)
         {
             if (playingCardPositions == null)
-                throw new InvalidOperationException("Playing card positions not loaded! LoadSprites() was not called or failed.");
+                throw new InvalidOperationException(
+                    "Playing card positions not loaded! LoadSprites() was not called or failed."
+                );
 
             if (playingCardsSheet == null)
-                throw new InvalidOperationException("Playing cards sprite sheet not loaded! 8BitDeck.png missing or failed to load.");
+                throw new InvalidOperationException(
+                    "Playing cards sprite sheet not loaded! 8BitDeck.png missing or failed to load."
+                );
 
             if (!playingCardPositions.TryGetValue(suit, out var suitCards))
             {
@@ -2036,6 +2123,7 @@ namespace BalatroSeedOracle.Services
         {
             [JsonPropertyName("x")]
             public int X { get; set; }
+
             [JsonPropertyName("y")]
             public int Y { get; set; }
         }
