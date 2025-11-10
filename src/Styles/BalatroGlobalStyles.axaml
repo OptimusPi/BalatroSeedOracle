@@ -242,6 +242,9 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
         <Setter Property="Background" Value="{StaticResource BlueHover}" />
     </Style>
+    <Style Selector="Button.btn-blue:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
+    </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-blue:disabled">
         <Setter Property="Background" Value="{StaticResource ModalGrey}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
@@ -254,11 +257,17 @@
     <Style Selector="Button:not(.SystemCaptionButton).btn-orange:pointerover">
         <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
+    <Style Selector="Button.btn-orange:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
     
     <Style Selector="Button:not(.SystemCaptionButton).btn-green">
         <Setter Property="Background" Value="{StaticResource Green}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
+        <Setter Property="Background" Value="{StaticResource GreenHover}" />
+    </Style>
+    <Style Selector="Button.btn-green:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{StaticResource GreenHover}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-green:disabled">
@@ -285,7 +294,10 @@
         <Setter Property="Background" Value="{StaticResource Purple}" />
     </Style>
     <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
-        <Setter Property="Background" Value="{StaticResource Purple}" />
+        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
+    </Style>
+    <Style Selector="Button.btn-purple:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
     </Style>
     
     <!-- Big back button style -->
@@ -516,12 +528,21 @@
         <Setter Property="FocusAdorner" Value="{x:Null}"/>
     </Style>
 
-    <!-- Disable keyboard navigation for main menu colored buttons -->
-    <Style Selector="Button.btn-blue, Button.btn-orange, Button.btn-green, Button.btn-red, Button.btn-purple">
-        <Setter Property="Focusable" Value="False"/>
-        <Setter Property="IsTabStop" Value="False"/>
+    <!-- Prevent text selection highlight in buttons -->
+    <Style Selector="Button:focus /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
     </Style>
 
+    <!-- Keep visual unchanged on focus (no background/border swap) -->
+    <Style Selector="Button:focus, Button:focus-visible">
+        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
+        <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
+    </Style>
+    
     <!-- ==== NOTIFICATION BADGE STYLES ==== -->
     
     <!-- Standard notification badge - always use with Canvas positioning -->

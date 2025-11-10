@@ -106,6 +106,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             {
                                 var cell = worksheet.Cell(1, i + 1);
                                 cell.Value = headers[i];
+                                cell.Style.Font.Bold = true;
                                 cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
                             }
 
