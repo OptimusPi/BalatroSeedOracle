@@ -54,26 +54,14 @@
                             Padding="{TemplateBinding Padding}"
                             Margin="0,0,0,4">
                         <ContentPresenter Name="PART_ContentPresenter"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          TextBlock.Foreground="{TemplateBinding Foreground}"
-                                          TextBlock.FontSize="{TemplateBinding FontSize}"
-                                          TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                          TextBlock.FontFamily="{TemplateBinding FontFamily}"/>
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
                 </Grid>
             </ControlTemplate>
         </Setter>
-    </Style>
-
-    <!-- Prevent text selection in all buttons -->
-    <Style Selector="Button TextBlock">
-        <Setter Property="IsHitTestVisible" Value="False" />
-    </Style>
-    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter TextBlock">
-        <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
 
     <!-- Enhanced red button hover shadow using exact color (precise resource) -->
