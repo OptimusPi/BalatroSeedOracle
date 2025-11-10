@@ -516,27 +516,12 @@
         <Setter Property="FocusAdorner" Value="{x:Null}"/>
     </Style>
 
-    <!-- Prevent text selection highlight in buttons -->
-    <Style Selector="Button:focus /template/ ContentPresenter">
-        <Setter Property="Background" Value="Transparent"/>
-    </Style>
-    <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
-    </Style>
-
     <!-- Disable keyboard navigation for main menu colored buttons -->
     <Style Selector="Button.btn-blue, Button.btn-orange, Button.btn-green, Button.btn-red, Button.btn-purple">
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="IsTabStop" Value="False"/>
     </Style>
 
-    <!-- Keep visual unchanged on focus (no background/border swap) -->
-    <Style Selector="Button:focus, Button:focus-visible">
-        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
-        <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
-    </Style>
-    
     <!-- ==== NOTIFICATION BADGE STYLES ==== -->
     
     <!-- Standard notification badge - always use with Canvas positioning -->
