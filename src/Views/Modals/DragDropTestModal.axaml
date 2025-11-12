@@ -5,7 +5,7 @@
              x:Class="BalatroSeedOracle.Views.Modals.DragDropTestModal"
              DragDrop.AllowDrop="True">
 
-    <Border Background="{StaticResource VeryDarkBackground}"
+    <Border Background="{StaticResource DarkGrey2}"
             BorderBrush="{StaticResource Purple}"
             BorderThickness="3"
             CornerRadius="12"

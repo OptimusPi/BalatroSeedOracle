@@ -28,7 +28,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="3"/>
         <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="BoxShadow" Value="0 6 16 0 #55000000"/>
+        <Setter Property="BoxShadow" Value="{StaticResource WidgetWindowShadow}"/>
     </Style>
 
     <!-- Widget header bar -->
@@ -48,7 +48,7 @@
     <!-- Light content area variant (for contrast) -->
     <Style Selector="Border.widget-content.light">
         <Setter Property="Background" Value="{StaticResource LightContentBackground}"/>
-        <Setter Property="BoxShadow" Value="0 2 8 0 #22000000"/>
+        <Setter Property="BoxShadow" Value="{StaticResource WidgetContentShadow}"/>
     </Style>
 
     <!-- =============================================

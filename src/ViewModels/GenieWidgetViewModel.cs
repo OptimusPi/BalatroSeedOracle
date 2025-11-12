@@ -47,8 +47,13 @@ namespace BalatroSeedOracle.ViewModels
         private string _generatedJson = string.Empty;
 
         public string GenerateButtonText => IsGenerating ? "✨ Generating..." : "🧞 Generate Filter";
-
+        
         public string GeneratingSpinner => IsGenerating ? "⏳" : "";
+
+        /// <summary>
+        /// Combined button content to prevent TextBlock selection issues
+        /// </summary>
+        public string ButtonContent => GenerateButtonText + " " + GeneratingSpinner;
 
         public GenieWidgetViewModel()
         {
@@ -136,6 +141,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsGenerating = false;
                 OnPropertyChanged(nameof(GenerateButtonText));
                 OnPropertyChanged(nameof(GeneratingSpinner));
+                OnPropertyChanged(nameof(ButtonContent));
             }
         }
 

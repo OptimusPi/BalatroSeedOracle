@@ -10,10 +10,16 @@
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True">
 
+    <UserControl.Resources>
+        <!-- BoxShadows for selection/hover effects -->
+        <BoxShadows x:Key="WhiteBoxShadowNone">0 0 0 0 #FFFFFF</BoxShadows>
+        <BoxShadows x:Key="WhiteBoxShadowActive">0 0 0 3 #FFFFFF</BoxShadows>
+    </UserControl.Resources>
+
     <UserControl.Styles>
         <!-- Shared drop zone overlay style -->
         <Style Selector="Border.dropzone-overlay">
-            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
             <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="IsVisible" Value="False"/>
@@ -32,7 +38,7 @@
 
         <Style Selector="Border.dropzone-overlay TextBlock > Border.Effect">
             <Setter Property="Effect">
-                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
             </Setter>
         </Style>
     </UserControl.Styles>
@@ -121,7 +127,7 @@
                 <Border Grid.Row="4"
                         Name="FavoritesDropOverlay"
                         Background="{StaticResource SemiTransparentGold}"
-                        BorderBrush="#FFFFFF"
+                        BorderBrush="{StaticResource White}"
                         BorderThickness="3"
                         CornerRadius="8"
                         IsVisible="False"
@@ -138,14 +144,10 @@
                     <TextBlock Text="ADD TO FAVORITES"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="28"
-                              
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                TextAlignment="Center">
-                        <TextBlock.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
-                        </TextBlock.Effect>
                     </TextBlock>
                 </Border>
             </Grid>
@@ -425,7 +427,7 @@
                 <!-- Return Overlay - Shows when dragging from drop zones -->
                 <Border Name="ReturnOverlay"
                         Background="{StaticResource Orange}"
-                        BorderBrush="#FFFFFF"
+                        BorderBrush="{StaticResource White}"
                         BorderThickness="3"
                         CornerRadius="8"
                         IsVisible="False"
@@ -436,15 +438,15 @@
                             <Style.Animations>
                                 <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                     <KeyFrame Cue="0%">
-                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                         <Setter Property="Background" Value="{StaticResource Orange}"/>
                                     </KeyFrame>
                                     <KeyFrame Cue="50%">
-                                        <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
                                         <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
                                     </KeyFrame>
                                     <KeyFrame Cue="100%">
-                                        <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                         <Setter Property="Background" Value="{StaticResource Orange}"/>
                                     </KeyFrame>
                                 </Animation>
@@ -467,7 +469,7 @@
                                VerticalAlignment="Center"
                                TextAlignment="Center">
                         <TextBlock.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                         </TextBlock.Effect>
                     </TextBlock>
                 </Border>
@@ -598,7 +600,7 @@
                     <!-- Unified Tray Drop Overlay -->
                     <Border Name="UnifiedTrayDropOverlay"
                             Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
-                            BorderBrush="#FFFFFF"
+                            BorderBrush="{StaticResource White}"
                             BorderThickness="3"
                             CornerRadius="8"
                             IsVisible="False"
@@ -609,13 +611,13 @@
                                 <Style.Animations>
                                     <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                         <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                         </KeyFrame>
                                     </Animation>
                                 </Style.Animations>
@@ -630,7 +632,7 @@
                                    VerticalAlignment="Center"
                                    TextAlignment="Center">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
@@ -654,15 +656,15 @@
                                 <Style.Animations>
                                     <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                         <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Blue}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
                                             <Setter Property="Background" Value="{StaticResource BlueHover}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Blue}"/>
                                         </KeyFrame>
                                     </Animation>
@@ -678,7 +680,7 @@
                         </Border.Effect>
                         <TextBlock Text="DROP IN MUST HAVE">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
@@ -693,15 +695,15 @@
                                 <Style.Animations>
                                     <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                         <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Green}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
                                             <Setter Property="Background" Value="{StaticResource GreenHover}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Green}"/>
                                         </KeyFrame>
                                     </Animation>
@@ -717,7 +719,7 @@
                         </Border.Effect>
                         <TextBlock Text="DROP IN SHOULD HAVE">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
@@ -732,15 +734,15 @@
                                 <Style.Animations>
                                     <Animation Duration="0:0:0.8" IterationCount="Infinite">
                                         <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 3 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
                                             <Setter Property="Background" Value="{StaticResource RedHover}"/>
                                         </KeyFrame>
                                         <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="0 0 0 0 #FFFFFF"/>
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
                                             <Setter Property="Background" Value="{StaticResource Red}"/>
                                         </KeyFrame>
                                     </Animation>
@@ -756,7 +758,7 @@
                         </Border.Effect>
                         <TextBlock Text="DROP IN BANNED ITEMS">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
                         </TextBlock>
                     </Border>
@@ -1063,7 +1065,7 @@
         <!-- ItemConfigPopup Overlay - replaces Primitives.Popup -->
         <Grid Name="PopupOverlay"
               IsVisible="False"
-              Background="#80000000"
+              Background="{StaticResource SemiTransparentBlack}"
               ZIndex="1000"
               PointerPressed="OnOverlayBackgroundClick">
             <Border Background="{StaticResource ItemConfigMediumBg}"

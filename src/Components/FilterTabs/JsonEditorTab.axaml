@@ -9,7 +9,7 @@
             BorderThickness="0"
             CornerRadius="12"
             Padding="0"
-            BoxShadow="inset 0 2 4 #00000040">
+            BoxShadow="{StaticResource InsetInputShadow}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

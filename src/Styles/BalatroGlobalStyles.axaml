@@ -15,66 +15,129 @@
     
     <!-- ==== DEFAULT CONTROL STYLES (Applied automatically) ==== -->
     
-    <!-- ALL Buttons get Balatro styling by default (except window chrome buttons) -->
+    <!-- ==== BALATRO BUTTONS ==== -->
+    <!-- Base button style with flat 2D shadow template -->
     <Style Selector="Button:not(.SystemCaptionButton)">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-
         <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
-        <Setter Property="Background" Value="{StaticResource ModalGrey}" /> <!-- Default gray like in Balatro -->
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="Margin" Value="4" />
         <Setter Property="MinHeight" Value="40" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Focusable" Value="True" />
-        <Setter Property="IsTabStop" Value="True" />
-        <!-- Transitions removed - cause infinite loops during rapid clicking -->
         <Setter Property="Template">
-            <ControlTemplate TargetType="Button">
-                <Grid>
-                    <!-- Dark drop shadow - creates 3D effect -->
-                    <Border Name="DropShadow"
-                            Background="{StaticResource TransparentDark3}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Margin="2,2,0,0"/>
-                    <!-- Dark bottom shadow -->
-                    <Border Name="BottomShadow"
-                            Background="{StaticResource HoverShadow}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Margin="0,4,0,0"/>
-                    <!-- Main button face -->
-                    <Border Name="ButtonFace"
-                            Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="{TemplateBinding Padding}"
-                            Margin="0,0,0,4">
-                        <ContentPresenter Name="PART_ContentPresenter"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                    </Border>
-                </Grid>
-            </ControlTemplate>
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <!-- Drop shadow (flat 2D, no blur) -->
+                        <Border Name="DropShadow"
+                                Background="{StaticResource ButtonShadow}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Margin="0,4,0,0"/>
+                        <!-- Main button face -->
+                        <Border Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Margin="0,0,0,4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Content}"
+                                              Padding="{TemplateBinding Padding}">
+                                <ContentPresenter.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
+                                        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+                                        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
+                                    </Style>
+                                </ContentPresenter.Styles>
+                            </ContentPresenter>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- Enhanced red button hover shadow using exact color (precise resource) -->
-    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover /template/ Border#BottomShadow">
-        <Setter Property="Background" Value="{StaticResource HoverShadow}" />
+    <!-- Color classes - Normal state -->
+    <Style Selector="Button.btn-blue">
+        <Setter Property="Background" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="Button.btn-green">
+        <Setter Property="Background" Value="{StaticResource Green}" />
+    </Style>
+    <Style Selector="Button.btn-orange">
+        <Setter Property="Background" Value="{StaticResource Orange}" />
+    </Style>
+    <Style Selector="Button.btn-purple">
+        <Setter Property="Background" Value="{StaticResource Purple}" />
+    </Style>
+    <Style Selector="Button.btn-red">
+        <Setter Property="Background" Value="{StaticResource Red}" />
+    </Style>
+
+    <!-- Hover states - Use Dark variants (flat, no gradients) -->
+    <Style Selector="Button.btn-blue:pointerover">
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
+    </Style>
+    <Style Selector="Button.btn-green:pointerover">
+        <Setter Property="Background" Value="{StaticResource GreenHover}" />
+    </Style>
+    <Style Selector="Button.btn-orange:pointerover">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+    </Style>
+    <Style Selector="Button.btn-purple:pointerover">
+        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
+    </Style>
+    <Style Selector="Button.btn-red:pointerover">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
+    </Style>
+
+    <!-- Pressed states - Shift down to cover shadow -->
+    <Style Selector="Button.btn-blue:pressed">
+        <Setter Property="Background" Value="{StaticResource BlueHover}" />
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.btn-blue:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Button.btn-green:pressed">
+        <Setter Property="Background" Value="{StaticResource GreenHover}" />
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.btn-green:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Button.btn-orange:pressed">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.btn-orange:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Button.btn-purple:pressed">
+        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.btn-purple:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="Button.btn-red:pressed">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.btn-red:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
     </Style>
 
     <!-- Button disabled state -->
     <Style Selector="Button:not(.SystemCaptionButton):disabled">
         <Setter Property="Opacity" Value="0.6" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton):disabled /template/ Border#ButtonFace">
-        <Setter Property="Background" Value="{StaticResource ModalBorder}" />
     </Style>
 
     <Style Selector="TextBlock">
@@ -100,18 +163,84 @@
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
+        <Setter Property="SelectionForegroundBrush" Value="{StaticResource White}" />
         <Setter Property="CaretBrush" Value="{StaticResource White}" />
     </Style>
-    <Style Selector="TextBox:focus">
+    <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+        <Setter Property="Foreground" Value="{StaticResource LightTextGrey}" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
         <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+    </Style>
+    <Style Selector="TextBox:focus">
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        <Setter Property="Opacity" Value="1.0" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ DockPanel">
+        <Setter Property="(TextElement.Foreground)" Value="{StaticResource White}" />
     </Style>
     <Style Selector="TextBox:pointerover">
-        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
-    
+    <Style Selector="TextBox /template/ DataValidationErrors">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- Back button - Orange with drop shadow and pressed state -->
+    <Style Selector="Button.back-button">
+        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+        <Setter Property="FontSize" Value="28"/>
+        <Setter Property="Foreground" Value="{StaticResource PureBlack}"/>
+        <Setter Property="Background" Value="{StaticResource Orange}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Height" Value="42"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="8,4,8,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Name="DropShadow"
+                                Background="{StaticResource HoverShadow}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+                        <Border Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Margin="0,0,0,4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding Content}">
+                                <ContentPresenter.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
+                                        <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+                                    </Style>
+                                </ContentPresenter.Styles>
+                            </ContentPresenter>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="Button.back-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+    </Style>
+    <Style Selector="Button.back-button:pressed">
+        <Setter Property="Background" Value="{StaticResource Orange}"/>
+        <Setter Property="RenderTransform" Value="translateY(3px)" />
+    </Style>
+    <Style Selector="Button.back-button:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
     <!-- ALL CheckBoxes get dark theme -->
     <Style Selector="CheckBox">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
@@ -135,13 +264,34 @@
 
     <!-- Hover state -->
     <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
-        <Setter Property="BorderBrush" Value="{StaticResource RedHover}" />
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                    <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Checked + Hover state -->
     <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
-        <Setter Property="Background" Value="{StaticResource RedHover}" />
-        <Setter Property="BorderBrush" Value="{StaticResource RedHover}" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                    <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                    <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style Selector="NumericUpDown:focus">
@@ -234,71 +384,6 @@
         <Setter Property="Margin" Value="0,0,0,20" />
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
-    
-    <!-- Button color variants - these override the default gray -->
-    <Style Selector="Button:not(.SystemCaptionButton).btn-blue">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-blue:pointerover">
-        <Setter Property="Background" Value="{StaticResource BlueHover}" />
-    </Style>
-    <Style Selector="Button.btn-blue:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource BlueHover}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-blue:disabled">
-        <Setter Property="Background" Value="{StaticResource ModalGrey}" />
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-        <Setter Property="Opacity" Value="0.5" />
-    </Style>
-    
-    <Style Selector="Button:not(.SystemCaptionButton).btn-orange">
-        <Setter Property="Background" Value="{StaticResource Orange}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-orange:pointerover">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
-    </Style>
-    <Style Selector="Button.btn-orange:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
-    </Style>
-
-    <Style Selector="Button:not(.SystemCaptionButton).btn-green">
-        <Setter Property="Background" Value="{StaticResource Green}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-green:pointerover">
-        <Setter Property="Background" Value="{StaticResource GreenHover}" />
-    </Style>
-    <Style Selector="Button.btn-green:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource GreenHover}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-green:disabled">
-        <Setter Property="Background" Value="{StaticResource ModalGrey}" />
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-        <Setter Property="Opacity" Value="0.5" />
-    </Style>
-    
-    <Style Selector="Button:not(.SystemCaptionButton).btn-red">
-        <Setter Property="Background" Value="{StaticResource Red}" />
-        <Setter Property="FontSize" Value="18" /> <!-- Increased from default 16 -->
-        <Setter Property="Margin" Value="5" /> <!-- Increased from default 4 (1px more spacing) -->
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pointerover">
-        <Setter Property="Background" Value="{StaticResource RedHover}" />
-        <Setter Property="Opacity" Value="1.0" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-red:pressed">
-        <Setter Property="Background" Value="{StaticResource RedHover}" />
-        <Setter Property="Opacity" Value="1.0" />
-    </Style>
-    
-    <Style Selector="Button:not(.SystemCaptionButton).btn-purple">
-        <Setter Property="Background" Value="{StaticResource Purple}" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-purple:pointerover">
-        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
-    </Style>
-    <Style Selector="Button.btn-purple:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource PurpleHover}" />
-    </Style>
 
     <!-- Big back button style -->
     <Style Selector="Button.btn-back">
@@ -307,12 +392,6 @@
         <Setter Property="MinHeight" Value="50" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0,16,0,0" />
-    </Style>
-    <Style Selector="Button:not(.SystemCaptionButton).btn-back:pointerover">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
-    </Style>
-    <Style Selector="Button.btn-back:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
     </Style>
 
     <!-- Category navigation buttons - compact for narrow sidebar -->
@@ -328,13 +407,7 @@
         <Setter Property="MaxWidth" Value="160" />
         <Setter Property="Focusable" Value="False" />
     </Style>
-    <Style Selector="Button.nav-button:pointerover">
-        <Setter Property="Background" Value="{StaticResource RedHover}" />
-    </Style>
     <Style Selector="Button.nav-button.active">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
-    </Style>
-    <Style Selector="Button.nav-button.active:pointerover">
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
 
@@ -342,13 +415,7 @@
     <Style Selector="Button.nav-button.special">
         <Setter Property="Background" Value="{StaticResource Orange}" />
     </Style>
-    <Style Selector="Button.nav-button.special:pointerover">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}" />
-    </Style>
     <Style Selector="Button.nav-button.special.active">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
-    </Style>
-    <Style Selector="Button.nav-button.special.active:pointerover">
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
 
@@ -365,16 +432,7 @@
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
-    <Style Selector="Button.small-pill-button:pointerover">
-        <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}" />
-        <Setter Property="BorderBrush" Value="{StaticResource LightGrey}" />
-    </Style>
     <Style Selector="Button.small-pill-button.active">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-    </Style>
-    <Style Selector="Button.small-pill-button.active:pointerover">
         <Setter Property="Background" Value="{StaticResource Blue}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
@@ -418,13 +476,13 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#F5F5F0" Offset="0"/>
-                    <GradientStop Color="#EEEEE8" Offset="1"/>
+                    <GradientStop Color="{StaticResource ColorCardFaceTop}" Offset="0"/>
+                    <GradientStop Color="{StaticResource ColorCardFaceBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
         <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BoxShadow" Value="0 2 6 0 #30000000, 0 0 0 1 #20000000" />
+        <Setter Property="BoxShadow" Value="{StaticResource CardShadow}" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Transitions">
@@ -434,7 +492,7 @@
         </Setter>
     </Style>
     <Style Selector="Border.balatro-card-authentic:pointerover">
-        <Setter Property="BoxShadow" Value="0 4 10 0 #40000000, 0 0 0 1 #20000000" />
+        <Setter Property="BoxShadow" Value="{StaticResource CardShadowHover}" />
     </Style>
 
     <!-- Small Balatro card variant (for item palette) -->
@@ -442,13 +500,13 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#F5F5F0" Offset="0"/>
-                    <GradientStop Color="#EEEEE8" Offset="1"/>
+                    <GradientStop Color="{StaticResource ColorCardFaceTop}" Offset="0"/>
+                    <GradientStop Color="{StaticResource ColorCardFaceBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
         <Setter Property="CornerRadius" Value="5" />
-        <Setter Property="BoxShadow" Value="0 1 4 0 #25000000, 0 0 0 1 #20000000" />
+        <Setter Property="BoxShadow" Value="{StaticResource CardShadowSmall}" />
         <Setter Property="Padding" Value="3" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
@@ -529,20 +587,11 @@
     </Style>
 
     <!-- Prevent text selection highlight in buttons -->
-    <Style Selector="Button:focus /template/ ContentPresenter">
-        <Setter Property="Background" Value="Transparent"/>
-    </Style>
     <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
     </Style>
 
-    <!-- Keep visual unchanged on focus (no background/border swap) -->
-    <Style Selector="Button:focus, Button:focus-visible">
-        <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource Self}}"/>
-        <Setter Property="BorderBrush" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
-    </Style>
-    
     <!-- ==== NOTIFICATION BADGE STYLES ==== -->
     
     <!-- Standard notification badge - always use with Canvas positioning -->
@@ -551,7 +600,7 @@
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="MinWidth" Value="24"/>
         <Setter Property="Height" Value="24"/>
-        <Setter Property="BoxShadow" Value="0 2 8 0 #22222222"/>
+        <Setter Property="BoxShadow" Value="{StaticResource TextBoxShadow}"/>
         <Setter Property="BorderBrush" Value="{StaticResource White}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
@@ -593,30 +642,12 @@
              to get the 3D drop shadow and pressed translateY animation -->
     </Style>
 
-    <!-- Hover and Pressed states for INACTIVE tabs only -->
-    <Style Selector="Button.tab-button:not(.active):pointerover">
-        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-    </Style>
-
-    <Style Selector="Button.tab-button:not(.active):pressed">
-        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-    </Style>
-
     <!-- Active tab overrides: .active class prevents hover/pressed from applying -->
     <!-- Active tab base style: keep normal red, triangle shows selection -->
     <Style Selector="Button.tab-button.active">
-        <Setter Property="Background" Value="{StaticResource Red}"/>
+        <Setter Property="Background" Value="{StaticResource Red}" />
     </Style>
 
-    <!-- Explicitly ensure active tabs stay red on hover -->
-    <Style Selector="Button.tab-button.active:pointerover">
-        <Setter Property="Background" Value="{StaticResource Red}"/>
-    </Style>
-
-    <!-- Explicitly ensure active tabs stay red when pressed -->
-    <Style Selector="Button.tab-button.active:pressed">
-        <Setter Property="Background" Value="{StaticResource Red}"/>
-    </Style>
 
     <!-- Icon button style for edition/sticker/seal toolbar buttons -->
     <Style Selector="Button.icon-button">
@@ -631,19 +662,9 @@
         <Setter Property="Focusable" Value="False"/>
     </Style>
 
-    <Style Selector="Button.icon-button:pointerover">
-        <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
-        <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
-    </Style>
-
     <Style Selector="Button.icon-button.active">
         <Setter Property="Background" Value="{StaticResource Blue}"/>
         <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
-    </Style>
-
-    <Style Selector="Button.icon-button.active:pointerover">
-        <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BlueHover}"/>
     </Style>
 
 </Styles>

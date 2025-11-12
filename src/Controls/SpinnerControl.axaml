@@ -44,13 +44,7 @@
             </Setter>
         </Style>
         
-        <Style Selector="Button.arrow-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-
-        <Style Selector="Button.arrow-button:pressed">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
+ 
 
         <!-- Hide shadow when pressed for pressed effect -->
         <Style Selector="Button.arrow-button:pressed /template/ Border#PART_Shadow">
@@ -70,7 +64,6 @@
             <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
 
-        <!-- Removed hover style - value badge is not clickable -->
 
         
         <!-- Value badge drop shadow -->

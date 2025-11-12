@@ -32,7 +32,7 @@
         "TeamId": "",
         "BundleCategory": "CardGames",
         "Permissions": {
-            "Network": "DayLatro website is updated by the DayLatro widget in Balatro seed Oracle."
+            "Network": "DayLatro website is updated by the DayLatro widget in Balatro Seed Oracle."
         },
         "AppIcon": "BalatroSeedOracle.ico",
         "DmgBackground": "BalatroSeedOracle.tif"

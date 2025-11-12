@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
@@ -25,7 +25,10 @@
                 <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
             </i:Interaction.Behaviors>
 
-            <Border Classes="widget-container widget-header"
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Width="64" Height="64"
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"

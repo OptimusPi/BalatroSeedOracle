@@ -57,7 +57,6 @@
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="BorderBrush" Value="{StaticResource DarkBorderGrey}"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
-            <Setter Property="BoxShadow" Value="0 2 0 0 #20000000, inset 0 -1 0 0 #30FFFFFF, inset 0 1 2 0 #40000000"/>
         </Style>
 
         <Style Selector="Border.strip-label">

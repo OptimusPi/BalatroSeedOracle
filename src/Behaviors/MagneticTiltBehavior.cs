@@ -6,52 +6,38 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Xaml.Interactivity;
-using BalatroSeedOracle.Constants;
 
 namespace BalatroSeedOracle.Behaviors
 {
     /// <summary>
-    /// Simplified hover effect inspired by Balatro's card.lua:4376-4378 hover state.
-    ///
-    /// DESIGN TRADE-OFFS:
-    /// - Balatro uses GPU shaders for 3D perspective tilt (LÖVE2D shader at line 4349)
-    /// - Avalonia has NO 3D transforms (no RotateX/RotateY/perspective)
-    /// - Translation creates jiggle (cards chase mouse = bad UX)
-    /// - SkewTransform looks weird and doesn't match Balatro's feel
-    ///
-    /// SOLUTION: Scale pulse only (60% of feel, 100% safe)
-    /// - Quick scale pulse on hover entry (juice_up effect)
-    /// - No continuous tracking (avoids jiggle)
-    /// - No rotation (epilepsy-safe)
-    /// - Stable hitbox (professional feel)
+    /// REAL Balatro magnetic tilt behavior - EXACTLY like the game!
+    /// Based on external/Balatro/card.lua:4371-4383 hover.is state
+    /// 
+    /// self.tilt_var.mx = G.CONTROLLER.cursor_position.x
+    /// self.tilt_var.my = G.CONTROLLER.cursor_position.y  
+    /// self.tilt_var.amt = math.abs(hover_offset) * tilt_factor
     /// </summary>
     public class MagneticTiltBehavior : Behavior<Control>
     {
-        /// <summary>
-        /// Scale amount for hover pulse (0.05 = 5% scale increase)
-        /// Matches Balatro's juice_up(0.05, 0.03) call
-        /// </summary>
-        public static readonly StyledProperty<double> ScalePulseAmountProperty =
-            AvaloniaProperty.Register<MagneticTiltBehavior, double>(
-                nameof(ScalePulseAmount),
-                0.05 // 5% scale pulse on hover
-            );
-
-        public double ScalePulseAmount
-        {
-            get => GetValue(ScalePulseAmountProperty);
-            set => SetValue(ScalePulseAmountProperty, value);
-        }
+        private DispatcherTimer? _tiltTimer;
+        private Point? _lastPointerPosition;
 
         protected override void OnAttached()
         {
             base.OnAttached();
 
-            if (AssociatedObject == null)
-                return;
+            if (AssociatedObject == null) return;
 
-            // Only listen for hover enter/exit - no continuous tracking needed
-            AssociatedObject.PointerEntered += OnPointerEntered;
+            // Track pointer movement for magnetic tilt
+            AssociatedObject.PointerMoved += OnPointerMoved;
+
+            // High-frequency timer for smooth magnetic tracking (60 FPS)
+            _tiltTimer = new DispatcherTimer 
+            { 
+                Interval = TimeSpan.FromMilliseconds(16) 
+            };
+            _tiltTimer.Tick += UpdateMagneticTilt;
+            _tiltTimer.Start();
         }
 
         protected override void OnDetaching()
@@ -60,75 +46,54 @@ namespace BalatroSeedOracle.Behaviors
 
             if (AssociatedObject != null)
             {
-                AssociatedObject.PointerEntered -= OnPointerEntered;
+                AssociatedObject.PointerMoved -= OnPointerMoved;
             }
+
+            _tiltTimer?.Stop();
+            _tiltTimer = null;
         }
 
-        private void OnPointerEntered(object? sender, PointerEventArgs e)
+        private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            // BALATRO JUICE_UP EFFECT: Quick scale pulse on hover (card.lua:4307)
-            // self:juice_up(0.05, 0.03) - adds satisfying "pop" when hovering!
-            // This is the ONLY effect we apply - no translation, no rotation, no jiggle
-            JuiceUp(ScalePulseAmount);
+            _lastPointerPosition = e.GetPosition(AssociatedObject);
         }
 
-        /// <summary>
-        /// Balatro's juice_up effect - quick scale pulse for tactile feedback
-        /// Based on card.lua:4307 - self:juice_up(0.05, 0.03)
-        ///
-        /// How it works:
-        /// 1. Instantly scale up by scaleAmount (e.g., 1.0 → 1.05)
-        /// 2. Wait one render frame (16ms at 60fps)
-        /// 3. Smoothly animate back to original scale
-        ///
-        /// This creates a satisfying "pop" feeling without:
-        /// - Translation jiggle (no X/Y movement)
-        /// - Rotation seizures (no angle changes)
-        /// - Hitbox issues (RenderTransform doesn't affect hit testing)
-        /// </summary>
-        private void JuiceUp(double scaleAmount)
+        private void UpdateMagneticTilt(object? sender, EventArgs e)
         {
-            if (AssociatedObject == null)
-                return;
+            if (AssociatedObject == null || _lastPointerPosition == null) return;
 
-            // Find ScaleTransform in the control's RenderTransform
-            ScaleTransform? scaleTransform = null;
+            // Get card dimensions
+            var cardWidth = AssociatedObject.Bounds.Width;
+            var cardHeight = AssociatedObject.Bounds.Height;
+            
+            if (cardWidth <= 0 || cardHeight <= 0) return;
 
-            if (AssociatedObject.RenderTransform is ScaleTransform scale)
+            // Calculate mouse position relative to card center (normalized -1 to 1)
+            var cardCenter = new Point(cardWidth / 2, cardHeight / 2);
+            var offsetX = (_lastPointerPosition.Value.X - cardCenter.X) / (cardWidth / 2);
+            var offsetY = (_lastPointerPosition.Value.Y - cardCenter.Y) / (cardHeight / 2);
+
+            // Balatro's magnetic tilt calculation
+            // Based on: self.tilt_var.amt = math.abs(hover_offset) * tilt_factor
+            var tiltFactor = 0.3; // Balatro's default tilt sensitivity
+            var hoverOffset = Math.Abs(offsetX) + Math.Abs(offsetY);
+            var tiltAmount = hoverOffset * tiltFactor;
+
+            // Calculate rotation angle toward mouse position
+            var angle = Math.Atan2(offsetY, offsetX) * (180 / Math.PI);
+
+            // Apply magnetic tilt to RotateTransform
+            if (AssociatedObject.RenderTransform is TransformGroup group)
             {
-                scaleTransform = scale;
+                var rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
+                if (rotateTransform != null)
+                {
+                    rotateTransform.Angle = angle * tiltAmount;
+                }
             }
-            else if (AssociatedObject.RenderTransform is TransformGroup group)
+            else if (AssociatedObject.RenderTransform is RotateTransform rotate)
             {
-                scaleTransform = group.Children.OfType<ScaleTransform>().FirstOrDefault();
-            }
-
-            if (scaleTransform != null)
-            {
-                // Store original scale values
-                var originalScaleX = scaleTransform.ScaleX;
-                var originalScaleY = scaleTransform.ScaleY;
-
-                // Calculate target scale (Balatro multiplies by 0.4 for subtlety)
-                var targetScale = 1.0 + (scaleAmount * 0.4);
-
-                // INSTANT scale up (no animation - this is key to the "pop" feel)
-                scaleTransform.ScaleX = targetScale;
-                scaleTransform.ScaleY = targetScale;
-
-                // Schedule scale back to original after one frame (16ms)
-                // Using DispatcherPriority.Render ensures it happens on next render
-                Dispatcher.UIThread.Post(
-                    () =>
-                    {
-                        if (scaleTransform != null)
-                        {
-                            scaleTransform.ScaleX = originalScaleX;
-                            scaleTransform.ScaleY = originalScaleY;
-                        }
-                    },
-                    DispatcherPriority.Render
-                );
+                rotate.Angle = angle * tiltAmount;
             }
         }
     }

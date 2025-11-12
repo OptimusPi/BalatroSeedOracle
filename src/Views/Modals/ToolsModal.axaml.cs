@@ -252,7 +252,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Classes = { "btn-red" },
                 MinWidth = 150,
                 MinHeight = 40,
-                Background = Avalonia.Media.Brushes.DarkRed,
+                Background = this.FindResource("Red") as Avalonia.Media.IBrush,
             };
 
             cancelButton.Click += (s, ev) =>

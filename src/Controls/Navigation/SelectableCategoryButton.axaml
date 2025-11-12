@@ -75,15 +75,6 @@
     <Style Selector="nav|SelectableCategoryButton:selected /template/ Polygon#SelectionArrow">
         <Setter Property="IsVisible" Value="True"/>
     </Style>
-
-    <!-- Hover state -->
-    <Style Selector="nav|SelectableCategoryButton:pointerover /template/ Border#PART_ButtonBorder">
-        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-    </Style>
-
-    <Style Selector="nav|SelectableCategoryButton:pressed /template/ Border#PART_ButtonBorder">
-        <Setter Property="Background" Value="{StaticResource RedHover}"/>
-    </Style>
     
     <!-- Special style for the Favorites button -->
     <Style Selector="nav|SelectableCategoryButton.special /template/ Border#PART_ButtonBorder">

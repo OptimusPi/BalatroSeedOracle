@@ -74,12 +74,12 @@
                             </Style>
 
                             <Style Selector="TabItem:pointerover">
-                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                <Setter Property="Background" Value="{StaticResource Red}"/>
                                 <Setter Property="Cursor" Value="Hand"/>
                             </Style>
 
                             <Style Selector="TabItem:pressed">
-                                <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                <Setter Property="Background" Value="{StaticResource Red}"/>
                             </Style>
 
                             <!-- Hide shadows when pressed for pressed effect -->

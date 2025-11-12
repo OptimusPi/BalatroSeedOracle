@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -13,7 +13,7 @@
         <Style Selector="TextBox.score-input">
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="CornerRadius" Value="4"/>

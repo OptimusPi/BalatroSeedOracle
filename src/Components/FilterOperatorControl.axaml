@@ -15,7 +15,7 @@
 
         <!-- Balatro-style highlight when dragging over - white border with colored overlay -->
         <Style Selector="Border#OperatorContainer.drag-over">
-            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
             <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="MinWidth" Value="220"/>
             <Setter Property="MinHeight" Value="160"/>
@@ -25,10 +25,10 @@
         <Style Selector="Border#ChildrenDropZone.drag-active">
             <Setter Property="Background">
                 <Setter.Value>
-                    <SolidColorBrush Color="#4CAF50" Opacity="0.3"/>
+                    <SolidColorBrush Color="{StaticResource ColorGreen}" Opacity="0.3"/>
                 </Setter.Value>
             </Setter>
-            <Setter Property="BorderBrush" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
     </UserControl.Styles>

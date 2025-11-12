@@ -47,7 +47,7 @@ namespace BalatroSeedOracle.Behaviors
             _startTime = DateTime.Now;
 
             // Set up render transform if not already set
-            // If there's already a TransformGroup (from ResponsiveCard setup), we'll use that
+            // If there's already a TransformGroup, we'll use that
             // Otherwise create a new TranslateTransform (NOT RotateTransform!)
             if (AssociatedObject.RenderTransform == null)
             {
@@ -90,32 +90,13 @@ namespace BalatroSeedOracle.Behaviors
             }
             else if (AssociatedObject.RenderTransform is TransformGroup group)
             {
-                // Look for TranslateTransform in the group (should be second child in ResponsiveCard)
+                // Find TranslateTransform in parent hierarchy
+            // Look for TranslateTransform in the group (should be second child in transform group)
                 translateTransform = group.Children.OfType<TranslateTransform>().FirstOrDefault();
             }
 
             if (translateTransform == null)
                 return;
-
-            // Find ResponsiveCard parent to check hover state
-            var parent = AssociatedObject.Parent;
-            Components.ResponsiveCard? card = null;
-            while (parent != null)
-            {
-                if (parent is Components.ResponsiveCard responsiveCard)
-                {
-                    card = responsiveCard;
-                    break;
-                }
-                parent = parent.Parent;
-            }
-
-            if (card != null && card.IsHovering)
-            {
-                // When hovering, let MagneticTiltBehavior handle the lean
-                // Don't interfere with the magnetic lean effect
-                return;
-            }
 
             // AMBIENT MODE - Breathing motion when not hovering
             // Calculate elapsed time (like G.TIMERS.REAL in Balatro)

@@ -31,8 +31,8 @@ namespace BalatroSeedOracle.Extensions
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<BalatroMainMenuViewModel>();
-            services.AddTransient<FiltersModalViewModel>();
-            services.AddTransient<SearchModalViewModel>();
+            services.AddSingleton<FiltersModalViewModel>();       // One filter modal at a time
+            services.AddSingleton<SearchModalViewModel>();        // One search modal at a time
             services.AddTransient<AnalyzeModalViewModel>();
             services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<CreditsModalViewModel>();
@@ -41,7 +41,6 @@ namespace BalatroSeedOracle.Extensions
 
             // Filter Tab ViewModels
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
-            services.AddTransient<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
 

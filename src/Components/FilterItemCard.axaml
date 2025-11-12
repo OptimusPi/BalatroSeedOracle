@@ -20,7 +20,7 @@
                 <ScaleTransform ScaleX="1" ScaleY="1"/>
             </Border.RenderTransform>
             <i:Interaction.Behaviors>
-                <behaviors:MagneticTiltBehavior ScalePulseAmount="0.05"/>
+                <behaviors:MagneticTiltBehavior/>
             </i:Interaction.Behaviors>
 
             <Grid Width="71" Height="95">
@@ -95,7 +95,7 @@
         <TextBlock Text="{Binding DisplayName}"
                    FontFamily="{StaticResource BalatroFont}"
                    FontSize="10"
-                   Foreground="#FFFFFF"
+                   Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"
                    MaxWidth="95"/>

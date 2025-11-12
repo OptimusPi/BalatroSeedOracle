@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:conv="using:BalatroSeedOracle.Converters"
@@ -42,7 +42,7 @@
                                 <!-- Boss & Voucher Row with Sprites -->
                                 <WrapPanel Orientation="Horizontal" Margin="0,8">
                                     <!-- Boss -->
-                                    <Border Background="{StaticResource VeryDarkBackground}"
+                                    <Border Background="{StaticResource DarkGrey2}"
                                             BorderThickness="0"
                                             CornerRadius="6"
                                             Padding="12"
@@ -66,7 +66,7 @@
                                     </Border>
 
                                     <!-- Voucher -->
-                                    <Border Background="{StaticResource VeryDarkBackground}"
+                                    <Border Background="{StaticResource DarkGrey2}"
                                             BorderThickness="0"
                                             CornerRadius="6"
                                             Padding="12"
@@ -99,7 +99,7 @@
                                                Foreground="{StaticResource TextInactive}"/>
                                     <WrapPanel Orientation="Horizontal">
                                         <!-- Small Blind Tag -->
-                                        <Border Background="{StaticResource VeryDarkBackground}"
+                                        <Border Background="{StaticResource DarkGrey2}"
                                                 BorderThickness="0"
                                                 CornerRadius="20"
                                                 Padding="10,6"
@@ -121,7 +121,7 @@
                                             </StackPanel>
                                         </Border>
                                         <!-- Big Blind Tag -->
-                                        <Border Background="{StaticResource VeryDarkBackground}"
+                                        <Border Background="{StaticResource DarkGrey2}"
                                                 BorderThickness="0"
                                                 CornerRadius="20"
                                                 Padding="10,6"
@@ -159,7 +159,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="models:ShopItemModel">
-                                                <Border Background="{StaticResource VeryDarkBackground}"
+                                                <Border Background="{StaticResource DarkGrey2}"
                                                         BorderThickness="0"
                                                         CornerRadius="6"
                                                         Width="80"
@@ -198,7 +198,7 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="models:BoosterPackModel">
-                                                <Border Background="{StaticResource VeryDarkBackground}"
+                                                <Border Background="{StaticResource DarkGrey2}"
                                                         BorderThickness="0"
                                                         CornerRadius="6"
                                                         MinWidth="90"

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -91,15 +91,10 @@
                             </StackPanel>
 
                             <!-- Generate Button -->
-                            <Button Classes="widget-secondary-btn"
+                            <Button Content="{Binding ButtonContent}"
                                     Command="{Binding GenerateFilterCommand}"
                                     IsEnabled="{Binding !IsGenerating}"
-                                    HorizontalAlignment="Stretch">
-                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding GenerateButtonText}" FontSize="13"/>
-                                    <TextBlock Text="{Binding GeneratingSpinner}" FontSize="13" IsVisible="{Binding IsGenerating}"/>
-                                </StackPanel>
-                            </Button>
+                                    HorizontalAlignment="Stretch"/>
 
                             <!-- Status Message -->
                             <TextBlock Text="{Binding StatusMessage}"

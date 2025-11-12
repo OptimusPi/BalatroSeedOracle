@@ -209,7 +209,7 @@
                 CornerRadius="8"
                 Padding="16"
                 Margin="8,0,8,0"
-                BoxShadow="inset 0 2 4 #00000040">
+                BoxShadow="{StaticResource InsetInputShadow}">
             <Grid>
                 <!-- Placeholder when no filter selected -->
                 <StackPanel VerticalAlignment="Center"
@@ -276,7 +276,7 @@
                             Padding="12,8"
                             Margin="0,0,0,12"
                             MaxHeight="80"
-                            BoxShadow="inset 0 2 4 #00000040">
+                            BoxShadow="{StaticResource InsetInputShadow}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <TextBlock Text="{Binding SelectedFilterDescription}"
                                        FontFamily="{StaticResource BalatroFont}"
@@ -318,7 +318,7 @@
                                                             BorderThickness="0"
                                                             Margin="4"
                                                             Padding="2"
-                                                            BoxShadow="0 2 4 #00000040"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
                                                             RenderTransformOrigin="0.5,0.5">
                                                         <Border.RenderTransform>
                                                             <TransformGroup>
@@ -376,7 +376,7 @@
                                                             BorderThickness="0"
                                                             Margin="4"
                                                             Padding="2"
-                                                            BoxShadow="0 2 4 #00000040"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
                                                             RenderTransformOrigin="0.5,0.5">
                                                         <Border.RenderTransform>
                                                             <TransformGroup>
@@ -434,7 +434,7 @@
                                                             Margin="4"
                                                             Padding="2"
                                                             Opacity="0.6"
-                                                            BoxShadow="0 2 4 #00000040"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
                                                             RenderTransformOrigin="0.5,0.5">
                                                         <Border.RenderTransform>
                                                             <TransformGroup>
