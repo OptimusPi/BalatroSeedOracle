@@ -1364,11 +1364,11 @@
         </Style>
 
         <Style Selector="Button.filter-list-item:pointerover">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item:pressed">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">

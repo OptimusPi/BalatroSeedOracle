@@ -135,7 +135,7 @@ namespace BalatroSeedOracle.Views.Modals
             var dialog = new Window
             {
                 Width = 450,
-                Height = 220,
+                SizeToContent = SizeToContent.Height,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 SystemDecorations = SystemDecorations.None,
@@ -236,7 +236,7 @@ namespace BalatroSeedOracle.Views.Modals
             var messageText = new TextBlock
             {
                 Text = $"Are you sure you want to delete '{filterName}'?",
-                FontSize = 16,
+                FontSize = 14,
                 Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 320 // Leave room for icon
