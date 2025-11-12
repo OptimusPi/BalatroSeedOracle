@@ -454,7 +454,7 @@
                         </Style>
                     </Border.Styles>
                     <Border.Effect>
-                        <DropShadowEffect Color="{StaticResource OrangeColor}"
+                        <DropShadowEffect Color="{StaticResource ColorOrange}"
                                           OffsetX="0"
                                           OffsetY="0"
                                           BlurRadius="30"
@@ -672,7 +672,7 @@
                             </Style>
                         </Border.Styles>
                         <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource BlueColor}"
+                            <DropShadowEffect Color="{StaticResource ColorBlue}"
                                               OffsetX="0"
                                               OffsetY="0"
                                               BlurRadius="30"
@@ -711,7 +711,7 @@
                             </Style>
                         </Border.Styles>
                         <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource GreenColor}"
+                            <DropShadowEffect Color="{StaticResource ColorGreen}"
                                               OffsetX="0"
                                               OffsetY="0"
                                               BlurRadius="30"
@@ -750,7 +750,7 @@
                             </Style>
                         </Border.Styles>
                         <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource RedColor}"
+                            <DropShadowEffect Color="{StaticResource ColorRed}"
                                               OffsetX="0"
                                               OffsetY="0"
                                               BlurRadius="30"

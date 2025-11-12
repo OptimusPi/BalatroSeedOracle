@@ -169,14 +169,14 @@
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
                                              Text="{Binding AuthorName, Mode=TwoWay}"
-                                             FontFamily="{StaticResource BalatroFont}"
                                              FontSize="16"
-                                             Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
                                              IsVisible="{Binding AuthorEditMode}"
+                                             Focusable="True"
+                                             IsHitTestVisible="True"
                                              KeyDown="OnAuthorTextBoxKeyDown"
                                              LostFocus="OnAuthorTextBoxLostFocus"/>
                                 </Grid>

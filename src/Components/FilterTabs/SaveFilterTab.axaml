@@ -177,7 +177,7 @@
                 <StackPanel Spacing="12">
                     <!-- STATE 1: TESTING - Loading Spinner -->
                     <Border IsVisible="{Binding IsTestRunning}"
-                            Background="{StaticResource DarkGray}"
+                            Background="{StaticResource DarkGrey}"
                             BorderThickness="2"
                             BorderBrush="{StaticResource Gold}"
                             CornerRadius="8"
@@ -302,7 +302,7 @@
                                        TextAlignment="Center"/>
 
                             <!-- Ready Icon -->
-                            <Border Background="{StaticResource DarkGray}"
+                            <Border Background="{StaticResource DarkGrey}"
                                     BorderThickness="2"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     CornerRadius="50"

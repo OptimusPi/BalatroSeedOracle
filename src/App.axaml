@@ -178,8 +178,7 @@
     </Application.Resources>
 
     <Application.Styles>
-        <!-- Fluent theme MUST come first, then our overrides -->
-        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
     </Application.Styles>

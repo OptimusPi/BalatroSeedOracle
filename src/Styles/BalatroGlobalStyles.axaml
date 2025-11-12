@@ -143,7 +143,6 @@
     <Style Selector="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
         <Setter Property="Foreground" Value="{StaticResource White}" />
-        <Setter Property="Background" Value="Transparent" />
     </Style>
     
     <!-- ALL Labels get Balatro font -->
@@ -152,7 +151,7 @@
         <Setter Property="Foreground" Value="{StaticResource White}" />
         <Setter Property="FontSize" Value="14" />
     </Style>
-    
+
     <!-- ALL TextBoxes get dark theme -->
     <Style Selector="TextBox">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
@@ -163,32 +162,16 @@
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="MinHeight" Value="32" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
-        <Setter Property="SelectionForegroundBrush" Value="{StaticResource White}" />
         <Setter Property="CaretBrush" Value="{StaticResource White}" />
     </Style>
-    <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-        <Setter Property="Foreground" Value="{StaticResource LightTextGrey}" />
-    </Style>
-    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Style Selector="TextBox:focus">
         <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
-    <Style Selector="TextBox:focus">
-        <Setter Property="Foreground" Value="{StaticResource White}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
-        <Setter Property="Opacity" Value="1.0" />
-    </Style>
-    <Style Selector="TextBox:focus /template/ DockPanel">
-        <Setter Property="(TextElement.Foreground)" Value="{StaticResource White}" />
-    </Style>
     <Style Selector="TextBox:pointerover">
+        <Setter Property="Background" Value="{StaticResource DarkBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
-    </Style>
-    <Style Selector="TextBox /template/ DataValidationErrors">
-        <Setter Property="IsVisible" Value="False" />
     </Style>
 
     <!-- Back button - Orange with drop shadow and pressed state -->
@@ -471,66 +454,6 @@
         <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
     </Style>
     
-    <!-- Authentic Balatro card style (cream/white background with shadow) -->
-    <Style Selector="Border.balatro-card-authentic">
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="{StaticResource ColorCardFaceTop}" Offset="0"/>
-                    <GradientStop Color="{StaticResource ColorCardFaceBottom}" Offset="1"/>
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="BoxShadow" Value="{StaticResource CardShadow}" />
-        <Setter Property="Padding" Value="4" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Transitions">
-            <Transitions>
-                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
-            </Transitions>
-        </Setter>
-    </Style>
-    <Style Selector="Border.balatro-card-authentic:pointerover">
-        <Setter Property="BoxShadow" Value="{StaticResource CardShadowHover}" />
-    </Style>
-
-    <!-- Small Balatro card variant (for item palette) -->
-    <Style Selector="Border.balatro-card-small">
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="{StaticResource ColorCardFaceTop}" Offset="0"/>
-                    <GradientStop Color="{StaticResource ColorCardFaceBottom}" Offset="1"/>
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="CornerRadius" Value="5" />
-        <Setter Property="BoxShadow" Value="{StaticResource CardShadowSmall}" />
-        <Setter Property="Padding" Value="3" />
-        <Setter Property="Cursor" Value="Hand" />
-    </Style>
-
-    <!-- Legacy card style (deprecated - use balatro-card-authentic instead) -->
-    <Style Selector="Border.game-item-card">
-        <Setter Property="Background" Value="{StaticResource ModalGrey}" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="Padding" Value="8" />
-        <Setter Property="Margin" Value="4" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Transitions">
-            <Transitions>
-                <ThicknessTransition Property="Margin" Duration="0:0:0.1" />
-                <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
-            </Transitions>
-        </Setter>
-    </Style>
-    <Style Selector="Border.game-item-card:pointerover">
-        <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
-        <Setter Property="Margin" Value="3,1,3,5" /> <!-- Lift effect -->
-    </Style>
     
     <!-- Tab control styling -->
     <Style Selector="TabControl">
@@ -574,23 +497,6 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
     
-    <!-- Removed duplicate global style for Border.modal-content-box.
-         Use component-specific definition from Styles/BalatroModal.axaml (dark inner panel, no border).
-         This prevents double-layer backgrounds and conflicting borders in modals. -->
-    
-    <!-- Remove default focus rectangle / inner highlight on buttons -->
-    <Style Selector="Button:focus-visible">
-        <Setter Property="FocusAdorner" Value="{x:Null}"/>
-    </Style>
-    <Style Selector="Button:focus">
-        <Setter Property="FocusAdorner" Value="{x:Null}"/>
-    </Style>
-
-    <!-- Prevent text selection highlight in buttons -->
-    <Style Selector="Button:focus /template/ ContentPresenter TextBlock">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
-    </Style>
 
     <!-- ==== NOTIFICATION BADGE STYLES ==== -->
     

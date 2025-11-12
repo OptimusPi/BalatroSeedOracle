@@ -141,7 +141,7 @@
                                             Width="20" Height="20"
                                             CornerRadius="10"
                                             Background="{StaticResource BrightGreen}"
-                                            BorderBrush="{StaticResource DarkGreenTeal}"
+                                            BorderBrush="{StaticResource DarkBorder}"
                                             BorderThickness="1"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
@@ -295,7 +295,7 @@
                         <controls:BalatroTabControl.Items>
                             <!-- Must Have -->
                             <TabItem Header="Must Have">
-                            <Border Background="{StaticResource CardCream}"
+                            <Border Background="{StaticResource ModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -342,7 +342,7 @@
                                         <TextBlock Text="No items required"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="{StaticResource CardBrown}"
+                                                   Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"
@@ -354,7 +354,7 @@
 
                         <!-- Should Have -->
                         <TabItem Header="Should Have">
-                            <Border Background="{StaticResource CardCream}"
+                            <Border Background="{StaticResource ModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -399,7 +399,7 @@
                                         <TextBlock Text="No recommended items"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="{StaticResource CardBrown}"
+                                                   Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"
@@ -411,7 +411,7 @@
 
                         <!-- Must Not -->
                         <TabItem Header="Must Not">
-                            <Border Background="{StaticResource CardCream}"
+                            <Border Background="{StaticResource ModalGrey}"
                                     BorderThickness="0"
                                     CornerRadius="8"
                                     Padding="12"
@@ -429,7 +429,7 @@
                                                 <DataTemplate>
                                                     <Border CornerRadius="4"
                                                             Background="{StaticResource White}"
-                                                            BorderBrush="{StaticResource CardBrown}"
+                                                            BorderBrush="{StaticResource Black}"
                                                             BorderThickness="3"
                                                             Margin="4"
                                                             Padding="2"
@@ -466,7 +466,7 @@
                                         <TextBlock Text="No banned items"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="{StaticResource CardBrown}"
+                                                   Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    Opacity="0.7"
