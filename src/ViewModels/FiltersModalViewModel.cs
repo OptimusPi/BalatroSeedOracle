@@ -676,7 +676,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save</param>
+        /// <param name="tabIndex">0=Build Filter, 1=JSON Editor, 2=Save</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log(
@@ -698,24 +698,17 @@ namespace BalatroSeedOracle.ViewModels
                     IsVisualTabVisible = true;
                     DebugLogger.Log(
                         "FiltersModalViewModel",
-                        "Configure Filter tab visible, all others hidden"
+                        "Build Filter tab visible, all others hidden"
                     );
                     break;
                 case 1:
-                    IsVisualTabVisible = true;
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "Configure Score tab visible, all others hidden"
-                    );
-                    break;
-                case 2:
                     IsJsonTabVisible = true;
                     DebugLogger.Log(
                         "FiltersModalViewModel",
                         "JSON Editor tab visible, all others hidden"
                     );
                     break;
-                case 3:
+                case 2:
                     IsSaveTabVisible = true;
                     // Refresh Save tab data when it becomes visible
                     RefreshSaveTabData();

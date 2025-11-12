@@ -140,6 +140,15 @@
         <SolidColorBrush x:Key="ValueDisplayContainer" Color="{StaticResource ColorLightSilver}"/>
         <SolidColorBrush x:Key="ValueDisplayContainerSouthEdge" Color="{StaticResource ColorGreySilver}"/>
 
+        <!-- JSON Editor Semantic Brushes -->
+        <SolidColorBrush x:Key="EditorDarkBg" Color="{StaticResource ColorDarkGrey}"/>
+        <SolidColorBrush x:Key="EditorHeaderBg" Color="{StaticResource ColorGrey}"/>
+        <SolidColorBrush x:Key="EditorBorderBg" Color="{StaticResource ColorBrightSilver}"/>
+        <SolidColorBrush x:Key="EditorTextGrey" Color="{StaticResource ColorLightGrey}"/>
+        <SolidColorBrush x:Key="EditorButtonBg" Color="{StaticResource ColorDarkGrey}"/>
+        <SolidColorBrush x:Key="BrightGreenEditor" Color="{StaticResource ColorBrightGreen}"/>
+        <SolidColorBrush x:Key="EditorLineNumbers" Color="{StaticResource ColorFadedGrey}"/>
+
         <!-- Transparent/Overlay Brushes -->
         <SolidColorBrush x:Key="SemiTransparentBlack" Color="#80000000"/>
         <SolidColorBrush x:Key="SemiTransparentDarkBackground" Color="#66000000"/>
@@ -179,6 +188,7 @@
 
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
     </Application.Styles>

@@ -478,13 +478,13 @@
             <!-- RIGHT COLUMN - Operator Trays + Drop Zones (Collapsible!) -->
             <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="120"/>  <!-- OR/AND Trays - FIXED HEIGHT to prevent layout shift -->
-                    <RowDefinition Height="8"/>  <!-- Spacing -->
-                    <RowDefinition Height="1*"/>  <!-- MUST - Always expanded, equal height -->
-                    <RowDefinition Height="4"/>     <!-- Spacing -->
-                    <RowDefinition Height="1*"/>  <!-- SHOULD - Always expanded, equal height -->
-                    <RowDefinition Height="4"/>     <!-- Spacing -->
-                    <RowDefinition Height="1*"/>  <!-- CAN'T - Always expanded, equal height -->
+                    <RowDefinition Height="90"/>  <!-- OR/AND Trays - Reduced from 120 to give more room -->
+                    <RowDefinition Height="6"/>  <!-- Spacing -->
+                    <RowDefinition Height="1.5*"/>  <!-- MUST - Bigger drop zone -->
+                    <RowDefinition Height="6"/>     <!-- Spacing -->
+                    <RowDefinition Height="1.5*"/>  <!-- SHOULD - Bigger drop zone -->
+                    <RowDefinition Height="6"/>     <!-- Spacing -->
+                    <RowDefinition Height="1.5*"/>  <!-- BANNED - Bigger drop zone -->
                 </Grid.RowDefinitions>
 
                 <!-- UNIFIED OPERATOR TRAY at top of right column -->
@@ -497,7 +497,7 @@
                             BorderThickness="2"
                             CornerRadius="8"
                             Padding="0"
-                            MinHeight="120"
+                            MinHeight="90"
                             Cursor="Hand"
                             PointerPressed="OnUnifiedTrayPointerPressed"
                             DragDrop.AllowDrop="True">
@@ -580,7 +580,7 @@
                     <Button Grid.Column="1"
                             Command="{Binding ToggleOperatorCommand}"
                             Width="40"
-                            Height="120"
+                            Height="90"
                             Margin="4,0,0,0"
                             Background="{StaticResource DarkBackground}"
                             BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
@@ -796,9 +796,9 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <StackPanel Grid.Row="1">
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding SelectedMust}"
-                                          Margin="6">
+                                          Margin="8">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal"/>
@@ -858,7 +858,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        </StackPanel>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
 
@@ -895,9 +895,9 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <StackPanel Grid.Row="1">
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding SelectedShould}"
-                                          Margin="6">
+                                          Margin="8">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal"/>
@@ -957,8 +957,8 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </StackPanel>
-                </Grid>
+                        </ScrollViewer>
+                    </Grid>
                 </Border>
 
                 <!-- BANNED ITEMS Zone -->
@@ -994,9 +994,9 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ItemsControl Grid.Row="1"
-                                      ItemsSource="{Binding SelectedMustNot}"
-                                      Margin="6">
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding SelectedMustNot}"
+                                          Margin="8">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Orientation="Horizontal"/>
@@ -1056,6 +1056,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
 
