@@ -122,6 +122,143 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 unifiedTray.AddHandler(DragDrop.DropEvent, OnUnifiedTrayDrop);
                 DebugLogger.Log("VisualBuilderTab", "Unified Tray drag/drop handlers attached");
             }
+
+            // Subscribe to UnifiedOperator.Children collection changes to update fanned layout
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                vm.UnifiedOperator.Children.CollectionChanged += OnUnifiedTrayChildrenChanged;
+                // Initial layout
+                UpdateUnifiedTrayFannedLayout();
+            }
+        }
+
+        private void OnUnifiedTrayChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Update the fanned card layout whenever children change
+            UpdateUnifiedTrayFannedLayout();
+        }
+
+        private void UpdateUnifiedTrayFannedLayout()
+        {
+            if (DataContext is not ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                return;
+
+            var itemsControl = this.FindControl<ItemsControl>("UnifiedTrayItemsControl");
+            if (itemsControl == null)
+                return;
+
+            // Wait for the visual tree to be fully rendered
+            Avalonia.Threading.Dispatcher.UIThread.Post(
+                () =>
+                {
+                    CalculateUnifiedTrayFannedPositions(vm);
+                },
+                Avalonia.Threading.DispatcherPriority.Background
+            );
+        }
+
+        private void CalculateUnifiedTrayFannedPositions(ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+        {
+            var itemsControl = this.FindControl<ItemsControl>("UnifiedTrayItemsControl");
+            if (itemsControl == null)
+                return;
+
+            int count = vm.UnifiedOperator.Children.Count;
+            if (count == 0)
+                return;
+
+            // Enhanced fanning parameters for dramatic poker hand effect
+            double cardWidth = 60.0;
+
+            // Adjust parameters based on card count for optimal visual effect
+            double baseAngle;
+            double angleDelta;
+            double xOffset;
+            double yArcHeight;
+
+            if (count == 1)
+            {
+                // Single card - no rotation, centered
+                baseAngle = 0;
+                angleDelta = 0;
+                xOffset = 0;
+                yArcHeight = 0;
+            }
+            else if (count == 2)
+            {
+                // Two cards - slight spread
+                baseAngle = -8.0;
+                angleDelta = 16.0;
+                xOffset = 25.0;
+                yArcHeight = 3.0;
+            }
+            else if (count <= 4)
+            {
+                // 3-4 cards - moderate fan
+                baseAngle = -12.0;
+                angleDelta = 24.0 / (count - 1);
+                xOffset = 22.0;
+                yArcHeight = 8.0;
+            }
+            else if (count <= 6)
+            {
+                // 5-6 cards - fuller fan
+                baseAngle = -15.0;
+                angleDelta = 30.0 / (count - 1);
+                xOffset = 20.0;
+                yArcHeight = 12.0;
+            }
+            else
+            {
+                // 7+ cards - dramatic poker hand fan
+                baseAngle = -18.0;
+                angleDelta = 36.0 / (count - 1);
+                xOffset = 17.0;
+                yArcHeight = 15.0;
+            }
+
+            // Center the fan horizontally
+            double totalWidth = (count - 1) * xOffset + cardWidth;
+            double startX = -totalWidth / 2.0 + cardWidth / 2.0;
+
+            // Apply transforms to each card container
+            var containers = itemsControl.GetVisualDescendants().OfType<Border>().ToList();
+
+            for (int i = 0; i < Math.Min(count, containers.Count); i++)
+            {
+                var container = containers[i];
+                if (container.RenderTransform is not TransformGroup transformGroup)
+                    continue;
+
+                // Calculate angle for this card
+                double normalizedPosition = count > 1 ? (double)i / (count - 1) : 0.5;
+                double angle = baseAngle + (i * angleDelta);
+
+                // Calculate position with arc effect (cards curve upward at edges)
+                double x = startX + (i * xOffset);
+
+                // Parabolic arc: higher at edges, lower in center
+                double centerOffset = normalizedPosition - 0.5; // -0.5 to 0.5
+                double y = yArcHeight * (4 * centerOffset * centerOffset); // Parabola formula
+
+                // Update transforms
+                if (transformGroup.Children.Count >= 2)
+                {
+                    if (transformGroup.Children[0] is RotateTransform rotateTransform)
+                    {
+                        rotateTransform.Angle = angle;
+                    }
+
+                    if (transformGroup.Children[1] is TranslateTransform translateTransform)
+                    {
+                        translateTransform.X = x;
+                        translateTransform.Y = y;
+                    }
+                }
+
+                // Set Z-Index so cards on the right appear in front
+                container.ZIndex = 100 + i;
+            }
         }
 
         private void OnCardPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -1214,112 +1351,119 @@ namespace BalatroSeedOracle.Components.FilterTabs
             Avalonia.Interactivity.RoutedEventArgs e
         )
         {
-            // Get Balatro color resources from App.axaml
-            var darkBg =
-                Application.Current?.FindResource("DarkBackground")
-                as Avalonia.Media.SolidColorBrush;
-            var modalGrey =
-                Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
-            var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
-            var white =
-                Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
-
-            // Show confirmation dialog with Balatro-style colors
-            var dialog = new Window
+            try
             {
-                Width = 400,
-                Height = 200,
-                CanResize = false,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Background =
-                    darkBg
-                    ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
-                Title = "Start Over?",
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
-                SystemDecorations = SystemDecorations.Full,
-            };
+                // Get Balatro color resources from App.axaml
+                var darkBg =
+                    Application.Current?.FindResource("DarkBackground")
+                    as Avalonia.Media.SolidColorBrush;
+                var modalGrey =
+                    Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
+                var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
+                var white =
+                    Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
 
-            var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 20 };
-
-            var label = new TextBlock
-            {
-                Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
-                FontSize = 16,
-                Foreground = white,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                TextAlignment = Avalonia.Media.TextAlignment.Center,
-            };
-
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Spacing = 15,
-            };
-
-            var cancelButton = new Button
-            {
-                Content = "Cancel",
-                Width = 120,
-                Height = 45,
-                FontSize = 16,
-                Background = modalGrey,
-                Foreground = white,
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            };
-
-            var confirmButton = new Button
-            {
-                Content = "YES, START OVER",
-                Width = 180,
-                Height = 45,
-                FontSize = 16,
-                Background = red,
-                Foreground = white,
-                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            };
-
-            cancelButton.Click += (s, ev) => dialog.Close();
-            confirmButton.Click += (s, ev) =>
-            {
-                var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                if (vm != null)
+                // Show confirmation dialog with Balatro-style colors
+                var dialog = new Window
                 {
-                    // Clear all drop zones
-                    vm.SelectedMust.Clear();
-                    vm.SelectedShould.Clear();
-                    vm.SelectedMustNot.Clear();
+                    Width = 400,
+                    Height = 200,
+                    CanResize = false,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Background =
+                        darkBg
+                        ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
+                    Title = "Start Over?",
+                    TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
+                    SystemDecorations = SystemDecorations.Full,
+                };
 
-                    // Clear unified operator tray
-                    vm.UnifiedOperator.Children.Clear();
+                var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 20 };
 
-                    // Reset search filter
-                    vm.SearchFilter = "";
+                var label = new TextBlock
+                {
+                    Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
+                    FontSize = 16,
+                    Foreground = white,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                };
 
-                    // Reset to first category (Joker)
-                    vm.SetCategory("Joker");
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    Spacing = 15,
+                };
+
+                var cancelButton = new Button
+                {
+                    Content = "Cancel",
+                    Width = 120,
+                    Height = 45,
+                    FontSize = 16,
+                    Background = modalGrey,
+                    Foreground = white,
+                    HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                };
+
+                var confirmButton = new Button
+                {
+                    Content = "YES, START OVER",
+                    Width = 180,
+                    Height = 45,
+                    FontSize = 16,
+                    Background = red,
+                    Foreground = white,
+                    HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                };
+
+                cancelButton.Click += (s, ev) => dialog.Close();
+                confirmButton.Click += (s, ev) =>
+                {
+                    var vm = DataContext as ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                    if (vm != null)
+                    {
+                        // Clear all drop zones
+                        vm.SelectedMust.Clear();
+                        vm.SelectedShould.Clear();
+                        vm.SelectedMustNot.Clear();
+
+                        // Clear unified operator tray
+                        vm.UnifiedOperator.Children.Clear();
+
+                        // Reset search filter
+                        vm.SearchFilter = "";
+
+                        // Reset to first category (Joker)
+                        vm.SetCategory("Joker");
+                    }
+                    dialog.Close();
+                };
+
+                buttonPanel.Children.Add(cancelButton);
+                buttonPanel.Children.Add(confirmButton);
+
+                panel.Children.Add(label);
+                panel.Children.Add(buttonPanel);
+
+                dialog.Content = panel;
+
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
                 }
-                dialog.Close();
-            };
-
-            buttonPanel.Children.Add(cancelButton);
-            buttonPanel.Children.Add(confirmButton);
-
-            panel.Children.Add(label);
-            panel.Children.Add(buttonPanel);
-
-            dialog.Content = panel;
-
-            var owner = Avalonia.Application.Current?.ApplicationLifetime
-                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
-                ? desktop.MainWindow
-                : null;
-
-            if (owner != null)
+            }
+            catch (Exception ex)
             {
-                await dialog.ShowDialog(owner);
+                DebugLogger.LogError("VisualBuilderTab", $"Error in OnStartOverClick: {ex.Message}");
             }
         }
 
@@ -1590,9 +1734,31 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             try
             {
+                // CRITICAL: Hide adorner BEFORE attempting removal (prevents ghost flash)
+                if (_dragAdorner != null)
+                {
+                    _dragAdorner.IsVisible = false;
+                }
+
                 if (_dragAdorner != null && _adornerLayer != null)
                 {
-                    _adornerLayer.Children.Remove(_dragAdorner);
+                    try
+                    {
+                        _adornerLayer.Children.Remove(_dragAdorner);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("RemoveDragAdorner", $"Failed to remove adorner: {ex.Message}");
+                        // If removal fails, try clearing entire layer as fallback
+                        try
+                        {
+                            _adornerLayer.Children.Clear();
+                        }
+                        catch
+                        {
+                            // Even clearing failed - layer might be disposed
+                        }
+                    }
 
                     // Properly dispose visual elements to prevent memory leak
                     if (_dragAdorner.Child is StackPanel stack)
@@ -1608,22 +1774,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         stack.Children.Clear();
                     }
 
-                    _dragAdorner = null;
-                    _adornerLayer = null;
-                    _topLevel = null;
                     DebugLogger.Log("VisualBuilderTab", "Ghost image removed and disposed");
                 }
-
-                // Hide all drop zone overlays when drag ends
-                HideAllDropZoneOverlays();
             }
-            catch (Exception ex)
+            finally
             {
-                DebugLogger.LogError(
-                    "VisualBuilderTab",
-                    $"Failed to remove drag adorner: {ex.Message}"
-                );
+                // ALWAYS clear references, even if cleanup fails
+                _dragAdorner = null;
+                _adornerLayer = null;
+                _topLevel = null;
             }
+
+            // Hide all drop zone overlays when drag ends
+            HideAllDropZoneOverlays();
         }
 
         /// <summary>
@@ -2073,6 +2236,67 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 "StandardCard" => 6,
                 _ => 0, // Default to Favorites
             };
+
+        #endregion
+
+        #region Carousel Pagination Event Handlers
+
+        // MUST zone pagination
+        private void OnMustPrevClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "MUST Previous page clicked");
+            }
+        }
+
+        private void OnMustNextClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "MUST Next page clicked");
+            }
+        }
+
+        // SHOULD zone pagination
+        private void OnShouldPrevClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "SHOULD Previous page clicked");
+            }
+        }
+
+        private void OnShouldNextClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "SHOULD Next page clicked");
+            }
+        }
+
+        // BANNED zone pagination
+        private void OnBannedPrevClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "BANNED Previous page clicked");
+            }
+        }
+
+        private void OnBannedNextClick(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+            {
+                // TODO: Implement pagination logic in ViewModel
+                DebugLogger.Log("VisualBuilderTab", "BANNED Next page clicked");
+            }
+        }
 
         #endregion
     }

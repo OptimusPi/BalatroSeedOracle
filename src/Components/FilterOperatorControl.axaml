@@ -6,41 +6,61 @@
     x:DataType="models:FilterOperatorItem">
 
     <UserControl.Styles>
+        <!-- Operator card container base style -->
+        <Style Selector="Border.operator-card-container">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="180"/>
+            <Setter Property="MinHeight" Value="120"/>
+        </Style>
+
         <!-- Expansion animation on hover -->
-        <Style Selector="Border#OperatorContainer:pointerover">
-            <Setter Property="MinWidth" Value="220"/>
-            <Setter Property="MinHeight" Value="160"/>
+        <Style Selector="Border.operator-card-container:pointerover">
+            <Setter Property="MinWidth" Value="240"/>
+            <Setter Property="MinHeight" Value="180"/>
             <Setter Property="BorderThickness" Value="3"/>
         </Style>
 
-        <!-- Balatro-style highlight when dragging over - white border with colored overlay -->
-        <Style Selector="Border#OperatorContainer.drag-over">
+        <!-- Balatro-style highlight when dragging over -->
+        <Style Selector="Border.operator-card-container.drag-over">
             <Setter Property="BorderBrush" Value="{StaticResource White}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="MinWidth" Value="220"/>
-            <Setter Property="MinHeight" Value="160"/>
+            <Setter Property="MinWidth" Value="240"/>
+            <Setter Property="MinHeight" Value="180"/>
         </Style>
 
-        <!-- Semi-transparent overlay for drop zone -->
-        <Style Selector="Border#ChildrenDropZone.drag-active">
+        <!-- Operator header style -->
+        <Style Selector="Border.operator-header">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+        </Style>
+
+        <!-- Operator label text style -->
+        <Style Selector="TextBlock.operator-label">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Semi-transparent overlay for drop zone feedback -->
+        <Style Selector="Border.operator-drop-zone.drag-active">
             <Setter Property="Background">
                 <Setter.Value>
-                    <SolidColorBrush Color="{StaticResource ColorGreen}" Opacity="0.3"/>
+                    <SolidColorBrush Color="{StaticResource ColorBlue}" Opacity="0.3"/>
                 </Setter.Value>
             </Setter>
-            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
-            <Setter Property="BorderThickness" Value="2"/>
         </Style>
     </UserControl.Styles>
 
     <Border
         Name="OperatorContainer"
-        Padding="0"
-        Background="Transparent"
-        BorderThickness="2"
-        CornerRadius="8"
-        MinWidth="160"
-        MinHeight="100"
+        Classes="operator-card-container"
         ClipToBounds="False">
         <Border.Transitions>
             <Transitions>
@@ -51,30 +71,24 @@
         </Border.Transitions>
 
         <Grid RowDefinitions="Auto,*">
-            <!-- Operator Label Header - Flat connected style (dynamic color based on operator type) -->
+            <!-- Blue Header with OR/AND Label -->
             <Border
                 Name="OperatorHeader"
                 Grid.Row="0"
-                Padding="12,6"
-                CornerRadius="6,6,0,0"
-                HorizontalAlignment="Stretch"
+                Classes="operator-header"
                 Cursor="Hand">
                 <TextBlock
                     Text="{Binding OperatorType}"
-                    FontSize="14"
-                    FontFamily="{StaticResource BalatroFont}"
-                    
-                    Foreground="{StaticResource White}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center" />
+                    Classes="operator-label" />
             </Border>
 
             <!-- Fanned Cards Container -->
             <Border
                 Grid.Row="1"
                 Name="ChildrenDropZone"
-                Padding="8"
-                Background="{StaticResource DarkBackground}"
+                Classes="operator-drop-zone"
+                Padding="12,8"
+                Background="Transparent"
                 BorderThickness="0"
                 CornerRadius="0,0,6,6"
                 MinHeight="100"
@@ -85,7 +99,7 @@
                 <Canvas Name="FannedCardsCanvas"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        MinWidth="160"
+                        MinWidth="180"
                         MinHeight="100"
                         ClipToBounds="False">
                     <ItemsControl
@@ -99,7 +113,7 @@
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Fanned card with rotation and offset -->
+                                <!-- Fanned card with rotation and offset (poker hand style) -->
                                 <Border Background="Transparent"
                                         RenderTransformOrigin="0.5,1.0"
                                         ToolTip.Tip="{Binding DisplayName}"
@@ -111,7 +125,8 @@
                                         </TransformGroup>
                                     </Border.RenderTransform>
 
-                                    <Grid Width="40" Height="56">
+                                    <!-- Slightly larger cards (50x70 instead of 40x56) for better visibility -->
+                                    <Grid Width="50" Height="70">
                                         <Image
                                             Source="{Binding ItemImage}"
                                             Stretch="Uniform"

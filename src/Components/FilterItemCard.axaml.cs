@@ -10,7 +10,7 @@ namespace BalatroSeedOracle.Components
     /// NO manual behavior attachment needed in parent - just set DataContext!
     ///
     /// Features:
-    /// - MagneticTiltBehavior for hover effect
+    /// - BalatroCardHoverBehavior for authentic hover effects (juice_up bounce, magnetic tilt, ambient breathing)
     /// - CardFlipOnTriggerBehavior for wave flip animation (attached via code-behind)
     /// - All visual overlays (Edition, Stickers, Soul Face)
     /// - Drag opacity feedback

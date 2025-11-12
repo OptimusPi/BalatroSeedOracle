@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -131,19 +132,27 @@ tag"
 
         private async void OnFileSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+            try
             {
-                if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
+                if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
                 {
-                    // Ask to save changes
-                    var result = await ShowSavePrompt();
-                    if (result)
+                    if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
-                        SaveCurrentFile();
+                        // Ask to save changes
+                        var result = await ShowSavePrompt();
+                        if (result)
+                        {
+                            SaveCurrentFile();
+                        }
                     }
-                }
 
-                LoadFile(fileName);
+                    LoadFile(fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                UpdateStatus($"Error loading file: {ex.Message}");
             }
         }
 

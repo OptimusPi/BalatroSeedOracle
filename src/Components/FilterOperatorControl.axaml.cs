@@ -32,34 +32,11 @@ namespace BalatroSeedOracle.Components
                 headerBorder.PointerPressed += OnHeaderPointerPressed;
             }
 
-            // Set up the operator type tag for styling
+            // Set up the operator control
             DataContextChanged += (s, e) =>
             {
                 if (DataContext is FilterOperatorItem operatorItem)
                 {
-                    var containerBorder = this.FindControl<Border>("OperatorContainer");
-                    var headerBorder = this.FindControl<Border>("OperatorHeader");
-
-                    // Set the border color based on operator type
-                    if (containerBorder != null)
-                    {
-                        containerBorder.BorderBrush =
-                            operatorItem.OperatorType == "OR"
-                                ? Application.Current?.FindResource("Green")
-                                    as Avalonia.Media.IBrush
-                                : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
-                    }
-
-                    // Set the header background based on operator type
-                    if (headerBorder != null)
-                    {
-                        headerBorder.Background =
-                            operatorItem.OperatorType == "OR"
-                                ? Application.Current?.FindResource("Green")
-                                    as Avalonia.Media.IBrush
-                                : Application.Current?.FindResource("Red") as Avalonia.Media.IBrush;
-                    }
-
                     // Subscribe to Children collection changes to update fanned layout
                     operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
 
@@ -152,13 +129,57 @@ namespace BalatroSeedOracle.Components
             if (count == 0)
                 return;
 
-            // Fanning parameters (poker hand style)
-            double baseAngle = -15.0; // Start angle for first card
-            double angleDelta = count > 1 ? 30.0 / (count - 1) : 0; // Spread across 30 degrees
-            double xOffset = 18.0; // Horizontal spacing between cards
-            double cardWidth = 40.0;
+            // Enhanced fanning parameters for dramatic poker hand effect
+            double cardWidth = 50.0;
 
-            // Center the fan
+            // Adjust parameters based on card count for optimal visual effect
+            double baseAngle;
+            double angleDelta;
+            double xOffset;
+            double yArcHeight;
+
+            if (count == 1)
+            {
+                // Single card - no rotation, centered
+                baseAngle = 0;
+                angleDelta = 0;
+                xOffset = 0;
+                yArcHeight = 0;
+            }
+            else if (count == 2)
+            {
+                // Two cards - slight spread
+                baseAngle = -8.0;
+                angleDelta = 16.0;
+                xOffset = 22.0;
+                yArcHeight = 3.0;
+            }
+            else if (count <= 4)
+            {
+                // 3-4 cards - moderate fan
+                baseAngle = -12.0;
+                angleDelta = 24.0 / (count - 1);
+                xOffset = 20.0;
+                yArcHeight = 8.0;
+            }
+            else if (count <= 6)
+            {
+                // 5-6 cards - fuller fan
+                baseAngle = -15.0;
+                angleDelta = 30.0 / (count - 1);
+                xOffset = 18.0;
+                yArcHeight = 12.0;
+            }
+            else
+            {
+                // 7+ cards - dramatic poker hand fan
+                baseAngle = -18.0;
+                angleDelta = 36.0 / (count - 1);
+                xOffset = 15.0;
+                yArcHeight = 15.0;
+            }
+
+            // Center the fan horizontally
             double totalWidth = (count - 1) * xOffset + cardWidth;
             double startX = -totalWidth / 2.0 + cardWidth / 2.0;
 
@@ -171,12 +192,16 @@ namespace BalatroSeedOracle.Components
                 if (container.RenderTransform is not TransformGroup transformGroup)
                     continue;
 
-                // Calculate angle for this card
+                // Calculate angle for this card (alternating left/right from center)
+                double normalizedPosition = count > 1 ? (double)i / (count - 1) : 0.5;
                 double angle = baseAngle + (i * angleDelta);
 
-                // Calculate position
+                // Calculate position with arc effect (cards curve upward at edges)
                 double x = startX + (i * xOffset);
-                double y = 0;
+
+                // Parabolic arc: higher at edges, lower in center
+                double centerOffset = normalizedPosition - 0.5; // -0.5 to 0.5
+                double y = yArcHeight * (4 * centerOffset * centerOffset); // Parabola formula
 
                 // Update transforms
                 if (transformGroup.Children.Count >= 2)

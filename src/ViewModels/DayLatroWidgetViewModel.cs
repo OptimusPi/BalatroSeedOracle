@@ -405,13 +405,20 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         protected override async void OnExpanded()
         {
-            ShowNewDayBadge = false;
+            try
+            {
+                ShowNewDayBadge = false;
 
-            // Fetch high scores when widget expands
-            await FetchAndDisplayHighScoresAsync();
+                // Fetch high scores when widget expands
+                await FetchAndDisplayHighScoresAsync();
 
-            // Start auto-refresh timer
-            _autoRefreshTimer?.Start();
+                // Start auto-refresh timer
+                _autoRefreshTimer?.Start();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnExpanded: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -438,59 +445,67 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async void OnSubmitScore()
         {
-            // Validate score input
-            if (!long.TryParse(ScoreInput.Replace(",", "").Trim(), out var score) || score < 0)
+            try
             {
-                ShowSubmissionMessage($"Invalid score input: {ScoreInput}", true);
-                DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid score input: {ScoreInput}");
-                return;
-            }
+                // Validate score input
+                if (!long.TryParse(ScoreInput.Replace(",", "").Trim(), out var score) || score < 0)
+                {
+                    ShowSubmissionMessage($"Invalid score input: {ScoreInput}", true);
+                    DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid score input: {ScoreInput}");
+                    return;
+                }
 
-            // Validate ante input
-            if (!int.TryParse(AnteInput.Trim(), out var ante) || ante < 1 || ante > 39)
-            {
-                ShowSubmissionMessage($"Invalid ante input (must be 1-39): {AnteInput}", true);
-                DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid ante input: {AnteInput}");
-                return;
-            }
+                // Validate ante input
+                if (!int.TryParse(AnteInput.Trim(), out var ante) || ante < 1 || ante > 39)
+                {
+                    ShowSubmissionMessage($"Invalid ante input (must be 1-39): {AnteInput}", true);
+                    DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid ante input: {AnteInput}");
+                    return;
+                }
 
-            // Get initials (max 3 chars)
-            var initials = InitialsInput.Trim().ToUpper();
-            if (initials.Length > 3)
-                initials = initials.Substring(0, 3);
+                // Get initials (max 3 chars)
+                var initials = InitialsInput.Trim().ToUpper();
+                if (initials.Length > 3)
+                    initials = initials.Substring(0, 3);
 
-            // Submit to Daylatro
-            var (success, message) = await _scoreService.SubmitToDaylatroAsync(
-                initials,
-                ante,
-                score
-            );
-
-            if (success)
-            {
-                DebugLogger.Log(
-                    "DayLatroWidgetViewModel",
-                    $"Successfully submitted to Daylatro: {initials} - Ante {ante} - {score}"
+                // Submit to Daylatro
+                var (success, message) = await _scoreService.SubmitToDaylatroAsync(
+                    initials,
+                    ante,
+                    score
                 );
 
-                // Clear score and ante inputs (keep initials for convenience)
-                ScoreInput = string.Empty;
-                AnteInput = string.Empty;
+                if (success)
+                {
+                    DebugLogger.Log(
+                        "DayLatroWidgetViewModel",
+                        $"Successfully submitted to Daylatro: {initials} - Ante {ante} - {score}"
+                    );
 
-                // Show success message
-                ShowSubmissionMessage(message, false);
+                    // Clear score and ante inputs (keep initials for convenience)
+                    ScoreInput = string.Empty;
+                    AnteInput = string.Empty;
 
-                // Refresh the high scores after submission
-                await FetchAndDisplayHighScoresAsync();
+                    // Show success message
+                    ShowSubmissionMessage(message, false);
+
+                    // Refresh the high scores after submission
+                    await FetchAndDisplayHighScoresAsync();
+                }
+                else
+                {
+                    // Show error/info message
+                    ShowSubmissionMessage(message, true);
+                    DebugLogger.Log(
+                        "DayLatroWidgetViewModel",
+                        $"Submission blocked or failed: {message}"
+                    );
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Show error/info message
-                ShowSubmissionMessage(message, true);
-                DebugLogger.Log(
-                    "DayLatroWidgetViewModel",
-                    $"Submission blocked or failed: {message}"
-                );
+                ShowSubmissionMessage($"Error submitting score: {ex.Message}", true);
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnSubmitScore: {ex.Message}");
             }
         }
 

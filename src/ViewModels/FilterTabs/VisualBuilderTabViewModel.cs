@@ -102,6 +102,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isCantHovered = false;
 
+        // Carousel pagination - show arrows when there are multiple pages
+        // TODO: Implement actual pagination logic - for now always false (arrows hidden)
+        public bool MustHasMultiplePages => false;
+        public bool ShouldHasMultiplePages => false;
+        public bool BannedHasMultiplePages => false;
+
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
@@ -2446,6 +2452,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         public void SetEdition(string edition)
         {
+            DebugLogger.Log("SetEdition", $"🔥 BUTTON CLICKED! Edition='{edition}'");
+
             // Don't trigger animation if edition didn't actually change
             if (SelectedEdition == edition)
             {
@@ -2459,8 +2467,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedEdition = edition;
             string? editionValue = edition == "None" ? null : edition.ToLower();
 
+            DebugLogger.Log("SetEdition", $"Processing {GroupedItems.Count} groups");
+
             // Apply ONLY to items in the SHELF (GroupedItems), NOT to items in drop zones!
             // This sets the "default edition" for items that will be dragged to zones
+            int updatedCount = 0;
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
@@ -2471,6 +2482,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                     // Update item.Edition directly to trigger EditionImage binding update
                     item.Edition = editionValue;
+                    updatedCount++;
+                    DebugLogger.Log("SetEdition", $"Updated {item.Name}: Edition={editionValue}");
 
                     // Also update ItemConfig (for when this item gets dropped to a zone)
                     if (

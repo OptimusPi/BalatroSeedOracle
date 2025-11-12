@@ -136,13 +136,20 @@ namespace BalatroSeedOracle.Components
         {
             base.OnLoaded(e);
 
-            if (ViewModel != null)
+            try
             {
-                // Sync Title property
-                ViewModel.Title = Title;
+                if (ViewModel != null)
+                {
+                    // Sync Title property
+                    ViewModel.Title = Title;
 
-                // Initialize and load filters
-                await ViewModel.InitializeAsync();
+                    // Initialize and load filters
+                    await ViewModel.InitializeAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelector", $"Error in OnLoaded: {ex.Message}");
             }
         }
 

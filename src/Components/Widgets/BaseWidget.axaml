@@ -11,7 +11,7 @@
         <!-- Minimized State -->
         <Grid Name="MinimizedView"
               IsVisible="{Binding IsMinimized}">
-            <Button Classes="widget-icon"
+            <Button Classes="widget-icon widget-header"
                     Width="100" Height="100"
                     Background="{StaticResource ModalGrey}"
                     BorderBrush="{StaticResource ModalBorder}"
