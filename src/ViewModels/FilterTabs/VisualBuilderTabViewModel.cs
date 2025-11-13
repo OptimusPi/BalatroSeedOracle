@@ -529,61 +529,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "Voucher":
-                    // Organize vouchers to match sprite sheet layout: 8 columns wide with base/upgrade rows
-                    var voucherPairs = GetVoucherPairs();
-                    var organizedVouchers = new List<FilterItem>();
-
-                    // First 8 pairs (row 0 bases, then row 1 upgrades)
-                    var firstSet = voucherPairs.Take(8).ToList();
-
-                    // Add all 8 base vouchers from row 0
-                    foreach (var (baseName, _) in firstSet)
-                    {
-                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
-                        );
-                        if (baseVoucher != null)
-                            organizedVouchers.Add(baseVoucher);
-                    }
-
-                    // Add all 8 upgrade vouchers from row 1
-                    foreach (var (_, upgradeName) in firstSet)
-                    {
-                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
-                        );
-                        if (upgradeVoucher != null)
-                            organizedVouchers.Add(upgradeVoucher);
-                    }
-
-                    // Second 8 pairs (row 2 bases, then row 3 upgrades)
-                    var secondSet = voucherPairs.Skip(8).Take(8).ToList();
-
-                    // Add all 8 base vouchers from row 2
-                    foreach (var (baseName, _) in secondSet)
-                    {
-                        var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
-                        );
-                        if (baseVoucher != null)
-                            organizedVouchers.Add(baseVoucher);
-                    }
-
-                    // Add all 8 upgrade vouchers from row 3
-                    foreach (var (_, upgradeName) in secondSet)
-                    {
-                        var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
-                            v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
-                        );
-                        if (upgradeVoucher != null)
-                            organizedVouchers.Add(upgradeVoucher);
-                    }
-
-                    // Add any remaining vouchers that weren't in the pairs
-                    var remainingVouchers = FilteredVouchers.Except(organizedVouchers);
-                    organizedVouchers.AddRange(remainingVouchers);
-
-                    AddGroup("Vouchers", organizedVouchers);
+                    // Vouchers are already sorted in AllVouchers (and FilteredVouchers) with the correct display order
+                    // Base vouchers appear first, then their upgrades directly below in the grid
+                    AddGroup("Vouchers", FilteredVouchers);
                     break;
 
                 case "StandardCard":
@@ -622,35 +570,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Items = new ObservableCollection<FilterItem>(items.ToList()),
             };
             GroupedItems.Add(group);
-        }
-
-        /// <summary>
-        /// Get vouchers organized into pairs (base + upgrade) matching sprite sheet layout.
-        /// Returns 8-column pairs where each pair has base voucher followed by upgrade voucher.
-        /// </summary>
-        private List<(string baseName, string upgradeName)> GetVoucherPairs()
-        {
-            return new List<(string, string)>
-            {
-                // Row 0 -> Row 1 pairs (8 pairs)
-                ("overstock", "overstockplus"),
-                ("tarotmerchant", "tarottycoon"),
-                ("planetmerchant", "planettycoon"),
-                ("clearancesale", "liquidation"),
-                ("hone", "glowup"),
-                ("grabber", "nachotong"),
-                ("wasteful", "recyclomancy"),
-                ("blank", "antimatter"),
-                // Row 2 -> Row 3 pairs (8 pairs)
-                ("rerollsurplus", "rerollglut"),
-                ("seedmoney", "moneytree"),
-                ("crystalball", "omenglobe"),
-                ("telescope", "observatory"),
-                ("magictrick", "illusion"),
-                ("hieroglyph", "petroglyph"),
-                ("directorscut", "retcon"),
-                ("paintbrush", "palette"),
-            };
         }
 
         private void RefreshFilteredItems()
@@ -1538,13 +1457,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
 
                     // Sort by custom display order
+                    DebugLogger.Log("VoucherOrdering", $"Sorting {tempVouchers.Count} vouchers...");
                     var sortedVouchers = tempVouchers
                         .OrderBy(v =>
                         {
                             var index = voucherDisplayOrder.IndexOf(v.Name);
+                            DebugLogger.Log("VoucherOrdering", $"  {v.Name} -> index {index}");
                             return index == -1 ? int.MaxValue : index;
                         })
                         .ToList();
+
+                    DebugLogger.Log("VoucherOrdering", "Final sorted order:");
+                    for (int i = 0; i < sortedVouchers.Count; i++)
+                    {
+                        DebugLogger.Log("VoucherOrdering", $"  [{i}] {sortedVouchers[i].Name}");
+                    }
 
                     foreach (var voucher in sortedVouchers)
                     {
@@ -2501,14 +2428,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedSeal = seal;
             string? sealValue = seal == "None" ? null : seal;
 
+            int totalItems = 0;
+            int skippedItems = 0;
+            int updatedItems = 0;
+
             // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
+                DebugLogger.Log("SetSeal", $"Group '{group.GroupName}' has {group.Items.Count} items");
                 foreach (var item in group.Items)
                 {
+                    totalItems++;
+                    DebugLogger.Log("SetSeal", $"  Item: Name='{item.Name}', Type='{item.Type}', Category='{item.Category}'");
+
                     // Only apply seal to StandardCards
                     if (item.Type == "StandardCard")
                     {
+                        DebugLogger.Log("SetSeal", $"  Setting Seal to '{sealValue ?? "NULL"}'...");
                         // CRITICAL FIX: Update item.Seal directly to trigger binding update
                         item.Seal = sealValue;
 
@@ -2523,15 +2459,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         {
                             config.Seal = sealValue;
                         }
+
+                        updatedItems++;
+                        DebugLogger.Log("SetSeal", $"  DONE");
+                    }
+                    else
+                    {
+                        skippedItems++;
+                        DebugLogger.Log("SetSeal", $"  SKIPPED (Type={item.Type})");
                     }
                 }
             }
 
-            // Helper buttons only affect shelf items, NOT drop zones
-            DebugLogger.Log(
-                "VisualBuilderTab",
-                $"Seal changed to: {seal} and applied to StandardCards in shelf only"
-            );
+            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied - Total:{totalItems}, Updated:{updatedItems}, Skipped:{skippedItems}");
         }
 
         /// <summary>

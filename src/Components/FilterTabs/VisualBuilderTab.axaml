@@ -188,9 +188,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
                                 ToolTip.Tip="None"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,1,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -200,9 +200,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
                                 ToolTip.Tip="Foil (+50 chips)"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,1,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -212,9 +212,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
                                 ToolTip.Tip="Holographic (+10 mult)"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,1,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -224,9 +224,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
                                 ToolTip.Tip="Polychrome (x1.5 mult)"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,1,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -236,9 +236,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
                                 ToolTip.Tip="Negative (+1 joker slot)"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,1,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -247,11 +247,11 @@
                         <Button Command="{Binding ToggleDebuffedCommand}"
                                 Classes="icon-button"
                                 ToolTip.Tip="Filter Out (Banned Item)"
-                                Width="42" Height="42"
+                                Width="38"
                                 Padding="2"
                                 Margin="0,0,4,0">
                             <Image Source="{Binding DebuffedIconImage}"
-                                   Width="38" Height="38"
+                                   Width="34" Height="34"
                                    Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
@@ -262,9 +262,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding StickerPerishable}"
                                 ToolTip.Tip="Perishable"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=perishable}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -273,9 +273,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding StickerEternal}"
                                 ToolTip.Tip="Eternal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=eternal}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -284,9 +284,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding StickerRental}"
                                 ToolTip.Tip="Rental"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,8,0">
+                                Margin="0,0,4,0">
                             <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -299,9 +299,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
                                 ToolTip.Tip="No Seal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="4"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <TextBlock Text="—" FontSize="16" Foreground="{StaticResource LightGrey}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
 
@@ -310,9 +310,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
                                 ToolTip.Tip="Purple Seal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -322,9 +322,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
                                 ToolTip.Tip="Gold Seal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -334,9 +334,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
                                 ToolTip.Tip="Red Seal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0">
                             <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -346,7 +346,7 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
                                 ToolTip.Tip="Blue Seal"
-                                Width="48" Height="48"
+                                Width="40"
                                 Padding="2"
                                 Margin="0,0,0,0">
                             <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
@@ -422,6 +422,7 @@
 
                 <!-- Return Overlay - Shows when dragging from drop zones -->
                 <Border Name="ReturnOverlay"
+                        Grid.RowSpan="4"
                         Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
                         BorderThickness="3"
