@@ -42,7 +42,6 @@ namespace BalatroSeedOracle.ViewModels
 
         // Additional UI-only properties for compatibility with existing code
         public bool IsFavorite { get; set; }
-        public int StaggerDelay { get; set; } // For flip animations
 
         // For OR/AND operators - wraps Config.Children
         public ObservableCollection<FilterBuilderItemViewModel>? ChildViewModels { get; set; }

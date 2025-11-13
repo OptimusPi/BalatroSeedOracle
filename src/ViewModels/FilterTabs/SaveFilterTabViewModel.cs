@@ -271,10 +271,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Convert FilterItem objects to their keys (ItemKey property)
                 mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
                 shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
-                mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
+                mustNotKeys = Enumerable.Empty<string>(); // MUST-NOT removed - use IsInvertedFilter flag instead
                 DebugLogger.Log(
                     "SaveFilterTab",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
             }
             else

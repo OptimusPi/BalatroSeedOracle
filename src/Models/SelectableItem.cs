@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -122,6 +123,7 @@ namespace BalatroSeedOracle.Models
                 }
 
                 // Get the edition overlay sprite (foil/holo/poly/negative)
+                // Negative now works just like other editions with an overlay sprite
                 var img = Services.SpriteService.Instance.GetEditionImage(Edition);
                 Helpers.DebugLogger.Log(
                     "EditionImage",
@@ -250,13 +252,51 @@ namespace BalatroSeedOracle.Models
         public string? Enhancement { get; set; }
         public string? Seal { get; set; }
 
-        // Animation properties
-        // Used for staggered flip animations - each card gets a unique delay
-        public int StaggerDelay { get; set; }
+        // Debuffed state (for inverted filter logic - "must NOT have this")
+        private bool _isDebuffed;
+        public bool IsDebuffed
+        {
+            get => _isDebuffed;
+            set
+            {
+                if (_isDebuffed != value)
+                {
+                    _isDebuffed = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(DebuffedImage));
+                }
+            }
+        }
+
+        public IImage? DebuffedImage
+        {
+            get
+            {
+                if (!IsDebuffed)
+                    return null;
+
+                return Services.SpriteService.Instance.GetEnhancementImage("debuffed");
+            }
+        }
+
+        // Inverted filter flag (used for filter export logic)
+        private bool _isInvertedFilter;
+        public bool IsInvertedFilter
+        {
+            get => _isInvertedFilter;
+            set
+            {
+                if (_isInvertedFilter != value)
+                {
+                    _isInvertedFilter = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        public virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

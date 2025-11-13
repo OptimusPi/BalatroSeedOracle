@@ -194,11 +194,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
-        // Flip Animation Trigger - incremented whenever edition/sticker/seal changes
-        // Cards watch this property and flip when it changes
-        [ObservableProperty]
-        private int _flipAnimationTrigger = 0;
-
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
         private string _currentEdition = "None";
@@ -222,8 +217,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
-        public bool SupportsFlipAnimation =>
-            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
 
         // Notify property changes when category changes
         partial void OnSelectedMainCategoryChanged(string value)
@@ -232,7 +225,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(ShowStickerButtons));
             OnPropertyChanged(nameof(ShowSealButtons));
             OnPropertyChanged(nameof(ShowEnhancementButtons));
-            OnPropertyChanged(nameof(SupportsFlipAnimation));
 
             // Reset edition/sticker/seal state when switching categories
             // Cards should start fresh with no enhancements
@@ -283,7 +275,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Selected items - these should sync with parent
         public ObservableCollection<FilterItem> SelectedMust { get; }
         public ObservableCollection<FilterItem> SelectedShould { get; }
-        public ObservableCollection<FilterItem> SelectedMustNot { get; }
 
         // Operator trays for Configure Score tab
         public ObservableCollection<FilterItem> OrTrayItems { get; }
@@ -407,7 +398,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedMust = new ObservableCollection<FilterItem>();
             SelectedShould = new ObservableCollection<FilterItem>();
-            SelectedMustNot = new ObservableCollection<FilterItem>();
 
             // Initialize operator trays
             OrTrayItems = new ObservableCollection<FilterItem>();
@@ -418,18 +408,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Subscribe to collection changes for auto-save
             SelectedMust.CollectionChanged += OnZoneCollectionChanged;
             SelectedShould.CollectionChanged += OnZoneCollectionChanged;
-            SelectedMustNot.CollectionChanged += OnZoneCollectionChanged;
             OrTrayItems.CollectionChanged += OnZoneCollectionChanged;
             AndTrayItems.CollectionChanged += OnZoneCollectionChanged;
 
             // Initialize commands
             AddToMustCommand = new RelayCommand<FilterItem>(AddToMust);
             AddToShouldCommand = new RelayCommand<FilterItem>(AddToShould);
-            AddToMustNotCommand = new RelayCommand<FilterItem>(AddToMustNot);
 
             RemoveFromMustCommand = new RelayCommand<FilterItem>(RemoveFromMust);
             RemoveFromShouldCommand = new RelayCommand<FilterItem>(RemoveFromShould);
-            RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
 
             AddToOrTrayCommand = new RelayCommand<FilterItem>(AddToOrTray);
             AddToAndTrayCommand = new RelayCommand<FilterItem>(AddToAndTray);
@@ -625,19 +612,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddGroup(string groupName, IEnumerable<FilterItem> items)
         {
-            // Assign stagger delays for flip animation (20ms between each card for smooth wave effect)
-            int delayCounter = 0;
-            var itemsList = items.ToList();
-            foreach (var item in itemsList)
-            {
-                item.StaggerDelay = delayCounter * 20; // 20ms stagger between cards
-                delayCounter++;
-            }
-
             var group = new ItemGroup
             {
                 GroupName = groupName,
-                Items = new ObservableCollection<FilterItem>(itemsList),
+                Items = new ObservableCollection<FilterItem>(items.ToList()),
             };
             GroupedItems.Add(group);
         }
@@ -765,11 +743,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public ICommand AddToMustCommand { get; }
         public ICommand AddToShouldCommand { get; }
-        public ICommand AddToMustNotCommand { get; }
 
         public ICommand RemoveFromMustCommand { get; }
         public ICommand RemoveFromShouldCommand { get; }
-        public ICommand RemoveFromMustNotCommand { get; }
 
         public ICommand AddToOrTrayCommand { get; }
         public ICommand AddToAndTrayCommand { get; }
@@ -801,6 +777,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             Helpers.DebugLogger.Log(
                 "AddToMust",
                 $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}"
+            );
+
+            // Set IsInvertedFilter based on IsDebuffed state
+            // Debuffed items (red X) in MUST zone = "Must NOT have this"
+            item.IsInvertedFilter = item.IsDebuffed;
+
+            DebugLogger.Log(
+                "AddToMust",
+                $"IsDebuffed={item.IsDebuffed}, IsInvertedFilter={item.IsInvertedFilter}"
             );
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
@@ -940,81 +925,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             NotifyJsonEditorOfChanges();
         }
 
-        private void AddToMustNot(FilterItem? item)
-        {
-            if (item == null)
-            {
-                Helpers.DebugLogger.Log("AddToMustNot", "Item is null, returning");
-                return;
-            }
-
-            Helpers.DebugLogger.Log(
-                "AddToMustNot",
-                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}"
-            );
-
-            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
-            SelectedMustNot.Add(item);
-
-            Helpers.DebugLogger.Log(
-                "AddToMustNot",
-                $"SelectedMustNot count after add: {SelectedMustNot.Count}"
-            );
-
-            // Log all items in collection for debugging
-            for (int i = 0; i < SelectedMustNot.Count; i++)
-            {
-                var existingItem = SelectedMustNot[i];
-                Helpers.DebugLogger.Log(
-                    "AddToMustNot",
-                    $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
-                );
-            }
-
-            // Force UI refresh
-            OnPropertyChanged(nameof(SelectedMustNot));
-
-            // Sync with parent ViewModel if available
-            if (_parentViewModel != null)
-            {
-                // Special handling for operators
-                if (item is FilterOperatorItem operatorItem)
-                {
-                    // If this is the unified operator, use it as-is with its children
-                    if (operatorItem == UnifiedOperator)
-                    {
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Adding unified operator ({operatorItem.OperatorType}) with {operatorItem.Children.Count} children"
-                        );
-                    }
-
-                    SyncOperatorToParent(operatorItem, "MustNot");
-                }
-                else
-                {
-                    var itemKey = _parentViewModel.GenerateNextItemKey();
-                    var itemConfig = new ItemConfig
-                    {
-                        ItemKey = itemKey,
-                        ItemType = item.Type,
-                        ItemName = item.Name,
-                    };
-
-                    // Phase 3: Apply currently selected edition/stickers/seal
-                    ApplyEditionStickersSeal(itemConfig, item);
-
-                    _parentViewModel.ItemConfigs[itemKey] = itemConfig;
-                    _parentViewModel.SelectedMustNot.Add(itemKey);
-                }
-            }
-
-            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
-
-            // Trigger auto-sync to JSON Editor
-            NotifyJsonEditorOfChanges();
-        }
-
         private void RemoveFromMust(FilterItem? item)
         {
             if (item == null)
@@ -1048,25 +958,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
-
-            // Trigger auto-sync to JSON Editor
-            NotifyJsonEditorOfChanges();
-        }
-
-        private void RemoveFromMustNot(FilterItem? item)
-        {
-            if (item == null)
-                return;
-
-            SelectedMustNot.Remove(item);
-
-            // Sync with parent ViewModel - remove from parent collections
-            if (_parentViewModel != null)
-            {
-                RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
-            }
-
-            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
 
             // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();
@@ -1419,7 +1310,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 "Must" => _parentViewModel.SelectedMust,
                 "Should" => _parentViewModel.SelectedShould,
-                "MustNot" => _parentViewModel.SelectedMustNot,
+                // MustNot removed - use IsInvertedFilter flag instead
                 _ => null,
             };
 
@@ -2155,23 +2046,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                     SelectedShould.RemoveAt(itemIndex);
                 }
-                // Check MUSTNOT zone
-                else
-                {
-                    itemIndex = SelectedMustNot.IndexOf(item);
-                    if (itemIndex >= 0)
-                    {
-                        sourceZone = "MUSTNOT";
-                        if (
-                            _parentViewModel != null
-                            && itemIndex < _parentViewModel.SelectedMustNot.Count
-                        )
-                        {
-                            itemKeyToRemove = _parentViewModel.SelectedMustNot[itemIndex];
-                        }
-                        SelectedMustNot.RemoveAt(itemIndex);
-                    }
-                }
             }
 
             // Remove associated config and sync with parent
@@ -2188,10 +2062,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 else if (sourceZone == "SHOULD")
                 {
                     _parentViewModel.SelectedShould.Remove(itemKeyToRemove);
-                }
-                else if (sourceZone == "MUSTNOT")
-                {
-                    _parentViewModel.SelectedMustNot.Remove(itemKeyToRemove);
                 }
             }
 
@@ -2448,6 +2318,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         /// <summary>
         /// Sets the edition for ALL items in shelf (GroupedItems) AND drop zones
+        /// Modeled after ApplyStickersToAllItems() for immediate UI updates
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
@@ -2469,9 +2340,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             DebugLogger.Log("SetEdition", $"Processing {GroupedItems.Count} groups");
 
-            // Apply ONLY to items in the SHELF (GroupedItems), NOT to items in drop zones!
-            // This sets the "default edition" for items that will be dragged to zones
-            int updatedCount = 0;
+            // Apply to ALL items in the shelf (GroupedItems)
+            // CRITICAL FIX: Update item.Edition directly to trigger image binding update
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
@@ -2480,12 +2350,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (item.Category != "Joker" && item.Category != "StandardCard")
                         continue;
 
-                    // Update item.Edition directly to trigger EditionImage binding update
+                    // Update item.Edition directly - this triggers EditionImage property notification
                     item.Edition = editionValue;
-                    updatedCount++;
-                    DebugLogger.Log("SetEdition", $"Updated {item.Name}: Edition={editionValue}");
 
-                    // Also update ItemConfig (for when this item gets dropped to a zone)
+                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
                     if (
                         _parentViewModel != null
                         && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
@@ -2502,7 +2370,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (
                     var itemKey in _parentViewModel
                         .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                        .Concat(_parentViewModel.SelectedMustNot)
                 )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
@@ -2511,8 +2378,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 }
 
-                // Also update visual items in drop zones
-                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                // Also update visual items in drop zones (MUST-NOT removed)
+                foreach (var item in SelectedMust.Concat(SelectedShould))
                 {
                     if (item.Category == "Joker" || item.Category == "StandardCard")
                     {
@@ -2523,15 +2390,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
-            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
-            if (SupportsFlipAnimation)
-            {
-                FlipAnimationTrigger++;
-            }
-
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Edition changed to: {edition} and applied to all items in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+                $"Edition changed to: {edition} and applied to all items in shelf and drop zones"
             );
         }
 
@@ -2546,15 +2407,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
-            if (SupportsFlipAnimation)
-            {
-                FlipAnimationTrigger++;
-            }
-
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Perishable sticker: {StickerPerishable} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+                $"Perishable sticker: {StickerPerishable} - applied to all items"
             );
         }
 
@@ -2569,15 +2424,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
-            if (SupportsFlipAnimation)
-            {
-                FlipAnimationTrigger++;
-            }
-
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Eternal sticker: {StickerEternal} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+                $"Eternal sticker: {StickerEternal} - applied to all items"
             );
         }
 
@@ -2592,15 +2441,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to all existing items
             ApplyStickersToAllItems();
 
-            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
-            if (SupportsFlipAnimation)
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Rental sticker: {StickerRental} - applied to all items"
+            );
+        }
+
+        /// <summary>
+        /// Toggles the Debuffed state (inverted filter logic) on all items in the shelf.
+        /// When enabled, items dropped into MUST zone will have IsInvertedFilter=true (MUST-NOT logic).
+        /// </summary>
+        [RelayCommand]
+        public void ToggleDebuffed()
+        {
+            // Toggle debuffed state on all items in shelf
+            foreach (var group in GroupedItems)
             {
-                FlipAnimationTrigger++;
+                foreach (var item in group.Items)
+                {
+                    item.IsDebuffed = !item.IsDebuffed; // Toggle red X overlay
+                }
             }
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Rental sticker: {StickerRental} - applied to all items (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+                $"Toggled Debuffed state on all shelf items"
             );
         }
 
@@ -2655,7 +2520,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (
                     var itemKey in _parentViewModel
                         .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                        .Concat(_parentViewModel.SelectedMustNot)
                 )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
@@ -2668,8 +2532,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 }
 
-                // Also update visual items in drop zones
-                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                // Also update visual items in drop zones (MUST-NOT removed)
+                foreach (var item in SelectedMust.Concat(SelectedShould))
                 {
                     if (item.Type == "StandardCard")
                     {
@@ -2680,15 +2544,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
-            // TRIGGER FLIP ANIMATION for all items in shelf (only for categories that support it)
-            if (SupportsFlipAnimation)
-            {
-                FlipAnimationTrigger++;
-            }
-
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones (FlipTrigger={FlipAnimationTrigger}, SupportsFlip={SupportsFlipAnimation})"
+                $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones"
             );
         }
 
@@ -2784,7 +2642,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (
                     var itemKey in _parentViewModel
                         .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                        .Concat(_parentViewModel.SelectedMustNot)
                 )
                 {
                     if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
@@ -2793,8 +2650,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 }
 
-                // Also update visual items in drop zones
-                foreach (var item in SelectedMust.Concat(SelectedShould).Concat(SelectedMustNot))
+                // Also update visual items in drop zones (MUST-NOT removed)
+                foreach (var item in SelectedMust.Concat(SelectedShould))
                 {
                     var stickers = new List<string>();
 
@@ -2973,7 +2830,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Clear current visual builder state
             SelectedMust.Clear();
             SelectedShould.Clear();
-            SelectedMustNot.Clear();
 
             // Load MUST items
             foreach (var itemKey in _parentViewModel.SelectedMust)
@@ -3006,26 +2862,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // Load MUSTNOT items
-            foreach (var itemKey in _parentViewModel.SelectedMustNot)
-            {
-                if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    var filterItem = CreateFilterItemFromConfig(config);
-                    if (filterItem != null)
-                    {
-                        SelectedMustNot.Add(filterItem);
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Loaded MUSTNOT item: {filterItem.Name}"
-                        );
-                    }
-                }
-            }
+            // MUST-NOT removed - items with IsInvertedFilter=true in Must collection are treated as MUST-NOT
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD, {SelectedMustNot.Count} MUSTNOT items"
+                $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD"
             );
         }
 

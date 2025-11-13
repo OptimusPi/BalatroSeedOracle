@@ -354,6 +354,23 @@
                                    Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
+
+                    <!-- Debuffed Button (Universal - for inverted filter logic) -->
+                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                        <Button Command="{Binding ToggleDebuffedCommand}"
+                                Classes="icon-button"
+                                ToolTip.Tip="Toggle Debuffed (Inverted Logic)"
+                                Width="32" Height="32"
+                                Padding="2"
+                                Margin="0,0,0,0"
+                                Background="{StaticResource Red}">
+                            <TextBlock Text="✗"
+                                       FontSize="20"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
                 </WrapPanel>
 
                 <!-- ITEMS SHELF - Full height scrollable item list -->
@@ -395,10 +412,7 @@
                                                         </i:Interaction.Behaviors>
 
                                                         <!-- Self-contained FilterItemCard with all behaviors baked in -->
-                                                        <components:FilterItemCard DataContext="{Binding}"
-                                                                                   FlipTrigger="{Binding $parent[UserControl].DataContext.FlipAnimationTrigger}"
-                                                                                   StaggerDelay="{Binding StaggerDelay}"
-                                                                                   DeckName="Red"/>
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
 
                                                         <!-- Hitbox overlay for pointer events -->
                                                         <Border ZIndex="1"
@@ -483,8 +497,6 @@
                     <RowDefinition Height="1.5*"/>  <!-- MUST - Bigger drop zone -->
                     <RowDefinition Height="6"/>     <!-- Spacing -->
                     <RowDefinition Height="1.5*"/>  <!-- SHOULD - Bigger drop zone -->
-                    <RowDefinition Height="6"/>     <!-- Spacing -->
-                    <RowDefinition Height="1.5*"/>  <!-- BANNED - Bigger drop zone -->
                 </Grid.RowDefinitions>
 
                 <!-- UNIFIED OPERATOR TRAY at top of right column -->
@@ -638,12 +650,11 @@
                     </Border>
                 </Grid>
 
-                <!-- Fixed third overlays positioned absolutely over the drop zones -->
-                <Grid Name="DropOverlaysGrid" Grid.Row="2" Grid.RowSpan="5" IsHitTestVisible="False" ZIndex="200">
+                <!-- Fixed overlays positioned absolutely over the drop zones -->
+                <Grid Name="DropOverlaysGrid" Grid.Row="2" Grid.RowSpan="3" IsHitTestVisible="False" ZIndex="200">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>  <!-- Top third - MUST -->
-                        <RowDefinition Height="1*"/>  <!-- Middle third - SHOULD -->
-                        <RowDefinition Height="1*"/>  <!-- Bottom third - CAN'T -->
+                        <RowDefinition Height="1*"/>  <!-- Top half - MUST -->
+                        <RowDefinition Height="1*"/>  <!-- Bottom half - SHOULD -->
                     </Grid.RowDefinitions>
 
                     <!-- MUST drop overlay - BLUE for AND operator -->
@@ -718,45 +729,6 @@
                                               Opacity="1.0"/>
                         </Border.Effect>
                         <TextBlock Text="DROP IN SHOULD HAVE">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                    </Border>
-
-                    <!-- CAN'T drop overlay -->
-                    <Border Name="MustNotDropOverlay"
-                            Grid.Row="2"
-                            Classes="dropzone-overlay"
-                            Background="{StaticResource Red}">
-                        <Border.Styles>
-                            <Style Selector="Border[IsVisible=True]">
-                                <Style.Animations>
-                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
-                                        <KeyFrame Cue="0%">
-                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
-                                            <Setter Property="Background" Value="{StaticResource Red}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="50%">
-                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
-                                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                        </KeyFrame>
-                                        <KeyFrame Cue="100%">
-                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
-                                            <Setter Property="Background" Value="{StaticResource Red}"/>
-                                        </KeyFrame>
-                                    </Animation>
-                                </Style.Animations>
-                            </Style>
-                        </Border.Styles>
-                        <Border.Effect>
-                            <DropShadowEffect Color="{StaticResource ColorRed}"
-                                              OffsetX="0"
-                                              OffsetY="0"
-                                              BlurRadius="30"
-                                              Opacity="1.0"/>
-                        </Border.Effect>
-                        <TextBlock Text="DROP IN BANNED ITEMS">
                             <TextBlock.Effect>
                                 <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
@@ -930,105 +902,6 @@
                                                         <!-- Hover-only Remove Button -->
                                                         <Button Content="×"
                                                                 Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
-                                                                CommandParameter="{Binding}"
-                                                                Background="{StaticResource Red}"
-                                                                Foreground="White"
-                                                                FontSize="12"
-                                                                Width="18"
-                                                                Height="18"
-                                                                CornerRadius="9"
-                                                                Padding="0"
-                                                                HorizontalAlignment="Right"
-                                                                VerticalAlignment="Top"
-                                                                Margin="0,-6,-6,0"
-                                                                IsVisible="False"
-                                                                Name="RemoveButton">
-                                                            <Button.Styles>
-                                                                <Style Selector="Button:pointerover">
-                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
-                                                                </Style>
-                                                            </Button.Styles>
-                                                        </Button>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ContentControl.DataTemplates>
-                                    </ContentControl>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
-
-                <!-- BANNED ITEMS Zone -->
-                <Border Name="MustNotDropZone"
-                        Grid.Row="6"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="8"
-                        Padding="0"
-                        DragDrop.AllowDrop="True">
-                    <Border.Transitions>
-                        <Transitions>
-                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
-                        </Transitions>
-                    </Border.Transitions>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>     <!-- Horizontal label row -->
-                            <RowDefinition Height="*"/>        <!-- Drop area -->
-                        </Grid.RowDefinitions>
-
-                        <!-- Top: Header Label -->
-                        <Border Grid.Row="0"
-                                Background="{StaticResource DarkBackground}"
-                                Padding="8,0,8,4">
-                            <TextBlock Text="BANNED"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="16"
-
-                                       Foreground="{StaticResource Red}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
-                        </Border>
-
-                        <!-- Bottom: Drop Area - Always visible -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding SelectedMustNot}"
-                                          Margin="8">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <!-- Render operator or regular card based on Type property -->
-                                    <ContentControl Content="{Binding}">
-                                        <ContentControl.DataTemplates>
-                                            <!-- Template for FilterOperatorItem -->
-                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl/>
-                                            </DataTemplate>
-
-                                            <!-- Template for regular FilterItem -->
-                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
-                                                <Border Background="Transparent"
-                                                        Width="95"
-                                                        Cursor="Hand"
-                                                        PointerPressed="OnDropZoneItemPointerPressed">
-                                                    <i:Interaction.Behaviors>
-                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
-                                                    </i:Interaction.Behaviors>
-
-                                                    <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Width="95" IsHitTestVisible="False">
-                                                        <components:FilterItemCard DataContext="{Binding}"/>
-
-                                                        <!-- Hover-only Remove Button -->
-                                                        <Button Content="×"
-                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustNotCommand}"
                                                                 CommandParameter="{Binding}"
                                                                 Background="{StaticResource Red}"
                                                                 Foreground="White"

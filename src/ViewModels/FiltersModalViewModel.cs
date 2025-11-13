@@ -846,10 +846,10 @@ namespace BalatroSeedOracle.ViewModels
                 // Convert FilterItem objects to their keys (ItemKey property)
                 mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
                 shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
-                mustNotKeys = visualVm.SelectedMustNot.Select(item => item.ItemKey);
+                mustNotKeys = Enumerable.Empty<string>(); // MUST-NOT removed - use IsInvertedFilter flag instead
                 DebugLogger.Log(
                     "FilterConfigurationService",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
             }
             else
@@ -1690,7 +1690,6 @@ namespace BalatroSeedOracle.ViewModels
                     // Clear existing items
                     visualVm.SelectedMust.Clear();
                     visualVm.SelectedShould.Clear();
-                    visualVm.SelectedMustNot.Clear();
 
                     // Convert Must items
                     foreach (var itemKey in SelectedMust)
@@ -1718,22 +1717,11 @@ namespace BalatroSeedOracle.ViewModels
                         }
                     }
 
-                    // Convert MustNot items
-                    foreach (var itemKey in SelectedMustNot)
-                    {
-                        if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                        {
-                            var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                            if (filterItem != null)
-                            {
-                                visualVm.SelectedMustNot.Add(filterItem);
-                            }
-                        }
-                    }
+                    // MUST-NOT removed - items with IsInvertedFilter=true in Must collection are treated as MUST-NOT
 
                     DebugLogger.Log(
                         "FiltersModalViewModel",
-                        $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should, {visualVm.SelectedMustNot.Count} mustNot"
+                        $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                     );
                 }
             }
@@ -1860,7 +1848,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Expand ALL zones that have items
                 visualVm.IsMustExpanded = visualVm.SelectedMust.Count > 0;
                 visualVm.IsShouldExpanded = visualVm.SelectedShould.Count > 0;
-                visualVm.IsCantExpanded = visualVm.SelectedMustNot.Count > 0;
+                // MUST-NOT zone removed - no IsCantExpanded property
             }
         }
     }

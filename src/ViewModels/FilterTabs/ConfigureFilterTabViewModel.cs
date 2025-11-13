@@ -136,20 +136,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
-        // Flip Animation Trigger - incremented whenever edition/sticker/seal changes
-        [ObservableProperty]
-        private int _flipAnimationTrigger = 0;
-
         // Computed properties for button visibility based on category
         public bool ShowEditionButtons =>
             SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
-
-        // Card flip animation only for Jokers (including Soul Jokers) and Standard Cards
-        public bool SupportsFlipAnimation =>
-            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
 
         // Operator Tray - permanent OR and AND operators
         public FilterOperatorItem TrayOrOperator { get; }
@@ -268,7 +260,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(ShowStickerButtons));
             OnPropertyChanged(nameof(ShowSealButtons));
             OnPropertyChanged(nameof(ShowEnhancementButtons));
-            OnPropertyChanged(nameof(SupportsFlipAnimation));
 
             // Reset edition/sticker/seal state when switching categories
             SelectedEdition = "None";
@@ -618,12 +609,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedEdition = edition;
 
-            // Only trigger flip animation for Jokers (including Soul Jokers) and Standard Cards
-            if (SupportsFlipAnimation)
-            {
-                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
-            }
-
             DebugLogger.Log("ConfigureFilterTab", $"Edition set to: {edition}");
         }
 
@@ -634,24 +619,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedSeal = seal;
 
-            // Only trigger flip animation for Standard Cards (seals only apply to standard cards)
-            if (SupportsFlipAnimation && SelectedMainCategory == "StandardCard")
-            {
-                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
-            }
-
             DebugLogger.Log("ConfigureFilterTab", $"Seal set to: {seal}");
         }
 
         private void ToggleStickerPerishable()
         {
             StickerPerishable = !StickerPerishable;
-
-            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
-            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
-            {
-                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
-            }
 
             DebugLogger.Log(
                 "ConfigureFilterTab",
@@ -663,24 +636,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             StickerEternal = !StickerEternal;
 
-            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
-            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
-            {
-                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
-            }
-
             DebugLogger.Log("ConfigureFilterTab", $"Eternal sticker toggled: {StickerEternal}");
         }
 
         private void ToggleStickerRental()
         {
             StickerRental = !StickerRental;
-
-            // Only trigger flip animation for Jokers (stickers only apply to Jokers)
-            if (SupportsFlipAnimation && SelectedMainCategory == "Joker")
-            {
-                FlipAnimationTrigger++; // Trigger awesome flip animation! 🃏
-            }
 
             DebugLogger.Log("ConfigureFilterTab", $"Rental sticker toggled: {StickerRental}");
         }

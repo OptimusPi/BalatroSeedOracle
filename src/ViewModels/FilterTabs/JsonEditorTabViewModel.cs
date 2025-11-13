@@ -110,17 +110,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
                 }
 
-                // Generate MustNot clauses from visual builder
-                foreach (var item in visualTab.SelectedMustNot)
-                {
-                    config.MustNot.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
-                }
+                // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
+                // No separate MustNot collection needed
 
                 // Update JSON content silently using FilterSerializationService for proper formatting
                 var serializationService = ServiceHelper.GetService<FilterSerializationService>();
@@ -141,13 +132,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
 
                 // Silent status update (no user-visible message)
-                var totalItems = config.Must.Count + config.Should.Count + config.MustNot.Count;
+                var totalItems = config.Must.Count + config.Should.Count;
                 ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
                 ValidationStatusColor = Brushes.Gray;
 
                 DebugLogger.Log(
                     "JsonEditorTab",
-                    $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not"
+                    $"Auto-synced JSON from visual builder: {config.Must.Count} must, {config.Should.Count} should"
                 );
             }
             catch (Exception ex)
@@ -216,17 +207,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     );
                 }
 
-                // Generate MustNot clauses from visual builder
-                foreach (var item in visualTab.SelectedMustNot)
-                {
-                    config.MustNot.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
-                }
+                // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
+                // No separate MustNot collection needed
 
                 JsonContent = JsonSerializer.Serialize(
                     config,
@@ -243,12 +225,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 );
 
                 ValidationStatus =
-                    $"✓ Generated from visual ({config.Must.Count + config.Should.Count + config.MustNot.Count} items)";
+                    $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
                 ValidationStatusColor = Brushes.Green;
 
                 DebugLogger.Log(
                     "JsonEditorTab",
-                    $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} must not items"
+                    $"Generated JSON from visual builder with {config.Must.Count} must, {config.Should.Count} should items"
                 );
             }
             catch (Exception ex)
@@ -303,7 +285,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Clear existing selections in visual builder
                 visualTab.SelectedMust.Clear();
                 visualTab.SelectedShould.Clear();
-                visualTab.SelectedMustNot.Clear();
 
                 int itemsAdded = 0;
 
@@ -335,22 +316,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 }
 
-                // Apply MustNot items
-                if (config.MustNot != null)
-                {
-                    foreach (var clause in config.MustNot)
-                    {
-                        var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (
-                            item != null
-                            && !visualTab.SelectedMustNot.Any(x => x.Name == item.Name)
-                        )
-                        {
-                            visualTab.SelectedMustNot.Add(item);
-                            itemsAdded++;
-                        }
-                    }
-                }
+                // MUST-NOT functionality removed - items with IsInvertedFilter=true in Must collection are treated as MUST-NOT
+                // No separate MustNot collection exists anymore
 
                 ValidationStatus = $"✓ Applied to visual ({itemsAdded} items)";
                 ValidationStatusColor = Brushes.Green;

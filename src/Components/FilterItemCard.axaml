@@ -10,7 +10,7 @@
              x:Class="BalatroSeedOracle.Components.FilterItemCard"
              x:DataType="models:FilterItem">
 
-    <!-- SELF-CONTAINED Balatro card component with ALL behaviors baked in -->
+    <!-- SELF-CONTAINED Balatro card component with magnetic tilt behavior -->
     <StackPanel Spacing="2" Width="95" IsHitTestVisible="False">
         <!-- Card image with all overlays and behaviors (71x95 native Balatro size) -->
         <Border Background="Transparent"
@@ -24,7 +24,7 @@
             </i:Interaction.Behaviors>
 
             <Grid Width="71" Height="95">
-                <!-- Base card image with CardFlipOnTriggerBehavior -->
+                <!-- Base card image -->
                 <Image Name="BaseCardImage"
                        Source="{Binding ItemImage}"
                        Width="71"
@@ -32,12 +32,7 @@
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
-                       IsHitTestVisible="False"
-                       RenderTransformOrigin="0.5,0.5">
-                    <Image.RenderTransform>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    </Image.RenderTransform>
-                </Image>
+                       IsHitTestVisible="False"/>
 
                 <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
                 <Image Source="{Binding EditionImage}"
@@ -88,6 +83,17 @@
                        VerticalAlignment="Center"
                        IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
                        IsHitTestVisible="False"/>
+
+                <!-- Debuffed overlay (red X for MUST-NOT items) - highest ZIndex -->
+                <Image Source="{Binding DebuffedImage}"
+                       Width="71"
+                       Height="95"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DebuffedImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"
+                       ZIndex="100"/>
             </Grid>
         </Border>
 

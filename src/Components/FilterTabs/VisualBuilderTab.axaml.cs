@@ -53,13 +53,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 DebugLogger.Log(
                     "VisualBuilderTab",
-                    $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}, MustNot: {vm.SelectedMustNot.Count}"
+                    $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}"
                 );
 
                 // CRITICAL-001 FIX: Use named methods for event handlers so they can be unsubscribed
                 vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
                 vm.SelectedShould.CollectionChanged += OnShouldCollectionChanged;
-                vm.SelectedMustNot.CollectionChanged += OnMustNotCollectionChanged;
             }
 
             // Setup drop zones AFTER the control is attached to visual tree
@@ -81,11 +80,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Find drop zones - we'll check them manually via hit testing
             var mustZone = this.FindControl<Border>("MustDropZone");
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
-            var mustNotZone = this.FindControl<Border>("MustNotDropZone");
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}, MustNot: {mustNotZone != null}"
+                $"Drop zones found - Must: {mustZone != null}, Should: {shouldZone != null}"
             );
 
             // Setup operator tray drop zones
@@ -441,14 +439,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         $"Drag initiated from Should zone: {item.Name}"
                     );
                 }
-                else if (vm.SelectedMustNot.Contains(item))
-                {
-                    _sourceDropZone = "MustNotDropZone";
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"Drag initiated from MustNot zone: {item.Name}"
-                    );
-                }
 
                 // Now start the drag operation
                 _draggedItem = item;
@@ -633,7 +623,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     "MustDropZone" => vm.SelectedMust,
                     "ShouldDropZone" => vm.SelectedShould,
-                    "MustNotDropZone" => vm.SelectedMustNot,
                     _ => null,
                 };
 
@@ -667,7 +656,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             var mustZone = this.FindControl<Border>("MustDropZone");
             var shouldZone = this.FindControl<Border>("ShouldDropZone");
-            var mustNotZone = this.FindControl<Border>("MustNotDropZone");
             var itemGridBorder = this.FindControl<Border>("ItemGridBorder");
             var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
@@ -682,8 +670,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 mustZone?.Classes.Remove("drag-over");
             if (shouldZone != exceptZone)
                 shouldZone?.Classes.Remove("drag-over");
-            if (mustNotZone != exceptZone)
-                mustNotZone?.Classes.Remove("drag-over");
             if (itemGridBorder != exceptZone)
                 itemGridBorder?.Classes.Remove("drag-over");
         }
@@ -838,17 +824,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         zoneName = "MustDropZone";
                         targetZone = this.FindControl<Border>("MustDropZone");
                     }
-                    else if (localPos.Y < thirdHeight * 2)
-                    {
-                        // Middle third - SHOULD
-                        zoneName = "ShouldDropZone";
-                        targetZone = this.FindControl<Border>("ShouldDropZone");
-                    }
                     else
                     {
-                        // Bottom third - CAN'T
-                        zoneName = "MustNotDropZone";
-                        targetZone = this.FindControl<Border>("MustNotDropZone");
+                        // Bottom half - SHOULD
+                        zoneName = "ShouldDropZone";
+                        targetZone = this.FindControl<Border>("ShouldDropZone");
                     }
 
                     DebugLogger.Log(
@@ -889,10 +869,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     vm.SelectedShould.Remove(_draggedItem);
                                     vm.IsDragging = false;
                                     break;
-                                case "MustNotDropZone":
-                                    vm.SelectedMustNot.Remove(_draggedItem);
-                                    vm.IsDragging = false;
-                                    break;
                             }
                             // Play trash sound (or card drop)
                             // SoundEffectService.Instance.PlayCardDrop();
@@ -921,9 +897,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             case "ShouldDropZone":
                                 vm.IsDragging = false;
                                 break;
-                            case "MustNotDropZone":
-                                vm.IsDragging = false;
-                                break;
                         }
                     }
                     else
@@ -942,9 +915,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     break;
                                 case "ShouldDropZone":
                                     vm.SelectedShould.Remove(_draggedItem);
-                                    break;
-                                case "MustNotDropZone":
-                                    vm.SelectedMustNot.Remove(_draggedItem);
                                     break;
                             }
                         }
@@ -1060,10 +1030,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         vm.AddToShouldCommand.Execute(itemToAdd);
                                         vm.IsDragging = false;
                                         break;
-                                    case "MustNotDropZone":
-                                        vm.AddToMustNotCommand.Execute(itemToAdd);
-                                        vm.IsDragging = false;
-                                        break;
                                 }
 
                                 // Clear the unified operator's children after copying them
@@ -1087,10 +1053,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         break;
                                     case "ShouldDropZone":
                                         vm.AddToShouldCommand.Execute(_draggedItem);
-                                        vm.IsDragging = false;
-                                        break;
-                                    case "MustNotDropZone":
-                                        vm.AddToMustNotCommand.Execute(_draggedItem);
                                         vm.IsDragging = false;
                                         break;
                                 }
@@ -1330,7 +1292,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 vm.SelectedMust.Clear();
                 vm.SelectedShould.Clear();
-                vm.SelectedMustNot.Clear();
             }
         }
 
@@ -1429,7 +1390,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // Clear all drop zones
                         vm.SelectedMust.Clear();
                         vm.SelectedShould.Clear();
-                        vm.SelectedMustNot.Clear();
 
                         // Clear unified operator tray
                         vm.UnifiedOperator.Children.Clear();
@@ -1803,15 +1763,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Show ALL drop zone overlays so user can see where to drop
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
             var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-            var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
 
             // Show all overlays except the source zone (if dragging from a zone)
             if (mustOverlay != null)
                 mustOverlay.IsVisible = (excludeZone != "MustDropZone");
             if (shouldOverlay != null)
                 shouldOverlay.IsVisible = (excludeZone != "ShouldDropZone");
-            if (mustNotOverlay != null)
-                mustNotOverlay.IsVisible = (excludeZone != "MustNotDropZone");
 
             // Always show Favorites overlay during drag
             var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");
@@ -1837,10 +1794,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (shouldOverlay != null)
                 shouldOverlay.IsVisible = false;
 
-            var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-            if (mustNotOverlay != null)
-                mustNotOverlay.IsVisible = false;
-
             var returnOverlay = this.FindControl<Border>("ReturnOverlay");
             if (returnOverlay != null)
                 returnOverlay.IsVisible = false;
@@ -1860,7 +1813,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Unsubscribe collection change handlers
                 vm.SelectedMust.CollectionChanged -= OnMustCollectionChanged;
                 vm.SelectedShould.CollectionChanged -= OnShouldCollectionChanged;
-                vm.SelectedMustNot.CollectionChanged -= OnMustNotCollectionChanged;
             }
 
             // Detach global pointer handlers
@@ -1898,16 +1850,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnMustNotCollectionChanged(object? s, NotifyCollectionChangedEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                DebugLogger.Log(
-                    "VisualBuilderTab",
-                    $"SelectedMustNot CollectionChanged - Action: {e.Action}, NewItems: {e.NewItems?.Count ?? 0}, Count: {vm.SelectedMustNot.Count}"
-                );
-            }
-        }
 
         /// <summary>
         /// Handle MUST zone label click - zones are always expanded now
@@ -2000,49 +1942,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 shouldOverlay.IsVisible = false;
         }
 
-        /// <summary>
-        /// Handle CAN'T zone label click - expand CAN'T, collapse others
-        /// </summary>
-        private void OnCantLabelClick(object? sender, PointerPressedEventArgs e)
-        {
-            // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "CAN'T zone label clicked (zones always expanded)");
-        }
-
-        /// <summary>
-        /// Handle pointer entering CAN'T drop zone - show overlay only during drag
-        /// </summary>
-        private void OnCantZonePointerEntered(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsCantHovered = true;
-            }
-
-            // Show overlay only if we're currently dragging
-            if (_isDragging)
-            {
-                var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-                if (mustNotOverlay != null)
-                    mustNotOverlay.IsVisible = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle pointer leaving CAN'T drop zone - hide overlay
-        /// </summary>
-        private void OnCantZonePointerExited(object? sender, PointerEventArgs e)
-        {
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.IsCantHovered = false;
-            }
-
-            // Hide overlay when leaving zone
-            var mustNotOverlay = this.FindControl<Border>("MustNotDropOverlay");
-            if (mustNotOverlay != null)
-                mustNotOverlay.IsVisible = false;
-        }
 
         #region Unified Operator Tray Handlers
 

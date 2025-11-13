@@ -1636,6 +1636,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+
         // Get a composite playing card image (enhancement + card pattern)
         public IImage GetPlayingCardImage(
             string suit,
@@ -1811,6 +1812,21 @@ namespace BalatroSeedOracle.Services
             if (edition.Equals("None", StringComparison.OrdinalIgnoreCase))
             {
                 return baseJoker;
+            }
+
+            // Special case for "Negative" - get the negative overlay sprite
+            if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+            {
+                var negativeOverlay = GetEditionImage(edition);
+                if (negativeOverlay == null)
+                {
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        "Failed to get negative overlay - returning base joker"
+                    );
+                    return baseJoker;
+                }
+                return CompositeImages(baseJoker, negativeOverlay, 142, 190);
             }
 
             // Get edition overlay
