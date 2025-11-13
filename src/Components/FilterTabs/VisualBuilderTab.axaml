@@ -188,9 +188,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
                                 ToolTip.Tip="None"
-                                Width="48" Height="48"
+                                Width="42" Height="42"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0,0,1,0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -200,9 +200,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
                                 ToolTip.Tip="Foil (+50 chips)"
-                                Width="48" Height="48"
+                                Width="42" Height="42"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0,0,1,0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -212,9 +212,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
                                 ToolTip.Tip="Holographic (+10 mult)"
-                                Width="48" Height="48"
+                                Width="42" Height="42"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0,0,1,0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -224,9 +224,9 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
                                 ToolTip.Tip="Polychrome (x1.5 mult)"
-                                Width="48" Height="48"
+                                Width="42" Height="42"
                                 Padding="2"
-                                Margin="0,0,2,0">
+                                Margin="0,0,1,0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
                                    Stretch="Uniform"/>
                         </Button>
@@ -236,10 +236,22 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
                                 ToolTip.Tip="Negative (+1 joker slot)"
-                                Width="48" Height="48"
+                                Width="42" Height="42"
                                 Padding="2"
-                                Margin="0,0,8,0">
+                                Margin="0,0,1,0">
                             <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Debuffed Button (Universal - marks items as Banned/Filter Out) -->
+                        <Button Command="{Binding ToggleDebuffedCommand}"
+                                Classes="icon-button"
+                                ToolTip.Tip="Filter Out (Banned Item)"
+                                Width="42" Height="42"
+                                Padding="2"
+                                Margin="0,0,4,0">
+                            <Image Source="{Binding DebuffedIconImage}"
+                                   Width="38" Height="38"
                                    Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
@@ -341,18 +353,6 @@
                                    Stretch="Uniform"/>
                         </Button>
                     </StackPanel>
-
-                    <!-- Debuffed Button (Universal - marks items as Banned/Filter Out) -->
-                    <Button Command="{Binding ToggleDebuffedCommand}"
-                            Classes="icon-button"
-                            ToolTip.Tip="Filter Out (Banned Item)"
-                            Width="48" Height="48"
-                            Padding="2"
-                            Margin="0,0,0,0">
-                        <Image Source="{Binding DebuffedIconImage}"
-                               Width="44" Height="44"
-                               Stretch="Uniform"/>
-                    </Button>
                 </WrapPanel>
 
                 <!-- ITEMS SHELF - Full height scrollable item list -->
