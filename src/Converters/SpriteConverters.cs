@@ -691,4 +691,48 @@ namespace BalatroSeedOracle.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class EnhancementSpriteConverter : IValueConverter
+    {
+        public static readonly EnhancementSpriteConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            var enhancement = parameter as string ?? value as string;
+            if (
+                string.IsNullOrEmpty(enhancement)
+                || enhancement.Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
+                return null;
+
+            try
+            {
+                var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
+                return spriteService.GetEnhancementImage(enhancement);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "EnhancementSpriteConverter",
+                    $"Failed to get enhancement sprite for '{enhancement}': {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        public object ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

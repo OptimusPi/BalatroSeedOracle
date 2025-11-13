@@ -30,5 +30,6 @@
         "**/*.exe",
         "**/*.pdb",
         "**/*.cache"
-    ]
+    ],
+    "dotnet.defaultSolution": "BalatroSeedOracle.sln"
 }

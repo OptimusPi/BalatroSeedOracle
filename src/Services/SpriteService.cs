@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
+using SkiaSharp;
 
 namespace BalatroSeedOracle.Services
 {
@@ -22,6 +23,7 @@ namespace BalatroSeedOracle.Services
 
         private bool _spritesPreloaded = false;
         private readonly Dictionary<string, IImage> _preloadedSprites = new();
+        private readonly Dictionary<string, IImage> _precomputedComposites = new();
 
         /// <summary>
         /// Normalizes a sprite name for consistent lookup: trims whitespace, removes spaces and underscores, converts to lowercase.
@@ -104,6 +106,7 @@ namespace BalatroSeedOracle.Services
                     PreloadEditions(progress);
                     PreloadEnhancements(progress);
                     PreloadSeals(progress);
+                    PreloadComposites(progress);
                 });
 
                 _spritesPreloaded = true;
@@ -586,6 +589,58 @@ namespace BalatroSeedOracle.Services
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Precomputes all common composite images (Joker + Edition/Debuff combinations)
+        /// to eliminate lag when opening the filters modal
+        /// </summary>
+        private void PreloadComposites(
+            IProgress<(string category, int current, int total)>? progress
+        )
+        {
+            DebugLogger.Log("SpriteService", "Precomputing composite images...");
+            var startTime = DateTime.Now;
+
+            var editions = new[] { "None", "Foil", "Holo", "Polychrome", "Negative" };
+            var debuffStates = new[] { false, true };
+
+            int total = editions.Length * debuffStates.Length;
+            int current = 0;
+
+            foreach (var edition in editions)
+            {
+                foreach (var debuff in debuffStates)
+                {
+                    try
+                    {
+                        var key = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+                        if (!_precomputedComposites.ContainsKey(key))
+                        {
+                            var composite = GetJokerWithEditionImage(edition, debuff);
+                            if (composite != null)
+                            {
+                                _precomputedComposites[key] = composite;
+                            }
+                        }
+                        current++;
+                        progress?.Report(("Composites", current, total));
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            $"Failed to precompute {edition} {(debuff ? "(debuff)" : "")}: {ex.Message}"
+                        );
+                    }
+                }
+            }
+
+            var elapsed = DateTime.Now - startTime;
+            DebugLogger.LogImportant(
+                "SpriteService",
+                $"Precomputed {_precomputedComposites.Count} composite images in {elapsed.TotalSeconds:F2}s"
+            );
         }
 
         private void LoadAssets()
@@ -1636,6 +1691,91 @@ namespace BalatroSeedOracle.Services
             }
         }
 
+        /// <summary>
+        /// Inverts the colors of an image using RGB color inversion (photo negative effect)
+        /// </summary>
+        private IImage? InvertImageColors(IImage sourceImage)
+        {
+            try
+            {
+                // Cast to Bitmap to access pixel data
+                if (sourceImage is not Bitmap sourceBitmap)
+                {
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        "Cannot invert non-Bitmap image"
+                    );
+                    return sourceImage;
+                }
+
+                // Create a MemoryStream to get bitmap bytes
+                using var memoryStream = new MemoryStream();
+                sourceBitmap.Save(memoryStream);
+                memoryStream.Position = 0;
+
+                // Load into SkiaSharp
+                using var skBitmap = SKBitmap.Decode(memoryStream);
+                if (skBitmap == null)
+                {
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        "Failed to decode bitmap with SkiaSharp"
+                    );
+                    return sourceImage;
+                }
+
+                // Create color matrix for RGB inversion
+                // Matrix format: [ R, G, B, A, Offset ]
+                var invertMatrix = new float[]
+                {
+                    -1,  0,  0, 0, 255, // Red inverted: R' = 255 - R
+                     0, -1,  0, 0, 255, // Green inverted: G' = 255 - G
+                     0,  0, -1, 0, 255, // Blue inverted: B' = 255 - B
+                     0,  0,  0, 1,   0  // Alpha unchanged
+                };
+
+                using var colorFilter = SKColorFilter.CreateColorMatrix(invertMatrix);
+                using var paint = new SKPaint { ColorFilter = colorFilter };
+
+                // Create output surface
+                var imageInfo = new SKImageInfo(
+                    skBitmap.Width,
+                    skBitmap.Height,
+                    SKColorType.Rgba8888,
+                    SKAlphaType.Premul
+                );
+                using var surface = SKSurface.Create(imageInfo);
+                if (surface == null)
+                {
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        "Failed to create SkiaSharp surface"
+                    );
+                    return sourceImage;
+                }
+
+                // Draw inverted image
+                surface.Canvas.DrawBitmap(skBitmap, 0, 0, paint);
+
+                // Convert back to Avalonia Bitmap
+                using var image = surface.Snapshot();
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var outputStream = new MemoryStream();
+                data.SaveTo(outputStream);
+                outputStream.Position = 0;
+
+                return new Bitmap(outputStream);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to invert image colors: {ex.Message}"
+                );
+                return sourceImage;
+            }
+        }
+
 
         // Get a composite playing card image (enhancement + card pattern)
         public IImage GetPlayingCardImage(
@@ -1791,12 +1931,22 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Gets a composite image of a Joker with an edition overlay
+        /// Gets a composite image of a Joker with optional edition and debuff overlays
         /// </summary>
-        public IImage? GetJokerWithEditionImage(string edition)
+        /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
+        /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
+        public IImage? GetJokerWithEditionImage(string edition, bool debuff = false)
         {
             ArgumentNullException.ThrowIfNull(edition);
 
+            // Check cache first (precomputed during loading screen)
+            var cacheKey = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+            if (_precomputedComposites.TryGetValue(cacheKey, out var cached))
+            {
+                return cached;
+            }
+
+            // Not in cache - compute on the fly (fallback for dynamic combinations)
             // Get base joker image
             var baseJoker = GetItemImage("Joker", "Joker");
             if (baseJoker == null)
@@ -1808,40 +1958,63 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            // Special case for "None" - just return the base joker
-            if (edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+            IImage? result = baseJoker;
+
+            // Apply edition effect
+            if (!edition.Equals("None", StringComparison.OrdinalIgnoreCase))
             {
-                return baseJoker;
+                if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Negative: Invert colors
+                    var inverted = InvertImageColors(result);
+                    if (inverted != null)
+                        result = inverted;
+                    else
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            "Failed to invert Joker colors for Negative edition"
+                        );
+                }
+                else
+                {
+                    // Other editions: Composite overlay
+                    var editionOverlay = GetEditionImage(edition);
+                    if (editionOverlay != null)
+                    {
+                        var composited = CompositeImages(result, editionOverlay, 142, 190);
+                        if (composited != null)
+                            result = composited;
+                    }
+                    else
+                    {
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            $"Failed to get edition overlay for: {edition}"
+                        );
+                    }
+                }
             }
 
-            // Special case for "Negative" - get the negative overlay sprite
-            if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+            // Apply debuff overlay if requested
+            if (debuff)
             {
-                var negativeOverlay = GetEditionImage(edition);
-                if (negativeOverlay == null)
+                var debuffOverlay = GetEnhancementImage("debuffed");
+                if (debuffOverlay != null)
+                {
+                    var composited = CompositeImages(result, debuffOverlay, 142, 190);
+                    if (composited != null)
+                        result = composited;
+                }
+                else
                 {
                     DebugLogger.LogError(
                         "SpriteService",
-                        "Failed to get negative overlay - returning base joker"
+                        "Failed to get debuffed overlay"
                     );
-                    return baseJoker;
                 }
-                return CompositeImages(baseJoker, negativeOverlay, 142, 190);
             }
 
-            // Get edition overlay
-            var editionOverlay = GetEditionImage(edition);
-            if (editionOverlay == null)
-            {
-                DebugLogger.LogError(
-                    "SpriteService",
-                    $"Failed to get edition overlay for: {edition}"
-                );
-                return baseJoker; // Return base joker if no overlay available
-            }
-
-            // Composite them together (142x190 pixels - standard joker size)
-            return CompositeImages(baseJoker, editionOverlay, 142, 190);
+            return result;
         }
 
         // Get stake chip image from the smaller stake chips sprite sheet (29x29 pixels each)

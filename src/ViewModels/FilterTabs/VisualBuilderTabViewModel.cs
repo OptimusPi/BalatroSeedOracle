@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
@@ -193,6 +194,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         [ObservableProperty]
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
+
+        // Button icon images
+        public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEnhancementImage("debuffed");
 
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
@@ -2390,6 +2394,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 TriggerAutoSave();
             }
 
+            // Force immediate UI refresh with high priority render pass
+            Avalonia.Threading.Dispatcher.UIThread.Post(
+                () =>
+                {
+                    DebugLogger.Log("SetEdition", "✅ Forced UI refresh complete");
+                },
+                Avalonia.Threading.DispatcherPriority.Render
+            );
+
             DebugLogger.Log(
                 "VisualBuilderTab",
                 $"Edition changed to: {edition} and applied to all items in shelf and drop zones"
@@ -2403,6 +2416,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public void ToggleStickerPerishable()
         {
             StickerPerishable = !StickerPerishable;
+
+            // Mutual exclusivity: Turn off Eternal when Perishable is enabled
+            if (StickerPerishable && StickerEternal)
+            {
+                StickerEternal = false;
+                DebugLogger.Log("VisualBuilderTab", "Turned off Eternal (mutual exclusivity)");
+            }
 
             // Apply to all existing items
             ApplyStickersToAllItems();
@@ -2420,6 +2440,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public void ToggleStickerEternal()
         {
             StickerEternal = !StickerEternal;
+
+            // Mutual exclusivity: Turn off Perishable when Eternal is enabled
+            if (StickerEternal && StickerPerishable)
+            {
+                StickerPerishable = false;
+                DebugLogger.Log("VisualBuilderTab", "Turned off Perishable (mutual exclusivity)");
+            }
 
             // Apply to all existing items
             ApplyStickersToAllItems();
