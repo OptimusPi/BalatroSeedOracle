@@ -300,6 +300,34 @@ namespace BalatroSeedOracle.Models
             }
         }
 
+        // Banned Items tray flag (shows debuffed overlay when inside BannedItems operator)
+        private bool _isInBannedItemsTray;
+        public bool IsInBannedItemsTray
+        {
+            get => _isInBannedItemsTray;
+            set
+            {
+                if (_isInBannedItemsTray != value)
+                {
+                    _isInBannedItemsTray = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(DebuffedOverlayImage));
+                }
+            }
+        }
+
+        // Debuffed overlay image for items in BannedItems tray
+        public IImage? DebuffedOverlayImage
+        {
+            get
+            {
+                if (!IsInBannedItemsTray)
+                    return null;
+
+                return Services.SpriteService.Instance.GetEditionImage("debuffed");
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

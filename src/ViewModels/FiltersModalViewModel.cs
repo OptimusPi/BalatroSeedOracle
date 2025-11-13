@@ -1717,7 +1717,38 @@ namespace BalatroSeedOracle.ViewModels
                         }
                     }
 
-                    // MUST-NOT removed - items with IsInvertedFilter=true in Must collection are treated as MUST-NOT
+                    // Convert MustNot items → BannedItems tray
+                    if (SelectedMustNot != null && SelectedMustNot.Any())
+                    {
+                        DebugLogger.Log(
+                            "FiltersModalViewModel",
+                            $"Creating BannedItems tray with {SelectedMustNot.Count} items"
+                        );
+
+                        var bannedItemsTray = new Models.FilterOperatorItem("BannedItems");
+
+                        foreach (var itemKey in SelectedMustNot)
+                        {
+                            if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                            {
+                                var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
+                                if (filterItem != null)
+                                {
+                                    // Set IsInBannedItemsTray flag for debuffed overlay
+                                    filterItem.IsInBannedItemsTray = true;
+                                    bannedItemsTray.Children.Add(filterItem);
+                                }
+                            }
+                        }
+
+                        // Add BannedItems tray to MUST zone
+                        visualVm.SelectedMust.Add(bannedItemsTray);
+
+                        DebugLogger.Log(
+                            "FiltersModalViewModel",
+                            $"Added BannedItems tray with {bannedItemsTray.Children.Count} children to MUST zone"
+                        );
+                    }
 
                     DebugLogger.Log(
                         "FiltersModalViewModel",

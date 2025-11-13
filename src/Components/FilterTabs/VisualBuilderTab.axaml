@@ -191,7 +191,7 @@
                                 Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=None}"
+                            <Image Source="{Binding EditionBaseImage}"
                                    Stretch="Uniform"/>
                         </Button>
 
@@ -203,8 +203,11 @@
                                 Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetEditionCommand}"
@@ -215,8 +218,11 @@
                                 Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetEditionCommand}"
@@ -227,8 +233,11 @@
                                 Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetEditionCommand}"
@@ -239,20 +248,11 @@
                                 Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
-                                   Stretch="Uniform"/>
-                        </Button>
-
-                        <!-- Debuffed Button (Universal - marks items as Banned/Filter Out) -->
-                        <Button Command="{Binding ToggleDebuffedCommand}"
-                                Classes="icon-button"
-                                ToolTip.Tip="Filter Out (Banned Item)"
-                                Width="38"
-                                Padding="2"
-                                Margin="0,0,4,0">
-                            <Image Source="{Binding DebuffedIconImage}"
-                                   Width="34" Height="34"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
                     </StackPanel>
 
@@ -292,29 +292,21 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- Seal Buttons (StandardCard only) -->
+                    <!-- Seal Buttons (StandardCard only) - Show 10 of Spades with seal on top -->
                     <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
-                        <Button Command="{Binding SetSealCommand}"
-                                CommandParameter="None"
-                                Classes="icon-button"
-                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
-                                ToolTip.Tip="No Seal"
-                                Width="40"
-                                Padding="4"
-                                Margin="0">
-                            <TextBlock Text="—" FontSize="16" Foreground="{StaticResource LightGrey}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Button>
-
                         <Button Command="{Binding SetSealCommand}"
                                 CommandParameter="Purple"
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
                                 ToolTip.Tip="Purple Seal"
-                                Width="40"
+                                Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetSealCommand}"
@@ -322,11 +314,14 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
                                 ToolTip.Tip="Gold Seal"
-                                Width="40"
+                                Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetSealCommand}"
@@ -334,11 +329,14 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
                                 ToolTip.Tip="Red Seal"
-                                Width="40"
+                                Width="38"
                                 Padding="2"
                                 Margin="0">
-                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
-                                   Stretch="Uniform"/>
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
 
                         <Button Command="{Binding SetSealCommand}"
@@ -346,11 +344,14 @@
                                 Classes="icon-button"
                                 Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
                                 ToolTip.Tip="Blue Seal"
-                                Width="40"
+                                Width="38"
                                 Padding="2"
-                                Margin="0,0,0,0">
-                            <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
-                                   Stretch="Uniform"/>
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
+                                       Stretch="Uniform"/>
+                            </Grid>
                         </Button>
                     </StackPanel>
                 </WrapPanel>
@@ -582,7 +583,7 @@
                             BorderThickness="2"
                             CornerRadius="6"
                             Cursor="Hand"
-                            ToolTip.Tip="Toggle OR/AND"
+                            ToolTip.Tip="Cycle: OR → AND → BANNED"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
                         <TextBlock Text="⇄"

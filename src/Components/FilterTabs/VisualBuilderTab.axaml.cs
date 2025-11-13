@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
@@ -953,6 +954,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     $"➕ Adding {_draggedItem.DisplayName} operator to {zoneName}"
                                 );
 
+                                // VALIDATION: BannedItems can ONLY drop into MUST zone
+                                if (operatorItem.OperatorType == "BannedItems" && zoneName == "ShouldDropZone")
+                                {
+                                    DebugLogger.Log(
+                                        "VisualBuilderTab",
+                                        "🚫 BLOCKED: BannedItems cannot drop into SHOULD zone!"
+                                    );
+                                    // Animate rubber-band back to origin
+                                    await AnimateGhostBackToOrigin();
+                                    return;
+                                }
+
                                 // Check if this is the unified operator
                                 bool isUnifiedOperator = (operatorItem == vm.UnifiedOperator);
 
@@ -997,6 +1010,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Suit = child.Suit,
                                             Enhancement = child.Enhancement,
                                             Seal = child.Seal,
+                                            // Copy stickers for overlay rendering (eternal/perishable/rental)
+                                            Stickers = child.Stickers != null ? new List<string>(child.Stickers) : null,
                                         };
                                         operatorCopy.Children.Add(childCopy);
                                     }
@@ -1006,6 +1021,49 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         "VisualBuilderTab",
                                         $"Created operator copy with {operatorCopy.Children.Count} deep-copied children"
                                     );
+                                }
+
+                                // MERGE LOGIC: Check if BannedItems tray already exists in MUST zone
+                                if (operatorItem.OperatorType == "BannedItems" && zoneName == "MustDropZone")
+                                {
+                                    var existingBanned = vm.SelectedMust
+                                        .OfType<Models.FilterOperatorItem>()
+                                        .FirstOrDefault(x => x.OperatorType == "BannedItems");
+
+                                    if (existingBanned != null)
+                                    {
+                                        DebugLogger.Log(
+                                            "VisualBuilderTab",
+                                            $"🔀 MERGING BannedItems: Adding {operatorItem.Children.Count} items to existing BannedItems tray"
+                                        );
+
+                                        // Merge all children into existing BannedItems tray
+                                        foreach (var child in operatorItem.Children.ToList())
+                                        {
+                                            // Set IsInBannedItemsTray flag for debuffed overlay
+                                            child.IsInBannedItemsTray = true;
+                                            existingBanned.Children.Add(child);
+                                        }
+
+                                        // Clear the source tray
+                                        if (isUnifiedOperator)
+                                        {
+                                            operatorItem.Children.Clear();
+                                        }
+
+                                        vm.IsDragging = false;
+                                        // Don't add the operator - we merged into existing one
+                                        return; // Exit early, skip normal add logic
+                                    }
+                                }
+
+                                // Set IsInBannedItemsTray flag for all children if this is a BannedItems tray
+                                if (itemToAdd is Models.FilterOperatorItem bannedOp && bannedOp.OperatorType == "BannedItems")
+                                {
+                                    foreach (var child in bannedOp.Children)
+                                    {
+                                        child.IsInBannedItemsTray = true;
+                                    }
                                 }
 
                                 // Add operator to zone (operators can't go inside operators)
@@ -1511,58 +1569,137 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item is Models.FilterOperatorItem operatorItem)
                 {
-                    // Show fanned cards adorner (like FilterOperatorControl)
+                    // Show fanned cards adorner matching FilterOperatorControl appearance
                     var blue =
                         Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
                     var green =
                         Application.Current?.FindResource("Green") as IBrush ?? Brushes.LimeGreen;
+                    var red =
+                        Application.Current?.FindResource("Red") as IBrush ?? Brushes.Red;
                     var darkBg =
                         Application.Current?.FindResource("DarkBackground") as IBrush
                         ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
 
+                    // Use proper card dimensions (50x70) to match FilterOperatorControl
+                    int count = operatorItem.Children.Count;
+                    double cardWidth = 50.0;
+                    double cardHeight = 70.0;
+
+                    // Calculate canvas size based on number of cards
+                    double canvasWidth = count > 0 ? Math.Max(240, 120 + count * 20) : 120;
+                    double canvasHeight = 150;
+
                     var canvas = new Canvas
                     {
-                        Width = 200,
-                        Height = 120,
+                        Width = canvasWidth,
+                        Height = canvasHeight,
                         ClipToBounds = false
                     };
 
-                    int count = operatorItem.Children.Count;
                     if (count > 0)
                     {
-                        // Calculate fan parameters (similar to FilterOperatorControl)
-                        double baseAngle = count <= 2 ? -8.0 : -15.0;
-                        double angleDelta = count <= 2 ? 16.0 : 30.0 / (count - 1);
-                        double xOffset = 20.0;
-                        double cardWidth = 20.0;
-                        double startX = 100 - (count - 1) * xOffset / 2.0; // Center at canvas midpoint
+                        // Use same fan parameters as FilterOperatorControl for consistency
+                        double baseAngle;
+                        double angleDelta;
+                        double xOffset;
+
+                        if (count == 1)
+                        {
+                            baseAngle = 0;
+                            angleDelta = 0;
+                            xOffset = 0;
+                        }
+                        else if (count == 2)
+                        {
+                            baseAngle = -8.0;
+                            angleDelta = 16.0;
+                            xOffset = 25.0;
+                        }
+                        else if (count <= 4)
+                        {
+                            baseAngle = -12.0;
+                            angleDelta = 24.0 / (count - 1);
+                            xOffset = 22.0;
+                        }
+                        else if (count <= 6)
+                        {
+                            baseAngle = -15.0;
+                            angleDelta = 30.0 / (count - 1);
+                            xOffset = 20.0;
+                        }
+                        else
+                        {
+                            baseAngle = -18.0;
+                            angleDelta = 36.0 / (count - 1);
+                            xOffset = 17.0;
+                        }
+
+                        // Center the fan
+                        double totalWidth = (count - 1) * xOffset + cardWidth;
+                        double startX = (canvasWidth - totalWidth) / 2.0 + cardWidth / 2.0;
 
                         for (int i = 0; i < count; i++)
                         {
                             var child = operatorItem.Children[i];
-                            var childImage = new Image
+
+                            // Create card with all overlays
+                            var cardGrid = new Grid { Width = cardWidth, Height = cardHeight };
+
+                            // Base image
+                            cardGrid.Children.Add(new Image
                             {
                                 Source = child.ItemImage,
                                 Width = cardWidth,
+                                Height = cardHeight,
                                 Stretch = Avalonia.Media.Stretch.Uniform
-                            };
+                            });
+
+                            // Soul face overlay
+                            if (child.SoulFaceImage != null)
+                            {
+                                cardGrid.Children.Add(new Image
+                                {
+                                    Source = child.SoulFaceImage,
+                                    Width = cardWidth,
+                                    Height = cardHeight,
+                                    Stretch = Avalonia.Media.Stretch.Uniform
+                                });
+                            }
+
+                            // Debuffed overlay for BannedItems tray
+                            if (child.DebuffedOverlayImage != null && child.IsInBannedItemsTray)
+                            {
+                                cardGrid.Children.Add(new Image
+                                {
+                                    Source = child.DebuffedOverlayImage,
+                                    Width = cardWidth,
+                                    Height = cardHeight,
+                                    Stretch = Avalonia.Media.Stretch.Uniform
+                                });
+                            }
 
                             var childBorder = new Border
                             {
-                                Child = childImage,
-                                RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative)
+                                Child = cardGrid,
+                                RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative),
+                                ZIndex = 100 + i
                             };
 
                             // Apply fan transforms
+                            double normalizedPosition = count > 1 ? (double)i / (count - 1) : 0.5;
                             double angle = baseAngle + (i * angleDelta);
                             double x = startX + (i * xOffset);
+
+                            // Arc effect
+                            double centerOffset = normalizedPosition - 0.5;
+                            double y = 8.0 * (4 * centerOffset * centerOffset);
 
                             childBorder.RenderTransform = new TransformGroup
                             {
                                 Children =
                                 {
                                     new RotateTransform { Angle = angle },
-                                    new TranslateTransform { X = x, Y = 60 }
+                                    new TranslateTransform { X = x, Y = 60 + y }
                                 }
                             };
 
@@ -1572,14 +1709,24 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
                     }
 
-                    // Wrap canvas in colored border
+                    // Choose border color based on operator type
+                    IBrush borderBrush = operatorItem.OperatorType switch
+                    {
+                        "BannedItems" => red,
+                        "AND" => blue,
+                        _ => green  // OR
+                    };
+
+                    // Wrap canvas in colored border matching FilterOperatorControl
                     var operatorBorder = new Border
                     {
                         Background = darkBg,
-                        BorderBrush = operatorItem.OperatorType == "OR" ? green : blue,
+                        BorderBrush = borderBrush,
                         BorderThickness = new Avalonia.Thickness(2),
                         CornerRadius = new CornerRadius(8),
-                        Padding = new Avalonia.Thickness(8),
+                        Padding = new Avalonia.Thickness(12, 8),
+                        MinWidth = 120,
+                        MinHeight = 100,
                         Child = canvas,
                         Opacity = 0.9
                     };
@@ -1619,6 +1766,98 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             new Image
                             {
                                 Source = item.SoulFaceImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    // Edition overlay (foil, holo, polychrome, negative)
+                    if (item?.EditionImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.EditionImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    // Seal overlay (purple, gold, red, blue - for StandardCards)
+                    if (!string.IsNullOrEmpty(item?.Seal) && item.Seal != "None")
+                    {
+                        var sealImage = Services.SpriteService.Instance.GetSealImage(item.Seal.ToLowerInvariant());
+                        if (sealImage != null)
+                        {
+                            imageGrid.Children.Add(
+                                new Image
+                                {
+                                    Source = sealImage,
+                                    Width = 71,
+                                    Height = 95,
+                                    Stretch = Stretch.Uniform,
+                                    Opacity = 1.0,
+                                }
+                            );
+                        }
+                    }
+
+                    // Sticker overlays (perishable, eternal, rental - for Jokers)
+                    if (item?.PerishableStickerImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.PerishableStickerImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    if (item?.EternalStickerImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.EternalStickerImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    if (item?.RentalStickerImage != null)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.RentalStickerImage,
+                                Width = 71,
+                                Height = 95,
+                                Stretch = Stretch.Uniform,
+                                Opacity = 1.0,
+                            }
+                        );
+                    }
+
+                    // Debuffed overlay (for BannedItems tray)
+                    if (item?.DebuffedOverlayImage != null && item?.IsInBannedItemsTray == true)
+                    {
+                        imageGrid.Children.Add(
+                            new Image
+                            {
+                                Source = item.DebuffedOverlayImage,
                                 Width = 71,
                                 Height = 95,
                                 Stretch = Stretch.Uniform,
@@ -1770,11 +2009,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var mustOverlay = this.FindControl<Border>("MustDropOverlay");
             var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
 
+            // Check if we're dragging a BannedItems operator (cannot drop in SHOULD)
+            bool isDraggingBannedItems = _draggedItem is FilterOperatorItem opItem &&
+                                         opItem.OperatorType == "BannedItems";
+
             // Show all overlays except the source zone (if dragging from a zone)
             if (mustOverlay != null)
                 mustOverlay.IsVisible = (excludeZone != "MustDropZone");
             if (shouldOverlay != null)
-                shouldOverlay.IsVisible = (excludeZone != "ShouldDropZone");
+                shouldOverlay.IsVisible = (excludeZone != "ShouldDropZone") && !isDraggingBannedItems;
 
             // Always show Favorites overlay during drag
             var favoritesOverlay = this.FindControl<Border>("FavoritesDropOverlay");

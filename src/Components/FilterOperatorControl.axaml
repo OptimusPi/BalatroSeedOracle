@@ -3,12 +3,24 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:BalatroSeedOracle.Models"
+    xmlns:converters="using:BalatroSeedOracle.Converters"
     x:DataType="models:FilterOperatorItem">
 
     <UserControl.Styles>
         <!-- Operator card container base style -->
         <Style Selector="Border.operator-card-container">
             <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="100"/>
+        </Style>
+
+        <!-- BannedItems container - RED theme -->
+        <Style Selector="Border.operator-card-container.banned">
+            <Setter Property="BorderBrush" Value="{StaticResource Red}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
@@ -39,6 +51,13 @@
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
         </Style>
 
+        <!-- BannedItems header - RED background -->
+        <Style Selector="Border.operator-header.banned">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="6,6,0,0"/>
+        </Style>
+
         <!-- Operator label text style -->
         <Style Selector="TextBlock.operator-label">
             <Setter Property="Foreground" Value="White"/>
@@ -61,6 +80,7 @@
     <Border
         Name="OperatorContainer"
         Classes="operator-card-container"
+        Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
         ClipToBounds="False">
         <Border.Transitions>
             <Transitions>
@@ -71,14 +91,15 @@
         </Border.Transitions>
 
         <Grid RowDefinitions="Auto,*">
-            <!-- Blue Header with OR/AND Label -->
+            <!-- Header with OR/AND/Banned Items Label -->
             <Border
                 Name="OperatorHeader"
                 Grid.Row="0"
                 Classes="operator-header"
+                Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
                 Cursor="Hand">
                 <TextBlock
-                    Text="{Binding OperatorType}"
+                    Text="{Binding DisplayName}"
                     Classes="operator-label" />
             </Border>
 
@@ -127,15 +148,24 @@
 
                                     <!-- Slightly larger cards (50x70 instead of 40x56) for better visibility -->
                                     <Grid Width="50" Height="70">
+                                        <!-- Base card image -->
                                         <Image
                                             Source="{Binding ItemImage}"
                                             Stretch="Uniform"
                                             IsHitTestVisible="False"/>
+
                                         <!-- Soul face overlay for legendary jokers -->
                                         <Image
                                             Source="{Binding SoulFaceImage}"
                                             Stretch="Uniform"
                                             IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            IsHitTestVisible="False"/>
+
+                                        <!-- DEBUFFED overlay (FULL SIZE) - only for BannedItems tray -->
+                                        <Image
+                                            Source="{Binding DebuffedOverlayImage}"
+                                            Stretch="Uniform"
+                                            IsVisible="{Binding IsInBannedItemsTray}"
                                             IsHitTestVisible="False"/>
                                     </Grid>
                                 </Border>

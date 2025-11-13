@@ -7,8 +7,8 @@ using Avalonia.Media;
 namespace BalatroSeedOracle.Converters
 {
     /// <summary>
-    /// Converts operator type string ("OR" or "AND") to appropriate color brush
-    /// Uses the SAME colors as SHOULD (Green) and MUST (Blue) drop zones from App.axaml resources
+    /// Converts operator type string ("OR", "AND", or "BannedItems") to appropriate color brush
+    /// Uses the SAME colors as SHOULD (Green), MUST (Blue), and MustNot (Red) drop zones from App.axaml resources
     /// </summary>
     public class OperatorColorConverter : IValueConverter
     {
@@ -30,6 +30,7 @@ namespace BalatroSeedOracle.Converters
             {
                 "OR" => "Green", // Matches SHOULD zone
                 "AND" => "Blue", // Matches MUST zone
+                "BannedItems" => "Red", // Matches MustNot logic - RED theme
                 _ => throw new ArgumentException($"Unknown operator type: {operatorType}"),
             };
 
@@ -140,6 +141,39 @@ namespace BalatroSeedOracle.Converters
                 return count == 0;
             }
             return true;
+        }
+
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Returns true if operator type is "BannedItems"
+    /// Used to conditionally apply the "banned" CSS class
+    /// </summary>
+    public class IsBannedItemsConverter : IValueConverter
+    {
+        public static readonly IsBannedItemsConverter Instance = new();
+
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
+        {
+            if (value is string operatorType)
+            {
+                return operatorType == "BannedItems";
+            }
+            return false;
         }
 
         public object? ConvertBack(

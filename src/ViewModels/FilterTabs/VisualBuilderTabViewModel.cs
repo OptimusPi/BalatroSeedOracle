@@ -147,6 +147,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private string _selectedCategory = "Legendary";
 
+        partial void OnSelectedCategoryChanged(string value)
+        {
+            // Notify button images to update when category changes
+            OnPropertyChanged(nameof(EditionBaseImage));
+            OnPropertyChanged(nameof(TenOfSpadesImage));
+        }
+
         // Grouped items for the new UI
         public class ItemGroup : ObservableObject
         {
@@ -197,6 +204,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Button icon images
         public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEditionImage("debuffed");
+
+        // Base image for edition buttons - 10 of Spades for Standard Cards, joker for Jokers
+        public IImage? EditionBaseImage => SelectedCategory == "StandardCard"
+            ? TenOfSpadesImage
+            : Services.SpriteService.Instance.GetJokerImage("Joker");
+
+        // 10 of Spades card image for seal/edition buttons
+        public IImage? TenOfSpadesImage => Services.SpriteService.Instance.GetPlayingCardImage("Spades", "10");
 
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
@@ -1140,8 +1155,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ToggleOperator()
         {
-            // Simply toggle the OperatorType - property change notification handles the rest
-            UnifiedOperator.OperatorType = (UnifiedOperator.OperatorType == "OR") ? "AND" : "OR";
+            // Cycle through three operator types: OR → AND → BannedItems → OR
+            UnifiedOperator.OperatorType = UnifiedOperator.OperatorType switch
+            {
+                "OR" => "AND",
+                "AND" => "BannedItems",
+                "BannedItems" => "OR",
+                _ => "OR" // Default fallback
+            };
             DebugLogger.Log(
                 "VisualBuilderTab",
                 $"Toggled operator to {UnifiedOperator.OperatorType} mode"

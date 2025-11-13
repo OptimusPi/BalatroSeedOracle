@@ -286,9 +286,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Convert FilterItem objects directly (handles FilterOperatorItem with nested children)
                 foreach (var item in visualVm.SelectedMust)
                 {
-                    var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
-                    if (clause != null)
-                        config.Must.Add(clause);
+                    // SPECIAL HANDLING: BannedItems operator → MustNot[]
+                    if (item is Models.FilterOperatorItem operatorItem &&
+                        operatorItem.OperatorType == "BannedItems")
+                    {
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Converting BannedItems operator with {operatorItem.Children.Count} children to MustNot[]"
+                        );
+
+                        // Add each child to MustNot array
+                        foreach (var child in operatorItem.Children)
+                        {
+                            var clause = ConvertFilterItemToClause(child, _parentViewModel.ItemConfigs);
+                            if (clause != null)
+                                config.MustNot.Add(clause);
+                        }
+                    }
+                    else
+                    {
+                        // Normal OR/AND operators or regular items → Must[]
+                        var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
+                        if (clause != null)
+                            config.Must.Add(clause);
+                    }
                 }
 
                 foreach (var item in visualVm.SelectedShould)
