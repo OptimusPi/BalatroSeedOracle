@@ -343,18 +343,16 @@
                     </StackPanel>
 
                     <!-- Debuffed Button (Universal - marks items as Banned/Filter Out) -->
-                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
-                        <Button Command="{Binding ToggleDebuffedCommand}"
-                                Classes="icon-button"
-                                ToolTip.Tip="Filter Out (Banned Item)"
-                                Width="48" Height="48"
-                                Padding="2"
-                                Margin="0,0,0,0">
-                            <Image Source="{Binding DebuffedIconImage}"
-                                   Width="48" Height="48"
-                                   Stretch="Uniform"/>
-                        </Button>
-                    </StackPanel>
+                    <Button Command="{Binding ToggleDebuffedCommand}"
+                            Classes="icon-button"
+                            ToolTip.Tip="Filter Out (Banned Item)"
+                            Width="48" Height="48"
+                            Padding="2"
+                            Margin="0,0,0,0">
+                        <Image Source="{Binding DebuffedIconImage}"
+                               Width="44" Height="44"
+                               Stretch="Uniform"/>
+                    </Button>
                 </WrapPanel>
 
                 <!-- ITEMS SHELF - Full height scrollable item list -->
@@ -390,7 +388,7 @@
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
-                                                    <Grid Margin="1,2" Height="120">
+                                                    <Grid Margin="1,2" Height="105">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
                                                         </i:Interaction.Behaviors>
@@ -405,7 +403,7 @@
                                                                 IsHitTestVisible="True"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Height="120"/>
+                                                                Height="105"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

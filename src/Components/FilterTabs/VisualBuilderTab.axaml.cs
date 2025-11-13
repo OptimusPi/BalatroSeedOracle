@@ -805,36 +805,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     targetZone = itemGridBorder;
                     zoneName = "ItemGridBorder";
                 }
-                // Check if over drop zone container - determine which third
-                else if (
-                    dropZoneContainer != null
-                    && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel)
-                )
+                // Check if over drop zones - use proper hit testing instead of Y-position math
+                else if (dropZoneContainer != null && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel))
                 {
-                    // Get position within the drop zone container
-                    var localPos = e.GetPosition(dropZoneContainer);
-                    var containerHeight = dropZoneContainer.Bounds.Height;
+                    var mustZone = this.FindControl<Border>("MustDropZone");
+                    var shouldZone = this.FindControl<Border>("ShouldDropZone");
 
-                    // Divide into thirds (account for 8px total spacers: 4px + 4px between zones)
-                    var thirdHeight = (containerHeight - 8) / 3.0;
-
-                    if (localPos.Y < thirdHeight)
+                    // Use direct hit testing on each drop zone (fixes bug where operator tray offset broke Y-position math)
+                    if (mustZone != null && IsPointOverControl(cursorPos, mustZone, _topLevel))
                     {
-                        // Top third - MUST
                         zoneName = "MustDropZone";
-                        targetZone = this.FindControl<Border>("MustDropZone");
+                        targetZone = mustZone;
+                        DebugLogger.Log("VisualBuilderTab", "✅ Over MUST drop zone (FILTER)");
                     }
-                    else
+                    else if (shouldZone != null && IsPointOverControl(cursorPos, shouldZone, _topLevel))
                     {
-                        // Bottom half - SHOULD
                         zoneName = "ShouldDropZone";
-                        targetZone = this.FindControl<Border>("ShouldDropZone");
+                        targetZone = shouldZone;
+                        DebugLogger.Log("VisualBuilderTab", "✅ Over SHOULD drop zone (SCORING)");
                     }
-
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"Drop zone detection: Y={localPos.Y:F1}, Height={containerHeight:F1}, Third={thirdHeight:F1}, Zone={zoneName}"
-                    );
                 }
 
                 if (targetZone != null && zoneName != null)
@@ -2119,7 +2108,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
 
             int index = GetCategoryIndex(category);
-            double yPos = (index * 50) + 12;
+            double yPos = (index * 40) + 8;  // 36px button + 4px spacing = 40px per row, 8px offset to center
             Canvas.SetTop(arrow, yPos);
         }
 

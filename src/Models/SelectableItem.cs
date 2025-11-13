@@ -275,7 +275,7 @@ namespace BalatroSeedOracle.Models
                 if (!IsDebuffed)
                     return null;
 
-                return Services.SpriteService.Instance.GetEnhancementImage("debuffed");
+                return Services.SpriteService.Instance.GetEditionImage("debuffed");
             }
         }
 

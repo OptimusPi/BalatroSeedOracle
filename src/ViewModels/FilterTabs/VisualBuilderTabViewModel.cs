@@ -196,7 +196,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
         // Button icon images
-        public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEnhancementImage("debuffed");
+        public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEditionImage("debuffed");
 
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
@@ -2342,22 +2342,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedEdition = edition;
             string? editionValue = edition == "None" ? null : edition.ToLower();
 
-            DebugLogger.Log("SetEdition", $"Processing {GroupedItems.Count} groups");
-
-            // Apply to ALL items in the shelf (GroupedItems)
-            // CRITICAL FIX: Update item.Edition directly to trigger image binding update
+            // Simple direct update - works instantly like ToggleDebuffed
             foreach (var group in GroupedItems)
             {
                 foreach (var item in group.Items)
                 {
-                    // ONLY apply to Jokers and Standard Cards - skip other categories
+                    // ONLY apply to Jokers and Standard Cards
                     if (item.Category != "Joker" && item.Category != "StandardCard")
                         continue;
 
-                    // Update item.Edition directly - this triggers EditionImage property notification
+                    // Direct property set triggers immediate UI update
                     item.Edition = editionValue;
 
-                    // Also update ItemConfig if it exists (for when item gets dropped to zones)
+                    // Update ItemConfig
                     if (
                         _parentViewModel != null
                         && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
@@ -2368,45 +2365,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // Apply to all existing items in drop zones
-            if (_parentViewModel != null)
-            {
-                foreach (
-                    var itemKey in _parentViewModel
-                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                )
-                {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                    {
-                        config.Edition = editionValue;
-                    }
-                }
-
-                // Also update visual items in drop zones (MUST-NOT removed)
-                foreach (var item in SelectedMust.Concat(SelectedShould))
-                {
-                    if (item.Category == "Joker" || item.Category == "StandardCard")
-                    {
-                        item.Edition = editionValue;
-                    }
-                }
-
-                TriggerAutoSave();
-            }
-
-            // Force immediate UI refresh with high priority render pass
-            Avalonia.Threading.Dispatcher.UIThread.Post(
-                () =>
-                {
-                    DebugLogger.Log("SetEdition", "✅ Forced UI refresh complete");
-                },
-                Avalonia.Threading.DispatcherPriority.Render
-            );
-
-            DebugLogger.Log(
-                "VisualBuilderTab",
-                $"Edition changed to: {edition} and applied to all items in shelf and drop zones"
-            );
+            DebugLogger.Log("SetEdition", $"✅ Edition '{edition}' applied to shelf items");
         }
 
         /// <summary>
@@ -2541,39 +2500,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // Apply to all existing items in drop zones
-            if (_parentViewModel != null)
-            {
-                foreach (
-                    var itemKey in _parentViewModel
-                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                )
-                {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                    {
-                        // Only apply seal to StandardCards
-                        if (config.ItemType == "StandardCard")
-                        {
-                            config.Seal = sealValue;
-                        }
-                    }
-                }
-
-                // Also update visual items in drop zones (MUST-NOT removed)
-                foreach (var item in SelectedMust.Concat(SelectedShould))
-                {
-                    if (item.Type == "StandardCard")
-                    {
-                        item.Seal = sealValue;
-                    }
-                }
-
-                TriggerAutoSave();
-            }
-
+            // Helper buttons only affect shelf items, NOT drop zones
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Seal changed to: {seal} and applied to all StandardCards in shelf and drop zones"
+                $"Seal changed to: {seal} and applied to StandardCards in shelf only"
             );
         }
 
@@ -2663,48 +2593,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            // Apply to all existing items in drop zones
-            if (_parentViewModel != null)
-            {
-                foreach (
-                    var itemKey in _parentViewModel
-                        .SelectedMust.Concat(_parentViewModel.SelectedShould)
-                )
-                {
-                    if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                    {
-                        ApplyStickerLogic(config, config.ItemName, eternalRestrictedJokers);
-                    }
-                }
-
-                // Also update visual items in drop zones (MUST-NOT removed)
-                foreach (var item in SelectedMust.Concat(SelectedShould))
-                {
-                    var stickers = new List<string>();
-
-                    if (StickerPerishable)
-                    {
-                        stickers.Add("perishable");
-                    }
-                    else if (
-                        StickerEternal
-                        && CanItemBeEternal(item)
-                        && !eternalRestrictedJokers.Contains(item.Name)
-                    )
-                    {
-                        stickers.Add("eternal");
-                    }
-
-                    if (StickerRental)
-                    {
-                        stickers.Add("rental");
-                    }
-
-                    item.Stickers = stickers.Count > 0 ? stickers : null;
-                }
-
-                TriggerAutoSave();
-            }
+            // Helper buttons only affect shelf items, NOT drop zones
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"Stickers applied to shelf items only"
+            );
         }
 
         /// <summary>

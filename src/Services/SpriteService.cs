@@ -1496,27 +1496,30 @@ namespace BalatroSeedOracle.Services
                 int spriteWidth = 71;
                 int spriteHeight = 94;
 
-                // Map edition names to positions (0-4)
+                // Map edition names to positions (0-4 horizontal layout)
+                // Note: "negative" is a SHADER effect, NOT a sprite in Editions.png
                 int position = edition.ToLowerInvariant() switch
                 {
                     "none" or "normal" => 0,
                     "foil" => 1,
                     "holographic" or "holo" => 2,
                     "polychrome" or "poly" => 3,
-                    "negative" or "neg" => 4, // Position 4 is Negative (not debuffed/red X)
+                    "debuffed" or "debuff" => 4, // Position 4 is the red X (debuffed/banned)
                     _ => 0,
                 };
 
+                // Simple horizontal sprite sheet layout
                 int x = position * spriteWidth;
+                int y = 0;
 
                 if (
                     x + spriteWidth <= editionsSheet.PixelSize.Width
-                    && spriteHeight <= editionsSheet.PixelSize.Height
+                    && y + spriteHeight <= editionsSheet.PixelSize.Height
                 )
                 {
                     return new CroppedBitmap(
                         editionsSheet,
-                        new PixelRect(x, 0, spriteWidth, spriteHeight)
+                        new PixelRect(x, y, spriteWidth, spriteHeight)
                     );
                 }
             }
