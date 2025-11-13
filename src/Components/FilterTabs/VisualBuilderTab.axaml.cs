@@ -1511,7 +1511,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item is Models.FilterOperatorItem operatorItem)
                 {
-                    // Special visual for operators - show a compact box with children count
+                    // Show fanned cards adorner (like FilterOperatorControl)
                     var blue =
                         Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
                     var green =
@@ -1519,13 +1519,60 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var darkBg =
                         Application.Current?.FindResource("DarkBackground") as IBrush
                         ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
-                    var white =
-                        Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
-                    var balatroFont =
-                        Application.Current?.FindResource("BalatroFont")
-                            as Avalonia.Media.FontFamily
-                        ?? Avalonia.Media.FontFamily.Default;
 
+                    var canvas = new Canvas
+                    {
+                        Width = 200,
+                        Height = 120,
+                        ClipToBounds = false
+                    };
+
+                    int count = operatorItem.Children.Count;
+                    if (count > 0)
+                    {
+                        // Calculate fan parameters (similar to FilterOperatorControl)
+                        double baseAngle = count <= 2 ? -8.0 : -15.0;
+                        double angleDelta = count <= 2 ? 16.0 : 30.0 / (count - 1);
+                        double xOffset = 20.0;
+                        double cardWidth = 20.0;
+                        double startX = 100 - (count - 1) * xOffset / 2.0; // Center at canvas midpoint
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            var child = operatorItem.Children[i];
+                            var childImage = new Image
+                            {
+                                Source = child.ItemImage,
+                                Width = cardWidth,
+                                Stretch = Avalonia.Media.Stretch.Uniform
+                            };
+
+                            var childBorder = new Border
+                            {
+                                Child = childImage,
+                                RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative)
+                            };
+
+                            // Apply fan transforms
+                            double angle = baseAngle + (i * angleDelta);
+                            double x = startX + (i * xOffset);
+
+                            childBorder.RenderTransform = new TransformGroup
+                            {
+                                Children =
+                                {
+                                    new RotateTransform { Angle = angle },
+                                    new TranslateTransform { X = x, Y = 60 }
+                                }
+                            };
+
+                            Canvas.SetLeft(childBorder, 0);
+                            Canvas.SetTop(childBorder, 0);
+                            canvas.Children.Add(childBorder);
+                        }
+                    }
+
+                    // Wrap canvas in colored border
                     var operatorBorder = new Border
                     {
                         Background = darkBg,
@@ -1533,38 +1580,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         BorderThickness = new Avalonia.Thickness(2),
                         CornerRadius = new CornerRadius(8),
                         Padding = new Avalonia.Thickness(8),
-                        Width = 100,
-                        Child = new StackPanel
-                        {
-                            Spacing = 4,
-                            Children =
-                            {
-                                new Border
-                                {
-                                    Background = operatorItem.OperatorType == "OR" ? green : blue,
-                                    CornerRadius = new CornerRadius(4),
-                                    Padding = new Avalonia.Thickness(6, 3),
-                                    Child = new TextBlock
-                                    {
-                                        Text = operatorItem.OperatorType,
-                                        FontFamily = balatroFont,
-                                        FontSize = 14,
-                                        Foreground = white,
-                                        HorizontalAlignment = HorizontalAlignment.Center,
-                                    },
-                                },
-                                new TextBlock
-                                {
-                                    Text = $"{operatorItem.Children.Count} items",
-                                    FontFamily = balatroFont,
-                                    FontSize = 11,
-                                    Foreground = white,
-                                    HorizontalAlignment = HorizontalAlignment.Center,
-                                    Opacity = 0.7,
-                                },
-                            },
-                        },
-                        Opacity = 0.9,
+                        Child = canvas,
+                        Opacity = 0.9
                     };
 
                     cardContent = operatorBorder;

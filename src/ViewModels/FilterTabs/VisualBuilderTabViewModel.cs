@@ -1503,6 +1503,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Load Vouchers from BalatroData
                 if (BalatroData.Vouchers?.Keys != null)
                 {
+                    // Custom display order: base vouchers in rows 1,3,5,7 and upgrades in rows 2,4,6,8
+                    // Assuming 5 columns per row for grid layout
+                    var voucherDisplayOrder = new List<string>
+                    {
+                        // Row 1: Base vouchers
+                        "Overstock", "ClearanceSale", "Hone", "RerollSurplus", "CrystalBall",
+                        // Row 2: Upgrades (directly below base versions)
+                        "OverstockPlus", "Liquidation", "GlowUp", "RerollGlut", "OmenGlobe",
+                        // Row 3: Base vouchers
+                        "Telescope", "Grabber", "Wasteful", "TarotMerchant", "PlanetMerchant",
+                        // Row 4: Upgrades
+                        "Observatory", "NachoTong", "Recyclomancy", "TarotTycoon", "PlanetTycoon",
+                        // Row 5: Base vouchers
+                        "SeedMoney", "Blank", "MagicTrick", "Hieroglyph", "DirectorsCut",
+                        // Row 6: Upgrades
+                        "MoneyTree", "Antimatter", "Illusion", "Petroglyph", "Retcon",
+                        // Row 7-8: Final pair
+                        "PaintBrush", "Palette",
+                    };
+
+                    var tempVouchers = new List<FilterItem>();
                     foreach (var voucherName in BalatroData.Vouchers.Keys)
                     {
                         var item = new FilterItem
@@ -1513,7 +1534,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             DisplayName = BalatroData.GetDisplayNameFromSprite(voucherName),
                             ItemImage = spriteService.GetVoucherImage(voucherName),
                         };
-                        AllVouchers.Add(item);
+                        tempVouchers.Add(item);
+                    }
+
+                    // Sort by custom display order
+                    var sortedVouchers = tempVouchers
+                        .OrderBy(v =>
+                        {
+                            var index = voucherDisplayOrder.IndexOf(v.Name);
+                            return index == -1 ? int.MaxValue : index;
+                        })
+                        .ToList();
+
+                    foreach (var voucher in sortedVouchers)
+                    {
+                        AllVouchers.Add(voucher);
                     }
                 }
 
@@ -2321,51 +2356,43 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for ALL items in shelf (GroupedItems) AND drop zones
-        /// Modeled after ApplyStickersToAllItems() for immediate UI updates
+        /// Sets the edition for ALL items in shelf - EXACT COPY of ToggleDebuffed pattern
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
         {
-            DebugLogger.Log("SetEdition", $"🔥 BUTTON CLICKED! Edition='{edition}'");
-
-            // Don't trigger animation if edition didn't actually change
-            if (SelectedEdition == edition)
-            {
-                DebugLogger.Log(
-                    "VisualBuilderTab",
-                    $"Edition already set to '{edition}' - skipping animation"
-                );
-                return;
-            }
-
             SelectedEdition = edition;
             string? editionValue = edition == "None" ? null : edition.ToLower();
 
-            // Simple direct update - works instantly like ToggleDebuffed
+            int totalItems = 0;
+            int skippedItems = 0;
+            int updatedItems = 0;
+
+            // EXACT pattern from ToggleDebuffed - direct property set on all items
             foreach (var group in GroupedItems)
             {
+                DebugLogger.Log("SetEdition", $"Group '{group.GroupName}' has {group.Items.Count} items");
                 foreach (var item in group.Items)
                 {
-                    // ONLY apply to Jokers and Standard Cards
-                    if (item.Category != "Joker" && item.Category != "StandardCard")
-                        continue;
+                    totalItems++;
+                    DebugLogger.Log("SetEdition", $"  Item: Name='{item.Name}', Type='{item.Type}', Category='{item.Category}'");
 
-                    // Direct property set triggers immediate UI update
-                    item.Edition = editionValue;
-
-                    // Update ItemConfig
-                    if (
-                        _parentViewModel != null
-                        && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
-                    )
+                    // ONLY apply to Jokers and Standard Cards - CHECK TYPE NOT CATEGORY!
+                    if (item.Type != "Joker" && item.Type != "SoulJoker" && item.Type != "StandardCard")
                     {
-                        config.Edition = editionValue;
+                        skippedItems++;
+                        DebugLogger.Log("SetEdition", $"  SKIPPED (Type={item.Type})");
+                        continue;
                     }
+
+                    DebugLogger.Log("SetEdition", $"  Setting Edition to '{editionValue ?? "NULL"}'...");
+                    item.Edition = editionValue; // Direct property set - triggers EditionImage refresh
+                    updatedItems++;
+                    DebugLogger.Log("SetEdition", $"  DONE");
                 }
             }
 
-            DebugLogger.Log("SetEdition", $"✅ Edition '{edition}' applied to shelf items");
+            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied - Total:{totalItems}, Updated:{updatedItems}, Skipped:{skippedItems}");
         }
 
         /// <summary>

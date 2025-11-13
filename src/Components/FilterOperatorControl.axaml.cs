@@ -16,6 +16,8 @@ namespace BalatroSeedOracle.Components
         {
             InitializeComponent();
 
+            Helpers.DebugLogger.Log("FilterOperatorControl", "Constructor called");
+
             // Set up drag-drop handlers for the child drop zone
             var dropZone = this.FindControl<Border>("ChildrenDropZone");
             if (dropZone != null)
@@ -37,11 +39,20 @@ namespace BalatroSeedOracle.Components
             {
                 if (DataContext is FilterOperatorItem operatorItem)
                 {
+                    Helpers.DebugLogger.Log("FilterOperatorControl",
+                        $"DataContext set - Type: {operatorItem.OperatorType}, Children: {operatorItem.Children.Count}");
+
                     // Subscribe to Children collection changes to update fanned layout
                     operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
 
                     // Initial layout update
                     UpdateFannedLayout();
+
+                    Helpers.DebugLogger.Log("FilterOperatorControl", "UpdateFannedLayout() called from DataContext");
+                }
+                else
+                {
+                    Helpers.DebugLogger.Log("FilterOperatorControl", "DataContext changed but not FilterOperatorItem");
                 }
             };
 

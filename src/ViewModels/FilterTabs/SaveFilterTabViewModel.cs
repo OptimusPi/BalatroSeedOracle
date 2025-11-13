@@ -260,45 +260,171 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Uses shared FilterConfigurationService instead of duplicating massive logic
         private MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            // CRITICAL FIX: Read from VisualBuilderTab's collections if available
-            // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
-            IEnumerable<string> mustKeys;
-            IEnumerable<string> shouldKeys;
-            IEnumerable<string> mustNotKeys;
+            var userProfileService = ServiceHelper.GetService<UserProfileService>();
+            var config = new MotelyJsonConfig
+            {
+                Deck = "Red", // Default deck
+                Stake = "White", // Default stake
+                Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
+                Description = FilterDescription,
+                DateCreated = DateTime.UtcNow,
+                Author = userProfileService?.GetAuthorName() ?? "Unknown",
+            };
 
+            config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+            config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+            config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+
+            // CRITICAL FIX: Handle FilterOperatorItem objects directly
             if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
             {
-                // Convert FilterItem objects to their keys (ItemKey property)
-                mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
-                shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
-                mustNotKeys = Enumerable.Empty<string>(); // MUST-NOT removed - use IsInvertedFilter flag instead
                 DebugLogger.Log(
                     "SaveFilterTab",
                     $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
+
+                // Convert FilterItem objects directly (handles FilterOperatorItem with nested children)
+                foreach (var item in visualVm.SelectedMust)
+                {
+                    var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
+                    if (clause != null)
+                        config.Must.Add(clause);
+                }
+
+                foreach (var item in visualVm.SelectedShould)
+                {
+                    var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
+                    if (clause != null)
+                        config.Should.Add(clause);
+                }
             }
             else
             {
-                // Fallback to parent's collections (for JSON editor mode)
-                mustKeys = _parentViewModel.SelectedMust;
-                shouldKeys = _parentViewModel.SelectedShould;
-                mustNotKeys = _parentViewModel.SelectedMustNot;
+                // Fallback to parent's collections (for JSON editor mode) - use old key-based approach
+                var mustKeys = _parentViewModel.SelectedMust;
+                var shouldKeys = _parentViewModel.SelectedShould;
+                var mustNotKeys = _parentViewModel.SelectedMustNot;
                 DebugLogger.Log(
                     "SaveFilterTab",
                     $"Building config from parent collections: {mustKeys.Count()} must, {shouldKeys.Count()} should, {mustNotKeys.Count()} mustNot"
                 );
+
+                return _filterConfigurationService.BuildConfigFromSelections(
+                    mustKeys.ToList(),
+                    shouldKeys.ToList(),
+                    mustNotKeys.ToList(),
+                    _parentViewModel.ItemConfigs,
+                    FilterName,
+                    FilterDescription
+                );
             }
 
-            var itemConfigs = _parentViewModel.ItemConfigs;
-
-            return _filterConfigurationService.BuildConfigFromSelections(
-                mustKeys.ToList(),
-                shouldKeys.ToList(),
-                mustNotKeys.ToList(),
-                itemConfigs,
-                FilterName,
-                FilterDescription
+            DebugLogger.Log(
+                "SaveFilterTab",
+                $"Built config: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} mustNot"
             );
+            return config;
+        }
+
+        /// <summary>
+        /// Converts a FilterItem (including FilterOperatorItem with nested children) to a MotleyJsonFilterClause
+        /// </summary>
+        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
+            Models.FilterItem item,
+            Dictionary<string, Models.ItemConfig> itemConfigs
+        )
+        {
+            // Handle FilterOperatorItem specially - it has Children that need to be recursively converted
+            if (item is Models.FilterOperatorItem operatorItem)
+            {
+                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                {
+                    Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                };
+
+                DebugLogger.Log(
+                    "SaveFilterTab",
+                    $"Converting FilterOperatorItem: {operatorItem.OperatorType} with {operatorItem.Children.Count} children"
+                );
+
+                // Recursively convert all children
+                foreach (var child in operatorItem.Children)
+                {
+                    var childClause = ConvertFilterItemToClause(child, itemConfigs);
+                    if (childClause != null)
+                    {
+                        operatorClause.Clauses.Add(childClause);
+                    }
+                }
+
+                DebugLogger.Log(
+                    "SaveFilterTab",
+                    $"Created {operatorItem.OperatorType} clause with {operatorClause.Clauses.Count} children"
+                );
+
+                return operatorClause;
+            }
+
+            // Normal FilterItem - look up in ItemConfigs by ItemKey
+            if (itemConfigs.TryGetValue(item.ItemKey, out var itemConfig))
+            {
+                // Use FilterConfigurationService to convert ItemConfig to clause
+                // We need to create a simple clause from the itemConfig
+                var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+                {
+                    Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+                    Min = itemConfig.Min,
+                };
+
+                // Map ItemType to Motely type
+                var normalizedType = itemConfig.ItemType.ToLower();
+                switch (normalizedType)
+                {
+                    case "joker":
+                        clause.Type = "Joker";
+                        clause.Value = itemConfig.ItemName;
+                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
+                        {
+                            clause.Edition = itemConfig.Edition;
+                        }
+                        break;
+
+                    case "souljoker":
+                        clause.Type = "SoulJoker";
+                        clause.Value = itemConfig.ItemName;
+                        break;
+
+                    case "tarot":
+                        clause.Type = "TarotCard";
+                        clause.Value = itemConfig.ItemName;
+                        break;
+
+                    case "voucher":
+                        clause.Type = "Voucher";
+                        clause.Value = itemConfig.ItemName;
+                        break;
+
+                    case "planet":
+                        clause.Type = "PlanetCard";
+                        clause.Value = itemConfig.ItemName;
+                        break;
+
+                    case "spectral":
+                        clause.Type = "SpectralCard";
+                        clause.Value = itemConfig.ItemName;
+                        break;
+
+                    default:
+                        DebugLogger.Log("SaveFilterTab", $"Unknown item type: {itemConfig.ItemType}");
+                        return null;
+                }
+
+                return clause;
+            }
+
+            DebugLogger.Log("SaveFilterTab", $"ItemKey not found in ItemConfigs: {item.ItemKey}");
+            return null;
         }
 
         // Logic moved to shared FilterConfigurationService

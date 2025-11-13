@@ -234,11 +234,17 @@ namespace BalatroSeedOracle.Models
             get => _edition;
             set
             {
+                Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': OLD='{_edition ?? "NULL"}', NEW='{value ?? "NULL"}'");
                 if (_edition != value)
                 {
                     _edition = value;
+                    Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': CHANGED! Calling OnPropertyChanged...");
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(EditionImage)); // Notify EditionImage to refresh
+                }
+                else
+                {
+                    Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': NO CHANGE (skipped)");
                 }
             }
         }

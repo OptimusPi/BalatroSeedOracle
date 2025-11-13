@@ -13,8 +13,8 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="MinWidth" Value="180"/>
-            <Setter Property="MinHeight" Value="120"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="100"/>
         </Style>
 
         <!-- Expansion animation on hover -->
@@ -99,7 +99,7 @@
                 <Canvas Name="FannedCardsCanvas"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        MinWidth="180"
+                        MinWidth="120"
                         MinHeight="100"
                         ClipToBounds="False">
                     <ItemsControl
