@@ -52,20 +52,22 @@
                     </Grid>
 
                     <!-- Selection arrow overlays the left edge without affecting layout width -->
-                    <Canvas Name="SelectionArrowHost"
-                            Width="20"
-                            Height="44"
-                            IsHitTestVisible="False"
-                            HorizontalAlignment="Left"
-                            Margin="-20,0,0,0"
-                            ClipToBounds="False">
+                    <Grid Name="SelectionArrowHost"
+                          Width="20"
+                          IsHitTestVisible="False"
+                          HorizontalAlignment="Left"
+                          Margin="-20,0,0,0"
+                          ClipToBounds="False">
                         <Polygon Name="SelectionArrow"
                                  Points="0,0 15,10 0,20"
+                                 Width="15"
+                                 Height="20"
                                  Classes="balatro-triangle nav-selection-arrow balatro-bounce-horizontal"
                                  IsVisible="False"
-                                 Canvas.Left="2"
-                                 Canvas.Top="12"/>
-                    </Canvas>
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Center"
+                                 Margin="2,0,0,0"/>
+                    </Grid>
                 </Grid>
             </ControlTemplate>
         </Setter>
@@ -87,5 +89,18 @@
     <Style Selector="nav|SelectableCategoryButton.special:selected /template/ Polygon#SelectionArrow">
         <Setter Property="Fill" Value="{StaticResource BrightGold}"/>
     </Style>
-    
+
+    <!-- Pressed state - move down and hide shadows -->
+    <Style Selector="nav|SelectableCategoryButton:pressed">
+        <Setter Property="RenderTransform">
+            <TranslateTransform Y="4"/>
+        </Setter>
+    </Style>
+    <Style Selector="nav|SelectableCategoryButton:pressed /template/ Border#DropShadow">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="nav|SelectableCategoryButton:pressed /template/ Border#BottomShadow">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
 </Styles>

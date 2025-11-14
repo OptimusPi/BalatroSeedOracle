@@ -3,12 +3,12 @@ using Avalonia.Controls;
 namespace BalatroSeedOracle.Components
 {
     /// <summary>
-    /// SELF-CONTAINED Balatro card component with magnetic tilt behavior.
-    /// NO manual behavior attachment needed in parent - just set DataContext!
+    /// SELF-CONTAINED Balatro card component with all animations baked in.
     ///
     /// Features:
-    /// - MagneticTiltBehavior for authentic hover effects
-    /// - All visual overlays (Edition, Stickers, Soul Face)
+    /// - CardDragBehavior for drag, magnetic tilt, ambient sway, and juice animations
+    /// - All visual overlays (Edition, Stickers, Soul Face, Debuff)
+    /// - Card name label
     /// - Drag opacity feedback
     ///
     /// Usage: <components:FilterItemCard DataContext="{Binding}"/>

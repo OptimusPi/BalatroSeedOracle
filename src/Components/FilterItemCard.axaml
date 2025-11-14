@@ -10,7 +10,7 @@
              x:Class="BalatroSeedOracle.Components.FilterItemCard"
              x:DataType="models:FilterItem">
 
-    <!-- SELF-CONTAINED Balatro card component with magnetic tilt behavior -->
+    <!-- SELF-CONTAINED Balatro card component -->
     <StackPanel Spacing="2" Width="80" IsHitTestVisible="False">
         <!-- Card image with all overlays and behaviors (71x95 native Balatro size) -->
         <Border Background="Transparent"
@@ -19,7 +19,6 @@
                 IsHitTestVisible="True"
                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                 RenderTransformOrigin="0.5,0.5">
-            <!-- Transforms applied by parent's CardDragBehavior -->
 
 
             <Grid Width="71" Height="95">

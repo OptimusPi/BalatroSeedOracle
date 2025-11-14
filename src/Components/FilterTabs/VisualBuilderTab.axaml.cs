@@ -28,18 +28,32 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Models.FilterItem? _draggedItem;
         private Border? _dragAdorner;
         private TranslateTransform? _adornerTransform; // Transform for positioning the ghost (allows sway to work)
+        private RotateTransform? _adornerLeanTransform; // Transform for velocity-based lean effect
         private AdornerLayer? _adornerLayer;
         private TopLevel? _topLevel;
         private bool _isDragging = false;
         private bool _isAnimating = false; // Track if rubber-band animation is playing
         private bool _isDraggingTray = false; // Track if we're dragging an operator tray (disables drop acceptance on trays)
         private Avalonia.Point _dragStartPosition;
+        private Avalonia.Point _dragOffset; // Offset from card origin to click point (maintains grab position)
+        private Avalonia.Point _previousMousePosition; // Track previous frame position for velocity calculation
         private Control? _originalDragSource; // Store the original control to animate back to
         private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
+
+        // Simple LERP system for smooth drag adornment positioning
+        private Avalonia.Point _adornerTargetPosition; // Target position (where mouse is)
+        private Avalonia.Threading.DispatcherTimer? _springUpdateTimer;
 
         public VisualBuilderTab()
         {
             InitializeComponent();
+
+            // Initialize 60fps spring physics timer
+            _springUpdateTimer = new Avalonia.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16) // 60fps
+            };
+            _springUpdateTimer.Tick += OnSpringUpdateTick;
 
             // Set DataContext to the VisualBuilderTabViewModel
             DataContext =
@@ -328,10 +342,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             topLevel
                         );
                         _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+
+                        // Store the click offset relative to the card origin (where user grabbed)
+                        var clickPos = e.GetPosition(topLevel);
+                        _dragOffset = new Avalonia.Point(
+                            clickPos.X - _dragStartPosition.X,
+                            clickPos.Y - _dragStartPosition.Y
+                        );
+
+                        // Initialize previous position for velocity tracking
+                        _previousMousePosition = clickPos;
                     }
                     else
                     {
                         _dragStartPosition = e.GetPosition(this);
+                        _dragOffset = new Avalonia.Point(0, 0);
+                        _previousMousePosition = e.GetPosition(this);
                     }
 
                     DebugLogger.Log(
@@ -348,6 +374,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     // CREATE GHOST IMAGE
                     CreateDragAdorner(item, _dragStartPosition);
+
+                    // Start spring physics timer
+                    _springUpdateTimer?.Start();
 
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
@@ -455,10 +484,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         topLevel
                     );
                     _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+
+                    // Store the click offset relative to the card origin (where user grabbed)
+                    var clickPos = e.GetPosition(topLevel);
+                    _dragOffset = new Avalonia.Point(
+                        clickPos.X - _dragStartPosition.X,
+                        clickPos.Y - _dragStartPosition.Y
+                    );
+
+                    // Initialize previous position for velocity tracking
+                    _previousMousePosition = clickPos;
                 }
                 else
                 {
                     _dragStartPosition = e.GetPosition(this);
+                    _dragOffset = new Avalonia.Point(0, 0);
+                    _previousMousePosition = e.GetPosition(this);
                 }
 
                 // Play sound - disabled (NAudio removed)
@@ -466,6 +507,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Create ghost
                 CreateDragAdorner(item, _dragStartPosition);
+
+                // Start spring physics timer
+                _springUpdateTimer?.Start();
 
                 // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones (zones don't expand, just overlays)
                 if (_sourceDropZone != null)
@@ -492,6 +536,37 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        private void OnSpringUpdateTick(object? sender, EventArgs e)
+        {
+            if (_dragAdorner == null || _adornerTransform == null) return;
+
+            UpdateSpringPhysics();
+        }
+
+        private void UpdateSpringPhysics()
+        {
+            if (_adornerTransform == null) return;
+
+            // Simple lerp towards target - no complex physics needed!
+            const double lerpFactor = 0.3; // adjust for feel (higher = faster, snappier)
+
+            double currentX = _adornerTransform.X;
+            double currentY = _adornerTransform.Y;
+
+            // Interpolate position towards target
+            _adornerTransform.X = currentX + ((_adornerTargetPosition.X - currentX) * lerpFactor);
+            _adornerTransform.Y = currentY + ((_adornerTargetPosition.Y - currentY) * lerpFactor);
+
+            // Lean based on distance to target (simple and works!)
+            if (_adornerLeanTransform != null)
+            {
+                double deltaX = _adornerTargetPosition.X - currentX;
+                double leanAngle = -deltaX * 0.5; // Scale factor
+                leanAngle = Math.Clamp(leanAngle, -15.0, 15.0);
+                _adornerLeanTransform.Angle = leanAngle;
+            }
+        }
+
         private void OnPointerMovedManualDrag(object? sender, PointerEventArgs e)
         {
             if (!_isDragging || _draggedItem == null)
@@ -499,18 +574,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                // Update adorner position using TranslateTransform (allows CardDragBehavior sway to work)
-                if (_adornerTransform != null && _topLevel != null)
+                // Update target position only - timer will handle spring physics
+                if (_topLevel != null)
                 {
-                    var position = e.GetPosition(_topLevel);
-                    _adornerTransform.X = position.X - 24;
-                    _adornerTransform.Y = position.Y - 32;
+                    var mousePosition = e.GetPosition(_topLevel);
 
-                    // Log less frequently to avoid spam
-                    if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 100 < 16) // ~10fps logging
+                    // Update target position (where the mouse cursor is, minus grab offset)
+                    _adornerTargetPosition = new Avalonia.Point(
+                        mousePosition.X - _dragOffset.X,
+                        mousePosition.Y - _dragOffset.Y
+                    );
+
+                    // Restart spring timer if it was stopped by settlement optimization
+                    if (_springUpdateTimer != null && !_springUpdateTimer.IsEnabled)
                     {
-                        // Ghost position tracking (spam removed)
+                        _springUpdateTimer.Start();
                     }
+
+                    // Update previous position for other calculations
+                    _previousMousePosition = mousePosition;
                 }
 
                 // Check if we're over a drop zone and provide visual feedback
@@ -1888,13 +1970,31 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Child = cardContent, // Just the card, no label (cleaner drag visual)
                 };
 
-                // Position the drag adorner (CardDragBehavior handles rotation/tilt)
+                // Initialize adorner position AND target to the card's current location (accounting for grab offset!)
+                double initialX = startPosition.X - _dragOffset.X;
+                double initialY = startPosition.Y - _dragOffset.Y;
+
+                _adornerTargetPosition = new Avalonia.Point(initialX, initialY);
+
+                // Create transform group for positioning AND velocity-based lean
                 _adornerTransform = new TranslateTransform
                 {
-                    X = startPosition.X,
-                    Y = startPosition.Y,
+                    X = initialX,
+                    Y = initialY,
                 };
-                _dragAdorner.RenderTransform = _adornerTransform;
+                _adornerLeanTransform = new RotateTransform
+                {
+                    Angle = 0.0
+                };
+
+                // Apply transforms: translate for position, rotate for velocity lean
+                // Set rotation origin to center-bottom of card for natural lean
+                var transformGroup = new TransformGroup();
+                transformGroup.Children.Add(_adornerLeanTransform);
+                transformGroup.Children.Add(_adornerTransform);
+
+                _dragAdorner.RenderTransform = transformGroup;
+                _dragAdorner.RenderTransformOrigin = new RelativePoint(0.5, 0.8, RelativeUnit.Relative); // Pivot near bottom-center
                 _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
                 _dragAdorner.VerticalAlignment = VerticalAlignment.Top;
 
@@ -1939,6 +2039,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             try
             {
+                // Stop spring physics timer
+                _springUpdateTimer?.Stop();
+
                 // CRITICAL: Hide adorner BEFORE attempting removal (prevents ghost flash)
                 if (_dragAdorner != null)
                 {
@@ -1986,6 +2089,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 // ALWAYS clear references, even if cleanup fails
                 _dragAdorner = null;
+                _adornerTransform = null;
+                _adornerLeanTransform = null;
                 _adornerLayer = null;
                 _topLevel = null;
             }
@@ -2119,17 +2224,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.IsMustHovered = true;
             }
 
-            // Show overlay only if we're currently dragging
+            // HIDE overlay when hovering - you're already here, don't need the map!
             if (_isDragging)
             {
                 var mustOverlay = this.FindControl<Border>("MustDropOverlay");
                 if (mustOverlay != null)
-                    mustOverlay.IsVisible = true;
+                    mustOverlay.IsVisible = false;
             }
         }
 
         /// <summary>
-        /// Handle pointer leaving MUST drop zone - hide overlay
+        /// Handle pointer leaving MUST drop zone - show overlay again (navigational aid from afar)
         /// </summary>
         private void OnMustZonePointerExited(object? sender, PointerEventArgs e)
         {
@@ -2138,10 +2243,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.IsMustHovered = false;
             }
 
-            // Hide overlay when leaving zone
-            var mustOverlay = this.FindControl<Border>("MustDropOverlay");
-            if (mustOverlay != null)
-                mustOverlay.IsVisible = false;
+            // SHOW overlay when leaving - guide user from a distance
+            if (_isDragging)
+            {
+                var mustOverlay = this.FindControl<Border>("MustDropOverlay");
+                if (mustOverlay != null)
+                    mustOverlay.IsVisible = true;
+            }
         }
 
         /// <summary>
@@ -2166,17 +2274,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.IsShouldHovered = true;
             }
 
-            // Show overlay only if we're currently dragging
+            // HIDE overlay when hovering - you're already here, don't need the map!
             if (_isDragging)
             {
                 var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
                 if (shouldOverlay != null)
-                    shouldOverlay.IsVisible = true;
+                    shouldOverlay.IsVisible = false;
             }
         }
 
         /// <summary>
-        /// Handle pointer leaving SHOULD drop zone - hide overlay
+        /// Handle pointer leaving SHOULD drop zone - show overlay again (navigational aid from afar)
         /// </summary>
         private void OnShouldZonePointerExited(object? sender, PointerEventArgs e)
         {
@@ -2185,10 +2293,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 vm.IsShouldHovered = false;
             }
 
-            // Hide overlay when leaving zone
-            var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
-            if (shouldOverlay != null)
-                shouldOverlay.IsVisible = false;
+            // SHOW overlay when leaving - guide user from a distance
+            if (_isDragging)
+            {
+                var shouldOverlay = this.FindControl<Border>("ShouldDropOverlay");
+                if (shouldOverlay != null)
+                    shouldOverlay.IsVisible = true;
+            }
         }
 
 
@@ -2225,10 +2336,22 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     topLevel
                 );
                 _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+
+                // Store the click offset relative to the card origin (where user grabbed)
+                var clickPos = e.GetPosition(topLevel);
+                _dragOffset = new Avalonia.Point(
+                    clickPos.X - _dragStartPosition.X,
+                    clickPos.Y - _dragStartPosition.Y
+                );
+
+                // Initialize previous position for velocity tracking
+                _previousMousePosition = clickPos;
             }
             else
             {
                 _dragStartPosition = e.GetPosition(this);
+                _dragOffset = new Avalonia.Point(0, 0);
+                _previousMousePosition = e.GetPosition(this);
             }
 
             DebugLogger.Log(
@@ -2237,6 +2360,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             );
 
             CreateDragAdorner(_draggedItem, _dragStartPosition);
+
+            // Start spring physics timer
+            _springUpdateTimer?.Start();
+
             ShowDropZoneOverlays();
 
             e.Handled = true;

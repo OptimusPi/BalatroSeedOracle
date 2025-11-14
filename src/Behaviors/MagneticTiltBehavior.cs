@@ -21,6 +21,7 @@ namespace BalatroSeedOracle.Behaviors
     {
         private DispatcherTimer? _tiltTimer;
         private Point? _lastPointerPosition;
+        private bool _isHovering;
 
         protected override void OnAttached()
         {
@@ -28,13 +29,15 @@ namespace BalatroSeedOracle.Behaviors
 
             if (AssociatedObject == null) return;
 
-            // Track pointer movement for magnetic tilt
+            // Track pointer events for magnetic tilt
+            AssociatedObject.PointerEntered += OnPointerEntered;
+            AssociatedObject.PointerExited += OnPointerExited;
             AssociatedObject.PointerMoved += OnPointerMoved;
 
             // High-frequency timer for smooth magnetic tracking (60 FPS)
-            _tiltTimer = new DispatcherTimer 
-            { 
-                Interval = TimeSpan.FromMilliseconds(16) 
+            _tiltTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16)
             };
             _tiltTimer.Tick += UpdateMagneticTilt;
             _tiltTimer.Start();
@@ -46,6 +49,8 @@ namespace BalatroSeedOracle.Behaviors
 
             if (AssociatedObject != null)
             {
+                AssociatedObject.PointerEntered -= OnPointerEntered;
+                AssociatedObject.PointerExited -= OnPointerExited;
                 AssociatedObject.PointerMoved -= OnPointerMoved;
             }
 
@@ -53,48 +58,91 @@ namespace BalatroSeedOracle.Behaviors
             _tiltTimer = null;
         }
 
+        private void OnPointerEntered(object? sender, PointerEventArgs e)
+        {
+            _isHovering = true;
+            _lastPointerPosition = e.GetPosition(AssociatedObject);
+        }
+
+        private void OnPointerExited(object? sender, PointerEventArgs e)
+        {
+            _isHovering = false;
+            _lastPointerPosition = null;
+        }
+
         private void OnPointerMoved(object? sender, PointerEventArgs e)
         {
-            _lastPointerPosition = e.GetPosition(AssociatedObject);
+            if (_isHovering)
+            {
+                _lastPointerPosition = e.GetPosition(AssociatedObject);
+            }
         }
 
         private void UpdateMagneticTilt(object? sender, EventArgs e)
         {
-            if (AssociatedObject == null || _lastPointerPosition == null) return;
+            if (AssociatedObject == null) return;
 
-            // Get card dimensions
+            // Get card dimensions first
             var cardWidth = AssociatedObject.Bounds.Width;
             var cardHeight = AssociatedObject.Bounds.Height;
-            
             if (cardWidth <= 0 || cardHeight <= 0) return;
+
+            // Get or create MatrixTransform for TRUE 3D-like magnetic tilt
+            MatrixTransform? matrixTransform = null;
+            if (AssociatedObject.RenderTransform is MatrixTransform existing)
+            {
+                matrixTransform = existing;
+            }
+            else if (AssociatedObject.RenderTransform is TransformGroup group)
+            {
+                matrixTransform = group.Children.OfType<MatrixTransform>().FirstOrDefault();
+                if (matrixTransform == null)
+                {
+                    matrixTransform = new MatrixTransform();
+                    group.Children.Add(matrixTransform);
+                }
+            }
+            else
+            {
+                matrixTransform = new MatrixTransform();
+                AssociatedObject.RenderTransform = matrixTransform;
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            }
+
+            // If not hovering, reset to identity matrix
+            if (!_isHovering || _lastPointerPosition == null)
+            {
+                matrixTransform.Matrix = Matrix.Identity;
+                return;
+            }
 
             // Calculate mouse position relative to card center (normalized -1 to 1)
             var cardCenter = new Point(cardWidth / 2, cardHeight / 2);
             var offsetX = (_lastPointerPosition.Value.X - cardCenter.X) / (cardWidth / 2);
             var offsetY = (_lastPointerPosition.Value.Y - cardCenter.Y) / (cardHeight / 2);
 
-            // Balatro's magnetic tilt calculation
-            // Based on: self.tilt_var.amt = math.abs(hover_offset) * tilt_factor
-            var tiltFactor = 0.3; // Balatro's default tilt sensitivity
-            var hoverOffset = Math.Abs(offsetX) + Math.Abs(offsetY);
-            var tiltAmount = hoverOffset * tiltFactor;
+            // Clamp to reasonable values
+            offsetX = Math.Clamp(offsetX, -1.0, 1.0);
+            offsetY = Math.Clamp(offsetY, -1.0, 1.0);
 
-            // Calculate rotation angle toward mouse position
-            var angle = Math.Atan2(offsetY, offsetX) * (180 / Math.PI);
+            // Balatro magnetic tilt: Card tilts TOWARD cursor
+            // Using simple skew - edges tilt in direction of mouse
 
-            // Apply magnetic tilt to RotateTransform
-            if (AssociatedObject.RenderTransform is TransformGroup group)
-            {
-                var rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
-                if (rotateTransform != null)
-                {
-                    rotateTransform.Angle = angle * tiltAmount;
-                }
-            }
-            else if (AssociatedObject.RenderTransform is RotateTransform rotate)
-            {
-                rotate.Angle = angle * tiltAmount;
-            }
+            var tiltStrength = 0.12;
+
+            // Direct skew mapping:
+            // offsetY (up/down) → M12 (horizontal skew)
+            // offsetX (left/right) → M21 (vertical skew)
+            //
+            // Negative signs make card tilt TOWARD mouse position
+
+            var m = new Matrix(
+                1.0, -offsetY * tiltStrength,  // M11, M12
+                -offsetX * tiltStrength, 1.0,  // M21, M22
+                0, 0
+            );
+
+            matrixTransform.Matrix = m;
         }
     }
 }

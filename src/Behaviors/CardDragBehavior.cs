@@ -168,7 +168,7 @@ namespace BalatroSeedOracle.Behaviors
                 Interval = TimeSpan.FromMilliseconds(UIConstants.AnimationFrameRateMs), // 60 FPS
             };
             _animationTimer.Tick += OnAnimationTick;
-            _animationTimer.Start(); // Always running for ambient idle animation
+            _animationTimer.Start(); // For ambient sway and juice decay only
         }
 
         protected override void OnDetaching()
@@ -221,6 +221,9 @@ namespace BalatroSeedOracle.Behaviors
             if (_isHovering || _isDragging)
             {
                 _lastPointerPosition = e.GetPosition(_hitboxElement);
+
+                // IMMEDIATE magnetic tilt update - no timer delay!
+                UpdateTransforms();
             }
         }
 
@@ -246,6 +249,13 @@ namespace BalatroSeedOracle.Behaviors
         }
 
         private void OnAnimationTick(object? sender, EventArgs e)
+        {
+            // Timer only handles ambient sway and juice decay
+            // Magnetic tilt is event-driven via OnPointerMoved
+            UpdateTransforms();
+        }
+
+        private void UpdateTransforms()
         {
             if (
                 !IsEnabled
