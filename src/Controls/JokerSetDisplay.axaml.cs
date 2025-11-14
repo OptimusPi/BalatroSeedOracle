@@ -10,6 +10,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
@@ -98,9 +99,9 @@ namespace BalatroSeedOracle.Controls
                 return;
 
             var spriteService = SpriteService.Instance;
-            const double cardWidth = 35.5; // Half of normal width
-            const double cardHeight = 47.5; // Half of normal height
-            const double overlap = 20; // Pixels of overlap
+            const double cardWidth = UIConstants.JokerSpriteWidth;
+            const double cardHeight = UIConstants.JokerSpriteHeight;
+            const double overlap = 40; // Pixels of overlap
 
             // Calculate starting position to center the cards
             double totalWidth = cardWidth + (items.Count - 1) * (cardWidth - overlap);

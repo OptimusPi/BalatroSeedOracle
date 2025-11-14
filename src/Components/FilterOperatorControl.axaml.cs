@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Components
@@ -141,7 +142,7 @@ namespace BalatroSeedOracle.Components
                 return;
 
             // Enhanced fanning parameters for dramatic poker hand effect
-            double cardWidth = 50.0;
+            double cardWidth = UIConstants.JokerSpriteWidth;
 
             // Adjust parameters based on card count for optimal visual effect
             double baseAngle;

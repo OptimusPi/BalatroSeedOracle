@@ -167,7 +167,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
 
             // Enhanced fanning parameters for dramatic poker hand effect
-            double cardWidth = 60.0;
+            double cardWidth = UIConstants.JokerSpriteWidth;
 
             // Adjust parameters based on card count for optimal visual effect
             double baseAngle;
@@ -1580,10 +1580,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         Application.Current?.FindResource("DarkBackground") as IBrush
                         ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
 
-                    // Use proper card dimensions (50x70) to match FilterOperatorControl
+                    // Use proper card dimensions (71x95) from UIConstants
                     int count = operatorItem.Children.Count;
-                    double cardWidth = 50.0;
-                    double cardHeight = 70.0;
+                    double cardWidth = UIConstants.JokerSpriteWidth;
+                    double cardHeight = UIConstants.JokerSpriteHeight;
 
                     // Calculate canvas size based on number of cards
                     double canvasWidth = count > 0 ? Math.Max(240, 120 + count * 20) : 120;

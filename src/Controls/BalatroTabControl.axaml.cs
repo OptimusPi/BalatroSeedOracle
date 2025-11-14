@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.Controls
     /// </summary>
     public class BalatroTabControl : TemplatedControl
     {
-        private const double TRIANGLE_HALF_WIDTH = 8.0; // Half of the 16px wide triangle
+        private const double TRIANGLE_HALF_WIDTH = 6.0; // Half of the 12px wide triangle (Points="0,0 12,0 6,8")
 
         private TabControl? _innerTabControl;
         private Canvas? _triangleCanvas;

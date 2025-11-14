@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Models;
 
@@ -23,12 +24,12 @@ namespace BalatroSeedOracle.Behaviors
     public class CategoryGroupedLayoutBehavior : Behavior<ItemsControl>
     {
         // Joker fanned layout
-        private const double JokerCardWidth = 57;
+        private const double JokerCardWidth = UIConstants.JokerSpriteWidth;
         private const double JokerCardSpacing = 45; // More horizontal spread
         private const double JokerMaxRotation = 8;
 
         // Voucher fanned layout
-        private const double VoucherCardWidth = 57;
+        private const double VoucherCardWidth = UIConstants.VoucherSpriteWidth;
         private const double VoucherCardSpacing = 40;
         private const double VoucherMaxRotation = 6;
 

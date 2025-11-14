@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Extensions;
 
 namespace BalatroSeedOracle.Behaviors
@@ -15,8 +16,8 @@ namespace BalatroSeedOracle.Behaviors
     /// </summary>
     public class FannedHandBehavior : Behavior<ItemsControl>
     {
-        private const double CardWidth = 36;
-        private const double CardSpacing = 24; // Overlap amount (cards are 36px but spaced 24px apart)
+        private const double CardWidth = UIConstants.JokerSpriteWidth;
+        private const double CardSpacing = 47; // Overlap amount (cards are 71px but spaced 47px apart for nice fan)
         private const double MaxRotation = 8; // Max rotation in degrees for outer cards
 
         protected override void OnAttached()

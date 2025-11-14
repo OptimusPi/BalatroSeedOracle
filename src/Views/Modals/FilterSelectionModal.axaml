@@ -205,16 +205,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -266,16 +266,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -358,16 +358,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -457,16 +457,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -514,16 +514,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -571,16 +571,16 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="71" Height="95" Margin="2">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="71" Height="95"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>

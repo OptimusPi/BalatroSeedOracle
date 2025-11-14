@@ -64,6 +64,7 @@
 
         <!-- Color aliases (for DropShadowEffect, etc - need Color not Brush) -->
         <StaticResource x:Key="GoldColor" ResourceKey="ColorBrightGold" />
+        <StaticResource x:Key="BlackColor" ResourceKey="ColorBlack" />
 
         <!-- Brand Action Brushes -->
         <SolidColorBrush x:Key="White" Color="{StaticResource ColorWhite}"/>
@@ -157,19 +158,8 @@
         <SolidColorBrush x:Key="TransparentDark1" Color="{StaticResource ColorTranslucentBlack33}"/>
         <SolidColorBrush x:Key="TransparentDark3" Color="#33000000"/>
 
-        <!-- Legacy compatibility (will be removed in future) -->
-        <SolidColorBrush x:Key="LightBlue" Color="{StaticResource ColorBlue}"/>
-        <SolidColorBrush x:Key="BrighterBlue" Color="{StaticResource ColorBlue}"/>
-        <SolidColorBrush x:Key="CyanHighlight" Color="{StaticResource ColorBlue}"/>
-        <SolidColorBrush x:Key="TealGrey" Color="{StaticResource ColorGrey}"/>
-        <SolidColorBrush x:Key="MainBackground" Color="{StaticResource ColorGrey}"/>
-        <SolidColorBrush x:Key="Background" Color="{StaticResource ColorGrey}"/>
-        <SolidColorBrush x:Key="ItemConfigMediumBg" Color="{StaticResource ColorGrey}"/>
-        <SolidColorBrush x:Key="ItemConfigDarkBg" Color="{StaticResource ColorDarkGrey}"/>
-        <SolidColorBrush x:Key="LightContentBackground" Color="{StaticResource ColorBrightSilver}"/>
-        <SolidColorBrush x:Key="ToggleRed" Color="{StaticResource ColorRed}"/>
-        <SolidColorBrush x:Key="ToggleBlue" Color="{StaticResource ColorBlue}"/>
-        <SolidColorBrush x:Key="BlackColor" Color="{StaticResource ColorBlack}"/>
+
+        
 
         <!-- ============================================================ -->
         <!-- NON-COLOR RESOURCES                                          -->
@@ -193,6 +183,7 @@
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroAnimations.axaml" />
         <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
     </Application.Styles>
 </Application>

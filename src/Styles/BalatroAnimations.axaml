@@ -62,11 +62,13 @@
     <!-- Shared selection arrow styling (used across navigation controls) -->
     <Style Selector="Polygon.nav-selection-arrow">
         <Setter Property="Effect">
-            <DropShadowEffect Color="{StaticResource BlackColor}"
-                              BlurRadius="4"
-                              OffsetX="2"
-                              OffsetY="2"
-                              Opacity="0.8"/>
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource BlackColor}"
+                                  BlurRadius="4"
+                                  OffsetX="2"
+                                  OffsetY="2"
+                                  Opacity="0.8"/>
+            </Setter.Value>
         </Setter>
     </Style>
 

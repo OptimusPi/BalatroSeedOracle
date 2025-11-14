@@ -482,24 +482,95 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
     
-    <!-- Scrollbar styling -->
+    <!-- Balatro-style red thermometer scrollbar (like slider controls) -->
     <Style Selector="ScrollBar">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
     </Style>
+
     <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width" Value="20" />
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid>
+                        <!-- Red thermometer track background -->
+                        <Border Name="PART_Border"
+                                Background="{StaticResource RedHover}"
+                                CornerRadius="4"
+                                Width="6"
+                                HorizontalAlignment="Center"/>
+                        <!-- Scrollable thumb -->
+                        <Track Name="PART_Track"
+                               IsDirectionReversed="True"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
+                               Orientation="Vertical">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Border Background="{StaticResource Red}"
+                                                    CornerRadius="3"
+                                                    Width="6"
+                                                    MinHeight="24"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+
     <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height" Value="20" />
+        <Setter Property="Height" Value="8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid>
+                        <!-- Red thermometer track background -->
+                        <Border Name="PART_Border"
+                                Background="{StaticResource RedHover}"
+                                CornerRadius="4"
+                                Height="6"
+                                VerticalAlignment="Center"/>
+                        <!-- Scrollable thumb -->
+                        <Track Name="PART_Track"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
+                               Orientation="Horizontal">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Border Background="{StaticResource Red}"
+                                                    CornerRadius="3"
+                                                    Height="6"
+                                                    MinWidth="24"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
-    <Style Selector="ScrollBar /template/ Thumb">
-        <Setter Property="Background" Value="{StaticResource ModalBorder}" />
-        <Setter Property="CornerRadius" Value="10" />
+
+    <!-- Thumb hover state for thermometer scrollbar -->
+    <Style Selector="ScrollBar /template/ Thumb:pointerover Border">
+        <Setter Property="Background" Value="{StaticResource RedHover}" />
     </Style>
-    <Style Selector="ScrollBar /template/ Thumb:pointerover">
-        <Setter Property="Background" Value="{StaticResource Blue}" />
-    </Style>
-    
+
 
     <!-- ==== NOTIFICATION BADGE STYLES ==== -->
     
