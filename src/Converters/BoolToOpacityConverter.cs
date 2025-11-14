@@ -21,9 +21,8 @@ namespace BalatroSeedOracle.Converters
         {
             if (value is bool isDragging)
             {
-                // No opacity change during drag - nothing should be half invisible
-                // This is a safety issue for users with photosensitivity/epilepsy
-                return 1.0;
+                // Completely hide the shelf card when dragging (seamless swap to adorner)
+                return isDragging ? 0.0 : 1.0;
             }
             return 1.0; // Default to fully visible
         }
