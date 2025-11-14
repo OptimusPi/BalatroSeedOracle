@@ -11,22 +11,22 @@
              x:DataType="models:FilterItem">
 
     <!-- SELF-CONTAINED Balatro card component -->
-    <StackPanel Spacing="2" Width="80" IsHitTestVisible="False">
-        <!-- Card image with all overlays and behaviors (71x95 native Balatro size) -->
+    <StackPanel Spacing="2" Width="72" IsHitTestVisible="False">
+        <!-- Card image with all overlays and behaviors (64x86 compact size) -->
         <Border Background="Transparent"
-                Width="71"
-                Height="95"
+                Width="64"
+                Height="86"
                 IsHitTestVisible="True"
                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                 RenderTransformOrigin="0.5,0.5">
 
 
-            <Grid Width="71" Height="95">
+            <Grid Width="64" Height="86">
                 <!-- Base card image -->
                 <Image Name="BaseCardImage"
                        Source="{Binding ItemImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -34,8 +34,8 @@
 
                 <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
                 <Image Source="{Binding EditionImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -44,8 +44,8 @@
 
                 <!-- Eternal sticker overlay -->
                 <Image Source="{Binding EternalStickerImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -54,8 +54,8 @@
 
                 <!-- Perishable sticker overlay -->
                 <Image Source="{Binding PerishableStickerImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -64,8 +64,8 @@
 
                 <!-- Rental sticker overlay -->
                 <Image Source="{Binding RentalStickerImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -74,8 +74,8 @@
 
                 <!-- Soul face overlay for legendary jokers -->
                 <Image Source="{Binding SoulFaceImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -84,8 +84,8 @@
 
                 <!-- Debuffed overlay (red X for MUST-NOT items) - highest ZIndex -->
                 <Image Source="{Binding DebuffedImage}"
-                       Width="71"
-                       Height="95"
+                       Width="64"
+                       Height="86"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -102,6 +102,6 @@
                    Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"
-                   MaxWidth="80"/>
+                   MaxWidth="72"/>
     </StackPanel>
 </UserControl>
