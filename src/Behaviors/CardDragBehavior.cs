@@ -28,6 +28,8 @@ namespace BalatroSeedOracle.Behaviors
         private TransformGroup? _transformGroup;
         private TranslateTransform? _translateTransform;
         private ScaleTransform? _scaleTransform;
+        private RotateTransform? _rotateTransform;
+        private SkewTransform? _skewTransform;
         private Control? _visualChild; // The actual visual content that gets transformed
         private Control? _hitboxElement; // The hitbox element that receives pointer events
 
@@ -104,13 +106,17 @@ namespace BalatroSeedOracle.Behaviors
                 _visualChild = AssociatedObject;
             }
 
-            // Set up transform group with translation and scale
+            // Set up transform group with skew (for 3D perspective), rotation, translation, and scale
+            _skewTransform = new SkewTransform(0, 0);
+            _rotateTransform = new RotateTransform(0);
             _translateTransform = new TranslateTransform();
             _scaleTransform = new ScaleTransform(
                 UIConstants.DefaultScaleFactor,
                 UIConstants.DefaultScaleFactor
             );
             _transformGroup = new TransformGroup();
+            _transformGroup.Children.Add(_skewTransform);
+            _transformGroup.Children.Add(_rotateTransform);
             _transformGroup.Children.Add(_scaleTransform);
             _transformGroup.Children.Add(_translateTransform);
 
@@ -219,15 +225,20 @@ namespace BalatroSeedOracle.Behaviors
                 || AssociatedObject == null
                 || _translateTransform == null
                 || _scaleTransform == null
+                || _rotateTransform == null
+                || _skewTransform == null
             )
                 return;
 
             var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
 
-            // Calculate lean/translation based on current mode
+            // Calculate lean/translation, rotation, and skew based on current mode
             double leanX = 0;
             double leanY = 0;
             double leanDistance = 0;
+            double rotationAngle = 0;
+            double skewX = 0;
+            double skewY = 0;
 
             if (_isDragging && _lastPointerPosition.HasValue && _pointerPressedPosition.HasValue)
             {
@@ -257,45 +268,48 @@ namespace BalatroSeedOracle.Behaviors
                 leanX = offsetX * leanDistance;
                 leanY = offsetY * leanDistance;
             }
-            // DISABLED: Hover lean causes jiggle/hallucination
-            // else if (_isHovering && _lastPointerPosition.HasValue)
-            // {
-            //     // HOVER MODE: Lean towards cursor (magnetic effect)
-            //     var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
-            //     var centerX = bounds.Width / 2;
-            //     var centerY = bounds.Height / 2;
+            else if (_isHovering && _lastPointerPosition.HasValue)
+            {
+                // HOVER MODE: 3D perspective tilt toward cursor (like real Balatro!)
+                var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
+                var centerX = bounds.Width / 2;
+                var centerY = bounds.Height / 2;
 
-            //     var offsetX = (_lastPointerPosition.Value.X - centerX) / bounds.Width;
-            //     var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
+                var offsetX = (_lastPointerPosition.Value.X - centerX) / (bounds.Width / 2);
+                var offsetY = (_lastPointerPosition.Value.Y - centerY) / (bounds.Height / 2);
 
-            //     // Balatro formula: abs(hover_offset.y + hover_offset.x - 1) * 0.3
-            //     leanDistance =
-            //         Math.Abs(offsetY + offsetX - 1)
-            //         * UIConstants.CardTiltFactorRadians
-            //         * 15.0; // Convert tilt factor to pixel distance
+                // 3D perspective tilt - simple and direct
+                // Mouse LEFT/RIGHT (offsetX) → horizontal skew (tilt left/right)
+                // Mouse UP/DOWN (offsetY) → vertical skew (tilt up/down)
 
-            //     // Lean towards cursor position
-            //     leanX = offsetX * leanDistance;
-            //     leanY = offsetY * leanDistance;
-            // }
-            // DISABLED: Ambient sway causes circular translation
-            // else
-            // {
-            //     // AMBIENT MODE: Subtle breathing sway (like BalatroCardSwayBehavior)
-            //     // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
-            //     var swayAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+                var skewStrength = 8; // Subtle 3D perspective effect
 
-            //     // tilt_amt = self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-            //     var swayAmount =
-            //         UIConstants.CardAmbientTiltRadians
-            //         * (0.5 + Math.Cos(swayAngle))
-            //         * UIConstants.CardTiltFactorRadians
-            //         * 5.0; // Convert to subtle pixel movement
+                // Horizontal skew from horizontal mouse movement
+                skewX = offsetX * skewStrength;
 
-            //     // Subtle circular sway motion
-            //     leanX = Math.Sin(swayAngle) * swayAmount;
-            //     leanY = Math.Cos(swayAngle) * swayAmount * 0.5; // Less vertical movement
-            // }
+                // Vertical skew from vertical mouse movement
+                skewY = offsetY * skewStrength;
+            }
+            else
+            {
+                // AMBIENT MODE: Subtle breathing sway (like real Balatro!)
+                // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
+                var tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+
+                // Balatro's ambient tilt: self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
+                var ambientTilt = UIConstants.CardAmbientTiltRadians; // 0.2
+                var tiltFactor = 0.3;
+
+                // Calculate rotation for breathing effect (using Balatro's exact formula)
+                rotationAngle = ambientTilt * (0.5 + Math.Cos(tiltAngle)) * tiltFactor * 10;
+            }
+
+            // Apply 3D perspective (skew effect)
+            _skewTransform.AngleX = skewX;
+            _skewTransform.AngleY = skewY;
+
+            // Apply rotation (tilt effect for ambient sway)
+            _rotateTransform.Angle = rotationAngle;
 
             // Apply translation (lean effect) - ONLY when not dragging
             if (!_isDragging)
@@ -349,15 +363,33 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     // Juice finished
                     _juiceStartTime = null;
-                    _scaleTransform.ScaleX = 1.0;
-                    _scaleTransform.ScaleY = 1.0;
+
+                    // Apply hover scale if hovering (prevents seizure bug by creating buffer zone)
+                    if (_isHovering)
+                    {
+                        _scaleTransform.ScaleX = 1.10;
+                        _scaleTransform.ScaleY = 1.10;
+                    }
+                    else
+                    {
+                        _scaleTransform.ScaleX = 1.0;
+                        _scaleTransform.ScaleY = 1.0;
+                    }
                 }
             }
             else
             {
-                // No juice, ensure scale is normal
-                _scaleTransform.ScaleX = 1.0;
-                _scaleTransform.ScaleY = 1.0;
+                // No juice - apply hover scale if hovering (prevents seizure bug)
+                if (_isHovering)
+                {
+                    _scaleTransform.ScaleX = 1.10;
+                    _scaleTransform.ScaleY = 1.10;
+                }
+                else
+                {
+                    _scaleTransform.ScaleX = 1.0;
+                    _scaleTransform.ScaleY = 1.0;
+                }
             }
         }
     }

@@ -389,7 +389,7 @@
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
-                                                    <Grid Margin="1,2" Height="105">
+                                                    <Grid Margin="1,2" Height="105" ClipToBounds="False">
                                                         <i:Interaction.Behaviors>
                                                             <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
                                                         </i:Interaction.Behaviors>
@@ -775,6 +775,7 @@
                                                 <Border Background="Transparent"
                                                         Width="95"
                                                         Cursor="Hand"
+                                                        ClipToBounds="False"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
@@ -874,6 +875,7 @@
                                                 <Border Background="Transparent"
                                                         Width="95"
                                                         Cursor="Hand"
+                                                        ClipToBounds="False"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
