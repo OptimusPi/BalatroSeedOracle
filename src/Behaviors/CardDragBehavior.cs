@@ -62,6 +62,21 @@ namespace BalatroSeedOracle.Behaviors
             set => SetValue(JuiceAmountProperty, value);
         }
 
+        /// <summary>
+        /// 3D perspective tilt strength (8 = default)
+        /// </summary>
+        public static readonly StyledProperty<double> TiltStrengthProperty =
+            AvaloniaProperty.Register<CardDragBehavior, double>(
+                nameof(TiltStrength),
+                8.0
+            );
+
+        public double TiltStrength
+        {
+            get => GetValue(TiltStrengthProperty);
+            set => SetValue(TiltStrengthProperty, value);
+        }
+
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -178,6 +193,12 @@ namespace BalatroSeedOracle.Behaviors
             _isHovering = true;
             _lastPointerPosition = e.GetPosition(_hitboxElement);
 
+            // Bring card to front so it appears above neighbors (fixes drop zone clipping!)
+            if (AssociatedObject != null)
+            {
+                AssociatedObject.ZIndex = 1000;
+            }
+
             // Play Balatro card hover sound (paper1.ogg with random pitch)
             var sfxService = ServiceHelper.GetService<SoundEffectsService>();
             sfxService?.PlayCardHover();
@@ -187,6 +208,12 @@ namespace BalatroSeedOracle.Behaviors
         {
             _isHovering = false;
             _lastPointerPosition = null;
+
+            // Reset ZIndex when not hovering
+            if (AssociatedObject != null)
+            {
+                AssociatedObject.ZIndex = 0;
+            }
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -261,8 +288,8 @@ namespace BalatroSeedOracle.Behaviors
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
                 leanDistance =
                     Math.Abs(offsetY + offsetX - 1 + dx + dy - 1)
-                    * UIConstants.CardTiltFactorRadians
-                    * 15.0; // Convert tilt factor to pixel distance
+                    * UIConstants.CardDragLeanMultiplier
+                    * 15.0; // Convert to pixel distance
 
                 // Lean towards drag direction
                 leanX = offsetX * leanDistance;
@@ -270,25 +297,34 @@ namespace BalatroSeedOracle.Behaviors
             }
             else if (_isHovering && _lastPointerPosition.HasValue)
             {
-                // HOVER MODE: 3D perspective tilt toward cursor (like real Balatro!)
+                // HOVER MODE: 3D perspective tilt toward cursor (EXACT Balatro formula!)
                 var bounds = _hitboxElement?.Bounds ?? AssociatedObject.Bounds;
                 var centerX = bounds.Width / 2;
                 var centerY = bounds.Height / 2;
 
+                // Normalized offset from center (-1 to 1)
                 var offsetX = (_lastPointerPosition.Value.X - centerX) / (bounds.Width / 2);
                 var offsetY = (_lastPointerPosition.Value.Y - centerY) / (bounds.Height / 2);
 
-                // 3D perspective tilt - simple and direct
-                // Mouse LEFT/RIGHT (offsetX) → horizontal skew (tilt left/right)
-                // Mouse UP/DOWN (offsetY) → vertical skew (tilt up/down)
+                // Convert to Balatro's 0-1 range for tilt calculation
+                // In card.lua: self.hover_offset.x/y = (cursor - card_edge) / card_size
+                var hoverOffsetX = (offsetX + 1) / 2; // -1..1 → 0..1
+                var hoverOffsetY = (offsetY + 1) / 2; // -1..1 → 0..1
 
-                var skewStrength = 8; // Subtle 3D perspective effect
+                // BALATRO'S EXACT FORMULA from card.lua:4378
+                // self.tilt_var.amt = math.abs(self.hover_offset.y + self.hover_offset.x - 1) * tilt_factor
+                var tiltFactor = 0.3; // Balatro constant
+                var tiltAmount = Math.Abs(hoverOffsetY + hoverOffsetX - 1) * tiltFactor;
 
-                // Horizontal skew from horizontal mouse movement
-                skewX = offsetX * skewStrength;
+                // When mouse is at center (0.5, 0.5): |0.5 + 0.5 - 1| * 0.3 = 0 (NO TILT!)
+                // When mouse is at corners: |0 + 0 - 1| * 0.3 = 0.3 or |1 + 1 - 1| * 0.3 = 0.3 (MAX TILT!)
 
-                // Vertical skew from vertical mouse movement
-                skewY = offsetY * skewStrength;
+                // Apply 3D perspective approximation
+                // Y offset controls X skew (vertical tilt makes top/bottom change width)
+                // X offset controls Y skew (horizontal tilt makes left/right change height)
+                // Negate to tilt TOWARD mouse, scale by tilt intensity and user TiltStrength
+                skewX = -offsetY * tiltAmount * (TiltStrength / tiltFactor);
+                skewY = -offsetX * tiltAmount * (TiltStrength / tiltFactor);
             }
             else
             {
@@ -297,14 +333,14 @@ namespace BalatroSeedOracle.Behaviors
                 var tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // Balatro's ambient tilt: self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
-                var ambientTilt = UIConstants.CardAmbientTiltRadians; // 0.2
+                var ambientTilt = UIConstants.CardAmbientTiltMultiplier; // 0.2
                 var tiltFactor = 0.3;
 
                 // Calculate rotation for breathing effect (using Balatro's exact formula)
                 rotationAngle = ambientTilt * (0.5 + Math.Cos(tiltAngle)) * tiltFactor * 10;
             }
 
-            // Apply 3D perspective (skew effect)
+            // Apply 3D perspective (skew effect) - AXES SWAPPED TO FIX SIDEWAYS SKEW BUG
             _skewTransform.AngleX = skewX;
             _skewTransform.AngleY = skewY;
 
@@ -367,8 +403,8 @@ namespace BalatroSeedOracle.Behaviors
                     // Apply hover scale if hovering (prevents seizure bug by creating buffer zone)
                     if (_isHovering)
                     {
-                        _scaleTransform.ScaleX = 1.10;
-                        _scaleTransform.ScaleY = 1.10;
+                        _scaleTransform.ScaleX = 1.12;
+                        _scaleTransform.ScaleY = 1.12;
                     }
                     else
                     {
@@ -382,8 +418,8 @@ namespace BalatroSeedOracle.Behaviors
                 // No juice - apply hover scale if hovering (prevents seizure bug)
                 if (_isHovering)
                 {
-                    _scaleTransform.ScaleX = 1.10;
-                    _scaleTransform.ScaleY = 1.10;
+                    _scaleTransform.ScaleX = 1.12;
+                    _scaleTransform.ScaleY = 1.12;
                 }
                 else
                 {

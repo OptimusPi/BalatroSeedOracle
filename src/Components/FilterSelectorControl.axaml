@@ -450,13 +450,16 @@
                                                                    Width="71"
                                                                    Height="95"
                                                                    Margin="2"/>
-                                                            <!-- Red X overlay for banned items -->
-                                                            <TextBlock Text="✕"
-                                                                       FontSize="48"
-                                                                       Foreground="{StaticResource Red}"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center"
-                                                                       />
+                                                            <!-- Debuffed overlay (red X for banned items) -->
+                                                            <Image Source="{Binding DebuffedImage}"
+                                                                   Width="71"
+                                                                   Height="95"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding DebuffedImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"
+                                                                   ZIndex="100"/>
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>

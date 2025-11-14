@@ -6,7 +6,7 @@
         <Style Selector="ComboBox">
             <Setter Property="Foreground" Value="{StaticResource BrightGold}"/>
             <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource NeonGreen}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="14"/>
@@ -19,7 +19,7 @@
         </Style>
         
         <Style Selector="TextBlock.edition-label">
-            <Setter Property="Foreground" Value="{StaticResource NeonGreen}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
@@ -32,7 +32,7 @@
     </UserControl.Styles>
     
     <Border Background="{StaticResource SemiTransparentBlack}"
-            BorderBrush="{StaticResource NeonGreen}" 
+            BorderBrush="{StaticResource AccentGreen}" 
             BorderThickness="2" 
             CornerRadius="8" 
             Padding="15">

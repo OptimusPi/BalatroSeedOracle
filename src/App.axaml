@@ -20,6 +20,7 @@
         <Color x:Key="ColorDarkBlue">#0057a1</Color>
         <Color x:Key="ColorOrange">#ff9800</Color>
         <Color x:Key="ColorDarkOrange">#a05b00</Color>
+        <Color x:Key="ColorDarkGold">#b8883a</Color>
         <Color x:Key="ColorGreen">#429f79</Color>
         <Color x:Key="ColorDarkGreen">#215f46</Color>
         <Color x:Key="ColorPurple">#7d60e0</Color>
@@ -88,6 +89,7 @@
         <SolidColorBrush x:Key="GoldFont" Color="{StaticResource ColorBrightGold}"/>
         <SolidColorBrush x:Key="BrightGold" Color="{StaticResource ColorBrightGold}"/>
         <SolidColorBrush x:Key="Gold" Color="{StaticResource ColorBrightGold}"/>
+        <SolidColorBrush x:Key="GoldHover" Color="{StaticResource ColorDarkGold}"/>
         <SolidColorBrush x:Key="GreenFont" Color="{StaticResource ColorBrightGreen}"/>
         <SolidColorBrush x:Key="SpecialGreenText" Color="{StaticResource ColorBrightGreen}"/>
         <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource ColorBrightGreen}"/>
@@ -152,6 +154,7 @@
         <!-- Transparent/Overlay Brushes -->
         <SolidColorBrush x:Key="SemiTransparentBlack" Color="#80000000"/>
         <SolidColorBrush x:Key="SemiTransparentDarkBackground" Color="#66000000"/>
+        <SolidColorBrush x:Key="TransparentDark1" Color="{StaticResource ColorTranslucentBlack33}"/>
         <SolidColorBrush x:Key="TransparentDark3" Color="#33000000"/>
 
         <!-- Legacy compatibility (will be removed in future) -->

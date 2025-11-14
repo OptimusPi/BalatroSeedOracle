@@ -394,9 +394,12 @@
         <Setter Property="Background" Value="{StaticResource Blue}" />
     </Style>
 
-    <!-- Special (Wildcards) button - Orange to match Back button -->
+    <!-- Special (Favorites) button - Gold for premium feel -->
     <Style Selector="Button.nav-button.special">
-        <Setter Property="Background" Value="{StaticResource Orange}" />
+        <Setter Property="Background" Value="{StaticResource BrightGold}" />
+    </Style>
+    <Style Selector="Button.nav-button.special:pointerover">
+        <Setter Property="Background" Value="{StaticResource GoldHover}" />
     </Style>
     <Style Selector="Button.nav-button.special.active">
         <Setter Property="Background" Value="{StaticResource Blue}" />

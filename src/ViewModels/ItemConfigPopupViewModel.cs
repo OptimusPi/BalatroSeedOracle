@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia;
@@ -12,6 +13,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels;
+
+/// <summary>
+/// Simple model for ante checkbox items
+/// </summary>
+public partial class AnteItem : ObservableObject
+{
+    [ObservableProperty]
+    private int _number;
+
+    [ObservableProperty]
+    private bool _isSelected = true;
+
+    public string DisplayName => $"Ante {Number}";
+}
 
 public partial class ItemConfigPopupViewModel : ObservableObject
 {
@@ -61,33 +76,25 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     [ObservableProperty]
     private bool _sourcesVisible;
 
-    // Individual ante properties for proper MVVM binding (can't use indexers in XAML)
     [ObservableProperty]
-    private bool _ante0 = true;
+    private bool _stickersVisible;
 
     [ObservableProperty]
-    private bool _ante1 = true;
+    private bool _negativeEditionVisible;
+
+    // Sticker checkboxes (for Jokers only)
+    [ObservableProperty]
+    private bool _isEternal;
 
     [ObservableProperty]
-    private bool _ante2 = true;
+    private bool _isPerishable;
 
     [ObservableProperty]
-    private bool _ante3 = true;
+    private bool _isRental;
 
+    // Antes collection - PROPER MVVM approach (not 9 individual properties!)
     [ObservableProperty]
-    private bool _ante4 = true;
-
-    [ObservableProperty]
-    private bool _ante5 = true;
-
-    [ObservableProperty]
-    private bool _ante6 = true;
-
-    [ObservableProperty]
-    private bool _ante7 = true;
-
-    [ObservableProperty]
-    private bool _ante8 = true;
+    private ObservableCollection<AnteItem> _antes = new();
 
     [ObservableProperty]
     private string _selectedEdition = "none";
@@ -137,7 +144,18 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
     public ItemConfigPopupViewModel(ItemConfig config)
     {
+        // Initialize antes collection (0-8)
+        InitializeAntes();
         Configure(config);
+    }
+
+    private void InitializeAntes()
+    {
+        Antes.Clear();
+        for (int i = 0; i <= 8; i++)
+        {
+            Antes.Add(new AnteItem { Number = i, IsSelected = true });
+        }
     }
 
     public void Configure(ItemConfig config)
@@ -149,11 +167,13 @@ public partial class ItemConfigPopupViewModel : ObservableObject
 
         // Determine visibility based on item type
         AntesVisible = true;
-        EditionVisible = config.ItemType == "Joker" || config.ItemType == "StandardCard";
+        EditionVisible = config.ItemType == "Joker" || config.ItemType == "SoulJoker" || config.ItemType == "StandardCard";
+        NegativeEditionVisible = config.ItemType == "Joker" || config.ItemType == "SoulJoker"; // Negative ONLY for Jokers!
         SealVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         EnhancementVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         RankVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
         SuitVisible = config.ItemType == "PlayingCard" || config.ItemType == "StandardCard";
+        StickersVisible = config.ItemType == "Joker" || config.ItemType == "SoulJoker";
         SourcesVisible =
             config.ItemType == "Joker"
             || config.ItemType == "SoulJoker"
@@ -163,44 +183,19 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             || config.ItemType == "PlayingCard"
             || config.ItemType == "StandardCard";
 
+        // Load antes from config
         if (config.Antes != null)
         {
-            // Reset all to false first
-            Ante0 = Ante1 = Ante2 = Ante3 = Ante4 = Ante5 = Ante6 = Ante7 = Ante8 = false;
+            // Deselect all first
+            foreach (var ante in Antes)
+                ante.IsSelected = false;
 
-            // Set specified antes to true
-            foreach (var ante in config.Antes)
+            // Select only specified antes
+            foreach (var anteNum in config.Antes)
             {
-                switch (ante)
-                {
-                    case 0:
-                        Ante0 = true;
-                        break;
-                    case 1:
-                        Ante1 = true;
-                        break;
-                    case 2:
-                        Ante2 = true;
-                        break;
-                    case 3:
-                        Ante3 = true;
-                        break;
-                    case 4:
-                        Ante4 = true;
-                        break;
-                    case 5:
-                        Ante5 = true;
-                        break;
-                    case 6:
-                        Ante6 = true;
-                        break;
-                    case 7:
-                        Ante7 = true;
-                        break;
-                    case 8:
-                        Ante8 = true;
-                        break;
-                }
+                var anteItem = Antes.FirstOrDefault(a => a.Number == anteNum);
+                if (anteItem != null)
+                    anteItem.IsSelected = true;
             }
         }
 
@@ -242,6 +237,11 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             config.PackSlots != null && config.PackSlots.Count > 0
                 ? string.Join(",", config.PackSlots)
                 : "";
+
+        // Load stickers from config
+        IsEternal = config.Stickers?.Contains("eternal") ?? false;
+        IsPerishable = config.Stickers?.Contains("perishable") ?? false;
+        IsRental = config.Stickers?.Contains("rental") ?? false;
     }
 
     private void InitLists()
@@ -366,25 +366,8 @@ public partial class ItemConfigPopupViewModel : ObservableObject
     [RelayCommand]
     private void Apply()
     {
-        var antes = new List<int>();
-        if (Ante0)
-            antes.Add(0);
-        if (Ante1)
-            antes.Add(1);
-        if (Ante2)
-            antes.Add(2);
-        if (Ante3)
-            antes.Add(3);
-        if (Ante4)
-            antes.Add(4);
-        if (Ante5)
-            antes.Add(5);
-        if (Ante6)
-            antes.Add(6);
-        if (Ante7)
-            antes.Add(7);
-        if (Ante8)
-            antes.Add(8);
+        // Collect selected antes from collection (clean!)
+        var antes = Antes.Where(a => a.IsSelected).Select(a => a.Number).ToList();
 
         var config = new ItemConfig
         {
@@ -416,6 +399,19 @@ public partial class ItemConfigPopupViewModel : ObservableObject
             var packSlots = ParseSlots(PackSlotsText);
             config.ShopSlots = shopSlots.Count > 0 ? shopSlots : null;
             config.PackSlots = packSlots.Count > 0 ? packSlots : null;
+        }
+
+        // Apply stickers if visible (Jokers only)
+        if (StickersVisible)
+        {
+            var stickers = new List<string>();
+            if (IsEternal)
+                stickers.Add("eternal");
+            if (IsPerishable)
+                stickers.Add("perishable");
+            if (IsRental)
+                stickers.Add("rental");
+            config.Stickers = stickers.Count > 0 ? stickers : null;
         }
 
         ConfigApplied?.Invoke(config);

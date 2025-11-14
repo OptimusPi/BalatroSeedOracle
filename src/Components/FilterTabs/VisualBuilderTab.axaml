@@ -366,8 +366,9 @@
                         DragDrop.AllowDrop="True">
                     <ScrollViewer Name="ItemScrollViewer"
                                   VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding GroupedItems}">
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding GroupedItems}" ClipToBounds="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup" x:DataType="vm:VisualBuilderTabViewModel+ItemGroup">
                                     <StackPanel Margin="0,0,0,16">
@@ -386,7 +387,7 @@
                                         </Border>
 
                                         <!-- Items in Group -->
-                                        <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl ItemsSource="{Binding Items}" ClipToBounds="False">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
                                                     <Grid Margin="1,2" Height="105" ClipToBounds="False">
@@ -410,7 +411,7 @@
                                             </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="5"/>
+                                                    <UniformGrid Columns="5" ClipToBounds="False"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
@@ -752,12 +753,13 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" ClipToBounds="False">
                             <ItemsControl ItemsSource="{Binding SelectedMust}"
-                                          Margin="8">
+                                          Margin="8"
+                                          ClipToBounds="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
+                                    <WrapPanel Orientation="Horizontal" ClipToBounds="False"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -852,12 +854,13 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" ClipToBounds="False">
                             <ItemsControl ItemsSource="{Binding SelectedShould}"
-                                          Margin="8">
+                                          Margin="8"
+                                          ClipToBounds="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
+                                    <WrapPanel Orientation="Horizontal" ClipToBounds="False"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>

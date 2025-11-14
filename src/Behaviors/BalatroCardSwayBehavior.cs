@@ -27,7 +27,7 @@ namespace BalatroSeedOracle.Behaviors
         public static readonly StyledProperty<double> AmbientTiltProperty =
             AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(
                 nameof(AmbientTilt),
-                UIConstants.CardAmbientTiltRadians
+                UIConstants.CardAmbientTiltMultiplier
             );
 
         public double AmbientTilt

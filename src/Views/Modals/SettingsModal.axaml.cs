@@ -30,8 +30,8 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (mainMenu != null)
             {
-                // Show word lists modal using ModalHelper extension
-                mainMenu.ShowWordListsModal();
+                // Show word lists modal with back navigation to Settings
+                mainMenu.ShowWordListsModalFromSettings();
             }
             else
             {
@@ -49,8 +49,8 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (mainMenu != null)
             {
-                // Show credits modal using ModalHelper extension
-                mainMenu.ShowCreditsModal();
+                // Show credits modal with back navigation to Settings
+                mainMenu.ShowCreditsModalFromSettings();
             }
             else
             {

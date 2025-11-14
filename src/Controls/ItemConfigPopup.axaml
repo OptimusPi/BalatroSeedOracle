@@ -199,30 +199,29 @@
                 </StackPanel>
             </Border>
 
-            <!-- Ante Selection -->
+            <!-- Ante Selection - PROPER collection binding! -->
             <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding AntesVisible}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="ANTES"
+                <StackPanel Spacing="6">
+                    <TextBlock Text="ANTES"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="11"
-                               Foreground="{StaticResource ModalBorder}"
-                               Margin="0,0,0,6"/>
-                    <UniformGrid Grid.Row="1" Columns="9" Margin="-2">
-                        <CheckBox IsChecked="{Binding Ante0}" Content="0" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante1}" Content="1" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante2}" Content="2" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante3}" Content="3" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante4}" Content="4" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante5}" Content="5" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante6}" Content="6" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante7}" Content="7" Classes="ante-checkbox" Margin="2"/>
-                        <CheckBox IsChecked="{Binding Ante8}" Content="8" Classes="ante-checkbox" Margin="2"/>
-                    </UniformGrid>
-                </Grid>
+                               Foreground="{StaticResource ModalBorder}"/>
+                    <ItemsControl ItemsSource="{Binding Antes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="9" Margin="-2"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected}"
+                                          Content="{Binding Number}"
+                                          Classes="ante-checkbox"
+                                          Margin="2"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </Border>
 
             <!-- Sources Selection -->
@@ -281,7 +280,11 @@
                         <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Polychrome'}" GroupName="ItemEdition" Classes="edition-radio edition-poly" Margin="2">
                             <Image Source="{Binding EditionImages[Polychrome]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
-                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Negative'}" GroupName="ItemEdition" Classes="edition-radio edition-negative" Margin="2">
+                        <RadioButton IsChecked="{Binding SelectedEdition, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Negative'}"
+                                     GroupName="ItemEdition"
+                                     Classes="edition-radio edition-negative"
+                                     Margin="2"
+                                     IsVisible="{Binding NegativeEditionVisible}">
                             <Image Source="{Binding EditionImages[Negative]}" Width="35" Height="47" Stretch="Uniform"/>
                         </RadioButton>
                     </UniformGrid>
@@ -311,6 +314,62 @@
                 <StackPanel>
                     <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource ModalBorder}" Margin="0,0,0,6"/>
                     <ComboBox ItemsSource="{Binding Enhancements}" SelectedItem="{Binding SelectedEnhancement}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Seal Selection (Playing Cards only) -->
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SealVisible}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="SEAL"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               Foreground="{StaticResource ModalBorder}"
+                               Margin="0,0,0,6"/>
+                    <UniformGrid Grid.Row="1" Columns="5" Margin="-2">
+                        <RadioButton IsChecked="{Binding SelectedSeal, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='None'}" GroupName="CardSeal" Classes="edition-radio" Margin="2">
+                            <Border Classes="edition-border" Padding="4" CornerRadius="4">
+                                <TextBlock Text="None" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton IsChecked="{Binding SelectedSeal, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Red'}" GroupName="CardSeal" Classes="edition-radio edition-foil" Margin="2">
+                            <Border Classes="edition-border" Padding="4" CornerRadius="4">
+                                <TextBlock Text="🔴" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton IsChecked="{Binding SelectedSeal, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Blue'}" GroupName="CardSeal" Classes="edition-radio edition-holo" Margin="2">
+                            <Border Classes="edition-border" Padding="4" CornerRadius="4">
+                                <TextBlock Text="🔵" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton IsChecked="{Binding SelectedSeal, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Gold'}" GroupName="CardSeal" Classes="edition-radio edition-poly" Margin="2">
+                            <Border Classes="edition-border" Padding="4" CornerRadius="4">
+                                <TextBlock Text="🟡" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                        <RadioButton IsChecked="{Binding SelectedSeal, Mode=TwoWay, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Purple'}" GroupName="CardSeal" Classes="edition-radio edition-negative" Margin="2">
+                            <Border Classes="edition-border" Padding="4" CornerRadius="4">
+                                <TextBlock Text="🟣" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </RadioButton>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Stickers (Jokers only) -->
+            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding StickersVisible}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="STICKERS"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               Foreground="{StaticResource ModalBorder}"
+                               Margin="0,0,0,4"/>
+                    <CheckBox IsChecked="{Binding IsEternal}" Content="♾️ Eternal (cannot be sold)" FontSize="12"/>
+                    <CheckBox IsChecked="{Binding IsPerishable}" Content="⏳ Perishable (debuffs after rounds)" FontSize="12"/>
+                    <CheckBox IsChecked="{Binding IsRental}" Content="💰 Rental (costs money each round)" FontSize="12"/>
                 </StackPanel>
             </Border>
 

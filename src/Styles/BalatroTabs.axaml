@@ -74,9 +74,9 @@
         <Setter Property="Opacity" Value="1.0"/>
     </Style>
     
-    <!-- Hover state - orange -->
+    <!-- Hover state - dark red -->
     <Style Selector="TabControl.balatro-tabs > TabItem:pointerover:not(:selected)">
-        <Setter Property="Background" Value="{StaticResource Orange}"/>
+        <Setter Property="Background" Value="{StaticResource RedHover}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
     </Style>
     

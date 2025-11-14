@@ -868,6 +868,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void ShowSettingsModal()
         {
+            // Clear modal stack when starting fresh from main menu
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
             var settingsModal = new Modals.SettingsModal();
 
             var modal = new StandardModal("SETTINGS");
@@ -876,6 +880,88 @@ namespace BalatroSeedOracle.Views
             modal.BackClicked += (s, e) => HideModalContent();
 
             ShowModalContent(modal, "SETTINGS");
+        }
+
+        /// <summary>
+        /// Show word lists modal from Settings (with back navigation to Settings)
+        /// </summary>
+        public void ShowWordListsModalFromSettings()
+        {
+            // Save Settings modal for back navigation
+            if (_activeModalContent != null)
+            {
+                _previousModalContent = _activeModalContent;
+                _previousModalTitle = "SETTINGS";
+            }
+
+            var wordListsModal = new Modals.WordListsModal();
+            var modal = new StandardModal("WORD LISTS");
+            modal.SetContent(wordListsModal);
+            modal.BackClicked += (s, e) =>
+            {
+                // Check if we have a previous modal to return to
+                if (_previousModalContent != null && _previousModalTitle != null)
+                {
+                    // Return to Settings modal
+                    var previousContent = _previousModalContent;
+                    var previousTitle = _previousModalTitle;
+
+                    // Clear stack for next navigation
+                    _previousModalContent = null;
+                    _previousModalTitle = null;
+
+                    // Restore previous modal
+                    ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                }
+                else
+                {
+                    // No previous modal - close entirely
+                    HideModalContent();
+                }
+            };
+            // Keep backdrop visible during transition to prevent flicker
+            ShowModalContent(modal, "WORD LISTS", keepBackdrop: true);
+        }
+
+        /// <summary>
+        /// Show credits modal from Settings (with back navigation to Settings)
+        /// </summary>
+        public void ShowCreditsModalFromSettings()
+        {
+            // Save Settings modal for back navigation
+            if (_activeModalContent != null)
+            {
+                _previousModalContent = _activeModalContent;
+                _previousModalTitle = "SETTINGS";
+            }
+
+            var creditsModal = new Modals.CreditsModal();
+            var modal = new StandardModal("CREDITS");
+            modal.SetContent(creditsModal);
+            modal.BackClicked += (s, e) =>
+            {
+                // Check if we have a previous modal to return to
+                if (_previousModalContent != null && _previousModalTitle != null)
+                {
+                    // Return to Settings modal
+                    var previousContent = _previousModalContent;
+                    var previousTitle = _previousModalTitle;
+
+                    // Clear stack for next navigation
+                    _previousModalContent = null;
+                    _previousModalTitle = null;
+
+                    // Restore previous modal
+                    ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                }
+                else
+                {
+                    // No previous modal - close entirely
+                    HideModalContent();
+                }
+            };
+            // Keep backdrop visible during transition to prevent flicker
+            ShowModalContent(modal, "CREDITS", keepBackdrop: true);
         }
 
         /// <summary>

@@ -22,56 +22,29 @@
                    Foreground="{StaticResource Gold}"
                    HorizontalAlignment="Center"/>
 
-        <!-- Settings Content -->
+        <!-- Settings Content - Simple vertical stack like Balatro -->
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="24">
+            <StackPanel Spacing="12">
+                <Button Content="Word Lists"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnWordListsClick"/>
 
-                <!-- Resources Section -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="RESOURCES"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
-                               Foreground="{StaticResource Gold}"/>
+                <Button Content="Credits"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnCreditsClick"/>
 
-                    <Rectangle Height="1"
-                               Fill="{StaticResource ModalBorder}"
-                               Opacity="0.3"
-                               Margin="0,4,0,12"/>
+                <Button Content="Open Filters Folder"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnOpenFiltersDirectoryClick"/>
 
-                    <Button Content="Word Lists"
-                            Classes="btn-red"
-                            HorizontalAlignment="Stretch"
-                            Click="OnWordListsClick"/>
-
-                    <Button Content="Credits"
-                            Classes="btn-red"
-                            HorizontalAlignment="Stretch"
-                            Click="OnCreditsClick"/>
-                </StackPanel>
-
-                <!-- File Locations Section -->
-                <StackPanel Spacing="12">
-                    <TextBlock Text="FILE LOCATIONS"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
-                               Foreground="{StaticResource Gold}"/>
-
-                    <Rectangle Height="1"
-                               Fill="{StaticResource ModalBorder}"
-                               Opacity="0.3"
-                               Margin="0,4,0,12"/>
-
-                    <Button Content="Open Filters Folder"
-                            Classes="btn-red"
-                            HorizontalAlignment="Stretch"
-                            Click="OnOpenFiltersDirectoryClick"/>
-
-                    <Button Content="Open App Folder"
-                            Classes="btn-red"
-                            HorizontalAlignment="Stretch"
-                            Click="OnOpenAppDirectoryClick"/>
-                </StackPanel>
+                <Button Content="Open App Folder"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnOpenAppDirectoryClick"/>
             </StackPanel>
         </ScrollViewer>
 

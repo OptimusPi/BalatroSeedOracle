@@ -78,11 +78,11 @@
     
     <!-- Special style for the Favorites button -->
     <Style Selector="nav|SelectableCategoryButton.special /template/ Border#PART_ButtonBorder">
-    <Setter Property="Background" Value="{StaticResource Gold}"/>
+    <Setter Property="Background" Value="{StaticResource BrightGold}"/>
     <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="nav|SelectableCategoryButton.special:pointerover /template/ Border#PART_ButtonBorder">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+        <Setter Property="Background" Value="{StaticResource GoldHover}"/>
     </Style>
     <Style Selector="nav|SelectableCategoryButton.special:selected /template/ Polygon#SelectionArrow">
         <Setter Property="Fill" Value="{StaticResource BrightGold}"/>

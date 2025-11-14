@@ -14,18 +14,20 @@
     <StackPanel Spacing="2" Width="80" IsHitTestVisible="False">
         <!-- Card image with all overlays and behaviors (71x95 native Balatro size) -->
         <Border Background="Transparent"
+                Width="71"
+                Height="95"
                 IsHitTestVisible="True"
                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                 RenderTransformOrigin="0.5,0.5">
             <!-- Transforms applied by parent's CardDragBehavior -->
 
 
-            <Grid Width="60" Height="80">
+            <Grid Width="71" Height="95">
                 <!-- Base card image -->
                 <Image Name="BaseCardImage"
                        Source="{Binding ItemImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -33,8 +35,8 @@
 
                 <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
                 <Image Source="{Binding EditionImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -43,8 +45,8 @@
 
                 <!-- Eternal sticker overlay -->
                 <Image Source="{Binding EternalStickerImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -53,8 +55,8 @@
 
                 <!-- Perishable sticker overlay -->
                 <Image Source="{Binding PerishableStickerImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -63,8 +65,8 @@
 
                 <!-- Rental sticker overlay -->
                 <Image Source="{Binding RentalStickerImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -73,8 +75,8 @@
 
                 <!-- Soul face overlay for legendary jokers -->
                 <Image Source="{Binding SoulFaceImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -83,8 +85,8 @@
 
                 <!-- Debuffed overlay (red X for MUST-NOT items) - highest ZIndex -->
                 <Image Source="{Binding DebuffedImage}"
-                       Width="60"
-                       Height="80"
+                       Width="71"
+                       Height="95"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -97,7 +99,7 @@
         <!-- Card name label -->
         <TextBlock Text="{Binding DisplayName}"
                    FontFamily="{StaticResource BalatroFont}"
-                   FontSize="10"
+                   FontSize="11"
                    Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"

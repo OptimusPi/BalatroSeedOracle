@@ -65,10 +65,10 @@ public static class UIConstants
     public const double CardJuiceRotationFactor = 0.6; // Rotation wobble multiplier
     public const double CardFlipJuiceScalePeak = 1.3; // Peak scale during flip juice animation
 
-    // Rotation Constants (in degrees unless noted)
-    public const double CardTiltFactorRadians = 0.3; // Tilt strength multiplier
-    public const double CardAmbientTiltRadians = 0.2; // Idle breathing tilt
-    public const double CardRotationToDegrees = 10.0; // Convert tilt amount to degrees
+    // Balatro card animation multipliers (unitless)
+    public const double CardDragLeanMultiplier = 0.3; // From card.lua - drag lean strength
+    public const double CardAmbientTiltMultiplier = 0.2; // From card.lua - idle breathing strength
+    public const double CardRotationToDegrees = 10.0; // Multiplier to convert to degrees
     public const double CardSwayRotationAmplitude = 0.02; // ~1.15° max wobble
 
     // Physics Constants
