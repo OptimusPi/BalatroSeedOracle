@@ -567,9 +567,9 @@
         </Setter>
     </Style>
 
-    <!-- Thumb hover state for thermometer scrollbar -->
+    <!-- Thumb hover state for thermometer scrollbar - Keep bright red, don't darken -->
     <Style Selector="ScrollBar /template/ Thumb:pointerover Border">
-        <Setter Property="Background" Value="{StaticResource RedHover}" />
+        <Setter Property="Background" Value="{StaticResource Red}" />
     </Style>
 
 
