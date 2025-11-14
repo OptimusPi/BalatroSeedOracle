@@ -91,7 +91,7 @@
                             </Style>
                             <!-- Move tab face down when pressed -->
                             <Style Selector="TabItem:pressed /template/ Border#TabFace">
-                                <Setter Property="Margin" Value="0,2,0,0"/>
+                                <Setter Property="Margin" Value="0,1,0,0"/>
                             </Style>
                         </TabControl.Styles>
                     </TabControl>

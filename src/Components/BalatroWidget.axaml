@@ -6,14 +6,14 @@
 
     <UserControl.Styles>
         <Style Selector="Border.widget-container">
-            <Setter Property="Background" Value="{StaticResource MainBackground}"/>
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
 
         <Style Selector="Border.widget-header">
-            <Setter Property="Background" Value="{StaticResource Background}"/>
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
             <Setter Property="CornerRadius" Value="6,6,0,0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>

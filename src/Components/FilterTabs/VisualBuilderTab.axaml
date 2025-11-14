@@ -931,8 +931,8 @@
               Background="{StaticResource SemiTransparentBlack}"
               ZIndex="1000"
               PointerPressed="OnOverlayBackgroundClick">
-            <Border Background="{StaticResource ItemConfigMediumBg}"
-                    BorderBrush="{StaticResource ItemConfigDarkBg}"
+            <Border Background="{StaticResource ModalBackground}"
+                    BorderBrush="{StaticResource ModalInnerPanel}"
                     BorderThickness="3"
                     CornerRadius="8"
                     Padding="0"

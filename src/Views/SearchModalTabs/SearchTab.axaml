@@ -96,7 +96,7 @@
         </Style>
 
         <Style Selector="Border.strip-label.cyan">
-            <Setter Property="Background" Value="{StaticResource CyanHighlight}"/>
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
         </Style>
 
         <Style Selector="TextBlock.strip-value-text.gold">
@@ -108,7 +108,7 @@
         </Style>
 
         <Style Selector="TextBlock.strip-value-text.cyan">
-            <Setter Property="Foreground" Value="{StaticResource CyanHighlight}"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
         </Style>
     </UserControl.Styles>
 

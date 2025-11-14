@@ -67,8 +67,8 @@
 
         <!-- Default ante border style -->
         <Style Selector="CheckBox.ante-checkbox Border.ante-border">
-            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalInnerPanel}"/>
         </Style>
 
         <!-- Checked state for ante checkboxes -->
@@ -92,22 +92,22 @@
 
         <!-- Default edition border style -->
         <Style Selector="RadioButton.edition-radio Border.edition-border">
-            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalInnerPanel}"/>
         </Style>
 
         <!-- Checked states for each edition -->
         <Style Selector="RadioButton.edition-radio:checked Border.edition-border">
-            <Setter Property="Background" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Background" Value="{StaticResource ModalInnerPanel}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
         </Style>
 
         <Style Selector="RadioButton.edition-foil:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="{StaticResource LightBlue}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
 
         <Style Selector="RadioButton.edition-holo:checked Border.edition-border">
-            <Setter Property="BorderBrush" Value="{StaticResource ToggleRed}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Red}"/>
         </Style>
 
         <Style Selector="RadioButton.edition-poly:checked Border.edition-border">
@@ -129,8 +129,8 @@
 
         <!-- Default source border style -->
         <Style Selector="CheckBox.source-checkbox Border.source-border">
-            <Setter Property="Background" Value="{StaticResource ItemConfigMediumBg}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalInnerPanel}"/>
         </Style>
 
         <!-- Checked state for source checkboxes -->
@@ -150,7 +150,7 @@
         </Style>
 
         <Style Selector="Button.delete-button">
-            <Setter Property="Background" Value="{StaticResource ToggleRed}"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="11"/>
@@ -159,7 +159,7 @@
         </Style>
 
         <Style Selector="Button.cancel-button">
-            <Setter Property="Background" Value="{StaticResource ItemConfigDarkBg}"/>
+            <Setter Property="Background" Value="{StaticResource ModalInnerPanel}"/>
             <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="11"/>
@@ -172,8 +172,8 @@
 
     <Border MinWidth="280"
             MaxWidth="320"
-            Background="{StaticResource ItemConfigMediumBg}"
-            BorderBrush="{StaticResource ItemConfigDarkBg}"
+            Background="{StaticResource ModalBackground}"
+            BorderBrush="{StaticResource ModalInnerPanel}"
             BorderThickness="3"
             CornerRadius="8"
             Padding="16"
@@ -181,7 +181,7 @@
 
         <StackPanel Spacing="10">
             <!-- Item Name Header -->
-            <Border Background="{StaticResource ItemConfigDarkBg}"
+            <Border Background="{StaticResource ModalInnerPanel}"
                     CornerRadius="4"
                     Padding="8,6"
                     Margin="-16,-16,-16,0">
@@ -193,14 +193,14 @@
             </Border>
 
             <!-- Preview (for PlayingCard) -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding RankVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding RankVisible}">
                 <StackPanel HorizontalAlignment="Center">
                     <Image Source="{Binding PreviewImage}" Width="71" Height="95" Stretch="Uniform"/>
                 </StackPanel>
             </Border>
 
             <!-- Ante Selection - PROPER collection binding! -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding AntesVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding AntesVisible}">
                 <StackPanel Spacing="6">
                     <TextBlock Text="ANTES"
                                FontFamily="{StaticResource BalatroFont}"
@@ -225,7 +225,7 @@
             </Border>
 
             <!-- Sources Selection -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SourcesVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SourcesVisible}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="SOURCE"
                                FontFamily="{StaticResource BalatroFont}"
@@ -256,7 +256,7 @@
             </Border>
 
             <!-- Edition Selection -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding EditionVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding EditionVisible}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -292,7 +292,7 @@
             </Border>
 
             <!-- Rank and Suit Selection -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding RankVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding RankVisible}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -310,7 +310,7 @@
             </Border>
 
             <!-- Enhancement Selection -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding EnhancementVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding EnhancementVisible}">
                 <StackPanel>
                     <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="11" Foreground="{StaticResource ModalBorder}" Margin="0,0,0,6"/>
                     <ComboBox ItemsSource="{Binding Enhancements}" SelectedItem="{Binding SelectedEnhancement}" />
@@ -318,7 +318,7 @@
             </Border>
 
             <!-- Seal Selection (Playing Cards only) -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SealVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding SealVisible}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -360,7 +360,7 @@
             </Border>
 
             <!-- Stickers (Jokers only) -->
-            <Border Background="{StaticResource ItemConfigDarkBg}" CornerRadius="4" Padding="10,8" IsVisible="{Binding StickersVisible}">
+            <Border Background="{StaticResource ModalInnerPanel}" CornerRadius="4" Padding="10,8" IsVisible="{Binding StickersVisible}">
                 <StackPanel Spacing="6">
                     <TextBlock Text="STICKERS"
                                FontFamily="{StaticResource BalatroFont}"
