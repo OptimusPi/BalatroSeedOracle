@@ -39,7 +39,7 @@
         </Style>
         
         <Style Selector="Button.panel-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
         
         <!-- Pressed state - hide shadow and move button down -->
