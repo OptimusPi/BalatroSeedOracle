@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.DeckStakeTab"
+             x:DataType="vm:DeckStakeTabViewModel">
+                <components:DeckAndStakeSelector
+                    Name="DeckAndStakeSelector"
+                    DeckIndex="{Binding SelectedDeckIndex, Mode=TwoWay}"
+                    StakeIndex="{Binding SelectedStakeIndex, Mode=TwoWay}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="0,20,0,20"/>
+</UserControl>

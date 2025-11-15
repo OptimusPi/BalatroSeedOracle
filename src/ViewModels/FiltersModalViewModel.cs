@@ -1448,6 +1448,14 @@ namespace BalatroSeedOracle.ViewModels
             };
             TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
+            // Deck/Stake tab (NEW - between Build Filter and JSON Editor)
+            var deckStakeViewModel = new FilterTabs.DeckStakeTabViewModel(this);
+            var deckStakeTab = new Components.FilterTabs.DeckStakeTab
+            {
+                DataContext = deckStakeViewModel,
+            };
+            TabItems.Add(new TabItemViewModel("DECK/STAKE", deckStakeTab));
+
             // JSON Editor tab
             var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
             var jsonEditorTab = new Components.FilterTabs.JsonEditorTab
@@ -1487,7 +1495,7 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("VALIDATE FILTER", validateFilterTab));
 
             // Ensure initial tab content and visibility are set
-            // Order now: 0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Validate Filter
+            // Order now: 0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }

@@ -106,22 +106,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isFilterVerified = false;
 
-        // Expose parent's deck/stake properties for binding
-        public int SelectedDeckIndex
-        {
-            get => _parentViewModel.SelectedDeckIndex;
-            set => _parentViewModel.SelectedDeckIndex = value;
-        }
-
-        public int SelectedStakeIndex
-        {
-            get => _parentViewModel.SelectedStakeIndex;
-            set => _parentViewModel.SelectedStakeIndex = value;
-        }
-
-        public string[] DeckDisplayValues => _parentViewModel.DeckDisplayValues;
-        public string[] StakeDisplayValues => _parentViewModel.StakeDisplayValues;
-
         public ValidateFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,

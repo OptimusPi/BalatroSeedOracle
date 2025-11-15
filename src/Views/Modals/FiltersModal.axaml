@@ -18,6 +18,7 @@
                                     SelectedIndex="{Binding SelectedTabIndex}">
             <controls:BalatroTabControl.Items>
                 <TabItem Header="Build Filter"/>
+                <TabItem Header="Deck/Stake"/>
                 <TabItem Header="JSON Editor"/>
                 <TabItem Header="Save"/>
             </controls:BalatroTabControl.Items>

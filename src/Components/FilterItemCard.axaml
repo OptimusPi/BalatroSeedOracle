@@ -11,7 +11,7 @@
              x:DataType="models:FilterItem">
 
     <!-- SELF-CONTAINED Balatro card component -->
-    <StackPanel Spacing="2" Width="72" IsHitTestVisible="False">
+    <StackPanel Spacing="6" Width="72" IsHitTestVisible="False">
         <!-- Card image with all overlays and behaviors (adaptive size for different item types) -->
         <Border Background="Transparent"
                 Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
@@ -104,7 +104,7 @@
                    TextAlignment="Center"
                    TextWrapping="Wrap"
                    MaxWidth="72"
-                   MinHeight="28"
+                   MinHeight="32"
                    MaxLines="2"/>
     </StackPanel>
 </UserControl>

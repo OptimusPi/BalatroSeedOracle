@@ -78,43 +78,6 @@
                                  Height="80"/>
                     </StackPanel>
 
-                    <!-- Preferred Deck & Stake -->
-                    <StackPanel>
-                        <TextBlock Text="Preferred Deck &amp; Stake"
-                                   FontSize="13"
-                                   Foreground="{StaticResource White}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   Margin="0,0,0,5"
-                                   HorizontalAlignment="Center"/>
-                        <TextBlock Text="(Settings this filter was designed for)"
-                                   FontSize="10"
-                                   Foreground="{StaticResource LightGrey}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   Margin="0,0,0,10"
-                                   HorizontalAlignment="Center"/>
-
-                        <!-- Deck Selector -->
-                        <controls:SpinnerControl Label="Deck"
-                                                SpinnerType="deck"
-                                                Value="{Binding SelectedDeckIndex}"
-                                                Minimum="0"
-                                                Maximum="14"
-                                                ReadOnly="True"
-                                                DisplayValues="{Binding DeckDisplayValues}"
-                                                HorizontalAlignment="Stretch"
-                                                Margin="0,0,0,8"/>
-
-                        <!-- Stake Selector -->
-                        <controls:SpinnerControl Label="Stake"
-                                                SpinnerType="stake"
-                                                Value="{Binding SelectedStakeIndex}"
-                                                Minimum="0"
-                                                Maximum="7"
-                                                ReadOnly="True"
-                                                DisplayValues="{Binding StakeDisplayValues}"
-                                                HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-
                     <!-- Separator -->
                     <Border Height="1"
                             Background="{StaticResource ModalBorder}"
