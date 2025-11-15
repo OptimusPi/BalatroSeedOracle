@@ -79,13 +79,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Setup drop zones AFTER the control is attached to visual tree
             this.AttachedToVisualTree += (s, e) => SetupDropZones();
 
-            // Subscribe to ViewModel PropertyChanged for arrow positioning
+            // Subscribe to ViewModel PropertyChanged
             this.DataContextChanged += (s, e) =>
             {
                 if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
                 {
                     vm.PropertyChanged += OnViewModelPropertyChanged;
-                    UpdateArrowPosition(vm.SelectedMainCategory); // Set initial position
+                    // Arrow position is now handled via data binding in XAML
                 }
             };
         }
@@ -378,6 +378,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Start spring physics timer
                     _springUpdateTimer?.Start();
 
+                    // Hide the original control during drag
+                    if (_originalDragSource != null)
+                    {
+                        _originalDragSource.Opacity = 0; // Hide original while dragging
+                        DebugLogger.Log("VisualBuilderTab", "Hidden original shelf card during drag");
+                    }
+
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
                     ShowDropZoneOverlays();
 
@@ -511,6 +518,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Start spring physics timer
                 _springUpdateTimer?.Start();
 
+                // Hide the original control during drag (make it invisible, not just transparent)
+                if (_originalDragSource != null)
+                {
+                    _originalDragSource.Opacity = 0; // Hide original while dragging
+                    DebugLogger.Log("VisualBuilderTab", "Hidden original card during drag");
+                }
+
                 // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones (zones don't expand, just overlays)
                 if (_sourceDropZone != null)
                 {
@@ -624,14 +638,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                 }
 
+                // Keep return overlay visible the ENTIRE time when dragging FROM a drop zone
+                // Only hide it when actually dropping or canceling
+                if (returnOverlay != null && _sourceDropZone != null)
+                {
+                    returnOverlay.IsVisible = true;
+                }
+
                 // Check if over item grid (return to shelf)
                 if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel) && !isOverTray)
                 {
-                    // Show return overlay if dragging FROM drop zones (sourceDropZone != null)
-                    if (returnOverlay != null && _sourceDropZone != null)
-                    {
-                        returnOverlay.IsVisible = true;
-                    }
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                 }
                 // Check if over drop zone container
@@ -640,9 +656,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     && IsPointOverControl(cursorPos, dropZoneContainer, _topLevel)
                 )
                 {
-                    // Hide return overlay when over drop zones
-                    if (returnOverlay != null)
-                        returnOverlay.IsVisible = false;
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                     // Zones stay always visible - no accordion-style expansion during drag
                 }
@@ -650,8 +663,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     // Not over any drop zone or return area
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
-                    if (returnOverlay != null)
-                        returnOverlay.IsVisible = false;
                 }
             }
             catch (Exception ex)
@@ -743,10 +754,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var returnOverlay = this.FindControl<Border>("ReturnOverlay");
 
             // Keep overlay visible when dragging from drop zones
-            // If dragging from shelf (_sourceDropZone == null), hide it normally
-            if (returnOverlay != null && exceptZone != itemGridBorder && _sourceDropZone == null)
+            // Only hide return overlay if dragging from shelf (not from a drop zone)
+            // When dragging from a drop zone, keep it visible the entire time
+            if (returnOverlay != null && _sourceDropZone == null)
             {
-                returnOverlay.IsVisible = false;
+                // Only hide if we're not hovering over the return zone
+                if (exceptZone != itemGridBorder)
+                {
+                    returnOverlay.IsVisible = false;
+                }
             }
 
             if (mustZone != exceptZone)
@@ -870,7 +886,27 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         Type = _draggedItem.Type,
                         Category = _draggedItem.Category,
                         DisplayName = _draggedItem.DisplayName,
+                        ItemKey = _draggedItem.ItemKey,
                         ItemImage = _draggedItem.ItemImage,
+                        IsFavorite = _draggedItem.IsFavorite,
+                        Status = _draggedItem.Status,
+                        // Copy configuration properties
+                        Value = _draggedItem.Value,
+                        Label = _draggedItem.Label,
+                        Antes = _draggedItem.Antes,
+                        Edition = _draggedItem.Edition,
+                        IncludeBoosterPacks = _draggedItem.IncludeBoosterPacks,
+                        IncludeShopStream = _draggedItem.IncludeShopStream,
+                        IncludeSkipTags = _draggedItem.IncludeSkipTags,
+                        // Copy playing card properties
+                        Rank = _draggedItem.Rank,
+                        Suit = _draggedItem.Suit,
+                        Enhancement = _draggedItem.Enhancement,
+                        Seal = _draggedItem.Seal,
+                        // Copy stickers for overlay rendering (eternal/perishable/rental)
+                        Stickers = _draggedItem.Stickers != null ? new List<string>(_draggedItem.Stickers) : null,
+                        // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
+                        IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray
                     };
 
                     vm.UnifiedOperator.Children.Add(itemCopy);
@@ -1173,15 +1209,45 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             }
                             else
                             {
-                                // Add to target zone (allows duplicates from shelf!)
+                                // Create a COPY of the item to avoid sharing instances with the palette
+                                var itemCopy = new Models.FilterItem
+                                {
+                                    Name = _draggedItem.Name,
+                                    Type = _draggedItem.Type,
+                                    Category = _draggedItem.Category,
+                                    DisplayName = _draggedItem.DisplayName,
+                                    ItemKey = _draggedItem.ItemKey,
+                                    ItemImage = _draggedItem.ItemImage,
+                                    IsFavorite = _draggedItem.IsFavorite,
+                                    Status = _draggedItem.Status,
+                                    // Copy configuration properties
+                                    Value = _draggedItem.Value,
+                                    Label = _draggedItem.Label,
+                                    Antes = _draggedItem.Antes,
+                                    Edition = _draggedItem.Edition,
+                                    IncludeBoosterPacks = _draggedItem.IncludeBoosterPacks,
+                                    IncludeShopStream = _draggedItem.IncludeShopStream,
+                                    IncludeSkipTags = _draggedItem.IncludeSkipTags,
+                                    // Copy playing card properties
+                                    Rank = _draggedItem.Rank,
+                                    Suit = _draggedItem.Suit,
+                                    Enhancement = _draggedItem.Enhancement,
+                                    Seal = _draggedItem.Seal,
+                                    // Copy stickers for overlay rendering (eternal/perishable/rental)
+                                    Stickers = _draggedItem.Stickers != null ? new List<string>(_draggedItem.Stickers) : null,
+                                    // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
+                                    IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray
+                                };
+
+                                // Add the COPY to target zone (allows duplicates from shelf!)
                                 switch (zoneName)
                                 {
                                     case "MustDropZone":
-                                        vm.AddToMustCommand.Execute(_draggedItem);
+                                        vm.AddToMustCommand.Execute(itemCopy);
                                         vm.IsDragging = false;
                                         break;
                                     case "ShouldDropZone":
-                                        vm.AddToShouldCommand.Execute(_draggedItem);
+                                        vm.AddToShouldCommand.Execute(itemCopy);
                                         vm.IsDragging = false;
                                         break;
                                 }
@@ -1228,6 +1294,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     _draggedItem.IsBeingDragged = false;
                 }
+
+                // Restore original control visibility
+                if (_originalDragSource != null)
+                {
+                    _originalDragSource.Opacity = 1; // Show original again
+                    DebugLogger.Log("VisualBuilderTab", "Restored original card visibility");
+                }
+
                 _isDragging = false;
                 _isDraggingTray = false; // Re-enable drop acceptance on trays
                 _draggedItem = null;
@@ -1651,7 +1725,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (item is Models.FilterOperatorItem operatorItem)
                 {
-                    // Show fanned cards adorner matching FilterOperatorControl appearance
+                    // Simplified OR/AND clause adorner - just show a compact badge-style indicator
                     var blue =
                         Application.Current?.FindResource("Blue") as IBrush ?? Brushes.DodgerBlue;
                     var green =
@@ -1661,135 +1735,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var darkBg =
                         Application.Current?.FindResource("DarkBackground") as IBrush
                         ?? new SolidColorBrush(Color.FromRgb(45, 54, 59));
-
-                    // Use proper card dimensions (71x95) from UIConstants
-                    int count = operatorItem.Children.Count;
-                    double cardWidth = UIConstants.JokerSpriteWidth;
-                    double cardHeight = UIConstants.JokerSpriteHeight;
-
-                    // Calculate canvas size based on number of cards
-                    double canvasWidth = count > 0 ? Math.Max(240, 120 + count * 20) : 120;
-                    double canvasHeight = 150;
-
-                    var canvas = new Canvas
-                    {
-                        Width = canvasWidth,
-                        Height = canvasHeight,
-                        ClipToBounds = false
-                    };
-
-                    if (count > 0)
-                    {
-                        // Use same fan parameters as FilterOperatorControl for consistency
-                        double baseAngle;
-                        double angleDelta;
-                        double xOffset;
-
-                        if (count == 1)
-                        {
-                            baseAngle = 0;
-                            angleDelta = 0;
-                            xOffset = 0;
-                        }
-                        else if (count == 2)
-                        {
-                            baseAngle = -8.0;
-                            angleDelta = 16.0;
-                            xOffset = 25.0;
-                        }
-                        else if (count <= 4)
-                        {
-                            baseAngle = -12.0;
-                            angleDelta = 24.0 / (count - 1);
-                            xOffset = 22.0;
-                        }
-                        else if (count <= 6)
-                        {
-                            baseAngle = -15.0;
-                            angleDelta = 30.0 / (count - 1);
-                            xOffset = 20.0;
-                        }
-                        else
-                        {
-                            baseAngle = -18.0;
-                            angleDelta = 36.0 / (count - 1);
-                            xOffset = 17.0;
-                        }
-
-                        // Center the fan
-                        double totalWidth = (count - 1) * xOffset + cardWidth;
-                        double startX = (canvasWidth - totalWidth) / 2.0 + cardWidth / 2.0;
-
-                        for (int i = 0; i < count; i++)
-                        {
-                            var child = operatorItem.Children[i];
-
-                            // Create card with all overlays
-                            var cardGrid = new Grid { Width = cardWidth, Height = cardHeight };
-
-                            // Base image
-                            cardGrid.Children.Add(new Image
-                            {
-                                Source = child.ItemImage,
-                                Width = cardWidth,
-                                Height = cardHeight,
-                                Stretch = Avalonia.Media.Stretch.Uniform
-                            });
-
-                            // Soul face overlay
-                            if (child.SoulFaceImage != null)
-                            {
-                                cardGrid.Children.Add(new Image
-                                {
-                                    Source = child.SoulFaceImage,
-                                    Width = cardWidth,
-                                    Height = cardHeight,
-                                    Stretch = Avalonia.Media.Stretch.Uniform
-                                });
-                            }
-
-                            // Debuffed overlay for BannedItems tray
-                            if (child.DebuffedOverlayImage != null && child.IsInBannedItemsTray)
-                            {
-                                cardGrid.Children.Add(new Image
-                                {
-                                    Source = child.DebuffedOverlayImage,
-                                    Width = cardWidth,
-                                    Height = cardHeight,
-                                    Stretch = Avalonia.Media.Stretch.Uniform
-                                });
-                            }
-
-                            var childBorder = new Border
-                            {
-                                Child = cardGrid,
-                                RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative),
-                                ZIndex = 100 + i
-                            };
-
-                            // Apply fan transforms
-                            double normalizedPosition = count > 1 ? (double)i / (count - 1) : 0.5;
-                            double angle = baseAngle + (i * angleDelta);
-                            double x = startX + (i * xOffset);
-
-                            // Arc effect
-                            double centerOffset = normalizedPosition - 0.5;
-                            double y = 8.0 * (4 * centerOffset * centerOffset);
-
-                            childBorder.RenderTransform = new TransformGroup
-                            {
-                                Children =
-                                {
-                                    new RotateTransform { Angle = angle },
-                                    new TranslateTransform { X = x, Y = 60 + y }
-                                }
-                            };
-
-                            Canvas.SetLeft(childBorder, 0);
-                            Canvas.SetTop(childBorder, 0);
-                            canvas.Children.Add(childBorder);
-                        }
-                    }
+                    var white =
+                        Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
 
                     // Choose border color based on operator type
                     IBrush borderBrush = operatorItem.OperatorType switch
@@ -1799,18 +1746,95 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _ => green  // OR
                     };
 
-                    // Wrap canvas in colored border matching FilterOperatorControl
+                    // Create a simple, compact badge-style adorner
+                    var operatorContent = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Spacing = 8
+                    };
+
+                    // Operator type label
+                    var typeText = new TextBlock
+                    {
+                        Text = operatorItem.OperatorType == "BannedItems" ? "BAN" : operatorItem.OperatorType,
+                        FontSize = 14,
+                        FontWeight = FontWeight.Bold,
+                        Foreground = white,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    operatorContent.Children.Add(typeText);
+
+                    // Show count if has children
+                    if (operatorItem.Children.Count > 0)
+                    {
+                        var countBadge = new Border
+                        {
+                            Background = borderBrush,
+                            CornerRadius = new CornerRadius(10),
+                            Padding = new Avalonia.Thickness(6, 2),
+                            Child = new TextBlock
+                            {
+                                Text = operatorItem.Children.Count.ToString(),
+                                FontSize = 12,
+                                FontWeight = FontWeight.Bold,
+                                Foreground = white
+                            }
+                        };
+                        operatorContent.Children.Add(countBadge);
+                    }
+
+                    // Show first few item thumbnails if available
+                    if (operatorItem.Children.Count > 0)
+                    {
+                        var thumbnailPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Spacing = -10 // Overlap slightly
+                        };
+
+                        // Show up to 3 mini thumbnails
+                        int thumbnailCount = Math.Min(3, operatorItem.Children.Count);
+                        for (int i = 0; i < thumbnailCount; i++)
+                        {
+                            var child = operatorItem.Children[i];
+                            if (child.ItemImage != null)
+                            {
+                                var thumbnail = new Border
+                                {
+                                    Width = 28,
+                                    Height = 36,
+                                    CornerRadius = new CornerRadius(4),
+                                    ClipToBounds = true,
+                                    BorderBrush = darkBg,
+                                    BorderThickness = new Avalonia.Thickness(1),
+                                    Child = new Image
+                                    {
+                                        Source = child.ItemImage,
+                                        Width = 28,
+                                        Height = 36,
+                                        Stretch = Avalonia.Media.Stretch.UniformToFill
+                                    }
+                                };
+                                thumbnailPanel.Children.Add(thumbnail);
+                            }
+                        }
+
+                        if (thumbnailPanel.Children.Count > 0)
+                        {
+                            operatorContent.Children.Add(thumbnailPanel);
+                        }
+                    }
+
+                    // Wrap in a clean border
                     var operatorBorder = new Border
                     {
                         Background = darkBg,
                         BorderBrush = borderBrush,
                         BorderThickness = new Avalonia.Thickness(2),
-                        CornerRadius = new CornerRadius(8),
-                        Padding = new Avalonia.Thickness(12, 8),
-                        MinWidth = 120,
-                        MinHeight = 100,
-                        Child = canvas,
-                        Opacity = 0.9
+                        CornerRadius = new CornerRadius(6),
+                        Padding = new Avalonia.Thickness(10, 6),
+                        Child = operatorContent,
+                        Opacity = 1.0 // Full opacity, no translucency
                     };
 
                     cardContent = operatorBorder;
@@ -2468,49 +2492,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         #endregion
 
-        #region Category Arrow Animation
+        #region Property Changed Handler
 
         private void OnViewModelPropertyChanged(
             object? sender,
             System.ComponentModel.PropertyChangedEventArgs e
         )
         {
-            if (
-                e.PropertyName
-                == nameof(ViewModels.FilterTabs.VisualBuilderTabViewModel.SelectedMainCategory)
-            )
-            {
-                var vm = sender as ViewModels.FilterTabs.VisualBuilderTabViewModel;
-                if (vm != null)
-                {
-                    UpdateArrowPosition(vm.SelectedMainCategory);
-                }
-            }
+            // Arrow positioning is now handled via data binding in XAML
+            // Other property change handling can go here if needed
         }
-
-        private void UpdateArrowPosition(string category)
-        {
-            var arrow = this.FindControl<Avalonia.Controls.Shapes.Polygon>("CategoryArrow");
-            if (arrow == null)
-                return;
-
-            int index = GetCategoryIndex(category);
-            double yPos = (index * 40) + 8;  // 36px button + 4px spacing = 40px per row, 8px offset to center
-            Canvas.SetTop(arrow, yPos);
-        }
-
-        private int GetCategoryIndex(string category) =>
-            category switch
-            {
-                "Favorites" => 0,
-                "Joker" => 1,
-                "Consumable" => 2,
-                "SkipTag" => 3,
-                "Boss" => 4,
-                "Voucher" => 5,
-                "StandardCard" => 6,
-                _ => 0, // Default to Favorites
-            };
 
         #endregion
 

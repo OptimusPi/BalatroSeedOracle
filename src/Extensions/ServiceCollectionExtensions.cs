@@ -42,7 +42,7 @@ namespace BalatroSeedOracle.Extensions
             // Filter Tab ViewModels
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
-            services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.ValidateFilterTabViewModel>();
 
             return services;
         }

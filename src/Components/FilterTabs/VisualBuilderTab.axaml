@@ -8,7 +8,8 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             ClipToBounds="False">
 
     <UserControl.Resources>
         <!-- CARD SIZE CONTROL: Change this ONE value to resize all cards everywhere -->
@@ -17,6 +18,9 @@
         <!-- BoxShadows for selection/hover effects -->
         <BoxShadows x:Key="WhiteBoxShadowNone">0 0 0 0 #FFFFFF</BoxShadows>
         <BoxShadows x:Key="WhiteBoxShadowActive">0 0 0 3 #FFFFFF</BoxShadows>
+
+        <!-- Converter for comparing strings -->
+        <converters:StringEqualityConverter x:Key="EqualityConverter"/>
     </UserControl.Resources>
 
     <UserControl.Styles>
@@ -46,9 +50,9 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid VerticalAlignment="Stretch">
+    <Grid VerticalAlignment="Stretch" ClipToBounds="False">
                 <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
-                <Grid Margin="16,0,16,16" VerticalAlignment="Stretch">
+                <Grid Margin="16,0,16,16" VerticalAlignment="Stretch" ClipToBounds="False">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="115"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
@@ -74,55 +78,141 @@
                                MaxWidth="110"/>
                 </Border>
 
-                <!-- Category buttons with bouncing arrow indicator -->
+                <!-- Category buttons with arrow indicator on the left -->
                 <Grid Grid.Row="4">
-                    <!-- Bouncing arrow indicator (points at active category) -->
-                    <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" ZIndex="100">
-                        <Polygon Name="CategoryArrow"
-                                 Points="0,0 15,10 0,20"
-                                 Classes="balatro-triangle balatro-bounce-horizontal"
-                                 Canvas.Left="-20"
-                                 Canvas.Top="0"
-                                 IsVisible="True"/>
-                    </Canvas>
-
                     <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
-                        <!-- Category buttons without section headers -->
-                        <Button Content="Favorites"
-                            Classes="nav-button special"
-                            Click="OnCategoryClick"
-                            Tag="Favorites"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Joker"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Joker"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Consumable"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Consumable"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Skip Tags"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="SkipTag"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Boss Blind"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Boss"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Voucher"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="Voucher"
-                            HorizontalAlignment="Stretch"/>
-                    <Button Content="Standard Card"
-                            Classes="nav-button"
-                            Click="OnCategoryClick"
-                            Tag="StandardCard"
-                            HorizontalAlignment="Stretch"/>
+                        <!-- Favorites -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Favorites"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Favorites"
+                                    Classes="nav-button special"
+                                    Click="OnCategoryClick"
+                                    Tag="Favorites"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Joker -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Joker"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Joker"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Joker"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Consumable -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Consumable"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Consumable"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Consumable"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Skip Tags -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="SkipTag"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Skip Tags"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="SkipTag"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Boss Blind -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Boss"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Boss Blind"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Boss"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Voucher -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Voucher"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Voucher"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Voucher"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Standard Card -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="StandardCard"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Standard Card"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="StandardCard"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
                     </StackPanel>
                 </Grid>
 
@@ -484,7 +574,7 @@
             </Grid>
 
             <!-- RIGHT COLUMN - Operator Trays + Drop Zones (Collapsible!) -->
-            <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer">
+            <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer" ClipToBounds="False">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="90"/>  <!-- OR/AND Trays - Reduced from 120 to give more room -->
                     <RowDefinition Height="6"/>  <!-- Spacing -->
@@ -737,6 +827,7 @@
                         CornerRadius="8"
                         Padding="0"
                         ClipToBounds="False"
+                        ZIndex="10"
                         DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
@@ -779,7 +870,7 @@
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl/>
+                                                <components:FilterOperatorControl ZIndex="100"/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
@@ -788,6 +879,7 @@
                                                         Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
+                                                        ZIndex="100"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
@@ -845,6 +937,7 @@
                         CornerRadius="8"
                         Padding="0"
                         ClipToBounds="False"
+                        ZIndex="10"
                         DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
@@ -887,7 +980,7 @@
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl/>
+                                                <components:FilterOperatorControl ZIndex="100"/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
@@ -896,6 +989,7 @@
                                                         Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
+                                                        ZIndex="100"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>

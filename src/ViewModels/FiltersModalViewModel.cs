@@ -724,23 +724,86 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
+        /// Save current filter state to a temporary JSON file for tab switching consistency
+        /// </summary>
+        private void SaveFilterStateToTempFile()
+        {
+            try
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), "balatro_filter_temp.json");
+                var config = BuildConfigFromCurrentState();
+                var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                });
+                File.WriteAllText(tempPath, json);
+                DebugLogger.Log("FiltersModalViewModel", $"Saved filter state to temp file: {tempPath}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error saving filter state to temp: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Load filter state from temporary JSON file to ensure consistency across tabs
+        /// </summary>
+        private void LoadFilterStateFromTempFile()
+        {
+            try
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), "balatro_filter_temp.json");
+                if (File.Exists(tempPath))
+                {
+                    var json = File.ReadAllText(tempPath);
+                    var config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(json);
+                    if (config != null)
+                    {
+                        // Preserve current filter path and metadata
+                        var savedPath = CurrentFilterPath;
+                        var savedOriginalHash = _originalCriteriaHash;
+                        var savedOriginalDate = _originalDateCreated;
+                        var savedOriginalAuthor = _originalAuthor;
+
+                        // Load the filter config
+                        LoadConfigIntoState(config);
+
+                        // Restore preserved values
+                        CurrentFilterPath = savedPath;
+                        _originalCriteriaHash = savedOriginalHash;
+                        _originalDateCreated = savedOriginalDate;
+                        _originalAuthor = savedOriginalAuthor;
+
+                        DebugLogger.Log("FiltersModalViewModel", "Loaded filter state from temp file successfully");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter state from temp: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Refresh Save tab data when switching to it
         /// </summary>
         private void RefreshSaveTabData()
         {
             try
             {
-                // Find the Save tab and refresh its data
-                var saveTab = TabItems.FirstOrDefault(t =>
-                    t.Content is Components.FilterTabs.SaveFilterTab
+                // Find the Validate Filter tab and refresh its data
+                var validateTab = TabItems.FirstOrDefault(t =>
+                    t.Content is Components.FilterTabs.ValidateFilterTab
                 );
                 if (
-                    saveTab?.Content is Components.FilterTabs.SaveFilterTab saveFilterTab
-                    && saveFilterTab.DataContext is FilterTabs.SaveFilterTabViewModel saveVm
+                    validateTab?.Content is Components.FilterTabs.ValidateFilterTab validateFilterTab
+                    && validateFilterTab.DataContext is FilterTabs.ValidateFilterTabViewModel validateVm
                 )
                 {
-                    saveVm.PreFillFilterData();
-                    DebugLogger.Log("FiltersModalViewModel", "Refreshed Save tab data");
+                    validateVm.PreFillFilterData();
+                    validateVm.RefreshClauseDisplay();
+                    DebugLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
                 }
             }
             catch (Exception ex)
@@ -771,8 +834,20 @@ namespace BalatroSeedOracle.ViewModels
         // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
+            // Save current filter state to temp JSON file before switching tabs
+            SaveFilterStateToTempFile();
+
+            // Load the filter state from temp JSON file to ensure consistency
+            LoadFilterStateFromTempFile();
+
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
+
+            // When switching to the Validate tab, ensure it's refreshed with the loaded data
+            if (value == 2) // Validate/Save tab index
+            {
+                RefreshSaveTabData();
+            }
         }
 
         // ===== HELPER METHODS =====
@@ -1287,21 +1362,25 @@ namespace BalatroSeedOracle.ViewModels
             var filterConfigService =
                 ServiceHelper.GetService<IFilterConfigurationService>()
                 ?? new FilterConfigurationService(userProfileService);
-            var saveFilterViewModel = new FilterTabs.SaveFilterTabViewModel(
+            var validateFilterViewModel = new FilterTabs.ValidateFilterTabViewModel(
                 this,
                 configService,
                 filterService,
                 filterConfigService
             );
-            var saveFilterTab = new Components.FilterTabs.SaveFilterTab
+            var validateFilterTab = new Components.FilterTabs.ValidateFilterTab
             {
-                DataContext = saveFilterViewModel,
+                DataContext = validateFilterViewModel,
             };
 
-            TabItems.Add(new TabItemViewModel("SAVE", saveFilterTab));
+            // Initialize the ValidateFilterTab with current filter data
+            validateFilterViewModel.PreFillFilterData();
+            validateFilterViewModel.RefreshClauseDisplay();
+
+            TabItems.Add(new TabItemViewModel("VALIDATE FILTER", validateFilterTab));
 
             // Ensure initial tab content and visibility are set
-            // Order now: 0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Save
+            // Order now: 0=Configure Filter, 1=Configure Score, 2=JSON Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }

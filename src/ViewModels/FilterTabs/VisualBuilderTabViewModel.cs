@@ -2304,43 +2304,32 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for ALL items in shelf - EXACT COPY of ToggleDebuffed pattern
+        /// Sets the edition for ALL palette items AND future drops
+        /// Does NOT modify items already in drop zones
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
         {
+            // Set the selection for future drops
             SelectedEdition = edition;
-            string? editionValue = edition == "None" ? null : edition.ToLower();
 
-            int totalItems = 0;
-            int skippedItems = 0;
-            int updatedItems = 0;
-
-            // EXACT pattern from ToggleDebuffed - direct property set on all items
-            foreach (var group in GroupedItems)
+            // Apply to ALL palette items (but NOT drop zone items)
+            foreach (var item in AllJokers.Concat(AllTags).Concat(AllVouchers)
+                .Concat(AllTarots).Concat(AllPlanets).Concat(AllSpectrals)
+                .Concat(AllBosses).Concat(AllWildcards).Concat(AllStandardCards))
             {
-                DebugLogger.Log("SetEdition", $"Group '{group.GroupName}' has {group.Items.Count} items");
-                foreach (var item in group.Items)
-                {
-                    totalItems++;
-                    DebugLogger.Log("SetEdition", $"  Item: Name='{item.Name}', Type='{item.Type}', Category='{item.Category}'");
-
-                    // ONLY apply to Jokers and Standard Cards - CHECK TYPE NOT CATEGORY!
-                    if (item.Type != "Joker" && item.Type != "SoulJoker" && item.Type != "StandardCard")
-                    {
-                        skippedItems++;
-                        DebugLogger.Log("SetEdition", $"  SKIPPED (Type={item.Type})");
-                        continue;
-                    }
-
-                    DebugLogger.Log("SetEdition", $"  Setting Edition to '{editionValue ?? "NULL"}'...");
-                    item.Edition = editionValue; // Direct property set - triggers EditionImage refresh
-                    updatedItems++;
-                    DebugLogger.Log("SetEdition", $"  DONE");
-                }
+                item.Edition = edition == "None" ? null : edition;
             }
 
-            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied - Total:{totalItems}, Updated:{updatedItems}, Skipped:{skippedItems}");
+            // Also apply to filtered items (they're references to the same objects but just in case)
+            foreach (var item in FilteredJokers.Concat(FilteredTags).Concat(FilteredVouchers)
+                .Concat(FilteredTarots).Concat(FilteredPlanets).Concat(FilteredSpectrals)
+                .Concat(FilteredBosses).Concat(FilteredWildcards).Concat(FilteredStandardCards))
+            {
+                item.Edition = edition == "None" ? null : edition;
+            }
+
+            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to all palette items");
         }
 
         /// <summary>
@@ -2431,7 +2420,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
-        /// Sets the seal for all StandardCard items in shelf AND drop zones
+        /// Sets the seal for ALL StandardCard palette items AND future drops
+        /// Does NOT modify items already in drop zones
         /// </summary>
         [RelayCommand]
         public void SetSeal(string seal)
@@ -2441,58 +2431,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 DebugLogger.Log(
                     "VisualBuilderTab",
-                    $"Seal already set to '{seal}' - skipping animation"
+                    $"Seal already set to '{seal}' - skipping"
                 );
                 return;
             }
 
+            // Set the selection for future drops
             SelectedSeal = seal;
-            string? sealValue = seal == "None" ? null : seal;
 
-            int totalItems = 0;
-            int skippedItems = 0;
-            int updatedItems = 0;
-
-            // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
-            foreach (var group in GroupedItems)
+            // Apply to ALL StandardCard palette items (but NOT drop zone items)
+            foreach (var item in AllStandardCards)
             {
-                DebugLogger.Log("SetSeal", $"Group '{group.GroupName}' has {group.Items.Count} items");
-                foreach (var item in group.Items)
-                {
-                    totalItems++;
-                    DebugLogger.Log("SetSeal", $"  Item: Name='{item.Name}', Type='{item.Type}', Category='{item.Category}'");
-
-                    // Only apply seal to StandardCards
-                    if (item.Type == "StandardCard")
-                    {
-                        DebugLogger.Log("SetSeal", $"  Setting Seal to '{sealValue ?? "NULL"}'...");
-                        // CRITICAL FIX: Update item.Seal directly to trigger binding update
-                        item.Seal = sealValue;
-
-                        // Also update ItemConfig if it exists (for when item gets dropped to zones)
-                        if (
-                            _parentViewModel != null
-                            && _parentViewModel.ItemConfigs.TryGetValue(
-                                item.ItemKey,
-                                out var config
-                            )
-                        )
-                        {
-                            config.Seal = sealValue;
-                        }
-
-                        updatedItems++;
-                        DebugLogger.Log("SetSeal", $"  DONE");
-                    }
-                    else
-                    {
-                        skippedItems++;
-                        DebugLogger.Log("SetSeal", $"  SKIPPED (Type={item.Type})");
-                    }
-                }
+                item.Seal = seal == "None" ? null : seal;
             }
 
-            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied - Total:{totalItems}, Updated:{updatedItems}, Skipped:{skippedItems}");
+            // Also apply to filtered StandardCards
+            foreach (var item in FilteredStandardCards)
+            {
+                item.Seal = seal == "None" ? null : seal;
+            }
+
+            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to all StandardCard palette items");
         }
 
         /// <summary>

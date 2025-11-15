@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.ClauseRowControl"
+             x:DataType="vm:ClauseRowViewModel">
+
+    <Border Background="{StaticResource DarkBackground}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="12,8"
+            Margin="{Binding IndentMargin}">
+
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <!-- Column 0: Icon/Sprite or Operator Symbol -->
+            <Panel Grid.Column="0" Width="40" Height="40" Margin="0,0,12,0">
+                <!-- Regular Item Icon -->
+                <Image Source="{Binding IconPath}"
+                       Width="40" Height="40"
+                       IsVisible="{Binding !IsOperator}"/>
+
+                <!-- Operator Symbol (OR/AND) -->
+                <Border IsVisible="{Binding IsOperator}"
+                        Background="{StaticResource Gold}"
+                        CornerRadius="20"
+                        Width="40" Height="40">
+                    <TextBlock Text="{Binding ClauseType}"
+                               FontSize="12"
+                               Foreground="{StaticResource Black}"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+            </Panel>
+
+            <!-- Column 1: Clause Description -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <!-- Main Display Text -->
+                <TextBlock Text="{Binding DisplayText}"
+                           FontSize="14"
+                           Foreground="{StaticResource White}"/>
+
+                <!-- Additional Info Row -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <!-- Ante Range -->
+                    <TextBlock Text="{Binding AnteRange}"
+                               FontSize="11"
+                               Foreground="{StaticResource LightGrey}"
+                               IsVisible="{Binding AnteRange, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                    <!-- Min Count -->
+                    <TextBlock FontSize="11"
+                               Foreground="{StaticResource Gold}"
+                               IsVisible="{Binding MinCount, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Min: {0}">
+                                <Binding Path="MinCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+
+                    <!-- Score Value (for Should clauses) -->
+                    <TextBlock FontSize="11"
+                               Foreground="{StaticResource AccentGreen}"
+                               IsVisible="{Binding HasScore}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Score: {0}">
+                                <Binding Path="ScoreValue"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+
+                    <!-- Edition Badge -->
+                    <Border Background="{StaticResource Blue}"
+                            CornerRadius="4"
+                            Padding="4,2"
+                            IsVisible="{Binding EditionBadge, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding EditionBadge}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource White}"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Column 2: Edit Button -->
+            <Button Grid.Column="2"
+                    Content="⚙"
+                    Command="{Binding EditClauseCommand}"
+                    Classes="btn-blue"
+                    Width="32"
+                    Height="32"
+                    ToolTip.Tip="Edit clause settings"
+                    Margin="8,0"/>
+
+            <!-- Column 3: Remove Button -->
+            <Button Grid.Column="3"
+                    Content="✕"
+                    Command="{Binding RemoveClauseCommand}"
+                    Classes="btn-red"
+                    Width="32"
+                    Height="32"
+                    ToolTip.Tip="Remove clause"/>
+        </Grid>
+    </Border>
+</UserControl>

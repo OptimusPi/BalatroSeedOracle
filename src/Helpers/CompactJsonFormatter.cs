@@ -101,7 +101,8 @@ namespace BalatroSeedOracle.Helpers
         /// </summary>
         private static string CompactArrays(string json, int maxWidth)
         {
-            var lines = json.Split('\n');
+            // Split by newlines and handle both \r\n and \n line endings
+            var lines = json.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             var result = new StringBuilder();
             var i = 0;
 
