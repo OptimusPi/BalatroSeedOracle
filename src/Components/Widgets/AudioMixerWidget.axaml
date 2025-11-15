@@ -32,7 +32,7 @@
                 <TextBlock Text="🎚" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="Mixer"
-                       FontSize="10"
+                       FontSize="16"
                        Foreground="{StaticResource White}"
                        HorizontalAlignment="Center"/>
         </StackPanel>

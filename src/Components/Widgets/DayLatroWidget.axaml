@@ -73,7 +73,7 @@
                 </Grid>
 
                 <TextBlock Text="Daylatro"
-                           FontSize="10"
+                           FontSize="16"
                            FontFamily="{StaticResource BalatroFont}"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"/>

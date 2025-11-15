@@ -38,7 +38,7 @@
                 <TextBlock Text="🧞" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="Genie"
-                       FontSize="10"
+                       FontSize="16"
                        FontFamily="{StaticResource BalatroFont}"
                        Foreground="{StaticResource White}"
                        HorizontalAlignment="Center"/>

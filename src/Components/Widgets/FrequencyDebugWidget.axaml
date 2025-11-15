@@ -41,8 +41,8 @@
                 <TextBlock Text="📊" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <TextBlock Text="FFT"
-                       FontSize="10"
-                       
+                       FontSize="16"
+
                        Foreground="White"
                        HorizontalAlignment="Center"/>
         </StackPanel>
