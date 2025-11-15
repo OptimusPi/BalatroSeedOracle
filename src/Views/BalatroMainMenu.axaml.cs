@@ -255,7 +255,22 @@ namespace BalatroSeedOracle.Views
                     "BalatroMainMenu",
                     "🔵 ShowSearchModal: ModalCloseRequested event FIRED!"
                 );
+
+                // Debug: Check if Result is null
+                if (filterSelectionVM.Result == null)
+                {
+                    DebugLogger.Log(
+                        "BalatroMainMenu",
+                        "❌ Result is NULL in ModalCloseRequested handler!"
+                    );
+                    return;
+                }
+
                 var result = filterSelectionVM.Result;
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"📋 Result - Action: {result.Action}, FilterId: {result.FilterId}, Cancelled: {result.Cancelled}"
+                );
 
                 if (result.Cancelled)
                 {
@@ -271,6 +286,10 @@ namespace BalatroSeedOracle.Views
                 switch (result.Action)
                 {
                     case Models.FilterAction.Search:
+                        DebugLogger.Log(
+                            "BalatroMainMenu",
+                            $"✅ Search action triggered! FilterId: {result.FilterId}"
+                        );
                         if (result.FilterId != null)
                         {
                             // Save FilterSelectionModal for back navigation
@@ -286,8 +305,21 @@ namespace BalatroSeedOracle.Views
                                 filtersDir,
                                 result.FilterId + ".json"
                             );
+
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                $"🗂️ Loading filter from: {configPath}"
+                            );
+
                             // TRANSITION to SearchModal (no flicker - just content swap)
                             _ = ShowSearchModalWithFilterAsync(configPath);
+                        }
+                        else
+                        {
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "❌ Search action but FilterId is NULL!"
+                            );
                         }
                         break;
 
