@@ -392,136 +392,346 @@
             </Border>
         </Grid>
 
-        <!-- Row 4: Filter Requirements ScrollViewer (Must/MustNot) -->
-        <Border Grid.Row="4"
-                Background="{StaticResource VeryDarkBackground}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="10">
-            <StackPanel Spacing="8">
-                    <TextBlock Text="FILTER REQUIREMENTS"
-                               FontSize="16"
-                               Foreground="{StaticResource Gold}"
+        <!-- Row 4: Filter Requirements (Must/MustNot) with Card Grid -->
+        <StackPanel Grid.Row="4" Spacing="20">
+            <!-- Section Header -->
+            <TextBlock Text="FILTER REQUIREMENTS"
+                       FontSize="20"
+                       Foreground="{StaticResource Gold}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+            <!-- Must Have Section -->
+            <Border CornerRadius="12"
+                    BoxShadow="0 4 16 4 #0A0F1C">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#065F46" Offset="0"/>
+                        <GradientStop Color="#047857" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+
+                <Expander IsExpanded="True">
+                    <Expander.Header>
+                        <Border Padding="20,12" CornerRadius="8,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Icon with glow -->
+                                <Border Grid.Column="0"
+                                        Width="36" Height="36"
+                                        CornerRadius="18"
+                                        Background="#10B981"
+                                        BoxShadow="0 0 20 5 #10B981">
+                                    <TextBlock Text="✓"
+                                               FontSize="20"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Title -->
+                                <TextBlock Grid.Column="1"
+                                           Text="MUST HAVE ITEMS"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"
+                                           Margin="15,0,0,0"/>
+
+                                <!-- Count Badge -->
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Gold}"
+                                        CornerRadius="15"
+                                        Padding="12,6"
+                                        MinWidth="30">
+                                    <TextBlock Text="{Binding MustClauses.Count}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               Foreground="{StaticResource Black}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Expander.Header>
+
+                    <Border Background="#042F2E"
+                            CornerRadius="0,0,8,8"
+                            Padding="15">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding MustClauses}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <components:ClauseRowControl DataContext="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+            </Border>
+
+            <!-- Banned Items Section -->
+            <Border CornerRadius="12"
+                    BoxShadow="0 4 16 4 #0A0F1C">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#7F1D1D" Offset="0"/>
+                        <GradientStop Color="#991B1B" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+
+                <Expander IsExpanded="True">
+                    <Expander.Header>
+                        <Border Padding="20,12" CornerRadius="8,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Icon with glow -->
+                                <Border Grid.Column="0"
+                                        Width="36" Height="36"
+                                        CornerRadius="18"
+                                        Background="#EF4444"
+                                        BoxShadow="0 0 20 5 #EF4444">
+                                    <TextBlock Text="✕"
+                                               FontSize="20"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Title -->
+                                <TextBlock Grid.Column="1"
+                                           Text="BANNED ITEMS"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"
+                                           Margin="15,0,0,0"/>
+
+                                <!-- Count Badge -->
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource Gold}"
+                                        CornerRadius="15"
+                                        Padding="12,6"
+                                        MinWidth="30">
+                                    <TextBlock Text="{Binding MustNotClauses.Count}"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               Foreground="{StaticResource Black}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Expander.Header>
+
+                    <Border Background="#450A0A"
+                            CornerRadius="0,0,8,8"
+                            Padding="15">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding MustNotClauses}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <components:ClauseRowControl DataContext="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+            </Border>
+        </StackPanel>
+
+        <!-- Row 6: Scoring Items (Should) with Purple Gradient Theme -->
+        <StackPanel Grid.Row="6" Spacing="0">
+            <!-- Section Header with Royal Purple Gradient -->
+            <Border CornerRadius="10,10,0,0"
+                    Padding="16,12"
+                    Margin="0,16,0,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#5B21B6" Offset="0"/>  <!-- Deep Purple -->
+                        <GradientStop Color="#6D28D9" Offset="0.5"/> <!-- Violet -->
+                        <GradientStop Color="#7C3AED" Offset="1"/>   <!-- Light Violet -->
+                    </LinearGradientBrush>
+                </Border.Background>
+
+                <!-- Purple Glow Effect -->
+                <Border.Effect>
+                    <DropShadowEffect Color="#8B5CF6"
+                                      Opacity="0.6"
+                                      BlurRadius="20"
+                                      OffsetX="0"
+                                      OffsetY="0"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Star Icon with Golden Glow -->
+                    <TextBlock Grid.Column="0"
+                               Text="⭐"
+                               FontSize="28"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#FFD700"
+                                              Opacity="0.9"
+                                              BlurRadius="12"
+                                              OffsetX="0"
+                                              OffsetY="0"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+
+                    <TextBlock Grid.Column="1"
+                               Text="SCORING ITEMS"
                                FontFamily="{StaticResource BalatroFont}"
-                               Margin="0,0,0,10"/>
+                               FontSize="22"
+                               FontWeight="ExtraBold"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"
+                               LetterSpacing="3">
+                        <!-- Add purple text shadow for depth -->
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#311B92"
+                                              Opacity="0.8"
+                                              BlurRadius="3"
+                                              OffsetX="0"
+                                              OffsetY="2"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
 
-                    <!-- Must Clauses Expander -->
-                    <Expander IsExpanded="True">
-                        <Expander.Header>
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <TextBlock Text="✓ Must Have Items"
-                                           FontSize="14"
-                                           Foreground="{StaticResource AccentGreen}"/>
-                                <TextBlock FontSize="14"
-                                           Foreground="{StaticResource LightGrey}">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="({0})">
-                                            <Binding Path="MustClauses.Count"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
+                    <!-- Count Badge with Golden Accent -->
+                    <Border Grid.Column="2"
+                            Background="{StaticResource Gold}"
+                            CornerRadius="16"
+                            Padding="14,5"
+                            Margin="10,0,0,0"
+                            BoxShadow="0 3 10 2 #FFD70055">
+                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Black}">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} SCORED">
+                                    <Binding Path="ShouldClauses.Count"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Should Clauses Expander with Card Background -->
+            <Border Background="#1A1625"
+                    BorderBrush="#8B5CF6"
+                    BorderThickness="2,0,2,2"
+                    CornerRadius="0,0,10,10">
+                <Expander IsExpanded="True"
+                          Background="Transparent"
+                          Padding="0">
+                    <Expander.Header>
+                        <Border Background="Transparent"
+                                BorderBrush="#7C3AED"
+                                BorderThickness="0,0,0,1"
+                                Width="900"
+                                Padding="16,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="⚡"
+                                           FontSize="20"
+                                           Margin="0,0,10,0"
+                                           Foreground="{StaticResource Gold}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect Color="#FFD700"
+                                                          Opacity="0.6"
+                                                          BlurRadius="6"
+                                                          OffsetX="0"
+                                                          OffsetY="0"/>
+                                    </TextBlock.Effect>
                                 </TextBlock>
-                            </StackPanel>
-                        </Expander.Header>
 
-                        <ItemsControl ItemsSource="{Binding MustClauses}"
-                                      Margin="10,5,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Spacing="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <components:ClauseRowControl DataContext="{Binding}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Expander>
+                                <TextBlock Grid.Column="1"
+                                           Text="Preference Items (Contribute to Score)"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#B794F4"
+                                           VerticalAlignment="Center"/>
 
-                    <!-- MustNot Clauses Expander (Banned Items) -->
-                    <Expander IsExpanded="True">
-                        <Expander.Header>
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <TextBlock Text="✕ Banned Items"
-                                           FontSize="14"
-                                           Foreground="{StaticResource Red}"/>
-                                <TextBlock FontSize="14"
-                                           Foreground="{StaticResource LightGrey}">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="({0})">
-                                            <Binding Path="MustNotClauses.Count"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                        </Expander.Header>
+                                <!-- Subtitle showing scoring mode -->
+                                <TextBlock Grid.Column="2"
+                                           Text="Higher scores = better seeds"
+                                           FontSize="11"
+                                           FontStyle="Italic"
+                                           Foreground="#8B5CF6"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Expander.Header>
 
-                        <ItemsControl ItemsSource="{Binding MustNotClauses}"
-                                      Margin="10,5,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Spacing="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <components:ClauseRowControl DataContext="{Binding}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Expander>
-                </StackPanel>
-        </Border>
-
-        <!-- Row 6: Scoring Items (Should) -->
-        <Border Grid.Row="6"
-                Background="{StaticResource VeryDarkBackground}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="10">
-            <StackPanel Spacing="8">
-                    <TextBlock Text="SCORING ITEMS"
-                               FontSize="16"
-                               Foreground="{StaticResource Gold}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               Margin="0,0,0,10"/>
-
-                    <!-- Should Clauses Expander -->
-                    <Expander IsExpanded="True">
-                        <Expander.Header>
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <TextBlock Text="⭐ Should Have Items (Scoring)"
-                                           FontSize="14"
-                                           Foreground="{StaticResource Blue}"/>
-                                <TextBlock FontSize="14"
-                                           Foreground="{StaticResource LightGrey}">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="({0})">
-                                            <Binding Path="ShouldClauses.Count"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </StackPanel>
-                        </Expander.Header>
-
-                        <ItemsControl ItemsSource="{Binding ShouldClauses}"
-                                      Margin="10,5,0,0">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Spacing="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <components:ClauseRowControl DataContext="{Binding}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Expander>
-                </StackPanel>
-        </Border>
+                    <!-- Content Area with Card Grid -->
+                    <Border Background="Transparent"
+                            CornerRadius="0,0,8,8"
+                            Padding="15">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding ShouldClauses}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <!-- Use WrapPanel for card grid layout -->
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <components:ClauseRowControl DataContext="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+            </Border>
+        </StackPanel>
         </Grid>
     </ScrollViewer>
 </UserControl>

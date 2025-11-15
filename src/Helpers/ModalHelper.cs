@@ -483,7 +483,11 @@ namespace BalatroSeedOracle.Helpers
 
             var json = System.Text.Json.JsonSerializer.Serialize(
                 emptyFilter,
-                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                }
             );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
 
@@ -523,7 +527,11 @@ namespace BalatroSeedOracle.Helpers
 
                     var json = System.Text.Json.JsonSerializer.Serialize(
                         config,
-                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                        new System.Text.Json.JsonSerializerOptions
+                        {
+                            WriteIndented = true,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                        }
                     );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);
 

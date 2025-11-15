@@ -12,21 +12,22 @@
 
     <!-- SELF-CONTAINED Balatro card component -->
     <StackPanel Spacing="2" Width="72" IsHitTestVisible="False">
-        <!-- Card image with all overlays and behaviors (64x86 compact size) -->
+        <!-- Card image with all overlays and behaviors (adaptive size for different item types) -->
         <Border Background="Transparent"
-                Width="64"
-                Height="86"
+                Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                 IsHitTestVisible="True"
                 Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                 RenderTransformOrigin="0.5,0.5">
 
 
-            <Grid Width="64" Height="86">
+            <Grid Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                  Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}">
                 <!-- Base card image -->
                 <Image Name="BaseCardImage"
                        Source="{Binding ItemImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -34,8 +35,8 @@
 
                 <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
                 <Image Source="{Binding EditionImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -44,8 +45,8 @@
 
                 <!-- Eternal sticker overlay -->
                 <Image Source="{Binding EternalStickerImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -54,8 +55,8 @@
 
                 <!-- Perishable sticker overlay -->
                 <Image Source="{Binding PerishableStickerImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -64,8 +65,8 @@
 
                 <!-- Rental sticker overlay -->
                 <Image Source="{Binding RentalStickerImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -74,8 +75,8 @@
 
                 <!-- Soul face overlay for legendary jokers -->
                 <Image Source="{Binding SoulFaceImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -84,8 +85,8 @@
 
                 <!-- Debuffed overlay (red X for MUST-NOT items) - highest ZIndex -->
                 <Image Source="{Binding DebuffedImage}"
-                       Width="64"
-                       Height="86"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                        Stretch="Uniform"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
@@ -95,13 +96,15 @@
             </Grid>
         </Border>
 
-        <!-- Card name label -->
+        <!-- Card name label with proper height for 2-line wrapping -->
         <TextBlock Text="{Binding DisplayName}"
                    FontFamily="{StaticResource BalatroFont}"
                    FontSize="11"
                    Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"
-                   MaxWidth="72"/>
+                   MaxWidth="72"
+                   MinHeight="28"
+                   MaxLines="2"/>
     </StackPanel>
 </UserControl>

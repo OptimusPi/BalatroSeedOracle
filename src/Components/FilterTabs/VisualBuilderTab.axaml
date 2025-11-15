@@ -827,7 +827,7 @@
                         CornerRadius="8"
                         Padding="0"
                         ClipToBounds="False"
-                        ZIndex="10"
+                        MinHeight="120"
                         DragDrop.AllowDrop="True">
                     <Border.Transitions>
                         <Transitions>
@@ -854,23 +854,30 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" ClipToBounds="False">
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      ClipToBounds="False"
+                                      Padding="5">
                             <ItemsControl ItemsSource="{Binding SelectedMust}"
-                                          Margin="8"
-                                          ClipToBounds="False">
+                                          Margin="8,8,8,15"
+                                          ClipToBounds="False"
+                                         >
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" ClipToBounds="False"/>
+                                    <WrapPanel Orientation="Horizontal"
+                                               ClipToBounds="False"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <!-- Render operator or regular card based on Type property -->
-                                    <ContentControl Content="{Binding}">
+                                    <ContentControl Content="{Binding}"
+                                                    ClipToBounds="False"
+>
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl ZIndex="100"/>
+                                                <components:FilterOperatorControl/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
@@ -879,7 +886,7 @@
                                                         Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
-                                                        ZIndex="100"
+                                                                                                               Margin="2,2,2,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
@@ -964,23 +971,30 @@
                         </Border>
 
                         <!-- Bottom: Drop Area - Always visible -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" ClipToBounds="False">
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      ClipToBounds="False"
+                                      Padding="5">
                             <ItemsControl ItemsSource="{Binding SelectedShould}"
-                                          Margin="8"
-                                          ClipToBounds="False">
+                                          Margin="8,8,8,15"
+                                          ClipToBounds="False"
+                                         >
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal" ClipToBounds="False"/>
+                                    <WrapPanel Orientation="Horizontal"
+                                               ClipToBounds="False"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <!-- Render operator or regular card based on Type property -->
-                                    <ContentControl Content="{Binding}">
+                                    <ContentControl Content="{Binding}"
+                                                    ClipToBounds="False"
+>
                                         <ContentControl.DataTemplates>
                                             <!-- Template for FilterOperatorItem -->
                                             <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
-                                                <components:FilterOperatorControl ZIndex="100"/>
+                                                <components:FilterOperatorControl/>
                                             </DataTemplate>
 
                                             <!-- Template for regular FilterItem -->
@@ -989,7 +1003,7 @@
                                                         Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
-                                                        ZIndex="100"
+                                                                                                               Margin="2,2,2,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>

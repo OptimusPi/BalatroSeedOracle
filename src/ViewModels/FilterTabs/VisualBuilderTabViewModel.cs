@@ -2690,9 +2690,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public void LoadFromParentCollections()
         {
             if (_parentViewModel == null)
+            {
+                DebugLogger.Log("VisualBuilderTab", "❌ Cannot load - parent view model is null!");
                 return;
+            }
 
-            DebugLogger.Log("VisualBuilderTab", "Loading from parent collections...");
+            DebugLogger.Log("VisualBuilderTab", $"🔄 Loading from parent collections - Must: {_parentViewModel.SelectedMust.Count}, Should: {_parentViewModel.SelectedShould.Count}");
 
             // Clear current visual builder state
             SelectedMust.Clear();
@@ -2733,7 +2736,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             DebugLogger.Log(
                 "VisualBuilderTab",
-                $"Loaded {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD"
+                $"✅ Finished loading - Now have {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD items in VisualBuilderTab"
             );
         }
 

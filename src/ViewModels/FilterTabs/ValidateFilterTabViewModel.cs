@@ -21,6 +21,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterService _filterService;
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
+        private readonly ClauseConversionService _clauseConversionService;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(SaveCurrentFilterCommand))]
@@ -132,6 +133,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _configurationService = configurationService;
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
+            _clauseConversionService = new ClauseConversionService();
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -193,7 +195,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
                 {
                     DebugLogger.Log("ValidateFilterTab",
-                        $"Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+                        $"✅ FOUND VisualBuilderTab - Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
 
                     // Convert Must items
                     foreach (var item in visualVm.SelectedMust)
@@ -205,39 +207,62 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             // Add children to MustNot
                             foreach (var child in operatorItem.Children)
                             {
-                                var clauseRow = ConvertFilterItemToClauseRow(child, 0);
-                                if (clauseRow != null)
-                                    MustNotClauses.Add(clauseRow);
+                                var config = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
+                                    ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                    : new ItemConfig();
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(child, config);
+                                if (clause != null)
+                                {
+                                    var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, child.Category, 0);
+                                    if (clauseRow != null)
+                                        MustNotClauses.Add(clauseRow);
+                                }
                             }
                         }
                         else
                         {
-                            var clauseRow = ConvertFilterItemToClauseRow(item, 0);
-                            if (clauseRow != null)
-                                MustClauses.Add(clauseRow);
+                            var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                                ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
+                                : new ItemConfig();
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                            if (clause != null)
+                            {
+                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
+                                if (clauseRow != null)
+                                    MustClauses.Add(clauseRow);
+                            }
                         }
                     }
 
                     // Convert Should items
                     foreach (var item in visualVm.SelectedShould)
                     {
-                        var clauseRow = ConvertFilterItemToClauseRow(item, 0);
-                        if (clauseRow != null)
-                            ShouldClauses.Add(clauseRow);
+                        var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                            ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
+                            : new ItemConfig();
+                        var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                        if (clause != null)
+                        {
+                            var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
+                            if (clauseRow != null)
+                                ShouldClauses.Add(clauseRow);
+                        }
                     }
                 }
                 else
                 {
                     // Fallback to parent's key-based collections
                     DebugLogger.Log("ValidateFilterTab",
-                        $"Refreshing from parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot");
+                        $"⚠️ NO VisualBuilderTab found! Falling back to parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot");
+                    DebugLogger.Log("ValidateFilterTab",
+                        $"VisualBuilderTab is null: {_parentViewModel.VisualBuilderTab == null}, Type: {_parentViewModel.VisualBuilderTab?.GetType()?.Name ?? "null"}");
 
                     // Convert Must items from keys
                     foreach (var itemKey in _parentViewModel.SelectedMust)
                     {
                         if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                         {
-                            var clauseRow = ConvertItemConfigToClauseRow(config, 0);
+                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
                             if (clauseRow != null)
                                 MustClauses.Add(clauseRow);
                         }
@@ -248,7 +273,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                         {
-                            var clauseRow = ConvertItemConfigToClauseRow(config, 0);
+                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
                             if (clauseRow != null)
                                 MustNotClauses.Add(clauseRow);
                         }
@@ -259,7 +284,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                         {
-                            var clauseRow = ConvertItemConfigToClauseRow(config, 0);
+                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
                             if (clauseRow != null)
                                 ShouldClauses.Add(clauseRow);
                         }
@@ -272,114 +297,41 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
-        private ClauseRowViewModel? ConvertFilterItemToClauseRow(Models.FilterItem item, int nestingLevel)
+
+        private ClauseRowViewModel? ConvertItemConfigDirectly(ItemConfig config, string itemKey, int nestingLevel)
         {
-            // Handle FilterOperatorItem (OR/AND)
-            if (item is Models.FilterOperatorItem operatorItem)
+            // Extract category and name from item key (format: "category:name")
+            var parts = itemKey.Split(':');
+            if (parts.Length != 2)
+                return null;
+
+            var category = parts[0];
+            var name = parts[1];
+
+            // Create a FilterItem to pass to the conversion service
+            var filterItem = new FilterItem
             {
-                var row = new ClauseRowViewModel
-                {
-                    ClauseType = operatorItem.OperatorType,
-                    ItemKey = $"operator_{operatorItem.OperatorType}",
-                    NestingLevel = nestingLevel,
-                    DisplayText = $"{operatorItem.OperatorType.ToUpper()} ({operatorItem.Children.Count} items)",
-                    IsExpanded = true
-                };
-
-                // Convert children recursively
-                foreach (var child in operatorItem.Children)
-                {
-                    var childRow = ConvertFilterItemToClauseRow(child, nestingLevel + 1);
-                    if (childRow != null)
-                        row.Children.Add(childRow);
-                }
-
-                // Wire up commands
-                row.EditClauseCommand = new RelayCommand(() => EditClause(row));
-                row.RemoveClauseCommand = new RelayCommand(() => RemoveClause(row));
-
-                return row;
-            }
-
-            // Normal FilterItem - look up config
-            if (_parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config))
-            {
-                return ConvertItemConfigToClauseRow(config, nestingLevel);
-            }
-
-            return null;
-        }
-
-        private ClauseRowViewModel ConvertItemConfigToClauseRow(Models.ItemConfig config, int nestingLevel)
-        {
-            var row = new ClauseRowViewModel
-            {
-                ClauseType = config.ItemType,
-                ItemKey = config.ItemKey,
-                NestingLevel = nestingLevel,
-                DisplayText = BuildDisplayText(config),
-                IconPath = GetIconPath(config),
-                EditionBadge = config.Edition != "none" ? config.Edition : null,
-                AnteRange = FormatAnteRange(config.Antes),
-                MinCount = config.Min,
-                ScoreValue = config.Score
+                Category = category,
+                Name = name,
+                ItemKey = itemKey
             };
 
-            // Wire up commands
-            row.EditClauseCommand = new RelayCommand(() => EditClause(row));
-            row.RemoveClauseCommand = new RelayCommand(() => RemoveClause(row));
+            // Use the conversion service to create the clause
+            var clause = _clauseConversionService.ConvertFilterItemToClause(filterItem, config);
+            if (clause == null)
+                return null;
 
-            return row;
-        }
+            // Convert the clause to a view model
+            var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, nestingLevel);
 
-        private string BuildDisplayText(Models.ItemConfig config)
-        {
-            var text = config.ItemName;
-
-            if (config.IsSoulJoker)
-                text = $"{text} (Soul)";
-
-            if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
-                text += $" [{config.Edition}]";
-
-            return text;
-        }
-
-        private string GetIconPath(Models.ItemConfig config)
-        {
-            // Build sprite path based on item type and name
-            // This assumes sprites are in standard locations
-            var itemType = config.ItemType.ToLower();
-            var itemName = config.ItemName.Replace(" ", "_").ToLower();
-
-            return itemType switch
+            // Wire up commands if the row was created successfully
+            if (clauseRow != null)
             {
-                "joker" or "souljoker" => $"avares://BalatroSeedOracle/Assets/Sprites/Jokers/{itemName}.png",
-                "tarot" => $"avares://BalatroSeedOracle/Assets/Sprites/Tarots/{itemName}.png",
-                "planet" => $"avares://BalatroSeedOracle/Assets/Sprites/Planets/{itemName}.png",
-                "spectral" => $"avares://BalatroSeedOracle/Assets/Sprites/Spectrals/{itemName}.png",
-                "voucher" => $"avares://BalatroSeedOracle/Assets/Sprites/Vouchers/{itemName}.png",
-                _ => ""
-            };
-        }
-
-        private string FormatAnteRange(List<int>? antes)
-        {
-            if (antes == null || antes.Count == 0)
-                return "";
-
-            if (antes.Count == 8)
-                return "All Antes";
-
-            // Format as range if consecutive
-            var sorted = antes.OrderBy(a => a).ToList();
-            if (sorted.Count > 1 && sorted.Last() - sorted.First() == sorted.Count - 1)
-            {
-                return $"Antes {sorted.First()}-{sorted.Last()}";
+                clauseRow.EditClauseCommand = new RelayCommand(() => EditClause(clauseRow));
+                clauseRow.RemoveClauseCommand = new RelayCommand(() => RemoveClause(clauseRow));
             }
 
-            // Otherwise list them
-            return $"Antes {string.Join(", ", sorted)}";
+            return clauseRow;
         }
 
         private void EditClause(ClauseRowViewModel row)
@@ -828,14 +780,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Add each child to MustNot array
                         foreach (var child in operatorItem.Children)
                         {
-                            var clause = ConvertFilterItemToClause(child, _parentViewModel.ItemConfigs);
+                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
+                                ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                : new ItemConfig();
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(child, itemConfig);
                             if (clause != null)
                                 config.MustNot.Add(clause);
                         }
                     }
                     else
                     {
-                        var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
+                        var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                            ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
+                            : new ItemConfig();
+                        var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
                         if (clause != null)
                             config.Must.Add(clause);
                     }
@@ -843,7 +801,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 foreach (var item in visualVm.SelectedShould)
                 {
-                    var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
+                    var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                        ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
+                        : new ItemConfig();
+                    var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
                     if (clause != null)
                         config.Should.Add(clause);
                 }
@@ -864,90 +825,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return config;
         }
 
-        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
-            Models.FilterItem item,
-            Dictionary<string, Models.ItemConfig> itemConfigs
-        )
-        {
-            // Handle FilterOperatorItem
-            if (item is Models.FilterOperatorItem operatorItem)
-            {
-                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
-                {
-                    Type = operatorItem.OperatorType.ToLowerInvariant(),
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                };
-
-                // Recursively convert children
-                foreach (var child in operatorItem.Children)
-                {
-                    var childClause = ConvertFilterItemToClause(child, itemConfigs);
-                    if (childClause != null)
-                    {
-                        operatorClause.Clauses.Add(childClause);
-                    }
-                }
-
-                return operatorClause;
-            }
-
-            // Normal FilterItem - look up in ItemConfigs
-            if (itemConfigs.TryGetValue(item.ItemKey, out var itemConfig))
-            {
-                var clause = new MotelyJsonConfig.MotleyJsonFilterClause
-                {
-                    Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                    Min = itemConfig.Min,
-                };
-
-                // Map ItemType to Motely type
-                var normalizedType = itemConfig.ItemType.ToLower();
-                switch (normalizedType)
-                {
-                    case "joker":
-                        clause.Type = "Joker";
-                        clause.Value = itemConfig.ItemName;
-                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
-                        {
-                            clause.Edition = itemConfig.Edition;
-                        }
-                        break;
-
-                    case "souljoker":
-                        clause.Type = "SoulJoker";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "tarot":
-                        clause.Type = "TarotCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "voucher":
-                        clause.Type = "Voucher";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "planet":
-                        clause.Type = "PlanetCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "spectral":
-                        clause.Type = "SpectralCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    default:
-                        DebugLogger.Log("ValidateFilterTab", $"Unknown item type: {itemConfig.ItemType}");
-                        return null;
-                }
-
-                return clause;
-            }
-
-            return null;
-        }
 
         private string GetDeckName(int index)
         {

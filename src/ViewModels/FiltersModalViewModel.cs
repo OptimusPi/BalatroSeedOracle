@@ -767,6 +767,7 @@ namespace BalatroSeedOracle.ViewModels
                         var savedOriginalAuthor = _originalAuthor;
 
                         // Load the filter config
+                        DebugLogger.Log("FiltersModalViewModel", $"🔄 Loading filter state from temp file into state...");
                         LoadConfigIntoState(config);
 
                         // Restore preserved values
@@ -775,7 +776,19 @@ namespace BalatroSeedOracle.ViewModels
                         _originalDateCreated = savedOriginalDate;
                         _originalAuthor = savedOriginalAuthor;
 
-                        DebugLogger.Log("FiltersModalViewModel", "Loaded filter state from temp file successfully");
+                        DebugLogger.Log("FiltersModalViewModel", "✅ Loaded filter state from temp file successfully");
+
+                        // Log VisualBuilderTab state after loading
+                        if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                        {
+                            DebugLogger.Log("FiltersModalViewModel",
+                                $"📊 VisualBuilderTab after load - Must: {visualVm.SelectedMust.Count}, Should: {visualVm.SelectedShould.Count}");
+                        }
+                        else
+                        {
+                            DebugLogger.Log("FiltersModalViewModel",
+                                $"⚠️ VisualBuilderTab is not available after load! Type: {VisualBuilderTab?.GetType()?.Name ?? "null"}");
+                        }
                     }
                 }
             }
@@ -912,59 +925,85 @@ namespace BalatroSeedOracle.ViewModels
 
             // CRITICAL FIX: Read from VisualBuilderTab's collections if available
             // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
-            IEnumerable<string> mustKeys;
-            IEnumerable<string> shouldKeys;
-            IEnumerable<string> mustNotKeys;
-
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
-                // Convert FilterItem objects to their keys (ItemKey property)
-                mustKeys = visualVm.SelectedMust.Select(item => item.ItemKey);
-                shouldKeys = visualVm.SelectedShould.Select(item => item.ItemKey);
-                mustNotKeys = Enumerable.Empty<string>(); // MUST-NOT removed - use IsInvertedFilter flag instead
                 DebugLogger.Log(
                     "FilterConfigurationService",
                     $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
-            }
-            else
-            {
-                // Fallback to parent's collections
-                mustKeys = SelectedMust;
-                shouldKeys = SelectedShould;
-                mustNotKeys = SelectedMustNot;
-            }
 
-            // Build Must clauses
-            foreach (var itemKey in mustKeys)
-            {
-                if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
+                foreach (var filterItem in visualVm.SelectedMust)
                 {
-                    var clause = ConvertItemConfigToClause(itemConfig);
+                    var clause = ConvertFilterItemToClause(filterItem);
                     if (clause != null)
                         config.Must.Add(clause);
                 }
             }
+            else
+            {
+                // Fallback to parent's key-based collections
+                foreach (var itemKey in SelectedMust)
+                {
+                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    {
+                        var clause = ConvertItemConfigToClause(itemConfig);
+                        if (clause != null)
+                            config.Must.Add(clause);
+                    }
+                }
+            }
 
             // Build Should clauses
-            foreach (var itemKey in shouldKeys)
+            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm2)
             {
-                if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                foreach (var filterItem in visualVm2.SelectedShould)
                 {
-                    var clause = ConvertItemConfigToClause(itemConfig);
+                    var clause = ConvertFilterItemToClause(filterItem);
                     if (clause != null)
                         config.Should.Add(clause);
                 }
             }
-
-            // Build MustNot clauses
-            foreach (var itemKey in mustNotKeys)
+            else
             {
-                if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                foreach (var itemKey in SelectedShould)
                 {
-                    var clause = ConvertItemConfigToClause(itemConfig);
-                    if (clause != null)
-                        config.MustNot.Add(clause);
+                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    {
+                        var clause = ConvertItemConfigToClause(itemConfig);
+                        if (clause != null)
+                            config.Should.Add(clause);
+                    }
+                }
+            }
+
+            // Build MustNot clauses - handle both BannedItems operator and direct MustNot
+            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm3)
+            {
+                // Check for BannedItems operator in Must collection
+                foreach (var item in visualVm3.SelectedMust)
+                {
+                    if (item is Models.FilterOperatorItem op && op.OperatorType == "BannedItems")
+                    {
+                        foreach (var child in op.Children)
+                        {
+                            var clause = ConvertFilterItemToClause(child);
+                            if (clause != null)
+                                config.MustNot.Add(clause);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var itemKey in SelectedMustNot)
+                {
+                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    {
+                        var clause = ConvertItemConfigToClause(itemConfig);
+                        if (clause != null)
+                            config.MustNot.Add(clause);
+                    }
                 }
             }
 
@@ -1078,6 +1117,74 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Fallback to direct sources object if set
                 clause.Sources = itemConfig.Sources as MotelyJsonConfig.SourcesConfig;
+            }
+
+            return clause;
+        }
+
+        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
+            Models.FilterItem filterItem
+        )
+        {
+            // Handle FilterOperatorItem (OR/AND clauses)
+            if (filterItem is Models.FilterOperatorItem operatorItem)
+            {
+                // Skip BannedItems operator - it's handled separately
+                if (operatorItem.OperatorType == "BannedItems")
+                    return null;
+
+                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                {
+                    Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
+                    Label = operatorItem.DisplayName,
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                };
+
+                // Recursively convert children
+                foreach (var child in operatorItem.Children)
+                {
+                    var childClause = ConvertFilterItemToClause(child);
+                    if (childClause != null)
+                    {
+                        operatorClause.Clauses.Add(childClause);
+                    }
+                }
+
+                return operatorClause;
+            }
+
+            // Regular FilterItem
+            var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+            {
+                Type = filterItem.Type,
+                Value = filterItem.Name,
+            };
+
+            // Add antes if configured
+            if (filterItem.Antes?.Any() == true)
+            {
+                clause.Antes = filterItem.Antes.ToArray();
+            }
+
+            // Add edition if not default
+            if (!string.IsNullOrEmpty(filterItem.Edition) && filterItem.Edition != "none" && filterItem.Edition != "None")
+            {
+                clause.Edition = filterItem.Edition;
+            }
+
+            // Add stickers if configured
+            if (filterItem.Stickers?.Any() == true)
+            {
+                clause.Stickers = filterItem.Stickers;
+            }
+
+            // Handle playing card specific properties
+            if (filterItem.Type == "PlayingCard" || filterItem.Category == "PlayingCards")
+            {
+                if (!string.IsNullOrEmpty(filterItem.Seal) && filterItem.Seal != "None")
+                    clause.Seal = filterItem.Seal;
+                if (!string.IsNullOrEmpty(filterItem.Enhancement) && filterItem.Enhancement != "None")
+                    clause.Enhancement = filterItem.Enhancement;
             }
 
             return clause;
@@ -1526,6 +1633,7 @@ namespace BalatroSeedOracle.ViewModels
                         var options = new System.Text.Json.JsonSerializerOptions
                         {
                             WriteIndented = true,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
                         };
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
@@ -1742,6 +1850,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             WriteIndented = true,
                             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
                         }
                     );
                     jsonEditorVm.JsonContent = json;

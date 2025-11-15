@@ -1994,9 +1994,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Child = cardContent, // Just the card, no label (cleaner drag visual)
                 };
 
-                // Initialize adorner position AND target to the card's current location (accounting for grab offset!)
-                double initialX = startPosition.X - _dragOffset.X;
-                double initialY = startPosition.Y - _dragOffset.Y;
+                // Initialize adorner to appear at the mouse position (accounting for drag offset)
+                // The adorner should immediately snap to where it would be if following the mouse
+                // Mouse position = startPosition + _dragOffset (startPosition is card pos, offset is from card to mouse)
+                // Adorner position = Mouse position - _dragOffset (to keep grab point under cursor)
+                // This simplifies to just startPosition, BUT we want it to snap to current mouse immediately
+
+                // Get current mouse position if available
+                var currentMousePos = _topLevel != null ?
+                    _previousMousePosition :  // Use the stored mouse position from drag start
+                    new Avalonia.Point(startPosition.X + _dragOffset.X, startPosition.Y + _dragOffset.Y);
+
+                // Position adorner so the grabbed point stays under the cursor
+                double initialX = currentMousePos.X - _dragOffset.X;
+                double initialY = currentMousePos.Y - _dragOffset.Y;
 
                 _adornerTargetPosition = new Avalonia.Point(initialX, initialY);
 

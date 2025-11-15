@@ -2,8 +2,17 @@
   "name": "Wee Joker is my Husband",
   "description": "Created with visual filter builder",
   "author": "pifreak",
-  "dateCreated": "2025-11-13T05:00:57.9314107Z",
-  "must": [],
+  "dateCreated": "2025-11-15T06:52:42.3213060Z",
+  "must": [
+    {
+      "type": "Joker",
+      "value": "Perkeo"
+    },
+    {
+      "type": "Joker",
+      "value": "Chicot"
+    }
+  ],
   "should": [],
   "mustNot": [],
   "deck": "Red",
