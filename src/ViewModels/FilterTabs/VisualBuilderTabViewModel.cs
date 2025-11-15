@@ -38,6 +38,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private CancellationTokenSource? _autoSaveCts;
         private const int AutoSaveDebounceMs = 500;
 
+        // Prevent JSON auto-generation during filter load
+        private bool _isLoadingFilter = false;
+
+        /// <summary>
+        /// Enable loading mode to prevent JSON auto-generation during filter load
+        /// </summary>
+        public void BeginFilterLoad()
+        {
+            _isLoadingFilter = true;
+            DebugLogger.Log("VisualBuilderTab", "🔒 Filter loading started - JSON auto-generation disabled");
+        }
+
+        /// <summary>
+        /// Disable loading mode to re-enable JSON auto-generation
+        /// </summary>
+        public void EndFilterLoad()
+        {
+            _isLoadingFilter = false;
+            DebugLogger.Log("VisualBuilderTab", "🔓 Filter loading complete - JSON auto-generation enabled");
+        }
+
         [ObservableProperty]
         private string _autoSaveStatus = "";
 
@@ -534,8 +555,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "SkipTag":
-                    // For now, just show all tags (ante filtering can be added later)
-                    AddGroup("Skip Tags - Any Ante", FilteredTags);
+                    // Split tags by ante availability
+                    var allAntesTags = new[] { "Uncommon Tag", "Rare Tag", "Foil Tag", "Holographic Tag", "Polychrome Tag",
+                                               "Investment Tag", "Speed Tag", "Economy Tag", "D6 Tag", "Coupon Tag",
+                                               "Boss Tag", "Charm Tag", "Double Tag", "Juggle Tag", "Voucher Tag" };
+                    var ante2PlusTags = new[] { "Negative Tag", "Standard Tag", "Meteor Tag", "Buffoon Tag", "Handy Tag",
+                                                "Garbage Tag", "Ethereal Tag", "Top-up Tag", "Orbital Tag" };
+
+                    AddGroup("Skip Tags - All Antes", FilteredTags.Where(t => allAntesTags.Contains(t.DisplayName)));
+                    AddGroup("Skip Tags - Ante 2+", FilteredTags.Where(t => ante2PlusTags.Contains(t.DisplayName)));
                     break;
 
                 case "Boss":
@@ -1269,6 +1297,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void NotifyJsonEditorOfChanges()
         {
+            // Skip auto-generation during initial filter load to prevent overwriting loaded JSON
+            if (_isLoadingFilter)
+                return;
+
             if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
             {
                 // Trigger the JSON generation automatically
@@ -1431,7 +1463,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         var item = new FilterItem
                         {
                             Name = tagName,
-                            Type = "SmallBlindTag",
+                            Type = "Tag",
                             Category = "Tags", // Added for CategoryGroupedLayoutBehavior
                             DisplayName = BalatroData.GetDisplayNameFromSprite(tagName),
                             ItemImage = spriteService.GetTagImage(tagName),
@@ -1566,6 +1598,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         "VisualBuilderTab",
                         $"Error loading planets: {ex.Message}"
                     );
+                    throw;
                 }
 
                 // Load Spectrals from BalatroData

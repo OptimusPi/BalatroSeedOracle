@@ -134,7 +134,7 @@
                                                          Classes="balatro-bounce-horizontal"
                                                          HorizontalAlignment="Left"
                                                          VerticalAlignment="Center"
-                                                         Margin="-23,2,0,0"
+                                                         Margin="-23,0,0,0"
                                                          ZIndex="10"
                                                          IsVisible="{Binding IsSelected}"
                                                          IsHitTestVisible="False"/>
@@ -197,24 +197,24 @@
                                             </TextBlock>
 
                                             <!-- Sprite content area -->
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Must.Jokers}">
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Must.Jokers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -258,24 +258,24 @@
                                             <!-- Sprite content area -->
                                             <StackPanel Grid.Column="1" Spacing="6">
                                                 <!-- Must Vouchers (normal sprites) -->
-                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}">
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -350,24 +350,24 @@
                                             <!-- Sprite content area -->
                                             <StackPanel Grid.Column="1" Spacing="6">
                                                 <!-- Must Consumables (normal sprites) -->
-                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}">
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -449,24 +449,24 @@
                                                 </TextBlock.RenderTransform>
                                             </TextBlock>
 
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Jokers}">
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Jokers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -506,24 +506,24 @@
                                                 </TextBlock.RenderTransform>
                                             </TextBlock>
 
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Vouchers}">
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Vouchers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -563,24 +563,24 @@
                                                 </TextBlock.RenderTransform>
                                             </TextBlock>
 
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Consumables}">
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Consumables}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="71" Height="95" Margin="2">
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="71" Height="95"
+                                                                   Width="36" Height="48"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -1207,9 +1207,18 @@
                                                         ShowArrows="False"
                                                         SelectedDeckIndex="{Binding SelectedDeckIndex}"
                                                         StakeIndex="{Binding SelectedStakeIndex}"
-                                                        Margin="20"
+                                                        Margin="10"
                                                         HorizontalAlignment="Center"
-                                                        IsHitTestVisible="False"/>
+                                                        VerticalAlignment="Top"
+                                                        IsHitTestVisible="False">
+                                                        <components:DeckSpinner.Styles>
+                                                            <Style Selector="Border.panel-content">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="MinHeight" Value="180"/>
+                                                                <Setter Property="MaxHeight" Value="240"/>
+                                                            </Style>
+                                                        </components:DeckSpinner.Styles>
+                                                    </components:DeckSpinner>
                                                 </Grid>
                                             </Border>
 

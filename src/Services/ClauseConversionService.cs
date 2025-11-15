@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels.FilterTabs;
@@ -178,27 +179,38 @@ namespace BalatroSeedOracle.Services
 
         #region Private Helper Methods
 
-        private string GetIconPath(string? type, string? value)
+        private IImage? GetIconPath(string? type, string? value)
         {
             if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(value))
-                return "";
+                return null;
 
-            // Build sprite path based on type and value
-            // This assumes sprites are in standard locations
-            var normalizedValue = value.Replace(" ", "_").ToLower();
+            // Use SpriteService to get the actual sprite image
+            var spriteService = SpriteService.Instance;
 
-            return type?.ToLower() switch
+            try
             {
-                "joker" or "souljoker" => $"avares://BalatroSeedOracle/Assets/Sprites/Jokers/{normalizedValue}.png",
-                "tarotcard" => $"avares://BalatroSeedOracle/Assets/Sprites/Tarots/{normalizedValue}.png",
-                "planetcard" => $"avares://BalatroSeedOracle/Assets/Sprites/Planets/{normalizedValue}.png",
-                "spectralcard" => $"avares://BalatroSeedOracle/Assets/Sprites/Spectrals/{normalizedValue}.png",
-                "voucher" => $"avares://BalatroSeedOracle/Assets/Sprites/Vouchers/{normalizedValue}.png",
-                "playingcard" => $"avares://BalatroSeedOracle/Assets/Sprites/PlayingCards/{normalizedValue}.png",
-                "tag" => $"avares://BalatroSeedOracle/Assets/Sprites/Tags/{normalizedValue}.png",
-                "boss" => $"avares://BalatroSeedOracle/Assets/Sprites/Bosses/{normalizedValue}.png",
-                _ => ""
-            };
+                return type?.ToLower() switch
+                {
+                    "joker" => spriteService.GetJokerImage(value),
+                    "souljoker" => spriteService.GetJokerImage(value),
+                    "tarotcard" => spriteService.GetTarotImage(value),
+                    "planetcard" => spriteService.GetPlanetCardImage(value),
+                    "spectralcard" => spriteService.GetSpectralImage(value),
+                    "voucher" => spriteService.GetVoucherImage(value),
+                    "playingcard" => null, // Playing cards need rank/suit, not handled here
+                    "tag" => spriteService.GetTagImage(value),
+                    "boss" => spriteService.GetBossImage(value),
+                    _ => null,
+                };
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "ClauseConversionService",
+                    $"Failed to get icon for type '{type}', value '{value}': {ex.Message}"
+                );
+                return null;
+            }
         }
 
         private string MapTypeToCategory(string type)
@@ -214,7 +226,7 @@ namespace BalatroSeedOracle.Services
                 "voucher" => "vouchers",
                 "tag" => "tags",
                 "boss" => "bosses",
-                _ => ""
+                _ => throw new ArgumentException(),
             };
         }
 
@@ -231,7 +243,7 @@ namespace BalatroSeedOracle.Services
                 "vouchers" => "Voucher",
                 "tags" => "Tag",
                 "bosses" => "Boss",
-                _ => category
+                _ => throw new ArgumentException(),
             };
         }
 

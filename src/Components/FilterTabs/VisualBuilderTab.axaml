@@ -245,13 +245,12 @@
                 </Border>
             </Grid>
 
-            <!-- CENTER COLUMN - Search Bar + Edition/Sticker/Seal Buttons + Grouped Scrollable Items -->
+            <!-- CENTER COLUMN - Search Bar + Grouped Scrollable Items (with sticky toolbar inside) -->
             <Grid Grid.Column="1" Margin="8,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Row 0: Search bar + Settings button -->
                     <RowDefinition Height="4"/>    <!-- Spacer -->
-                    <RowDefinition Height="Auto"/> <!-- Row 2: Edition/Sticker/Seal buttons -->
-                    <RowDefinition Height="*"/>    <!-- Row 3: Item shelf -->
+                    <RowDefinition Height="*"/>    <!-- Row 2: Item shelf with sticky toolbar -->
                 </Grid.RowDefinitions>
 
                 <!-- Search Bar + Settings Button -->
@@ -272,8 +271,17 @@
                     </Border>
                 </Grid>
 
-                <!-- Edition/Sticker/Seal Toolbar - Single horizontal row with sprite icons -->
-                <WrapPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,4">
+                <!-- ITEMS SHELF - Full height scrollable item list with sticky toolbar at top -->
+                <Border Grid.Row="2"
+                        Name="ItemGridBorder"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12"
+                        DragDrop.AllowDrop="True">
+                    <DockPanel>
+                        <!-- Edition/Sticker/Seal Toolbar - Sticky at top of items shelf -->
+                        <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,8">
                     <!-- Edition Buttons (Jokers and Standard Cards only) -->
                     <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
                         <Button Command="{Binding SetEditionCommand}"
@@ -447,20 +455,13 @@
                             </Grid>
                         </Button>
                     </StackPanel>
-                </WrapPanel>
+                        </WrapPanel>
 
-                <!-- ITEMS SHELF - Full height scrollable item list -->
-                <Border Grid.Row="3"
-                        Name="ItemGridBorder"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="12"
-                        Padding="12"
-                        DragDrop.AllowDrop="True">
-                    <ScrollViewer Name="ItemScrollViewer"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  ClipToBounds="False">
+                        <!-- Scrollable items area - fills remaining space in DockPanel -->
+                        <ScrollViewer Name="ItemScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      ClipToBounds="False">
                         <ItemsControl ItemsSource="{Binding GroupedItems}" ClipToBounds="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup" x:DataType="vm:VisualBuilderTabViewModel+ItemGroup">
@@ -483,7 +484,7 @@
                                         <ItemsControl ItemsSource="{Binding Items}" ClipToBounds="False">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
-                                                    <Grid Margin="1,2" Height="105" ClipToBounds="False">
+                                                    <Grid Margin="1,2,1,8" Height="105" ClipToBounds="False">
                                                         <!-- Scale down cards in item shelf for breathing room (hover brings to ~0.95x) -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
@@ -518,12 +519,13 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
+                        </ScrollViewer>
+                    </DockPanel>
                 </Border>
 
                 <!-- Return Overlay - Shows when dragging from drop zones -->
                 <Border Name="ReturnOverlay"
-                        Grid.RowSpan="4"
+                        Grid.RowSpan="3"
                         Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
                         BorderThickness="3"
@@ -883,17 +885,16 @@
                                             <!-- Template for regular FilterItem -->
                                             <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
                                                 <Border Background="Transparent"
-                                                        Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
-                                                                                                               Margin="2,2,2,8"
+                                                        Margin="1,2,1,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Width="95" ClipToBounds="False" IsHitTestVisible="False">
+                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
                                                         <!-- Scale down drop zone cards to match item shelf -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
@@ -1000,17 +1001,16 @@
                                             <!-- Template for regular FilterItem -->
                                             <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
                                                 <Border Background="Transparent"
-                                                        Width="95"
                                                         Cursor="Hand"
                                                         ClipToBounds="False"
-                                                                                                               Margin="2,2,2,8"
+                                                        Margin="1,2,1,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
                                                         <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Width="95" ClipToBounds="False" IsHitTestVisible="False">
+                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
                                                         <!-- Scale down drop zone cards to match item shelf -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>

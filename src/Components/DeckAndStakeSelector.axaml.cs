@@ -34,12 +34,21 @@ public partial class DeckAndStakeSelector : UserControl
         DeckImage = _viewModel.DeckImage;
         StakeImage = _viewModel.StakeImage;
         // Subscribe to ViewModel property changes to keep exposed styled properties in sync (compatibility)
+        // Use SetCurrentValue to properly notify TwoWay bindings when ViewModel changes
         _viewModel.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(_viewModel.DeckIndex))
-                DeckIndex = _viewModel.DeckIndex;
+            {
+                // Clamp to valid range before setting
+                var clampedValue = Math.Max(0, Math.Min(14, _viewModel.DeckIndex));
+                SetCurrentValue(DeckIndexProperty, clampedValue);
+            }
             if (e.PropertyName == nameof(_viewModel.StakeIndex))
-                StakeIndex = _viewModel.StakeIndex;
+            {
+                // Clamp to valid range before setting
+                var clampedValue = Math.Max(0, Math.Min(7, _viewModel.StakeIndex));
+                SetCurrentValue(StakeIndexProperty, clampedValue);
+            }
             if (e.PropertyName == nameof(_viewModel.DeckImage))
                 DeckImage = _viewModel.DeckImage;
             if (e.PropertyName == nameof(_viewModel.StakeImage))
@@ -78,8 +87,10 @@ public partial class DeckAndStakeSelector : UserControl
         get => GetValue(DeckIndexProperty);
         set
         {
-            SetValue(DeckIndexProperty, value);
-            _viewModel.DeckIndex = value;
+            // Clamp to valid range (0-14 for decks)
+            var clampedValue = Math.Max(0, Math.Min(14, value));
+            SetValue(DeckIndexProperty, clampedValue);
+            _viewModel.DeckIndex = clampedValue;
         }
     }
 
@@ -93,8 +104,10 @@ public partial class DeckAndStakeSelector : UserControl
         get => GetValue(StakeIndexProperty);
         set
         {
-            SetValue(StakeIndexProperty, value);
-            _viewModel.StakeIndex = value;
+            // Clamp to valid range (0-7 for stakes)
+            var clampedValue = Math.Max(0, Math.Min(7, value));
+            SetValue(StakeIndexProperty, clampedValue);
+            _viewModel.StakeIndex = clampedValue;
         }
     }
 

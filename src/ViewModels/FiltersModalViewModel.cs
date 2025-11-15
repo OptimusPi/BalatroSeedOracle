@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Media;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -723,80 +724,6 @@ namespace BalatroSeedOracle.ViewModels
             );
         }
 
-        /// <summary>
-        /// Save current filter state to a temporary JSON file for tab switching consistency
-        /// </summary>
-        private void SaveFilterStateToTempFile()
-        {
-            try
-            {
-                var tempPath = Path.Combine(Path.GetTempPath(), "balatro_filter_temp.json");
-                var config = BuildConfigFromCurrentState();
-                var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
-                File.WriteAllText(tempPath, json);
-                DebugLogger.Log("FiltersModalViewModel", $"Saved filter state to temp file: {tempPath}");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error saving filter state to temp: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Load filter state from temporary JSON file to ensure consistency across tabs
-        /// </summary>
-        private void LoadFilterStateFromTempFile()
-        {
-            try
-            {
-                var tempPath = Path.Combine(Path.GetTempPath(), "balatro_filter_temp.json");
-                if (File.Exists(tempPath))
-                {
-                    var json = File.ReadAllText(tempPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(json);
-                    if (config != null)
-                    {
-                        // Preserve current filter path and metadata
-                        var savedPath = CurrentFilterPath;
-                        var savedOriginalHash = _originalCriteriaHash;
-                        var savedOriginalDate = _originalDateCreated;
-                        var savedOriginalAuthor = _originalAuthor;
-
-                        // Load the filter config
-                        DebugLogger.Log("FiltersModalViewModel", $"🔄 Loading filter state from temp file into state...");
-                        LoadConfigIntoState(config);
-
-                        // Restore preserved values
-                        CurrentFilterPath = savedPath;
-                        _originalCriteriaHash = savedOriginalHash;
-                        _originalDateCreated = savedOriginalDate;
-                        _originalAuthor = savedOriginalAuthor;
-
-                        DebugLogger.Log("FiltersModalViewModel", "✅ Loaded filter state from temp file successfully");
-
-                        // Log VisualBuilderTab state after loading
-                        if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
-                        {
-                            DebugLogger.Log("FiltersModalViewModel",
-                                $"📊 VisualBuilderTab after load - Must: {visualVm.SelectedMust.Count}, Should: {visualVm.SelectedShould.Count}");
-                        }
-                        else
-                        {
-                            DebugLogger.Log("FiltersModalViewModel",
-                                $"⚠️ VisualBuilderTab is not available after load! Type: {VisualBuilderTab?.GetType()?.Name ?? "null"}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter state from temp: {ex.Message}");
-            }
-        }
 
         /// <summary>
         /// Refresh Save tab data when switching to it
@@ -847,19 +774,176 @@ namespace BalatroSeedOracle.ViewModels
         // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
-            // Save current filter state to temp JSON file before switching tabs
-            SaveFilterStateToTempFile();
+            DebugLogger.Log("FiltersModalViewModel", $"🔄 Tab switching: FROM tab {_selectedTabIndex - 1} TO tab {value}");
 
-            // Load the filter state from temp JSON file to ensure consistency
-            LoadFilterStateFromTempFile();
+            // CRITICAL: Save current tab's data to the shared filter state BEFORE switching
+            SaveCurrentTabData();
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
 
-            // When switching to the Validate tab, ensure it's refreshed with the loaded data
-            if (value == 2) // Validate/Save tab index
+            // CRITICAL: Load fresh data into the new tab AFTER switching
+            LoadTabData(value);
+        }
+
+        /// <summary>
+        /// Save the current tab's data to the parent ViewModel's shared state.
+        /// Called BEFORE switching tabs to ensure changes aren't lost.
+        /// </summary>
+        private void SaveCurrentTabData()
+        {
+            try
             {
-                RefreshSaveTabData();
+                var currentTabIndex = SelectedTabIndex;
+
+                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {currentTabIndex}");
+
+                // Tab 0: Build Filter (Visual Builder) - already saves to SelectedMust/Should via collections
+                if (currentTabIndex == 0 && VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                {
+                    // Visual Builder auto-syncs to parent collections via CollectionChanged events
+                    // No explicit save needed
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"✅ Visual Builder data auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+                }
+
+                // Tab 1: Deck/Stake - already saves via two-way binding to SelectedDeckIndex/SelectedStakeIndex
+                else if (currentTabIndex == 1)
+                {
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"✅ Deck/Stake saved: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
+                }
+
+                // Tab 2: JSON Editor - parse JSON and update parent collections
+                else if (currentTabIndex == 2 && JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+                {
+                    SaveJsonEditorToState(jsonVm);
+                }
+
+                // Tab 3: Validate/Save - read-only, no save needed
+                else if (currentTabIndex == 3)
+                {
+                    DebugLogger.Log("FiltersModalViewModel", "✅ Validate tab is read-only - no save needed");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error saving current tab data: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Load fresh data into the newly selected tab from the parent ViewModel's shared state.
+        /// Called AFTER switching tabs to ensure the tab shows current data.
+        /// </summary>
+        private void LoadTabData(int tabIndex)
+        {
+            try
+            {
+                DebugLogger.Log("FiltersModalViewModel", $"📂 Loading data into tab index {tabIndex}");
+
+                // Tab 0: Build Filter (Visual Builder) - already loads from parent collections
+                if (tabIndex == 0 && VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                {
+                    // Visual Builder shows parent's SelectedMust/Should collections via binding
+                    // No explicit load needed
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"✅ Visual Builder auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+                }
+
+                // Tab 1: Deck/Stake - already loads via two-way binding
+                else if (tabIndex == 1)
+                {
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"✅ Deck/Stake loaded: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
+                }
+
+                // Tab 2: JSON Editor - regenerate JSON from current state
+                else if (tabIndex == 2 && JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+                {
+                    RegenerateJsonFromState(jsonVm);
+                }
+
+                // Tab 3: Validate/Save - refresh from current state
+                else if (tabIndex == 3)
+                {
+                    RefreshSaveTabData();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error loading tab data: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Parse JSON from JSON Editor and update parent ViewModel's state
+        /// </summary>
+        private void SaveJsonEditorToState(FilterTabs.JsonEditorTabViewModel jsonVm)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(jsonVm.JsonContent))
+                {
+                    DebugLogger.Log("FiltersModalViewModel", "⚠️ JSON Editor is empty - skipping save");
+                    return;
+                }
+
+                // Validate JSON first
+                var config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                    jsonVm.JsonContent,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                if (config == null)
+                {
+                    DebugLogger.LogError("FiltersModalViewModel", "❌ Failed to parse JSON - skipping save");
+                    return;
+                }
+
+                // Load config into parent state (updates SelectedMust/Should/MustNot, deck, stake, etc.)
+                LoadConfigIntoState(config);
+
+                DebugLogger.Log("FiltersModalViewModel",
+                    $"✅ JSON Editor saved to state: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"❌ Error parsing JSON: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Regenerate JSON content from current parent ViewModel state
+        /// </summary>
+        private void RegenerateJsonFromState(FilterTabs.JsonEditorTabViewModel jsonVm)
+        {
+            try
+            {
+                // Build config from current state (includes deck/stake from parent)
+                var config = BuildConfigFromCurrentState();
+
+                // Serialize to JSON with proper formatting
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    config,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    }
+                );
+
+                jsonVm.JsonContent = json;
+                jsonVm.ValidationStatus = "Loaded from current filter";
+                jsonVm.ValidationStatusColor = Brushes.Gray;
+
+                DebugLogger.Log("FiltersModalViewModel",
+                    $"✅ JSON regenerated: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"❌ Error regenerating JSON: {ex.Message}");
             }
         }
 
@@ -1883,6 +1967,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
                 {
+                    // Disable JSON auto-generation during filter load
+                    visualVm.BeginFilterLoad();
+
                     // Clear existing items
                     visualVm.SelectedMust.Clear();
                     visualVm.SelectedShould.Clear();
@@ -1950,6 +2037,9 @@ namespace BalatroSeedOracle.ViewModels
                         "FiltersModalViewModel",
                         $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                     );
+
+                    // Re-enable JSON auto-generation after filter load
+                    visualVm.EndFilterLoad();
                 }
             }
             catch (Exception ex)

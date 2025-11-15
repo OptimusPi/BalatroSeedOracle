@@ -609,32 +609,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                // Build test search criteria
-                // NOTE: We search 1 BILLION seeds since the system can handle millions per second
-                // BatchSize 3 = 35^3 = 42,875 seeds per batch
-                // 25,000 batches = 1,071,875,000 seeds (over 1 billion!)
-                var criteria = new BalatroSeedOracle.Models.SearchCriteria
-                {
-                    BatchSize = 3, // 35^3 = 42,875 seeds per batch
-                    StartBatch = 0,
-                    EndBatch = 25000, // 25K batches = ~1.07 BILLION seeds tested!
-                    Deck = deckName,
-                    Stake = stakeName,
-                    MinScore = 0,
-                    MaxResults = 10, // Find up to 10 matching seeds
-                };
-
-                // Create progress callback for live feedback
-                var totalSeeds = 1_071_875_000; // 1.07 billion seeds
-                var progress = new Progress<(int seedsChecked, int matchCount)>(p =>
-                {
-                    LiveSearchProgress = (p.seedsChecked / (double)totalSeeds) * 100;
-                    LiveSearchStatus = $"Searched {p.seedsChecked:N0} / {totalSeeds:N0} seeds ({(p.seedsChecked / 1_000_000.0):F1}M seeds)";
-                    LiveSearchMatchCount = p.matchCount;
-                    SeedsChecked = p.seedsChecked;
-                });
-
-                // Start search via SearchManager
                 var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
@@ -646,58 +620,197 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Run quick search with in-memory config
-                UpdateStatus($"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
-                DebugLogger.Log("ValidateFilterTab", $"🚀 STARTING MASSIVE SEARCH: Testing 1,071,875,000 seeds!");
-                DebugLogger.Log("ValidateFilterTab", $"Search parameters: Deck={deckName}, Stake={stakeName}, Batches={criteria.EndBatch}");
-
-                var results = await searchManager.RunQuickSearchAsync(criteria, config);
-
-                DebugLogger.Log("ValidateFilterTab", $"✅ SEARCH COMPLETE: Checked {SeedsChecked:N0} seeds in {results.ElapsedTime:F1} seconds");
-                DebugLogger.Log("ValidateFilterTab", $"Results: Found {results.Count} matching seeds");
-
-                // Update UI with results
-                IsTestRunning = false;
-                IsLiveSearchActive = false;
-                TestElapsedTime = results.ElapsedTime;
-
-                if (results.Success && results.Count > 0)
+                // PHASE 1: Ultra-quick sanity check (1 batch = 35 seeds)
+                LiveSearchStatus = "Phase 1: Quick sanity check (35 seeds)...";
+                var phase1Criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    // SUCCESS STATE
+                    BatchSize = 1, // 1 character = 35 seeds
+                    StartBatch = 0,
+                    EndBatch = 1, // Search batches 0-1 (1 batch = 35 seeds)
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                    MaxResults = 20, // Detect if too permissive (>10)
+                };
+
+                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 1: Testing 35 seeds (sanity check)");
+                var phase1Results = await searchManager.RunQuickSearchAsync(phase1Criteria, config);
+
+                if (phase1Results.Success && phase1Results.Count > 0)
+                {
+                    // Found seeds in first 35! Check if too permissive
+                    if (phase1Results.Count > 10)
+                    {
+                        HasValidationWarnings = true;
+                        ValidationWarningText = $"⚠️ Filter found {phase1Results.Count} seeds in first 35! This filter is very permissive.";
+                        DebugLogger.Log("ValidateFilterTab", $"⚠️ PHASE 1: Too permissive - found {phase1Results.Count} seeds");
+                    }
+
+                    // Still mark as verified
+                    IsTestRunning = false;
+                    IsLiveSearchActive = false;
                     ShowTestSuccess = true;
                     ShowFoundSeed = true;
                     IsFilterVerified = true;
 
-                    // Extract and store the seed
-                    if (results.Seeds != null && results.Seeds.Count > 0)
+                    if (phase1Results.Seeds != null && phase1Results.Seeds.Count > 0)
                     {
-                        FoundSeed = results.Seeds[0].ToString() ?? "Unknown";
-                        ExampleSeedForPreview = FoundSeed; // Store for preview
+                        FoundSeed = phase1Results.Seeds[0].ToString() ?? "Unknown";
+                        ExampleSeedForPreview = FoundSeed;
                     }
 
-                    TestResultMessage = $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
+                    TestResultMessage = $"✓ VERIFIED - Found {phase1Results.Count} seeds instantly";
                     UpdateStatus($"✓ Filter verified: Found seed {FoundSeed}", false);
-
-                    // Clear any validation warnings
-                    HasValidationWarnings = false;
-                    ValidationWarningText = "";
+                    return;
                 }
-                else if (results.Success && results.Count == 0)
-                {
-                    // NO MATCH STATE
-                    ShowTestError = true;
-                    TestResultMessage = $"⚠ NO MATCHES FOUND in {results.ElapsedTime:F1}s\nTry different deck/stake or wider search";
-                    UpdateStatus($"⚠ No matching seeds found (searched {criteria.EndBatch} batches)", true);
 
+                DebugLogger.Log("ValidateFilterTab", "✅ PHASE 1: No seeds found (good - filter not too permissive)");
+
+                // PHASE 2: Progressive escalation with batch size 1, CPU-1 threads
+                // Use CPU count - 1 for threads
+                var cpuCount = Environment.ProcessorCount;
+                var threadCount = Math.Max(1, cpuCount - 1);
+                DebugLogger.Log("ValidateFilterTab", $"Using {threadCount} threads (CPU count: {cpuCount})");
+
+                // Sub-phase 2a: Try 1,000 batches (35K seeds)
+                LiveSearchStatus = "Phase 2a: Searching 1,000 batches (35K seeds)...";
+                LiveSearchProgress = 10;
+                var phase2aCriteria = new BalatroSeedOracle.Models.SearchCriteria
+                {
+                    BatchSize = 1,
+                    StartBatch = 0,
+                    EndBatch = 1000,
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                    MaxResults = 1, // Stop at first match
+                };
+
+                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2a: Testing 1,000 batches (35K seeds)");
+                var phase2aResults = await searchManager.RunQuickSearchAsync(phase2aCriteria, config);
+
+                if (phase2aResults.Success && phase2aResults.Count > 0)
+                {
+                    ShowTestSuccess = true;
+                    ShowFoundSeed = true;
+                    IsFilterVerified = true;
+                    FoundSeed = phase2aResults.Seeds?[0].ToString() ?? "Unknown";
+                    ExampleSeedForPreview = FoundSeed;
+                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2aResults.ElapsedTime:F1}s";
+                    UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
+                    IsTestRunning = false;
+                    IsLiveSearchActive = false;
+                    return;
+                }
+
+                // Sub-phase 2b: Try 100,000 batches (3.5M seeds)
+                LiveSearchStatus = "Phase 2b: Searching 100,000 batches (3.5M seeds)...";
+                LiveSearchProgress = 30;
+                var phase2bCriteria = new BalatroSeedOracle.Models.SearchCriteria
+                {
+                    BatchSize = 1,
+                    StartBatch = 0,
+                    EndBatch = 100000,
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                    MaxResults = 1,
+                };
+
+                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2b: Testing 100,000 batches (3.5M seeds)");
+                var phase2bResults = await searchManager.RunQuickSearchAsync(phase2bCriteria, config);
+
+                if (phase2bResults.Success && phase2bResults.Count > 0)
+                {
+                    ShowTestSuccess = true;
+                    ShowFoundSeed = true;
+                    IsFilterVerified = true;
+                    FoundSeed = phase2bResults.Seeds?[0].ToString() ?? "Unknown";
+                    ExampleSeedForPreview = FoundSeed;
+                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2bResults.ElapsedTime:F1}s";
+                    UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
+                    IsTestRunning = false;
+                    IsLiveSearchActive = false;
+                    return;
+                }
+
+                // Sub-phase 2c: Continue from 100K + 250 more batches
+                LiveSearchStatus = "Phase 2c: Searching batches 100K-100.25K...";
+                LiveSearchProgress = 50;
+                var phase2cCriteria = new BalatroSeedOracle.Models.SearchCriteria
+                {
+                    BatchSize = 1,
+                    StartBatch = 100000,
+                    EndBatch = 100250,
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                    MaxResults = 1,
+                };
+
+                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2c: Testing batches 100K-100.25K");
+                var phase2cResults = await searchManager.RunQuickSearchAsync(phase2cCriteria, config);
+
+                if (phase2cResults.Success && phase2cResults.Count > 0)
+                {
+                    ShowTestSuccess = true;
+                    ShowFoundSeed = true;
+                    IsFilterVerified = true;
+                    FoundSeed = phase2cResults.Seeds?[0].ToString() ?? "Unknown";
+                    ExampleSeedForPreview = FoundSeed;
+                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2cResults.ElapsedTime:F1}s";
+                    UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
+                    IsTestRunning = false;
+                    IsLiveSearchActive = false;
+                    return;
+                }
+
+                // Sub-phase 2d: Final push - 1 million batches (35M seeds, 2-30 seconds)
+                LiveSearchStatus = "Phase 2d: Searching 1M batches (35M seeds)...";
+                LiveSearchProgress = 70;
+                var phase2dCriteria = new BalatroSeedOracle.Models.SearchCriteria
+                {
+                    BatchSize = 1,
+                    StartBatch = 0,
+                    EndBatch = 1000000,
+                    Deck = deckName,
+                    Stake = stakeName,
+                    MinScore = 0,
+                    MaxResults = 1,
+                };
+
+                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2d: Testing 1M batches (35M seeds) - FINAL PUSH");
+                var phase2dResults = await searchManager.RunQuickSearchAsync(phase2dCriteria, config);
+
+                LiveSearchProgress = 100;
+                IsTestRunning = false;
+                IsLiveSearchActive = false;
+
+                if (phase2dResults.Success && phase2dResults.Count > 0)
+                {
+                    ShowTestSuccess = true;
+                    ShowFoundSeed = true;
+                    IsFilterVerified = true;
+                    FoundSeed = phase2dResults.Seeds?[0].ToString() ?? "Unknown";
+                    ExampleSeedForPreview = FoundSeed;
+                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2dResults.ElapsedTime:F1}s";
+                    UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
+                }
+                else if (phase2dResults.Success && phase2dResults.Count == 0)
+                {
+                    // NO MATCH after all phases
+                    ShowTestError = true;
+                    TestResultMessage = $"⚠ NO SEEDS FOUND\nSearched 35M seeds in {phase2dResults.ElapsedTime:F1}s\nFilter may be too restrictive";
+                    UpdateStatus($"⚠ No seeds found in 35M seeds", true);
                     HasValidationWarnings = true;
-                    ValidationWarningText = "No matching seeds found. This filter may be too restrictive.";
+                    ValidationWarningText = "No matching seeds found. Try making filter less restrictive.";
                 }
                 else
                 {
                     // ERROR STATE
                     ShowTestError = true;
-                    TestResultMessage = $"❌ Test failed: {results.Error}";
-                    UpdateStatus($"Test failed: {results.Error}", true);
+                    TestResultMessage = $"❌ Test failed: {phase2dResults.Error}";
+                    UpdateStatus($"Test failed: {phase2dResults.Error}", true);
                 }
             }
             catch (Exception ex)

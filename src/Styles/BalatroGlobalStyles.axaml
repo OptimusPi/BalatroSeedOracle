@@ -509,19 +509,18 @@
     </Style>
 
     <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width" Value="12" />
-        <Setter Property="Margin" Value="0,0,-12,0" />
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Margin" Value="0,0,-20,0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
-                    <Grid>
-                        <!-- Red thermometer track background -->
-                        <Border Name="PART_Border"
-                                Background="{StaticResource RedHover}"
-                                CornerRadius="5"
-                                Width="10"
-                                HorizontalAlignment="Center"/>
-                        <!-- Scrollable thumb -->
+                    <Border Name="PART_Border"
+                            Background="{StaticResource RedHover}"
+                            CornerRadius="8"
+                            Width="16"
+                            HorizontalAlignment="Center"
+                            ClipToBounds="True">
+                        <!-- Scrollable thumb inside clipped border -->
                         <Track Name="PART_Track"
                                IsDirectionReversed="True"
                                Minimum="{TemplateBinding Minimum}"
@@ -534,34 +533,33 @@
                                     <Thumb.Template>
                                         <ControlTemplate>
                                             <Border Background="{StaticResource Red}"
-                                                    CornerRadius="4"
-                                                    Width="10"
-                                                    MinHeight="30"/>
+                                                    CornerRadius="8"
+                                                    Width="16"
+                                                    MinHeight="40"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
                             </Track.Thumb>
                         </Track>
-                    </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
     <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height" Value="12" />
-        <Setter Property="Margin" Value="0,0,0,-12" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="0,0,0,-20" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
-                    <Grid>
-                        <!-- Red thermometer track background -->
-                        <Border Name="PART_Border"
-                                Background="{StaticResource RedHover}"
-                                CornerRadius="5"
-                                Height="10"
-                                VerticalAlignment="Center"/>
-                        <!-- Scrollable thumb -->
+                    <Border Name="PART_Border"
+                            Background="{StaticResource RedHover}"
+                            CornerRadius="8"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            ClipToBounds="True">
+                        <!-- Scrollable thumb inside clipped border -->
                         <Track Name="PART_Track"
                                Minimum="{TemplateBinding Minimum}"
                                Maximum="{TemplateBinding Maximum}"
@@ -573,15 +571,15 @@
                                     <Thumb.Template>
                                         <ControlTemplate>
                                             <Border Background="{StaticResource Red}"
-                                                    CornerRadius="4"
-                                                    Height="10"
-                                                    MinWidth="30"/>
+                                                    CornerRadius="8"
+                                                    Height="16"
+                                                    MinWidth="40"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
                             </Track.Thumb>
                         </Track>
-                    </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

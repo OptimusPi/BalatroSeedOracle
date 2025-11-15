@@ -21,7 +21,7 @@
 
         <!-- Row 0: Main Header -->
         <TextBlock Grid.Row="0"
-                   Text="VALIDATE FILTER"
+                   Text="FINISH"
                    FontSize="24"
                    FontFamily="{StaticResource BalatroFont}"
                    Foreground="{StaticResource Gold}"

@@ -68,7 +68,7 @@ namespace BalatroSeedOracle.Converters
                 {
                     if (
                         Application.Current?.Resources.TryGetResource(
-                            "DarkerGrey",
+                            "DarkBackground",
                             null,
                             out var resource
                         ) == true
@@ -81,7 +81,7 @@ namespace BalatroSeedOracle.Converters
 
             if (
                 Application.Current?.Resources.TryGetResource(
-                    "DarkerGrey",
+                    "DarkBackground",
                     null,
                     out var defaultResource
                 ) == true

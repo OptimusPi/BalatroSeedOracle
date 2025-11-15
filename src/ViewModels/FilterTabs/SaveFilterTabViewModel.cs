@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,10 +25,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [NotifyCanExecuteChangedFor(nameof(SaveCurrentFilterCommand))]
         [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
         [NotifyCanExecuteChangedFor(nameof(ExportFilterCommand))]
+        [NotifyPropertyChangedFor(nameof(NormalizedFilterName))]
         private string _filterName = "";
 
         [ObservableProperty]
         private string _filterDescription = "";
+
+        // Computed property for normalized filter name (auto-generated ID)
+        public string NormalizedFilterName => NormalizeFilterName(FilterName);
+
+        // Criteria tree properties
+        public ObservableCollection<string> MustItems { get; } = new();
+        public ObservableCollection<string> ShouldItems { get; } = new();
+        public ObservableCollection<string> BannedItems { get; } = new();
+
+        // Empty state properties
+        public bool HasNoMustItems => MustItems.Count == 0;
+        public bool HasNoShouldItems => ShouldItems.Count == 0;
+        public bool HasNoBannedItems => BannedItems.Count == 0;
+
+        // Header text properties with counts
+        public string MustHeaderText => $"MUST ({MustItems.Count} items)";
+        public string ShouldHeaderText => $"SHOULD ({ShouldItems.Count} items)";
+        public string BannedHeaderText => $"BANNED ({BannedItems.Count} items)";
 
         [ObservableProperty]
         private string _currentFileName = "_UNSAVED_CREATION.json";
@@ -129,6 +149,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         $"Pre-filled from CurrentFilterPath: {FilterName}"
                     );
                 }
+
+                // CRITICAL: Refresh criteria display when tab becomes visible
+                RefreshCriteriaDisplay();
             }
             catch (Exception ex)
             {
@@ -263,8 +286,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             var config = new MotelyJsonConfig
             {
-                Deck = "Red", // Default deck
-                Stake = "White", // Default stake
+                // CRITICAL FIX: Use deck/stake from parent (synchronized with DeckStakeTab)
+                Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
+                Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                 Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
                 DateCreated = DateTime.UtcNow,
@@ -630,6 +654,94 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StatusColor = isError ? Brushes.Red : Brushes.Green;
 
             DebugLogger.Log("SaveFilterTab", $"Status: {message} (Error: {isError})");
+        }
+
+        /// <summary>
+        /// Normalizes filter name to valid filename format
+        /// </summary>
+        private string NormalizeFilterName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return "untitled_filter";
+
+            return name.ToLower()
+                .Replace(" ", "_")
+                .Replace("-", "_")
+                .Where(c => char.IsLetterOrDigit(c) || c == '_')
+                .Aggregate("", (acc, c) => acc + c);
+        }
+
+        /// <summary>
+        /// Refreshes the criteria tree display from parent ViewModel collections
+        /// </summary>
+        public void RefreshCriteriaDisplay()
+        {
+            MustItems.Clear();
+            ShouldItems.Clear();
+            BannedItems.Clear();
+
+            // Get criteria from VisualBuilderTab if available
+            if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
+            {
+                // MUST items
+                foreach (var item in visualVm.SelectedMust)
+                {
+                    if (item is Models.FilterOperatorItem operatorItem)
+                    {
+                        // Display operator items (OR/AND/BannedItems)
+                        if (operatorItem.OperatorType == "BannedItems")
+                        {
+                            // Add children to Banned list
+                            foreach (var child in operatorItem.Children)
+                            {
+                                BannedItems.Add($"  {child.Type}: {child.DisplayName}");
+                            }
+                        }
+                        else
+                        {
+                            // OR/AND operators
+                            MustItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                            foreach (var child in operatorItem.Children)
+                            {
+                                MustItems.Add($"  {child.Type}: {child.DisplayName}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Regular filter item
+                        MustItems.Add($"{item.Type}: {item.DisplayName}");
+                    }
+                }
+
+                // SHOULD items
+                foreach (var item in visualVm.SelectedShould)
+                {
+                    if (item is Models.FilterOperatorItem operatorItem)
+                    {
+                        ShouldItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                        foreach (var child in operatorItem.Children)
+                        {
+                            ShouldItems.Add($"  {child.Type}: {child.DisplayName}");
+                        }
+                    }
+                    else
+                    {
+                        ShouldItems.Add($"{item.Type}: {item.DisplayName}");
+                    }
+                }
+            }
+
+            // Notify property changes for header texts and empty states
+            OnPropertyChanged(nameof(MustHeaderText));
+            OnPropertyChanged(nameof(ShouldHeaderText));
+            OnPropertyChanged(nameof(BannedHeaderText));
+            OnPropertyChanged(nameof(HasNoMustItems));
+            OnPropertyChanged(nameof(HasNoShouldItems));
+            OnPropertyChanged(nameof(HasNoBannedItems));
+
+            DebugLogger.Log("SaveFilterTab",
+                $"Refreshed criteria display: {MustItems.Count} must, {ShouldItems.Count} should, {BannedItems.Count} banned");
         }
 
         [RelayCommand]

@@ -20,7 +20,7 @@
                 <TabItem Header="Build Filter"/>
                 <TabItem Header="Deck/Stake"/>
                 <TabItem Header="JSON Editor"/>
-                <TabItem Header="Save"/>
+                <TabItem Header="Finish"/>
             </controls:BalatroTabControl.Items>
         </controls:BalatroTabControl>
 

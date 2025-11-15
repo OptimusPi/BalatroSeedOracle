@@ -94,70 +94,14 @@ public partial class App : Application
                 return;
             }
 
-            // Create intro transition (dark pixelated → normal Balatro)
-            // User can customize these presets in Audio Settings Widget later
-            var introTransition = new Models.VisualizerPresetTransition
-            {
-                StartParameters =
-                    Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters(),
-                EndParameters =
-                    Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters(),
-                CurrentProgress = 0f,
-            };
+            // INTRO TRANSITION DISABLED - Seizure risk / too flashy
+            // Apply normal Balatro shader parameters (no flashy intro animation)
+            DebugLogger.LogImportant("App", "Applying normal Balatro shader parameters (skipping intro transition)");
+            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+            ApplyShaderParametersToMainMenu(mainMenu, normalParams);
 
-            // Apply initial intro state to shader
-            ApplyShaderParametersToMainMenu(mainMenu, introTransition.StartParameters);
-
-            DebugLogger.Log("App", "Intro shader state applied - starting sprite pre-load");
-
-            // Pre-load all sprites with progress-driven transition
-            var progress = new Progress<(string category, int current, int total)>(update =>
-            {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    // Calculate overall progress (0.0 to 1.0)
-                    float overallProgress =
-                        update.total > 0 ? (float)update.current / update.total : 0f;
-
-                    // Update transition progress
-                    introTransition.CurrentProgress = overallProgress;
-
-                    // Apply interpolated shader parameters
-                    var interpolatedParams = introTransition.GetInterpolatedParameters();
-                    ApplyShaderParametersToMainMenu(mainMenu, interpolatedParams);
-
-                    DebugLogger.Log(
-                        "App",
-                        $"Intro transition: {overallProgress:P0} - {update.category} ({update.current}/{update.total})"
-                    );
-                });
-            });
-
-            var spriteService = Services.SpriteService.Instance;
-            var loadStartTime = DateTime.Now;
-
-            await spriteService.PreloadAllSpritesAsync(progress);
-
-            // Ensure intro lasts at least π seconds (3.14)
-            var elapsed = (DateTime.Now - loadStartTime).TotalSeconds;
-            var minDuration = 3.14; // π seconds for intro
-            if (elapsed < minDuration)
-            {
-                var remainingMs = (int)((minDuration - elapsed) * 1000);
-                DebugLogger.Log("App", $"Intro minimum duration: waiting {remainingMs}ms to reach π seconds");
-                await Task.Delay(remainingMs);
-            }
-
-            // Ensure final state is applied (progress = 1.0)
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                introTransition.CurrentProgress = 1.0f;
-                ApplyShaderParametersToMainMenu(mainMenu, introTransition.EndParameters);
-                DebugLogger.LogImportant(
-                    "App",
-                    "Intro transition complete - normal shader state applied"
-                );
-            });
+            // Preload sprites without flashy transition
+            await PreloadSpritesWithoutTransition();
 
             // Initialize background music with SoundFlow (8-track)
             try

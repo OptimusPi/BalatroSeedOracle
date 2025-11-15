@@ -1121,7 +1121,7 @@ namespace BalatroSeedOracle.Services
                 name = "anyjoker";
             }
 
-            return GetSpriteImage(
+            var baseImage = GetSpriteImage(
                 name,
                 jokerPositions,
                 jokerSheet,
@@ -1129,6 +1129,34 @@ namespace BalatroSeedOracle.Services
                 spriteHeight,
                 "joker"
             );
+
+            if (baseImage == null)
+                return null;
+
+            // Legendary jokers: automatically composite soul face on top of base card
+            var legendaryJokers = new[] { "perkeo", "canio", "chicot", "triboulet", "yorick" };
+            if (legendaryJokers.Contains(name.ToLowerInvariant()))
+            {
+                var soulFace = GetJokerSoulImage(name, spriteWidth, spriteHeight);
+                if (soulFace != null)
+                {
+                    // Create composite with soul face layered on top
+                    var renderTarget = new RenderTargetBitmap(
+                        new PixelSize(spriteWidth, spriteHeight),
+                        new Vector(96, 96)
+                    );
+                    using (var context = renderTarget.CreateDrawingContext())
+                    {
+                        // Draw base legendary card frame
+                        context.DrawImage(baseImage, new Rect(0, 0, spriteWidth, spriteHeight));
+                        // Draw soul face on top
+                        context.DrawImage(soulFace, new Rect(0, 0, spriteWidth, spriteHeight));
+                    }
+                    return renderTarget;
+                }
+            }
+
+            return baseImage;
         }
 
         // Get joker image with stickers applied

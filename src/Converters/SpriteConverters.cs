@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Data.Converters;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Helpers;
@@ -242,6 +243,9 @@ namespace BalatroSeedOracle.Converters
 
     public class ItemNameToSoulFaceConverter : IValueConverter
     {
+        // Legendary jokers that have soul faces (same list as SpriteService)
+        private static readonly string[] LegendaryJokers = { "perkeo", "canio", "chicot", "triboulet", "yorick" };
+
         public object? Convert(
             object? value,
             Type targetType,
@@ -256,6 +260,8 @@ namespace BalatroSeedOracle.Converters
             {
                 case string str:
                     itemName = str;
+                    // Check if this string joker name is a legendary joker
+                    isSoulJoker = LegendaryJokers.Contains(str.ToLowerInvariant());
                     break;
                 case ItemConfig config:
                     itemName = config.ItemName;

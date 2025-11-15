@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
@@ -30,7 +31,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Display properties
         [ObservableProperty]
-        private string _iconPath = ""; // Sprite image path
+        private IImage? _iconPath; // Sprite image from SpriteService
 
         [ObservableProperty]
         private string? _editionBadge; // "Foil", "Holographic", etc.

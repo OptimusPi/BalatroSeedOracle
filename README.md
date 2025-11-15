@@ -3,6 +3,7 @@
 Search millions of Balatro seeds to find the perfect runs for your strategies.
 
 ## Docs
+
 - See `docs/INDEX.md` for the current documentation index and cleanup plan.
 
 ## What is this?
@@ -16,22 +17,25 @@ Balatro Seed Oracle helps you find specific Balatro seeds based on detailed crit
 
 Built for the Balatro community to discover optimal seeds for challenge runs, high scores, and specific strategies.
 
-# Installation
+## Installation
 
-## Requirements
+### Requirements
+
 - Windows, Linux, or macOS*
 - Intel, AMD, or Apple Silicon CPU**
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [git](https://git-scm.com/downloads)]
 
 ### NOTE on other compatibilities
+
 - Not sure if other OS will work such as BSD, but it probably will.
 - I think this might work on other CPUs like ARM, but I have not tested it.
-- I think I might need some changes to Motely's Vector helpers to make it work, but it's possible the fallbacks (if AVX5112 and/or AVX2 not supported) tacodiva added already will be compatible.
+- I think I might need some changes to Motely's Vector helpers to make it work, but it's possible the fallbacks (if AVX512 and/or AVX2 not supported) tacodiva added already will be compatible.
 - Mobile would be really cool in the future.
 - Web page version would be really cool in the future.
 
 ## Clone this repository (or download zip, or use Github Desktop)
+
 Either click the green button in the upper-right of this page and download in your favorite way...or:
 
 ```sh
@@ -41,29 +45,32 @@ dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 ```
 
 ## Initialize the git Submodule
+
 This repo uses git submodules to include the Motely search engine.
 The git submodule is my fork of tacodiva/Motely that includes the MotelyJson support!
 You need to initialize and update the submodule after cloning:
+
 ```bash
-cd external
 git submodule update --init --recursive
-cd ..
 ```
 
-# Run the Balatro Seed Oracle GUI Application
+## Run the Balatro Seed Oracle GUI Application
 
 If you are making code changes on your own fork for example, you can specify Debug build configuration.
 NOTE: This searches a *lot* slower than release version!
+
 ```sh
 dotnet run -c Debug --project ./src/BalatroSeedOracle.csproj
 ```
 
 To run the optimized release build:
+
 ```sh
 dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 ```
 
-# MotelyJson with Command Line
+## MotelyJson with Command Line
+
 TODO: This readme section should probably go over to my Motely fork but for now I think it's helpful to include here as well.
 
 Make a .json filter for MotelyJson CLI, place it here: `BalatroSeedOracle/external/Motely/Motely/JsonItemFilters/foo.json`
@@ -73,6 +80,7 @@ Change directory to be where Motely CLI lives.
 I added some neat CLI params to help you search in various ways!
 
 TIP: try --help to see all options.
+
 ```bash
 # Go to the Motely submodule that you initialized earlier.
 cd ./external/Motely/Motely
@@ -80,24 +88,35 @@ dotnet run -c Release -- --help
 ```
 
 - Example 1: Search with existing filter (Motely JSON)
+
 ```bash
 dotnet run -c Release -- --json PerkeoObservatory --threads 16
 ```
 
-# Example 2: Search specific seeds from a text file.
-# Helpful if you or a friend has previous results or a list from other search programs.
-# Tip: This is also how pifreak makes those "Funny Seeds" info for the Discord requests..
+# Example 2: Search specific seeds from a text file
+
+# Helpful if you or a friend has previous results or a list from other search programs
+
+# Tip: This is also how pifreak makes those "Funny Seeds" info for the Discord requests
+
 # Tip: There are a couple fun word lists included such as `2NegativeEggs.txt` or `QuintupleNegativeSkipRewards.txt
+
 dotnet run -c Release -- --json MyFilter --wordlist 2NegativeEggs
 
 # Example 3: Analyze a specific seed
-# This is an attempt at 1:1 matching Immolate-based/ "SpectralPack/TheSoul" website.
-# Also it's used in unit tests for Motely.
+
+# This is an attempt at 1:1 matching Immolate-based/ "SpectralPack/TheSoul" website
+
+# Also it's used in unit tests for Motely
+
 dotnet run -c Release -- --analyze XTTO2111
 
 # Example 4: Search one specific seed
-# this is a simple shortcut to basically use a WordList with 1 string, by the way.
+
+# this is a simple shortcut to basically use a WordList with 1 string, by the way
+
 dotnet run -c Release -- --json PerkeoObservatory --seed XTTO2111
+
 ```
 
 
@@ -214,6 +233,7 @@ This is a community project. Contributions welcome:
 ## Technical Details
 
 Built on:
+
 - **.NET 9** - Modern C# with high performance features
 - **Avalonia UI** - Cross-platform desktop framework  
 - **DuckDB** - Fast analytical database for results
@@ -229,7 +249,7 @@ The search engine uses advanced vectorized operations to achieve high throughput
 
 ## License
 
-[Add your license here]
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ---
 

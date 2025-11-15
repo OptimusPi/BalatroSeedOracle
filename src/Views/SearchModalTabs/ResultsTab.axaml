@@ -8,7 +8,7 @@
     <UserControl.Styles>
         <!-- Modal content styles -->
         <Style Selector="Border.modal-content-box">
-            <Setter Property="Background" Value="{StaticResource DarkerGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -84,7 +84,7 @@
 
         <!-- Loading overlay (shown when searching with 0 results) -->
         <Border Grid.Row="1"
-                Background="{StaticResource DarkerGrey}"
+                Background="{StaticResource DarkBackground}"
                 CornerRadius="8"
                 Padding="32"
                 HorizontalAlignment="Center"

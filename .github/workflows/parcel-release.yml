@@ -1,17 +1,9 @@
 name: Parcel Release
 
 on:
-  push:
-    branches:
-      - main
-      - qa
-    tags:
-      - 'v*'
-  workflow_dispatch:
-    # Only allow manual trigger from main/qa branches
-    branches:
-      - main
-      - qa
+  release:
+    types: [published]
+  workflow_dispatch:  # Keep manual trigger for testing
 
 jobs:
   build-and-package:
@@ -74,7 +66,8 @@ jobs:
           src/bin/packages/*.dmg
           src/bin/packages/*.deb
         draft: false
-        prerelease: false
+        # Mark as pre-release if tag contains -rc, -beta, -alpha, or -preview
+        prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-preview') }}
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
