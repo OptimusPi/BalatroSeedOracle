@@ -621,7 +621,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private async Task ReloadVisualFromSavedFile()
+        public async Task ReloadVisualFromSavedFile()
         {
             try
             {

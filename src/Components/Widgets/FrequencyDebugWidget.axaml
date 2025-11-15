@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:conv="using:BalatroSeedOracle.Converters"
+             xmlns:local="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
              x:DataType="vm:FrequencyDebugWidgetViewModel"
              x:CompileBindings="True"
@@ -53,26 +54,8 @@
                 MaxWidth="380">
 
             <Grid RowDefinitions="Auto,*">
-                <!-- Header with Title and Minimize Button -->
-                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
-                    <Grid ColumnDefinitions="Auto,*">
-                        <Button Grid.Column="0"
-                                Content="↙"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding MinimizeCommand}"
-                                ToolTip.Tip="Minimize"
-                                Margin="0,0,8,0"/>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="📊" FontSize="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="Frequency Analyzer"
-                                       FontSize="13"
-                                       
-                                       Foreground="White"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <!-- Header using shared component -->
+                <local:WidgetHeader Grid.Row="0" />
 
                 <!-- Content Area -->
                 <StackPanel Grid.Row="1" Margin="15" Spacing="12">

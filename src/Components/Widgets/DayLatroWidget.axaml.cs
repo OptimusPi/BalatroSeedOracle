@@ -13,12 +13,9 @@ namespace BalatroSeedOracle.Components
     /// Code-behind for DayLatroWidget
     /// MVVM pattern - ALL business logic in ViewModel, drag handled by DraggableWidgetBehavior
     /// </summary>
-    public partial class DayLatroWidget : UserControl
+    public partial class DayLatroWidget : BaseWidgetControl
     {
         public DayLatroWidgetViewModel? ViewModel { get; }
-
-        // Track click vs drag for minimized icon
-        private Avalonia.Point _iconPressedPosition;
 
         public DayLatroWidget()
         {
@@ -107,39 +104,8 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        /// <summary>
-        /// Track pointer pressed position to detect drag vs click
-        /// </summary>
-        private void OnMinimizedIconPressed(
-            object? sender,
-            Avalonia.Input.PointerPressedEventArgs e
-        )
-        {
-            _iconPressedPosition = e.GetPosition((Control)sender!);
-            // DON'T mark as handled - let drag behavior process it too
-        }
-
-        /// <summary>
-        /// On release: if no drag happened, expand the widget
-        /// </summary>
-        private void OnMinimizedIconReleased(
-            object? sender,
-            Avalonia.Input.PointerReleasedEventArgs e
-        )
-        {
-            var releasePosition = e.GetPosition((Control)sender!);
-            var distance =
-                Math.Abs(releasePosition.X - _iconPressedPosition.X)
-                + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
-
-            // If pointer moved less than 5 pixels, treat as click (not drag)
-            // Use smaller threshold than drag behavior (20px) to avoid conflicts
-            if (distance < 5 && ViewModel != null)
-            {
-                ViewModel.ExpandCommand.Execute(null);
-                // DON'T mark as handled - let drag behavior clean up its state
-            }
-            // If distance >= 5, let drag behavior handle it
-        }
+        // Event handlers inherited from BaseWidgetControl:
+        // - OnMinimizedIconPressed
+        // - OnMinimizedIconReleased
     }
 }

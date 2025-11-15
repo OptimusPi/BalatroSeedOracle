@@ -596,8 +596,19 @@ namespace BalatroSeedOracle.Views
                 // Back to the REAL FiltersModal with visual item shelf and card display!
                 var filtersModal = new Modals.FiltersModal();
 
+                // Check if initialization succeeded
+                if (filtersModal.ViewModel == null)
+                {
+                    Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        "FiltersModal initialization failed - ViewModel is null"
+                    );
+                    HideModalContent(); // Clean up modal state
+                    return;
+                }
+
                 // Load the filter data FIRST if provided
-                if (!string.IsNullOrEmpty(filterId) && filtersModal.ViewModel != null)
+                if (!string.IsNullOrEmpty(filterId))
                 {
                     var filtersDir = System.IO.Path.Combine(
                         System.IO.Directory.GetCurrentDirectory(),
@@ -622,11 +633,16 @@ namespace BalatroSeedOracle.Views
                     );
                 }
 
-                // DEBUG ASSERT: Filter must ALWAYS be loaded when showing designer
-                System.Diagnostics.Debug.Assert(
-                    filtersModal.ViewModel != null && !string.IsNullOrEmpty(filterId),
-                    "Filter Designer opened without a valid filter! FilterId must be provided."
-                );
+                // Verify filter was loaded properly
+                if (string.IsNullOrEmpty(filterId))
+                {
+                    Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        "Filter Designer opened without a valid filter! FilterId must be provided."
+                    );
+                    HideModalContent();
+                    return;
+                }
 
                 // THEN show the modal with loaded content
                 var modal = new StandardModal("🎨 FILTER DESIGNER");

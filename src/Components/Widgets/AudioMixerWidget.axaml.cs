@@ -1,21 +1,18 @@
-using System;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components
 {
-    public partial class AudioMixerWidget : UserControl
+    public partial class AudioMixerWidget : BaseWidgetControl
     {
         public AudioMixerWidget()
         {
             InitializeComponent();
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnWidgetAttached()
         {
-            base.OnAttachedToVisualTree(e);
+            base.OnWidgetAttached();
 
             if (DataContext is AudioMixerWidgetViewModel vm)
             {
@@ -23,9 +20,9 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnWidgetDetached()
         {
-            base.OnDetachedFromVisualTree(e);
+            base.OnWidgetDetached();
 
             if (DataContext is AudioMixerWidgetViewModel vm)
             {
@@ -33,44 +30,8 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        private Point _iconPressedPosition;
-
-        private void OnMinimizedIconPressed(object? sender, PointerPressedEventArgs e)
-        {
-            _iconPressedPosition = e.GetPosition((Control)sender!);
-
-            if (DataContext is AudioMixerWidgetViewModel vm)
-            {
-                vm.BringToFront();
-            }
-            // DON'T mark as handled - let drag behavior process it too
-        }
-
-        private void OnMinimizedIconReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            if (DataContext is AudioMixerWidgetViewModel vm)
-            {
-                var releasePosition = e.GetPosition((Control)sender!);
-                var distance =
-                    Math.Abs(releasePosition.X - _iconPressedPosition.X)
-                    + Math.Abs(releasePosition.Y - _iconPressedPosition.Y);
-
-                // If pointer moved less than 5 pixels, treat as click (not drag)
-                // Use smaller threshold than drag behavior (20px) to avoid conflicts
-                if (distance < 5)
-                {
-                    if (vm.IsMinimized)
-                    {
-                        vm.ExpandCommand.Execute(null);
-                    }
-                    else
-                    {
-                        vm.MinimizeCommand.Execute(null);
-                    }
-                    // DON'T mark as handled - let drag behavior clean up its state
-                }
-                // If distance >= 5, let drag behavior handle it
-            }
-        }
+        // Event handlers inherited from BaseWidgetControl:
+        // - OnMinimizedIconPressed
+        // - OnMinimizedIconReleased
     }
 }

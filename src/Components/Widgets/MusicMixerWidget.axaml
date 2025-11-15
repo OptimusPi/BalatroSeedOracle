@@ -3,6 +3,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -46,25 +47,8 @@
                 Width="400">
 
             <Grid RowDefinitions="Auto,*">
-                <!-- Header with Title and Minimize Button -->
-                <Border Grid.Row="0" Classes="widget-header" Padding="8,6">
-                    <Grid ColumnDefinitions="Auto,*">
-                        <Button Grid.Column="0"
-                                Content="↙"
-                                Classes="widget-minimize-btn"
-                                Command="{Binding MinimizeCommand}"
-                                ToolTip.Tip="Minimize"
-                                Margin="0,0,6,0"/>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="{Binding WidgetIcon}" FontSize="13" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding WidgetTitle}"
-                                       FontSize="11"
-                                       Foreground="White"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <!-- Header using shared component -->
+                <local:WidgetHeader Grid.Row="0" />
 
                 <!-- Content Area with ScrollViewer -->
                 <ScrollViewer Grid.Row="1"
