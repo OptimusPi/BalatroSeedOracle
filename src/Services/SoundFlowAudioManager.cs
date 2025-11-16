@@ -157,11 +157,15 @@ namespace BalatroSeedOracle.Services
 
         private void LoadTracks(AudioFormat format)
         {
+            // Get executable directory (works for both dev and installed)
+            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
+
             // Find audio directory
             var possiblePaths = new[]
             {
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio"),
+                Path.Combine(exeDir, "Assets", "Audio"),  // Installed/published
+                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio"),  // Dev
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio"),  // Dev from root
             };
 
             string? audioDir = possiblePaths.FirstOrDefault(Directory.Exists);
@@ -237,11 +241,15 @@ namespace BalatroSeedOracle.Services
 
         private void LoadSoundEffects(AudioFormat format)
         {
+            // Get executable directory (works for both dev and installed)
+            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
+
             // Find audio directory
             var possiblePaths = new[]
             {
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio", "SFX"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio", "SFX"),
+                Path.Combine(exeDir, "Assets", "Audio", "SFX"),  // Installed/published
+                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio", "SFX"),  // Dev
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio", "SFX"),  // Dev from root
             };
 
             string? sfxDir = possiblePaths.FirstOrDefault(Directory.Exists);
