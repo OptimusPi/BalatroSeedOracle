@@ -1,0 +1,62 @@
+name: macOS Release Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build-macos:
+    strategy:
+      matrix:
+        include:
+          - runtime: osx-x64
+            arch: x64
+          - runtime: osx-arm64
+            arch: arm64
+
+    runs-on: macos-latest
+    env:
+      PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install Parcel
+      run: dotnet tool install --global AvaloniaUI.Parcel.macOS
+
+    - name: Verify Parcel Installation
+      run: |
+        echo "Checking if parcel is in PATH..."
+        which parcel
+        parcel --version
+
+    - name: Restore dependencies
+      run: dotnet restore src/BalatroSeedOracle.csproj
+
+    - name: Build
+      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
+
+    - name: Package DMG (${{ matrix.arch }})
+      run: |
+        cd src
+        if [ ! -f "BalatroSeedOracle.parcel" ]; then
+          echo "Error: BalatroSeedOracle.parcel file not found!"
+          exit 1
+        fi
+        echo "Building macOS DMG for ${{ matrix.arch }}..."
+        parcel pack BalatroSeedOracle.parcel -r ${{ matrix.runtime }} -p dmg
+
+    - name: Upload DMG (${{ matrix.arch }})
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-${{ matrix.arch }}
+        path: src/bin/packages/*.dmg
+        if-no-files-found: error

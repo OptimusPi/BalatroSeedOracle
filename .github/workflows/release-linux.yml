@@ -1,0 +1,67 @@
+name: Linux Release Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    env:
+      PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install Parcel
+      run: dotnet tool install --global AvaloniaUI.Parcel.Linux
+
+    - name: Verify Parcel Installation
+      run: |
+        echo "Checking if parcel is in PATH..."
+        which parcel
+        parcel --version
+
+    - name: Restore dependencies
+      run: dotnet restore src/BalatroSeedOracle.csproj
+
+    - name: Build
+      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
+
+    - name: Package DEB Package
+      run: |
+        cd src
+        if [ ! -f "BalatroSeedOracle.parcel" ]; then
+          echo "Error: BalatroSeedOracle.parcel file not found!"
+          exit 1
+        fi
+        echo "Building Linux DEB package..."
+        parcel pack BalatroSeedOracle.parcel -r linux-x64 -p deb
+
+    - name: Package ZIP Archive
+      run: |
+        cd src
+        echo "Building Linux ZIP archive..."
+        parcel pack BalatroSeedOracle.parcel -r linux-x64 -p zip
+
+    - name: Upload DEB Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-deb
+        path: src/bin/packages/*.deb
+        if-no-files-found: error
+
+    - name: Upload ZIP Archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-zip
+        path: src/bin/packages/*.zip
+        if-no-files-found: error

@@ -1,0 +1,67 @@
+name: Windows Release Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install Parcel
+      run: dotnet tool install --global AvaloniaUI.Parcel.Windows
+
+    - name: Verify Parcel Installation
+      run: |
+        echo "Checking if parcel is in PATH..."
+        where parcel
+        parcel --version
+
+    - name: Restore dependencies
+      run: dotnet restore src/BalatroSeedOracle.csproj
+
+    - name: Build
+      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
+
+    - name: Package NSIS Installer
+      run: |
+        cd src
+        if (!(Test-Path "BalatroSeedOracle.parcel")) {
+          Write-Error "BalatroSeedOracle.parcel file not found!"
+          exit 1
+        }
+        Write-Host "Building Windows NSIS installer..."
+        parcel pack BalatroSeedOracle.parcel -r win-x64 -p nsis
+
+    - name: Package ZIP Archive
+      run: |
+        cd src
+        Write-Host "Building Windows ZIP archive..."
+        parcel pack BalatroSeedOracle.parcel -r win-x64 -p zip
+
+    - name: Upload NSIS Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-nsis
+        path: src/bin/packages/*.exe
+        if-no-files-found: error
+
+    - name: Upload ZIP Archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-zip
+        path: src/bin/packages/*.zip
+        if-no-files-found: error
