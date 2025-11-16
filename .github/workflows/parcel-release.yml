@@ -23,9 +23,7 @@ jobs:
     - name: Install Parcel
       env:
         PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
-      run: |
-        dotnet nuget add source https://nuget.avaloniaui.net/repository/avalonia-all/ --name avalonia-all
-        dotnet tool install --global AvaloniaUI.Net.Parcel --add-source https://nuget.avaloniaui.net/repository/avalonia-all/
+      run: dotnet tool install --global AvaloniaUI.Parcel.Windows
 
     - name: Restore dependencies
       run: dotnet restore src/BalatroSeedOracle.csproj
