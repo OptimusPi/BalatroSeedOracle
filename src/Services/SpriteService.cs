@@ -2026,10 +2026,10 @@ namespace BalatroSeedOracle.Services
                 }
             }
 
-            // Apply debuff overlay if requested
+            // Apply debuff overlay if requested (debuff is position 4 in Editions.png - the red X!)
             if (debuff)
             {
-                var debuffOverlay = GetEnhancementImage("debuffed");
+                var debuffOverlay = GetEditionImage("debuffed");
                 if (debuffOverlay != null)
                 {
                     var composited = CompositeImages(result, debuffOverlay, 142, 190);
