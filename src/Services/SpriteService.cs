@@ -1528,12 +1528,11 @@ namespace BalatroSeedOracle.Services
                 // Note: "negative" is a SHADER effect, NOT a sprite in Editions.png
                 int position = edition.ToLowerInvariant() switch
                 {
-                    "none" or "normal" => 0,
-                    "foil" => 1,
-                    "holographic" or "holo" => 2,
-                    "polychrome" or "poly" => 3,
-                    "debuffed" or "debuff" => 4, // Position 4 is the red X (debuffed/banned)
-                    _ => 0,
+                    "foil" => 0,                          // Position 0: Blue swirl
+                    "holographic" or "holo" => 1,         // Position 1: Sparkly
+                    "polychrome" or "poly" => 2,          // Position 2: Rainbow
+                    "debuffed" or "debuff" => 3,          // Position 3: Red X (rightmost!)
+                    "none" or "normal" or "negative" or _ => -1,  // No sprite (negative is shader effect)
                 };
 
                 // Simple horizontal sprite sheet layout
