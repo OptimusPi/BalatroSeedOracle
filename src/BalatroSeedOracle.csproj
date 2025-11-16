@@ -52,12 +52,14 @@
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="Avalonia.Win32" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
     <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="ScottPlot.Avalonia" />
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
