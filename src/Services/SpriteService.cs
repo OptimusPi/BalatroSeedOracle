@@ -1535,6 +1535,10 @@ namespace BalatroSeedOracle.Services
                     "none" or "normal" or "negative" or _ => -1,  // No sprite (negative is shader effect)
                 };
 
+                // Return null for invalid/no sprite positions
+                if (position < 0)
+                    return null;
+
                 // Simple horizontal sprite sheet layout
                 int x = position * spriteWidth;
                 int y = 0;
