@@ -43,6 +43,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _selectedTabIndex = 0;
 
+        // Track previous tab index to properly save data when switching tabs
+        private int _previousTabIndex = 0;
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasLoadedFilter))]
         [NotifyCanExecuteChangedFor(nameof(DeleteFilterCommand))]
@@ -782,13 +785,19 @@ namespace BalatroSeedOracle.ViewModels
             return false;
         }
 
+        // Capture the OLD tab index BEFORE the property changes
+        partial void OnSelectedTabIndexChanging(int value)
+        {
+            _previousTabIndex = SelectedTabIndex;
+        }
+
         // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"🔄 Tab switching: FROM tab {_selectedTabIndex - 1} TO tab {value}");
+            DebugLogger.Log("FiltersModalViewModel", $"🔄 Tab switching: FROM tab {_previousTabIndex} TO tab {value}");
 
             // CRITICAL: Save current tab's data to the shared filter state BEFORE switching
-            SaveCurrentTabData();
+            SaveCurrentTabData(_previousTabIndex);
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
@@ -801,13 +810,13 @@ namespace BalatroSeedOracle.ViewModels
         /// Save the current tab's data to the parent ViewModel's shared state.
         /// Called BEFORE switching tabs to ensure changes aren't lost.
         /// </summary>
-        private void SaveCurrentTabData()
+        private void SaveCurrentTabData(int tabIndex)
         {
             try
             {
-                var currentTabIndex = SelectedTabIndex;
+                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {tabIndex}");
 
-                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {currentTabIndex}");
+                var currentTabIndex = tabIndex;
 
                 // Tab 0: Build Filter (Visual Builder) - already saves to SelectedMust/Should via collections
                 if (currentTabIndex == 0 && VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
