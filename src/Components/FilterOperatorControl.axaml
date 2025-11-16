@@ -116,63 +116,88 @@
                 ClipToBounds="False"
                 DragDrop.AllowDrop="True">
 
-                <!-- Canvas for absolute positioning of fanned cards -->
-                <Canvas Name="FannedCardsCanvas"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        MinWidth="120"
-                        MinHeight="100"
-                        ClipToBounds="False">
-                    <ItemsControl
-                        Name="ChildrenItemsControl"
-                        ItemsSource="{Binding Children}">
+                <Grid>
+                    <!-- Less than 5 cards: simple side-by-side layout -->
+                    <ItemsControl ItemsSource="{Binding Children}"
+                                  Name="ChildrenItemsControl"
+                                  IsVisible="{Binding Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- Fanned card with rotation and offset (poker hand style) -->
-                                <Border Background="Transparent"
-                                        RenderTransformOrigin="0.5,1.0"
-                                        ToolTip.Tip="{Binding DisplayName}"
-                                        Cursor="Hand">
-                                    <Border.RenderTransform>
-                                        <TransformGroup>
-                                            <RotateTransform Angle="0"/>
-                                            <TranslateTransform X="0" Y="0"/>
-                                        </TransformGroup>
-                                    </Border.RenderTransform>
-
-                                    <!-- Slightly larger cards (50x70 instead of 40x56) for better visibility -->
-                                    <Grid Width="50" Height="70">
-                                        <!-- Base card image -->
-                                        <Image
-                                            Source="{Binding ItemImage}"
-                                            Stretch="Uniform"
-                                            IsHitTestVisible="False"/>
-
-                                        <!-- Soul face overlay for legendary jokers -->
-                                        <Image
-                                            Source="{Binding SoulFaceImage}"
-                                            Stretch="Uniform"
-                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                            IsHitTestVisible="False"/>
-
-                                        <!-- DEBUFFED overlay (FULL SIZE) - only for BannedItems tray -->
-                                        <Image
-                                            Source="{Binding DebuffedOverlayImage}"
-                                            Stretch="Uniform"
-                                            IsVisible="{Binding IsInBannedItemsTray}"
-                                            IsHitTestVisible="False"/>
-                                    </Grid>
-                                </Border>
+                                <Grid Width="50" Height="70" Margin="3">
+                                    <Image Source="{Binding ItemImage}"
+                                           Width="50"
+                                           Height="70"
+                                           Stretch="Uniform"/>
+                                    <Image Source="{Binding SoulFaceImage}"
+                                           Width="50"
+                                           Height="70"
+                                           Stretch="Uniform"
+                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <Image Source="{Binding DebuffedOverlayImage}"
+                                           Width="50"
+                                           Height="70"
+                                           Stretch="Uniform"
+                                           IsVisible="{Binding IsInBannedItemsTray}"/>
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </Canvas>
+
+                    <!-- 5+ cards: fanned Canvas layout -->
+                    <Canvas Name="FannedCardsCanvas"
+                            IsVisible="{Binding Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            MinWidth="120"
+                            MinHeight="100"
+                            ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding Children}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent"
+                                            RenderTransformOrigin="0.5,1.0"
+                                            ToolTip.Tip="{Binding DisplayName}"
+                                            Cursor="Hand">
+                                        <Border.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform Angle="0"/>
+                                                <TranslateTransform X="0" Y="0"/>
+                                            </TransformGroup>
+                                        </Border.RenderTransform>
+
+                                        <Grid Width="50" Height="70">
+                                            <Image Source="{Binding ItemImage}"
+                                                   Width="50"
+                                                   Height="70"
+                                                   Stretch="Uniform"/>
+                                            <Image Source="{Binding SoulFaceImage}"
+                                                   Width="50"
+                                                   Height="70"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            <Image Source="{Binding DebuffedOverlayImage}"
+                                                   Width="50"
+                                                   Height="70"
+                                                   Stretch="Uniform"
+                                                   IsVisible="{Binding IsInBannedItemsTray}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                </Grid>
             </Border>
         </Grid>
     </Border>
