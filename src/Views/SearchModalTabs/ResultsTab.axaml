@@ -49,7 +49,7 @@
         </Style>
 
         <Style Selector="Border.result-row">
-            <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Margin" Value="0,2"/>
         </Style>

@@ -1989,10 +1989,33 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         );
                     }
 
+                    // INCLUDE LABEL in the drag adorner (not just card image)
+                    var whiteBrush = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
+
+                    var cardWithLabel = new StackPanel
+                    {
+                        Spacing = 6,
+                        Children =
+                        {
+                            imageGrid,
+                            new TextBlock
+                            {
+                                Text = item.DisplayName ?? "",
+                                FontSize = 11,
+                                Foreground = whiteBrush,
+                                TextAlignment = TextAlignment.Center,
+                                TextWrapping = TextWrapping.Wrap,
+                                MaxWidth = 72,
+                                MinHeight = 40,
+                                MaxLines = 2
+                            }
+                        }
+                    };
+
                     cardContent = new Border
                     {
                         Background = Brushes.Transparent,
-                        Child = imageGrid,
+                        Child = cardWithLabel,
                     };
                 }
 
@@ -2008,7 +2031,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _dragAdorner = new Border
                 {
                     Background = Brushes.Transparent,
-                    Child = cardContent, // Just the card, no label (cleaner drag visual)
+                    Child = cardContent, // Card WITH label now!
                 };
 
                 // Initialize adorner to appear at the mouse position (accounting for drag offset)

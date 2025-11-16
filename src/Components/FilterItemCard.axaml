@@ -104,7 +104,7 @@
                    TextAlignment="Center"
                    TextWrapping="Wrap"
                    MaxWidth="72"
-                   MinHeight="32"
+                   MinHeight="40"
                    MaxLines="2"/>
     </StackPanel>
 </UserControl>
