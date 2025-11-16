@@ -1,0 +1,74 @@
+{
+  "name": "Oops a Burnt Shortcut to Space",
+  "description": "I would love a seed with an early Burnt and Shortcut (possibly Space Joker and Oops!)",
+  "author": "Crowe",
+  "dateCreated": "2025-08-19T05:46:12.6691000Z",
+  "must": [
+    {
+      "type": "joker",
+      "value": "oopsall6s",
+      "sources": {
+        "packSlots": [0,1]
+      },
+      "antes": [1,2]
+    },
+    {
+      "type": "joker",
+      "value": "Shortcut",
+      "sources": {
+        "shopSlots": [0,1,2,3]
+      },
+      "antes": [1,2]
+    }
+  ],
+  "should": [
+    {
+      "type": "joker",
+      "value": "SpaceJoker",
+      "sources": {
+        "shopSlots": [0,1,2,3],
+        "packSlots": [0,1,2,3,4,5]
+      },
+      "antes": [2],
+      "score": 10
+    },
+    {
+      "type": "joker",
+      "value": "BurntJoker",
+
+      "sources": {
+        "shopSlots": [0,1,2,3],
+        "packSlots": [0,1,2,3,4,5]
+      },
+      "antes": [2],
+      "score": 10
+    },
+
+
+
+    {
+      "type": "joker",
+      "value": "BurntJoker",
+      "sources": {
+        "shopSlots": [0,1,2,3],
+        "packSlots": [0,1,2,3,4,5]
+      },
+      "antes": [3,4,5],
+      "score": 8
+    },
+    {
+      "type": "joker",
+      "value": "SpaceJoker",
+      "sources": {
+        "shopSlots": [0,1,2,3],
+        "packSlots": [0,1,2,3,4,5]
+      },
+      "antes": [3,4,5],
+      "score": 8
+    }
+  ],
+  "mustNot": [],
+  "scoring": {
+    "type": "sum"
+  }
+}

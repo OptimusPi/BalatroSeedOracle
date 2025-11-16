@@ -1,0 +1,60 @@
+{
+    "name": "CrimsonObservatory",
+    "description": "With this setup it should be possible to get a decent crimson bean seed as well as more fun seeds, like most money, big lucky cat, etc.",
+    "author": "ChillBill",
+    "must": [
+        {
+            "type": "Voucher",
+            "value": "Telescope",
+            "Antes": [1]
+        },
+        {
+            "type": "Voucher",
+            "value": "Observatory",
+            "Antes": [2]
+        }
+    ],
+    "should": [
+        {
+            "type": "souljoker",
+            "value": "perkeo",
+            "edition": "negative",
+            "Antes": [1],
+            "sources": {
+                "shopSlots": [0, 1],
+                "packSlots": [0, 1],
+                "requireMega": true
+            }
+        },
+        {
+            "type": "TarotCard",
+            "value": "Judgement",
+            "Antes": [1],
+            "sources": {
+                "shopSlots": [0, 1],
+                "packSlots": [0, 1],
+                "requireMega": true
+            }
+        },
+        {
+            "type": "playingcard",
+            "seal": "gold",
+            "Antes": [2],
+            "sources": {
+                "packSlots": [0, 1, 2, 3, 4, 5]
+            }
+        },
+        {
+            "type": "planetcard",
+            "seal": "pluto",
+            "Antes": [2],
+            "sources": {
+                "shopSlots": [0, 1, 2, 3, 4, 5],
+                "packSlots": [0, 1, 2, 3, 4, 5]
+            }
+        }
+    ],
+    "mustNot": [],
+    "deck": "Red",
+    "stake": "Black"
+}

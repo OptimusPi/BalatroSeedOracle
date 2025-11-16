@@ -1,0 +1,58 @@
+{
+  "name": "Fortune Tell Her",
+  "description": "Purple Seals Galore! Use them tarot cards baby!",
+  "author": "pifreak",
+  "dateCreated": "2025-08-24T05:46:12.6691000Z",
+  "deck": "Yellow",
+  "stake": "White",
+  "must": [
+    {
+        "smallBlindTag": "CouponTag",
+        "antes": [1]
+    },
+    {
+      "type": "Joker",
+      "value":"FortuneTeller",
+      "antes": [1],
+      "sources": {
+        "shopSlots": [0,1]
+      }
+    },
+    {
+      "type": "SpectralCard",
+      "value": "Ankh",
+      "antes": [1],
+      "sources": {
+        "packSlots": [1],
+        "requireMega": true
+      }
+    },
+     {
+      "type": "SoulJoker",
+      "value": "Yorick",
+      "antes": [1],
+      "sources": {
+        "packSlots": [1],
+        "requireMega": true
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "SoulJoker",
+      "value": "Yorick",
+      "edition": "Negative",
+      "antes": [1],
+      "sources": {
+        "packSlots": [1],
+        "requireMega": true
+      }
+    },
+    {
+      "type": "PlanetCard",
+      "value": "Uranus",
+      "antes": [2,3,4,5,6,7,8]
+    }
+  ],
+  "mustNot": []
+}

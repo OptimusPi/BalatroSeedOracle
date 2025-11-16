@@ -1,0 +1,101 @@
+{
+  "name": "NegativeSkipCopy",
+  "description": "finds copy jokers after negativetags",
+  "author": "pifreak",
+  "dateCreated": "2025-08-24T05:46:12.6691000Z",
+  "must": [
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [1],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [2],
+      "sources": {
+        "packSlots": [0]
+      }
+    }
+  ],
+  "should": [
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [1],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [2],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [3],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [4],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [5],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [6],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [7],
+      "sources": {
+        "packSlots": [0]
+      }
+    },
+    {
+      "type": "Joker",
+      "value": "any",
+      "edition": "Negative",
+      "antes": [8],
+      "sources": {
+        "packSlots": [0]
+      }
+    }
+  ],
+  "mustNot": []
+}
