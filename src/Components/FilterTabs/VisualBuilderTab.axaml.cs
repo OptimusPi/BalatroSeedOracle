@@ -2000,7 +2000,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             imageGrid,
                             new TextBlock
                             {
-                                Text = item.DisplayName ?? "",
+                                Text = item?.DisplayName ?? "",
                                 FontSize = 11,
                                 Foreground = whiteBrush,
                                 TextAlignment = TextAlignment.Center,
