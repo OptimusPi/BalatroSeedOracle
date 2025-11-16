@@ -1,0 +1,70 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: win-x64
+            packages: 'nsis,zip'
+            tool: AvaloniaUI.Parcel.Windows
+          - os: ubuntu-latest
+            runtime: linux-x64
+            packages: 'deb,zip'
+            tool: AvaloniaUI.Parcel.Linux
+          - os: macos-latest
+            runtime: osx-x64
+            packages: dmg
+            tool: AvaloniaUI.Parcel.macOS
+          - os: macos-latest
+            runtime: osx-arm64
+            packages: dmg
+            tool: AvaloniaUI.Parcel.macOS
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Install Parcel
+      run: dotnet tool install --global ${{ matrix.tool }}
+
+    - name: Build Release
+      env:
+        PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+      run: parcel pack BalatroSeedOracle.parcel.json --runtimes ${{ matrix.runtime }} --packages ${{ matrix.packages }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.runtime }}
+        path: bin/packages/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/**/*
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

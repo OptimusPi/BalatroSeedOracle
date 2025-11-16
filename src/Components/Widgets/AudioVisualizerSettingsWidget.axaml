@@ -85,6 +85,128 @@
                                     Padding="16,4"/>
                         </StackPanel>
 
+                        <!-- TRANSITION DESIGNER -->
+                        <Border Background="{StaticResource DarkGrey}"
+                                BorderBrush="{StaticResource Gold}"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Padding="14"
+                                Margin="0,12,0,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="🎬 TRANSITION DESIGNER"
+                                           Foreground="{StaticResource Gold}"
+                                           FontSize="16"
+                                           FontWeight="Bold"/>
+
+                                <TextBlock Text="Design smooth transitions between visual states"
+                                           Foreground="{StaticResource LightTextGrey}"
+                                           FontSize="11"
+                                           Margin="0,-6,0,2"/>
+
+                                <!-- Start Preset -->
+                                <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Start Preset"
+                                               Foreground="{StaticResource White}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1"
+                                              SelectedIndex="{Binding TransitionStartPresetIndex}"
+                                              FontSize="12">
+                                        <ComboBoxItem Content="Current State"/>
+                                        <ComboBoxItem Content="Default"/>
+                                        <ComboBoxItem Content="Wave Rider"/>
+                                        <ComboBoxItem Content="Inferno"/>
+                                        <ComboBoxItem Content="Frozen"/>
+                                        <ComboBoxItem Content="Dark Intro"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <!-- End Preset -->
+                                <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0"
+                                               Text="End Preset"
+                                               Foreground="{StaticResource White}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1"
+                                              SelectedIndex="{Binding TransitionEndPresetIndex}"
+                                              FontSize="12">
+                                        <ComboBoxItem Content="Current State"/>
+                                        <ComboBoxItem Content="Default"/>
+                                        <ComboBoxItem Content="Wave Rider"/>
+                                        <ComboBoxItem Content="Inferno"/>
+                                        <ComboBoxItem Content="Frozen"/>
+                                        <ComboBoxItem Content="Vibrant Balatro"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <!-- Duration -->
+                                <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Duration"
+                                               Foreground="{StaticResource White}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Minimum="0.5"
+                                            Maximum="10"
+                                            Value="{Binding TransitionDuration}"
+                                            VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding TransitionDuration, StringFormat='{}{0:F1}s'}"
+                                               Foreground="{StaticResource Gold}"
+                                               FontSize="12"
+                                               TextAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Manual Preview Slider -->
+                                <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Preview"
+                                               Foreground="{StaticResource White}"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Value="{Binding TransitionPreviewProgress}"
+                                            VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding TransitionPreviewProgress, StringFormat='{}{0:P0}'}"
+                                               Foreground="{StaticResource Gold}"
+                                               FontSize="12"
+                                               TextAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Action Buttons -->
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                    <Button Grid.Column="0"
+                                            Content="▶ Play Transition"
+                                            Classes="btn-blue"
+                                            Command="{Binding PlayTransitionCommand}"
+                                            Height="36"
+                                            FontSize="13"/>
+                                    <Button Grid.Column="1"
+                                            Content="💾 Save Transition"
+                                            Classes="btn-red"
+                                            Command="{Binding SaveTransitionCommand}"
+                                            Height="36"
+                                            FontSize="13"/>
+                                </Grid>
+
+                                <!-- Info Text -->
+                                <TextBlock Text="💡 Tip: Use the preview slider to scrub through the transition manually"
+                                           Foreground="{StaticResource LightTextGrey}"
+                                           FontSize="10"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           Margin="0,2,0,-4"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- THEME SELECTION -->
                         <StackPanel Spacing="8">
                             <TextBlock Text="THEME" Foreground="{StaticResource White}" FontSize="16"/>
