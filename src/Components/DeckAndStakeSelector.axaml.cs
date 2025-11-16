@@ -89,7 +89,8 @@ public partial class DeckAndStakeSelector : UserControl
         {
             // Clamp to valid range (0-14 for decks)
             var clampedValue = Math.Max(0, Math.Min(14, value));
-            SetValue(DeckIndexProperty, clampedValue);
+            // CRITICAL FIX: Use SetCurrentValue to properly notify TwoWay bindings
+            SetCurrentValue(DeckIndexProperty, clampedValue);
             _viewModel.DeckIndex = clampedValue;
         }
     }
@@ -106,7 +107,8 @@ public partial class DeckAndStakeSelector : UserControl
         {
             // Clamp to valid range (0-7 for stakes)
             var clampedValue = Math.Max(0, Math.Min(7, value));
-            SetValue(StakeIndexProperty, clampedValue);
+            // CRITICAL FIX: Use SetCurrentValue to properly notify TwoWay bindings
+            SetCurrentValue(StakeIndexProperty, clampedValue);
             _viewModel.StakeIndex = clampedValue;
         }
     }

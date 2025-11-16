@@ -401,6 +401,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         operatorClause.Clauses.Add(childClause);
                     }
+                    else
+                    {
+                        DebugLogger.LogError(
+                            "SaveFilterTab",
+                            $"Failed to convert child: {child.ItemKey} (Type={child.Type}, Name={child.Name})"
+                        );
+                    }
                 }
 
                 DebugLogger.Log(
@@ -411,7 +418,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return operatorClause;
             }
 
-            // Normal FilterItem - look up in ItemConfigs by ItemKey
+            // Normal FilterItem - TRY to look up in ItemConfigs first
             if (itemConfigs.TryGetValue(item.ItemKey, out var itemConfig))
             {
                 // Use FilterConfigurationService to convert ItemConfig to clause
@@ -465,11 +472,93 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         return null;
                 }
 
+                // Apply additional properties from itemConfig
+                if (itemConfig.Stickers != null && itemConfig.Stickers.Count > 0)
+                {
+                    clause.Stickers = new List<string>(itemConfig.Stickers);
+                }
+                if (!string.IsNullOrEmpty(itemConfig.Seal) && itemConfig.Seal != "none")
+                {
+                    clause.Seal = itemConfig.Seal;
+                }
+
                 return clause;
             }
 
-            DebugLogger.Log("SaveFilterTab", $"ItemKey not found in ItemConfigs: {item.ItemKey}");
-            return null;
+            // CRITICAL FIX: Fallback to creating clause from FilterItem properties directly
+            // This handles operator children that may not be in itemConfigs dictionary
+            DebugLogger.Log(
+                "SaveFilterTab",
+                $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
+            );
+
+            var fallbackClause = new MotelyJsonConfig.MotleyJsonFilterClause
+            {
+                Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
+            };
+
+            // Map Type from FilterItem directly
+            var normalizedItemType = item.Type.ToLower();
+            switch (normalizedItemType)
+            {
+                case "joker":
+                    fallbackClause.Type = "Joker";
+                    fallbackClause.Value = item.Name;
+                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    {
+                        fallbackClause.Edition = item.Edition;
+                    }
+                    break;
+
+                case "souljoker":
+                    fallbackClause.Type = "SoulJoker";
+                    fallbackClause.Value = item.Name;
+                    break;
+
+                case "tarot":
+                    fallbackClause.Type = "TarotCard";
+                    fallbackClause.Value = item.Name;
+                    break;
+
+                case "voucher":
+                    fallbackClause.Type = "Voucher";
+                    fallbackClause.Value = item.Name;
+                    break;
+
+                case "planet":
+                    fallbackClause.Type = "PlanetCard";
+                    fallbackClause.Value = item.Name;
+                    break;
+
+                case "spectral":
+                    fallbackClause.Type = "SpectralCard";
+                    fallbackClause.Value = item.Name;
+                    break;
+
+                default:
+                    DebugLogger.LogError(
+                        "SaveFilterTab",
+                        $"Cannot convert FilterItem with unknown type: {item.Type}"
+                    );
+                    return null;
+            }
+
+            // Apply additional properties from FilterItem
+            if (item.Stickers != null && item.Stickers.Count > 0)
+            {
+                fallbackClause.Stickers = new List<string>(item.Stickers);
+            }
+            if (!string.IsNullOrEmpty(item.Seal) && item.Seal != "none")
+            {
+                fallbackClause.Seal = item.Seal;
+            }
+
+            DebugLogger.Log(
+                "SaveFilterTab",
+                $"Created fallback clause: Type={fallbackClause.Type}, Value={fallbackClause.Value}, Edition={fallbackClause.Edition ?? "none"}, Seal={fallbackClause.Seal ?? "none"}"
+            );
+
+            return fallbackClause;
         }
 
         // Logic moved to shared FilterConfigurationService

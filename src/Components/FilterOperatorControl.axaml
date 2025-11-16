@@ -29,12 +29,12 @@
             <Setter Property="MinHeight" Value="100"/>
         </Style>
 
-        <!-- Expansion animation on hover -->
-        <Style Selector="Border.operator-card-container:pointerover">
+        <!-- DISABLED: Expansion animation on hover causes glitches when dropped in zones -->
+        <!-- <Style Selector="Border.operator-card-container:pointerover">
             <Setter Property="MinWidth" Value="240"/>
             <Setter Property="MinHeight" Value="180"/>
             <Setter Property="BorderThickness" Value="3"/>
-        </Style>
+        </Style> -->
 
         <!-- Balatro-style highlight when dragging over -->
         <Style Selector="Border.operator-card-container.drag-over">

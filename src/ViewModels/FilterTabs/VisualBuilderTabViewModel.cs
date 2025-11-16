@@ -1042,7 +1042,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             var groupedConfig = new ItemConfig
             {
                 ItemKey = $"or_clause_{Guid.NewGuid():N}",
-                ItemType = "Clause",
+                ItemType = "Operator",
                 ItemName = $"OR ({OrTrayItems.Count} items)",
                 OperatorType = "Or",
                 Mode = "Max",
@@ -1118,7 +1118,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             var groupedConfig = new ItemConfig
             {
                 ItemKey = $"and_clause_{Guid.NewGuid():N}",
-                ItemType = "Clause",
+                ItemType = "Operator",
                 ItemName = $"AND ({AndTrayItems.Count} items)",
                 OperatorType = "And",
                 Children = new List<ItemConfig>(),
@@ -1269,8 +1269,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     ItemType = child.Type,
                     ItemName = child.Name,
-                    // Preserve any additional properties if needed
                 };
+
+                // CRITICAL FIX: Preserve edition, stickers, seals from the FilterItem
+                ApplyEditionStickersSeal(childConfig, child);
+
                 operatorConfig.Children.Add(childConfig);
             }
 

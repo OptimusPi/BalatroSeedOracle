@@ -1105,6 +1105,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     // Deep copy all children to avoid binding issues
                                     foreach (var child in operatorItem.Children.ToList())
                                     {
+                                        // BUG FIX: Re-fetch ItemImage based on Type for proper rendering
+                                        var spriteService = SpriteService.Instance;
+                                        var childImage = child.Type switch
+                                        {
+                                            "Joker" or "SoulJoker" => spriteService.GetJokerImage(child.Name),
+                                            "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(child.Name),
+                                            "Voucher" => spriteService.GetVoucherImage(child.Name),
+                                            "Tarot" => spriteService.GetTarotImage(child.Name),
+                                            "Planet" => spriteService.GetPlanetCardImage(child.Name),
+                                            "Spectral" => spriteService.GetSpectralImage(child.Name),
+                                            "Boss" => spriteService.GetBossImage(child.Name),
+                                            _ => child.ItemImage // Fallback to original if type unknown
+                                        };
+
                                         var childCopy = new Models.FilterItem
                                         {
                                             Name = child.Name,
@@ -1112,7 +1126,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Category = child.Category,
                                             DisplayName = child.DisplayName,
                                             ItemKey = child.ItemKey,
-                                            ItemImage = child.ItemImage,
+                                            ItemImage = childImage, // Use freshly fetched image
                                             IsFavorite = child.IsFavorite,
                                             Status = child.Status,
                                             // Copy configuration properties
@@ -1132,6 +1146,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Stickers = child.Stickers != null ? new List<string>(child.Stickers) : null,
                                         };
                                         operatorCopy.Children.Add(childCopy);
+
+                                        DebugLogger.Log("VisualBuilderTab",
+                                            $"  Deep-copied child: {child.Name} (Type={child.Type}, HasImage={childImage != null})");
                                     }
 
                                     itemToAdd = operatorCopy;

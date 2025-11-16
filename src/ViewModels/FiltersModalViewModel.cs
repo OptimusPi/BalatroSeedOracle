@@ -193,6 +193,8 @@ namespace BalatroSeedOracle.ViewModels
                 if (value >= 0 && value < decks.Length)
                 {
                     SelectedDeck = decks[value];
+                    OnPropertyChanged(nameof(SelectedDeck));
+                    OnPropertyChanged(nameof(SelectedDeckIndex));
                 }
             }
         }
@@ -200,7 +202,15 @@ namespace BalatroSeedOracle.ViewModels
         public int SelectedStakeIndex
         {
             get => SelectedStake;
-            set => SelectedStake = value;
+            set
+            {
+                if (SelectedStake != value)
+                {
+                    SelectedStake = value;
+                    OnPropertyChanged(nameof(SelectedStake));
+                    OnPropertyChanged(nameof(SelectedStakeIndex));
+                }
+            }
         }
 
         public Dictionary<string, List<string>> ItemCategories => _itemCategories;
@@ -208,6 +218,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
+        public object? DeckStakeTab { get; set; }
         public object? JsonEditorTab { get; set; }
 
         [ObservableProperty]
@@ -807,11 +818,20 @@ namespace BalatroSeedOracle.ViewModels
                         $"✅ Visual Builder data auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
                 }
 
-                // Tab 1: Deck/Stake - already saves via two-way binding to SelectedDeckIndex/SelectedStakeIndex
-                else if (currentTabIndex == 1)
+                // Tab 1: Deck/Stake - EXPLICITLY save to ensure it persists
+                else if (currentTabIndex == 1 && DeckStakeTab is FilterTabs.DeckStakeTabViewModel deckStakeVm)
                 {
+                    // Force save deck/stake from tab to parent
+                    // NOTE: DeckStakeTabViewModel properties are just passthroughs to parent, so values are ALREADY saved
+                    // We just need to log for debugging
                     DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Deck/Stake saved: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
+                        $"✅ Deck/Stake tab closed: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
+
+                    // CRITICAL: Force property notifications to ensure bindings update
+                    OnPropertyChanged(nameof(SelectedDeck));
+                    OnPropertyChanged(nameof(SelectedDeckIndex));
+                    OnPropertyChanged(nameof(SelectedStake));
+                    OnPropertyChanged(nameof(SelectedStakeIndex));
                 }
 
                 // Tab 2: JSON Editor - parse JSON and update parent collections
@@ -851,11 +871,11 @@ namespace BalatroSeedOracle.ViewModels
                         $"✅ Visual Builder auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
                 }
 
-                // Tab 1: Deck/Stake - already loads via two-way binding
+                // Tab 1: Deck/Stake - TwoWay binding should auto-sync
                 else if (tabIndex == 1)
                 {
                     DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Deck/Stake loaded: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
+                        $"✅ Deck/Stake loaded via binding: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
                 }
 
                 // Tab 2: JSON Editor - regenerate JSON from current state
@@ -922,6 +942,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Build config from current state (includes deck/stake from parent)
                 var config = BuildConfigFromCurrentState();
+
+                // DEBUG: Log actual deck/stake values being used
+                DebugLogger.LogImportant("FiltersModalViewModel",
+                    $"RegenerateJsonFromState: Using Deck={SelectedDeck} (index={SelectedDeckIndex}), Stake={SelectedStake} (index={SelectedStakeIndex})");
 
                 // Serialize to JSON with proper formatting
                 var json = System.Text.Json.JsonSerializer.Serialize(
@@ -1000,8 +1024,10 @@ namespace BalatroSeedOracle.ViewModels
                 // BUG FIX: Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
-                Deck = GetDeckName(SelectedDeckIndex),
-                Stake = GetStakeName(SelectedStakeIndex),
+                // BUG FIX: Use SelectedDeck directly instead of converting from index
+                // The SelectedDeck property already contains the correct deck name!
+                Deck = SelectedDeck,
+                Stake = GetStakeName(SelectedStake), // SelectedStake is already the index
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
@@ -1009,19 +1035,34 @@ namespace BalatroSeedOracle.ViewModels
 
             // CRITICAL FIX: Read from VisualBuilderTab's collections if available
             // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
+            DebugLogger.LogImportant("FiltersModalViewModel",
+                $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}");
+
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
-                DebugLogger.Log(
-                    "FilterConfigurationService",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
+                DebugLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"✅ USING VisualBuilder PATH: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
 
                 // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
                 foreach (var filterItem in visualVm.SelectedMust)
                 {
+                    DebugLogger.LogImportant("FiltersModalViewModel",
+                        $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}");
+
                     var clause = ConvertFilterItemToClause(filterItem);
                     if (clause != null)
+                    {
                         config.Must.Add(clause);
+                        DebugLogger.Log("FiltersModalViewModel",
+                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses != null}, ClausesCount={clause.Clauses?.Count ?? 0}");
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("FiltersModalViewModel",
+                            $"Failed to convert {filterItem.Name} to clause!");
+                    }
                 }
             }
             else
@@ -1099,7 +1140,7 @@ namespace BalatroSeedOracle.ViewModels
         )
         {
             // Handle AND/OR clause types with Children
-            if (itemConfig.ItemType == "Clause" && !string.IsNullOrEmpty(itemConfig.OperatorType))
+            if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
             {
                 var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
                 {
@@ -1217,6 +1258,9 @@ namespace BalatroSeedOracle.ViewModels
                 if (operatorItem.OperatorType == "BannedItems")
                     return null;
 
+                DebugLogger.LogImportant("FiltersModalViewModel",
+                    $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}");
+
                 var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
                 {
                     Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
@@ -1227,12 +1271,24 @@ namespace BalatroSeedOracle.ViewModels
                 // Recursively convert children
                 foreach (var child in operatorItem.Children)
                 {
+                    DebugLogger.Log("FiltersModalViewModel",
+                        $"  Converting child: {child.Name} (Type={child.Type})");
                     var childClause = ConvertFilterItemToClause(child);
                     if (childClause != null)
                     {
                         operatorClause.Clauses.Add(childClause);
+                        DebugLogger.Log("FiltersModalViewModel",
+                            $"  ✓ Added child clause: Type={childClause.Type}, Value={childClause.Value}");
+                    }
+                    else
+                    {
+                        DebugLogger.LogError("FiltersModalViewModel",
+                            $"  ✗ Failed to convert child: {child.Name}");
                     }
                 }
+
+                DebugLogger.LogImportant("FiltersModalViewModel",
+                    $"✓ Created {operatorItem.OperatorType} operator with {operatorClause.Clauses.Count} clauses");
 
                 return operatorClause;
             }
@@ -1437,7 +1493,7 @@ namespace BalatroSeedOracle.ViewModels
                 var operatorConfig = new ItemConfig
                 {
                     ItemKey = itemKey,
-                    ItemType = "Clause",
+                    ItemType = "Operator",  // CRITICAL FIX: Was "Clause", must be "Operator"!
                     ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
                     OperatorType =
                         normalizedType.Substring(0, 1).ToUpper()
@@ -1538,6 +1594,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DataContext = deckStakeViewModel,
             };
+            DeckStakeTab = deckStakeViewModel; // Store reference like JsonEditorTab
             TabItems.Add(new TabItemViewModel("DECK/STAKE", deckStakeTab));
 
             // JSON Editor tab
