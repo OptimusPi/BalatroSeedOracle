@@ -7,36 +7,38 @@
     
     <!-- Balatro Modal Card Style - Medium grey background like in Balatro -->
     <Style Selector="Border.BalatroSeedOracle-modal-card">
-        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <!-- Darker inner border to replace light ModalBorder -->
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 8 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
     </Style>
-    
+
     <!-- Precise modal with exact south-only shadow - Medium grey background -->
     <Style Selector="Border.BalatroSeedOracle-modal-card-precise">
-        <Setter Property="Background" Value="{StaticResource DockGrey}"/>
+        <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
         <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <!-- Darker inner border to replace light ModalBorder -->
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="4"/>
         <Setter Property="Padding" Value="42,34,42,34"/>
-        <Setter Property="BoxShadow" Value="0 4 0 #777e89"/>
+        <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
     </Style>
-    
+
     <!-- Inner content panel - Dark grey with no borders like in Balatro -->
     <Style Selector="Border.modal-content-panel">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="20"/>
         <Setter Property="Margin" Value="8"/>
     </Style>
-    
+
     <!-- Modal content box - Same as content panel, NO BORDERS -->
     <Style Selector="Border.modal-content-box">
-        <Setter Property="Background" Value="{StaticResource ContainerDarkPrecise}"/>
+        <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="24"/>
@@ -56,40 +58,39 @@
     <Style Selector="Button.BalatroSeedOracle-modal-btn">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="30"/>
-        
+
         <Setter Property="Background" Value="{StaticResource PureBlack}" />
-        <Setter Property="Foreground" Value="{StaticResource TextLight}" />
-        <Setter Property="BorderBrush" Value="{StaticResource Purple}" />
+        <Setter Property="Foreground" Value="{StaticResource White}" />
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="0,8"/>
-        <Setter Property="MinWidth" Value="100"/>
-        <Setter Property="Margin" Value="8,0,8,0"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Margin" Value="0,10,0,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}" 
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                </Border>
+                <Grid>
+                    <!-- Drop shadow below -->
+                    <Border Background="{StaticResource HoverShadow}" CornerRadius="8" Margin="0,4,0,0"/>
+                    <!-- Button surface -->
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Margin="0,0,0,4">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
             </ControlTemplate>
         </Setter>
     </Style>
     
+    <!-- Back button - Orange with drop shadow and pressed state -->
     <Style Selector="Button.back-button">
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
         <Setter Property="FontSize" Value="28"/>
-        <Setter Property="Foreground" Value="#000000"/>
+        <Setter Property="Foreground" Value="{StaticResource PureBlack}"/>
         <Setter Property="Background" Value="{StaticResource Orange}"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Height" Value="42"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Margin" Value="4"/>
+        <Setter Property="Margin" Value="8,4,8,4"/>
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="Background" Duration="0:0:0.1" />
@@ -101,7 +102,7 @@
                     <Grid>
                         <!-- Drop shadow (first = behind) -->
                         <Border Name="DropShadow"
-                                Background="#1e2e32"
+                                Background="{StaticResource HoverShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <!-- Main button -->
@@ -116,7 +117,6 @@
                                     <Style Selector="TextBlock">
                                         <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
                                         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                                        
                                     </Style>
                                 </ContentPresenter.Styles>
                             </ContentPresenter>
@@ -126,16 +126,15 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
     <Style Selector="Button.back-button:pointerover">
         <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
     </Style>
     <Style Selector="Button.back-button:pressed">
-        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+        <Setter Property="Background" Value="{StaticResource Orange}"/>
         <Setter Property="RenderTransform" Value="translateY(3px)" />
     </Style>
     <Style Selector="Button.back-button:pressed /template/ Border#DropShadow">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    
+
 </Styles>

@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             mc:Ignorable="d" d:DesignWidth="95" d:DesignHeight="120"
+             x:Class="BalatroSeedOracle.Components.FilterItemCard"
+             x:DataType="models:FilterItem">
+
+    <!-- SELF-CONTAINED Balatro card component -->
+    <StackPanel Spacing="6" Width="72" IsHitTestVisible="False">
+        <!-- Card image with all overlays and behaviors (adaptive size for different item types) -->
+        <Border Background="Transparent"
+                Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                IsHitTestVisible="True"
+                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
+                RenderTransformOrigin="0.5,0.5">
+
+
+            <Grid Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                  Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}">
+                <!-- Base card image -->
+                <Image Name="BaseCardImage"
+                       Source="{Binding ItemImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsHitTestVisible="False"/>
+
+                <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
+                <Image Source="{Binding EditionImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Eternal sticker overlay -->
+                <Image Source="{Binding EternalStickerImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding EternalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Perishable sticker overlay -->
+                <Image Source="{Binding PerishableStickerImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding PerishableStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Rental sticker overlay -->
+                <Image Source="{Binding RentalStickerImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding RentalStickerImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Soul face overlay for legendary jokers -->
+                <Image Source="{Binding SoulFaceImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"/>
+
+                <!-- Debuffed overlay (red X for MUST-NOT items) - highest ZIndex -->
+                <Image Source="{Binding DebuffedImage}"
+                       Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                       Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DebuffedImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       IsHitTestVisible="False"
+                       ZIndex="100"/>
+            </Grid>
+        </Border>
+
+        <!-- Card name label with proper height for 2-line wrapping -->
+        <TextBlock Text="{Binding DisplayName}"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="11"
+                   Foreground="{StaticResource White}"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   MaxWidth="72"
+                   MinHeight="40"
+                   MaxLines="2"/>
+    </StackPanel>
+</UserControl>

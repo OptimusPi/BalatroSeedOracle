@@ -1,0 +1,138 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
+             x:DataType="vm:SearchModalViewModel">
+
+    <UserControl.Styles>
+        <!-- Modal content styles -->
+        <Style Selector="Border.modal-content-box">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Header button style for sortable columns -->
+        <Style Selector="Button.header-button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.header-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
+        </Style>
+
+        <!-- Small button style -->
+        <Style Selector="Button.small-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.small-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+
+        <!-- Results table cell style -->
+        <Style Selector="Border.result-cell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+
+        <Style Selector="Border.result-row">
+            <Setter Property="Background" Value="{StaticResource DarkGrey}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style Selector="Border.result-row:pointerover">
+            <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title and result count -->
+            <RowDefinition Height="*"/>    <!-- SortableResultsGrid -->
+        </Grid.RowDefinitions>
+
+        <!-- Title with result count -->
+        <Border Grid.Row="0"
+                Classes="modal-content-box"
+                Margin="0,0,0,8">
+            <TextBlock Text="{Binding ResultsCount, StringFormat='Results: {0} seeds found'}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       Margin="0,8"/>
+        </Border>
+
+        <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->
+        <controls:SortableResultsGrid Grid.Row="1"
+                                      Name="ResultsGrid"
+                                      Margin="0"/>
+
+        <!-- Loading overlay (shown when searching with 0 results) -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkBackground}"
+                CornerRadius="8"
+                Padding="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                ZIndex="10">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsSearching"/>
+                    <Binding Path="ResultsCount" Converter="{x:Static ObjectConverters.Equal}" ConverterParameter="0"/>
+                </MultiBinding>
+            </Border.IsVisible>
+
+            <StackPanel Spacing="16" HorizontalAlignment="Center">
+                <TextBlock Text="◆"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="48"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center">
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock">
+                            <Style.Animations>
+                                <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="Opacity" Value="0.3"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+
+                <TextBlock Text="Searching for seeds..."
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Results will appear here as they are found"
+                           FontSize="12"
+                           Foreground="{StaticResource MediumGrey}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

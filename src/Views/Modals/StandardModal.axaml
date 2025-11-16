@@ -5,37 +5,36 @@
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <Border Background="{StaticResource SemiTransparentBlack}"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                IsHitTestVisible="False" />
-        
         <!-- Modal positioning grid -->
-        <Grid>
+        <Grid x:Name="ModalContainer">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="45"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="45"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="35"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
             
-            <!-- Main modal container - Balatro style -->
-            <Border Grid.Column="1" Grid.Row="1"
-                    Background="{StaticResource DockGrey}"
-                    CornerRadius="20"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="4"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="1100"
-                    Height="620"
-                    BoxShadow="{StaticResource StandardModalShadow}"
-                    ClipToBounds="False">
-                
+            <!-- Main modal container - Balatro style with subtle south edge -->
+            <Grid x:Name="ModalSizeGrid"
+                  Grid.Column="1" Grid.Row="1"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Width="1080"
+                  Height="600">
+                <!-- Main border with standard edge -->
+                <Border x:Name="ModalBorder"
+                        Background="{StaticResource ModalGrey}"
+                        CornerRadius="20"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="4"
+                        BoxShadow="{StaticResource StandardModalShadow}"
+                        ClipToBounds="True"
+                        Padding="4,4,4,4">
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>    <!-- Content -->
@@ -55,9 +54,11 @@
                             Content="Back"
                             Classes="back-button"
                             HorizontalAlignment="Stretch"
-                            Margin="3"/>
+                            Margin="0"/>
+
                 </Grid>
             </Border>
+        </Grid>
         </Grid>
     </Grid>
 

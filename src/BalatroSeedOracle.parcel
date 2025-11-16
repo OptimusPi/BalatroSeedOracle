@@ -1,0 +1,46 @@
+{
+    "GeneralSettings": {
+        "NetProjectPath": "BalatroSeedOracle.csproj",
+        "ApplicationName": "Balatro Seed Oracle",
+        "Version": "2.0.0",
+        "PackageName": {
+            "$type": "msbuild",
+            "property": "BalatroSeedOracle"
+        },
+        "AssemblyName": {
+            "$type": "msbuild",
+            "property": "AssemblyName"
+        }
+    },
+    "LinuxSettings": {
+        "InstallDirName": "balatro-seed-oracle",
+        "AppIcon": "BalatroSeedOracle.ico",
+        "Maintainer": "OptimusPi",
+        "CreateBinSymlink": "True",
+        "DesktopCategory": "Game"
+    },
+    "Win32Settings": {
+        "InstallerIcon": "BalatroSeedOracle.ico",
+        "Company": "pifreakLovesYou",
+        "CompanyFolder": "True",
+        "InstallerLicense": "LICENSE",
+        "IncludeUninstaller": "True"
+    },
+    "MacOsSettings": {
+        "CreateBundle": true,
+        "BundleIdentifier": "com.OptimusPi.BalatroSeedOracle",
+        "TeamId": "",
+        "BundleCategory": "CardGames",
+        "Permissions": {
+            "Network": "DayLatro website is updated by the DayLatro widget in Balatro Seed Oracle."
+        },
+        "AppIcon": "BalatroSeedOracle.ico",
+        "SigningCredentialsType": "AdHoc",
+        "DmgBackground": "BalatroSeedOracle.tif"
+    },
+    "PublishSettings": {
+        "PublishSingleFile": "True",
+        "PublishReadyToRun": "True",
+        "ExtraBuildProperties": {}
+    }
+}

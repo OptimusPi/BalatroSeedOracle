@@ -1,0 +1,30 @@
+{
+  "Id": "8080160d-b04e-43d9-b427-78976e6922a4",
+  "Name": "purple",
+  "ThemeIndex": 8,
+  "MainColor": 4,
+  "AccentColor": 5,
+  "AudioIntensity": 0,
+  "ParallaxStrength": 0,
+  "TimeSpeed": 1,
+  "SeedFoundTrigger": false,
+  "HighScoreSeedTrigger": false,
+  "SearchCompleteTrigger": false,
+  "SeedFoundAudioSource": 1,
+  "HighScoreAudioSource": 4,
+  "SearchCompleteAudioSource": 3,
+  "CustomEffects": {
+    "ShadowFlicker": 0,
+    "Spin": 0,
+    "BeatPulse": 0,
+    "Twirl": 0,
+    "ZoomThump": 0,
+    "ColorSaturation": 0
+  },
+  "FrequencyBreakpoints": null,
+  "MelodicBreakpoints": null,
+  "ParameterRanges": null,
+  "EffectMappings": null,
+  "CreatedAt": "2025-11-09T17:01:54.907497Z",
+  "ModifiedAt": "2025-11-09T17:01:54.907498Z"
+}

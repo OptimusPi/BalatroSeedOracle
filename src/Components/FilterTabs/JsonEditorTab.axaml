@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.JsonEditorTab"
+             x:DataType="vm:JsonEditorTabViewModel">
+    <Border Grid.Row="0"
+            Background="{StaticResource EditorDarkBg}"
+            BorderThickness="0"
+            CornerRadius="12"
+            Padding="0"
+            BoxShadow="{StaticResource InsetInputShadow}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Editor Header Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource EditorHeaderBg}"
+                    BorderBrush="{StaticResource EditorBorderBg}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="12,12,0,0"
+                    Padding="12,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding FilterFileName}"
+                                    Foreground="{StaticResource EditorTextGrey}"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="14"
+                                    VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                        <Button Content="Format"
+                                ToolTip.Tip="Auto-format JSON"
+                                Command="{Binding FormatJsonCommand}"
+                                Height="24"
+                                Padding="8,4"
+                                FontSize="11"
+                                Background="{StaticResource EditorButtonBg}"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Foreground="{StaticResource BrightGold}"/>
+                        <Button Content="Validate"
+                                ToolTip.Tip="Validate JSON"
+                                Command="{Binding ValidateJsonCommand}"
+                                Height="24"
+                                Padding="8,4"
+                                FontSize="11"
+                                Background="{StaticResource EditorButtonBg}"
+                                BorderThickness="0"
+                                CornerRadius="4"
+                                Foreground="{StaticResource BrightGreenEditor}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Editor Content -->
+            <AvaloniaEdit:TextEditor Grid.Row="1"
+                                    Name="JsonEditor"
+                                    SyntaxHighlighting="Json"
+                                    ShowLineNumbers="True"
+                                    FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"
+                                    FontSize="16"
+                                    Background="{StaticResource EditorDarkBg}"
+                                    Foreground="{StaticResource White}"
+                                    LineNumbersForeground="{StaticResource EditorLineNumbers}"
+                                    Margin="0"
+                                    Padding="12,8"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+    </Border>
+</UserControl>

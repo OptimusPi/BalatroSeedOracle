@@ -1,0 +1,169 @@
+{
+  "Name": "Deep Negatives - Copy Jokers",
+  "Description": "Find Negative Tag with Blueprint/Brainstorm in shop across antes 2-8",
+  "Deck": "Red",
+  "Stake": "White",
+  "Should": [
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [2]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [2], "ShopSlots": [2, 3]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [2], "ShopSlots": [4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [3]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [3], "ShopSlots": [2, 3, 4]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [3], "ShopSlots": [2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [4]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [4], "ShopSlots": [1, 2, 3, 4]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [4], "ShopSlots": [1, 2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [5]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [5], "ShopSlots": [1, 2, 3, 4, 5]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [5], "ShopSlots": [1, 2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [6]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [6], "ShopSlots": [1, 2, 3, 4, 5]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [6], "ShopSlots": [1, 2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [7]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [7], "ShopSlots": [1, 2, 3, 4, 5]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [7], "ShopSlots": [1, 2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Score": 100,
+      "Type": "And",
+      "Clauses": [
+        {"Type": "SmallBlindTag", "Value": "NegativeTag", "Antes": [8]},
+        {
+          "Type": "Or",
+          "Mode": "Max",
+          "Score": 1,
+          "Clauses": [
+            {
+              "Score": 1,
+              "Mode": "Max",
+              "Type": "Or",
+              "Clauses": [
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [8], "ShopSlots": [1, 2, 3, 4, 5]},
+                {"Type": "Joker", "Values": ["Blueprint", "Brainstorm"], "Antes": [8], "ShopSlots": [1, 2, 3, 4, 5]}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

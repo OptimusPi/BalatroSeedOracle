@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.AnteSelector">
+
+    <UserControl.Styles>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style Selector="CheckBox:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource GreenHighlight}"/>
+        </Style>
+
+        <Style Selector="TextBlock.ante-label">
+            <Setter Property="Foreground" Value="{StaticResource Teal}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Background="{StaticResource SemiTransparentBlack}"
+            BorderBrush="{StaticResource Teal}"
+            BorderThickness="2"
+            CornerRadius="8"
+            Padding="15">
+        <StackPanel Spacing="10">
+            <TextBlock Text="Search Antes"
+                       Classes="ante-label"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Select which antes to search for this item:"
+                       Foreground="{StaticResource VeryLightGrey}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"/>
+
+            <!-- Quick Select Options -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="10"
+                        Margin="0,5,0,10">
+                <Button Content="All"
+                        Command="{Binding SelectAllCommand}"
+                        Classes="btn-green"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="None"
+                        Command="{Binding SelectNoneCommand}"
+                        Classes="btn-red"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="Early (1-3)"
+                        Command="{Binding SelectEarlyCommand}"
+                        Classes="btn-gold"
+                        Padding="10,5"
+                        FontSize="12"/>
+                <Button Content="Late (4-8)"
+                        Command="{Binding SelectLateCommand}"
+                        Classes="btn-purple"
+                        Padding="10,5"
+                        FontSize="12"/>
+            </StackPanel>
+
+            <!-- Ante Checkboxes Grid -->
+            <ItemsControl ItemsSource="{Binding Antes}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" Rows="2"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding DisplayText}"
+                                  IsChecked="{Binding IsSelected}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Selected Summary -->
+            <TextBlock Text="{Binding SelectionSummary}"
+                       Foreground="{StaticResource Teal}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
+        </StackPanel>
+    </Border>
+</UserControl>

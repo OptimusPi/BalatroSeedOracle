@@ -4,8 +4,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views;
 
@@ -13,9 +16,14 @@ public partial class MainWindow : Window
 {
     private BalatroMainMenu? _mainMenu;
 
+    public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
     public MainWindow()
     {
         InitializeComponent();
+
+        // Set DataContext to ViewModel from DI
+        DataContext = ServiceHelper.GetRequiredService<MainWindowViewModel>();
 
         // Set up the Buy Balatro link
         var buyBalatroLink = this.FindControl<TextBlock>("BuyBalatroLink");
@@ -27,8 +35,23 @@ public partial class MainWindow : Window
         // Get reference to main menu for cleanup
         _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
 
+        // Sync IsVibeOutMode from MainMenu to MainWindow
+        if (_mainMenu?.ViewModel != null && ViewModel != null)
+        {
+            _mainMenu.ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode))
+                {
+                    ViewModel.IsVibeOutMode = _mainMenu.ViewModel.IsVibeOutMode;
+                }
+            };
+        }
+
         // Handle window closing
         Closing += OnWindowClosing;
+
+        // Handle window resize to reposition widgets
+        SizeChanged += OnWindowSizeChanged;
     }
 
     private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
@@ -45,15 +68,19 @@ public partial class MainWindow : Window
             {
                 DebugLogger.Log("MainWindow", "Starting cleanup");
 
-                // CRITICAL: First ensure any running search state is saved
-                var userProfileService = BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
+                // First ensure any running search state is saved
+                var userProfileService =
+                    BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
                 if (userProfileService != null)
                 {
-                    DebugLogger.LogImportant("MainWindow", "Flushing user profile to save search state...");
+                    DebugLogger.LogImportant(
+                        "MainWindow",
+                        "Flushing user profile to save search state..."
+                    );
                     userProfileService.FlushProfile();
                 }
-                
-                // CRITICAL: Stop any running Motely searches first
+
+                // Stop any running Motely searches first
                 if (_mainMenu != null)
                 {
                     DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");
@@ -84,20 +111,21 @@ public partial class MainWindow : Window
             finally
             {
                 // Trigger the App shutdown handler FIRST
-                var searchManager = BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager =
+                    BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager != null)
                 {
                     DebugLogger.Log("MainWindow", "Stopping all searches via SearchManager...");
                     searchManager.StopAllSearches();
-                    
+
                     // Give searches a moment to actually stop
                     await Task.Delay(500);
-                    
+
                     // Dispose the search manager which will dispose all searches
                     searchManager.Dispose();
                     DebugLogger.Log("MainWindow", "SearchManager disposed");
                 }
-                
+
                 // Close the window on UI thread
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
@@ -126,6 +154,29 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             DebugLogger.LogError($"Error opening Balatro website: {ex.Message}");
+        }
+    }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        try
+        {
+            // Get the widget position service
+            var positionService = ServiceHelper.GetService<Services.WidgetPositionService>();
+            if (positionService != null)
+            {
+                // Handle window resize by repositioning widgets that are now out of bounds
+                positionService.HandleWindowResize(e.NewSize.Width, e.NewSize.Height);
+
+                DebugLogger.Log(
+                    "MainWindow",
+                    $"Window resized to {e.NewSize.Width}x{e.NewSize.Height}, widgets repositioned"
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError($"Error handling window resize: {ex.Message}");
         }
     }
 }

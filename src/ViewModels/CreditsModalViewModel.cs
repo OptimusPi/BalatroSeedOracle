@@ -43,7 +43,7 @@ namespace BalatroSeedOracle.ViewModels
         public string? role { get; set; }
         public string? note { get; set; }
         public string? link { get; set; }
-        
+
         // Properties for binding (uppercase)
         public string? Name => name;
         public string? Role => role;

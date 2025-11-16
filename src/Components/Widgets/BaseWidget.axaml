@@ -1,0 +1,97 @@
+﻿<ContentControl xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:vm="using:BalatroSeedOracle.ViewModels"
+                x:Class="BalatroSeedOracle.Components.BaseWidget"
+                x:DataType="vm:BaseWidgetViewModel"
+                ZIndex="{Binding WidgetZIndex}">
+
+    <!-- SHARED BASE WIDGET COMPONENT - All widgets use this! -->
+    <!-- ZIndex: Minimized=1, Expanded=100 (expanded widgets always on top!) -->
+    <Grid>
+        <!-- Minimized State -->
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}">
+            <Button Classes="widget-icon widget-header"
+                    Width="100" Height="100"
+                    Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Cursor="Hand"
+                    Command="{Binding ExpandCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding WidgetIcon}" FontSize="19" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding WidgetTitle}" FontSize="16" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Notification badge overlay -->
+            <Canvas ZIndex="100" IsVisible="{Binding ShowNotificationBadge}">
+                <Border Classes="notification-badge"
+                        Canvas.Right="-8"
+                        Canvas.Top="-8">
+                    <TextBlock Text="{Binding NotificationText}" />
+                </Border>
+            </Canvas>
+        </Grid>
+
+        <!-- Expanded State -->
+        <Border Name="ExpandedView"
+                ZIndex="10"
+                Classes="widget-container"
+                Background="{StaticResource ModalGrey}"
+                IsVisible="{Binding !IsMinimized}"
+                Width="350" Height="450">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header with Title and Window Controls -->
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8"
+                        PointerPressed="OnHeaderPointerPressed"
+                        PointerMoved="OnHeaderPointerMoved"
+                        PointerReleased="OnHeaderPointerReleased"
+                        PointerCaptureLost="OnHeaderPointerCaptureLost"
+                        Cursor="Hand">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*">
+                        <!-- Window Control Buttons - NOW ON LEFT! -->
+                        <Button Grid.Column="0"
+                                Content="↙"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MinimizeCommand}"
+                                ToolTip.Tip="Minimize"/>
+
+                        <Button Grid.Column="1"
+                                Content="□"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding MaximizeCommand}"
+                                ToolTip.Tip="Maximize"
+                                IsVisible="False"/>
+
+                        <Button Grid.Column="2"
+                                Content="✕"
+                                Classes="widget-minimize-btn"
+                                Command="{Binding CloseCommand}"
+                                ToolTip.Tip="Close"/>
+
+                        <!-- Title - NOW ON RIGHT! -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontSize="13"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area (scrollable) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
+                    <Border Classes="widget-content light" Padding="15">
+                        <ContentPresenter Name="PART_ContentPresenter"/>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+
+</ContentControl>

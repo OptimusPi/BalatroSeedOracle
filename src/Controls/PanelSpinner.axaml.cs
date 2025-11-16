@@ -8,6 +8,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 
@@ -20,6 +21,7 @@ public partial class PanelSpinner : UserControl
     private TextBlock? _titleText;
     private TextBlock? _descriptionText;
     private Image? _spriteImage;
+    private Image? _overlayImage;
     private StackPanel? _dotsPanel;
 
     private int _currentIndex = 0;
@@ -44,6 +46,17 @@ public partial class PanelSpinner : UserControl
             nameof(SelectedItem),
             o => o.SelectedItem
         );
+
+    public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<
+        PanelSpinner,
+        bool
+    >(nameof(ShowArrows), defaultValue: true);
+
+    public bool ShowArrows
+    {
+        get => GetValue(ShowArrowsProperty);
+        set => SetValue(ShowArrowsProperty, value);
+    }
 
     public List<PanelItem> Items
     {
@@ -90,25 +103,66 @@ public partial class PanelSpinner : UserControl
         _titleText = this.FindControl<TextBlock>("TitleText");
         _descriptionText = this.FindControl<TextBlock>("DescriptionText");
         _spriteImage = this.FindControl<Image>("SpriteImage");
+        _overlayImage = this.FindControl<Image>("OverlayImage");
         _dotsPanel = this.FindControl<StackPanel>("DotsPanel");
+
+        // Wire up ShowArrows property to button visibility
+        this.PropertyChanged += (s, e) =>
+        {
+            if (e.Property == ShowArrowsProperty)
+            {
+                if (_prevButton != null)
+                    _prevButton.IsVisible = ShowArrows;
+                if (_nextButton != null)
+                    _nextButton.IsVisible = ShowArrows;
+            }
+        };
+
+        // Set initial visibility
+        if (_prevButton != null)
+            _prevButton.IsVisible = ShowArrows;
+        if (_nextButton != null)
+            _nextButton.IsVisible = ShowArrows;
     }
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)
     {
+        if (_items.Count == 0)
+            return;
+
+        // Play filter switch sound - disabled (NAudio removed)
+        // SoundEffectService.Instance.PlayFilterSwitch();
+
+        // Circular navigation: if at beginning, wrap to end
         if (_currentIndex > 0)
         {
             SelectedIndex = _currentIndex - 1;
-            SelectionChanged?.Invoke(this, SelectedItem);
         }
+        else
+        {
+            SelectedIndex = _items.Count - 1; // Wrap to last item
+        }
+        SelectionChanged?.Invoke(this, SelectedItem);
     }
 
     private void OnNextClick(object? sender, RoutedEventArgs e)
     {
+        if (_items.Count == 0)
+            return;
+
+        // Play filter switch sound - disabled (NAudio removed)
+        // SoundEffectService.Instance.PlayFilterSwitch();
+
+        // Circular navigation: if at end, wrap to beginning
         if (_currentIndex < _items.Count - 1)
         {
             SelectedIndex = _currentIndex + 1;
-            SelectionChanged?.Invoke(this, SelectedItem);
         }
+        else
+        {
+            SelectedIndex = 0; // Wrap to first item
+        }
+        SelectionChanged?.Invoke(this, SelectedItem);
     }
 
     private void UpdateDisplay()
@@ -127,22 +181,18 @@ public partial class PanelSpinner : UserControl
         // Check if we should show a custom control or an image
         if (_spriteImage != null)
         {
-            var viewbox = _spriteImage.Parent as Viewbox;
-            if (viewbox?.Parent is Grid grid)
+            // Simple path: just set the image directly
+            if (item.GetImage != null)
             {
-                var customControlsInImageRow = grid.Children
-                    .Where(child => Grid.GetRow(child) == 1 && child != viewbox)
-                    .ToList();
-                
-                foreach (var child in customControlsInImageRow)
+                var image = item.GetImage();
+                _spriteImage.Source = image;
+            }
+            else if (item.GetControl != null && item.Value == "__CREATE_NEW__")
+            {
+                // Custom control path (for filter modal)
+                var viewbox = _spriteImage.Parent as Viewbox;
+                if (viewbox?.Parent is Grid grid)
                 {
-                    grid.Children.Remove(child);
-                }
-                
-                // Only show custom control if this specific item has one AND it's the special create item
-                if (item.GetControl != null && item.Value == "__CREATE_NEW__")
-                {
-                    // Show custom control instead of image
                     var customControl = item.GetControl();
                     if (customControl != null)
                     {
@@ -151,29 +201,20 @@ public partial class PanelSpinner : UserControl
                         grid.Children.Add(customControl);
                     }
                 }
-                else
-                {
-                    // Show image for regular filters
-                    viewbox.IsVisible = true;
-                    if (item.GetImage != null)
-                    {
-                        var image = item.GetImage();
-                        _spriteImage.Source = image;
-                    }
-                    else
-                    {
-                        _spriteImage.Source = null;
-                    }
-                }
+            }
+            else
+            {
+                DebugLogger.LogError("PanelSpinner", $"GetImage is NULL for item: {item.Title}");
+                _spriteImage.Source = null;
             }
         }
 
-        // Update button states
+        // Update button states - with circular navigation, buttons are always enabled if we have items
         if (_prevButton != null)
-            _prevButton.IsEnabled = _currentIndex > 0;
+            _prevButton.IsEnabled = _items.Count > 1;
 
         if (_nextButton != null)
-            _nextButton.IsEnabled = _currentIndex < _items.Count - 1;
+            _nextButton.IsEnabled = _items.Count > 1;
     }
 
     private void UpdateDots()
@@ -184,18 +225,38 @@ public partial class PanelSpinner : UserControl
         // Clear existing dots
         _dotsPanel.Children.Clear();
 
-        // Create new dots
-        for (int i = 0; i < _items.Count; i++)
+        // If more than 8 items, show page counter instead of dots
+        if (_items.Count > 8)
         {
-            var dot = new TextBlock();
-            dot.Classes.Add("position-dot");
-
-            if (i == _currentIndex)
+            var pageIndicator = new TextBlock
             {
-                dot.Classes.Add("active");
-            }
+                Text = $"{_currentIndex + 1}/{_items.Count}",
+                FontFamily =
+                    Application.Current?.Resources["BalatroFont"] as FontFamily
+                    ?? FontFamily.Default,
+                FontSize = 14,
+                Foreground = Brushes.White,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            };
+            _dotsPanel.Children.Add(pageIndicator);
+        }
+        else
+        {
+            // Show dots for 8 or fewer items
+            _dotsPanel.Spacing = 4;
 
-            _dotsPanel.Children.Add(dot);
+            for (int i = 0; i < _items.Count; i++)
+            {
+                var dot = new TextBlock();
+                dot.Classes.Add("position-dot");
+
+                if (i == _currentIndex)
+                {
+                    dot.Classes.Add("active");
+                }
+
+                _dotsPanel.Children.Add(dot);
+            }
         }
     }
 
@@ -233,6 +294,32 @@ public static class PanelItemFactory
                         : "",
                     Value = $"{deckKey}_Deck",
                     GetImage = () => SpriteService.Instance.GetDeckImage(deckKey),
+                }
+            );
+        }
+
+        return items;
+    }
+
+    // Create deck items with stake sticker composited on the card
+    public static List<PanelItem> CreateDeckItemsWithStake(string stakeName)
+    {
+        ArgumentNullException.ThrowIfNull(stakeName);
+        var items = new List<PanelItem>();
+
+        foreach (var deck in BalatroData.Decks)
+        {
+            var deckKey = deck.Key;
+            items.Add(
+                new PanelItem
+                {
+                    Title = deck.Value,
+                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc)
+                        ? desc
+                        : "",
+                    Value = $"{deckKey}_Deck",
+                    GetImage = () =>
+                        SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
                 }
             );
         }

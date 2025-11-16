@@ -1,0 +1,188 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
+             xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
+             x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
+             x:DataType="vm:AnalyzerViewModel">
+
+    <UserControl.Resources>
+        <conv:ItemTypeToSpriteConverter x:Key="ItemTypeToSprite"/>
+    </UserControl.Resources>
+
+    <Design.DataContext>
+        <vm:AnalyzerViewModel/>
+    </Design.DataContext>
+
+    <!-- Compact horizontal layout: Top bar + Full-width content below -->
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Top Horizontal Control Bar -->
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,2"
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto,16,Auto,Auto,16,Auto,*,Auto,16,Auto">
+
+                <!-- Current Seed Display -->
+                <StackPanel Grid.Column="0"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="SEED:"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Orange}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CurrentSeed}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Deck Spinner -->
+                <controls:SpinnerControl Grid.Column="2"
+                                        Label="Deck"
+                                        SpinnerType="deck"
+                                        Value="{Binding SelectedDeckIndex}"
+                                        Minimum="0"
+                                        Maximum="14"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding DeckDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"/>
+
+                <!-- Stake Spinner -->
+                <controls:SpinnerControl Grid.Column="3"
+                                        Label="Stake"
+                                        SpinnerType="stake"
+                                        Value="{Binding SelectedStakeIndex}"
+                                        Minimum="0"
+                                        Maximum="7"
+                                        ReadOnly="True"
+                                        DisplayValues="{Binding StakeDisplayValues}"
+                                        ShadowDirection="south-east"
+                                        Width="160"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0"/>
+
+                <!-- Seed Navigation -->
+                <StackPanel Grid.Column="5"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ResultCounter}"
+                               FontSize="12"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Content="◀"
+                            Command="{Binding PreviousResultCommand}"
+                            IsEnabled="{Binding HasPreviousResult}"
+                            ToolTip.Tip="Previous Seed (PgUp)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                    <Button Content="▶"
+                            Command="{Binding NextResultCommand}"
+                            IsEnabled="{Binding HasNextResult}"
+                            ToolTip.Tip="Next Seed (PgDn)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                </StackPanel>
+
+                <!-- Ante Navigation -->
+                <StackPanel Grid.Column="7"
+                           Orientation="Horizontal"
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="{Binding AnteNavigationDisplay}"
+                               FontSize="12"
+                               Foreground="{StaticResource White}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Content="▲"
+                            Command="{Binding ScrollUpAnteCommand}"
+                            ToolTip.Tip="Previous Ante (↑)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                    <Button Content="▼"
+                            Command="{Binding ScrollDownAnteCommand}"
+                            ToolTip.Tip="Next Ante (↓)"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            FontSize="14"/>
+                </StackPanel>
+
+                <!-- Copy URL Button -->
+                <Button Grid.Column="9"
+                        Content="COPY URL"
+                        Command="{Binding CopyBlueprintUrlCommand}"
+                        Classes="btn-orange"
+                        Padding="16,8"
+                        ToolTip.Tip="Copy Blueprint-compatible URL to clipboard"
+                        VerticalAlignment="Center">
+                    <Button.Styles>
+                        <Style Selector="Button.btn-orange">
+                            <Setter Property="Background" Value="{StaticResource Orange}"/>
+                            <Setter Property="Foreground" Value="{StaticResource White}"/>
+                            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                        <Style Selector="Button.btn-orange:pointerover">
+                            <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+
+            </Grid>
+        </Border>
+
+        <!-- Full-Width Analysis Display Area -->
+        <Grid Grid.Row="1" RowDefinitions="*">
+
+            <!-- Scrollable Antes -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+
+                <StackPanel Spacing="20" Margin="20">
+
+                    <!-- Loading Indicator -->
+                    <Border IsVisible="{Binding IsAnalyzing}"
+                            Classes="info-panel"
+                            Padding="40">
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <TextBlock Text="Analyzing seed..."
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Calculating ante distributions..."
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextInactive}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Shared Analysis Display (when not analyzing) -->
+                    <features:SeedAnalysisDisplay DataContext="{Binding DisplayAnalysis}"
+                                                 IsVisible="{Binding !IsAnalyzing}"/>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+
+    </Grid>
+</UserControl>

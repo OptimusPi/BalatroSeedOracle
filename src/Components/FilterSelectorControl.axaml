@@ -1,0 +1,536 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
+             x:DataType="vm:FilterListViewModel">
+
+    <UserControl.Resources>
+        <conv:TruncateConverter x:Key="TruncateConv"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Balatro-styled scrollbars - subtle and elegant -->
+        <Style Selector="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ScrollBar:vertical">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Margin" Value="2,0,0,0"/>
+        </Style>
+        <Style Selector="ScrollBar:horizontal">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Opacity" Value="0.5"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pointerover">
+            <Setter Property="Background" Value="{StaticResource Border}"/>
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+        <Style Selector="ScrollBar /template/ Thumb:pressed">
+            <Setter Property="Background" Value="{StaticResource Gold}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <!-- Hide scroll buttons -->
+        <Style Selector="ScrollBar /template/ RepeatButton">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Filter Selection UI (Balatro Challenges Style) -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" MinWidth="240"/>
+            <ColumnDefinition Width="*" MinWidth="450"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Filter List (Balatro challenges style) -->
+        <Border Grid.Column="0"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="12,5,8,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Paginated filter list with numbers OUTSIDE buttons -->
+                <!-- Add inner padding and disable clipping to prevent buttons appearing cut off near the divider -->
+                <Border Grid.Row="0" Name="FilterListContainer" ClipToBounds="False" Padding="6,6,12,6">
+                    <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="0.5"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Button layout with number outside and check mark indicator (Balatro style) -->
+                                <Grid Margin="0" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="24"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Number outside (like Balatro challenges) -->
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding DisplayIndex}"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               Foreground="{StaticResource White}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Right"
+                                               Margin="0,0,6,0"
+                                               Opacity="0.9"/>
+
+                                    <!-- Full-width button with filter info -->
+                                    <Button Grid.Column="1"
+                                            Classes="btn-red"
+                                            Height="39"
+                                            MinHeight="39"
+                                            HorizontalAlignment="Stretch"
+                                            CornerRadius="6"
+                                            Margin="0,2,0,2"
+                                            Padding="12,4"
+                                            Command="{Binding DataContext.SelectFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+                                        <Button.Content>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Filter name -->
+                                                <TextBlock Grid.Row="0"
+                                                           Text="{Binding Name}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="15"
+                                                           TextAlignment="Left"/>
+
+                                                <!-- Author (smaller, subtle) -->
+                                                <TextBlock Grid.Row="1"
+                                                           Text="{Binding Author}"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="10"
+                                                           TextAlignment="Left"
+                                                           Opacity="0.7"
+                                                           IsVisible="{Binding Author, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </Grid>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <!-- Check mark circle (shows when selected, like Balatro) -->
+                                    <Border Grid.Column="2"
+                                            Width="20" Height="20"
+                                            CornerRadius="10"
+                                            Background="{StaticResource BrightGreen}"
+                                            BorderBrush="{StaticResource DarkBorder}"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            IsVisible="{Binding IsSelected}">
+                                        <TextBlock Text="✓"
+                                                   Foreground="{StaticResource White}"
+                                                   FontSize="12"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <!-- Pagination Controls (matching Balatro screenshot) -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                    <Button Content="&lt;"
+                            Classes="btn-red"
+                            Width="44"
+                            Height="36"
+                            FontSize="16"
+                            
+                            Padding="0"
+                            CornerRadius="8"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoToPreviousPage}"/>
+
+                    <!-- Page indicator -->
+                    <Border Background="{StaticResource Red}"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            MinWidth="100"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageIndicator}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   
+                                   Foreground="White"
+                                   TextAlignment="Center"/>
+                    </Border>
+
+                    <Button Content="&gt;"
+                            Classes="btn-red"
+                            Width="44"
+                            Height="36"
+                            FontSize="16"
+                            
+                            Padding="0"
+                            CornerRadius="8"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoToNextPage}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right: Filter Details (Balatro Challenges-style dark panel) -->
+        <Border Grid.Column="1"
+                Background="{StaticResource DarkBackground}"
+                BorderThickness="0"
+                CornerRadius="8"
+                Padding="16"
+                Margin="8,0,8,0"
+                BoxShadow="{StaticResource InsetInputShadow}">
+            <Grid>
+                <!-- Placeholder when no filter selected -->
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Spacing="16"
+                            IsVisible="{Binding !IsFilterSelected}">
+                    <TextBlock Text="Select a Filter"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="24"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.9"/>
+                    <TextBlock Text="— or —"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.4"/>
+                    <Button Name="NewFilterButton"
+                            Content="+ CREATE NEW FILTER"
+                            Classes="btn-blue"
+                            Height="42"
+                            FontSize="16"
+                            Padding="24,8"
+                            HorizontalAlignment="Center"
+                            Click="OnCreateNewFilterClick"/>
+                </StackPanel>
+
+                <!-- Filter details when selected - Balatro Challenges Style -->
+                <Grid IsVisible="{Binding IsFilterSelected}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filter Name (prominent) -->
+                    <TextBlock Grid.Row="0"
+                               Text="{Binding SelectedFilterName}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="22"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,2"/>
+
+                    <!-- Author (more visible) -->
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding SelectedFilterAuthor}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               Opacity="0.8"
+                               Margin="0,0,0,8"/>
+
+                    <!-- Description (FULL, not truncated!) - Dark Balatro style -->
+                    <Border Grid.Row="2"
+                            Background="{StaticResource DarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="6"
+                            Padding="12,8"
+                            Margin="0,0,0,12"
+                            MaxHeight="80"
+                            BoxShadow="{StaticResource InsetInputShadow}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock Text="{Binding SelectedFilterDescription}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"
+                                       TextWrapping="Wrap"
+                                       LineHeight="18"
+                                       Opacity="0.9"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Reusable BalatroTabControl with automatic triangle positioning -->
+                    <controls:BalatroTabControl Grid.Row="3"
+                                                Margin="0,0,0,8"
+                                                SelectedIndex="{Binding SelectedTabIndex}">
+                        <controls:BalatroTabControl.Items>
+                            <!-- Must Have -->
+                            <TabItem Header="Must Have">
+                            <Border Background="{StaticResource ModalGrey}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    MinHeight="200">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <!-- Items displayed as cards with sway animation -->
+                                        <ItemsControl ItemsSource="{Binding MustHaveItems}"
+                                                      IsVisible="{Binding HasMustHaveItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="0"
+                                                            Margin="4"
+                                                            Padding="2"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Margin="2"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- Empty state -->
+                                        <TextBlock Text="No items required"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource Black}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.7"
+                                                   IsVisible="{Binding !HasMustHaveItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
+
+                        <!-- Should Have -->
+                        <TabItem Header="Should Have">
+                            <Border Background="{StaticResource ModalGrey}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    MinHeight="200">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <ItemsControl ItemsSource="{Binding ShouldHaveItems}"
+                                                      IsVisible="{Binding HasShouldHaveItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource ModalGrey}"
+                                                            BorderBrush="{StaticResource ModalBorder}"
+                                                            BorderThickness="0"
+                                                            Margin="4"
+                                                            Padding="2"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
+                                                        <Image Source="{Binding ItemImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Margin="2"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No recommended items"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource Black}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.7"
+                                                   IsVisible="{Binding !HasShouldHaveItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
+
+                        <!-- Must Not -->
+                        <TabItem Header="Must Not">
+                            <Border Background="{StaticResource ModalGrey}"
+                                    BorderThickness="0"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    MinHeight="200">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <ItemsControl ItemsSource="{Binding MustNotHaveItems}"
+                                                      IsVisible="{Binding HasMustNotHaveItems}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4"
+                                                            Background="{StaticResource White}"
+                                                            BorderBrush="{StaticResource Black}"
+                                                            BorderThickness="3"
+                                                            Margin="4"
+                                                            Padding="2"
+                                                            Opacity="0.6"
+                                                            BoxShadow="{StaticResource SmallDropShadow}"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                                        <Border.RenderTransform>
+                                                            <TransformGroup>
+                                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                                <RotateTransform Angle="0"/>
+                                                            </TransformGroup>
+                                                        </Border.RenderTransform>
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:BalatroCardSwayBehavior AmbientTilt="0.3" />
+                                                        </i:Interaction.Behaviors>
+                                                        <Grid>
+                                                            <Image Source="{Binding ItemImage}"
+                                                                   Width="71"
+                                                                   Height="95"
+                                                                   Margin="2"/>
+                                                            <!-- Debuffed overlay (red X for banned items) -->
+                                                            <Image Source="{Binding DebuffedImage}"
+                                                                   Width="71"
+                                                                   Height="95"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding DebuffedImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                   IsHitTestVisible="False"
+                                                                   ZIndex="100"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="No banned items"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource Black}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Opacity="0.7"
+                                                   IsVisible="{Binding !HasMustNotHaveItems}"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </TabItem>
+                        </controls:BalatroTabControl.Items>
+                    </controls:BalatroTabControl>
+
+                    <!-- Action Buttons (context-aware) -->
+                    <Grid Grid.Row="4" Margin="0,12,0,8">
+                        <!-- SELECT button (SearchModal) - full width when visible -->
+                        <Button Name="SelectFilterButton"
+                                Content="{Binding SelectButtonText}"
+                                Classes="btn-green"
+                                Height="40"
+                                HorizontalAlignment="Stretch"
+                                FontSize="16"
+                                Click="OnSelectFilterClick"
+                                Margin="8,0,8,0"
+                                IsEnabled="{Binding IsFilterSelected}"
+                                IsVisible="{Binding ShowSelectButton}"/>
+
+                        <!-- Three action buttons side by side (FiltersModal) -->
+                        <Grid IsVisible="{Binding ShowActionButtons}"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="8"
+                              Margin="8,0,8,0">
+
+                            <!-- COPY button (blue) -->
+                            <Button Grid.Column="0"
+                                    Name="CopyFilterButton"
+                                    Content="📋 COPY"
+                                    Classes="btn-blue"
+                                    Height="40"
+                                    FontSize="14"
+                                    Click="OnCopyFilterClick"/>
+
+                            <!-- EDIT button (orange) -->
+                            <Button Grid.Column="1"
+                                    Name="EditFilterButton"
+                                    Content="✏️ EDIT"
+                                    Classes="btn-orange"
+                                    Height="40"
+                                    FontSize="14"
+                                    Click="OnEditFilterClick"/>
+
+                            <!-- DELETE button (red) -->
+                            <Button Grid.Column="2"
+                                    Name="DeleteFilterButton"
+                                    Content="🗑️ DELETE"
+                                    Classes="btn-red"
+                                    Height="40"
+                                    FontSize="14"
+                                    Click="OnDeleteFilterClick"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

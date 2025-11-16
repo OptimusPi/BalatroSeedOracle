@@ -1,35 +1,51 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Styling;
+using Avalonia.Threading;
+using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
 
 namespace BalatroSeedOracle.Views
 {
     public partial class BalatroMainMenu : UserControl
     {
+        // View-only references (no business logic state)
         private Grid? _modalContainer;
-        private BalatroStyleBackground? _background;
-        private Button? _animationToggleButton;
-        private TextBlock? _animationButtonText;
-        private SearchDesktopIcon? _searchDesktopIcon;
-        private bool _isAnimating = true;
-        private int _widgetCounter = 0;
-        private int _minimizedWidgetCount = 0;
-        private UserProfileService? _userProfileService;
+        private Border? _modalOverlay;
+        private ContentControl? _modalContentWrapper;
+        private Control? _background;
+        private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
+
+        // private Grid? _vibeOutOverlay; // REMOVED: VibeOut feature removed
+        private Grid? _mainContent;
+        private UserControl? _activeModalContent;
+        private TextBlock? _mainTitleText;
+        private Action<float, float, float, float>? _audioAnalysisHandler;
+        private Popup? _volumePopup;
+
+        // Modal navigation stack (for Back button support)
+        private UserControl? _previousModalContent;
+        private string? _previousModalTitle;
+
+        // ViewModel (injected via DI - never null after construction)
+        public BalatroMainMenuViewModel ViewModel { get; }
 
         /// <summary>
         /// Callback to request main content swap (set by MainWindow)
@@ -38,9 +54,16 @@ namespace BalatroSeedOracle.Views
 
         public BalatroMainMenu()
         {
+            // Get ViewModel from DI (proper way!)
+            ViewModel = ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>();
+            DataContext = ViewModel;
+
             InitializeComponent();
 
-            // Defer service initialization to OnLoaded to ensure services are ready
+            // Wire up ViewModel events
+            WireViewModelEvents();
+
+            // Defer initialization to OnLoaded
             this.Loaded += OnLoaded;
         }
 
@@ -48,25 +71,1064 @@ namespace BalatroSeedOracle.Views
         {
             AvaloniaXamlLoader.Load(this);
 
+            // Get view-only control references
             _modalContainer = this.FindControl<Grid>("ModalContainer");
-            _background = this.FindControl<BalatroStyleBackground>("BackgroundControl");
-            _animationToggleButton = this.FindControl<Button>("AnimationToggleButton");
-            _searchDesktopIcon = this.FindControl<SearchDesktopIcon>("SearchDesktopIcon");
+            _modalOverlay = this.FindControl<Border>("ModalOverlay");
+            _modalContentWrapper = this.FindControl<ContentControl>("ModalContentWrapper");
+            _background = this.FindControl<Control>("BackgroundControl");
+            _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
+            // _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay"); // REMOVED: VibeOut feature removed
+            _mainContent = this.FindControl<Grid>("MainContent");
+            _volumePopup = this.FindControl<Popup>("VolumePopup");
 
-            if (_animationToggleButton != null)
+            // CRITICAL FIX: Add drag event handlers to ModalContainer to allow events to pass through
+            // Without this, drag events stop at ModalContainer and never reach modal content
+            if (_modalContainer != null)
             {
-                // Find the TextBlock inside the button using logical tree traversal
-                _animationButtonText = LogicalExtensions
-                    .GetLogicalChildren(_animationToggleButton)
-                    .OfType<TextBlock>()
-                    .FirstOrDefault();
+                _modalContainer.AddHandler(
+                    DragDrop.DragOverEvent,
+                    OnModalContainerDragOver,
+                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+                    true
+                );
+                _modalContainer.AddHandler(
+                    DragDrop.DropEvent,
+                    OnModalContainerDrop,
+                    RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+                    true
+                );
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    "✅ ModalContainer drag event handlers installed"
+                );
             }
-
-            // Don't initialize service here - wait for OnLoaded
         }
 
-        private UserControl? _activeModalContent;
-        private TextBlock? _mainTitleText;
+        /// <summary>
+        /// Allows drag events to pass through ModalContainer to modal content
+        /// </summary>
+        private void OnModalContainerDragOver(object? sender, DragEventArgs e)
+        {
+            // Allow ALL drag effects - let the actual drop zones decide
+            e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
+            // DON'T set e.Handled - let event continue to modal content
+            DebugLogger.Log("BalatroMainMenu", $"ModalContainer DragOver - allowing passthrough");
+        }
+
+        /// <summary>
+        /// Allows drop events to pass through ModalContainer to modal content
+        /// </summary>
+        private void OnModalContainerDrop(object? sender, DragEventArgs e)
+        {
+            // DON'T set e.Handled - let event continue to modal content drop zones
+            DebugLogger.Log("BalatroMainMenu", "ModalContainer Drop - allowing passthrough");
+        }
+
+        /// <summary>
+        /// Wire up ViewModel events to view behaviors
+        /// </summary>
+        private void WireViewModelEvents()
+        {
+            // Modal requests
+            ViewModel.ModalRequested += OnModalRequested;
+            ViewModel.HideModalRequested += (s, e) => HideModalContent();
+
+            // Animation state changes
+            ViewModel.OnIsAnimatingChangedEvent += (s, isAnimating) =>
+            {
+                if (_shaderBackground != null)
+                {
+                    // Ensure UI-thread dispatch when touching visual controls
+                    Avalonia.Threading.Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            _shaderBackground.IsAnimating = isAnimating;
+                        },
+                        Avalonia.Threading.DispatcherPriority.Render
+                    );
+                }
+            };
+
+            // Author edit activation (focus request)
+            ViewModel.OnAuthorEditActivated += (s, e) =>
+            {
+                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
+                if (authorEdit != null)
+                {
+                    authorEdit.Focus();
+                    authorEdit.SelectAll();
+                }
+            };
+
+            // Window state change requests (for fullscreen vibe mode)
+            ViewModel.WindowStateChangeRequested += OnWindowStateChangeRequested;
+        }
+
+        /// <summary>
+        /// Handles window state change requests from the ViewModel (for fullscreen vibe mode)
+        /// </summary>
+        private void OnWindowStateChangeRequested(object? sender, bool enterFullscreen)
+        {
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(
+                    () =>
+                    {
+                        if (enterFullscreen)
+                        {
+                            window.WindowState = WindowState.FullScreen;
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Entered fullscreen for Vibe Out Mode"
+                            );
+                        }
+                        else
+                        {
+                            window.WindowState = WindowState.Normal;
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Exited fullscreen from Vibe Out Mode"
+                            );
+                        }
+                    },
+                    Avalonia.Threading.DispatcherPriority.Render
+                );
+            }
+        }
+
+        /// <summary>
+        /// Handles modal requests from ViewModel
+        /// </summary>
+        private void OnModalRequested(object? sender, ModalRequestedEventArgs e)
+        {
+            switch (e.ModalType)
+            {
+                case ModalType.Search:
+                    this.ShowSearchModal();
+                    break;
+                case ModalType.Filters:
+                    this.ShowFiltersModal();
+                    break;
+                case ModalType.Analyze:
+                    ShowAnalyzeModal();
+                    break;
+                case ModalType.Tools:
+                    this.ShowToolsModal();
+                    break;
+                case ModalType.Settings:
+                    this.ShowSettingsModal();
+                    break;
+                case ModalType.Custom:
+                    if (e.CustomContent != null && e.CustomTitle != null)
+                    {
+                        ShowModalContent(e.CustomContent, e.CustomTitle);
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Show search modal - now uses FilterSelectionModal as gateway
+        /// </summary>
+        private void ShowSearchModal()
+        {
+            // Clear modal stack when starting fresh from main menu
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
+            // Create FilterSelectionModal and show it as main modal content (NOT as a dialog)
+            var filterSelectionModal = new FilterSelectionModal();
+            var filterSelectionVM = new FilterSelectionModalViewModel(
+                enableSearch: true,
+                enableEdit: true,
+                enableCopy: false,
+                enableDelete: false,
+                enableAnalyze: false
+            );
+            filterSelectionModal.DataContext = filterSelectionVM;
+
+            // Wire up ModalCloseRequested to handle user actions
+            filterSelectionVM.ModalCloseRequested += (s, e) =>
+            {
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    "🔵 ShowSearchModal: ModalCloseRequested event FIRED!"
+                );
+
+                // Debug: Check if Result is null
+                if (filterSelectionVM.Result == null)
+                {
+                    DebugLogger.Log(
+                        "BalatroMainMenu",
+                        "❌ Result is NULL in ModalCloseRequested handler!"
+                    );
+                    return;
+                }
+
+                var result = filterSelectionVM.Result;
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"📋 Result - Action: {result.Action}, FilterId: {result.FilterId}, Cancelled: {result.Cancelled}"
+                );
+
+                if (result.Cancelled)
+                {
+                    // User hit back/cancel - close modal
+                    HideModalContent();
+                    if (ViewModel != null)
+                    {
+                        ViewModel.IsModalVisible = false;
+                    }
+                    return;
+                }
+
+                switch (result.Action)
+                {
+                    case Models.FilterAction.Search:
+                        DebugLogger.Log(
+                            "BalatroMainMenu",
+                            $"✅ Search action triggered! FilterId: {result.FilterId}"
+                        );
+                        if (result.FilterId != null)
+                        {
+                            // Save FilterSelectionModal for back navigation
+                            _previousModalContent = filterSelectionModal;
+                            _previousModalTitle = "🔍 SELECT FILTER";
+
+                            // Resolve filter id to full path
+                            var filtersDir = System.IO.Path.Combine(
+                                System.IO.Directory.GetCurrentDirectory(),
+                                "JsonItemFilters"
+                            );
+                            var configPath = System.IO.Path.Combine(
+                                filtersDir,
+                                result.FilterId + ".json"
+                            );
+
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                $"🗂️ Loading filter from: {configPath}"
+                            );
+
+                            // TRANSITION to SearchModal (no flicker - just content swap)
+                            _ = ShowSearchModalWithFilterAsync(configPath);
+                        }
+                        else
+                        {
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "❌ Search action but FilterId is NULL!"
+                            );
+                        }
+                        break;
+
+                    case Models.FilterAction.Edit:
+                        if (result.FilterId != null)
+                            _ = ShowFiltersModalDirectAsync(result.FilterId);
+                        else
+                            _ = ShowFiltersModalDirectAsync(); // CreateNew
+                        break;
+
+                    case Models.FilterAction.CreateNew:
+                        _ = ShowFiltersModalDirectAsync();
+                        break;
+                }
+            };
+
+            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal - it has its own Back button!)
+            ShowModalContent(filterSelectionModal, "🔍 SELECT FILTER");
+        }
+
+        /// <summary>
+        /// Show search modal with a specific filter loaded (overload for FilterSelectionModal flow)
+        /// </summary>
+        private async Task ShowSearchModalWithFilterAsync(string configPath)
+        {
+            try
+            {
+                Helpers.DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"ShowSearchModal called with filter: {configPath}"
+                );
+
+                var searchContent = new SearchModal();
+                // Set the MainMenu reference so CREATE NEW FILTER button works
+                searchContent.ViewModel.MainMenu = this;
+
+                // CRITICAL: Load the selected filter immediately AND WAIT FOR IT!
+                if (!string.IsNullOrEmpty(configPath) && System.IO.File.Exists(configPath))
+                {
+                    await searchContent.ViewModel.LoadFilterAsync(configPath);
+
+                    // DEBUG ASSERT: Filter MUST be loaded
+                    if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
+                    {
+                        throw new InvalidOperationException(
+                            $"ASSERT FAILED: Filter did not load! Path: {configPath}"
+                        );
+                    }
+
+                    // Open directly to Search tab (index 0 since Preferred Deck tab was removed)
+                    searchContent.ViewModel.SelectedTabIndex = 0;
+
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"✅ Filter loaded: {System.IO.Path.GetFileName(configPath)}"
+                    );
+                }
+                else
+                {
+                    Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        $"❌ Filter not found: {configPath}"
+                    );
+                    throw new InvalidOperationException(
+                        $"ASSERT FAILED: Filter file does not exist! Path: {configPath}"
+                    );
+                }
+
+                // Wire up desktop icon creation
+                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
+                {
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"Desktop icon requested for config: {cfgPath}"
+                    );
+                    var modalSearchId = searchContent.ViewModel.CurrentSearchId;
+                    if (!string.IsNullOrEmpty(modalSearchId))
+                    {
+                        ShowSearchDesktopIcon(modalSearchId, cfgPath);
+                    }
+                };
+
+                // Show SearchModal as main modal content (replaces FilterSelectionModal)
+                var modal = new StandardModal("🎰 SEED SEARCH");
+                modal.SetContent(searchContent);
+                modal.BackClicked += (s, e) =>
+                {
+                    // Check if we have a previous modal to return to
+                    if (_previousModalContent != null && _previousModalTitle != null)
+                    {
+                        // Return to FilterSelectionModal
+                        var previousContent = _previousModalContent;
+                        var previousTitle = _previousModalTitle;
+
+                        // Clear stack for next navigation
+                        _previousModalContent = null;
+                        _previousModalTitle = null;
+
+                        // Restore previous modal
+                        ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                    }
+                    else
+                    {
+                        // No previous modal - close entirely
+                        HideModalContent();
+                    }
+                };
+                // Keep backdrop visible during transition to prevent flicker
+                ShowModalContent(modal, "🎰 SEED SEARCH", keepBackdrop: true);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to show search modal with filter: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Show filters modal (for creating/managing filters) - now uses FilterSelectionModal as gateway
+        /// </summary>
+        public void ShowFiltersModal()
+        {
+            // Create FilterSelectionModal with Edit/Copy/Delete actions enabled
+            var filterSelectionModal = new FilterSelectionModal();
+            var filterSelectionVM = new FilterSelectionModalViewModel(
+                enableSearch: false,
+                enableEdit: true,
+                enableCopy: true,
+                enableDelete: true,
+                enableAnalyze: false
+            );
+            filterSelectionModal.DataContext = filterSelectionVM;
+
+            // Handle modal close event
+            filterSelectionVM.ModalCloseRequested += async (s, e) =>
+            {
+                var result = filterSelectionVM.Result;
+
+                if (result.Cancelled)
+                {
+                    // Reset IsModalVisible and hide modal
+                    if (ViewModel != null)
+                    {
+                        ViewModel.IsModalVisible = false;
+                    }
+                    HideModalContent();
+                    return;
+                }
+
+                // Handle different actions - ShowFiltersModalDirect will replace the modal content directly
+                switch (result.Action)
+                {
+                    case Models.FilterAction.CreateNew:
+                        // Show filter name input dialog first
+                        var filterName = await ShowFilterNameInputDialog();
+                        if (!string.IsNullOrWhiteSpace(filterName))
+                        {
+                            // Create new filter with the given name
+                            var newFilterId = await CreateNewFilterWithName(filterName);
+                            if (!string.IsNullOrEmpty(newFilterId))
+                            {
+                                await Dispatcher.UIThread.InvokeAsync(() =>
+                                    ShowFiltersModalDirectAsync(newFilterId)
+                                );
+                            }
+                        }
+                        else
+                        {
+                            // User cancelled - stay in FilterSelectionModal (don't close entire modal)
+                            Helpers.DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Create filter cancelled - staying in filter selection"
+                            );
+                            // Do nothing - just let the dialog close and stay in FilterSelectionModal
+                        }
+                        break;
+                    case Models.FilterAction.Edit:
+                        // Open designer with selected filter loaded (replaces current modal)
+                        if (result.FilterId != null)
+                        {
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                                ShowFiltersModalDirectAsync(result.FilterId)
+                            );
+                        }
+                        break;
+                    case Models.FilterAction.Copy:
+                        // Show dialog to get copy name, then clone and open designer
+                        if (result.FilterId != null)
+                        {
+                            // Get original filter name for default (using FilterService)
+                            var filterService =
+                                Helpers.ServiceHelper.GetRequiredService<IFilterService>();
+                            var originalName = await filterService.GetFilterNameAsync(
+                                result.FilterId
+                            );
+                            var defaultCopyName = string.IsNullOrEmpty(originalName)
+                                ? "Filter Copy"
+                                : $"{originalName} Copy";
+
+                            var copyName = await ShowFilterNameInputDialog(defaultCopyName);
+                            if (!string.IsNullOrWhiteSpace(copyName))
+                            {
+                                var clonedId = await filterService.CloneFilterAsync(
+                                    result.FilterId,
+                                    copyName
+                                );
+                                if (!string.IsNullOrEmpty(clonedId))
+                                {
+                                    await Dispatcher.UIThread.InvokeAsync(() =>
+                                        ShowFiltersModalDirectAsync(clonedId)
+                                    );
+                                }
+                            }
+                            else
+                            {
+                                // User cancelled - stay in FilterSelectionModal (don't close entire modal)
+                                Helpers.DebugLogger.Log(
+                                    "BalatroMainMenu",
+                                    "Copy filter cancelled - staying in filter selection"
+                                );
+                                // Do nothing - just let the dialog close and stay in FilterSelectionModal
+                            }
+                        }
+                        break;
+                    case Models.FilterAction.Delete:
+                        // NOTE: Delete is now handled entirely in FilterSelectionModalViewModel.ConfirmDelete()
+                        // This case should never be reached since ConfirmDelete() doesn't invoke ModalCloseRequested anymore
+                        // Kept for backwards compatibility in case of refactoring
+                        Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            "Delete action reached ModalCloseRequested - this should not happen. Delete is handled in ViewModel."
+                        );
+                        break;
+                }
+            };
+
+            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal)
+            ShowModalContent(filterSelectionModal, "🎨 SELECT FILTER");
+        }
+
+        /// <summary>
+        /// Show filters modal directly (internal use - called after filter selection)
+        /// </summary>
+        private async Task ShowFiltersModalDirectAsync(string? filterId = null)
+        {
+            try
+            {
+                // If no filterId provided (Create New), prompt for filter name first
+                if (string.IsNullOrEmpty(filterId))
+                {
+                    var filterName = await ShowFilterNameInputDialog();
+                    if (string.IsNullOrEmpty(filterName))
+                    {
+                        Helpers.DebugLogger.Log(
+                            "BalatroMainMenu",
+                            "Filter creation cancelled by user"
+                        );
+                        return; // User cancelled
+                    }
+
+                    // Create new filter file with user's chosen name
+                    var filtersDir = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        "JsonItemFilters"
+                    );
+                    System.IO.Directory.CreateDirectory(filtersDir);
+
+                    // Sanitize filename
+                    var sanitizedName = string.Join(
+                        "_",
+                        filterName.Split(System.IO.Path.GetInvalidFileNameChars())
+                    );
+                    filterId = sanitizedName;
+                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                    // Create default empty filter in NEW MotelyJsonConfig format
+                    var defaultFilter = new
+                    {
+                        name = filterName,
+                        description = "Created with visual filter builder",
+                        author = "pifreak",
+                        dateCreated = DateTime.UtcNow.ToString("O"),
+                        deck = "Red",
+                        stake = "White",
+                        must = new object[] { },
+                        should = new object[] { },
+                        mustNot = new object[] { },
+                    };
+                    var jsonContent = System.Text.Json.JsonSerializer.Serialize(
+                        defaultFilter,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                    );
+                    System.IO.File.WriteAllText(
+                        filterPath,
+                        Helpers.CompactJsonFormatter.Format(jsonContent)
+                    );
+
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"✅ Created new filter: {filterName} ({filterId}.json)"
+                    );
+                }
+
+                // Back to the REAL FiltersModal with visual item shelf and card display!
+                var filtersModal = new Modals.FiltersModal();
+
+                // Check if initialization succeeded
+                if (filtersModal.ViewModel == null)
+                {
+                    Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        "FiltersModal initialization failed - ViewModel is null"
+                    );
+                    HideModalContent(); // Clean up modal state
+                    return;
+                }
+
+                // Load the filter data FIRST if provided
+                if (!string.IsNullOrEmpty(filterId))
+                {
+                    var filtersDir = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(),
+                        "JsonItemFilters"
+                    );
+                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                    filtersModal.ViewModel.CurrentFilterPath = filterPath;
+
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"🔄 Loading filter for editing: {filterPath}"
+                    );
+
+                    await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(
+                        null
+                    );
+
+                    Helpers.DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"✅ Filter loaded for editing: {filterId}"
+                    );
+                }
+
+                // Verify filter was loaded properly
+                if (string.IsNullOrEmpty(filterId))
+                {
+                    Helpers.DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        "Filter Designer opened without a valid filter! FilterId must be provided."
+                    );
+                    HideModalContent();
+                    return;
+                }
+
+                // THEN show the modal with loaded content
+                var modal = new StandardModal("🎨 FILTER DESIGNER");
+                modal.SetContent(filtersModal);
+                modal.BackClicked += (s, e) => HideModalContent();
+                // Keep backdrop visible during transition to prevent flicker
+                ShowModalContent(modal, keepBackdrop: true);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"ShowFiltersModalDirectAsync failed: {ex.Message}"
+                );
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Show Avalonia input dialog for filter name
+        /// </summary>
+        private async Task<string?> ShowFilterNameInputDialog(string? defaultName = null)
+        {
+            var dialog = new Window
+            {
+                Width = 450,
+                Height = 250,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                SystemDecorations = SystemDecorations.None,
+                Background = Avalonia.Media.Brushes.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+            };
+
+            // Use provided default name, or generate a fun random filter name
+            string defaultText;
+            if (!string.IsNullOrEmpty(defaultName))
+            {
+                defaultText = defaultName;
+            }
+            else
+            {
+                var randomNames = new[]
+                {
+                    "Epic Filter",
+                    "Lucky Find",
+                    "Mega Search",
+                    "Sweet Combo",
+                    "Power Play",
+                    "Golden Run",
+                    "Chaos Filter",
+                    "Master Build",
+                    "Pro Strat",
+                    "Wildcard Hunt",
+                    "Dream Seed",
+                    "Perfect Setup",
+                    "Boss Crusher",
+                    "Money Maker",
+                    "Victory Path",
+                };
+                defaultText = randomNames[new Random().Next(randomNames.Length)];
+            }
+
+            string? result = null;
+            var textBox = new TextBox
+            {
+                Text = defaultText,
+                Watermark = "Enter filter name...",
+                Margin = new Thickness(0, 10, 0, 0),
+                FontSize = 18,
+                Padding = new Thickness(12, 8),
+                MinHeight = 45
+            };
+
+            var okButton = new Button
+            {
+                Content = "CREATE",
+                Classes = { "btn-blue" },
+                MinWidth = 120,
+                Height = 45
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "CANCEL",
+                Classes = { "btn-red" },
+                MinWidth = 120,
+                Height = 45
+            };
+
+            okButton.Click += (s, e) =>
+            {
+                result = textBox.Text;
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, e) =>
+            {
+                result = null;
+                dialog.Close();
+            };
+
+            // Main container with border and rounded corners
+            var mainBorder = new Border
+            {
+                Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                BorderThickness = new Thickness(3),
+                CornerRadius = new CornerRadius(16)
+            };
+
+            var mainGrid = new Grid
+            {
+                RowDefinitions = new RowDefinitions("Auto,*,Auto")
+            };
+
+            // Title bar
+            var titleBar = new Border
+            {
+                [Grid.RowProperty] = 0,
+                Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(14, 14, 0, 0),
+                Padding = new Thickness(20, 12)
+            };
+
+            var titleText = new TextBlock
+            {
+                Text = defaultName == null ? "Create New Filter" : "Copy Filter",
+                FontSize = 24,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            titleBar.Child = titleText;
+            mainGrid.Children.Add(titleBar);
+
+            // Content area
+            var contentBorder = new Border
+            {
+                [Grid.RowProperty] = 1,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                Padding = new Thickness(24)
+            };
+
+            var contentStack = new StackPanel { Spacing = 8 };
+            contentStack.Children.Add(new TextBlock
+            {
+                Text = "Filter Name:",
+                FontSize = 16,
+                Foreground = this.FindResource("White") as Avalonia.Media.IBrush
+            });
+            contentStack.Children.Add(textBox);
+
+            contentBorder.Child = contentStack;
+            mainGrid.Children.Add(contentBorder);
+
+            // Button area
+            var buttonBorder = new Border
+            {
+                [Grid.RowProperty] = 2,
+                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                CornerRadius = new CornerRadius(0, 0, 14, 14),
+                Padding = new Thickness(20, 12, 20, 20)
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 12
+            };
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            buttonBorder.Child = buttonPanel;
+            mainGrid.Children.Add(buttonBorder);
+
+            mainBorder.Child = mainGrid;
+            dialog.Content = mainBorder;
+
+            await dialog.ShowDialog((Window)this.VisualRoot!);
+            return result;
+        }
+
+        /// <summary>
+        /// Create a new filter with the given name
+        /// </summary>
+        private async Task<string?> CreateNewFilterWithName(string filterName)
+        {
+            try
+            {
+                var filtersDir = System.IO.Path.Combine(
+                    System.IO.Directory.GetCurrentDirectory(),
+                    "JsonItemFilters"
+                );
+
+                System.IO.Directory.CreateDirectory(filtersDir);
+
+                // Generate unique ID
+                var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+
+                // Create minimal valid filter JSON in NEW MotelyJsonConfig format
+                var minimalFilter = new
+                {
+                    name = filterName,
+                    description = "Created with visual filter builder",
+                    author = "pifreak",
+                    dateCreated = DateTime.UtcNow.ToString("O"),
+                    deck = "Red",
+                    stake = "White",
+                    must = new object[] { },
+                    should = new object[] { },
+                    mustNot = new object[] { },
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    minimalFilter,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                );
+
+                await System.IO.File.WriteAllTextAsync(filterPath, json);
+
+                Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
+                return filterId;
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to create filter: {ex.Message}"
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Show settings modal
+        /// </summary>
+        private void ShowSettingsModal()
+        {
+            // Clear modal stack when starting fresh from main menu
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
+            var settingsModal = new Modals.SettingsModal();
+
+            var modal = new StandardModal("SETTINGS");
+            modal.Squeeze = true; // Use compact sizing for settings
+            modal.SetContent(settingsModal);
+            modal.BackClicked += (s, e) => HideModalContent();
+
+            ShowModalContent(modal, "SETTINGS");
+        }
+
+        /// <summary>
+        /// Show word lists modal from Settings (with back navigation to Settings)
+        /// </summary>
+        public void ShowWordListsModalFromSettings()
+        {
+            // Save Settings modal for back navigation
+            if (_activeModalContent != null)
+            {
+                _previousModalContent = _activeModalContent;
+                _previousModalTitle = "SETTINGS";
+            }
+
+            var wordListsModal = new Modals.WordListsModal();
+            var modal = new StandardModal("WORD LISTS");
+            modal.SetContent(wordListsModal);
+            modal.BackClicked += (s, e) =>
+            {
+                // Check if we have a previous modal to return to
+                if (_previousModalContent != null && _previousModalTitle != null)
+                {
+                    // Return to Settings modal
+                    var previousContent = _previousModalContent;
+                    var previousTitle = _previousModalTitle;
+
+                    // Clear stack for next navigation
+                    _previousModalContent = null;
+                    _previousModalTitle = null;
+
+                    // Restore previous modal
+                    ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                }
+                else
+                {
+                    // No previous modal - close entirely
+                    HideModalContent();
+                }
+            };
+            // Keep backdrop visible during transition to prevent flicker
+            ShowModalContent(modal, "WORD LISTS", keepBackdrop: true);
+        }
+
+        /// <summary>
+        /// Show credits modal from Settings (with back navigation to Settings)
+        /// </summary>
+        public void ShowCreditsModalFromSettings()
+        {
+            // Save Settings modal for back navigation
+            if (_activeModalContent != null)
+            {
+                _previousModalContent = _activeModalContent;
+                _previousModalTitle = "SETTINGS";
+            }
+
+            var creditsModal = new Modals.CreditsModal();
+            var modal = new StandardModal("CREDITS");
+            modal.SetContent(creditsModal);
+            modal.BackClicked += (s, e) =>
+            {
+                // Check if we have a previous modal to return to
+                if (_previousModalContent != null && _previousModalTitle != null)
+                {
+                    // Return to Settings modal
+                    var previousContent = _previousModalContent;
+                    var previousTitle = _previousModalTitle;
+
+                    // Clear stack for next navigation
+                    _previousModalContent = null;
+                    _previousModalTitle = null;
+
+                    // Restore previous modal
+                    ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+                }
+                else
+                {
+                    // No previous modal - close entirely
+                    HideModalContent();
+                }
+            };
+            // Keep backdrop visible during transition to prevent flicker
+            ShowModalContent(modal, "CREDITS", keepBackdrop: true);
+        }
+
+        /// <summary>
+        /// Show tools modal
+        /// </summary>
+        private void ShowToolsModal()
+        {
+            var toolsModal = new Modals.ToolsModal();
+            var modal = new StandardModal("TOOLS");
+            modal.SetContent(toolsModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "TOOLS");
+        }
+
+        /// <summary>
+        /// Show analyze modal - skips FilterSelectionModal and goes straight to analyzer
+        /// </summary>
+        private void ShowAnalyzeModal()
+        {
+            OpenAnalyzer(null);
+        }
+
+        /// <summary>
+        /// Open analyzer with the specified filter (filter selection happens inside analyzer)
+        /// </summary>
+        private void OpenAnalyzer(string? filterId)
+        {
+            var analyzeModal = new AnalyzeModal();
+            var modal = new StandardModal("ANALYZE");
+            modal.SetContent(analyzeModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "SEED ANALYZER");
+        }
+
+        /// <summary>
+        /// Loaded event handler
+        /// </summary>
+        private void OnLoaded(object? sender, RoutedEventArgs e)
+        {
+            // Load visualizer settings
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.LoadAndApplyVisualizerSettings(shader);
+            }
+
+            // Check for resumable search
+            ViewModel.CheckAndRestoreSearchIcon(ShowSearchDesktopIcon);
+
+            // Set up click-away handler for popups (NOT for main modals which have back buttons)
+            this.PointerPressed += OnPointerPressedForPopupClickAway;
+
+            // Request focus so keyboard events work (F11, ESC)
+            this.Focus();
+        }
+
+        /// <summary>
+        /// Handles pointer press to close popups when clicking outside
+        /// This is for TRUE popups (volume slider, etc) NOT main modals which have back buttons
+        /// </summary>
+        private void OnPointerPressedForPopupClickAway(object? sender, PointerPressedEventArgs e)
+        {
+            // Only handle click-away for actual popups, not main modals
+            if (_volumePopup?.IsOpen == true)
+            {
+                // Get the source of the click
+                var source = e.Source as Control;
+
+                // Don't close if clicking on the music toggle button itself (let it toggle naturally)
+                var musicButton = this.FindControl<Button>("MusicToggleButton");
+                if (source == musicButton)
+                {
+                    return; // Let the button's click handler toggle the popup
+                }
+
+                // Check if the click source is a child of the music button
+                var parent = source;
+                while (parent != null)
+                {
+                    if (parent == musicButton)
+                    {
+                        return; // Click was on music button or its child
+                    }
+                    parent = parent.Parent as Control;
+                }
+
+                // Get the position of the click
+                var clickPosition = e.GetPosition(this);
+
+                // Get the volume popup's child (the Border control)
+                if (_volumePopup.Child is Control popupContent)
+                {
+                    // Check if click is outside the popup bounds
+                    var popupBounds = popupContent.Bounds;
+                    var popupPosition = popupContent.TranslatePoint(new Point(0, 0), this);
+
+                    if (popupPosition.HasValue)
+                    {
+                        var absolutePopupBounds = new Rect(
+                            popupPosition.Value.X,
+                            popupPosition.Value.Y,
+                            popupBounds.Width,
+                            popupBounds.Height
+                        );
+
+                        // If click is outside popup, close it
+                        if (!absolutePopupBounds.Contains(clickPosition))
+                        {
+                            ViewModel.IsVolumePopupOpen = false;
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Volume popup closed via click-away"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        #region Modal Management (View-only logic)
 
         /// <summary>
         /// Updates the main title text
@@ -85,25 +1147,270 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show a UserControl as a modal overlay in the main menu, styled as a Balatro card
+        /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
         /// </summary>
-        public void ShowModalContent(UserControl content, string? title = null)
+        public void ShowModalContent(
+            UserControl content,
+            string? title = null,
+            bool keepBackdrop = false
+        )
         {
-            if (_modalContainer == null)
+            if (_modalContainer == null || _modalOverlay == null || _modalContentWrapper == null)
                 return;
 
-            // Remove previous content
-            _modalContainer.Children.Clear();
+            // Close any open popups when opening a modal
+            if (ViewModel.IsVolumePopupOpen)
+            {
+                ViewModel.IsVolumePopupOpen = false;
+            }
 
-            // Add the modal directly - it already has its own sizing grid
-            _modalContainer.Children.Add(content);
-            _modalContainer.IsVisible = true;
-            _activeModalContent = content;
-
-            // Update title if provided
+            // Update title immediately
             if (!string.IsNullOrEmpty(title))
             {
                 SetTitle(title);
+            }
+
+            // Store active content reference
+            _activeModalContent = content;
+
+            // CRITICAL: Calculate window height and set initial transform FIRST
+            var windowHeight = this.Bounds.Height;
+
+            // Set initial states BEFORE making visible or adding content
+            // Backdrop appears INSTANTLY (no fade) - Balatro style
+            if (!keepBackdrop)
+            {
+                _modalOverlay.Opacity = UIConstants.FullOpacity;
+            }
+
+            // CRITICAL: Keep content wrapper invisible until transform is applied
+            _modalContentWrapper.Opacity = UIConstants.InvisibleOpacity;
+
+            // Get the existing TranslateTransform from XAML (which has transitions attached!)
+            var translateTransform = _modalContentWrapper.RenderTransform as TranslateTransform;
+            if (translateTransform == null)
+            {
+                // Fallback: create new transform if somehow missing from XAML
+                translateTransform = new TranslateTransform();
+                _modalContentWrapper.RenderTransform = translateTransform;
+            }
+
+            // Set initial Y position to be off-screen at the bottom
+            translateTransform.Y = windowHeight;
+            translateTransform.X = 0;
+
+            // Set the content in the wrapper
+            _modalContentWrapper.Content = content;
+
+            // Make container visible
+            _modalContainer.IsVisible = true;
+
+            // Enable modal state
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = true;
+            }
+
+            // Trigger animations by changing properties after a delay
+            // The transitions defined in XAML will handle the smooth animation
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    // Make content wrapper visible now that transform is set
+                    _modalContentWrapper.Opacity = UIConstants.FullOpacity;
+
+                    // Backdrop is already instant - no fade animation
+
+                    // Slide up content from below screen (translateY: windowHeight → 0)
+                    translateTransform.Y = 0;
+                },
+                DispatcherPriority.Render
+            );
+        }
+
+        /// <summary>
+        /// Smoothly transition from current modal to new modal (Balatro-style)
+        /// </summary>
+        private async Task TransitionToNewModalAsync(UserControl newContent, string? title)
+        {
+            try
+            {
+                if (
+                    _modalContainer == null
+                    || _modalContentWrapper == null
+                    || _modalContentWrapper.Content == null
+                )
+                    return;
+
+                var oldContent = _modalContentWrapper.Content as Control;
+                if (oldContent == null)
+                    return;
+
+                // Gravity fall with bounce - modal falls completely out of view
+                var fallAnimation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.GravityAnimationDurationMs), // Smooth gravity fall
+                    Easing = new ExponentialEaseIn(), // Gravity acceleration
+                    Children =
+                    {
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0),
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 0d),
+                                new Setter(OpacityProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
+                                new Setter(RotateTransform.AngleProperty, 0d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.3), // Start rotating as it falls
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 100d),
+                                new Setter(OpacityProperty, 0.9d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.98d),
+                                new Setter(RotateTransform.AngleProperty, 2d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.7), // Accelerating
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 400d),
+                                new Setter(OpacityProperty, 0.5d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.9d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.95d),
+                                new Setter(RotateTransform.AngleProperty, 5d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(1), // Completely out of view
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 1200d), // Way off screen
+                                new Setter(OpacityProperty, 0.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.7d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.85d),
+                                new Setter(RotateTransform.AngleProperty, 8d),
+                            },
+                        },
+                    },
+                };
+
+                var transformGroup = new TransformGroup();
+                transformGroup.Children.Add(new ScaleTransform(1, 1));
+                transformGroup.Children.Add(new RotateTransform(0));
+                transformGroup.Children.Add(new TranslateTransform(0, 0));
+                oldContent.RenderTransform = transformGroup;
+                oldContent.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
+
+                await fallAnimation.RunAsync(oldContent);
+
+                _modalContentWrapper.Content = null;
+                await ShowModalWithAnimationAsync(newContent, title);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"TransitionToNewModalAsync failed: {ex.Message}"
+                );
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Show modal with pop-up bounce animation (Balatro-style)
+        /// </summary>
+        private async Task ShowModalWithAnimationAsync(UserControl content, string? title)
+        {
+            try
+            {
+                if (
+                    _modalContainer == null
+                    || _modalContentWrapper == null
+                    || _modalOverlay == null
+                )
+                    return;
+
+                _modalContentWrapper.Content = content;
+                _modalContainer.IsVisible = true;
+                _activeModalContent = content;
+                _modalOverlay.Opacity = UIConstants.FullOpacity; // Keep overlay visible during transition
+
+                if (!string.IsNullOrEmpty(title))
+                {
+                    SetTitle(title);
+                }
+
+                // Smooth gravity bounce - rises from below with elastic bounce
+                var popAnimation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromMilliseconds(UIConstants.BounceAnimationDurationMs), // Smooth rise with bounce
+                    Easing = new ElasticEaseOut(), // Bouncy landing
+                    Children =
+                    {
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0),
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 800d), // Start from below
+                                new Setter(OpacityProperty, 0.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.5d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.8d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(0.4), // Rising up
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 200d),
+                                new Setter(OpacityProperty, 0.8d),
+                                new Setter(ScaleTransform.ScaleYProperty, 0.95d),
+                                new Setter(ScaleTransform.ScaleXProperty, 0.98d),
+                            },
+                        },
+                        new Avalonia.Animation.KeyFrame
+                        {
+                            Cue = new Cue(1), // Final position with elastic bounce
+                            Setters =
+                            {
+                                new Setter(TranslateTransform.YProperty, 0d),
+                                new Setter(OpacityProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleYProperty, 1.0d),
+                                new Setter(ScaleTransform.ScaleXProperty, 1.0d),
+                            },
+                        },
+                    },
+                };
+
+                var transformGroup = new TransformGroup();
+                transformGroup.Children.Add(new ScaleTransform(1, 1));
+                transformGroup.Children.Add(new TranslateTransform(0, 0));
+                content.RenderTransform = transformGroup;
+                content.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+
+                await popAnimation.RunAsync(content);
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"ShowModalWithAnimationAsync failed: {ex.Message}"
+                );
+                throw;
             }
         }
 
@@ -112,451 +1419,452 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void HideModalContent()
         {
-            if (_modalContainer == null)
+            if (_modalContainer == null || _modalContentWrapper == null)
                 return;
 
-            _modalContainer.Children.Clear();
+            // PERFORMANCE FIX: Defer content clearing to prevent audio crackling
+            // FiltersModal has thousands of controls - clearing synchronously blocks UI thread
+            // which causes audio buffer underruns
             _modalContainer.IsVisible = false;
             _activeModalContent = null;
-
-            // Reset title to Welcome!
             SetTitle("Welcome!");
+
+            // Re-enable buttons by clearing modal state
+            if (ViewModel != null)
+            {
+                ViewModel.IsModalVisible = false;
+            }
+
+            // Clear content on background thread to avoid blocking audio
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    _modalContentWrapper.Content = null;
+                },
+                DispatcherPriority.Background
+            );
+
+            var audioManager = App.GetService<Services.SoundFlowAudioManager>();
         }
 
-        // Main menu button event handlers
-        private void OnSeedSearchClick(object? sender, RoutedEventArgs e)
+        #endregion
+
+        #region VibeOut Mode - REMOVED
+        // REMOVED: VibeOut feature has been removed from the application
+        /*
+        /// <summary>
+        /// Enter VibeOut mode - view changes only
+        /// </summary>
+        private void EnterVibeOutModeView()
+        {
+            if (_mainContent != null) _mainContent.IsVisible = false;
+            if (_modalContainer != null) _modalContainer.IsVisible = false;
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = true;
+
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
+            }
+
+            var window = this.VisualRoot as Window;
+            if (window != null)
+            {
+                window.WindowState = WindowState.Maximized;
+            }
+
+            DebugLogger.Log("BalatroMainMenu", "🎵 Entered VibeOut mode");
+        }
+
+        /// <summary>
+        /// Exit VibeOut mode - view changes only
+        /// </summary>
+        private void ExitVibeOutModeView()
+        {
+            if (_mainContent != null) _mainContent.IsVisible = true;
+            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = false;
+
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.Theme = BalatroShaderBackground.BackgroundTheme.Default;
+            }
+
+            DebugLogger.Log("BalatroMainMenu", "👋 Exited VibeOut mode");
+        }
+
+        /// <summary>
+        /// Enter VibeOut mode (public API)
+        /// </summary>
+        public void EnterVibeOutMode()
+        {
+            ViewModel.EnterVibeOutMode();
+        }
+
+        /// <summary>
+        /// Exit VibeOut mode (public API)
+        /// </summary>
+        public void ExitVibeOutMode()
+        {
+            ViewModel.ExitVibeOutMode();
+        }
+        */
+        #endregion
+
+        #region Settings Modal Wiring (View-only)
+
+        private void OnVisualizerThemeChanged(object? sender, int themeIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyVisualizerTheme(shader, themeIndex);
+            }
+        }
+
+        #endregion
+
+        #region Shader Management (Delegated to ViewModel)
+
+        internal void ApplyVisualizerTheme(int themeIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyVisualizerTheme(shader, themeIndex);
+            }
+        }
+
+        internal void ApplyMainColor(int colorIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyMainColor(shader, colorIndex);
+            }
+        }
+
+        internal void ApplyAccentColor(int colorIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyAccentColor(shader, colorIndex);
+            }
+        }
+
+        internal void ApplyAudioIntensity(float intensity)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyAudioIntensity(shader, intensity);
+            }
+        }
+
+        internal void ApplyParallaxStrength(float strength)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyParallaxStrength(shader, strength);
+            }
+        }
+
+        internal void ApplyTimeSpeed(float speed)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyTimeSpeed(shader, speed);
+            }
+        }
+
+        internal void ApplyShaderContrast(float contrast)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderContrast(shader, contrast);
+            }
+        }
+
+        internal void ApplyShaderSpinAmount(float spinAmount)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderSpinAmount(shader, spinAmount);
+            }
+        }
+
+        internal void ApplyShaderZoomPunch(float zoom)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderZoomPunch(shader, zoom);
+            }
+        }
+
+        internal void ApplyShaderMelodySaturation(float saturation)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderMelodySaturation(shader, saturation);
+            }
+        }
+
+        internal void ApplyShaderPixelSize(float pixelSize)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderPixelSize(shader, pixelSize);
+            }
+        }
+
+        internal void ApplyShaderSpinEase(float spinEase)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShaderSpinEase(shader, spinEase);
+            }
+        }
+
+        // New shader parameter methods that call shader directly
+        internal void ApplyShaderTime(float time)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTime(time);
+            }
+        }
+
+        internal void ApplyShaderSpinTime(float spinTime)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinTime(spinTime);
+            }
+        }
+
+        internal void ApplyShaderParallaxX(float parallaxX)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetParallaxX(parallaxX);
+            }
+        }
+
+        internal void ApplyShaderParallaxY(float parallaxY)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetParallaxY(parallaxY);
+            }
+        }
+
+        internal void ApplyShaderLoopCount(float loopCount)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetLoopCount(loopCount);
+            }
+        }
+
+        /// <summary>
+        /// Set the volume for a specific track in the audio manager
+        /// </summary>
+        internal void SetTrackVolume(string trackName, float volume)
+        {
+            DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
+        }
+
+        internal void ApplyShadowFlickerSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyShadowFlickerSource(shader, sourceIndex);
+            }
+        }
+
+        internal void ApplySpinSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplySpinSource(shader, sourceIndex);
+            }
+        }
+
+        internal void ApplyTwirlSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyTwirlSource(shader, sourceIndex);
+            }
+        }
+
+        internal void ApplyZoomThumpSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyZoomThumpSource(shader, sourceIndex);
+            }
+        }
+
+        internal void ApplyColorSaturationSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyColorSaturationSource(shader, sourceIndex);
+            }
+        }
+
+        internal void ApplyBeatPulseSource(int sourceIndex)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyBeatPulseSource(shader, sourceIndex);
+            }
+        }
+
+        // Range application helpers - REMOVED (VibeOut feature)
+        // REMOVED: These methods no longer exist on BalatroShaderBackground
+        /*
+        internal void ApplyContrastRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetContrastRange(min, max);
+            }
+        }
+
+        internal void ApplySpinAmountRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetSpinAmountRange(min, max);
+            }
+        }
+
+        internal void ApplyTwirlSpeedRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetTwirlSpeedRange(min, max);
+            }
+        }
+
+        internal void ApplyZoomPunchRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetZoomPunchRange(min, max);
+            }
+        }
+
+        internal void ApplyMelodySatRange(float min, float max)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetMelodySaturationRange(min, max);
+            }
+        }
+        */
+
+        #endregion
+
+        #region Desktop Icon Management
+
+        /// <summary>
+        /// Shows the search modal for an existing search instance
+        /// </summary>
+        public async Task ShowSearchModalForInstanceAsync(
+            string searchId,
+            string? configPath = null
+        )
         {
             try
             {
-                // Open the search modal
-                this.ShowSearchModal();
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                DebugLogger.Log(
                     "BalatroMainMenu",
-                    $"Failed to open search modal: {ex}"
+                    $"ShowSearchModalForInstanceAsync called - SearchId: {searchId}, ConfigPath: {configPath}"
                 );
-                // Show error in UI
-                var errorModal = new StandardModal("ERROR");
-                var errorText = new TextBlock
-                {
-                    Text =
-                        $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.",
-                    Margin = new Avalonia.Thickness(20),
-                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                };
-                errorModal.SetContent(errorText);
-                errorModal.BackClicked += (s, ev) => HideModalContent();
-                ShowModalContent(errorModal, "ERROR");
-            }
-        }
 
-        private void OnEditorClick(object? sender, RoutedEventArgs e)
-        {
-            // Open filters modal with blank/new filter
-            this.ShowFiltersModal();
-        }
-
-        private void OnAnalyzeClick(object? sender, RoutedEventArgs e)
-        {
-            // Show the analyze modal
-            var analyzeModal = new AnalyzeModal();
-            var modal = new StandardModal("ANALYZE");
-            modal.SetContent(analyzeModal);
-            modal.BackClicked += (s, ev) => HideModalContent();
-            ShowModalContent(modal, "SEED ANALYZER");
-        }
-
-        private void OnToolClick(object? sender, RoutedEventArgs e)
-        {
-            // Use the modal helper extension method
-            this.ShowToolsModal();
-        }
-
-        private void OnExitClick(object? sender, RoutedEventArgs e)
-        {
-            if (
-                Application.Current?.ApplicationLifetime
-                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
-            )
-            {
-                desktop.Shutdown();
-            }
-        }
-
-        /// <summary>
-        /// Proper cleanup when the view is disposed
-        /// </summary>
-        public void Dispose()
-        {
-            try
-            {
-                // Search widgets removed - using desktop icons now
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"⚠️  Error during disposal: {ex.Message}"
-                );
-            }
-        }
-
-        private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
-        {
-            try
-            {
-                // Open the Balatro website in the default browser
-                var url = "https://playbalatro.com/";
-                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error opening Balatro website: {ex.Message}"
-                );
-            }
-        }
-
-        /// <summary>
-        /// Cycles through the available background themes when the theme button is clicked
-        /// </summary>
-        private void OnThemeCycleClick(object? sender, RoutedEventArgs e)
-        {
-            if (_background == null)
-                return;
-
-            // Get the current theme and cycle to the next one
-            var currentTheme = _background.Theme;
-            var themes = Enum.GetValues<BalatroStyleBackground.BackgroundTheme>();
-            var nextThemeIndex = ((int)currentTheme + 1) % themes.Length;
-            var nextTheme = themes[nextThemeIndex];
-
-            // Set the new theme
-            _background.Theme = nextTheme;
-        }
-
-        /// <summary>
-        /// Toggles the background animation on/off when the animation button is clicked
-        /// </summary>
-        private void OnAnimationToggleClick(object? sender, RoutedEventArgs e)
-        {
-            if (_background == null)
-                return;
-
-            // Toggle animation state
-            _isAnimating = !_isAnimating;
-            _background.IsAnimating = _isAnimating;
-
-            // Update button icon based on animation state
-            if (_animationButtonText != null)
-            {
-                _animationButtonText.Text = _isAnimating ? "⏸" : "▶";
-            }
-        }
-
-        /// <summary>
-        /// Switches to edit mode for author name
-        /// </summary>
-        private void OnAuthorClick(object? sender, RoutedEventArgs e)
-        {
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-            if (authorDisplay != null && authorEdit != null)
-            {
-                // Switch to edit mode
-                authorDisplay.IsVisible = false;
-                authorEdit.IsVisible = true;
-
-                // Focus and select all text
-                authorEdit.Focus();
-                authorEdit.SelectAll();
-            }
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Save author name when edit loses focus
-        /// </summary>
-        private void OnAuthorEditLostFocus(object? sender, RoutedEventArgs e)
-        {
-            SaveAuthorName();
-        }
-
-        /// <summary>
-        /// Handle Enter/Tab keys in author edit
-        /// </summary>
-        private void OnAuthorEditKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter || e.Key == Key.Tab)
-            {
-                SaveAuthorName();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                // Cancel edit
-                var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-                if (authorDisplay != null && authorEdit != null && _userProfileService != null)
-                {
-                    // Restore original value
-                    authorEdit.Text = _userProfileService.GetAuthorName();
-                    authorDisplay.IsVisible = true;
-                    authorEdit.IsVisible = false;
-                }
-                e.Handled = true;
-            }
-        }
-
-        /// <summary>
-        /// Save the author name and switch back to display mode
-        /// </summary>
-        private void SaveAuthorName()
-        {
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-
-            if (authorDisplay != null && authorEdit != null && _userProfileService != null)
-            {
-                var newName = authorEdit.Text?.Trim();
-                if (!string.IsNullOrEmpty(newName))
-                {
-                    _userProfileService.SetAuthorName(newName);
-                    authorDisplay.Text = newName;
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Author name updated to: {newName}"
-                    );
-                }
-
-                // Switch back to display mode
-                authorDisplay.IsVisible = true;
-                authorEdit.IsVisible = false;
-            }
-        }
-
-        private void OnLoaded(object? sender, RoutedEventArgs e)
-        {
-            // Initialize user profile service when control is loaded
-            if (_userProfileService == null)
-            {
-                _userProfileService = ServiceHelper.GetService<UserProfileService>();
-                if (_userProfileService == null)
-                {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "UserProfileService is null after initialization attempt"
-                    );
-                    return;
-                }
-            }
-
-            // Load and display current author name
-            var authorDisplay = this.FindControl<TextBlock>("AuthorDisplay");
-            var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-            if (authorDisplay != null && authorEdit != null)
-            {
-                var authorName = _userProfileService.GetAuthorName();
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Setting author display to: '{authorName}'"
-                );
-                authorDisplay.Text = authorName;
-                authorEdit.Text = authorName;
-            }
-            else
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    "Could not find AuthorDisplay or AuthorEdit controls"
-                );
-            }
-            
-            // Check for resumable search and restore desktop icon if needed
-            CheckAndRestoreSearchIcon();
-        }
-
-        /// <summary>
-        /// Check for resumable search state and restore desktop icon if needed
-        /// </summary>
-        private void CheckAndRestoreSearchIcon()
-        {
-            try
-            {
-                if (_userProfileService?.GetSearchState() is { } resumeState)
-                {
-                    // Check if the search is recent (within last 24 hours)
-                    var timeSinceSearch = DateTime.UtcNow - resumeState.LastActiveTime;
-                    if (timeSinceSearch.TotalHours > 24)
-                    {
-                        // Too old, clear it
-                        _userProfileService.ClearSearchState();
-                        return;
-                    }
-
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
-                    );
-
-                    // DON'T create a search instance here! Just show the icon
-                    // The search will be created when the user actually clicks the icon
-                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
-                    {
-                        // Create a placeholder search ID for the icon
-                        // The actual search will be created when the icon is clicked
-                        var placeholderSearchId = Guid.NewGuid().ToString();
-                        ShowSearchDesktopIcon(placeholderSearchId, resumeState.ConfigPath);
-                        
-                        BalatroSeedOracle.Helpers.DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Restored desktop icon for search (not started yet): {resumeState.ConfigPath}"
-                        );
-                    }
-                    else
-                    {
-                        BalatroSeedOracle.Helpers.DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Skipping desktop icon for resumable search - invalid config path: {resumeState.ConfigPath}"
-                        );
-                        _userProfileService.ClearSearchState();
-                    }
-                    
-                }
-            }
-            catch (Exception ex)
-            {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error checking for resumable search: {ex.Message}"
-                );
-            }
-        }
-
-        /// <summary>
-        /// Shows a search desktop icon on the desktop
-        /// </summary>
-        /// <summary>
-        /// Shows the search modal for an existing search instance (opened from desktop icon)
-        /// </summary>
-        public void ShowSearchModalForInstance(string searchId, string? configPath = null)
-        {
-            try
-            {
-                DebugLogger.Log("BalatroMainMenu", $"ShowSearchModalForInstance called - SearchId: {searchId}, ConfigPath: {configPath}");
-                
                 var searchContent = new SearchModal();
-                
-                // Connect to the existing search instance
-                searchContent.ConnectToExistingSearch(searchId);
-                
-                // If we have a config path, load it
+                // Set the MainMenu reference so CREATE NEW FILTER button works
+                searchContent.ViewModel.MainMenu = this;
+                await searchContent.ViewModel.ConnectToExistingSearch(searchId);
+
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    _ = searchContent.LoadFilterAsync(configPath);
+                    await searchContent.ViewModel.LoadFilterAsync(configPath);
                 }
-                
-                // Handle desktop icon creation when modal closes with active search
-                searchContent.CreateShortcutRequested += (sender, cfgPath) => 
+
+                searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
-                    // Get the search ID from the modal
-                    var modalSearchId = searchContent.GetCurrentSearchId();
+                    DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"Desktop icon requested for config: {cfgPath}"
+                    );
+                    var modalSearchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
                         ShowSearchDesktopIcon(modalSearchId, cfgPath);
                     }
                 };
-                
-                this.ShowModal("MOTELY SEARCH", searchContent);
+
+                this.ShowModal("🎰 SEED SEARCH", searchContent);
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to show search modal for instance: {ex}");
+                DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"ShowSearchModalForInstanceAsync failed: {ex.Message}"
+                );
+                throw;
             }
         }
-        
+
         public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "BalatroMainMenu",
                 $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
             );
 
-            // Get the desktop canvas
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
-            // Create a new SearchDesktopIcon instance
-            var searchIcon = new SearchDesktopIcon();
-
-            // Get filter name from config path
             string filterName = "Unknown Filter";
-            if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+            if (!string.IsNullOrEmpty(configPath) && System.IO.File.Exists(configPath))
             {
-                filterName = Path.GetFileNameWithoutExtension(configPath);
+                filterName = System.IO.Path.GetFileNameWithoutExtension(configPath);
             }
             else
             {
-                // Don't create desktop icons for unknown filters
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                DebugLogger.Log(
                     "BalatroMainMenu",
                     $"Skipping desktop icon creation - no valid config path"
                 );
                 return;
             }
 
+            var searchIcon = new SearchDesktopIcon();
             searchIcon.Initialize(searchId, configPath ?? string.Empty, filterName);
 
-            // Calculate position based on existing icons
-            var leftMargin = 20 + (_widgetCounter % 8) * 120; // 8 icons per row, 120px apart
-            var topMargin = 20 + (_widgetCounter / 8) * 140; // Stack rows, 140px apart
+            var leftMargin = 20 + (ViewModel.WidgetCounter % 8) * 120;
+            var topMargin = 20 + (ViewModel.WidgetCounter / 8) * 140;
 
             searchIcon.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
             searchIcon.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
             searchIcon.Margin = new Thickness(leftMargin, topMargin, 0, 0);
             searchIcon.IsVisible = true;
 
-            // Add to the desktop canvas
             desktopCanvas.Children.Add(searchIcon);
-            _widgetCounter++;
+            ViewModel.WidgetCounter++;
 
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "BalatroMainMenu",
-                $"Created SearchDesktopIcon #{_widgetCounter} at position ({leftMargin}, {topMargin})"
+                $"Created SearchDesktopIcon #{ViewModel.WidgetCounter} at position ({leftMargin}, {topMargin})"
             );
-
-            // DON'T auto-start searches! The user will start them manually
-            // The icon is just a placeholder for resuming later
         }
 
-        /// <summary>
-        /// Updates the visibility of the search desktop icon based on minimized widget count
-        /// </summary>
-        private void UpdateSearchDesktopIconVisibility()
-        {
-            if (_searchDesktopIcon != null)
-            {
-                _searchDesktopIcon.IsVisible = _minimizedWidgetCount > 0;
-            }
-        }
-
-        /// <summary>
-        /// Removes a search desktop icon from the desktop
-        /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "BalatroMainMenu",
                 $"RemoveSearchDesktopIcon called for searchId: {searchId}"
             );
@@ -564,28 +1872,20 @@ namespace BalatroSeedOracle.Views
             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
             if (desktopCanvas == null)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
+                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
                 return;
             }
 
-            // Find and remove the icon with matching searchId
             SearchDesktopIcon? iconToRemove = null;
             foreach (var child in desktopCanvas.Children)
             {
                 if (child is SearchDesktopIcon icon)
                 {
-                    // Check if this icon matches the searchId
-                    // We'll need to add a property to SearchDesktopIcon to get its searchId
-                    var searchIdProperty = icon.GetType().GetField("_searchId", 
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (searchIdProperty != null)
+                    // Use public SearchId property instead of reflection
+                    if (icon.SearchId == searchId)
                     {
-                        var iconSearchId = searchIdProperty.GetValue(icon) as string;
-                        if (iconSearchId == searchId)
-                        {
-                            iconToRemove = icon;
-                            break;
-                        }
+                        iconToRemove = icon;
+                        break;
                     }
                 }
             }
@@ -593,47 +1893,81 @@ namespace BalatroSeedOracle.Views
             if (iconToRemove != null)
             {
                 desktopCanvas.Children.Remove(iconToRemove);
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                DebugLogger.Log(
                     "BalatroMainMenu",
                     $"Removed SearchDesktopIcon for searchId: {searchId}"
                 );
             }
             else
             {
-                BalatroSeedOracle.Helpers.DebugLogger.Log(
+                DebugLogger.Log(
                     "BalatroMainMenu",
                     $"No SearchDesktopIcon found for searchId: {searchId}"
                 );
             }
         }
 
-        /// <summary>
-        /// Stops all running searches - called during application shutdown
-        /// </summary>
+        #endregion
+
+        #region Cleanup
+
+        public void Dispose()
+        {
+            try
+            {
+                CleanupEventHandlers();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"⚠️  Error during disposal: {ex.Message}");
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            CleanupEventHandlers();
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void CleanupEventHandlers()
+        {
+            try
+            {
+                var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
+                if (audioManager != null && _audioAnalysisHandler != null)
+                {
+                    audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
+                    _audioAnalysisHandler = null;
+                }
+
+                DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Error cleaning up event handlers: {ex.Message}"
+                );
+            }
+        }
+
         public Task StopAllSearchesAsync()
         {
             DebugLogger.LogImportant("BalatroMainMenu", "Stopping all searches...");
 
-            // Search widgets removed - using desktop icons now
-
-            // Check if there's a filters modal open with a search running
-            if (_modalContainer != null && _modalContainer.Children.Count > 0)
+            if (_modalContentWrapper != null && _modalContentWrapper.Content != null)
             {
-                var modal = _modalContainer.Children[0] as StandardModal;
+                var modal = _modalContentWrapper.Content as StandardModal;
                 if (modal != null)
                 {
-                    // Find the ModalContent presenter inside StandardModal
                     var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as FiltersModalContent;
+                    var filtersModal = modalContent?.Content as Modals.FiltersModal;
                     if (filtersModal != null)
                     {
-                        // FiltersModal may have active searches to stop
                         DebugLogger.LogImportant(
                             "BalatroMainMenu",
                             "Checking FiltersModal for active searches..."
                         );
-                        // Note: FiltersModal doesn't have a StopSearch method
-                        // but we keep this structure in case it's needed later
                     }
                 }
             }
@@ -641,5 +1975,88 @@ namespace BalatroSeedOracle.Views
             DebugLogger.LogImportant("BalatroMainMenu", "All searches stopped");
             return Task.CompletedTask;
         }
+
+        #endregion
+
+        #region Keyboard Input
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            // F11 to toggle Vibe Out Mode (fullscreen visualizer)
+            if (e.Key == Key.F11)
+            {
+                ViewModel?.ToggleVibeOutModeCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+
+            // ESC to exit Vibe Out Mode
+            if (e.Key == Key.Escape && ViewModel?.IsVibeOutMode == true)
+            {
+                ViewModel.ToggleVibeOutModeCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+        }
+
+        #endregion
+
+        #region Filter Management Helpers
+
+        /// <summary>
+        /// Get the parent window (needed for modal dialogs)
+        /// </summary>
+        public Window GetWindow()
+        {
+            return TopLevel.GetTopLevel(this) as Window
+                ?? throw new InvalidOperationException("Could not find parent window");
+        }
+
+        /// <summary>
+        /// Clone a filter and return the new filter ID
+        /// </summary>
+        /// <summary>
+        /// Get filter name from filter ID
+        /// </summary>
+        // REMOVED: GetFilterName, CloneFilterWithName, DeleteFilter
+        // These methods have been moved to FilterService for proper MVVM separation
+        // Use IFilterService.GetFilterNameAsync(), IFilterService.CloneFilterAsync(), IFilterService.DeleteFilterAsync()
+
+        #endregion
+
+        #region Author TextBox Handlers
+
+        private void OnAuthorTextBoxKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // Save and exit edit mode
+                ViewModel.SaveAuthorCommand.Execute(null);
+                e.Handled = true;
+
+                // Remove focus from textbox
+                if (sender is TextBox textBox)
+                {
+                    var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+                    focusManager?.ClearFocus();
+                }
+            }
+            else if (e.Key == Key.Escape)
+            {
+                // Cancel editing
+                ViewModel.CancelAuthorEditCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+        private void OnAuthorTextBoxLostFocus(object? sender, RoutedEventArgs e)
+        {
+            // Auto-save when losing focus
+            ViewModel.SaveAuthorCommand.Execute(null);
+        }
+
+        #endregion
     }
 }

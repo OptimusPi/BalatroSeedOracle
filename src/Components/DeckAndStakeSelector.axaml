@@ -3,29 +3,35 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
-    
-    <StackPanel Spacing="14">
-        <!-- Deck Selection using PanelSpinner -->
-        <components:DeckSpinner Name="DeckSpinnerControl" />
-        
-        <!-- Stake Selection using regular spinner -->
-        <controls:SpinnerControl Name="StakeSpinner" 
-                                Label=""
-                                SpinnerType="stake"
-                                Minimum="0"
-                                Maximum="7"
-                                Value="0"
-                                Width="145"
-                                HorizontalAlignment="Center" />
-        
+
+    <StackPanel Spacing="24" HorizontalAlignment="Center">
+        <!-- Deck Spinner (Balatro-style panel with title/description/dots) -->
+        <components:DeckSpinner
+            ShowArrows="True"
+            SelectedDeckIndex="{Binding DeckIndex}"
+            StakeIndex="{Binding StakeIndex}"
+            HorizontalAlignment="Center"/>
+
+        <!-- Stake Spinner: enum-only selection (no text editing) -->
+        <controls:SpinnerControl Name="StakeSpinner"
+                                 Label=""
+                                 SpinnerType="stake"
+                                 Value="{Binding StakeIndex}"
+                                 Minimum="0"
+                                 Maximum="7"
+                                 Increment="1"
+                                 ReadOnly="True"
+                                 DisplayValues="{Binding StakeDisplayValues}"/>
+
         <!-- Select Button -->
-        <Button Name="SelectButton" 
-                Content="Select this Deck" 
-                Classes="btn-blue" 
-                MinWidth="200"
-                MinHeight="32"
+        <Button Name="SelectButton"
+                Content="CONTINUE"
+                Classes="btn-blue"
+                MinWidth="280"
+                MinHeight="48"
+                FontSize="18"
                 HorizontalAlignment="Center"
-                Click="OnSelectClick"/>
+                Command="{Binding SelectCommand}"/>
     </StackPanel>
-    
+
 </UserControl>

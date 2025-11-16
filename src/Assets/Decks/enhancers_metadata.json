@@ -7,6 +7,7 @@
   "sprites": {
     "decks": {
       "Red": { "x": 0, "y": 0 },
+      "Nebula": { "x": 3, "y": 0 },
       "Blue": { "x": 0, "y": 2 },
       "Yellow": { "x": 1, "y": 2 },
       "Green": { "x": 2, "y": 2 },
@@ -20,8 +21,7 @@
       "Painted": { "x": 4, "y": 3 },
       "Challenge": { "x": 0, "y": 4 },
       "Anaglyph": { "x": 2, "y": 4 },
-      "Zodiac": { "x": 3, "y": 4 },
-      "Nebula": { "x": 3, "y": 0 }
+      "Zodiac": { "x": 3, "y": 4 }
     },
     "enhancements": {
       "Bonus": { "x": 1, "y": 1 },
@@ -30,21 +30,21 @@
       "Lucky": { "x": 4, "y": 1 },
       "Glass": { "x": 5, "y": 1 },
       "Steel": { "x": 6, "y": 1 },
-      "Stone": { "x": 6, "y": 0 },
-      "Gold": { "x": 7, "y": 0 }
+      "Stone": { "x": 5, "y": 0 },
+      "Gold": { "x": 6, "y": 0 }
     },
     "seals": {
-      "Gold": { "x": 3, "y": 0 },
+      "Gold": { "x": 2, "y": 0 },
       "Purple": { "x": 4, "y": 4 },
       "Red": { "x": 5, "y": 4 },
       "Blue": { "x": 6, "y": 4 }
     },
     "special": {
-      "BlankCard": { "x": 1, "y": 0, "description": "Base card template" },
-      "TheSoulGem": { "x": 0, "y": 1, "description": "Animated gem overlay for Soul cards" },
-      "LockedDeckPlaceholder": { "x": 5, "y": 0 },
-      "MysteryLegendary": { "x": 5, "y": 3, "description": "Use for 'Any Legendary' selection" },
-      "MysteryGeneric": { "x": 6, "y": 3, "description": "Use for 'Any' selections" },
+      "StandardCard_Base": { "x": 1, "y": 0, "description": "Standard card base template" },
+      "TheSoulGem": { "x": 0, "y": 1, "description": "Animated gem overlay for The Soul spectral card" },
+      "LockedDeck": { "x": 4, "y": 0 },
+      "MysteryJokerFace": { "x": 5, "y": 3, "description": "Mystery face for wildcard jokers" },
+      "MysteryConsumable": { "x": 6, "y": 3, "description": "Question mark for wildcard consumables" },
       "UnusedDeck1": { "x": 5, "y": 2 },
       "UnusedDeck2": { "x": 1, "y": 4 }
     }

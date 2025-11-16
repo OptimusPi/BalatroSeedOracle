@@ -2,13 +2,13 @@
   "version": "1.0",
   "projects": [
     {
-      "name": "Oracle",
-      "path": "src/Oracle.csproj",
+      "name": "BalatroSeedOracle",
+      "path": "src/BalatroSeedOracle.csproj",
       "targetFramework": "net9.0",
       "outputType": "Exe",
       "isExecutable": true,
-      "previewAssembly": "src/bin/Debug/net9.0/Oracle.dll",
-      "designAssembly": "src/bin/Debug/net9.0/Oracle.dll"
+      "previewAssembly": "src/bin/Debug/net9.0/BalatroSeedOracle.dll",
+      "designAssembly": "src/bin/Debug/net9.0/BalatroSeedOracle.dll"
     }
   ]
 }

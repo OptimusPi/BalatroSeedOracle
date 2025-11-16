@@ -1,0 +1,63 @@
+{
+  "displayName": "Balatro Seed Oracle",
+  "publisher": "pifreak",
+  "version": "auto",
+  "identifier": "com.pifreak.balatroseedoracle",
+  "description": "Balatro seed searching and analysis tool powered by Motely",
+  "icon": "src/Assets/icon.png",
+
+  "input": {
+    "project": "src/BalatroSeedOracle.csproj",
+    "configuration": "Release"
+  },
+
+  "output": {
+    "directory": "bin/packages"
+  },
+
+  "runtimes": [
+    "win-x64",
+    "osx-x64",
+    "osx-arm64",
+    "linux-x64"
+  ],
+
+  "packages": {
+    "win-x64": ["nsis", "zip"],
+    "osx-x64": ["dmg"],
+    "osx-arm64": ["dmg"],
+    "linux-x64": ["deb", "zip"]
+  },
+
+  "publish": {
+    "selfContained": true,
+    "publishTrimmed": false,
+    "publishSingleFile": false,
+    "includeNativeLibrariesForSelfExtract": true
+  },
+
+  "nsis": {
+    "installScope": "currentUser",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "compressionLevel": "maximum",
+    "licensePath": "LICENSE.txt"
+  },
+
+  "dmg": {
+    "signIdentity": null,
+    "backgroundColor": "#1a1a1a",
+    "iconSize": 100,
+    "windowSize": {
+      "width": 600,
+      "height": 400
+    }
+  },
+
+  "deb": {
+    "maintainer": "pifreak",
+    "section": "utils",
+    "priority": "optional",
+    "dependencies": []
+  }
+}

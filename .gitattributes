@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# C# and .NET files should use CRLF on Windows
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.sln text eol=crlf
+*.config text eol=crlf
+*.axaml text eol=crlf
+*.xaml text eol=crlf
+*.json text eol=crlf
+*.xml text eol=crlf
+
+# Shell scripts should use LF
+*.sh text eol=lf
+
+# Documentation can use auto
+*.md text=auto

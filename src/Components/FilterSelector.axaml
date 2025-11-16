@@ -1,25 +1,79 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Components.FilterSelector">
-    
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.FilterSelector"
+             x:DataType="vm:FilterSelectorViewModel">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Filter browser using PanelSpinner -->
-        <controls:PanelSpinner Grid.Row="0" Name="FilterSpinner" />
-        
+        <controls:PanelSpinner Grid.Row="0"
+                               Name="FilterSpinner"
+                               Items="{Binding FilterItems}"
+                               SelectedIndex="{Binding SelectedFilterIndex, Mode=TwoWay}"
+                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                               HorizontalAlignment="Center"/>
+
         <!-- Action buttons below spinner -->
-        <StackPanel Grid.Row="1" Spacing="8" Margin="0,8,0,0">
-            <Button Name="SelectButton" 
-                    Content="Select Filter" 
-                    Classes="btn-blue" 
-                    MinWidth="200"
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,6,0,0">
+
+            <!-- Main Select Button (for SearchModal) -->
+            <Button Name="SelectButton"
+                    Content="{Binding SelectButtonText}"
+                    Classes="btn-blue"
+                    MinWidth="300"
+                    Height="50"
+                    FontSize="18"
                     HorizontalAlignment="Center"
-                    Click="OnSelectClick"/>
+                    Command="{Binding SelectFilterCommand}"
+                    IsEnabled="{Binding SelectButtonEnabled}"
+                    IsVisible="{Binding ShowSelectButton}"/>
+
+            <!-- Filter-specific actions (horizontal) -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="8"
+                        HorizontalAlignment="Center"
+                        IsVisible="{Binding ShowActionButtons}">
+                <Button Name="CopyFilterButton"
+                        Content="MAKE A COPY"
+                        Classes="btn-blue"
+                        Height="44"
+                        MinWidth="110"
+                        FontSize="14"
+                        Command="{Binding CopyFilterCommand}"/>
+
+                <Button Name="EditFilterButton"
+                        Content="EDIT THIS FILTER"
+                        Classes="btn-orange"
+                        Height="44"
+                        MinWidth="130"
+                        FontSize="14"
+                        Command="{Binding EditFilterCommand}"/>
+
+                <Button Name="DeleteFilterButton"
+                        Content="DELETE"
+                        Classes="btn-red"
+                        Height="44"
+                        Width="80"
+                        FontSize="14"
+                        Command="{Binding DeleteFilterCommand}"/>
+            </StackPanel>
+
+            <!-- Create new filter (full width) -->
+            <Button Name="CreateNewFilterButton"
+                    Content="CREATE NEW FILTER"
+                    Classes="btn-green"
+                    Height="55"
+                    MinWidth="300"
+                    FontSize="18"
+                    HorizontalAlignment="Center"
+                    Command="{Binding CreateNewFilterCommand}"
+                    IsVisible="{Binding ShowActionButtons}"/>
         </StackPanel>
     </Grid>
 </UserControl>

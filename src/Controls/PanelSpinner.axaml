@@ -6,23 +6,23 @@
         <!-- Arrow button style - Red navigation buttons -->
         <Style Selector="Button.panel-arrow">
             <Setter Property="Width" Value="36"/>
-            <Setter Property="MinHeight" Value="224"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,1,0,4"/>
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
                         <!-- Drop shadow -->
                         <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
+                                Background="{StaticResource HoverShadow}"
                                 CornerRadius="8"
                                 Margin="0,4,0,0"/>
                         <!-- Button face -->
@@ -45,6 +45,7 @@
         <!-- Pressed state - hide shadow and move button down -->
         <Style Selector="Button.panel-arrow:pressed">
             <Setter Property="RenderTransform" Value="translateY(3px)"/>
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
         </Style>
         <Style Selector="Button.panel-arrow:pressed /template/ Border#DropShadow">
             <Setter Property="IsVisible" Value="False"/>
@@ -52,11 +53,12 @@
         
         <!-- Inner panel style -->
         <Style Selector="Border.panel-content">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
+            <!-- Match Balatro's inner panel tone and tighter sizing -->
+            <Setter Property="Background" Value="{StaticResource DarkBorder}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="450"/>
-            <Setter Property="MinHeight" Value="224"/>
+            <Setter Property="Width" Value="280"/>
+            <Setter Property="MinHeight" Value="220"/>
             <Setter Property="MaxHeight" Value="280"/>
         </Style>
         
@@ -67,18 +69,22 @@
             
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="Margin" Value="0,6,0,2"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         </Style>
         
         <!-- Description text style -->
         <Style Selector="TextBlock.panel-description">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Margin" Value="16,0"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="MaxLines" Value="3"/>
+            <Setter Property="Margin" Value="12,4,12,6"/>
+            <Setter Property="LineHeight" Value="17"/>
         </Style>
         
         <!-- Position dots container -->
@@ -105,6 +111,12 @@
         <Style Selector="TextBlock.position-dot:not(.active)">
             <Setter Property="Foreground" Value="{StaticResource MediumDarkGrey}"/>
         </Style>
+        
+        <!-- Compact dots for many items -->
+        <Style Selector="TextBlock.position-dot.compact">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
     </UserControl.Styles>
     
     <Grid>
@@ -121,6 +133,7 @@
                 Name="PrevButton"
                 Classes="panel-arrow"
                 Content="&lt;"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Click="OnPrevClick"/>
         
         <!-- Main panel content -->
@@ -138,23 +151,39 @@
                            Name="TitleText"
                            Classes="panel-title"/>
                 
-                <!-- Sprite Image Container -->
+                <!-- Sprite Image Container with optional overlay -->
                 <Viewbox Grid.Row="1"
                          Stretch="Uniform"
-                         MaxHeight="140"
+                         MaxHeight="128"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
-                         Margin="0,4">
-                    <Image Name="SpriteImage"
-                           Width="400"
-                           Height="200"/>
+                         Margin="0,2">
+                    <Grid Width="400" Height="200">
+                        <!-- Base deck image -->
+                        <Image Name="SpriteImage"
+                               Width="400"
+                               Height="200"/>
+                        <!-- Stake chip overlay (top-right corner) -->
+                        <Image Name="OverlayImage"
+                               Width="400"
+                               Height="200"
+                               IsVisible="False"/>
+                    </Grid>
                 </Viewbox>
                 
-                <!-- Description -->
-                <Border Grid.Row="2" MinHeight="40" Margin="0,-4,0,0">
+                <!-- Description (fixed height - no growing!) -->
+                <Border Grid.Row="2"
+                        Height="56"
+                        Margin="10,2,10,2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="6"
+                        Padding="8,4">
                     <TextBlock Name="DescriptionText"
                                Classes="panel-description"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxLines="3"/>
                 </Border>
                 
                 <!-- Position dots -->
@@ -169,6 +198,7 @@
                 Name="NextButton"
                 Classes="panel-arrow"
                 Content="&gt;"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Click="OnNextClick"/>
     </Grid>
 </UserControl>

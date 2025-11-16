@@ -2,16 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
     
-    <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel HorizontalAlignment="Center" Margin="20" Spacing="20">
             <!-- Title -->
-            <TextBlock Text="TOOLS" 
-                       FontSize="24" 
-                        
+            <TextBlock Text="TOOLS"
+                       FontSize="24"
+
                        Foreground="{StaticResource Gold}"
                        FontFamily="{StaticResource BalatroFont}"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,20"/>
+                       Margin="0,0,0,10"/>
+
+            <!-- Explanatory Text -->
+            <TextBlock Text="Import filters, manage wordlists, and tweak your audio visualizer settings here."
+                      FontFamily="{StaticResource BalatroFont}"
+                      FontSize="13"
+                      Foreground="{StaticResource VeryLightGrey}"
+                      TextWrapping="Wrap"
+                      HorizontalAlignment="Center"
+                      TextAlignment="Center"
+                      Opacity="0.8"
+                      Margin="0,0,0,12"/>
             
             <!-- Import Files Button -->
             <Button Name="ImportFilesButton"
@@ -48,13 +59,28 @@
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center">
-                <TextBlock Text="Credits" 
+                <TextBlock Text="Credits"
                            FontSize="20"
-                           
+
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
-            
+
+            <!-- Audio Visualizer Settings Button -->
+            <Button Name="AudioVisualizerSettingsButton"
+                   Click="OnAudioVisualizerSettingsClick"
+                   Classes="btn-blue"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <TextBlock Text="🎵 Audio Visualizer"
+                           FontSize="20"
+
+                           FontFamily="{StaticResource BalatroFont}"
+                           IsHitTestVisible="False"/>
+            </Button>
+
+
             <!-- Nuke Everything Button -->
             <Button Name="NukeEverythingButton"
                    Click="OnNukeEverythingClick"
@@ -62,7 +88,7 @@
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center"
-                   Background="#FF0000">
+                   Background="{StaticResource BrightRed2}">
                 <TextBlock Text="🔥 Nuke Everything 🔥" 
                            FontSize="20"
                            Foreground="White"
@@ -70,5 +96,5 @@
                            IsHitTestVisible="False"/>
             </Button>
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </UserControl>

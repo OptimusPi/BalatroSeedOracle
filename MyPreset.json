@@ -1,0 +1,30 @@
+{
+  "Id": "c67163db-9884-45cb-91f1-bf51972a74d7",
+  "Name": "MyPreset",
+  "ThemeIndex": 8,
+  "MainColor": 4,
+  "AccentColor": 0,
+  "AudioIntensity": 0,
+  "ParallaxStrength": 0,
+  "TimeSpeed": 1,
+  "SeedFoundTrigger": false,
+  "HighScoreSeedTrigger": false,
+  "SearchCompleteTrigger": false,
+  "SeedFoundAudioSource": 1,
+  "HighScoreAudioSource": 4,
+  "SearchCompleteAudioSource": 3,
+  "CustomEffects": {
+    "ShadowFlicker": 0,
+    "Spin": 0,
+    "BeatPulse": 0,
+    "Twirl": 0,
+    "ZoomThump": 0,
+    "ColorSaturation": 0
+  },
+  "FrequencyBreakpoints": null,
+  "MelodicBreakpoints": null,
+  "ParameterRanges": null,
+  "EffectMappings": null,
+  "CreatedAt": "2025-10-31T04:03:46.1174917Z",
+  "ModifiedAt": "2025-10-31T04:03:46.1174918Z"
+}

@@ -1,0 +1,173 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
+             x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
+             x:DataType="vm:SortableResultsGridViewModel"
+             x:CompileBindings="True">
+
+    <UserControl.Resources>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header with sorting controls -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource DarkBackground}" 
+                BorderBrush="{StaticResource ModalBorder}" 
+                BorderThickness="0,0,0,2" 
+                Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15">
+                    <TextBlock Text="🔍 SEARCH RESULTS"
+                               Foreground="{StaticResource White}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="18"
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Text="{Binding ResultsCountText}"
+                               Foreground="{StaticResource Gold}"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- Sort controls -->
+                    <TextBlock Text="Sort by:"
+                               Foreground="{StaticResource White}"
+                               FontSize="12"
+                               VerticalAlignment="Center"/>
+
+                    <ComboBox SelectedIndex="{Binding SelectedSortIndex}"
+                              Background="{StaticResource DarkBackground}"
+                              Foreground="{StaticResource Gold}"
+                              BorderBrush="{StaticResource ModalBorder}"
+                              MinWidth="160">
+                        <ComboBoxItem Content="Seed"/>
+                        <ComboBoxItem Content="Score ↓"/>
+                        <ComboBoxItem Content="Score ↑"/>
+                    </ComboBox>
+
+                    <!-- Export button -->
+                    <Button Content="📤 Export"
+                            Command="{Binding ExportAllCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Main DataGrid -->
+        <DataGrid Grid.Row="1"
+                  Name="ResultsDataGrid"
+                  ItemsSource="{Binding DisplayedResults}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <!-- Seed column with copy button -->
+                <DataGridTemplateColumn Header="SEED" Width="150" SortMemberPath="Seed">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="{Binding Seed}"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"/>
+                                <Button Classes="copy-btn"
+                                        Content="📋"
+                                        ToolTip.Tip="Copy seed to clipboard"
+                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
+                                        CommandParameter="{Binding Seed}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                
+                <!-- Score column -->
+                <DataGridTextColumn Header="TOTALSCORE"
+                                    Binding="{Binding TotalScore}"
+                                    Width="80"
+                                    SortMemberPath="TotalScore"/>
+                
+                <!-- Tally columns will be added dynamically based on Labels/Scores -->
+                
+                <!-- Actions column -->
+                <DataGridTemplateColumn Header="ACTIONS" Width="90">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Button Classes="copy-btn"
+                                        Content="📋"
+                                        ToolTip.Tip="Copy seed"
+                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
+                                        CommandParameter="{Binding Seed}"/>
+                                <Button Classes="copy-btn"
+                                        Content="📊"
+                                        ToolTip.Tip="Analyze seed"
+                                        Command="{Binding $parent[UserControl].DataContext.AnalyzeCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+        <!-- Footer with pagination and stats -->
+        <Border Grid.Row="2"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,2,0,0"
+                Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Stats -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatsText}"
+                           Foreground="{StaticResource White}"
+                           FontSize="12"
+                           VerticalAlignment="Center"/>
+
+                <!-- Pagination -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <Button Content="◀"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding IsPreviousEnabled}"
+                            Classes="btn-red"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            VerticalAlignment="Center"/>
+
+                    <Button Content="{Binding PageInfoText}"
+                            Classes="btn-red"
+                            MinWidth="100"
+                            Height="32"
+                            IsHitTestVisible="False"
+                            VerticalAlignment="Center"/>
+
+                    <Button Content="▶"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding IsNextEnabled}"
+                            Classes="btn-red"
+                            Width="40"
+                            Height="32"
+                            Padding="0"
+                            VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

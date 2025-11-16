@@ -1,0 +1,31 @@
+<!-- Shared Widget Header Component - Used by all widgets for consistent header -->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.WidgetHeader"
+             x:DataType="vm:BaseWidgetViewModel">
+
+    <!-- Standard widget header with minimize button and title -->
+    <Border Classes="widget-header" Padding="12,8">
+        <Grid ColumnDefinitions="Auto,*">
+            <!-- Minimize Button -->
+            <Button Grid.Column="0"
+                    Content="↙"
+                    Classes="widget-minimize-btn"
+                    Command="{Binding MinimizeCommand}"
+                    ToolTip.Tip="Minimize"
+                    Margin="0,0,8,0"/>
+
+            <!-- Title with Icon -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding WidgetIcon}"
+                           FontSize="15"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding WidgetTitle}"
+                           FontSize="13"
+                           Foreground="{StaticResource White}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -6,96 +6,123 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:modals="using:BalatroSeedOracle.Views.Modals"
              xmlns:views="using:BalatroSeedOracle.Views"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
+             x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
-             x:CompileBindings="False">
+             Focusable="True"
+             x:CompileBindings="True">
+
+    <UserControl.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    </UserControl.Resources>
 
     <UserControl.Styles>
-        <!-- Modal panel style - Balatro card style with beveled border -->
-        <Style Selector="Border.modal-panel">
-            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
-            <Setter Property="CornerRadius" Value="18"/>
-            <Setter Property="Padding" Value="2"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PureBlack}"/>
-            <Setter Property="BorderThickness" Value="3"/>
-        </Style>
-        
-        <!-- Inner content panel (darker) -->
-        <Style Selector="Border.inner-panel">
-            <Setter Property="Background" Value="{StaticResource MediumBackground}"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="2"/>
-        </Style>
-        
-        <!-- Kill any weird focus/selection effects -->
-        <Style Selector="Button:focus">
-            <Setter Property="BorderBrush" Value="{StaticResource VeryLightGrey}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-        </Style>
-        <Style Selector="Button:focus /template/ ContentPresenter">
-            <Setter Property="BorderBrush" Value="Transparent"/>
-        </Style>
-        
-        <!-- Author Button Style - matches language/theme buttons -->
-        <Style Selector="Button.author-button">
-            <Setter Property="FontSize" Value="16"/>
-            
-            <Setter Property="Background" Value="{StaticResource TealGrey}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="2,4"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,0,2"/>
-        </Style>
-        <Style Selector="Button.author-button:pointerover">
-            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
-        </Style>
-        <Style Selector="Button.author-button:pressed">
-            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-        </Style>
-        <Style Selector="Button.author-button TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="16"/>
-            
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
-        </Style>
     </UserControl.Styles>
 
     <Grid>
-        <!-- Animated balatro-style background - behind everything -->
-        <controls:BalatroStyleBackground x:Name="BackgroundControl" />
+        <!-- Animated balatro-style background - behind everything (stretches to fill entire window) -->
+        <controls:BalatroShaderBackground x:Name="BackgroundControl"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch" />
+
+        <!-- Settings Popup removed - now using modal system -->
+
+        <!-- Volume Slider Popup (shown when music button clicked) -->
+        <Popup x:Name="VolumePopup"
+               IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
+               Placement="Top"
+               PlacementTarget="{Binding ElementName=MusicToggleButton}"
+               VerticalOffset="-10"
+               IsLightDismissEnabled="True">
+            <Border Background="{StaticResource DarkBorder}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="15,20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="🔊 VOLUME"
+                               FontSize="14"
+                               
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,5"/>
+
+                    <!-- Vertical Volume Slider -->
+                    <Slider x:Name="VolumeSlider"
+                            Orientation="Vertical"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="{Binding Volume, Mode=TwoWay}"
+                            Height="120"
+                            Width="40"
+                            ToolTip.Tip="Drag to adjust volume"/>
+
+                    <!-- Volume Percentage Display -->
+                    <TextBlock x:Name="VolumePercentText"
+                               Text="{Binding VolumePercentText}"
+                               FontSize="16"
+                               
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+
+                    <!-- Mute Button -->
+                    <Button x:Name="MuteButton"
+                            Content="{Binding MuteButtonText}"
+                            Command="{Binding MuteCommand}"
+                            MinWidth="80"
+                            Width="80"
+                            FontSize="12"
+                            Height="30"
+                            HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Popup>
         
-        <!-- Desktop widgets layer -->
-        <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False">
+        <!-- Desktop widgets layer - widgets use their own ZIndex bindings (hidden in Vibe Out Mode) -->
+    <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsVisible="{Binding AreWidgetsHidden, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}">
             <!-- Search Widgets will be added dynamically here -->
-            
+
+            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
+            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
+                                            ClipToBounds="False"/>
+
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
-                                     HorizontalAlignment="Right"
-                                     VerticalAlignment="Top"
-                                     Margin="20,24,20,0"
                                      ClipToBounds="False"/>
+
+            <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
+            <components:GenieWidget x:Name="GenieWidget"
+                                   ClipToBounds="False"/>
+
+            <!-- 🎨 AUDIO VISUALIZER WIDGET - Show/hide on paint palette button click -->
+            <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
+                                                    IsVisible="{Binding IsVisualizerWidgetVisible}"
+                                                    ClipToBounds="False"/>
+
+            <!-- 🎵 MUSIC MIXER WIDGET - 8-track volume and mute controls -->
+            <components:MusicMixerWidget x:Name="MusicMixerWidget"
+                                        ClipToBounds="False"/>
+
         </Grid>
         
-        <!-- Main content that will be blurred when modals are open -->
-        <Grid x:Name="MainContent" ZIndex="5">
+        <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
+        <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" IsHitTestVisible="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Name="MainTitleText"
-                        Text="Welcome!"
+                        Text="{Binding MainTitle}"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"
-                        
-                        Foreground="{StaticResource TextLight}"
+
+                        Foreground="{StaticResource White}"
                         HorizontalAlignment="Center"
-                        Margin="0,4,4,4"/>
+                        Margin="0,4,4,4"
+                        IsHitTestVisible="False"/>
 
             <!-- All Docks Container - Float off bottom of screen -->
             <StackPanel Grid.Row="1" 
@@ -103,16 +130,17 @@
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Bottom"
                         Margin="0,0,0,40"
-                        Spacing="20">
+                        Spacing="20"
+                        IsHitTestVisible="True">
                 
                 <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="4,0,4,2"
                             Margin="0,0,0,4">
@@ -124,37 +152,33 @@
                                        FontSize="14"
                                        
                                        HorizontalAlignment="Center"
-                                       Foreground="{StaticResource White}"
-                                       IsHitTestVisible="False"/>
+                                       Foreground="{StaticResource White}"/>
                             
                             <!-- Author Button (Balatro style like language buttons) -->
                             <Button x:Name="AuthorButton"
                                     Width="120"
                                     Height="40"
-                                    Click="OnAuthorClick"
+                                    Command="{Binding AuthorClickCommand}"
                                     Classes="author-button">
                                 <Grid>
                                     <!-- Display mode -->
                                     <TextBlock x:Name="AuthorDisplay"
-                                               Text="Author"
-                                               IsVisible="True"
-                                               IsHitTestVisible="False"/>
-                                    
+                                               Text="{Binding AuthorName}"
+                                               IsVisible="{Binding AuthorDisplayMode}"/>
+
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
-                                             Text=""
-                                             FontFamily="{StaticResource BalatroFont}"
+                                             Text="{Binding AuthorName, Mode=TwoWay}"
                                              FontSize="16"
-                                             
-                                             Background="{StaticResource TealGrey}"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
                                              TextAlignment="Center"
-                                             Foreground="{StaticResource VeryLightGrey}"
-                                             IsVisible="False"
-                                             LostFocus="OnAuthorEditLostFocus"
-                                             KeyDown="OnAuthorEditKeyDown"/>
+                                             IsVisible="{Binding AuthorEditMode}"
+                                             Focusable="True"
+                                             IsHitTestVisible="True"
+                                             KeyDown="OnAuthorTextBoxKeyDown"
+                                             LostFocus="OnAuthorTextBoxLostFocus"/>
                                 </Grid>
                             </Button>
                         </StackPanel>
@@ -164,72 +188,44 @@
                 <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,4,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="2"
                             Margin="0,0,0,4">
                 
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <!-- PLAY button equivalent - SEED SEARCH (blue) -->
-                    <Button Classes="btn-blue"
-                            Click="OnSeedSearchClick"
-                            MinHeight="64"
-                            MinWidth="160">
-                        <TextBlock Text="SEED SEARCH" 
-                                   FontSize="24" 
-                                   
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
-                    
-                    <!-- OPTIONS button equivalent - EDITOR (green) -->
                     <Button Classes="btn-green"
-                            Click="OnEditorClick"
-                            MinHeight="50"
-                            MinWidth="100">
-                        <TextBlock Text="NEW FILTER"
-                                   FontSize="20"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
-                    
-                    <!-- QUIT button (red) -->
-                    <Button Classes="btn-red"
-                            Click="OnExitClick"
-                            MinHeight="50"
-                            MinWidth="100">
-                        <TextBlock Text="QUIT" 
-                                   FontSize="20" 
-                                   
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
-                    
-                    <!-- COLLECTION button equivalent - ANALYZE (purple) -->
+                            Command="{Binding SeedSearchCommand}"
+                            Content="SEARCH"
+                            FontSize="36"
+                            MinHeight="60"
+                            MinWidth="158"/>
+
+                    <Button Classes="btn-blue"
+                            Command="{Binding EditorCommand}"
+                            Content="DESIGNER"
+                            FontSize="28"
+                            MinHeight="46"
+                            MinWidth="100"/>
+
                     <Button Classes="btn-purple"
-                            Click="OnAnalyzeClick"
-                            MinHeight="64"
-                            MinWidth="160">
-                        <TextBlock Text="ANALYZE" 
-                                   FontSize="24" 
-                                   
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   IsHitTestVisible="False"/>
-                    </Button>
+                            Command="{Binding AnalyzeCommand}"
+                            Content="ANALYZER"
+                            FontSize="28"
+                            MinHeight="46"
+                            MinWidth="100"/>
 
                     <!-- MODS button equivalent - MORE (orange) -->
                     <Button Classes="btn-orange"
-                            Click="OnToolClick"
-                            MinHeight="64"
-                            MinWidth="64">
-                        <TextBlock Text="MORE" 
-                                   FontSize="20" 
-                                   FontFamily="{StaticResource BalatroFont}"/>
-                    </Button>
+                            Command="{Binding ToolCommand}"
+                            Content="SETTINGS"
+                            FontSize="36"
+                            MinHeight="60"
+                            MinWidth="158"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -237,51 +233,65 @@
                 <!-- Right Side Dock (like Language selector in real Balatro) -->
                 <Grid>
                     <!-- Dark shadow underneath -->
-                    <Border Background="{StaticResource DropShadow}"
+                    <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
                             Margin="0,2,0,0"/>
                     <!-- Main dock panel -->
-                    <Border Background="{StaticResource DockGrey}"
+                    <Border Background="{StaticResource ModalGrey}"
                             CornerRadius="8"
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <!-- Theme Cycling Button (square like language buttons) -->
-                            <Button x:Name="ThemeCycleButton"
-                                    FontSize="16"
+                            <!-- Visual Settings Button -->
+                            <Button x:Name="SettingsButton"
+                                    Classes="btn-purple"
+                                    FontSize="24"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="{StaticResource TealGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Click="OnThemeCycleClick"
-                                    ToolTip.Tip="Cycle background theme">
-                                <TextBlock Text="🎨" 
-                                           FontFamily="Segoe UI Emoji, Noto Color Emoji"
-                                           HorizontalAlignment="Center" 
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"/>
+                                    Command="{Binding ToggleWidgetsVisibilityCommand}"
+                                    ToolTip.Tip="Show or hide widgets">
+                                <iconPacks:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Button>
-                            
+
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
+                                    Classes="btn-purple"
                                     FontSize="16"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
-                                    Background="{StaticResource TealGrey}"
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Click="OnAnimationToggleClick"
+                                    Command="{Binding AnimationToggleCommand}"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <TextBlock Text="⏸" 
+                                <TextBlock Text="{Binding AnimationIconText}"
                                            FontFamily="Segoe UI Symbol, Segoe UI Emoji"
-                                           HorizontalAlignment="Center" 
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"/>
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Button>
+
+                            <!-- Music Toggle Button -->
+                            <Button x:Name="MusicToggleButton"
+                                    Classes="btn-purple"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Command="{Binding MusicToggleCommand}"
+                                    ToolTip.Tip="Toggle background music">
+                                <TextBlock x:Name="MusicToggleIcon"
+                                           Text="{Binding MusicIconText}"
+                                           FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                             </Button>
                         </StackPanel>
                     </Border>
@@ -293,9 +303,39 @@
         <Grid x:Name="ModalContainer"
               IsVisible="False"
               ZIndex="100"
-              Background="{StaticResource VeryTransparentBlack}"
               VerticalAlignment="Stretch"
               HorizontalAlignment="Stretch"
-              Margin="0"/>
+              Margin="0">
+
+            <!-- Overlay dimmer - fades in -->
+            <Border x:Name="ModalOverlay"
+                    Background="{StaticResource SemiTransparentBlack}"
+                    Opacity="0">
+                <Border.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Opacity"
+                                        Duration="0:0:0.6"
+                                        Easing="CubicEaseOut"/>
+                    </Transitions>
+                </Border.Transitions>
+            </Border>
+
+            <!-- Modal content wrapper - slides up with bounce -->
+            <ContentControl x:Name="ModalContentWrapper">
+                <ContentControl.RenderTransform>
+                    <TranslateTransform X="0" Y="0">
+                        <TranslateTransform.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Y"
+                                                Duration="0:0:0.6"
+                                                Easing="ExponentialEaseOut"/>
+                            </Transitions>
+                        </TranslateTransform.Transitions>
+                    </TranslateTransform>
+                </ContentControl.RenderTransform>
+            </ContentControl>
+
+        </Grid>
+
     </Grid>
 </UserControl>

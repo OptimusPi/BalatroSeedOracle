@@ -1,0 +1,1401 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Views.Modals.FilterSelectionModal">
+
+    <UserControl.Resources>
+        <converters:ItemNameToSpriteConverter x:Key="ItemNameToSpriteConverter"/>
+        <converters:ItemNameToSoulFaceConverter x:Key="ItemNameToSoulFaceConverter"/>
+        <converters:StandardCardToSpriteConverter x:Key="StandardCardToSpriteConverter"/>
+        <converters:ItemNameToFormattedStringConverter x:Key="ItemNameToFormattedStringConverter"/>
+        <converters:AntesFormatterConverter x:Key="AntesFormatterConverter"/>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <converters:IsErraticDeckConverter x:Key="IsErraticDeckConverter"/>
+    </UserControl.Resources>
+
+    <!-- Full screen modal with Balatro-style overlay -->
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <!-- Modal positioning grid -->
+        <Grid x:Name="ModalContainer">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="45"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="45"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="35"/>
+            </Grid.RowDefinitions>
+
+            <!-- Main modal container -->
+            <Border x:Name="ModalBorder"
+                    Grid.Column="1" Grid.Row="1"
+                    Background="{StaticResource ModalGrey}"
+                    CornerRadius="20"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="1080"
+                    Height="604"
+                    BoxShadow="{StaticResource StandardModalShadow}"
+                    ClipToBounds="False"
+                    Padding="4,4,4,0">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>    <!-- Content -->
+                        <RowDefinition Height="56"/>   <!-- Footer fixed height -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Content area with 2-column layout -->
+                    <Grid Grid.Row="0" Margin="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>  <!-- Left: Filter List -->
+                            <ColumnDefinition Width="20"/>   <!-- Spacer -->
+                            <ColumnDefinition Width="*"/>    <!-- Right: Details Panel -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT SIDE: Filter List (inline implementation) -->
+                        <Border Grid.Column="0"
+                                BorderThickness="0"
+                                CornerRadius="8"
+                                Padding="20,20,20,0" ClipToBounds="False">
+                            <DockPanel ClipToBounds="False" LastChildFill="True">
+                                <!-- Pagination Controls - Docked to Bottom -->
+                                <StackPanel DockPanel.Dock="Bottom"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Center"
+                                            Spacing="6"
+                                            Margin="0,8,0,0">
+                                    <Button Content="&lt;"
+                                            Classes="btn-red"
+                                            Width="44"
+                                            Height="36"
+                                            FontSize="16"
+                                            Padding="0"
+                                            CornerRadius="8"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding FilterList.PreviousPageCommand}"/>
+
+                                    <!-- Page indicator -->
+                                    <Border Background="{StaticResource Red}"
+                                            BorderBrush="Transparent"
+                                            BorderThickness="0"
+                                            CornerRadius="8"
+                                            Height="36"
+                                            Padding="16,0"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FilterList.PageIndicatorText}"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="14"
+                                                   Foreground="White"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <Button Content="&gt;"
+                                            Classes="btn-red"
+                                            Width="44"
+                                            Height="36"
+                                            FontSize="16"
+                                            Padding="0"
+                                            CornerRadius="8"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding FilterList.NextPageCommand}"/>
+                                </StackPanel>
+
+                                <!-- Filter List - No scrolling, just pagination -->
+                                <ItemsControl ItemsSource="{Binding FilterList.CurrentPageFilters}"
+                                              ClipToBounds="False">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!-- Wrapper with button and arrow -->
+                                            <Grid>
+                                                <!-- Button (style sets it to Center with MinWidth 210px) -->
+                                                <Button Classes="filter-list-item"
+                                                        Classes.selected="{Binding IsSelected}"
+                                                        Content="{Binding DisplayText}"
+                                                        Command="{Binding $parent[UserControl].DataContext.FilterList.SelectFilterCommand}"
+                                                        CommandParameter="{Binding}"/>
+
+                                                <!-- Triangle attached to left edge of button -->
+                                                <Polygon Points="0,0 14,8.5 0,17"
+                                                         Width="14"
+                                                         Height="17"
+                                                         Fill="{StaticResource Red}"
+                                                         Classes="balatro-bounce-horizontal"
+                                                         HorizontalAlignment="Left"
+                                                         VerticalAlignment="Center"
+                                                         Margin="-23,0,0,0"
+                                                         ZIndex="10"
+                                                         IsVisible="{Binding IsSelected}"
+                                                         IsHitTestVisible="False"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- RIGHT SIDE: Details Panel -->
+                        <Border Grid.Column="2"
+                                Background="{StaticResource DarkBackground}"
+                                BorderThickness="0"
+                                CornerRadius="8"
+                                Padding="20" ClipToBounds="False">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Header: Name/Author/Date -->
+                                    <RowDefinition Height="Auto"/> <!-- Tab Buttons with Triangle -->
+                                    <RowDefinition Height="*"/>    <!-- Tab Content Area -->
+                                    <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+                                </Grid.RowDefinitions>
+
+                                <!-- HEADER SECTION: Horizontal Sprite Strips (visible on Filter Info tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowFilterTab}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- JOKERS Strip (Left) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="JOKERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Gold}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Must.Jokers}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- VOUCHERS Strip (Center) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Must Vouchers (normal sprites) -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- MustNot Vouchers (with red X) -->
+                                            <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Vouchers}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="2">
+                                                            <!-- Base sprite -->
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Stretch="Uniform"/>
+                                                            <!-- Red X overlay -->
+                                                            <Border Background="{StaticResource BrightRed}"
+                                                                    CornerRadius="4"
+                                                                    Opacity="0.6">
+                                                                <TextBlock Text="X"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="24"
+                                                                          
+                                                                           Foreground="{StaticResource BrightRed2}"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- CONSUMABLES Strip (Right) - ALWAYS VISIBLE -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Vertical Label on left edge -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Sprite content area -->
+                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Must Consumables (normal sprites) -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- MustNot Consumables (with red X) -->
+                                            <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Consumables}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="2">
+                                                            <!-- Base sprite -->
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Stretch="Uniform"/>
+                                                            <!-- Red X overlay -->
+                                                            <Border Background="{StaticResource BrightRed}"
+                                                                    CornerRadius="4"
+                                                                    Opacity="0.6">
+                                                                <TextBlock Text="X"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="24"
+                                                                          
+                                                                           Foreground="{StaticResource BrightRed2}"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- SCORE SETUP HEADER: Show "Should Have" items (visible on Score Setup tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowScoreTab}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- JOKERS Strip (Left) -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="JOKERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Gold}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Jokers}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- VOUCHERS Strip (Center) -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Vouchers}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- CONSUMABLES Strip (Right) -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Consumables}" ClipToBounds="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                                                   Width="36" Height="48"
+                                                                   Stretch="Uniform"
+                                                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                <i:Interaction.Behaviors>
+                                                                    <behaviors:BalatroCardSwayBehavior />
+                                                                </i:Interaction.Behaviors>
+                                                            </Image>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- PREFERRED DECK HEADER: Show deck defaults (visible on Preferred Deck tab) -->
+                                <Grid Grid.Row="0" Margin="0,0,0,15" IsVisible="{Binding ShowDeckTab}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- DECK DEFAULTS Strip (Left) - Jokers/Items that come with deck -->
+                                    <Border Grid.Column="0"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CARDS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Gold}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Erratic Deck Support Display -->
+                                            <Grid Grid.Column="1">
+                                                <!-- Show when NOT Erratic Deck -->
+                                                <Border Background="{StaticResource DarkBackground}"
+                                                        CornerRadius="4"
+                                                        Padding="8"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center">
+                                                    <Border.IsVisible>
+                                                        <Binding Path="DataContext.SelectedFilter.DeckName"
+                                                                 RelativeSource="{RelativeSource AncestorType=UserControl}">
+                                                            <Binding.Converter>
+                                                                <converters:IsErraticDeckConverter/>
+                                                            </Binding.Converter>
+                                                            <Binding.ConverterParameter>Inverse</Binding.ConverterParameter>
+                                                        </Binding>
+                                                    </Border.IsVisible>
+                                                    <TextBlock Text="(ERRATIC DECK ONLY)"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource VoucherOrange}"
+                                                              
+                                                               TextAlignment="Center"/>
+                                                </Border>
+
+                                                <!-- Show when IS Erratic Deck -->
+                                                <Border Background="{StaticResource DarkBackground}"
+                                                        CornerRadius="4"
+                                                        Padding="8"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center">
+                                                    <Border.IsVisible>
+                                                        <Binding Path="DataContext.SelectedFilter.DeckName"
+                                                                 RelativeSource="{RelativeSource AncestorType=UserControl}"
+                                                                 Converter="{StaticResource IsErraticDeckConverter}"/>
+                                                    </Border.IsVisible>
+                                                    <TextBlock Text="[SUPPORTED SOON]"
+                                                               FontFamily="{StaticResource BalatroFont}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource Blue}"
+                                                              
+                                                               TextAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- VOUCHERS Strip (Center) - Auto-activated vouchers for deck -->
+                                    <Border Grid.Column="2"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="VOUCHERS"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource VoucherOrange}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Placeholder - will be populated when deck defaults are implemented -->
+                                            <ItemsControl Grid.Column="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- CONSUMABLES Strip (Right) - Default consumables for deck -->
+                                    <Border Grid.Column="4"
+                                            Background="{StaticResource DarkTealGrey}"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Height="80"
+                                            ClipToBounds="False">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="CONSUMABLES"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource Purple}"
+                                                      
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0">
+                                                <TextBlock.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </TextBlock.RenderTransform>
+                                            </TextBlock>
+
+                                            <!-- Placeholder - will be populated when deck defaults are implemented -->
+                                            <ItemsControl Grid.Column="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="40" ItemHeight="52"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- TAB NAVIGATION (visible when filter selected) -->
+                                <controls:BalatroTabControl Grid.Row="1"
+                                                            Margin="0,0,0,10"
+                                                            SelectedIndex="{Binding ActiveTabIndex}"
+                                                            IsVisible="{Binding ShowDetailsPanel}">
+                                    <controls:BalatroTabControl.Items>
+                                        <TabItem Header="Filter Config"/>
+                                        <TabItem Header="Scoring Config"/>
+                                        <TabItem Header="Preferred Deck"/>
+                                    </controls:BalatroTabControl.Items>
+                                </controls:BalatroTabControl>
+
+                                <!-- TAB CONTENT AREA -->
+                                <Grid Grid.Row="2">
+                                    <!-- FILTER TAB CONTENT (two-column layout) -->
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowFilterTab}">
+                                        <!-- Filter Description Box (LEFT COLUMN - NO SCROLL) -->
+                                        <Border Grid.Column="0"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Filter Description"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                        <!-- Filter Name and Author (Title Row) -->
+                                                        <Grid Margin="0,0,0,5">
+                                                            <TextBlock Text="{Binding FilterName}"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="18"
+                                                                      
+                                                                       Foreground="Black"
+                                                                       HorizontalAlignment="Left"
+                                                                       VerticalAlignment="Top"/>
+
+                                                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="14"
+                                                                           Foreground="{StaticResource BodyText}"
+                                                                           HorizontalAlignment="Right">
+                                                                    <Run Text="by "/>
+                                                                    <Run Text="{Binding FilterAuthor}"/>
+                                                                </TextBlock>
+                                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="11"
+                                                                           Foreground="{StaticResource LightGrey}"
+                                                                           HorizontalAlignment="Right">
+                                                                    <Run Text="{Binding CreatedDate}"/>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </Grid>
+
+                                                        <!-- Description Text -->
+                                                        <TextBlock Text="{Binding FilterDescription}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Filter Criteria Box (Must[]) (RIGHT COLUMN - WITH SCROLL) -->
+                                            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                                                <Border Background="{StaticResource White}"
+                                                        CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Filter Criteria"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                        <!-- Header Row -->
+                                                        <Grid ColumnDefinitions="3*,*" Margin="0,0,0,5">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="Item"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="13"
+                                                                      
+                                                                       Foreground="{StaticResource DarkGrey}"/>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="Antes"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="13"
+                                                                      
+                                                                       Foreground="{StaticResource DarkGrey}"
+                                                                       HorizontalAlignment="Left"/>
+                                                        </Grid>
+
+                                                        <!-- Must Jokers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Jokers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Must Vouchers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Must Consumables -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- MustNot Jokers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Jokers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   TextWrapping="Wrap">
+                                                                            <Run Text="NOT "/>
+                                                                            <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
+                                                                        </TextBlock>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- MustNot Vouchers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Vouchers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   TextWrapping="Wrap">
+                                                                            <Run Text="NOT "/>
+                                                                            <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
+                                                                        </TextBlock>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- MustNot Consumables -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.MustNot.Consumables}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   TextWrapping="Wrap">
+                                                                            <Run Text="NOT "/>
+                                                                            <Run Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"/>
+                                                                        </TextBlock>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="{StaticResource Red}"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                            </ScrollViewer>
+                                        </Grid>
+
+                                    <!-- SCORE TAB CONTENT (two-column layout) -->
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowScoreTab}">
+                                            <!-- Left Column: Scoring Description -->
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Scoring Description"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content -->
+                                                    <StackPanel Grid.Row="1" Margin="15" Spacing="10">
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap">
+                                                            <Run Text="Tally Based Scoring for the selected items."/>
+                                                        </TextBlock>
+
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap">
+                                                            <Run Text="Recommended Cutoff value: "/>
+                                                            <Run Text="Unknown (TODO)" Foreground="{StaticResource Blue}"/>
+                                                        </TextBlock>
+
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap">
+                                                            <Run Text="Seed Rarity: "/>
+                                                            <Run Text="Unknown" Foreground="{StaticResource Blue}"/>
+                                                        </TextBlock>
+
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="13"
+                                                                   Foreground="Black"
+                                                                   TextWrapping="Wrap">
+                                                            <Run Text="Verified Seeds: "/>
+                                                            <Run Text="0" Foreground="{StaticResource Blue}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Right Column: Scoring Criteria (Should[]) - Fixed header, scrolling content -->
+                                            <Border Grid.Column="2"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header (Fixed) -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Scoring Criteria"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Content (Scrollable) -->
+                                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                                        <StackPanel Margin="15" Spacing="10">
+                                                        <!-- Header Row -->
+                                                        <Grid ColumnDefinitions="3*,*" Margin="0,0,0,5">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="Item"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="13"
+                                                                      
+                                                                       Foreground="{StaticResource DarkGrey}"/>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="Antes"
+                                                                       FontFamily="{StaticResource BalatroFont}"
+                                                                       FontSize="13"
+                                                                      
+                                                                       Foreground="{StaticResource DarkGrey}"
+                                                                       HorizontalAlignment="Left"/>
+                                                        </Grid>
+
+                                                        <!-- Should Jokers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Should.Jokers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Should Vouchers -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Should.Vouchers}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Should Consumables -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Should.Consumables}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Should StandardCards -->
+                                                        <ItemsControl ItemsSource="{Binding SelectedFilter.Should.StandardCards}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid ColumnDefinitions="3*,*" Margin="0,2">
+                                                                        <TextBlock Grid.Column="0"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding ., Converter={StaticResource ItemNameToFormattedStringConverter}}"
+                                                                                   TextWrapping="Wrap"/>
+                                                                        <TextBlock Grid.Column="1"
+                                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                                   FontSize="13"
+                                                                                   Foreground="Black"
+                                                                                   Text="{Binding Antes, Converter={StaticResource AntesFormatterConverter}}"
+                                                                                   HorizontalAlignment="Left"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        </StackPanel>
+                                                    </ScrollViewer>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+
+                                    <!-- PREFERRED DECK TAB CONTENT (two-column layout) -->
+                                    <Grid ColumnDefinitions="*,15,*" IsVisible="{Binding ShowDeckTab}">
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Deck &amp; Stake"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource White}"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Display-only: Deck sprite with stake seal (NO ARROWS!) -->
+                                                    <components:DeckSpinner Grid.Row="1"
+                                                        ShowArrows="False"
+                                                        SelectedDeckIndex="{Binding SelectedDeckIndex}"
+                                                        StakeIndex="{Binding SelectedStakeIndex}"
+                                                        Margin="10"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Top"
+                                                        IsHitTestVisible="False">
+                                                        <components:DeckSpinner.Styles>
+                                                            <Style Selector="Border.panel-content">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="MinHeight" Value="180"/>
+                                                                <Setter Property="MaxHeight" Value="240"/>
+                                                            </Style>
+                                                        </components:DeckSpinner.Styles>
+                                                    </components:DeckSpinner>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Right Column: Deck Information with Sticky Header -->
+                                            <Border Grid.Column="2"
+                                                    Background="{StaticResource White}"
+                                                    CornerRadius="8">
+                                                <Grid RowDefinitions="Auto,*">
+                                                    <!-- Sticky Header -->
+                                                    <Border Grid.Row="0"
+                                                            Background="{StaticResource Blue}"
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
+                                                        <TextBlock Text="Deck Information"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource White}"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Scrollable Content -->
+                                                    <ScrollViewer Grid.Row="1"
+                                                                  VerticalScrollBarVisibility="Auto">
+                                                        <TextBlock Margin="15"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="12"
+                                                                   Foreground="{StaticResource Black}"
+                                                                   TextWrapping="Wrap"
+                                                                   LineHeight="18">
+                                                            <Run Text=" - Spectral Cards in Shop Slots are Ghost Deck ONLY" />
+                                                            <LineBreak/>
+                                                            <Run Text=" - Some decks start with a voucher(s)/consumable(s) already obtained" />
+                                                            <LineBreak/>
+                                                            <Run Text=" - Start with Voucher based on Deck" />
+                                                            <LineBreak/>
+                                                            <Run Text=" -Black Stake or Higher is required to filter for Jokers with Eternal Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -Orange Stake or Higher is required to filter for Jokers with Perishable Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -Gold Stake, the highest, is required to filter for Jokers with Rental Sticker"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -This cute Blue Label at the top with the White Text is nifty. Let's add some more text. Scrolling is fun!"/>
+                                                            <LineBreak />
+                                                            <Run Text=" -If you ever havin' a bad day it's okay to take a break and just breathe. And remember..... pifreak loves you!"/>
+                                                        </TextBlock>
+                                                    </ScrollViewer>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+
+                                    <!-- Placeholder when no filter selected (Balatro Challenges style) -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Spacing="15"
+                                                IsVisible="{Binding ShowPlaceholder}">
+                                        <TextBlock Text="Select a Filter"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="20"
+                                                   Foreground="{StaticResource White}"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"/>
+
+                                        <TextBlock Text="— or —"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="16"
+                                                   Foreground="{StaticResource TextInactive}"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"/>
+
+                                        <Button Content="+ CREATE NEW FILTER"
+                                                Classes="btn-blue"
+                                                FontSize="16"
+                                                Height="50"
+                                                MinWidth="280"
+                                                Command="{Binding CreateNewCommand}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Grid.Row="3"
+                                      ColumnDefinitions="*,15,*"
+                                      Margin="0,8,0,0"
+                                      IsVisible="{Binding ShowDetailsPanel}">
+
+                                    <Grid Grid.Column="0">
+                                        <Button Content="Make a Copy of this Filter"
+                                                Classes="btn-blue"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding CopyCommand}"
+                                                IsVisible="{Binding EnableCopy}"
+                                                IsHitTestVisible="{Binding EnableCopy}"/>
+
+                                        <Button Content="Search Seeds using this Filter"
+                                                Classes="btn-blue"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding SearchCommand}"
+                                                IsVisible="{Binding EnableSearch}"
+                                                IsHitTestVisible="{Binding EnableSearch}"/>
+                                    </Grid>
+
+                                    <Grid Grid.Column="2" ColumnDefinitions="*,6,*">
+                                        <Button Grid.Column="0"
+                                                Content="Edit this Filter"
+                                                Classes="btn-orange"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding EditCommand}"/>
+
+                                        <Button Grid.Column="2"
+                                                Content="Delete this Filter"
+                                                Classes="btn-red"
+                                                Height="45"
+                                                FontSize="18"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding DeleteCommand}"/>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Footer with BACK button -->
+                    <Button Grid.Row="1"
+                            Content="BACK"
+                            Classes="back-button"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding BackCommand}"
+                            Margin="0"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <!-- Filter list item style (Balatro Challenges row spec) -->
+        <Style Selector="Button.filter-list-item">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="210"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="Button.filter-list-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+
+        <Style Selector="Button.filter-list-item:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+
+        <Style Selector="Button.filter-list-item.selected">
+            <!-- No background change - only triangle indicates selection -->
+        </Style>
+
+        <!-- Special blue styling for CREATE NEW FILTER -->
+        <Style Selector="Button.create-new-item">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <Style Selector="Button.create-new-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <Style Selector="Button.create-new-item:pressed">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+    </UserControl.Styles>
+
+</UserControl>

@@ -1,0 +1,243 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.PaginatedFilterBrowser"
+             x:DataType="vm:PaginatedFilterBrowserViewModel">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/>  <!-- Left: Filter List -->
+            <ColumnDefinition Width="20"/>   <!-- Spacer -->
+            <ColumnDefinition Width="*"/>    <!-- Right: Details Panel -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- LEFT SIDE: Paginated Filter List -->
+        <Border Grid.Column="0" 
+                Background="{StaticResource DarkBackground}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>    <!-- Filter List -->
+                    <RowDefinition Height="Auto"/> <!-- Pagination -->
+                    <RowDefinition Height="Auto"/> <!-- Status -->
+                </Grid.RowDefinitions>
+                
+                <!-- Filter List with Selection Triangle -->
+                <!-- Wrap the whole list and triangle in a ScrollViewer so a fixed page of 120 items can scroll without clipping -->
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <!-- Triangle indicator for selected item (Balatro Challenges style) -->
+                        <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
+                        <Polygon Name="SelectionTriangle"
+                                 Points="15,0 0,10 15,20"
+                                 Classes="balatro-triangle balatro-bounce-horizontal"
+                                 Canvas.Left="0"
+                                 Canvas.Top="{Binding SelectedItemTriangleY}"
+                                 IsVisible="{Binding HasSelectedFilter}"/>
+                    </Canvas>
+                    
+                        <!-- Filter List -->
+                        <StackPanel Name="FilterListPanel" Margin="0">
+                            <ItemsControl ItemsSource="{Binding CurrentPageFilters}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayText}"
+                                                Classes="filter-list-item"
+                                                Classes.selected="{Binding IsSelected}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+                
+                <!-- Pagination Controls -->
+                <!-- Pagination Controls (matching Balatro screenshot) -->
+                <StackPanel Grid.Row="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="4"
+                            Margin="0,20,0,0">
+                    <Button Content="&lt;"
+                            Classes="btn-red"
+                            Width="44"
+                            Height="36"
+                            FontSize="16"
+                            
+                            Padding="0"
+                            CornerRadius="8"
+                            Command="{Binding PreviousPageCommand}"/>
+
+                    <!-- Page indicator -->
+                    <Border Background="{StaticResource Red}"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            MinWidth="100"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageIndicatorText}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   
+                                   Foreground="White"
+                                   TextAlignment="Center"/>
+                    </Border>
+
+                    <Button Content="&gt;"
+                            Classes="btn-red"
+                            Width="44"
+                            Height="36"
+                            FontSize="16"
+                            
+                            Padding="0"
+                            CornerRadius="8"
+                            Command="{Binding NextPageCommand}"/>
+                </StackPanel>
+                
+                <!-- Status Text -->
+                <TextBlock Grid.Row="2"
+                           Text="{Binding StatusText}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="14"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"
+                           Margin="0,10,0,0"/>
+            </Grid>
+        </Border>
+        
+        <!-- RIGHT SIDE: Details Panel -->
+        <Border Grid.Column="2" 
+                Background="{StaticResource DarkBackground}" 
+                BorderThickness="0" 
+                CornerRadius="8" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>    <!-- Filter Details -->
+                    <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+                </Grid.RowDefinitions>
+                
+                <!-- Filter Details Area -->
+                <Grid Grid.Row="0" IsVisible="{Binding HasSelectedFilter}">
+                    <StackPanel Spacing="15">
+                        <!-- Filter Name -->
+                        <TextBlock Text="{Binding SelectedFilter.Name}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <!-- Filter Description -->
+                        <TextBlock Text="{Binding SelectedFilter.Description}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource White}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <!-- Filter Metadata -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding SelectedFilter.AuthorText}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ModalGrey}"/>
+                            <TextBlock Text="{Binding SelectedFilter.DateText}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ModalGrey}"/>
+                            <TextBlock Text="{Binding SelectedFilter.StatsText}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ModalGrey}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- No Selection Message -->
+                <TextBlock Grid.Row="0"
+                           Text="Select a filter to view details"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="18"
+                           Foreground="{StaticResource ModalGrey}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding !HasSelectedFilter}"/>
+                
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="1" 
+                            Spacing="10"
+                            IsVisible="{Binding HasSelectedFilter}">
+                    
+                    <!-- Main Action Button -->
+                    <Button Content="{Binding MainButtonText}"
+                            Classes="btn-blue"
+                            Height="50"
+                            FontSize="16"
+                            Command="{Binding MainButtonCommand}"
+                            CommandParameter="{Binding SelectedFilter}"/>
+                    
+                    <!-- Secondary Action Button -->
+                    <Button Content="{Binding SecondaryButtonText}"
+                            Classes="btn-orange"
+                            Height="45"
+                            FontSize="14"
+                            Command="{Binding SecondaryButtonCommand}"
+                            CommandParameter="{Binding SelectedFilter}"
+                            IsVisible="{Binding ShowSecondaryButton}"/>
+                    
+                    <!-- Delete Button -->
+                    <Button Content="DELETE"
+                            Classes="btn-red"
+                            Height="40"
+                            FontSize="14"
+                            Command="{Binding DeleteCommand}"
+                            CommandParameter="{Binding SelectedFilter}"
+                            IsVisible="{Binding ShowDeleteButton}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+    
+    <UserControl.Styles>
+        <!-- Filter list item style (Balatro Challenges row spec) -->
+        <Style Selector="Button.filter-list-item">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="210"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="Button.filter-list-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+        </Style>
+        
+        <Style Selector="Button.filter-list-item:pressed">
+            <Setter Property="Background" Value="{StaticResource HoverShadow}"/>
+        </Style>
+
+        <Style Selector="Button.filter-list-item.selected">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+
+        <!-- Special blue styling for CREATE NEW FILTER -->
+        <Style Selector="Button.create-new-item">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+        
+        <Style Selector="Button.create-new-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+        
+        <Style Selector="Button.create-new-item:pressed">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

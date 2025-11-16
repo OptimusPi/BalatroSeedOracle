@@ -2,282 +2,253 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
-             x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
+             x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal"
+             x:DataType="vm:AnalyzeModalViewModel">
     
-    <UserControl.Styles>
-        <!-- Balatro-style tab buttons -->
-        <Style Selector="Button.tab-button">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            
-            <Setter Property="Height" Value="50"/>
-            <Setter Property="MinWidth" Value="140"/>
-            <Setter Property="Margin" Value="4,0,4,4"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Grid>
-                        <Border Name="DropShadow"
-                                Background="{StaticResource DropShadow}"
-                                CornerRadius="8"
-                                Margin="0,4,0,0"/>
-                        <Border Name="PART_Border"
-                                Background="{StaticResource Red}"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                                              TextBlock.FontWeight="{TemplateBinding FontWeight}"
-                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        
-        <!-- Hover state -->
-        <Style Selector="Button.tab-button:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Tab button inherits pressed behavior from global styles -->
-        
-        <!-- Active state - same as regular, no blue! -->
-        <Style Selector="Button.tab-button.active /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource Red}"/>
-        </Style>
-        
-        <!-- Active hover -->
-        <Style Selector="Button.tab-button.active:pointerover /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
-        </Style>
-        
-        <!-- Disabled state -->
-        <Style Selector="Button.tab-button:disabled /template/ Border#PART_Border">
-            <Setter Property="Background" Value="{StaticResource RedDisabled}"/>
-        </Style>
-        <Style Selector="Button.tab-button:disabled">
-            <Setter Property="Cursor" Value="Arrow"/>
-        </Style>
-        
-        <!-- Small button style -->
-        <Style Selector="Button.small-button">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.small-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        
-        <!-- Navigation arrow style -->
-        <Style Selector="Button.nav-arrow">
-            <Setter Property="Background" Value="{StaticResource Blue}"/>
-            <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="26"/>
-            
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        <Style Selector="Button.nav-arrow:pointerover">
-            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
-        </Style>
-        
-        <!-- Content box style -->
-        <Style Selector="Border.content-box">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Ante Panel Style -->
-        <Style Selector="Border.ante-panel">
-            <Setter Property="Background" Value="{StaticResource DarkModalGrey}"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Margin" Value="5,5,5,10"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Shop Slot Style -->
-        <Style Selector="Border.shop-slot">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="MinWidth" Value="90"/>
-            <Setter Property="MinHeight" Value="130"/>
-        </Style>
-        
-        <!-- Tag Display Style -->
-        <Style Selector="Border.tag-display">
-            <Setter Property="Background" Value="{StaticResource VeryDarkGrey}"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-        
-        <!-- Section Header Style -->
-        <Style Selector="TextBlock.section-header">
-            <Setter Property="FontSize" Value="24"/>
-            
-            <Setter Property="Margin" Value="0,0,0,15"/>
-            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
-        </Style>
-    </UserControl.Styles>
+    <UserControl.Resources>
+        <converters:ShopItemSpriteConverter x:Key="ShopItemSpriteConverter"/>
+        <converters:BoosterPackSpriteConverter x:Key="BoosterPackSpriteConverter"/>
+        <converters:TagSpriteConverter x:Key="TagSpriteConverter"/>
+    </UserControl.Resources>
+
+    <!-- Remove local styles in favor of global Balatro styles -->
+
+    <!-- DataTemplates -->
+    <UserControl.DataTemplates>
+        <!-- Shop Item Template -->
+        <DataTemplate DataType="models:ShopItemModel">
+            <Border Classes="modal-content-box" Width="100" Height="140">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <!-- Item Sprite -->
+                    <Image Source="{Binding Converter={StaticResource ShopItemSpriteConverter}}"
+                           Width="71" Height="95"
+                           Stretch="UniformToFill"/>
+
+                    <!-- Edition Badge -->
+                    <TextBlock Text="{Binding EditionName}"
+                              FontSize="10"
+                              HorizontalAlignment="Center"
+                              Foreground="{Binding EditionColor}"
+                              IsVisible="{Binding HasEdition}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- Booster Pack Template -->
+        <DataTemplate DataType="models:BoosterPackModel">
+            <Border Classes="modal-content-box" MinWidth="100" MaxWidth="150" MinHeight="140" Margin="4">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <!-- Pack Sprite -->
+                    <Image Source="{Binding Converter={StaticResource BoosterPackSpriteConverter}}"
+                           Width="71" Height="95"
+                           Stretch="Uniform"/>
+
+                    <!-- Pack Info -->
+                    <StackPanel>
+                        <TextBlock Text="{Binding PackName}"
+                                  FontSize="10"
+                                  HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="{Binding ItemsText}"
+                                  FontSize="8"
+                                  HorizontalAlignment="Center"
+                                  TextWrapping="Wrap"
+                                  MaxWidth="90"
+                                  Opacity="0.8"
+                                  Margin="0,2,0,0"
+                                  IsVisible="{Binding HasItems}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- Tag Template -->
+        <DataTemplate DataType="models:TagModel">
+            <Border Classes="modal-content-box" CornerRadius="20" Padding="12,8" Margin="4">
+                <StackPanel Orientation="Horizontal">
+                    <!-- Tag Sprite -->
+                    <Image Source="{Binding Converter={StaticResource TagSpriteConverter}}"
+                           Width="34" Height="34"
+                           Stretch="UniformToFill"
+                           Margin="0,0,8,0"/>
+
+                    <!-- Tag Info -->
+                    <StackPanel>
+                        <TextBlock Text="{Binding BlindType}"
+                                  FontSize="10"
+                                  Opacity="0.7"/>
+                        <TextBlock Text="{Binding TagName}"
+                                  FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- Ante Template -->
+        <DataTemplate DataType="models:AnteAnalysisModel">
+            <Border Classes="BalatroSeedOracle-modal-card-precise" Padding="20">
+                <StackPanel>
+                    <!-- Ante Header -->
+                    <TextBlock Text="{Binding AnteTitle}" Classes="balatro-section-header"/>
+
+                    <!-- Voucher Section -->
+                    <StackPanel IsVisible="{Binding HasVoucher}">
+                        <TextBlock Text="VOUCHER" FontSize="16" Margin="0,10,0,5"/>
+                        <TextBlock Text="{Binding VoucherName}" FontSize="14" Margin="20,0,0,10"/>
+                    </StackPanel>
+
+                    <!-- Shop Section -->
+                    <StackPanel IsVisible="{Binding HasShopItems}">
+                        <TextBlock Text="SHOP" FontSize="16" Margin="0,10,0,5"/>
+                        <ItemsControl ItemsSource="{Binding ShopItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Booster Packs Section -->
+                    <StackPanel IsVisible="{Binding HasBoosterPacks}">
+                        <TextBlock Text="BOOSTER PACKS" FontSize="16" Margin="0,15,0,5"/>
+                        <ItemsControl ItemsSource="{Binding BoosterPacks}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Tags Section -->
+                    <StackPanel>
+                        <TextBlock Text="SKIP TAGS" FontSize="16" Margin="0,15,0,5"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <ContentControl Content="{Binding SmallBlindTag}"/>
+                            <ContentControl Content="{Binding BigBlindTag}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.DataTemplates>
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Triangle pointer -->
             <RowDefinition Height="Auto"/> <!-- Tabs -->
             <RowDefinition Height="*"/>    <!-- Content -->
         </Grid.RowDefinitions>
-        
-        <!-- Triangle pointer above tabs -->
-        <Grid Grid.Row="0" HorizontalAlignment="Center" Height="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="148"/> <!-- DECK/STAKE -->
-                <ColumnDefinition Width="148"/> <!-- ANALYZE -->
-            </Grid.ColumnDefinitions>
-            
-            <!-- Triangle container with shadow and main triangle -->
-            <Grid Grid.Column="0"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Bottom">
-                
-                <!-- Drop shadow triangle -->
-                <Polygon Points="10,20 20,5 0,5" 
-                         Fill="{StaticResource SemiTransparentShadow}"
-                         Margin="2,2,0,0"/>
-                
-                <!-- Main triangle that bounces -->
-                <Polygon Name="TabTriangle"
-                         Points="10,20 20,5 0,5" 
-                         Fill="{StaticResource Red}">
-                    <Polygon.Styles>
-                        <Style Selector="Polygon">
-                            <Style.Animations>
-                                <Animation Duration="0:0:1.2" 
-                                           IterationCount="Infinite"
-                                           PlaybackDirection="Alternate"
-                                           Easing="SineEaseInOut">
-                                    <KeyFrame Cue="0%">
-                                        <Setter Property="Margin" Value="0,0,0,0"/>
-                                    </KeyFrame>
-                                    <KeyFrame Cue="100%">
-                                        <Setter Property="Margin" Value="0,-8,0,8"/>
-                                    </KeyFrame>
-                                </Animation>
-                            </Style.Animations>
-                        </Style>
-                    </Polygon.Styles>
-                </Polygon>
-            </Grid>
-        </Grid>
-        
-        <!-- Tab buttons -->
-        <StackPanel Grid.Row="1" 
-                    Orientation="Horizontal" 
-                    HorizontalAlignment="Center"
-                    Margin="0,4,0,4">
-            <Button Name="SettingsTab" Content="DECK/STAKE" Classes="tab-button active" Click="OnSettingsTabClick"/>
-            <Button Name="AnalyzerTab" Content="ANALYZE" Classes="tab-button" Click="OnAnalyzerTabClick"/>
-        </StackPanel>
+
+        <!-- Balatro-style tab control with automatic triangle positioning -->
+        <controls:BalatroTabControl Grid.Row="0"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,2"
+                                    SelectedIndex="{Binding ActiveTab, Converter={x:Static converters:EnumToIntConverter.Instance}}">
+            <controls:BalatroTabControl.Items>
+                <TabItem Header="DECK/STAKE"/>
+                <TabItem Header="ANALYZE"/>
+            </controls:BalatroTabControl.Items>
+        </controls:BalatroTabControl>
         
         <!-- Content panels -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <!-- Settings Panel (Deck/Stake) -->
-            <StackPanel Name="SettingsPanel" IsVisible="True" Spacing="24">
-                <Border Background="{StaticResource DarkModalGrey}" 
-                        CornerRadius="12" 
-                        Padding="40"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                    <components:DeckAndStakeSelector Name="DeckAndStakeSelector"/>
-                </Border>
+            <StackPanel IsVisible="{Binding SettingsTabVisible}" Spacing="24">
+                <!-- Explanatory Text -->
+                <TextBlock Text="Peek inside any seed to see what the shops, packs, and skip tags look like for each ante!"
+                          FontFamily="{StaticResource BalatroFont}"
+                          FontSize="13"
+                          Foreground="{StaticResource VeryLightGrey}"
+                          TextWrapping="Wrap"
+                          HorizontalAlignment="Center"
+                          TextAlignment="Center"
+                          Opacity="0.8"
+                          Margin="0,8,0,0"/>
+
+                <!-- Deck and Stake selector (no wrapper needed - component styles itself) -->
+                <components:DeckAndStakeSelector Name="DeckAndStakeSelector"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
             </StackPanel>
             
             <!-- Analyzer Panel -->
-            <ScrollViewer Name="AnalyzerPanel" IsVisible="False" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer IsVisible="{Binding AnalyzerTabVisible}" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Input Section -->
-                    <Border Background="{StaticResource DarkModalGrey}" CornerRadius="12" Margin="10">
-                            <Grid Margin="15">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*" MaxWidth="300"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <!-- Seed Input -->
-                                <TextBlock Grid.Column="0" 
-                                          Text="Seed:" 
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,10,0"
-                                          FontSize="16"
-                                          Foreground="{StaticResource White}"/>
-                                
-                                <TextBox Grid.Column="1" 
-                                        Name="SeedInput"
-                                        Text=""
-                                        FontSize="16"
-                                        MaxLength="8"
-                                        Watermark="Enter seed..."
-                                        VerticalAlignment="Center"
-                                        Height="40"
-                                        Margin="0,0,15,0"
-                                        CornerRadius="6"
-                                        Background="{StaticResource VeryDarkGrey}"
-                                        BorderBrush="{StaticResource DarkBorder}"
-                                        BorderThickness="0"/>
-                                
-                                <!-- Analyze Button -->
-                                <Button Grid.Column="2" 
-                                       Name="AnalyzeButton"
-                                       Content="ANALYZE"
-                                       Click="OnAnalyzeClick"
-                                       MinWidth="120"
-                                       Background="{StaticResource AccentGreen}"
-                                       Foreground="{StaticResource White}"
-                                       
-                                       FontSize="16"
-                                       CornerRadius="6"
-                                       Height="40"
-                                       Classes="btn-green"/>
-                            </Grid>
-                        </Border>
-                    
+                    <Border Classes="modal-content-panel" Margin="10">
+                        <Grid Margin="15" ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*" MaxWidth="300"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Seed Input -->
+                            <TextBlock Grid.Column="0"
+                                      Text="Seed:"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,10,0"
+                                      FontSize="16"
+                                      Foreground="{StaticResource White}"/>
+
+                            <TextBox Grid.Column="1"
+                                    Text="{Binding SeedInput}"
+                                    FontSize="16"
+                                    MaxLength="8"
+                                    Watermark="Enter seed..."
+                                    VerticalAlignment="Center"
+                                    Height="40"
+                                    Margin="0,0,15,0"
+                                    CornerRadius="6"
+                                    BorderThickness="0"/>
+
+                            <!-- Analyze Button -->
+                            <Button Grid.Column="2"
+                                   Content="ANALYZE"
+                                   Command="{Binding AnalyzeSeedCommand}"
+                                   MinWidth="120"
+                                   Background="{StaticResource AccentGreen}"
+                                   Foreground="{StaticResource White}"
+                                   FontSize="16"
+                                   CornerRadius="6"
+                                   Height="44"
+                                   Classes="btn-green"/>
+
+                            <!-- Pop-out Analyzer Button -->
+                            <Button Grid.Column="3"
+                                   Content="POP-OUT"
+                                   Command="{Binding PopOutAnalyzerCommand}"
+                                   MinWidth="100"
+                                   Background="{StaticResource Blue}"
+                                   Foreground="{StaticResource White}"
+                                   FontSize="16"
+                                   CornerRadius="6"
+                                   Height="44"
+                                   Classes="btn-blue"/>
+                        </Grid>
+                    </Border>
+
                     <!-- Results Section -->
-                    <StackPanel Name="ResultsPanel" Margin="5">
+                    <StackPanel Margin="5">
                         <!-- Placeholder -->
-                        <Border Name="PlaceholderPanel" 
-                               Background="{StaticResource DarkModalGrey}" 
-                               CornerRadius="12" 
+                        <Border Classes="BalatroSeedOracle-modal-card-precise"
                                Padding="40"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Margin="20">
+                               Margin="20"
+                               IsVisible="{Binding ShowPlaceholder}">
                             <StackPanel>
                                 <TextBlock Text="🎴"
                                           FontSize="48"
                                           HorizontalAlignment="Center"
                                           Margin="0,0,0,10"/>
-                                <TextBlock Name="PlaceholderText"
-                                          Text="Enter a seed and click ANALYZE"
+                                <TextBlock Text="Enter a seed and click ANALYZE"
                                           HorizontalAlignment="Center"
                                           FontSize="18"
                                           Foreground="{StaticResource White}"/>
@@ -288,8 +259,17 @@
                                           Opacity="0.7"/>
                             </StackPanel>
                         </Border>
-                        
-                        <!-- Ante results will be added here dynamically -->
+
+                        <!-- Analysis Header -->
+                        <StackPanel Margin="0,0,0,10" IsVisible="{Binding HasAnalysisResults}">
+                            <TextBlock Text="{Binding AnalysisHeader}"
+                                      FontSize="20"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,10,0,5"/>
+                        </StackPanel>
+
+                        <!-- Analysis Display -->
+                        <features:SeedAnalysisDisplay DataContext="{Binding CurrentAnalysis}"/>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

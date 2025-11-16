@@ -1,0 +1,66 @@
+<!-- Balatro Card Flip Animation Styles -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Card flip animations - matches real Balatro! -->
+    <Style Selector="Button.widget-card">
+        <Setter Property="Width" Value="96"/>
+        <Setter Property="Height" Value="120"/>
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <!-- Horizontal pinch effect when flipping -->
+                <DoubleTransition Property="(ScaleTransform.ScaleX)" Duration="0:0:0.15"/>
+                <DoubleTransition Property="(ScaleTransform.ScaleY)" Duration="0:0:0.05"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Card back pattern (minimized state) -->
+    <Style Selector="Border.card-back">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="{StaticResource PurpleViolet}" Offset="0.0"/>
+                    <GradientStop Color="{StaticResource DarkPurple}" Offset="0.5"/>
+                    <GradientStop Color="{StaticResource PurpleViolet}" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="10"/>
+    </Style>
+
+    <!-- Card back pattern/decoration -->
+    <Style Selector="Border.card-back-pattern">
+        <Setter Property="Background">
+            <Setter.Value>
+                <VisualBrush TileMode="Tile"
+                             DestinationRect="0,0,20,20"
+                             Stretch="None">
+                    <VisualBrush.Visual>
+                        <Canvas Width="20" Height="20">
+                            <Ellipse Width="4" Height="4" Fill="{StaticResource PurpleMuted}" Canvas.Left="8" Canvas.Top="8"/>
+                        </Canvas>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Card front (when expanded/clicked) -->
+    <Style Selector="Border.card-front">
+        <Setter Property="Background" Value="{StaticResource Red}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+
+</Styles>

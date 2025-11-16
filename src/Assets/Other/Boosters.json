@@ -196,6 +196,48 @@
         }
     },
     {
+        "name": "standard",
+        "pos": {
+            "x": 1,
+            "y": 5
+        }
+    },
+    {
+        "name": "standardpack",
+        "pos": {
+            "x": 1,
+            "y": 5
+        }
+    },
+    {
+        "name": "standardpack1",
+        "pos": {
+            "x": 1,
+            "y": 5
+        }
+    },
+    {
+        "name": "buffoon",
+        "pos": {
+            "x": 2,
+            "y": 5
+        }
+    },
+    {
+        "name": "buffoonpack",
+        "pos": {
+            "x": 2,
+            "y": 5
+        }
+    },
+    {
+        "name": "buffoonpack1",
+        "pos": {
+            "x": 2,
+            "y": 5
+        }
+    },
+    {
         "name": "arcana",
         "pos": {
             "x": 0,

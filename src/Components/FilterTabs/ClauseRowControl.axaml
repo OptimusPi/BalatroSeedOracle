@@ -1,0 +1,269 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.ClauseRowControl"
+             x:DataType="vm:ClauseRowViewModel">
+
+    <!-- Card-based design with depth and game aesthetic -->
+    <Border x:Name="CardContainer"
+            Background="{DynamicResource CardGradientBrush}"
+            BorderBrush="{DynamicResource CardBorderBrush}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Margin="4"
+            MinWidth="220"
+            MaxWidth="260"
+            BoxShadow="0 4 12 2 #0F1923">
+
+        <!-- Add hover effects via transitions -->
+        <Border.Transitions>
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15"/>
+            </Transitions>
+        </Border.Transitions>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- Action buttons -->
+                <RowDefinition Height="Auto"/>  <!-- Icon/Sprite -->
+                <RowDefinition Height="Auto"/>  <!-- Item name -->
+                <RowDefinition Height="Auto"/>  <!-- Metadata badges -->
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Action Buttons (top corners) -->
+            <Grid Grid.Row="0" Margin="8,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Edit Button (top-left corner) -->
+                <Button Grid.Column="1"
+                        Width="28" Height="28"
+                        CornerRadius="14"
+                        Background="#44FFD700"
+                        BorderBrush="{StaticResource Gold}"
+                        BorderThickness="1"
+                        Command="{Binding EditClauseCommand}"
+                        ToolTip.Tip="Edit clause settings"
+                        Margin="0,0,4,0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right">
+                    <Button.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
+                        </Transitions>
+                    </Button.Transitions>
+                    <TextBlock Text="⚙"
+                               FontSize="14"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Button>
+
+                <!-- Remove Button (top-right corner) -->
+                <Button Grid.Column="2"
+                        Width="28" Height="28"
+                        CornerRadius="14"
+                        Background="#44FF4444"
+                        BorderBrush="{StaticResource Red}"
+                        BorderThickness="1"
+                        Command="{Binding RemoveClauseCommand}"
+                        ToolTip.Tip="Remove clause"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right">
+                    <Button.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.1"/>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
+                        </Transitions>
+                    </Button.Transitions>
+                    <TextBlock Text="✕"
+                               FontSize="14"
+                               Foreground="{StaticResource Red}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Button>
+            </Grid>
+
+            <!-- Row 1: Icon/Sprite Section -->
+            <Border Grid.Row="1"
+                    Width="90" Height="90"
+                    CornerRadius="8"
+                    Background="{StaticResource DarkGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="1"
+                    HorizontalAlignment="Center"
+                    Margin="12,0,12,12">
+
+                <Panel>
+                    <!-- Regular Item Icon with dynamic sizing based on category -->
+                    <Image Source="{Binding IconPath}"
+                           Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
+                           Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
+                           Stretch="Uniform"
+                           IsVisible="{Binding !IsOperator}"/>
+
+                    <!-- Operator Symbol (OR/AND) with glow effect -->
+                    <Border IsVisible="{Binding IsOperator}"
+                            Background="{StaticResource Gold}"
+                            CornerRadius="35"
+                            Width="70" Height="70"
+                            BoxShadow="0 0 20 5 #FFD700">
+                        <TextBlock Text="{Binding ClauseType}"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource Black}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Panel>
+            </Border>
+
+            <!-- Row 2: Item Name with glow -->
+            <TextBlock Grid.Row="2"
+                       Text="{Binding DisplayText}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource Gold}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="12,0,12,8"
+                       HorizontalAlignment="Center">
+                <!-- Add text shadow for depth -->
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="#FFD700"
+                                      Opacity="0.3"
+                                      BlurRadius="4"
+                                      OffsetX="0"
+                                      OffsetY="0"/>
+                </TextBlock.Effect>
+            </TextBlock>
+
+            <!-- Row 3: Metadata Badges -->
+            <WrapPanel Grid.Row="3"
+                       HorizontalAlignment="Center"
+                       Margin="12,0,12,12">
+
+                <!-- Ante Range Badge -->
+                <Border Background="{StaticResource Blue}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        Margin="2"
+                        IsVisible="{Binding AnteRange, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding AnteRange}"
+                               FontSize="10"
+                               FontFamily="{StaticResource BalatroFont}"
+                               Foreground="{StaticResource White}"/>
+                </Border>
+
+                <!-- Min Count Badge -->
+                <Border Background="{StaticResource Gold}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        Margin="2"
+                        IsVisible="{Binding MinCount, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <TextBlock FontSize="10"
+                               FontFamily="{StaticResource BalatroFont}"
+                               Foreground="{StaticResource Black}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Min: {0}">
+                                <Binding Path="MinCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Border>
+
+                <!-- Score Badge (for Should clauses) -->
+                <Border Background="{StaticResource AccentGreen}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        Margin="2"
+                        IsVisible="{Binding HasScore}">
+                    <TextBlock FontSize="10"
+                               FontFamily="{StaticResource BalatroFont}"
+                               Foreground="{StaticResource White}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Score: {0}">
+                                <Binding Path="ScoreValue"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Border>
+
+                <!-- Edition Badge with gradient -->
+                <Border CornerRadius="12"
+                        Padding="8,4"
+                        Margin="2"
+                        IsVisible="{Binding EditionBadge, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#8B5CF6" Offset="0"/>
+                            <GradientStop Color="#7C3AED" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock Text="{Binding EditionBadge}"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               FontFamily="{StaticResource BalatroFont}"
+                               Foreground="{StaticResource White}"/>
+                </Border>
+            </WrapPanel>
+        </Grid>
+    </Border>
+
+    <!-- Define card gradient brushes in resources -->
+    <UserControl.Resources>
+        <!-- Must Have Card Gradient (Emerald Green) -->
+        <LinearGradientBrush x:Key="MustCardGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#065F46" Offset="0"/>
+            <GradientStop Color="#047857" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Must Not Have Card Gradient (Crimson Red) -->
+        <LinearGradientBrush x:Key="MustNotCardGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#7F1D1D" Offset="0"/>
+            <GradientStop Color="#991B1B" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Should Have Card Gradient (Royal Purple) -->
+        <LinearGradientBrush x:Key="ShouldCardGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#5B21B6" Offset="0"/>
+            <GradientStop Color="#6D28D9" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Default Card Gradient -->
+        <LinearGradientBrush x:Key="CardGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#1E293B" Offset="0"/>
+            <GradientStop Color="#334155" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Default Border Brush -->
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#4ADE80"/>
+    </UserControl.Resources>
+
+    <!-- Add styles for hover effects -->
+    <UserControl.Styles>
+        <Style Selector="Border#CardContainer:pointerover">
+            <Setter Property="RenderTransform" Value="translateY(-4px)"/>
+            <Setter Property="BoxShadow" Value="0 8 20 4 #1E293B"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Button:pointerover">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="scale(1.1)"/>
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

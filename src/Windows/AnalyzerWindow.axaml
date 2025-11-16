@@ -1,0 +1,25 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:BalatroSeedOracle.ViewModels"
+        xmlns:views="using:BalatroSeedOracle.Features.Analyzer"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="BalatroSeedOracle.Windows.AnalyzerWindow"
+        x:DataType="vm:AnalyzerViewModel"
+        Title="Balatro Seed Analyzer"
+        Width="1200"
+        Height="800"
+        MinWidth="800"
+        MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True"
+        Background="{StaticResource ModalGrey}">
+
+    <Design.DataContext>
+        <vm:AnalyzerViewModel/>
+    </Design.DataContext>
+
+    <views:AnalyzerView x:Name="AnalyzerViewContent"/>
+
+</Window>

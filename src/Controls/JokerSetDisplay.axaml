@@ -4,7 +4,7 @@
     
     <UserControl.Styles>
         <Style Selector="Border.set-container">
-            <Setter Property="Background" Value="{StaticResource VeryDarkBackground}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -16,7 +16,7 @@
         
         <Style Selector="Border.set-container:pointerover">
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource LightGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         </Style>
         
         <Style Selector="TextBlock.set-name">

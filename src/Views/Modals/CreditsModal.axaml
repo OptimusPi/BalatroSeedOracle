@@ -1,9 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.CreditsModal">
     <UserControl.Styles>
         <Style Selector="TextBlock#CreditLink:pointerover">
-            <Setter Property="Foreground" Value="{StaticResource BrighterBlue}"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="TextDecorations" Value="Underline"/>
         </Style>
     </UserControl.Styles>
@@ -13,8 +13,8 @@
         </Grid.RowDefinitions>
 
         <!-- Credits Section -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource ContainerDarkPrecise}" 
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkBorder}"
                 BorderThickness="0"
                 Margin="20" 
                 CornerRadius="12"
@@ -63,7 +63,7 @@
                                         <TextBlock Text="{Binding Note}"
                                                    FontFamily="{StaticResource BalatroFont}"
                                                    FontSize="14"
-                                                   Foreground="{StaticResource TextLight}"
+                                                   Foreground="{StaticResource White}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,5,0,0"/>
                                         <TextBlock Text="{Binding Link}"

@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
+             MinWidth="600"
+             MinHeight="550">
+
+    <!-- NO BORDER! StandardModal already provides the border! -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="SETTINGS"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="24"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"/>
+
+        <!-- Settings Content - Simple vertical stack like Balatro -->
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+                <Button Content="Word Lists"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnWordListsClick"/>
+
+                <Button Content="Credits"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnCreditsClick"/>
+
+                <Button Content="Open Filters Folder"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnOpenFiltersDirectoryClick"/>
+
+                <Button Content="Open App Folder"
+                        Classes="btn-red"
+                        HorizontalAlignment="Stretch"
+                        Click="OnOpenAppDirectoryClick"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer removed - StandardModal provides the Back button -->
+    </Grid>
+</UserControl>

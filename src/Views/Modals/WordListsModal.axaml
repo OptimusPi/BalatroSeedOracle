@@ -1,11 +1,22 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
     <StackPanel Spacing="20" Margin="20">
+        <!-- Explanatory Text -->
+        <TextBlock Text="Create lists of seed keywords to search for (like memorable words or phrases). Your filters can reference these lists!"
+                  FontFamily="{StaticResource BalatroFont}"
+                  FontSize="13"
+                  Foreground="{StaticResource VeryLightGrey}"
+                  TextWrapping="Wrap"
+                  HorizontalAlignment="Center"
+                  TextAlignment="Center"
+                  Opacity="0.8"
+                  Margin="0,0,0,8"/>
+
         <!-- Simple file list at the top -->
-        <Border Background="{StaticResource ContainerDarkPrecise}" 
-                CornerRadius="12" 
+        <Border Background="{StaticResource DarkBorder}"
+                CornerRadius="12"
                 Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -21,19 +32,22 @@
                            FontSize="16"
                            Foreground="{StaticResource White}"/>
                 
-                <ComboBox Grid.Column="1" 
+                <ComboBox Grid.Column="1"
                           Name="FileSelector"
                           HorizontalAlignment="Stretch"
                           SelectedIndex="0">
-                    <ComboBoxItem>keywords.txt</ComboBoxItem>
-                    <ComboBoxItem>banned_words.txt</ComboBoxItem>
-                    <ComboBoxItem>custom_list.txt</ComboBoxItem>
+                    <!-- Files loaded dynamically from WordLists/ folder -->
                 </ComboBox>
                 
-                <StackPanel Grid.Column="2" 
-                            Orientation="Horizontal" 
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
                             Spacing="8"
                             Margin="12,0,0,0">
+                    <Button Name="PasteButton"
+                            Content="📋 Paste"
+                            Classes="small-button"
+                            Background="{StaticResource Blue}"
+                            Click="OnPasteClick"/>
                     <Button Name="NewButton"
                             Content="New List"
                             Classes="small-button"
@@ -48,7 +62,7 @@
         </Border>
         
         <!-- Text Editor -->
-        <Border Background="{StaticResource VeryDarkBackground}"
+        <Border Background="{StaticResource DarkBackground}"
                 BorderBrush="{StaticResource ModalBorder}"
                 BorderThickness="2"
                 CornerRadius="8"
@@ -66,7 +80,7 @@
                         Padding="12,8">
                     <TextBlock Text="One word or phrase per line"
                                FontSize="14"
-                               Foreground="{StaticResource MediumGrey}"/>
+                               Foreground="{StaticResource ModalGrey}"/>
                 </Border>
                 
                 <!-- Editor content -->
@@ -91,7 +105,7 @@
         <!-- Status text -->
         <TextBlock Name="StatusText"
                    Text="Edit word lists used by filters"
-                   Foreground="{StaticResource MediumGrey}"
+                   Foreground="{StaticResource ModalGrey}"
                    FontSize="14"
                    HorizontalAlignment="Center"/>
     </StackPanel>

@@ -1,0 +1,282 @@
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.ViewModels;
+
+namespace BalatroSeedOracle.Components
+{
+    public partial class FilterSelectorControl : UserControl
+    {
+        // IsInSearchModal Dependency Property
+        public static readonly StyledProperty<bool> IsInSearchModalProperty =
+            AvaloniaProperty.Register<FilterSelectorControl, bool>(
+                nameof(IsInSearchModal),
+                defaultValue: false
+            );
+
+        public bool IsInSearchModal
+        {
+            get => GetValue(IsInSearchModalProperty);
+            set => SetValue(IsInSearchModalProperty, value);
+        }
+
+        // Events that parent controls can subscribe to
+        public event EventHandler<string>? FilterSelected; // When a filter is clicked in list (for preview)
+        public event EventHandler<string>? FilterConfirmed; // When "SELECT THIS FILTER" button is clicked (confirm and advance)
+        public event EventHandler<string>? FilterEditRequested; // When Edit button is clicked
+        public event EventHandler<string>? FilterCopyRequested;
+        public event EventHandler<string>? FilterDeleteRequested; // When Delete button is clicked
+        public event EventHandler? NewFilterRequested;
+
+        private FilterListViewModel? _viewModel;
+        private Border? _filterListContainer;
+        private bool _pageSizeInitialized = false;
+
+        public FilterSelectorControl()
+        {
+            InitializeComponent();
+            InitializeViewModel();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsInSearchModalProperty)
+            {
+                // Update ViewModel when IsInSearchModal changes
+                _viewModel?.SetSearchModalMode((bool)change.NewValue!);
+            }
+        }
+
+        private void InitializeComponent()
+        {
+            Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
+        }
+
+        private void InitializeViewModel()
+        {
+            _viewModel = new FilterListViewModel();
+            DataContext = _viewModel;
+
+            // Wire up SizeChanged event for dynamic pagination
+            this.Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Find the filter list container
+            _filterListContainer = this.FindControl<Border>("FilterListContainer");
+            var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
+
+            // Do not set page size here; wait for template attach to measure item height
+
+            // When items control is attached and template materializes, re-calc using measured height
+            if (itemsControl != null)
+            {
+                itemsControl.AttachedToVisualTree += (s, a) =>
+                {
+                    if (_filterListContainer != null && !_pageSizeInitialized)
+                    {
+                        // Finalize page size using measured item height once the template is materialized
+                        UpdateItemsPerPage(_filterListContainer.Bounds.Height);
+                        _pageSizeInitialized = true;
+                    }
+                };
+            }
+
+            // Recalculate page size on container resize so it always fits whole items
+            if (_filterListContainer != null)
+            {
+                _filterListContainer.SizeChanged += (s, args) =>
+                {
+                    UpdateItemsPerPage(_filterListContainer.Bounds.Height);
+                };
+            }
+        }
+
+        private void UpdateItemsPerPage(double containerHeight)
+        {
+            if (_viewModel != null && containerHeight > 0)
+            {
+                // Try to measure the actual height of a filter item button for accurate paging
+                var measuredItemHeight = MeasureFilterItemHeight();
+
+                // Use the content height inside the Border, subtracting its vertical padding
+                var effectiveHeight = containerHeight;
+                if (_filterListContainer != null)
+                {
+                    var padding = _filterListContainer.Padding;
+                    effectiveHeight = Math.Max(0, containerHeight - (padding.Top + padding.Bottom));
+                }
+
+                _viewModel.UpdateItemsPerPage(effectiveHeight, measuredItemHeight);
+            }
+        }
+
+        private double MeasureFilterItemHeight()
+        {
+            try
+            {
+                var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
+                if (itemsControl != null)
+                {
+                    // Find the first Button inside the item template
+                    var button = itemsControl.FindDescendantOfType<Button>();
+                    if (button != null)
+                    {
+                        // Base height from measured bounds (includes template visuals)
+                        var measuredHeight = button.Bounds.Height;
+
+                        if (measuredHeight <= 0)
+                        {
+                            // If bounds not ready, force a measure
+                            button.Measure(Size.Infinity);
+                            measuredHeight = button.DesiredSize.Height;
+                        }
+
+                        if (measuredHeight > 0)
+                        {
+                            // Account for the button's vertical margin inside the item grid
+                            var marginTop = button.Margin.Top;
+                            var marginBottom = button.Margin.Bottom;
+
+                            // Include StackPanel item spacing
+                            var stackPanel = itemsControl.FindDescendantOfType<StackPanel>();
+                            var spacing = stackPanel != null ? stackPanel.Spacing : 0;
+
+                            // Add a small safety buffer to avoid off‑by‑one clipping
+                            return Math.Ceiling(
+                                measuredHeight + marginTop + marginBottom + spacing + 2
+                            );
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Error measuring button - use fallback height
+            }
+
+            // Conservative fallback: typical button height + margins + small buffer
+            // Default global MinHeight is 40; margin top/bottom ~3 each; spacing 0
+            return 48.0;
+        }
+
+        // Public method to refresh the filter list
+        public void RefreshFilters()
+        {
+            _viewModel?.LoadFilters();
+        }
+
+        // Public method to get the currently selected filter path
+        public string? GetSelectedFilterPath()
+        {
+            return _viewModel?.GetSelectedFilterPath();
+        }
+
+        // Event handler for filter list item click
+        private void OnFilterListItemClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Models.FilterListItem item)
+            {
+                _viewModel?.SelectFilter(item);
+
+                var filterPath = _viewModel?.GetSelectedFilterPath();
+                if (!string.IsNullOrEmpty(filterPath))
+                {
+                    // In SearchModal context: auto-advance to next tab (Balatro-style)
+                    // In FiltersModal context: just show preview (requires explicit "EDIT" click)
+                    if (IsInSearchModal)
+                    {
+                        Helpers.DebugLogger.Log(
+                            "FilterSelectorControl",
+                            $"Filter clicked in SearchModal - auto-advancing with: {filterPath}"
+                        );
+                        FilterConfirmed?.Invoke(this, filterPath);
+                    }
+                    else
+                    {
+                        Helpers.DebugLogger.Log(
+                            "FilterSelectorControl",
+                            $"Filter clicked in FiltersModal - showing preview: {filterPath}"
+                        );
+                        FilterSelected?.Invoke(this, filterPath);
+                    }
+                }
+            }
+        }
+
+        // Event handler for "Edit Filter" button
+        private void OnEditFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                // Fire edit event for FiltersModal
+                FilterEditRequested?.Invoke(this, filterPath);
+
+                // Also fire FilterSelected for backwards compatibility with SearchModal
+                // (SearchModal uses this to load the filter for searching)
+                FilterSelected?.Invoke(this, filterPath);
+            }
+        }
+
+        // Event handler for "Copy Filter" button
+        private void OnCopyFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                FilterCopyRequested?.Invoke(this, filterPath);
+            }
+        }
+
+        // Event handler for "Select This Filter" button (SearchModal context)
+        private void OnSelectFilterClick(object? sender, RoutedEventArgs e)
+        {
+            Helpers.DebugLogger.Log("FilterSelectorControl", "SELECT THIS FILTER button clicked!");
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            Helpers.DebugLogger.Log(
+                "FilterSelectorControl",
+                $"Filter path: {filterPath ?? "null"}"
+            );
+
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                Helpers.DebugLogger.Log(
+                    "FilterSelectorControl",
+                    $"Firing FilterConfirmed event with path: {filterPath}"
+                );
+                // Fire FilterConfirmed event (NOT FilterSelected) so SearchModal knows to advance
+                FilterConfirmed?.Invoke(this, filterPath);
+            }
+            else
+            {
+                Helpers.DebugLogger.LogError(
+                    "FilterSelectorControl",
+                    "No filter selected or path is empty!"
+                );
+            }
+        }
+
+        // Event handler for "+ NEW" button
+        private void OnCreateNewFilterClick(object? sender, RoutedEventArgs e)
+        {
+            NewFilterRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Event handler for "Delete Filter" button
+        private void OnDeleteFilterClick(object? sender, RoutedEventArgs e)
+        {
+            var filterPath = _viewModel?.GetSelectedFilterPath();
+            if (!string.IsNullOrEmpty(filterPath))
+            {
+                FilterDeleteRequested?.Invoke(this, filterPath);
+            }
+        }
+    }
+}

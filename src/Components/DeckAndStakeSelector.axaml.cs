@@ -1,154 +1,160 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using BalatroSeedOracle.Controls;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
+using CommunityToolkit.Mvvm.Input;
+using Motely;
 
 namespace BalatroSeedOracle.Components;
 
 public partial class DeckAndStakeSelector : UserControl
 {
-    private DeckSpinner? _deckSpinner;
-    private SpinnerControl? _stakeSpinner;
-    private Button? _selectButton;
+    private readonly DeckAndStakeSelectorViewModel _viewModel;
 
+    // Events mirror the inner ViewModel for external subscribers
     public event EventHandler<(int deckIndex, int stakeIndex)>? SelectionChanged;
     public event EventHandler? DeckSelected;
 
     public DeckAndStakeSelector()
     {
         InitializeComponent();
+        // Create internal ViewModel and set DataContext to the ViewModel for pure MVVM binding
+        _viewModel = new DeckAndStakeSelectorViewModel(
+            ServiceHelper.GetRequiredService<SpriteService>()
+        );
+        DataContext = _viewModel;
+        // Initialize styled properties from ViewModel
+        DeckIndex = _viewModel.DeckIndex;
+        StakeIndex = _viewModel.StakeIndex;
+        DeckImage = _viewModel.DeckImage;
+        StakeImage = _viewModel.StakeImage;
+        // Subscribe to ViewModel property changes to keep exposed styled properties in sync (compatibility)
+        // Use SetCurrentValue to properly notify TwoWay bindings when ViewModel changes
+        _viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(_viewModel.DeckIndex))
+            {
+                // Clamp to valid range before setting
+                var clampedValue = Math.Max(0, Math.Min(14, _viewModel.DeckIndex));
+                SetCurrentValue(DeckIndexProperty, clampedValue);
+            }
+            if (e.PropertyName == nameof(_viewModel.StakeIndex))
+            {
+                // Clamp to valid range before setting
+                var clampedValue = Math.Max(0, Math.Min(7, _viewModel.StakeIndex));
+                SetCurrentValue(StakeIndexProperty, clampedValue);
+            }
+            if (e.PropertyName == nameof(_viewModel.DeckImage))
+                DeckImage = _viewModel.DeckImage;
+            if (e.PropertyName == nameof(_viewModel.StakeImage))
+                StakeImage = _viewModel.StakeImage;
+        };
+
+        // Forward inner ViewModel events to control-level events for compatibility
+        _viewModel.SelectionChanged += (s, selection) => SelectionChanged?.Invoke(this, selection);
+        _viewModel.DeckSelected += (s, ea) => DeckSelected?.Invoke(this, ea);
     }
+
+    // InitializeViewModel removed; initialization happens in constructor to avoid reassigning readonly field
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
 
-        _deckSpinner = this.FindControl<DeckSpinner>("DeckSpinnerControl");
-        _stakeSpinner = this.FindControl<SpinnerControl>("StakeSpinner");
-        _selectButton = this.FindControl<Button>("SelectButton");
-        
-        // Configure stake spinner display values
-        if (_stakeSpinner != null)
+        // Ensure sane initial indices
+        if (_viewModel != null)
         {
-            _stakeSpinner.DisplayValues = new[] 
-            { 
-                "White Stake",
-                "Red Stake",
-                "Green Stake", 
-                "Black Stake",
-                "Blue Stake",
-                "Purple Stake",
-                "Orange Stake",
-                "Gold Stake"
-            };
+            if (_viewModel.DeckIndex < 0)
+                _viewModel.DeckIndex = 0;
+            if (_viewModel.StakeIndex < 0)
+                _viewModel.StakeIndex = 0;
         }
-
-        if (_deckSpinner != null)
-        {
-            _deckSpinner.DeckChanged += (s, deckIndex) =>
-            {
-                SelectionChanged?.Invoke(this, (deckIndex, StakeIndex));
-            };
-        }
-
-        if (_stakeSpinner != null)
-        {
-            _stakeSpinner.ValueChanged += (s, e) =>
-            {
-                // Update deck spinner to show new stake
-                _deckSpinner?.SetStakeIndex(StakeIndex);
-                SelectionChanged?.Invoke(this, (DeckIndex, StakeIndex));
-            };
-        }
+        // Pure MVVM: bindings handle synchronization; no manual event hookups required
     }
 
-    private void OnSelectClick(object? sender, RoutedEventArgs e)
-    {
-        // Fire the DeckSelected event to notify the parent modal
-        DeckSelected?.Invoke(this, EventArgs.Empty);
-    }
-
+    // DeckIndex property for MVVM two-way binding
+    public static readonly StyledProperty<int> DeckIndexProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        int
+    >(nameof(DeckIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int DeckIndex
     {
-        get => _deckSpinner?.SelectedDeckIndex ?? 0;
+        get => GetValue(DeckIndexProperty);
         set
         {
-            if (_deckSpinner != null)
-            {
-                _deckSpinner.SelectedDeckIndex = value;
-            }
+            // Clamp to valid range (0-14 for decks)
+            var clampedValue = Math.Max(0, Math.Min(14, value));
+            // CRITICAL FIX: Use SetCurrentValue to properly notify TwoWay bindings
+            SetCurrentValue(DeckIndexProperty, clampedValue);
+            _viewModel.DeckIndex = clampedValue;
         }
     }
 
+    // StakeIndex property for MVVM two-way binding
+    public static readonly StyledProperty<int> StakeIndexProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        int
+    >(nameof(StakeIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
     public int StakeIndex
     {
-        get => (int)(_stakeSpinner?.Value ?? 0);
+        get => GetValue(StakeIndexProperty);
         set
         {
-            if (_stakeSpinner != null)
-            {
-                _stakeSpinner.Value = value;
-            }
+            // Clamp to valid range (0-7 for stakes)
+            var clampedValue = Math.Max(0, Math.Min(7, value));
+            // CRITICAL FIX: Use SetCurrentValue to properly notify TwoWay bindings
+            SetCurrentValue(StakeIndexProperty, clampedValue);
+            _viewModel.StakeIndex = clampedValue;
         }
     }
 
-    public string SelectedDeckName => _deckSpinner?.SelectedDeckName ?? "Red";
-    public string SelectedStakeName => GetStakeName(StakeIndex);
-
-    private string GetStakeName(int index)
+    // Expose ViewModel-selected image paths as IImage for binding to Image.Source
+    public static readonly StyledProperty<IImage?> DeckImageProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        IImage?
+    >(nameof(DeckImage));
+    public IImage? DeckImage
     {
-        return index switch
-        {
-            0 => "White",
-            1 => "Red",
-            2 => "Green",
-            3 => "Black",
-            4 => "Blue",
-            5 => "Purple",
-            6 => "Orange",
-            7 => "Gold",
-            _ => "White",
-        };
+        get => GetValue(DeckImageProperty);
+        private set => SetValue(DeckImageProperty, value);
+    }
+    public static readonly StyledProperty<IImage?> StakeImageProperty = AvaloniaProperty.Register<
+        DeckAndStakeSelector,
+        IImage?
+    >(nameof(StakeImage));
+    public IImage? StakeImage
+    {
+        get => GetValue(StakeImageProperty);
+        private set => SetValue(StakeImageProperty, value);
+    }
+
+    // Commands for navigation and selection (expose as ICommand for broader compatibility)
+    public System.Windows.Input.ICommand PreviousDeckCommand => _viewModel.PreviousDeckCommand;
+    public System.Windows.Input.ICommand NextDeckCommand => _viewModel.NextDeckCommand;
+    public System.Windows.Input.ICommand PreviousStakeCommand => _viewModel.PreviousStakeCommand;
+    public System.Windows.Input.ICommand NextStakeCommand => _viewModel.NextStakeCommand;
+    public System.Windows.Input.ICommand SelectCommand => _viewModel.SelectCommand;
+
+    public void SetStake(string stakeName)
+    {
+        _viewModel?.SetStake(stakeName);
     }
 
     public void SetDeck(string deckName)
     {
-        int index = deckName?.ToLower() switch
-        {
-            "red" => 0,
-            "blue" => 1,
-            "yellow" => 2,
-            "green" => 3,
-            "black" => 4,
-            "magic" => 5,
-            "nebula" => 6,
-            "ghost" => 7,
-            "abandoned" => 8,
-            "checkered" => 9,
-            "zodiac" => 10,
-            "painted" => 11,
-            "anaglyph" => 12,
-            "plasma" => 13,
-            "erratic" => 14,
-            _ => 0, // Default to Red
-        };
-        DeckIndex = index;
+        _viewModel?.SetDeck(deckName);
     }
 
-    public void SetStake(string stakeName)
-    {
-        int index = stakeName?.ToLower() switch
-        {
-            "white" => 0,
-            "red" => 1,
-            "green" => 2,
-            "black" => 3,
-            "blue" => 4,
-            "purple" => 5,
-            "orange" => 6,
-            "gold" => 7,
-            _ => 0, // Default to White
-        };
-        StakeIndex = index;
-    }
+    // Forward selected names
+    public string SelectedDeckName => _viewModel.SelectedDeckName;
+    public string SelectedStakeName => _viewModel.SelectedStakeName;
+
+    // Forward strongly-typed enum selections
+    public MotelyDeck SelectedDeck => _viewModel.SelectedDeck;
+    public MotelyStake SelectedStake => _viewModel.SelectedStake;
 }

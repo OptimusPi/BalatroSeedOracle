@@ -1,3 +1,4 @@
+using System;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Models;
@@ -15,4 +16,9 @@ public class SearchProgress
     public bool HasError { get; set; }
     public int ResultsFound { get; set; }
     public SearchResult? NewResult { get; set; }
+
+    /// <summary>
+    /// Estimated time remaining for search completion (null if indeterminate)
+    /// </summary>
+    public TimeSpan? EstimatedTimeRemaining { get; set; }
 }

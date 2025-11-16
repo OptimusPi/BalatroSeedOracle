@@ -3,18 +3,18 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-  <ApplicationIcon>BalatroSeedOracle.ico</ApplicationIcon>
+    <ApplicationIcon>BalatroSeedOracle.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
-    <!-- Velopack Configuration -->
     <AssemblyName>BalatroSeedOracle</AssemblyName>
-    <Product>Balatro Seed BalatroSeedOracle</Product>
+    <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright © 2025</Copyright>
-  <Version>1.1.4</Version>
-  <FileVersion>1.1.4</FileVersion>
-  <AssemblyVersion>1.1.4</AssemblyVersion>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
     <!-- Enable more warnings for code quality -->
     <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -28,31 +28,46 @@
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
+  <!-- Copy Audio files to output directory -->
+  <ItemGroup>
+    <None Update="Assets\Audio\*.flac">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Audio\SFX\*.ogg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Copy syntax highlighting files to output directory -->
+  <ItemGroup>
+    <None Update="Resources\*.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Svg" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
-    <PackageReference Include="DuckDB.NET.Data" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
+    <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
+    <PackageReference Include="IconPacks.Avalonia.Material" />
     <PackageReference Include="MessageBox.Avalonia" />
-    <PackageReference Include="ScottPlot.Avalonia" />
+    <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
     <PackageReference Include="ClosedXML" />
-    <!-- Velopack for auto-updates and packaging -->
-    <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely.csproj" />
+    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />
   </ItemGroup>
 </Project>

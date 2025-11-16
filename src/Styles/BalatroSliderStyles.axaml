@@ -1,0 +1,60 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="Slider:horizontal">
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Slider">
+                <Grid>
+                    <Border Background="{StaticResource SliderEmpty}"
+                            CornerRadius="4"
+                            Height="8"
+                            VerticalAlignment="Center"/>
+
+                    <Track x:Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           Orientation="Horizontal">
+                        <Track.DecreaseButton>
+                            <RepeatButton Classes="trackButton"/>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Classes="trackButton"/>
+                        </Track.IncreaseButton>
+                        <Track.Thumb>
+                            <Thumb>
+                                <Thumb.Template>
+                                    <ControlTemplate>
+                                        <Border Width="16"
+                                                Height="16"
+                                                Background="{StaticResource Red}"
+                                                CornerRadius="8"
+                                                Cursor="Hand">
+                                            <Border.Styles>
+                                                <Style Selector="Border:pointerover">
+                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                </Style>
+                                            </Border.Styles>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Track.Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Slider RepeatButton.trackButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="RepeatButton">
+                <Border Background="Transparent"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+</Styles>

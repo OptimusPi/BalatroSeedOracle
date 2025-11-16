@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -19,7 +20,7 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _saveButton;
 
         private string _wordListsPath = System.IO.Path.Combine(
-            AppContext.BaseDirectory,
+            Directory.GetCurrentDirectory(),
             "WordLists"
         );
         private string? _currentFile;
@@ -131,19 +132,27 @@ tag"
 
         private async void OnFileSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+            try
             {
-                if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
+                if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
                 {
-                    // Ask to save changes
-                    var result = await ShowSavePrompt();
-                    if (result)
+                    if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
-                        SaveCurrentFile();
+                        // Ask to save changes
+                        var result = await ShowSavePrompt();
+                        if (result)
+                        {
+                            SaveCurrentFile();
+                        }
                     }
-                }
 
-                LoadFile(fileName);
+                    LoadFile(fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                UpdateStatus($"Error loading file: {ex.Message}");
             }
         }
 
@@ -154,10 +163,29 @@ tag"
                 var filePath = Path.Combine(_wordListsPath, fileName);
                 if (File.Exists(filePath) && _textEditor != null)
                 {
-                    _textEditor.Text = File.ReadAllText(filePath);
+                    var fileInfo = new FileInfo(filePath);
+
+                    // Check file size - if over 1MB, just load first 10k lines without counting total
+                    if (fileInfo.Length > 1_000_000) // 1MB
+                    {
+                        var lines = File.ReadLines(filePath).Take(10000).ToList();
+                        _textEditor.Text =
+                            string.Join("\n", lines)
+                            + $"\n\n... (showing first {lines.Count:N0} lines only)\n"
+                            + $"Large file ({fileInfo.Length / 1024:N0} KB) - read-only preview.\n"
+                            + $"Use external text editor to view/edit full file.";
+                        _textEditor.IsReadOnly = true;
+                        UpdateStatus($"⚠ Large file - showing preview only (read-only)");
+                    }
+                    else
+                    {
+                        _textEditor.Text = File.ReadAllText(filePath);
+                        _textEditor.IsReadOnly = false;
+                        UpdateStatus($"Loaded: {fileName}");
+                    }
+
                     _currentFile = fileName;
                     _hasUnsavedChanges = false;
-                    UpdateStatus($"Loaded: {fileName}");
                 }
             }
             catch (Exception ex)
@@ -200,6 +228,36 @@ tag"
             catch (Exception ex)
             {
                 UpdateStatus($"Error creating file: {ex.Message}");
+            }
+        }
+
+        private async void OnPasteClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard == null)
+                {
+                    UpdateStatus("Clipboard not available");
+                    return;
+                }
+
+                var clipboardText = await topLevel.Clipboard.GetTextAsync();
+                if (!string.IsNullOrEmpty(clipboardText) && _textEditor != null)
+                {
+                    // Replace entire content with clipboard text
+                    _textEditor.Text = clipboardText;
+                    _hasUnsavedChanges = true;
+                    UpdateStatus("Pasted from clipboard - click Save to persist");
+                }
+                else
+                {
+                    UpdateStatus("Clipboard is empty");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error pasting: {ex.Message}");
             }
         }
 

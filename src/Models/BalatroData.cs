@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Motely;
 using BalatroSeedOracle.Helpers;
+using Motely;
 
 namespace BalatroSeedOracle.Models
 {
@@ -31,12 +31,15 @@ namespace BalatroSeedOracle.Models
         }
 
         public static readonly Dictionary<string, string> Jokers = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> TarotCards = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> TarotCards =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> SpectralCards =
             new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> Vouchers = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> Vouchers =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Tags = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> BossBlinds = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> BossBlinds =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> PlanetCards =
             new Dictionary<string, string>();
         public static readonly Dictionary<string, string> BoosterPacks =
@@ -55,12 +58,8 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeJokers()
         {
-            // Add wildcard entries first
-            Jokers["anylegendary"] = "Any Legendary";
-            Jokers["anyrare"] = "Any Rare";
-            Jokers["anyuncommon"] = "Any Uncommon";
-            Jokers["anycommon"] = "Any Common";
-            Jokers["anyjoker"] = "Any Joker";
+            // Wildcard entries are in the Favorites section now
+            // Old "any*" entries removed - use "Wildcard_Joker *" instead
 
             // Common Jokers
             foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
@@ -97,7 +96,9 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeTarotCards()
         {
-            // Add wildcard entry first
+            // Add wildcard entries first
+            TarotCards["any"] = "Any Tarot";
+            TarotCards["*"] = "Any Tarot";
             TarotCards["anytarot"] = "Any Tarot";
 
             foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
@@ -110,9 +111,6 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeSpectralCards()
         {
-            // Add wildcard entry first
-            SpectralCards["anyspectral"] = "Any Spectral";
-
             foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
             {
                 var name = spectral.ToString();
@@ -158,6 +156,11 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializePlanetCards()
         {
+            // Add wildcard entries first
+            PlanetCards["any"] = "Any Planet";
+            PlanetCards["*"] = "Any Planet";
+            PlanetCards["anyplanet"] = "Any Planet";
+
             foreach (var planet in Enum.GetValues<MotelyPlanetCard>())
             {
                 var name = planet.ToString();
@@ -178,21 +181,21 @@ namespace BalatroSeedOracle.Models
 
         private static void InitializeDecks()
         {
-            Decks["Red"] = "Red Deck";
-            Decks["Blue"] = "Blue Deck";
-            Decks["Yellow"] = "Yellow Deck";
-            Decks["Green"] = "Green Deck";
-            Decks["Black"] = "Black Deck";
-            Decks["Magic"] = "Magic Deck";
-            Decks["Nebulous"] = "Nebulous Deck";
-            Decks["Ghost"] = "Ghost Deck";
-            Decks["Abandoned"] = "Abandoned Deck";
-            Decks["Checkered"] = "Checkered Deck";
-            Decks["Zodiac"] = "Zodiac Deck";
-            Decks["Painted"] = "Painted Deck";
-            Decks["Anagraph"] = "Anagraph Deck";
-            Decks["Plasma"] = "Plasma Deck";
-            Decks["Erratic"] = "Erratic Deck";
+            Decks["Red"] = "Red";
+            Decks["Blue"] = "Blue";
+            Decks["Yellow"] = "Yellow";
+            Decks["Green"] = "Green";
+            Decks["Black"] = "Black";
+            Decks["Magic"] = "Magic";
+            Decks["Nebula"] = "Nebula";
+            Decks["Ghost"] = "Ghost";
+            Decks["Abandoned"] = "Abandoned";
+            Decks["Checkered"] = "Checkered";
+            Decks["Zodiac"] = "Zodiac";
+            Decks["Painted"] = "Painted";
+            Decks["Anaglyph"] = "Anaglyph";
+            Decks["Plasma"] = "Plasma";
+            Decks["Erratic"] = "Erratic";
         }
 
         public static readonly Dictionary<string, string> DeckDescriptions = new()
@@ -203,13 +206,13 @@ namespace BalatroSeedOracle.Models
             { "Green", "$2 per remaining hand/discard\nEnd of round (no interest)" },
             { "Black", "+1 Joker slot\n-1 hand every round" },
             { "Magic", "Start run with the 'Crystal Ball' Voucher" },
-            { "Nebulous", "Start run with a 'Telescope' Voucher" },
+            { "Nebula", "Start run with a 'Telescope' Voucher" },
             { "Ghost", "Spectral cards may appear in the shop\nStart with a 'Hex' Spectral" },
             { "Abandoned", "No face cards in deck" },
             { "Checkered", "Start with 26 spades and 26 hearts" },
             { "Zodiac", "Start run with 'Tarot Merchant'\n'Planet Merchant' and 'Overstock'" },
             { "Painted", "+2 hand size\n-1 Joker slot" },
-            { "Anagraph", "After defeating each boss blind,\nchange all cards to a random rank" },
+            { "Anaglyph", "After defeating each Boss Blind,\ngain a Double Tag" },
             {
                 "Plasma",
                 "Balance chips and mult\nwhen calculating score for played hand\nX2 base blind size"
@@ -387,13 +390,31 @@ namespace BalatroSeedOracle.Models
                 { "yorick", "Yorick" },
                 { "chicot", "Chicot" },
                 { "perkeo", "Perkeo" },
-                // Wildcard entries
-                { "anyjoker", "Any Joker" },
-                { "anycommon", "Any Common" },
-                { "anyuncommon", "Any Uncommon" },
-                { "anyrare", "Any Rare" },
-                { "anylegendary", "Any Legendary" },
             };
+
+            // Handle Wildcard_* names first
+            if (spriteName.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                // "Wildcard_Joker" -> "Any Joker"
+                // "Wildcard_JokerLegendary" -> "Any Legendary"
+                // "Wildcard_Tarot" -> "Any Tarot"
+                var suffix = spriteName.Substring(9); // Remove "Wildcard_" prefix
+
+                // Handle special cases
+                if (suffix.Equals("Joker", StringComparison.OrdinalIgnoreCase))
+                    return "Any Joker";
+                if (suffix.Equals("JokerCommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Common";
+                if (suffix.Equals("JokerUncommon", StringComparison.OrdinalIgnoreCase))
+                    return "Any Uncommon";
+                if (suffix.Equals("JokerRare", StringComparison.OrdinalIgnoreCase))
+                    return "Any Rare";
+                if (suffix.Equals("JokerLegendary", StringComparison.OrdinalIgnoreCase))
+                    return "Any Legendary";
+
+                // For other types, just format as "Any <Type>"
+                return "Any " + FormatDisplayName(suffix);
+            }
 
             if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))
             {
@@ -544,29 +565,24 @@ namespace BalatroSeedOracle.Models
             {
                 JokersByRarity["Common"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Common"].Add("anycommon");
-            JokersByRarity["Common"].Add("anyjoker");
 
             JokersByRarity["Uncommon"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
             {
                 JokersByRarity["Uncommon"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Uncommon"].Add("anyuncommon");
 
             JokersByRarity["Rare"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerRare>())
             {
                 JokersByRarity["Rare"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Rare"].Add("anyrare");
 
             JokersByRarity["Legendary"] = new List<string>();
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {
                 JokersByRarity["Legendary"].Add(joker.ToString().ToLower());
             }
-            JokersByRarity["Legendary"].Add("anylegendary");
         }
     }
 }

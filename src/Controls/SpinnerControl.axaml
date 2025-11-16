@@ -11,12 +11,12 @@
     <UserControl.Styles>
         <!-- Arrow button style -->
         <Style Selector="Button.arrow-button">
-            <Setter Property="Width" Value="23"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="16"/>
             
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -28,7 +28,7 @@
                     <Grid>
                         <!-- Drop shadow -->
                         <Border Name="PART_Shadow"
-                                Background="{StaticResource DropShadow}"
+                                Background="{StaticResource HoverShadow}"
                                 CornerRadius="4"
                                 Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=button}"/>
                         <!-- Button -->
@@ -44,25 +44,31 @@
             </Setter>
         </Style>
         
-        <Style Selector="Button.arrow-button:pointerover">
-            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+ 
+
+        <!-- Hide shadow when pressed for pressed effect -->
+        <Style Selector="Button.arrow-button:pressed /template/ Border#PART_Shadow">
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
         
-        <!-- Arrow button inherits pressed behavior from global styles -->
-        
         <!-- Value display badge style -->
-        <Style Selector="Border.value-badge">
+        <Style Selector="Button.value-badge">
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="MinWidth" Value="60"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
+
+
         
         <!-- Value badge drop shadow -->
         <Style Selector="Grid.value-badge-container">
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
         
         <!-- Label style -->
@@ -106,7 +112,7 @@
         <TextBlock Grid.Row="0"
                    Name="LabelText"
                    Classes="spinner-label"
-                   Text="{Binding Label}"/>
+                   Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
         
         <!-- Spinner control -->
         <Grid Grid.Row="1">
@@ -128,21 +134,33 @@
             <!-- Value badge with drop shadow -->
             <Grid Grid.Column="2" Classes="value-badge-container">
                 <!-- Drop shadow -->
-                <Border Background="{StaticResource DropShadow}"
+                <Border Background="{StaticResource HoverShadow}"
                         CornerRadius="6"
                         HorizontalAlignment="Stretch"
-                        Height="32"
+                        Height="27"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
-                <Border Classes="value-badge"
-                        HorizontalAlignment="Stretch">
+                <Button Name="ValueButton"
+                        Classes="value-badge"
+                        HorizontalAlignment="Stretch"
+                        Click="OnValueButtonClick">
                     <Grid>
+                        <!-- Display mode -->
                         <TextBlock Name="ValueText"
-                                   Classes="value-text"/>
-                        <TextBlock Classes="dots-indicator"
-                                   Text="•••"/>
+                                   Classes="value-text"
+                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <!-- Edit mode -->
+                        <TextBox Name="ValueEdit"
+                                 Classes="value-text"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 TextAlignment="Center"
+                                 IsVisible="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 LostFocus="OnValueEditLostFocus"
+                                 KeyDown="OnValueEditKeyDown"/>
                     </Grid>
-                </Border>
+                </Button>
             </Grid>
             
             <!-- Right arrow -->

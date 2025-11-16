@@ -1,0 +1,46 @@
+{
+  "name": "WaveRider",
+  "themeIndex": 1,
+  "mainColor": null,
+  "accentColor": null,
+  "defaultShaderParams": {
+    "ZoomScale": 1.0,
+    "Contrast": 2.0,
+    "SpinAmount": 0.3,
+    "ParallaxX": 0.0,
+    "ParallaxY": 0.0,
+    "Saturation": 0.8,
+    "PixelSize": 1440.0,
+    "SpinEase": 0.5,
+    "LoopCount": 5.0
+  },
+  "triggerMappings": [
+    {
+      "shaderParam": "ZoomScale",
+      "triggerName": "Bass1Mid63",
+      "mode": "SetValue",
+      "multiplier": 15.0,
+      "inertiaDecay": 0.9,
+      "minValue": -10.0,
+      "maxValue": 50.0
+    },
+    {
+      "shaderParam": "SpinAmount",
+      "triggerName": "Drums1High75",
+      "mode": "AddInertia",
+      "multiplier": 2.0,
+      "inertiaDecay": 0.95,
+      "minValue": 0.0,
+      "maxValue": 10.0
+    },
+    {
+      "shaderParam": "Contrast",
+      "triggerName": "Melody1Mid55",
+      "mode": "SetValue",
+      "multiplier": 3.0,
+      "inertiaDecay": 0.9,
+      "minValue": 0.5,
+      "maxValue": 8.0
+    }
+  ]
+}

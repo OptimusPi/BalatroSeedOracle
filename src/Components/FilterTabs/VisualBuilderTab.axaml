@@ -1,0 +1,1080 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
+             x:DataType="vm:VisualBuilderTabViewModel"
+             x:CompileBindings="True"
+             ClipToBounds="False">
+
+    <UserControl.Resources>
+        <!-- CARD SIZE CONTROL: Change this ONE value to resize all cards everywhere -->
+        <x:Double x:Key="CardScaleFactor">0.85</x:Double>
+
+        <!-- BoxShadows for selection/hover effects -->
+        <BoxShadows x:Key="WhiteBoxShadowNone">0 0 0 0 #FFFFFF</BoxShadows>
+        <BoxShadows x:Key="WhiteBoxShadowActive">0 0 0 3 #FFFFFF</BoxShadows>
+
+        <!-- Converter for comparing strings -->
+        <converters:StringEqualityConverter x:Key="EqualityConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Shared drop zone overlay style -->
+        <Style Selector="Border.dropzone-overlay">
+            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="IsVisible" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="ZIndex" Value="200"/>
+        </Style>
+
+        <Style Selector="Border.dropzone-overlay TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.dropzone-overlay TextBlock > Border.Effect">
+            <Setter Property="Effect">
+                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid VerticalAlignment="Stretch" ClipToBounds="False">
+                <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
+                <Grid Margin="16,0,16,16" VerticalAlignment="Stretch" ClipToBounds="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="115"/>   <!-- Left: Category Buttons -->
+                <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
+                <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT COLUMN - Filter Name + Search + Categories (Operator Tray moved to center column) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
+                <!-- Filter Name Display (Auto-Save Status removed - was causing layout shift) -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12,8"
+                        MaxHeight="56">
+                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               Foreground="{StaticResource Gold}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="110"/>
+                </Border>
+
+                <!-- Category buttons with arrow indicator on the left -->
+                <Grid Grid.Row="4">
+                    <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                        <!-- Favorites -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Favorites"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Favorites"
+                                    Classes="nav-button special"
+                                    Click="OnCategoryClick"
+                                    Tag="Favorites"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Joker -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Joker"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Joker"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Joker"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Consumable -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Consumable"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Consumable"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Consumable"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Skip Tags -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="SkipTag"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Skip Tags"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="SkipTag"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Boss Blind -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Boss"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Boss Blind"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Boss"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Voucher -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Voucher"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Voucher"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="Voucher"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Standard Card -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="StandardCard"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Standard Card"
+                                    Classes="nav-button"
+                                    Click="OnCategoryClick"
+                                    Tag="StandardCard"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Favorites drop overlay - covers category nav area only -->
+                <Border Grid.Row="4"
+                        Name="FavoritesDropOverlay"
+                        Background="{StaticResource SemiTransparentGold}"
+                        BorderBrush="{StaticResource White}"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource GoldColor}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <!-- Balatro-style drop zone - BIG and prominent text -->
+                    <TextBlock Text="ADD TO FAVORITES"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="28"
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center">
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <!-- CENTER COLUMN - Search Bar + Grouped Scrollable Items (with sticky toolbar inside) -->
+            <Grid Grid.Column="1" Margin="8,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Row 0: Search bar + Settings button -->
+                    <RowDefinition Height="4"/>    <!-- Spacer -->
+                    <RowDefinition Height="*"/>    <!-- Row 2: Item shelf with sticky toolbar -->
+                </Grid.RowDefinitions>
+
+                <!-- Search Bar + Settings Button -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <!-- Search TextBox -->
+                    <Border Grid.Column="0"
+                            Background="{StaticResource DarkBackground}"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="8">
+                        <TextBox Text="{Binding SearchFilter, Mode=TwoWay}"
+                                 Watermark="Search items..."
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontFamily="{StaticResource BalatroFont}"
+                                 FontSize="12"
+                                 Foreground="{StaticResource LightGrey}"/>
+                    </Border>
+                </Grid>
+
+                <!-- ITEMS SHELF - Full height scrollable item list with sticky toolbar at top -->
+                <Border Grid.Row="2"
+                        Name="ItemGridBorder"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="12"
+                        DragDrop.AllowDrop="True">
+                    <DockPanel>
+                        <!-- Edition/Sticker/Seal Toolbar - Sticky at top of items shelf -->
+                        <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,8">
+                    <!-- Edition Buttons (Jokers and Standard Cards only) -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="None"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=None}"
+                                ToolTip.Tip="None"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Image Source="{Binding EditionBaseImage}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Foil"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Foil}"
+                                ToolTip.Tip="Foil (+50 chips)"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=foil}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Holo"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
+                                ToolTip.Tip="Holographic (+10 mult)"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=holo}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Polychrome"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Polychrome}"
+                                ToolTip.Tip="Polychrome (x1.5 mult)"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=poly}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetEditionCommand}"
+                                CommandParameter="Negative"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Negative}"
+                                ToolTip.Tip="Negative (+1 joker slot)"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Sticker Buttons (Jokers only) -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowStickerButtons}">
+                        <Button Command="{Binding ToggleStickerPerishableCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerPerishable}"
+                                ToolTip.Tip="Perishable"
+                                Width="40"
+                                Padding="2"
+                                Margin="0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=perishable}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding ToggleStickerEternalCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerEternal}"
+                                ToolTip.Tip="Eternal"
+                                Width="40"
+                                Padding="2"
+                                Margin="0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=eternal}"
+                                   Stretch="Uniform"/>
+                        </Button>
+
+                        <Button Command="{Binding ToggleStickerRentalCommand}"
+                                Classes="icon-button"
+                                Classes.active="{Binding StickerRental}"
+                                ToolTip.Tip="Rental"
+                                Width="40"
+                                Padding="2"
+                                Margin="0,0,4,0">
+                            <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
+                                   Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Seal Buttons (StandardCard only) - Show 10 of Spades with seal on top -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Purple"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Purple}"
+                                ToolTip.Tip="Purple Seal"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=purple}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Gold"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Gold}"
+                                ToolTip.Tip="Gold Seal"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=gold}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Red"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Red}"
+                                ToolTip.Tip="Red Seal"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=red}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Command="{Binding SetSealCommand}"
+                                CommandParameter="Blue"
+                                Classes="icon-button"
+                                Classes.active="{Binding SelectedSeal, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Blue}"
+                                ToolTip.Tip="Blue Seal"
+                                Width="38"
+                                Padding="2"
+                                Margin="0">
+                            <Grid>
+                                <Image Source="{Binding TenOfSpadesImage}" Stretch="Uniform"/>
+                                <Image Source="{Binding Converter={x:Static converters:SealSpriteConverter.Instance}, ConverterParameter=blue}"
+                                       Stretch="Uniform"/>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                        </WrapPanel>
+
+                        <!-- Scrollable items area - fills remaining space in DockPanel -->
+                        <ScrollViewer Name="ItemScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding GroupedItems}" ClipToBounds="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:VisualBuilderTabViewModel+ItemGroup" x:DataType="vm:VisualBuilderTabViewModel+ItemGroup">
+                                    <StackPanel Margin="0,0,0,16" ClipToBounds="False">
+                                        <!-- Subcategory Header -->
+                                        <Border Background="{StaticResource DarkBackground}"
+                                                BorderThickness="0"
+                                                Padding="8,6"
+                                                Margin="0,0,0,4"
+                                                CornerRadius="4">
+                                            <TextBlock Text="{Binding GroupName}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="16"
+                                                      
+                                                       Foreground="{StaticResource LightGrey}"
+                                                       TextAlignment="Left"/>
+                                        </Border>
+
+                                        <!-- Items in Group -->
+                                        <ItemsControl ItemsSource="{Binding Items}" ClipToBounds="False">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
+                                                    <Grid Margin="1,2,1,8" Height="105" ClipToBounds="False">
+                                                        <!-- Scale down cards in item shelf for breathing room (hover brings to ~0.95x) -->
+                                                        <Grid.RenderTransform>
+                                                            <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
+                                                        </Grid.RenderTransform>
+                                                        <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
+
+                                                        <i:Interaction.Behaviors>
+                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
+                                                        </i:Interaction.Behaviors>
+
+                                                        <!-- Self-contained FilterItemCard -->
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
+
+                                                        <!-- Hitbox overlay for pointer events -->
+                                                        <Border ZIndex="1"
+                                                                Background="Transparent"
+                                                                Cursor="Hand"
+                                                                IsHitTestVisible="True"
+                                                                PointerPressed="OnItemPointerPressed"
+                                                                PointerEntered="OnCardPointerEntered"
+                                                                Height="105"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="5" ClipToBounds="False"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+
+                <!-- Return Overlay - Shows when dragging from drop zones -->
+                <Border Name="ReturnOverlay"
+                        Grid.RowSpan="3"
+                        Background="{StaticResource Orange}"
+                        BorderBrush="{StaticResource White}"
+                        BorderThickness="3"
+                        CornerRadius="8"
+                        IsVisible="False"
+                        IsHitTestVisible="False"
+                        ZIndex="200">
+                    <Border.Styles>
+                        <Style Selector="Border[IsVisible=True]">
+                            <Style.Animations>
+                                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
+                                        <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                        <Setter Property="Background" Value="{StaticResource Orange}"/>
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </Border.Styles>
+                    <Border.Effect>
+                        <DropShadowEffect Color="{StaticResource ColorOrange}"
+                                          OffsetX="0"
+                                          OffsetY="0"
+                                          BlurRadius="30"
+                                          Opacity="1.0"/>
+                    </Border.Effect>
+                    <TextBlock Text="REMOVE FROM FILTER"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="24"
+                              
+                               Foreground="{StaticResource White}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <!-- RIGHT COLUMN - Operator Trays + Drop Zones (Collapsible!) -->
+            <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer" ClipToBounds="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="90"/>  <!-- OR/AND Trays - Reduced from 120 to give more room -->
+                    <RowDefinition Height="6"/>  <!-- Spacing -->
+                    <RowDefinition Height="1.5*"/>  <!-- MUST - Bigger drop zone -->
+                    <RowDefinition Height="6"/>     <!-- Spacing -->
+                    <RowDefinition Height="1.5*"/>  <!-- SHOULD - Bigger drop zone -->
+                </Grid.RowDefinitions>
+
+                <!-- UNIFIED OPERATOR TRAY at top of right column -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    <!-- Unified Tray -->
+                    <Border Grid.Column="0"
+                            Name="UnifiedTray"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Padding="0"
+                            MinHeight="90"
+                            Cursor="Hand"
+                            PointerPressed="OnUnifiedTrayPointerPressed"
+                            DragDrop.AllowDrop="True">
+                        <Grid RowDefinitions="Auto,*">
+                            <!-- Simple header - just shows OR/AND label -->
+                            <Border Grid.Row="0"
+                                    Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                                    CornerRadius="6,6,0,0"
+                                    Padding="8,4">
+                                <TextBlock Text="{Binding UnifiedOperator.OperatorType}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="12"
+                                          
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Card display area -->
+                            <Grid Grid.Row="1" Margin="8">
+                                <!-- Less than 5 cards: side-by-side layout -->
+                                <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}"
+                                              IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="71" Height="95" Margin="3">
+                                                <!-- Card image -->
+                                                <Image Source="{Binding ItemImage}"
+                                                       Width="71"
+                                                       Height="95"
+                                                       Stretch="Uniform"/>
+                                                <Image Source="{Binding SoulFaceImage}"
+                                                       Width="71"
+                                                       Height="95"
+                                                       Stretch="Uniform"
+                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- 5 or more cards: fanned layout using Canvas -->
+                                <Canvas IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
+                                        Height="120"
+                                        ClipToBounds="False">
+                                    <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- TODO: Need to compute Canvas.Left, Canvas.Top, and RenderTransform in code-behind -->
+                                                <Grid Width="71" Height="95">
+                                                    <Image Source="{Binding ItemImage}"
+                                                           Width="71"
+                                                           Height="95"
+                                                           Stretch="Uniform"/>
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Width="71"
+                                                           Height="95"
+                                                           Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Toggle Button - OUTSIDE tray, on the right -->
+                    <Button Grid.Column="1"
+                            Command="{Binding ToggleOperatorCommand}"
+                            Width="40"
+                            Height="90"
+                            Margin="4,0,0,0"
+                            Background="{StaticResource DarkBackground}"
+                            BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                            BorderThickness="2"
+                            CornerRadius="6"
+                            Cursor="Hand"
+                            ToolTip.Tip="Cycle: OR → AND → BANNED"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center">
+                        <TextBlock Text="⇄"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="20"
+                                  
+                                   Foreground="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"/>
+                    </Button>
+
+                    <!-- Unified Tray Drop Overlay -->
+                    <Border Name="UnifiedTrayDropOverlay"
+                            Background="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
+                            BorderBrush="{StaticResource White}"
+                            BorderThickness="3"
+                            CornerRadius="8"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            ZIndex="200">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <TextBlock Text="{Binding UnifiedOperator.OperatorType, StringFormat='ADD TO {0} CLAUSE'}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="18"
+                                  
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <!-- Fixed overlays positioned absolutely over the drop zones -->
+                <Grid Name="DropOverlaysGrid" Grid.Row="2" Grid.RowSpan="3" IsHitTestVisible="False" ZIndex="200">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>  <!-- Top half - MUST -->
+                        <RowDefinition Height="1*"/>  <!-- Bottom half - SHOULD -->
+                    </Grid.RowDefinitions>
+
+                    <!-- MUST drop overlay - BLUE for AND operator -->
+                    <Border Name="MustDropOverlay"
+                            Grid.Row="0"
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource Blue}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
+                                            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                            <Setter Property="Background" Value="{StaticResource Blue}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource ColorBlue}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN MUST HAVE">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+
+                    <!-- SHOULD drop overlay - GREEN for OR operator -->
+                    <Border Name="ShouldDropOverlay"
+                            Grid.Row="1"
+                            Classes="dropzone-overlay"
+                            Background="{StaticResource Green}">
+                        <Border.Styles>
+                            <Style Selector="Border[IsVisible=True]">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                                        <KeyFrame Cue="0%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="50%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowActive}"/>
+                                            <Setter Property="Background" Value="{StaticResource GreenHover}"/>
+                                        </KeyFrame>
+                                        <KeyFrame Cue="100%">
+                                            <Setter Property="BoxShadow" Value="{StaticResource WhiteBoxShadowNone}"/>
+                                            <Setter Property="Background" Value="{StaticResource Green}"/>
+                                        </KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource ColorGreen}"
+                                              OffsetX="0"
+                                              OffsetY="0"
+                                              BlurRadius="30"
+                                              Opacity="1.0"/>
+                        </Border.Effect>
+                        <TextBlock Text="DROP IN SHOULD HAVE">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+                <!-- MUST HAVE Zone -->
+                <Border Name="MustDropZone"
+                        Grid.Row="2"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="0"
+                        ClipToBounds="False"
+                        MinHeight="120"
+                        DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
+                    <Grid ClipToBounds="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>     <!-- Horizontal label row -->
+                            <RowDefinition Height="*"/>        <!-- Drop area -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Top: Header Label -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="8,0,8,4">
+                            <TextBlock Text="MUST"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+
+                                       Foreground="{StaticResource Blue}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <!-- Bottom: Drop Area - Always visible -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      ClipToBounds="False"
+                                      Padding="5">
+                            <ItemsControl ItemsSource="{Binding SelectedMust}"
+                                          Margin="8,8,8,15"
+                                          ClipToBounds="False"
+                                         >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"
+                                               ClipToBounds="False"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Render operator or regular card based on Type property -->
+                                    <ContentControl Content="{Binding}"
+                                                    ClipToBounds="False"
+>
+                                        <ContentControl.DataTemplates>
+                                            <!-- Template for FilterOperatorItem -->
+                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
+                                                <components:FilterOperatorControl/>
+                                            </DataTemplate>
+
+                                            <!-- Template for regular FilterItem -->
+                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
+                                                <Border Background="Transparent"
+                                                        Cursor="Hand"
+                                                        ClipToBounds="False"
+                                                        Margin="1,2,1,8"
+                                                        PointerPressed="OnDropZoneItemPointerPressed">
+                                                    <i:Interaction.Behaviors>
+                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                    </i:Interaction.Behaviors>
+
+                                                    <!-- Reusable FilterItemCard component with Remove button -->
+                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
+                                                        <!-- Scale down drop zone cards to match item shelf -->
+                                                        <Grid.RenderTransform>
+                                                            <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
+                                                        </Grid.RenderTransform>
+                                                        <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
+
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
+
+                                                        <!-- Hover-only Remove Button -->
+                                                        <Button Content="×"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                FontSize="12"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                IsVisible="False"
+                                                                Name="RemoveButton">
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ContentControl.DataTemplates>
+                                    </ContentControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- SHOULD HAVE Zone -->
+                <Border Name="ShouldDropZone"
+                        Grid.Row="4"
+                        Background="{StaticResource DarkBackground}"
+                        BorderThickness="0"
+                        CornerRadius="8"
+                        Padding="0"
+                        ClipToBounds="False"
+                        ZIndex="10"
+                        DragDrop.AllowDrop="True">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </Border.Transitions>
+                    <Grid ClipToBounds="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>     <!-- Horizontal label row -->
+                            <RowDefinition Height="*"/>        <!-- Drop area -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Top: Header Label -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource DarkBackground}"
+                                Padding="8,0,8,4">
+                            <TextBlock Text="SHOULD"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+
+                                       Foreground="{StaticResource Green}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <!-- Bottom: Drop Area - Always visible -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      ClipToBounds="False"
+                                      Padding="5">
+                            <ItemsControl ItemsSource="{Binding SelectedShould}"
+                                          Margin="8,8,8,15"
+                                          ClipToBounds="False"
+                                         >
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"
+                                               ClipToBounds="False"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Render operator or regular card based on Type property -->
+                                    <ContentControl Content="{Binding}"
+                                                    ClipToBounds="False"
+>
+                                        <ContentControl.DataTemplates>
+                                            <!-- Template for FilterOperatorItem -->
+                                            <DataTemplate DataType="{x:Type models:FilterOperatorItem}" x:DataType="models:FilterOperatorItem">
+                                                <components:FilterOperatorControl/>
+                                            </DataTemplate>
+
+                                            <!-- Template for regular FilterItem -->
+                                            <DataTemplate DataType="{x:Type models:FilterItem}" x:DataType="models:FilterItem">
+                                                <Border Background="Transparent"
+                                                        Cursor="Hand"
+                                                        ClipToBounds="False"
+                                                        Margin="1,2,1,8"
+                                                        PointerPressed="OnDropZoneItemPointerPressed">
+                                                    <i:Interaction.Behaviors>
+                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                    </i:Interaction.Behaviors>
+
+                                                    <!-- Reusable FilterItemCard component with Remove button -->
+                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
+                                                        <!-- Scale down drop zone cards to match item shelf -->
+                                                        <Grid.RenderTransform>
+                                                            <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
+                                                        </Grid.RenderTransform>
+                                                        <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
+
+                                                        <components:FilterItemCard DataContext="{Binding}"/>
+
+                                                        <!-- Hover-only Remove Button -->
+                                                        <Button Content="×"
+                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="{StaticResource Red}"
+                                                                Foreground="White"
+                                                                FontSize="12"
+                                                                Width="18"
+                                                                Height="18"
+                                                                CornerRadius="9"
+                                                                Padding="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0,-6,-6,0"
+                                                                IsVisible="False"
+                                                                Name="RemoveButton">
+                                                            <Button.Styles>
+                                                                <Style Selector="Button:pointerover">
+                                                                    <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                                </Style>
+                                                            </Button.Styles>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ContentControl.DataTemplates>
+                                    </ContentControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </Grid>
+
+        <!-- ItemConfigPopup Overlay - replaces Primitives.Popup -->
+        <Grid Name="PopupOverlay"
+              IsVisible="False"
+              Background="{StaticResource SemiTransparentBlack}"
+              ZIndex="1000"
+              PointerPressed="OnOverlayBackgroundClick">
+            <Border Background="{StaticResource ModalBackground}"
+                    BorderBrush="{StaticResource ModalInnerPanel}"
+                    BorderThickness="3"
+                    CornerRadius="8"
+                    Padding="0"
+                    BoxShadow="{StaticResource DeepBoxShadow}"
+                    MaxWidth="320"
+                    MaxHeight="600"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    PointerPressed="OnPopupContentClick">
+                <ContentControl Name="PopupContent"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

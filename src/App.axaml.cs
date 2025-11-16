@@ -1,10 +1,13 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
+using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle;
 
@@ -21,7 +24,7 @@ public partial class App : Application
     {
         try
         {
-            DebugLogger.Log("Initializing services...");
+            DebugLogger.Log("App", "Initializing application services");
 
             // Ensure required directories exist
             EnsureDirectoriesExist();
@@ -31,18 +34,22 @@ public partial class App : Application
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
+            // Initialize filter cache on startup for fast filter access
+            InitializeFilterCache();
+
             // Line below is needed to remove Avalonia data validation.
             // Without this line you will get duplicate validations from both Avalonia and CT
             BindingPlugins.DataValidators.RemoveAt(0);
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new Views.MainWindow();
+                // Show loading window and pre-load sprites before showing main window
+                ShowLoadingWindowAndPreloadSprites(desktop);
 
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
 
-                DebugLogger.Log("MainWindow created successfully");
+                DebugLogger.Log("App", "Application initialization complete");
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -56,27 +63,183 @@ public partial class App : Application
         }
     }
 
+    private async void ShowLoadingWindowAndPreloadSprites(
+        IClassicDesktopStyleApplicationLifetime desktop
+    )
+    {
+        try
+        {
+            DebugLogger.LogImportant(
+                "App",
+                "Starting shader-driven intro with sprite pre-loading..."
+            );
+
+            // Create main window FIRST (so we have access to shader background)
+            var mainWindow = new Views.MainWindow();
+            desktop.MainWindow = mainWindow;
+            mainWindow.Show();
+
+            // Give UI a moment to render and initialize shader
+            await System.Threading.Tasks.Task.Delay(100);
+
+            // Get reference to BalatroMainMenu and its shader background
+            var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
+            if (mainMenu == null)
+            {
+                DebugLogger.LogError(
+                    "App",
+                    "Failed to find BalatroMainMenu - falling back to normal startup"
+                );
+                await PreloadSpritesWithoutTransition();
+                return;
+            }
+
+            // INTRO TRANSITION DISABLED - Seizure risk / too flashy
+            // Apply normal Balatro shader parameters (no flashy intro animation)
+            DebugLogger.LogImportant("App", "Applying normal Balatro shader parameters (skipping intro transition)");
+            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+            ApplyShaderParametersToMainMenu(mainMenu, normalParams);
+
+            // Preload sprites without flashy transition
+            await PreloadSpritesWithoutTransition();
+
+            // Initialize background music with SoundFlow (8-track)
+            try
+            {
+                var audioManager =
+                    _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
+                DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
+                DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
+            }
+
+            DebugLogger.LogImportant(
+                "App",
+                "Application ready! All sprites pre-loaded with shader intro."
+            );
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Error during sprite pre-load: {ex.Message}");
+            DebugLogger.LogError("App", $"Stack trace: {ex.StackTrace}");
+
+            // Fall back to showing main window without transition
+            if (desktop.MainWindow == null)
+            {
+                desktop.MainWindow = new Views.MainWindow();
+                desktop.MainWindow.Show();
+            }
+            await PreloadSpritesWithoutTransition();
+        }
+    }
+
+    /// <summary>
+    /// Applies shader parameters to BalatroMainMenu's shader background.
+    /// Uses reflection to access private _shaderBackground field.
+    /// </summary>
+    private void ApplyShaderParametersToMainMenu(
+        Views.BalatroMainMenu mainMenu,
+        Models.ShaderParameters parameters
+    )
+    {
+        try
+        {
+            // Access private _shaderBackground field via reflection
+            var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
+                "_shaderBackground",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+            );
+
+            if (
+                shaderBackgroundField?.GetValue(mainMenu)
+                is Controls.BalatroShaderBackground shaderBackground
+            )
+            {
+                // Apply all shader parameters
+                shaderBackground.SetTime(parameters.TimeSpeed);
+                shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
+                shaderBackground.SetMainColor(parameters.MainColor);
+                shaderBackground.SetAccentColor(parameters.AccentColor);
+                shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
+                shaderBackground.SetContrast(parameters.Contrast);
+                shaderBackground.SetSpinAmount(parameters.SpinAmount);
+                shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
+                shaderBackground.SetZoomScale(parameters.ZoomScale);
+                shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
+                shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
+                shaderBackground.SetPixelSize(parameters.PixelSize);
+                shaderBackground.SetSpinEase(parameters.SpinEase);
+                shaderBackground.SetLoopCount(parameters.LoopCount);
+            }
+            else
+            {
+                DebugLogger.LogError("App", "Failed to get shader background reference");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to apply shader parameters: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Fallback: Pre-load sprites without transition effect
+    /// </summary>
+    private async System.Threading.Tasks.Task PreloadSpritesWithoutTransition()
+    {
+        try
+        {
+            var spriteService = Services.SpriteService.Instance;
+            await spriteService.PreloadAllSpritesAsync(null);
+            DebugLogger.Log("App", "Sprites pre-loaded (no transition)");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to pre-load sprites: {ex.Message}");
+        }
+    }
+
     private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
         try
         {
             DebugLogger.Log("App", "Shutdown requested - stopping all searches...");
-            
+
+            // Flush user profile first to ensure all settings are saved
+            var userProfileService = _serviceProvider?.GetService<Services.UserProfileService>();
+            if (userProfileService != null)
+            {
+                DebugLogger.Log("App", "Flushing user profile...");
+                userProfileService.FlushProfile();
+                DebugLogger.Log("App", "User profile flushed");
+            }
+
+            // Stop audio
+            var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
+            audioManager?.Dispose();
+
+            // Dispose filter cache
+            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
+            filterCache?.Dispose();
+
             // Get the search manager and stop all active searches
             var searchManager = _serviceProvider?.GetService<Services.SearchManager>();
             if (searchManager != null)
             {
                 DebugLogger.Log("App", "Stopping active searches...");
                 searchManager.StopAllSearches();
-                
+
                 // Give searches a moment to actually stop
                 System.Threading.Thread.Sleep(500);
-                
+
                 // Dispose the search manager which will dispose all searches
                 searchManager.Dispose();
                 DebugLogger.Log("App", "All searches stopped");
             }
-            
+
             // Now dispose the service provider
             _serviceProvider?.Dispose();
             DebugLogger.Log("App", "Services disposed");
@@ -89,13 +252,37 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        // Register services
-        // SearchHistoryService removed - SearchInstance handles its own DuckDB connection
-        services.AddSingleton<Services.SearchManager>();
+        // Register all MVVM services and ViewModels
+        services.AddBalatroSeedOracleServices();
+
+        // Register existing singleton services
         services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
-        services.AddSingleton<Services.FavoritesService>();
-        services.AddSingleton<Services.UserProfileService>();
         // ClipboardService is static, no need to register
+    }
+
+    private void InitializeFilterCache()
+    {
+        try
+        {
+            DebugLogger.Log("App", "Initializing filter cache...");
+            var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
+            if (filterCache != null)
+            {
+                filterCache.Initialize();
+                DebugLogger.Log(
+                    "App",
+                    $"Filter cache initialized with {filterCache.Count} filters"
+                );
+            }
+            else
+            {
+                DebugLogger.LogError("App", "FilterCacheService not found in DI container");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to initialize filter cache: {ex.Message}");
+        }
     }
 
     private void EnsureDirectoriesExist()
@@ -110,7 +297,7 @@ public partial class App : Application
             if (!System.IO.Directory.Exists(jsonFiltersDir))
             {
                 System.IO.Directory.CreateDirectory(jsonFiltersDir);
-                DebugLogger.Log($"Created directory: {jsonFiltersDir}");
+                DebugLogger.Log("App", $"Created directory: {jsonFiltersDir}");
             }
 
             // Create other required directories
@@ -121,7 +308,7 @@ public partial class App : Application
             if (!System.IO.Directory.Exists(searchResultsDir))
             {
                 System.IO.Directory.CreateDirectory(searchResultsDir);
-                DebugLogger.Log($"Created directory: {searchResultsDir}");
+                DebugLogger.Log("App", $"Created directory: {searchResultsDir}");
             }
         }
         catch (Exception ex)

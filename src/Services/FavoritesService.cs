@@ -28,13 +28,13 @@ namespace BalatroSeedOracle.Services
             public string Description { get; set; } = "";
             public List<string> Items { get; set; } = new List<string>(); // Can be jokers, tarots, etc
             public List<string> Tags { get; set; } = new List<string>();
-            
+
             // New structure to remember which zone each item belongs to
             public List<string> MustItems { get; set; } = new List<string>();
             public List<string> ShouldItems { get; set; } = new List<string>();
             public List<string> MustNotItems { get; set; } = new List<string>();
-            
-            // For backward compatibility
+
+            // Check if favorite has zone-specific item assignments
             public bool HasZoneInfo => MustItems.Any() || ShouldItems.Any() || MustNotItems.Any();
         }
 
@@ -152,14 +152,7 @@ namespace BalatroSeedOracle.Services
                     {
                         Name = "HandSize",
                         Description = "Maximum hand size expansion",
-                        Items = new List<string>
-                        {
-                            "turtlebean",
-                            "juggler",
-                            "giftcard",
-                            "palette",
-                            "troubadour",
-                        },
+                        Items = new List<string> { "turtlebean", "juggler", "troubadour" },
                         Tags = new List<string> { "#HandSize", "#Voucher", "#Utility" },
                     },
                     new JokerSet

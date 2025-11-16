@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Controls.SourceSelector">
+    
+    <UserControl.Styles>
+        <Style Selector="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource BrightGold}"/>
+            <Setter Property="Background" Value="{StaticResource SemiTransparentBlack}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="5"/>
+        </Style>
+        
+        <Style Selector="ComboBox:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource Cyan}"/>
+        </Style>
+        
+        <Style Selector="TextBlock.source-label">
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        
+        <Style Selector="TextBlock.source-description">
+            <Setter Property="Foreground" Value="{StaticResource LightGrey2}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Border Background="{StaticResource SemiTransparentBlack}"
+            BorderBrush="{StaticResource AccentGreen}" 
+            BorderThickness="2" 
+            CornerRadius="8" 
+            Padding="15">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Item Source" 
+                       Classes="source-label"
+                       HorizontalAlignment="Center"/>
+            
+            <TextBlock Text="Where should this item come from?"
+                       Classes="source-description"
+                       HorizontalAlignment="Center"/>
+            
+            <ComboBox Name="SourceComboBox"
+                      ItemsSource="{Binding Sources}"
+                      SelectedItem="{Binding SelectedSource}"
+                      HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Source Description -->
+            <Border Background="{StaticResource TransparentDark1}"
+                    CornerRadius="5"
+                    Padding="10"
+                    Name="DescriptionBorder">
+                <TextBlock Text="{Binding Description}"
+                           Classes="source-description"
+                           HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- Visual Preview -->
+            <Border Background="{StaticResource TransparentDark3}"
+                    CornerRadius="8"
+                    Padding="10"
+                    Name="PreviewBorder"
+                    IsVisible="{Binding IsPreviewVisible}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="10">
+                    <TextBlock Text="🎯" FontSize="20"/>
+                    <TextBlock Text="{Binding PreviewText}"
+                               Foreground="{Binding PreviewColor}"
+                               Classes="source-description"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

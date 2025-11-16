@@ -23,7 +23,7 @@
     <!-- ToolTip Style -->
     <Style Selector="ToolTip">
         <Setter Property="Background" Value="{StaticResource PopupBackground}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource Orange}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Padding" Value="8,4"/>
@@ -39,7 +39,7 @@
     </Style>
     
     <Style Selector="FlyoutPresenter RadioButton:checked /template/ ContentPresenter">
-        <Setter Property="TextElement.Foreground" Value="{StaticResource Orange}"/>
+        <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
         
     </Style>
     
@@ -62,7 +62,7 @@
     
     <!-- Headers in Popups -->
     <Style Selector="FlyoutPresenter TextBlock.header">
-        <Setter Property="Foreground" Value="{StaticResource Orange}"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
         
         <Setter Property="FontSize" Value="16"/>
     </Style>

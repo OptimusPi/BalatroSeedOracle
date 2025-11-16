@@ -1,0 +1,256 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.DayLatroWidget"
+             x:DataType="vm:DayLatroWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <UserControl.Styles>
+        <!-- Local style overrides for DayLatro-specific widgets -->
+        <Style Selector="TextBox.score-input">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Calendar Icon -->
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}">
+            <i:Interaction.Behaviors>
+                <!-- BALATRO SWAY ANIMATION! -->
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <StackPanel Spacing="4">
+                <Grid>
+                    <!-- Icon - draggable! Has widget-header class so DraggableWidgetBehavior allows drag -->
+                    <Border Background="{StaticResource ModalGrey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Width="64" Height="64"
+                            Classes="widget-header"
+                            Cursor="Hand"
+                            PointerPressed="OnMinimizedIconPressed"
+                            PointerReleased="OnMinimizedIconReleased">
+                        <TextBlock Text="📅" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Notification badge overlay -->
+                    <Border Classes="notification-badge small"
+                            Background="{StaticResource Red}"
+                            BorderBrush="{StaticResource White}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            Width="20" Height="20"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="{Binding ShowNewDayBadge}">
+                        <TextBlock Text="!"
+                                   FontSize="12"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <TextBlock Text="Daylatro"
+                           FontSize="16"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Expanded State -->
+        <Border Name="ExpandedView"
+                Classes="widget-window"
+                Width="350"
+                MaxHeight="360"
+                IsVisible="{Binding !IsMinimized}">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <!-- Header using shared component -->
+                <local:WidgetHeader Grid.Row="0" />
+
+                <!-- Content -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="15">
+                    <StackPanel Spacing="12">
+                        <!-- Date and Seed -->
+                        <TextBlock Text="{Binding DateText}"
+                                   FontSize="18"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,5"/>
+
+                        <!-- Seed text with Copy button inline -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,0,0,15">
+                            <TextBlock Text="{Binding TodaySeed}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource Red}"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="📋"
+                                    FontSize="16"
+                                    Width="32" Height="32"
+                                    Classes="btn-blue"
+                                    Padding="0"
+                                    Command="{Binding CopySeedCommand}"
+                                    ToolTip.Tip="Copy Seed"/>
+                        </StackPanel>
+
+                        <!-- My Score Section -->
+                        <TextBlock Text="Submit Score"
+                                   FontSize="14"
+                                   Margin="0,0,0,5"/>
+
+                        <!-- Input Fields Grid -->
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0"
+                                     Classes="score-input"
+                                     Text="{Binding InitialsInput}"
+                                     Watermark="ABC"
+                                     MaxLength="3"
+                                     Margin="0,0,5,0"/>
+
+                            <TextBox Grid.Column="1"
+                                     Classes="score-input"
+                                     Text="{Binding AnteInput}"
+                                     Watermark="Ante"
+                                     Margin="0,0,5,0"/>
+
+                            <TextBox Grid.Column="2"
+                                     Classes="score-input"
+                                     Text="{Binding ScoreInput}"
+                                     Watermark="Best hand..."/>
+                        </Grid>
+
+                        <Button Content="Submit to Daylatro"
+                                Classes="widget-submit-btn"
+                                Command="{Binding SubmitScoreCommand}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,5"/>
+
+                        <!-- Submission Message - Success -->
+                        <TextBlock Text="{Binding SubmissionMessage}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource SuccessGreen}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding !SubmissionMessageIsError}"/>
+
+                        <!-- Submission Message - Error -->
+                        <TextBlock Text="{Binding SubmissionMessage}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ErrorRed}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding SubmissionMessageIsError}"/>
+
+                        <!-- High Scores Table -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="Today's High Scores"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+
+                            <Button Grid.Column="1"
+                                    Content="↻"
+                                    FontSize="16"
+                                    Width="24"
+                                    Height="24"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{Binding RefreshScoresCommand}"
+                                    ToolTip.Tip="Refresh scores"/>
+                        </Grid>
+
+                        <Border Background="{StaticResource DarkBackground}"
+                                CornerRadius="6"
+                                Padding="10"
+                                MaxHeight="200">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding HighScores}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:HighScoreDisplayItem">
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="30"/>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="50"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Rank}"
+                                                           FontSize="12"/>
+
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Initials}"
+                                                           FontSize="12"
+                                                           FontFamily="{StaticResource BalatroFont}"/>
+
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Ante}"
+                                                           FontSize="12"/>
+
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding Score}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource DaytroOrange}"
+                                                           HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <Button Content="Copy Seed"
+                                HorizontalAlignment="Center"
+                                Margin="0,15,0,0"
+                                Command="{Binding CopySeedCommand}"/>
+
+                        <!-- Analyze Seed Button -->
+                        <Button Content="Analyze This Seed"
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,0"
+                                Command="{Binding AnalyzeSeedCommand}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

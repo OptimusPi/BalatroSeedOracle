@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             x:Class="BalatroSeedOracle.Components.FilterItemCarousel">
+
+    <!-- Horizontal carousel for FilterItems - clean and simple -->
+    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled"
+                  HorizontalAlignment="Center">
+        <ItemsControl Name="CarouselItems">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!-- Horizontal layout with overlap (negative spacing) -->
+                    <StackPanel Orientation="Horizontal" Spacing="-15"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:FilterItem">
+                    <!-- Reuse FilterItemCard - self-contained with all behaviors! -->
+                    <components:FilterItemCard DataContext="{Binding}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

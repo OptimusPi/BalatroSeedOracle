@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
@@ -13,8 +14,8 @@ namespace BalatroSeedOracle.Views.Modals
         public CreditsModal()
         {
             InitializeComponent();
-            DataContext = new CreditsModalViewModel();
-            
+            DataContext = ServiceHelper.GetRequiredService<CreditsModalViewModel>();
+
             // Set up event handler for link clicks
             this.AddHandler(PointerPressedEvent, OnLinkClick, handledEventsToo: true);
         }
@@ -23,7 +24,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void OnLinkClick(object? sender, PointerPressedEventArgs e)
         {
             // Check if the clicked element is a credit link
@@ -37,7 +38,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 catch (Exception ex)
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("CreditsModal", $"Error opening link: {ex.Message}");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                        "CreditsModal",
+                        $"Error opening link: {ex.Message}"
+                    );
                 }
             }
         }

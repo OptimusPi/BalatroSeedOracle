@@ -20,15 +20,25 @@ public static class DebugLogger
     }
 
     /// <summary>
+    /// Sets whether verbose logging is enabled
+    /// </summary>
+    public static void SetVerboseEnabled(bool enabled)
+    {
+        EnableVerboseLogging = enabled;
+    }
+
+    /// <summary>
     /// Logs a debug message with timestamp if debug logging is enabled
     /// </summary>
     /// <param name="message">The message to log</param>
     public static void Log(string message)
     {
+#if DEBUG
         if (EnableDebugLogging)
         {
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] {message}");
         }
+#endif
     }
 
     /// <summary>
@@ -38,29 +48,35 @@ public static class DebugLogger
     /// <param name="message">The message to log</param>
     public static void Log(string category, string message)
     {
+#if DEBUG
         if (EnableDebugLogging)
         {
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] {message}");
         }
+#endif
     }
 
     /// <summary>
-    /// Logs an error message (always shown regardless of debug setting)
+    /// Logs an error message (only in DEBUG builds)
     /// </summary>
     /// <param name="message">The error message to log</param>
     public static void LogError(string message)
     {
+#if DEBUG
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] ERROR: {message}");
+#endif
     }
 
     /// <summary>
-    /// Logs an error message with category (always shown regardless of debug setting)
+    /// Logs an error message with category (only in DEBUG builds)
     /// </summary>
     /// <param name="category">The category/component name</param>
     /// <param name="message">The error message to log</param>
     public static void LogError(string category, string message)
     {
+#if DEBUG
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] ERROR: {message}");
+#endif
     }
 
     /// <summary>
@@ -70,10 +86,12 @@ public static class DebugLogger
     /// <param name="message">The important message to log</param>
     public static void LogImportant(string category, string message)
     {
+#if DEBUG
         if (EnableVerboseLogging || EnableDebugLogging)
         {
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss}] [{category}] INFO: {message}");
         }
+#endif
     }
 
     /// <summary>
@@ -81,11 +99,13 @@ public static class DebugLogger
     /// </summary>
     public static void LogFormat(string category, string format, params object[] args)
     {
+#if DEBUG
         if (EnableDebugLogging)
         {
             Console.WriteLine(
                 $"[{DateTime.UtcNow:HH:mm:ss}] [{category}] {string.Format(format, args)}"
             );
         }
+#endif
     }
 }

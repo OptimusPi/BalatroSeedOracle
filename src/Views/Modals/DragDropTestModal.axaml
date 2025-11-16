@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Views.Modals.DragDropTestModal"
+             DragDrop.AllowDrop="True">
+
+    <Border Background="{StaticResource DarkGrey2}"
+            BorderBrush="{StaticResource Purple}"
+            BorderThickness="3"
+            CornerRadius="12"
+            Padding="20">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <TextBlock Grid.Row="0"
+                       Text="🧪 DRAG-DROP NEGATIVE TEST"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="24"
+                       
+                       Foreground="{StaticResource Purple}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <!-- Test Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="20">
+                <!-- Source Items -->
+                <StackPanel Grid.Column="0" Spacing="10">
+                    <TextBlock Text="Available Items (Drag From Here):"
+                               FontFamily="{StaticResource BalatroFont}"
+                               
+                               Foreground="{StaticResource White}"/>
+                    <Border Background="{StaticResource DarkGrey2}" Padding="10" CornerRadius="8">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <!-- TEST: StackPanel items WITHOUT CardDragBehavior (like standalone test) -->
+                            <StackPanel Name="Item1Stack" Width="71" Height="95" Background="{StaticResource Blue}" Cursor="Hand">
+                                <TextBlock Text="Item 1"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Name="Item2Stack" Width="71" Height="95" Background="{StaticResource Green}" Cursor="Hand">
+                                <TextBlock Text="Item 2"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Name="Item3Stack" Width="71" Height="95" Background="{StaticResource Red}" Cursor="Hand">
+                                <TextBlock Text="Item 3"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Drop Zone -->
+                <StackPanel Grid.Column="1" Spacing="10">
+                    <TextBlock Text="Drop Zone (with ItemsControl):"
+                               FontFamily="{StaticResource BalatroFont}"
+                               
+                               Foreground="{StaticResource White}"/>
+                    <Border Name="DropZone"
+                            Background="{StaticResource DarkGrey3}"
+                            BorderBrush="{StaticResource Purple}"
+                            BorderThickness="2"
+                            MinHeight="200"
+                            Padding="10"
+                            CornerRadius="8"
+                            DragDrop.AllowDrop="True">
+                        <StackPanel>
+                            <TextBlock Name="DropStatus"
+                                       Text="Drop items here"
+                                       Foreground="{StaticResource White}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Margin="0,0,0,10"/>
+                            <ItemsControl Name="DroppedItems">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource Purple}"
+                                                Margin="4"
+                                                Padding="10"
+                                                CornerRadius="4">
+                                            <TextBlock Text="{Binding}"
+                                                       Foreground="White"
+                                                       FontFamily="{StaticResource BalatroFont}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Back Button -->
+            <Button Grid.Row="2"
+                    Content="← BACK"
+                    Classes="nav-button"
+                    Background="{StaticResource Purple}"
+                    HorizontalAlignment="Center"
+                    Padding="30,10"
+                    Margin="0,20,0,0"
+                    Click="OnBackClick"/>
+        </Grid>
+    </Border>
+</UserControl>

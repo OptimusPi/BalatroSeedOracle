@@ -1,13 +1,5 @@
 {
   "version": 1,
   "isRoot": true,
-  "tools": {
-    "vpk": {
-      "version": "0.0.1298",
-      "commands": [
-        "vpk"
-      ],
-      "rollForward": false
-    }
-  }
+  "tools": {}
 }
