@@ -41,7 +41,7 @@
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "compressionLevel": "maximum",
-    "licensePath": "LICENSE.txt"
+    "licensePath": "LICENSE"
   },
 
   "dmg": {

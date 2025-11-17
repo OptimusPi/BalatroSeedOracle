@@ -94,14 +94,35 @@ public partial class App : Application
                 return;
             }
 
-            // INTRO TRANSITION DISABLED - Seizure risk / too flashy
-            // Apply normal Balatro shader parameters (no flashy intro animation)
-            DebugLogger.LogImportant("App", "Applying normal Balatro shader parameters (skipping intro transition)");
-            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
-            ApplyShaderParametersToMainMenu(mainMenu, normalParams);
+            // SMOOTH INTRO TRANSITION - Dark pixelated → Vibrant Balatro
+            DebugLogger.LogImportant("App", "Starting SMOOTH intro transition (Dark → Normal)");
 
-            // Preload sprites without flashy transition
-            await PreloadSpritesWithoutTransition();
+            var introParams = Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters();
+            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+
+            // Apply intro state immediately
+            ApplyShaderParametersToMainMenu(mainMenu, introParams);
+
+            // Get TransitionService and start the transition
+            var transitionService = _serviceProvider?.GetService<Services.TransitionService>();
+            if (transitionService != null)
+            {
+                // Start transition - we'll drive progress via sprite loading
+                transitionService.StartTransition(
+                    introParams,
+                    normalParams,
+                    parameters => ApplyShaderParametersToMainMenu(mainMenu, parameters)
+                );
+
+                // Preload sprites WITH SMOOTH TRANSITION driven by progress
+                await PreloadSpritesWithTransition(transitionService);
+            }
+            else
+            {
+                DebugLogger.LogError("App", "TransitionService not found - falling back to instant transition");
+                ApplyShaderParametersToMainMenu(mainMenu, normalParams);
+                await PreloadSpritesWithoutTransition();
+            }
 
             // Initialize background music with SoundFlow (8-track)
             try
@@ -182,6 +203,60 @@ public partial class App : Application
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"Failed to apply shader parameters: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Pre-load sprites WITH smooth shader transition driven by progress
+    /// </summary>
+    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(
+        Services.TransitionService transitionService
+    )
+    {
+        try
+        {
+            var spriteService = Services.SpriteService.Instance;
+
+            // Track total sprites loaded across all categories
+            int totalLoaded = 0;
+            int totalSprites = 150; // Approximate total (will be updated as we go)
+
+            var progress = new Progress<(string category, int current, int total)>(update =>
+            {
+                // Update total if we have more accurate count
+                totalSprites = Math.Max(totalSprites, totalLoaded + update.total);
+
+                // Calculate overall progress (0.0 to 1.0)
+                float overallProgress = (float)totalLoaded / totalSprites;
+
+                // Drive the transition! 0% loaded = dark/pixelated, 100% = vibrant/normal
+                transitionService.SetProgress(overallProgress);
+
+                DebugLogger.Log(
+                    "App",
+                    $"Loading {update.category}: {update.current}/{update.total} " +
+                    $"(Overall: {overallProgress * 100:F0}%)"
+                );
+
+                // Update total after processing this batch
+                if (update.current >= update.total)
+                {
+                    totalLoaded += update.total;
+                }
+            });
+
+            await spriteService.PreloadAllSpritesAsync(progress);
+
+            // Ensure we hit 100% at the end
+            transitionService.SetProgress(1.0f);
+
+            DebugLogger.LogImportant("App", "Sprites pre-loaded with smooth transition!");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
+            // Ensure transition completes even if sprite loading fails
+            transitionService.SetProgress(1.0f);
         }
     }
 

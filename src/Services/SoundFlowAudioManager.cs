@@ -87,7 +87,8 @@ namespace BalatroSeedOracle.Services
             {
                 _masterVolume = Math.Clamp(value, 0f, 1f);
                 if (_device != null)
-                    _device.MasterMixer.Volume = _masterVolume;
+                    // Apply 2.5x gain boost (audio files are mastered too quiet)
+                    _device.MasterMixer.Volume = _masterVolume * 2.5f;
             }
         }
 

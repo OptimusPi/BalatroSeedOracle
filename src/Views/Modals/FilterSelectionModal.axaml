@@ -849,13 +849,13 @@
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
                                                                       
-                                                                       Foreground="{StaticResource DarkGrey}"/>
+                                                                       Foreground="{StaticResource ColorDarkGrey}"/>
                                                             <TextBlock Grid.Column="1"
                                                                        Text="Antes"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
                                                                       
-                                                                       Foreground="{StaticResource DarkGrey}"
+                                                                       Foreground="{StaticResource ColorDarkGrey}"
                                                                        HorizontalAlignment="Left"/>
                                                         </Grid>
 
@@ -1082,13 +1082,13 @@
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
                                                                       
-                                                                       Foreground="{StaticResource DarkGrey}"/>
+                                                                       Foreground="{StaticResource ColorDarkGrey}"/>
                                                             <TextBlock Grid.Column="1"
                                                                        Text="Antes"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="13"
                                                                       
-                                                                       Foreground="{StaticResource DarkGrey}"
+                                                                       Foreground="{StaticResource ColorDarkGrey}"
                                                                        HorizontalAlignment="Left"/>
                                                         </Grid>
 

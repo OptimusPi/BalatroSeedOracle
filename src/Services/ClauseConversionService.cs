@@ -129,6 +129,42 @@ namespace BalatroSeedOracle.Services
             if (filterItem == null)
                 return null;
 
+            // Handle FilterOperatorItem (OR/AND/BannedItems)
+            if (filterItem is FilterOperatorItem operatorItem)
+            {
+                // BannedItems should not be converted to a clause
+                // (caller should handle these by adding children to MustNot array)
+                if (operatorItem.OperatorType == "BannedItems")
+                    return null;
+
+                // Create OR/AND clause with nested children
+                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                {
+                    Type = operatorItem.OperatorType switch
+                    {
+                        "OR" => "Or",
+                        "AND" => "And",
+                        _ => operatorItem.OperatorType // Fallback
+                    },
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                };
+
+                // Recursively convert children
+                foreach (var child in operatorItem.Children)
+                {
+                    // Use empty config for children (they should have their own configs if needed)
+                    var childConfig = new ItemConfig();
+                    var childClause = ConvertFilterItemToClause(child, childConfig);
+                    if (childClause != null)
+                    {
+                        operatorClause.Clauses.Add(childClause);
+                    }
+                }
+
+                return operatorClause;
+            }
+
+            // Regular item clause
             var clause = new MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Type = MapCategoryToType(filterItem.Category, filterItem.Name),

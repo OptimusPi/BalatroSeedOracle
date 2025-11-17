@@ -814,46 +814,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {tabIndex}");
+                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {tabIndex} TO DISK");
 
-                var currentTabIndex = tabIndex;
+                // SIMPLE SOLUTION: ALWAYS SAVE TO DISK WHEN LEAVING ANY TAB
+                _ = SaveCurrentFilterCommand.ExecuteAsync(null);
 
-                // Tab 0: Build Filter (Visual Builder) - already saves to SelectedMust/Should via collections
-                if (currentTabIndex == 0 && VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
-                {
-                    // Visual Builder auto-syncs to parent collections via CollectionChanged events
-                    // No explicit save needed
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Visual Builder data auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
-                }
-
-                // Tab 1: Deck/Stake - EXPLICITLY save to ensure it persists
-                else if (currentTabIndex == 1 && DeckStakeTab is FilterTabs.DeckStakeTabViewModel deckStakeVm)
-                {
-                    // Force save deck/stake from tab to parent
-                    // NOTE: DeckStakeTabViewModel properties are just passthroughs to parent, so values are ALREADY saved
-                    // We just need to log for debugging
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Deck/Stake tab closed: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
-
-                    // CRITICAL: Force property notifications to ensure bindings update
-                    OnPropertyChanged(nameof(SelectedDeck));
-                    OnPropertyChanged(nameof(SelectedDeckIndex));
-                    OnPropertyChanged(nameof(SelectedStake));
-                    OnPropertyChanged(nameof(SelectedStakeIndex));
-                }
-
-                // Tab 2: JSON Editor - parse JSON and update parent collections
-                else if (currentTabIndex == 2 && JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
-                {
-                    SaveJsonEditorToState(jsonVm);
-                }
-
-                // Tab 3: Validate/Save - read-only, no save needed
-                else if (currentTabIndex == 3)
-                {
-                    DebugLogger.Log("FiltersModalViewModel", "✅ Validate tab is read-only - no save needed");
-                }
+                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data saved to disk");
             }
             catch (Exception ex)
             {
@@ -869,35 +835,12 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.Log("FiltersModalViewModel", $"📂 Loading data into tab index {tabIndex}");
+                DebugLogger.Log("FiltersModalViewModel", $"📂 Loading data into tab index {tabIndex} FROM DISK");
 
-                // Tab 0: Build Filter (Visual Builder) - already loads from parent collections
-                if (tabIndex == 0 && VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
-                {
-                    // Visual Builder shows parent's SelectedMust/Should collections via binding
-                    // No explicit load needed
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Visual Builder auto-synced: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
-                }
+                // SIMPLE SOLUTION: ALWAYS RELOAD FROM DISK WHEN ENTERING ANY TAB
+                _ = ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
 
-                // Tab 1: Deck/Stake - TwoWay binding should auto-sync
-                else if (tabIndex == 1)
-                {
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"✅ Deck/Stake loaded via binding: Deck={SelectedDeck} ({SelectedDeckIndex}), Stake={SelectedStake} ({SelectedStakeIndex})");
-                }
-
-                // Tab 2: JSON Editor - regenerate JSON from current state
-                else if (tabIndex == 2 && JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
-                {
-                    RegenerateJsonFromState(jsonVm);
-                }
-
-                // Tab 3: Validate/Save - refresh from current state
-                else if (tabIndex == 3)
-                {
-                    RefreshSaveTabData();
-                }
+                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data loaded from disk");
             }
             catch (Exception ex)
             {

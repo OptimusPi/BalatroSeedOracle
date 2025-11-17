@@ -31,7 +31,7 @@
                          FontSize="12"
                          FontFamily="Consolas"
                          Height="32"
-                         Background="{StaticResource DarkGrey}"
+                         Background="{StaticResource ColorDarkGrey}"
                          ToolTip.Tip="Auto-generated filename and search database ID"/>
             </StackPanel>
 
@@ -98,7 +98,7 @@
                                                Text="No MUST items"
                                                FontStyle="Italic"
                                                FontSize="12"
-                                               Foreground="{StaticResource DarkGrey}"/>
+                                               Foreground="{StaticResource ColorDarkGrey}"/>
                                 </Grid>
                             </Border>
                         </Expander>
@@ -138,7 +138,7 @@
                                                Text="No SHOULD items"
                                                FontStyle="Italic"
                                                FontSize="12"
-                                               Foreground="{StaticResource DarkGrey}"/>
+                                               Foreground="{StaticResource ColorDarkGrey}"/>
                                 </Grid>
                             </Border>
                         </Expander>
@@ -178,7 +178,7 @@
                                                Text="No banned items"
                                                FontStyle="Italic"
                                                FontSize="12"
-                                               Foreground="{StaticResource DarkGrey}"/>
+                                               Foreground="{StaticResource ColorDarkGrey}"/>
                                 </Grid>
                             </Border>
                         </Expander>
@@ -223,7 +223,7 @@
                     <StackPanel Spacing="12">
                         <!-- STATE 1: TESTING - Loading Spinner -->
                         <Border IsVisible="{Binding IsTestRunning}"
-                                Background="{StaticResource DarkGrey}"
+                                Background="{StaticResource ColorDarkGrey}"
                                 BorderThickness="2"
                                 BorderBrush="{StaticResource Gold}"
                                 CornerRadius="8"
@@ -348,7 +348,7 @@
                                            TextAlignment="Center"/>
 
                                 <!-- Ready Icon -->
-                                <Border Background="{StaticResource DarkGrey}"
+                                <Border Background="{StaticResource ColorDarkGrey}"
                                         BorderThickness="2"
                                         BorderBrush="{StaticResource ModalBorder}"
                                         CornerRadius="50"
@@ -364,7 +364,7 @@
 
                                 <TextBlock Text="No test results yet"
                                            FontSize="10"
-                                           Foreground="{StaticResource DarkGrey}"
+                                           Foreground="{StaticResource ColorDarkGrey}"
                                            FontFamily="{StaticResource BalatroFont}"
                                            HorizontalAlignment="Center"/>
                             </StackPanel>

@@ -23,10 +23,10 @@
     </UserControl.Styles>
 
     <Grid>
-        <!-- 🌈 PSYCHEDELIC MILKDROP SHADER - TEMPORARY FOR DEMO! -->
-        <controls:PsychedelicShaderBackground x:Name="BackgroundControl"
-                                             HorizontalAlignment="Stretch"
-                                             VerticalAlignment="Stretch" />
+        <!-- Balatro Shader Background -->
+        <controls:BalatroShaderBackground x:Name="BackgroundControl"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch" />
 
         <!-- Settings Popup removed - now using modal system -->
 

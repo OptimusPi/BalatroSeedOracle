@@ -19,7 +19,6 @@
     <PackageVersion Include="NAudio" Version="2.2.1" />
     <PackageVersion Include="NAudio.Vorbis" Version="1.5.0" />
     <PackageVersion Include="NVorbis" Version="0.10.5" />
-    <PackageVersion Include="ScottPlot.Avalonia" Version="5.1.57" />
     <PackageVersion Include="SoundFlow" Version="1.2.1" />
     <PackageVersion Include="Avalonia" Version="11.3.4" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.4" />

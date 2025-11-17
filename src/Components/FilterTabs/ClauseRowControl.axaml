@@ -95,7 +95,7 @@
             <Border Grid.Row="1"
                     Width="90" Height="90"
                     CornerRadius="8"
-                    Background="{StaticResource DarkGrey}"
+                    Background="{StaticResource ColorDarkGrey}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="1"
                     HorizontalAlignment="Center"

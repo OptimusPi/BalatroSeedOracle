@@ -1967,6 +1967,63 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Gets a composite image of a Joker with optional edition and debuff overlays
         /// </summary>
+        /// <summary>
+        /// Gets a specific joker sprite with optional edition effects applied
+        /// </summary>
+        /// <param name="jokerName">Name of the joker</param>
+        /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
+        /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
+        public IImage? GetJokerSpriteWithEdition(string jokerName, string? edition = null, bool debuff = false)
+        {
+            // Get base joker sprite
+            var baseJoker = GetJokerImage(jokerName);
+            if (baseJoker == null)
+            {
+                DebugLogger.LogError("SpriteService", $"Failed to get joker image: {jokerName}");
+                return null;
+            }
+
+            // No edition = return base
+            if (string.IsNullOrEmpty(edition) || edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+                return baseJoker;
+
+            IImage? result = baseJoker;
+
+            // Apply edition effect
+            if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+            {
+                // Negative: Invert colors
+                var inverted = InvertImageColors(result);
+                if (inverted != null)
+                    result = inverted;
+            }
+            else
+            {
+                // Other editions: Composite overlay
+                var editionOverlay = GetEditionImage(edition);
+                if (editionOverlay != null)
+                {
+                    var composited = CompositeImages(result, editionOverlay, 71, 95);
+                    if (composited != null)
+                        result = composited;
+                }
+            }
+
+            // Apply debuff overlay if requested
+            if (debuff)
+            {
+                var debuffOverlay = GetEditionImage("debuffed");
+                if (debuffOverlay != null)
+                {
+                    var composited = CompositeImages(result, debuffOverlay, 71, 95);
+                    if (composited != null)
+                        result = composited;
+                }
+            }
+
+            return result;
+        }
+
         /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
         /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
         public IImage? GetJokerWithEditionImage(string edition, bool debuff = false)

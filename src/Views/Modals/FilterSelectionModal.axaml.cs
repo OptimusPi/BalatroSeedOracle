@@ -306,9 +306,9 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void UpdateDeckAndStake(FilterBrowserItem filter)
         {
-            // Extract deck and stake names with fallbacks
-            var deckName = filter.DeckName ?? "Red";
-            var stakeName = filter.StakeName ?? "White";
+            // Extract deck and stake names with fallbacks (handle both null and empty strings)
+            var deckName = string.IsNullOrWhiteSpace(filter.DeckName) ? "Red" : filter.DeckName;
+            var stakeName = string.IsNullOrWhiteSpace(filter.StakeName) ? "White" : filter.StakeName;
 
             // SpriteService expects SHORT deck names (just "Red", not "Red Deck")
             // Filter JSON stores short names like "Red", "Anaglyph", etc.

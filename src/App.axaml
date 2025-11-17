@@ -111,17 +111,13 @@
 
         <!-- Border Brushes (consolidated to use DarkGrey) -->
         <SolidColorBrush x:Key="DarkBorder" Color="{StaticResource ColorDarkGrey}"/>
-        <SolidColorBrush x:Key="DarkGreyBorder" Color="{StaticResource ColorDarkGrey}"/>
-        <SolidColorBrush x:Key="DarkBorderGrey" Color="{StaticResource ColorDarkGrey}"/>
         <SolidColorBrush x:Key="DarkTealGrey" Color="{StaticResource ColorDarkGrey}"/>
 
         <!-- Grey Scale Brushes -->
         <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorFadedGrey}"/>
-        <SolidColorBrush x:Key="MediumDarkGrey" Color="{StaticResource ColorFadedGrey}"/>
         <SolidColorBrush x:Key="VeryLightGrey" Color="{StaticResource ColorBrightSilver}"/>
         <SolidColorBrush x:Key="LightTextGrey" Color="{StaticResource ColorLightGrey}"/>
         <SolidColorBrush x:Key="TextInactive" Color="{StaticResource ColorFadedGrey}"/>
-        <SolidColorBrush x:Key="SlateGrey" Color="{StaticResource ColorBrightSilver}"/>
         <SolidColorBrush x:Key="VeryDarkGrey2" Color="{StaticResource ColorDarkGrey}"/>
         <SolidColorBrush x:Key="DarkGrey2" Color="{StaticResource ColorDarkGrey}"/>
         <SolidColorBrush x:Key="LightCream" Color="{StaticResource ColorBrightSilver}"/>

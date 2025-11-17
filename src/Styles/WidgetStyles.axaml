@@ -138,7 +138,7 @@
     <Style Selector="TextBox.widget-input">
         <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DarkGreyBorder}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="8,4"/>
         <Setter Property="CornerRadius" Value="4"/>

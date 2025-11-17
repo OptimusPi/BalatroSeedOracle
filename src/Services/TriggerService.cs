@@ -21,6 +21,9 @@ namespace BalatroSeedOracle.Services
         private readonly Dictionary<string, ITrigger> _triggers = new();
         private readonly string _audioTriggersPath;
 
+        // Inertia state tracking for AddInertia mode (shader param → velocity)
+        private readonly Dictionary<string, float> _inertiaVelocities = new();
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
@@ -234,6 +237,87 @@ namespace BalatroSeedOracle.Services
                     trigger.UpdateState(currentValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// Apply shader parameter mappings with springloaded physics
+        /// Call this each frame to update shader parameters based on active triggers
+        /// </summary>
+        /// <param name="mappings">List of trigger-to-shader mappings</param>
+        /// <param name="currentParams">Current shader parameter values (will be modified in-place)</param>
+        public void ApplyShaderMappings(
+            List<ShaderParamMapping> mappings,
+            Dictionary<string, float> currentParams
+        )
+        {
+            foreach (var mapping in mappings)
+            {
+                // Get the trigger
+                var trigger = GetTrigger(mapping.TriggerName);
+                if (trigger == null)
+                    continue;
+
+                // Get trigger intensity (0-1 normalized value)
+                float triggerIntensity = trigger.GetIntensity();
+
+                // Apply multiplier
+                float scaledValue = triggerIntensity * mapping.Multiplier;
+
+                // Get current param value (default to 0 if not exists)
+                if (!currentParams.TryGetValue(mapping.ShaderParam, out float currentValue))
+                {
+                    currentValue = 0f;
+                }
+
+                // Apply effect mode
+                float newValue;
+                if (mapping.Mode == EffectMode.SetValue)
+                {
+                    // SetValue mode: Directly set the value (smooth transition)
+                    newValue = scaledValue;
+                }
+                else // AddInertia mode
+                {
+                    // AddInertia mode: Springloaded physics (flick to target, then decay back)
+
+                    // Get or initialize velocity for this param
+                    string velocityKey = $"{mapping.ShaderParam}_velocity";
+                    if (!_inertiaVelocities.TryGetValue(velocityKey, out float velocity))
+                    {
+                        velocity = 0f;
+                    }
+
+                    // If trigger is active, add "force" to velocity
+                    if (trigger.IsActive())
+                    {
+                        velocity += scaledValue;
+                    }
+
+                    // Apply decay to velocity (springloaded feel)
+                    velocity *= mapping.InertiaDecay;
+
+                    // Update param value with velocity
+                    newValue = currentValue + velocity;
+
+                    // Store updated velocity
+                    _inertiaVelocities[velocityKey] = velocity;
+                }
+
+                // Clamp to min/max
+                newValue = Math.Clamp(newValue, mapping.MinValue, mapping.MaxValue);
+
+                // Update current params
+                currentParams[mapping.ShaderParam] = newValue;
+            }
+        }
+
+        /// <summary>
+        /// Reset all inertia velocities to zero (useful when changing presets)
+        /// </summary>
+        public void ResetInertia()
+        {
+            _inertiaVelocities.Clear();
+            DebugLogger.Log("TriggerService", "Reset all inertia velocities");
         }
     }
 }

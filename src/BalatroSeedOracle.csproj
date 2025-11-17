@@ -59,7 +59,6 @@
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
     <PackageReference Include="MessageBox.Avalonia" />
-    <PackageReference Include="ScottPlot.Avalonia" />
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />

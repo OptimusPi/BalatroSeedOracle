@@ -109,7 +109,7 @@
         
         <!-- Inactive dot -->
         <Style Selector="TextBlock.position-dot:not(.active)">
-            <Setter Property="Foreground" Value="{StaticResource MediumDarkGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
         </Style>
         
         <!-- Compact dots for many items -->

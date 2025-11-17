@@ -55,25 +55,27 @@
             <Setter Property="Height" Value="42"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DarkBorderGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
         <Style Selector="Border.strip-label">
-            <Setter Property="Background" Value="{StaticResource SlateGrey}"/>
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="CornerRadius" Value="4,0,0,4"/>
             <Setter Property="Padding" Value="12,0,12,0"/>
         </Style>
 
         <Style Selector="Border.strip-value">
             <Setter Property="Background" Value="{StaticResource VeryDarkGrey2}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource LightCream}"/>
             <Setter Property="CornerRadius" Value="0,4,4,0"/>
             <Setter Property="Padding" Value="12,0,12,0"/>
         </Style>
 
         <Style Selector="TextBlock.strip-label-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="{StaticResource VeryDarkGrey2}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -109,6 +111,19 @@
 
         <Style Selector="TextBlock.strip-value-text.cyan">
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <!-- Color-specific border styles -->
+        <Style Selector="Border.strip-value.gold">
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Border.strip-value.green">
+            <Setter Property="BorderBrush" Value="{StaticResource Green}"/>
+        </Style>
+
+        <Style Selector="Border.strip-value.cyan">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
     </UserControl.Styles>
 
@@ -348,7 +363,7 @@
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Progress" Classes="strip-label-text"/>
                             </Border>
-                            <Border Grid.Column="1" Classes="strip-value">
+                            <Border Grid.Column="1" Classes="strip-value gold">
                                 <TextBlock Text="{Binding ProgressPercent, StringFormat='{}{0:0.00}%'}"
                                            Classes="strip-value-text gold"/>
                             </Border>
@@ -361,7 +376,7 @@
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Speed" Classes="strip-label-text"/>
                             </Border>
-                            <Border Grid.Column="1" Classes="strip-value">
+                            <Border Grid.Column="1" Classes="strip-value gold">
                                 <TextBlock Text="{Binding SearchSpeed}"
                                            Classes="strip-value-text gold"/>
                             </Border>
@@ -400,7 +415,7 @@
                             <Border Grid.Column="0" Classes="strip-label cyan">
                                 <TextBlock Text="ETA" Classes="strip-label-text"/>
                             </Border>
-                            <Border Grid.Column="1" Classes="strip-value">
+                            <Border Grid.Column="1" Classes="strip-value cyan">
                                 <TextBlock Text="{Binding EstimatedTimeRemaining}"
                                            Classes="strip-value-text cyan"/>
                             </Border>
@@ -413,7 +428,7 @@
                             <Border Grid.Column="0" Classes="strip-label green">
                                 <TextBlock Text="Found" Classes="strip-label-text"/>
                             </Border>
-                            <Border Grid.Column="1" Classes="strip-value">
+                            <Border Grid.Column="1" Classes="strip-value green">
                                 <TextBlock Text="{Binding ResultsCount, StringFormat='{}{0:N0}'}"
                                            Classes="strip-value-text green"/>
                             </Border>
@@ -439,7 +454,7 @@
                             <Border Grid.Column="0" Classes="strip-label gold">
                                 <TextBlock Text="Rarity" Classes="strip-label-text"/>
                             </Border>
-                            <Border Grid.Column="1" Classes="strip-value">
+                            <Border Grid.Column="1" Classes="strip-value gold">
                                 <TextBlock Text="{Binding Rarity}"
                                            Classes="strip-value-text gold"/>
                             </Border>

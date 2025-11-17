@@ -209,6 +209,12 @@ namespace BalatroSeedOracle.ViewModels
         private double _testTwirlValue = 1.0;
 
         /// <summary>
+        /// Psychedelic Blend - smoothly morphs between normal and full trippy mode (0.0 = normal, 1.0 = maximum psychedelic)
+        /// </summary>
+        [ObservableProperty]
+        private double _psychedelicBlend = 0.0;
+
+        /// <summary>
         /// Triggers a manual Zoom Punch effect test
         /// </summary>
         [RelayCommand]
@@ -727,130 +733,6 @@ namespace BalatroSeedOracle.ViewModels
             set => _settingsViewModel.VibeIntensityMultiplier = value;
         }
 
-        // Track Volume Controls (0.0 to 1.0) - Control actual audio playback volume
-        private float _drums1Volume = 1.0f;
-        public float Drums1Volume
-        {
-            get => _drums1Volume;
-            set
-            {
-                if (SetProperty(ref _drums1Volume, value))
-                {
-                    ApplyTrackVolume("Drums1", value);
-                }
-            }
-        }
-
-        private float _drums2Volume = 1.0f;
-        public float Drums2Volume
-        {
-            get => _drums2Volume;
-            set
-            {
-                if (SetProperty(ref _drums2Volume, value))
-                {
-                    ApplyTrackVolume("Drums2", value);
-                }
-            }
-        }
-
-        private float _bass1Volume = 1.0f;
-        public float Bass1Volume
-        {
-            get => _bass1Volume;
-            set
-            {
-                if (SetProperty(ref _bass1Volume, value))
-                {
-                    ApplyTrackVolume("Bass1", value);
-                }
-            }
-        }
-
-        private float _bass2Volume = 1.0f;
-        public float Bass2Volume
-        {
-            get => _bass2Volume;
-            set
-            {
-                if (SetProperty(ref _bass2Volume, value))
-                {
-                    ApplyTrackVolume("Bass2", value);
-                }
-            }
-        }
-
-        private float _chords1Volume = 1.0f;
-        public float Chords1Volume
-        {
-            get => _chords1Volume;
-            set
-            {
-                if (SetProperty(ref _chords1Volume, value))
-                {
-                    ApplyTrackVolume("Chords1", value);
-                }
-            }
-        }
-
-        private float _chords2Volume = 1.0f;
-        public float Chords2Volume
-        {
-            get => _chords2Volume;
-            set
-            {
-                if (SetProperty(ref _chords2Volume, value))
-                {
-                    ApplyTrackVolume("Chords2", value);
-                }
-            }
-        }
-
-        private float _melody1Volume = 1.0f;
-        public float Melody1Volume
-        {
-            get => _melody1Volume;
-            set
-            {
-                if (SetProperty(ref _melody1Volume, value))
-                {
-                    ApplyTrackVolume("Melody1", value);
-                }
-            }
-        }
-
-        private float _melody2Volume = 1.0f;
-        public float Melody2Volume
-        {
-            get => _melody2Volume;
-            set
-            {
-                if (SetProperty(ref _melody2Volume, value))
-                {
-                    ApplyTrackVolume("Melody2", value);
-                }
-            }
-        }
-
-        private void ApplyTrackVolume(string trackName, float volume)
-        {
-            var audioManager = Helpers.ServiceHelper.GetService<SoundFlowAudioManager>();
-            if (audioManager == null)
-            {
-                DebugLogger.LogError(
-                    "AudioVisualizerSettingsWidgetViewModel",
-                    "SoundFlowAudioManager service not found!"
-                );
-                return;
-            }
-
-            audioManager.SetTrackVolume(trackName, volume);
-            DebugLogger.Log(
-                "AudioVisualizerSettingsWidgetViewModel",
-                $"Volume slider: {trackName} → {volume:F2}"
-            );
-        }
-
         // Shader Effect Intensities
         public float ShadowFlickerIntensity
         {
@@ -1005,6 +887,30 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         [ObservableProperty]
         private string? _searchTransitionEndPresetName;
+
+        /// <summary>
+        /// Selected preset A for manual transition testing
+        /// </summary>
+        [ObservableProperty]
+        private string? _manualTransitionPresetA;
+
+        /// <summary>
+        /// Selected preset B for manual transition testing
+        /// </summary>
+        [ObservableProperty]
+        private string? _manualTransitionPresetB;
+
+        /// <summary>
+        /// Manual transition progress (0-100%)
+        /// </summary>
+        [ObservableProperty]
+        private double _manualTransitionProgress = 0.0;
+
+        partial void OnManualTransitionProgressChanged(double value)
+        {
+            // Apply manual transition when slider moves
+            ApplyManualTransition(value / 100.0); // Convert 0-100 to 0-1
+        }
 
         partial void OnEnableSearchTransitionChanged(bool value)
         {
@@ -1320,6 +1226,94 @@ namespace BalatroSeedOracle.ViewModels
         private void ExportToJson()
         {
             System.Diagnostics.Debug.WriteLine("Export to JSON - Not yet implemented");
+        }
+
+        #endregion
+
+        #region Manual Transition Tester
+
+        /// <summary>
+        /// Applies manual transition between Preset A and Preset B at given progress
+        /// </summary>
+        /// <param name="progress">0.0 = Preset A, 1.0 = Preset B</param>
+        private async void ApplyManualTransition(double progress)
+        {
+            // Skip if presets not selected
+            if (string.IsNullOrWhiteSpace(ManualTransitionPresetA) ||
+                string.IsNullOrWhiteSpace(ManualTransitionPresetB))
+            {
+                return;
+            }
+
+            try
+            {
+                // Build preset file paths
+                var presetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+                var presetAPath = Path.Combine(presetsDir, $"{ManualTransitionPresetA}.json");
+                var presetBPath = Path.Combine(presetsDir, $"{ManualTransitionPresetB}.json");
+
+                // Check if files exist
+                if (!File.Exists(presetAPath) || !File.Exists(presetBPath))
+                {
+                    DebugLogger.LogError(
+                        "AudioVisualizerWidget",
+                        $"One or both presets not found: {ManualTransitionPresetA}, {ManualTransitionPresetB}"
+                    );
+                    return;
+                }
+
+                // Load preset A
+                var jsonA = await File.ReadAllTextAsync(presetAPath);
+                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonA);
+
+                // Load preset B
+                var jsonB = await File.ReadAllTextAsync(presetBPath);
+                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonB);
+
+                if (presetA != null && presetB != null)
+                {
+                    // Simple interpolation of theme and colors for now
+                    // Full shader parameter interpolation would go here
+
+                    // LERP theme index (rounded to nearest int)
+                    var lerpedThemeIndex = (int)Math.Round(
+                        presetA.ThemeIndex * (1 - progress) + presetB.ThemeIndex * progress
+                    );
+
+                    // Apply the interpolated theme
+                    ThemeIndex = lerpedThemeIndex;
+
+                    DebugLogger.Log(
+                        "AudioVisualizerWidget",
+                        $"Manual transition {progress:P0}: {ManualTransitionPresetA} → {ManualTransitionPresetB} (Theme: {lerpedThemeIndex})"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to apply manual transition: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Plays automatic transition from 0% to 100% over 3 seconds using Avalonia Transitions
+        /// </summary>
+        [RelayCommand]
+        private async Task PlayManualTransition()
+        {
+            // Reset to 0% first
+            ManualTransitionProgress = 0;
+
+            // Wait a frame to ensure the transition system sees the 0 value
+            await Task.Delay(50);
+
+            // Set to 100% - the DoubleTransition in XAML will smoothly animate from 0 to 100
+            ManualTransitionProgress = 100;
+
+            DebugLogger.Log("AudioVisualizerWidget", "Manual transition animation started (Avalonia Transitions)");
         }
 
         #endregion

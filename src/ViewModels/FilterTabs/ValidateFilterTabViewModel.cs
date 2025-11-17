@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -169,41 +170,59 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public void RefreshClauseDisplay()
         {
-            MustClauses.Clear();
-            MustNotClauses.Clear();
-            ShouldClauses.Clear();
-
-            try
+            Dispatcher.UIThread.Post(() =>
             {
-                // Get VisualBuilderTab if available
-                if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
-                {
-                    DebugLogger.Log("ValidateFilterTab",
-                        $"✅ FOUND VisualBuilderTab - Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+                MustClauses.Clear();
+                MustNotClauses.Clear();
+                ShouldClauses.Clear();
 
-                    // Convert Must items
-                    foreach (var item in visualVm.SelectedMust)
+                try
+                {
+                    // Get VisualBuilderTab if available
+                    if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
                     {
-                        // Check for BannedItems operator
-                        if (item is Models.FilterOperatorItem operatorItem &&
-                            operatorItem.OperatorType == "BannedItems")
+                        DebugLogger.Log("ValidateFilterTab",
+                            $"✅ FOUND VisualBuilderTab - Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+
+                        // Convert Must items
+                        foreach (var item in visualVm.SelectedMust)
                         {
-                            // Add children to MustNot
-                            foreach (var child in operatorItem.Children)
+                            // Check for BannedItems operator
+                            if (item is Models.FilterOperatorItem operatorItem &&
+                                operatorItem.OperatorType == "BannedItems")
                             {
-                                var config = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
-                                    ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                // Add children to MustNot
+                                foreach (var child in operatorItem.Children)
+                                {
+                                    var config = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
+                                        ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                        : new ItemConfig();
+                                    var clause = _clauseConversionService.ConvertFilterItemToClause(child, config);
+                                    if (clause != null)
+                                    {
+                                        var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, child.Category, 0);
+                                        if (clauseRow != null)
+                                            MustNotClauses.Add(clauseRow);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                                    ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                     : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(child, config);
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
                                 if (clause != null)
                                 {
-                                    var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, child.Category, 0);
+                                    var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
                                     if (clauseRow != null)
-                                        MustNotClauses.Add(clauseRow);
+                                        MustClauses.Add(clauseRow);
                                 }
                             }
                         }
-                        else
+
+                        // Convert Should items
+                        foreach (var item in visualVm.SelectedShould)
                         {
                             var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
                                 ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
@@ -213,72 +232,57 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             {
                                 var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
                                 if (clauseRow != null)
-                                    MustClauses.Add(clauseRow);
+                                    ShouldClauses.Add(clauseRow);
                             }
                         }
                     }
-
-                    // Convert Should items
-                    foreach (var item in visualVm.SelectedShould)
+                    else
                     {
-                        var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
-                            ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                            : new ItemConfig();
-                        var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
-                        if (clause != null)
+                        // Fallback to parent's key-based collections
+                        DebugLogger.Log("ValidateFilterTab",
+                            $"⚠️ NO VisualBuilderTab found! Falling back to parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot");
+                        DebugLogger.Log("ValidateFilterTab",
+                            $"VisualBuilderTab is null: {_parentViewModel.VisualBuilderTab == null}, Type: {_parentViewModel.VisualBuilderTab?.GetType()?.Name ?? "null"}");
+
+                        // Convert Must items from keys
+                        foreach (var itemKey in _parentViewModel.SelectedMust)
                         {
-                            var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
-                            if (clauseRow != null)
-                                ShouldClauses.Add(clauseRow);
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            {
+                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                if (clauseRow != null)
+                                    MustClauses.Add(clauseRow);
+                            }
+                        }
+
+                        // Convert MustNot items
+                        foreach (var itemKey in _parentViewModel.SelectedMustNot)
+                        {
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            {
+                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                if (clauseRow != null)
+                                    MustNotClauses.Add(clauseRow);
+                            }
+                        }
+
+                        // Convert Should items
+                        foreach (var itemKey in _parentViewModel.SelectedShould)
+                        {
+                            if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
+                            {
+                                var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
+                                if (clauseRow != null)
+                                    ShouldClauses.Add(clauseRow);
+                            }
                         }
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Fallback to parent's key-based collections
-                    DebugLogger.Log("ValidateFilterTab",
-                        $"⚠️ NO VisualBuilderTab found! Falling back to parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot");
-                    DebugLogger.Log("ValidateFilterTab",
-                        $"VisualBuilderTab is null: {_parentViewModel.VisualBuilderTab == null}, Type: {_parentViewModel.VisualBuilderTab?.GetType()?.Name ?? "null"}");
-
-                    // Convert Must items from keys
-                    foreach (var itemKey in _parentViewModel.SelectedMust)
-                    {
-                        if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                        {
-                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
-                            if (clauseRow != null)
-                                MustClauses.Add(clauseRow);
-                        }
-                    }
-
-                    // Convert MustNot items
-                    foreach (var itemKey in _parentViewModel.SelectedMustNot)
-                    {
-                        if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                        {
-                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
-                            if (clauseRow != null)
-                                MustNotClauses.Add(clauseRow);
-                        }
-                    }
-
-                    // Convert Should items
-                    foreach (var itemKey in _parentViewModel.SelectedShould)
-                    {
-                        if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
-                        {
-                            var clauseRow = ConvertItemConfigDirectly(config, itemKey, 0);
-                            if (clauseRow != null)
-                                ShouldClauses.Add(clauseRow);
-                        }
-                    }
+                    DebugLogger.LogError("ValidateFilterTab", $"Error refreshing clause display: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("ValidateFilterTab", $"Error refreshing clause display: {ex.Message}");
-            }
+            });
         }
 
 
@@ -849,77 +853,82 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            var config = new MotelyJsonConfig
+            // MUST run on UI thread to access ObservableCollections
+            return Dispatcher.UIThread.Invoke(() =>
             {
-                Deck = "Red", // Default deck
-                Stake = "White", // Default stake
-                Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
-                Description = FilterDescription,
-                DateCreated = DateTime.UtcNow,
-                Author = userProfileService?.GetAuthorName() ?? "Unknown",
-            };
-
-            config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-
-            // Build from VisualBuilderTab if available
-            if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
-            {
-                // Convert FilterItem objects directly
-                foreach (var item in visualVm.SelectedMust)
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                var config = new MotelyJsonConfig
                 {
-                    // SPECIAL HANDLING: BannedItems operator → MustNot[]
-                    if (item is Models.FilterOperatorItem operatorItem &&
-                        operatorItem.OperatorType == "BannedItems")
+                    Deck = "Red", // Default deck
+                    Stake = "White", // Default stake
+                    Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
+                    Description = FilterDescription,
+                    DateCreated = DateTime.UtcNow,
+                    Author = userProfileService?.GetAuthorName() ?? "Unknown",
+                };
+
+                config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+
+                // Build from VisualBuilderTab if available
+                if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
+                {
+                    // Convert FilterItem objects directly
+                    foreach (var item in visualVm.SelectedMust)
                     {
-                        // Add each child to MustNot array
-                        foreach (var child in operatorItem.Children)
+                        // Special handling for BannedItems - add children to MustNot
+                        if (item is Models.FilterOperatorItem operatorItem && operatorItem.OperatorType == "BannedItems")
                         {
-                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
-                                ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                            // BannedItems: Add each child to MustNot array
+                            foreach (var child in operatorItem.Children)
+                            {
+                                var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
+                                    ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                    : new ItemConfig();
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(child, itemConfig);
+                                if (clause != null)
+                                    config.MustNot.Add(clause);
+                            }
+                        }
+                        else
+                        {
+                            // Regular items and OR/AND operators (ClauseConversionService handles operators)
+                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                                ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                 : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(child, itemConfig);
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
                             if (clause != null)
-                                config.MustNot.Add(clause);
+                                config.Must.Add(clause);
                         }
                     }
-                    else
+
+                    foreach (var item in visualVm.SelectedShould)
                     {
+                        // Convert all items (ClauseConversionService handles operators)
                         var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
                             ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                             : new ItemConfig();
                         var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
                         if (clause != null)
-                            config.Must.Add(clause);
+                            config.Should.Add(clause);
                     }
                 }
-
-                foreach (var item in visualVm.SelectedShould)
+                else
                 {
-                    var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
-                        ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                        : new ItemConfig();
-                    var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
-                    if (clause != null)
-                        config.Should.Add(clause);
+                    // Fallback to parent's collections
+                    return _filterConfigurationService.BuildConfigFromSelections(
+                        _parentViewModel.SelectedMust.ToList(),
+                        _parentViewModel.SelectedShould.ToList(),
+                        _parentViewModel.SelectedMustNot.ToList(),
+                        _parentViewModel.ItemConfigs,
+                        FilterName,
+                        FilterDescription
+                    );
                 }
-            }
-            else
-            {
-                // Fallback to parent's collections
-                return _filterConfigurationService.BuildConfigFromSelections(
-                    _parentViewModel.SelectedMust.ToList(),
-                    _parentViewModel.SelectedShould.ToList(),
-                    _parentViewModel.SelectedMustNot.ToList(),
-                    _parentViewModel.ItemConfigs,
-                    FilterName,
-                    FilterDescription
-                );
-            }
 
-            return config;
+                return config;
+            });
         }
 
 

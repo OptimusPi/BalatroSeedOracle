@@ -204,7 +204,7 @@
                                             MinWidth="180"/>
 
                                     <!-- Ready Icon -->
-                                    <Border Background="{StaticResource DarkGrey}"
+                                    <Border Background="{StaticResource ColorDarkGrey}"
                                             BorderThickness="2"
                                             BorderBrush="{StaticResource ModalBorder}"
                                             CornerRadius="50"
@@ -220,7 +220,7 @@
 
                                     <TextBlock Text="No test results yet"
                                                FontSize="10"
-                                               Foreground="{StaticResource DarkGrey}"
+                                               Foreground="{StaticResource ColorDarkGrey}"
                                                FontFamily="{StaticResource BalatroFont}"
                                                HorizontalAlignment="Center"/>
                                 </StackPanel>
@@ -274,7 +274,7 @@
                                                    HorizontalAlignment="Center"/>
                                     </Border>
 
-                                    <Border Background="{StaticResource DarkGrey}"
+                                    <Border Background="{StaticResource ColorDarkGrey}"
                                             CornerRadius="6"
                                             Padding="12">
                                         <StackPanel Spacing="10">

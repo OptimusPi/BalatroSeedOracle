@@ -85,128 +85,6 @@
                                     Padding="16,4"/>
                         </StackPanel>
 
-                        <!-- TRANSITION DESIGNER -->
-                        <Border Background="{StaticResource DarkGrey}"
-                                BorderBrush="{StaticResource Gold}"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                Padding="14"
-                                Margin="0,12,0,0">
-                            <StackPanel Spacing="10">
-                                <TextBlock Text="🎬 TRANSITION DESIGNER"
-                                           Foreground="{StaticResource Gold}"
-                                           FontSize="16"
-                                           FontWeight="Bold"/>
-
-                                <TextBlock Text="Design smooth transitions between visual states"
-                                           Foreground="{StaticResource LightTextGrey}"
-                                           FontSize="11"
-                                           Margin="0,-6,0,2"/>
-
-                                <!-- Start Preset -->
-                                <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Start Preset"
-                                               Foreground="{StaticResource White}"
-                                               FontSize="13"
-                                               VerticalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1"
-                                              SelectedIndex="{Binding TransitionStartPresetIndex}"
-                                              FontSize="12">
-                                        <ComboBoxItem Content="Current State"/>
-                                        <ComboBoxItem Content="Default"/>
-                                        <ComboBoxItem Content="Wave Rider"/>
-                                        <ComboBoxItem Content="Inferno"/>
-                                        <ComboBoxItem Content="Frozen"/>
-                                        <ComboBoxItem Content="Dark Intro"/>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- End Preset -->
-                                <Grid ColumnDefinitions="90,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="End Preset"
-                                               Foreground="{StaticResource White}"
-                                               FontSize="13"
-                                               VerticalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1"
-                                              SelectedIndex="{Binding TransitionEndPresetIndex}"
-                                              FontSize="12">
-                                        <ComboBoxItem Content="Current State"/>
-                                        <ComboBoxItem Content="Default"/>
-                                        <ComboBoxItem Content="Wave Rider"/>
-                                        <ComboBoxItem Content="Inferno"/>
-                                        <ComboBoxItem Content="Frozen"/>
-                                        <ComboBoxItem Content="Vibrant Balatro"/>
-                                    </ComboBox>
-                                </Grid>
-
-                                <!-- Duration -->
-                                <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Duration"
-                                               Foreground="{StaticResource White}"
-                                               FontSize="13"
-                                               VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1"
-                                            Minimum="0.5"
-                                            Maximum="10"
-                                            Value="{Binding TransitionDuration}"
-                                            VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding TransitionDuration, StringFormat='{}{0:F1}s'}"
-                                               Foreground="{StaticResource Gold}"
-                                               FontSize="12"
-                                               TextAlignment="Right"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-
-                                <!-- Manual Preview Slider -->
-                                <Grid ColumnDefinitions="90,*,60" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0"
-                                               Text="Preview"
-                                               Foreground="{StaticResource White}"
-                                               FontSize="13"
-                                               VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1"
-                                            Minimum="0"
-                                            Maximum="1"
-                                            Value="{Binding TransitionPreviewProgress}"
-                                            VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding TransitionPreviewProgress, StringFormat='{}{0:P0}'}"
-                                               Foreground="{StaticResource Gold}"
-                                               FontSize="12"
-                                               TextAlignment="Right"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-
-                                <!-- Action Buttons -->
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
-                                    <Button Grid.Column="0"
-                                            Content="▶ Play Transition"
-                                            Classes="btn-blue"
-                                            Command="{Binding PlayTransitionCommand}"
-                                            Height="36"
-                                            FontSize="13"/>
-                                    <Button Grid.Column="1"
-                                            Content="💾 Save Transition"
-                                            Classes="btn-red"
-                                            Command="{Binding SaveTransitionCommand}"
-                                            Height="36"
-                                            FontSize="13"/>
-                                </Grid>
-
-                                <!-- Info Text -->
-                                <TextBlock Text="💡 Tip: Use the preview slider to scrub through the transition manually"
-                                           Foreground="{StaticResource LightTextGrey}"
-                                           FontSize="10"
-                                           FontStyle="Italic"
-                                           TextWrapping="Wrap"
-                                           Margin="0,2,0,-4"/>
-                            </StackPanel>
-                        </Border>
-
                         <!-- THEME SELECTION -->
                         <StackPanel Spacing="8">
                             <TextBlock Text="THEME" Foreground="{StaticResource White}" FontSize="16"/>
@@ -259,7 +137,7 @@
                         </StackPanel>
 
                         <!-- EFFECT TESTING -->
-                        <Border Background="{StaticResource DarkGrey}"
+                        <Border Background="{StaticResource ModalGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="1"
                                 CornerRadius="6"
@@ -274,6 +152,29 @@
                                            Foreground="{StaticResource LightTextGrey}"
                                            FontSize="12"
                                            Margin="0,0,0,4"/>
+
+                                <!-- Psychedelic Blend Slider -->
+                                <Grid ColumnDefinitions="140,*,80" ColumnSpacing="8" Margin="0,0,0,8">
+                                    <TextBlock Grid.Column="0"
+                                               Text="🌈 Psychedelic Blend"
+                                               Foreground="{StaticResource Gold}"
+                                               VerticalAlignment="Center"
+                                               FontSize="14"
+                                               FontWeight="Bold"/>
+                                    <Slider Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Value="{Binding PsychedelicBlend}"
+                                            VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding PsychedelicBlend, StringFormat='{}{0:P0}'}"
+                                               Foreground="{StaticResource Gold}"
+                                               FontSize="14"
+                                               TextAlignment="Right"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Border Height="1" Background="{StaticResource ModalBorder}" Margin="0,4"/>
 
                                 <!-- Zoom Punch Test -->
                                 <Grid ColumnDefinitions="120,*,80,50" ColumnSpacing="8">
@@ -382,7 +283,7 @@
                         </Border>
 
                         <!-- SHADER PARAM TO TRIGGER MAPPING (ENHANCED) -->
-                        <Border Background="{StaticResource DarkGrey}"
+                        <Border Background="{StaticResource ModalGrey}"
                                 BorderBrush="{StaticResource ModalBorder}"
                                 BorderThickness="1"
                                 CornerRadius="6"
@@ -1235,51 +1136,6 @@
                             </StackPanel>
                         </Expander>
 
-                        <!-- TRACK VOLUMES -->
-                        <StackPanel Spacing="6" Margin="0,12,0,0">
-                            <TextBlock Text="TRACK VOLUMES" Foreground="{StaticResource White}" FontSize="16"/>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Drums1" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Drums1Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Drums1Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Drums2" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Drums2Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Drums2Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Bass1" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Bass1Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Bass1Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Bass2" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Bass2Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Bass2Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Chords1" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Chords1Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Chords1Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Chords2" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Chords2Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Chords2Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Melody1" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Melody1Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Melody1Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                <TextBlock Grid.Column="0" Text="Melody2" Foreground="{StaticResource White}" FontSize="14" VerticalAlignment="Center" MinWidth="60"/>
-                                <Slider Grid.Column="1" Value="{Binding Melody2Volume}" Minimum="0" Maximum="1"/>
-                                <TextBlock Grid.Column="2" Text="{Binding Melody2Volume, StringFormat='{}{0:P0}'}" Foreground="{StaticResource White}" FontSize="14" MinWidth="40"/>
-                            </Grid>
-                        </StackPanel>
-
                         <!-- SEARCH TRANSITIONS -->
                         <StackPanel Spacing="6" Margin="0,12,0,0">
                             <TextBlock Text="SEARCH TRANSITIONS" Foreground="{StaticResource White}" FontSize="16"/>
@@ -1330,6 +1186,87 @@
                                     Height="32"
                                     Padding="16,4"
                                     Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- MANUAL TRANSITION TESTER -->
+                        <StackPanel Spacing="6" Margin="0,12,0,0">
+                            <TextBlock Text="MANUAL TRANSITION TESTER" Foreground="{StaticResource White}" FontSize="16"/>
+                            <TextBlock Text="Test shader transitions between two presets with manual control" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,4"/>
+
+                            <!-- Preset A Dropdown -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0"
+                                           Text="Preset A:"
+                                           Foreground="{StaticResource White}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           MinWidth="120"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailablePresetNames}"
+                                          SelectedItem="{Binding ManualTransitionPresetA}"
+                                          HorizontalAlignment="Stretch"
+                                          FontSize="13"/>
+                            </Grid>
+
+                            <!-- Preset B Dropdown -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0"
+                                           Text="Preset B:"
+                                           Foreground="{StaticResource White}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           MinWidth="120"/>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailablePresetNames}"
+                                          SelectedItem="{Binding ManualTransitionPresetB}"
+                                          HorizontalAlignment="Stretch"
+                                          FontSize="13"/>
+                            </Grid>
+
+                            <!-- Progress Slider -->
+                            <Grid ColumnDefinitions="Auto,*,60" ColumnSpacing="8" Margin="0,4,0,0">
+                                <TextBlock Grid.Column="0"
+                                           Text="Progress:"
+                                           Foreground="{StaticResource White}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           MinWidth="120"/>
+                                <Slider Grid.Column="1"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        Value="{Binding ManualTransitionProgress}"
+                                        TickFrequency="10"
+                                        IsSnapToTickEnabled="False"
+                                        VerticalAlignment="Center">
+                                    <Slider.Transitions>
+                                        <Transitions>
+                                            <DoubleTransition Property="Value" Duration="0:0:3" Easing="CubicEaseInOut"/>
+                                        </Transitions>
+                                    </Slider.Transitions>
+                                </Slider>
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding ManualTransitionProgress, StringFormat='{}{0:F0}%'}"
+                                           Foreground="{StaticResource Gold}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Play Transition Button -->
+                            <Button Content="Play Transition (Auto 0% → 100%)"
+                                    Classes="btn-gold"
+                                    Command="{Binding PlayManualTransitionCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    Height="32"
+                                    Padding="16,4"
+                                    Margin="0,4,0,0"/>
+
+                            <TextBlock Text="Use the progress slider for manual control, or click Play Transition for automatic animation"
+                                       Foreground="{StaticResource LightTextGrey}"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
                         </StackPanel>
 
                     </StackPanel>

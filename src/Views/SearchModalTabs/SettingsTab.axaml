@@ -57,7 +57,7 @@
                         <TextBlock Name="DeckDescriptionText"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="12"
-                                   Foreground="{StaticResource DarkGrey}"
+                                   Foreground="{StaticResource ColorDarkGrey}"
                                    TextWrapping="Wrap"
                                    Text="Loading..."/>
                     </StackPanel>
