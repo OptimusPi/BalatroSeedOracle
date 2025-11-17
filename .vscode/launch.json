@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build (dotnet)",
-            "program": "${workspaceFolder}/src/bin/Debug/net9.0/BalatroSeedOracle.dll",
+            "program": "${workspaceFolder}/src/bin/Debug/net10.0/BalatroSeedOracle.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src",
             "console": "internalConsole",

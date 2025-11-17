@@ -4,11 +4,11 @@
     {
       "name": "BalatroSeedOracle",
       "path": "src/BalatroSeedOracle.csproj",
-      "targetFramework": "net9.0",
+      "targetFramework": "net10.0",
       "outputType": "Exe",
       "isExecutable": true,
-      "previewAssembly": "src/bin/Debug/net9.0/BalatroSeedOracle.dll",
-      "designAssembly": "src/bin/Debug/net9.0/BalatroSeedOracle.dll"
+      "previewAssembly": "src/bin/Debug/net10.0/BalatroSeedOracle.dll",
+      "designAssembly": "src/bin/Debug/net10.0/BalatroSeedOracle.dll"
     }
   ]
 }

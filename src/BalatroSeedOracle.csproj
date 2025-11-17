@@ -62,11 +62,11 @@
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
     <PackageReference Include="ClosedXML" />
+    <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />

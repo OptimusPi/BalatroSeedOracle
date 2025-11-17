@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
@@ -242,7 +243,7 @@ tag"
                     return;
                 }
 
-                var clipboardText = await topLevel.Clipboard.GetTextAsync();
+                var clipboardText = await topLevel.Clipboard.TryGetTextAsync();
                 if (!string.IsNullOrEmpty(clipboardText) && _textEditor != null)
                 {
                     // Replace entire content with clipboard text

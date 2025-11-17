@@ -4,15 +4,20 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Models;
 
+#pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
+
 namespace BalatroSeedOracle.Components
 {
     public partial class FilterOperatorControl : UserControl
     {
+        private const string FilterItemFormatId = "BalatroSeedOracle.FilterItem";
+
         public FilterOperatorControl()
         {
             InitializeComponent();
@@ -81,7 +86,7 @@ namespace BalatroSeedOracle.Components
             // Parent handlers (OnDropZoneItemPointerPressed, OnTrayOrPointerPressed) will handle dragging
         }
 
-        private void OnCardPointerPressed(object? sender, PointerPressedEventArgs e)
+        private async void OnCardPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             // Find the card that was clicked
             var point = e.GetCurrentPoint(this);
@@ -95,10 +100,10 @@ namespace BalatroSeedOracle.Components
                 if (source is Border border && border.DataContext is FilterItem item)
                 {
                     // Start drag operation for this individual card
-                    var data = new Avalonia.Input.DataObject();
-                    data.Set("FilterItem", item);
+                    var data = new DataObject();
+                    data.Set(FilterItemFormatId, item);
 
-                    DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+                    await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
                     e.Handled = true;
                     return;
                 }
@@ -239,27 +244,30 @@ namespace BalatroSeedOracle.Components
         private void OnChildrenDragOver(object? sender, DragEventArgs e)
         {
             // Only allow FilterItems (not operators) to be dropped here
-            if (e.Data.Get("FilterItem") is FilterItem item && item is not FilterOperatorItem)
+            if (e.Data.Contains(FilterItemFormatId))
             {
-                e.DragEffects = DragDropEffects.Move;
-                e.Handled = true;
-
-                // Balatro-style visual feedback - white border and colored overlay
-                if (sender is Border dropZone && !dropZone.Classes.Contains("drag-active"))
+                var item = e.Data.Get(FilterItemFormatId) as FilterItem;
+                if (item is not null and not FilterOperatorItem)
                 {
-                    dropZone.Classes.Add("drag-active");
-                }
+                    e.DragEffects = DragDropEffects.Move;
+                    e.Handled = true;
 
-                var operatorContainer = this.FindControl<Border>("OperatorContainer");
-                if (operatorContainer != null && !operatorContainer.Classes.Contains("drag-over"))
-                {
-                    operatorContainer.Classes.Add("drag-over");
+                    // Balatro-style visual feedback - white border and colored overlay
+                    if (sender is Border dropZone && !dropZone.Classes.Contains("drag-active"))
+                    {
+                        dropZone.Classes.Add("drag-active");
+                    }
+
+                    var operatorContainer = this.FindControl<Border>("OperatorContainer");
+                    if (operatorContainer != null && !operatorContainer.Classes.Contains("drag-over"))
+                    {
+                        operatorContainer.Classes.Add("drag-over");
+                    }
+                    return;
                 }
             }
-            else
-            {
-                e.DragEffects = DragDropEffects.None;
-            }
+
+            e.DragEffects = DragDropEffects.None;
         }
 
         private void OnChildrenDragLeave(object? sender, DragEventArgs e)
@@ -291,14 +299,18 @@ namespace BalatroSeedOracle.Components
                 operatorContainer.Classes.Remove("drag-over");
             }
 
-            if (e.Data.Get("FilterItem") is FilterItem item && item is not FilterOperatorItem)
+            if (e.Data.Contains(FilterItemFormatId))
             {
-                // Get the operator item from DataContext
-                if (DataContext is FilterOperatorItem operatorItem)
+                var item = e.Data.Get(FilterItemFormatId) as FilterItem;
+                if (item is not null and not FilterOperatorItem)
                 {
-                    // Add the item to this operator's children
-                    operatorItem.Children.Add(item);
-                    e.Handled = true;
+                    // Get the operator item from DataContext
+                    if (DataContext is FilterOperatorItem operatorItem)
+                    {
+                        // Add the item to this operator's children
+                        operatorItem.Children.Add(item);
+                        e.Handled = true;
+                    }
                 }
             }
         }
