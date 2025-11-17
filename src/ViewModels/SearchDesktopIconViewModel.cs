@@ -199,7 +199,8 @@ namespace BalatroSeedOracle.ViewModels
                 App.GetService<SearchManager>(),
                 new UserProfileService(),
                 ServiceHelper.GetRequiredService<SpriteService>()
-            ) { }
+            )
+        { }
 
         #endregion
 

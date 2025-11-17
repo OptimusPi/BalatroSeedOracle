@@ -43,7 +43,6 @@ namespace BalatroSeedOracle.Views.Modals
                 backButton.Click += OnBackButtonClick;
             }
 
-            // REMOVED click-away handler - main modals should only close via back button
             // Only popup controls (like volume slider) should have click-away behavior
 
             // Hook TopLevel.BackRequested once the control is attached

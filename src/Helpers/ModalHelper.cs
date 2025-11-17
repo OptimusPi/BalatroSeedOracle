@@ -414,7 +414,6 @@ namespace BalatroSeedOracle.Helpers
                 };
 
                 // Range events (advanced)
-                // REMOVED: Range methods no longer exist on BalatroMainMenu (VibeOut feature removed)
                 /*
                 vm.ContrastRangeChangedEvent += (s, range) =>
                 {

@@ -1385,7 +1385,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        // REMOVED: Double-click handler - right-click is the only way to configure items
 
         private void ShowItemConfigPopup(Models.FilterItem item, Control? sourceControl)
         {

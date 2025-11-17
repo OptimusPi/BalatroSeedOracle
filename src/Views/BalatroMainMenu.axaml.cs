@@ -33,7 +33,6 @@ namespace BalatroSeedOracle.Views
         private Control? _background;
         private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
 
-        // private Grid? _vibeOutOverlay; // REMOVED: VibeOut feature removed
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
@@ -77,7 +76,6 @@ namespace BalatroSeedOracle.Views
             _modalContentWrapper = this.FindControl<ContentControl>("ModalContentWrapper");
             _background = this.FindControl<Control>("BackgroundControl");
             _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
-            // _vibeOutOverlay = this.FindControl<Grid>("VibeOutOverlay"); // REMOVED: VibeOut feature removed
             _mainContent = this.FindControl<Grid>("MainContent");
             _volumePopup = this.FindControl<Popup>("VolumePopup");
 
@@ -1449,65 +1447,6 @@ namespace BalatroSeedOracle.Views
 
         #endregion
 
-        #region VibeOut Mode - REMOVED
-        // REMOVED: VibeOut feature has been removed from the application
-        /*
-        /// <summary>
-        /// Enter VibeOut mode - view changes only
-        /// </summary>
-        private void EnterVibeOutModeView()
-        {
-            if (_mainContent != null) _mainContent.IsVisible = false;
-            if (_modalContainer != null) _modalContainer.IsVisible = false;
-            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = true;
-
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.Theme = BalatroShaderBackground.BackgroundTheme.VibeOut;
-            }
-
-            var window = this.VisualRoot as Window;
-            if (window != null)
-            {
-                window.WindowState = WindowState.Maximized;
-            }
-
-            DebugLogger.Log("BalatroMainMenu", "🎵 Entered VibeOut mode");
-        }
-
-        /// <summary>
-        /// Exit VibeOut mode - view changes only
-        /// </summary>
-        private void ExitVibeOutModeView()
-        {
-            if (_mainContent != null) _mainContent.IsVisible = true;
-            if (_vibeOutOverlay != null) _vibeOutOverlay.IsVisible = false;
-
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.Theme = BalatroShaderBackground.BackgroundTheme.Default;
-            }
-
-            DebugLogger.Log("BalatroMainMenu", "👋 Exited VibeOut mode");
-        }
-
-        /// <summary>
-        /// Enter VibeOut mode (public API)
-        /// </summary>
-        public void EnterVibeOutMode()
-        {
-            ViewModel.EnterVibeOutMode();
-        }
-
-        /// <summary>
-        /// Exit VibeOut mode (public API)
-        /// </summary>
-        public void ExitVibeOutMode()
-        {
-            ViewModel.ExitVibeOutMode();
-        }
-        */
-        #endregion
 
         #region Settings Modal Wiring (View-only)
 
@@ -1715,50 +1654,6 @@ namespace BalatroSeedOracle.Views
                 ViewModel.ApplyBeatPulseSource(shader, sourceIndex);
             }
         }
-
-        // Range application helpers - REMOVED (VibeOut feature)
-        // REMOVED: These methods no longer exist on BalatroShaderBackground
-        /*
-        internal void ApplyContrastRange(float min, float max)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetContrastRange(min, max);
-            }
-        }
-
-        internal void ApplySpinAmountRange(float min, float max)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetSpinAmountRange(min, max);
-            }
-        }
-
-        internal void ApplyTwirlSpeedRange(float min, float max)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetTwirlSpeedRange(min, max);
-            }
-        }
-
-        internal void ApplyZoomPunchRange(float min, float max)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetZoomPunchRange(min, max);
-            }
-        }
-
-        internal void ApplyMelodySatRange(float min, float max)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetMelodySaturationRange(min, max);
-            }
-        }
-        */
 
         #endregion
 
@@ -2020,9 +1915,6 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Get filter name from filter ID
         /// </summary>
-        // REMOVED: GetFilterName, CloneFilterWithName, DeleteFilter
-        // These methods have been moved to FilterService for proper MVVM separation
-        // Use IFilterService.GetFilterNameAsync(), IFilterService.CloneFilterAsync(), IFilterService.DeleteFilterAsync()
 
         #endregion
 

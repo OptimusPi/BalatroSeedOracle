@@ -47,7 +47,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _generatedJson = string.Empty;
 
         public string GenerateButtonText => IsGenerating ? "✨ Generating..." : "🧞 Generate Filter";
-        
+
         public string GeneratingSpinner => IsGenerating ? "⏳" : "";
 
         /// <summary>

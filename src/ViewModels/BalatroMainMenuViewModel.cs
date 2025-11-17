@@ -696,7 +696,8 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_soundFlowAudioManager != null)
                 {
-                    _audioAnalysisHandler = (bass, mid, treble, peak) => {
+                    _audioAnalysisHandler = (bass, mid, treble, peak) =>
+                    {
                         // Audio reactivity handled by effect binding system
                     };
 

@@ -26,10 +26,8 @@ namespace BalatroSeedOracle.Components
             DataContext = ViewModel;
 
             // Update ZIndex when IsMinimized changes - now handled by XAML binding to WidgetZIndex
-            // ViewModel.PropertyChanged += (s, e) => { ... }; // REMOVED - use XAML binding instead
 
             // Set initial ZIndex - now handled by XAML binding to WidgetZIndex
-            // this.ZIndex = ViewModel.IsMinimized ? 1 : 100; // REMOVED - use XAML binding instead
         }
 
         private void InitializeComponent()

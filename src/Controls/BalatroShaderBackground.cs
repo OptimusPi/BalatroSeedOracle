@@ -27,7 +27,6 @@ namespace BalatroSeedOracle.Controls
             Midnight,
             Sepia,
             Dynamic,
-            // REMOVED: VibeOut (feature removed)
         }
 
         public enum AudioSource
