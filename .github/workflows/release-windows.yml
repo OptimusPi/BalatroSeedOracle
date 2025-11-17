@@ -22,7 +22,7 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Install Parcel
-      run: dotnet tool install --global AvaloniaUI.Parcel.Windows
+      run: dotnet tool install --global AvaloniaUI.Parcel
 
     - name: Restore dependencies
       run: dotnet restore src/BalatroSeedOracle.csproj
