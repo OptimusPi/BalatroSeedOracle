@@ -24,12 +24,6 @@ jobs:
     - name: Install Parcel
       run: dotnet tool install --global AvaloniaUI.Parcel.Windows
 
-    - name: Verify Parcel Installation
-      run: |
-        echo "Checking if parcel is in PATH..."
-        where parcel
-        parcel --version
-
     - name: Restore dependencies
       run: dotnet restore src/BalatroSeedOracle.csproj
 
@@ -38,30 +32,24 @@ jobs:
 
     - name: Package NSIS Installer
       run: |
-        cd src
-        if (!(Test-Path "BalatroSeedOracle.parcel")) {
-          Write-Error "BalatroSeedOracle.parcel file not found!"
-          exit 1
-        }
         Write-Host "Building Windows NSIS installer..."
-        parcel pack BalatroSeedOracle.parcel -r win-x64 -p nsis
+        parcel pack BalatroSeedOracle.parcel.json -r win-x64 -p nsis
 
     - name: Package ZIP Archive
       run: |
-        cd src
         Write-Host "Building Windows ZIP archive..."
-        parcel pack BalatroSeedOracle.parcel -r win-x64 -p zip
+        parcel pack BalatroSeedOracle.parcel.json -r win-x64 -p zip
 
     - name: Upload NSIS Installer
       uses: actions/upload-artifact@v4
       with:
         name: windows-nsis
-        path: src/bin/packages/*.exe
+        path: bin/packages/*.exe
         if-no-files-found: error
 
     - name: Upload ZIP Archive
       uses: actions/upload-artifact@v4
       with:
         name: windows-zip
-        path: src/bin/packages/*.zip
+        path: bin/packages/*.zip
         if-no-files-found: error
