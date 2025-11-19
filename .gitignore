@@ -76,3 +76,4 @@ avalonia.license
 **/appsettings.*.json
 !**/appsettings.json
 /node_modules
+/.trae
