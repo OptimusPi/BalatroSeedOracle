@@ -2543,7 +2543,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ApplyStickersToAllItems()
         {
-            // Jokers that CANNOT be Eternal (from Balatro game logic)
+            // Soul Jokers (Legendary) - CANNOT have ANY stickers (Perishable, Rental, or Eternal)
+            var soulJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
+            };
+
+            // Jokers that CANNOT be Eternal (from Balatro game logic) - but CAN have Perishable/Rental
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Cavendish",
@@ -2557,12 +2567,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "Ramen",
                 "Seltzer",
                 "TurtleBean",
-                // Soul Jokers also cannot be Eternal
-                "Perkeo",
-                "Triboulet",
-                "Yorick",
-                "Chicot",
-                "Canio",
             };
 
             // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
@@ -2573,13 +2577,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // CRITICAL FIX: Update item.Stickers directly to trigger image binding update
                     var stickers = new List<string>();
 
+                    // Soul Jokers (Legendary) CANNOT have ANY stickers
+                    bool isSoulJoker = soulJokers.Contains(item.Name);
+
                     // Perishable and Eternal are mutually exclusive
-                    if (StickerPerishable)
+                    if (StickerPerishable && !isSoulJoker)
                     {
                         stickers.Add("perishable");
                     }
                     else if (
                         StickerEternal
+                        && !isSoulJoker
                         && CanItemBeEternal(item)
                         && !eternalRestrictedJokers.Contains(item.Name)
                     )
@@ -2587,7 +2595,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         stickers.Add("eternal");
                     }
 
-                    if (StickerRental)
+                    if (StickerRental && !isSoulJoker)
                     {
                         stickers.Add("rental");
                     }
@@ -2621,15 +2629,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             HashSet<string> eternalRestrictedJokers
         )
         {
+            // Soul Jokers (Legendary) - CANNOT have ANY stickers
+            var soulJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
+            };
+
             // Build sticker list based on current toggles
             var stickers = new List<string>();
 
+            // Soul Jokers CANNOT have ANY stickers
+            bool isSoulJoker = soulJokers.Contains(itemName);
+
             // Perishable and Eternal are mutually exclusive
-            if (StickerPerishable)
+            if (StickerPerishable && !isSoulJoker)
             {
                 stickers.Add("perishable");
             }
-            else if (StickerEternal)
+            else if (StickerEternal && !isSoulJoker)
             {
                 // Check if item type can be eternal
                 bool canTypeBeEternal = config.ItemType switch
@@ -2655,7 +2676,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Rental can combine with Eternal but not Perishable
-            if (StickerRental && !StickerPerishable)
+            if (StickerRental && !StickerPerishable && !isSoulJoker)
             {
                 stickers.Add("rental");
             }

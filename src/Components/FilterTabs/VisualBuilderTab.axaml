@@ -307,7 +307,7 @@
                         DragDrop.AllowDrop="True">
                     <DockPanel>
                         <!-- Edition/Sticker/Seal Toolbar - Sticky at top of items shelf -->
-                        <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,8">
+                        <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0">
                     <!-- Edition Buttons (Jokers and Standard Cards only) -->
                     <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
                         <Button Command="{Binding SetEditionCommand}"
@@ -501,9 +501,8 @@
                                                 CornerRadius="4">
                                             <TextBlock Text="{Binding GroupName}"
                                                        FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="16"
-                                                      
-                                                       Foreground="{StaticResource LightGrey}"
+                                                       FontSize="18"
+                                                       Foreground="{StaticResource BrightGold}"
                                                        TextAlignment="Left"/>
                                         </Border>
 

@@ -26,6 +26,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly AudioVisualizerSettingsModalViewModel _settingsViewModel;
         private readonly UserProfileService _userProfileService;
         private Control? _ownerControl;
+        private bool _isApplyingManualTransition = false;
 
         public AudioVisualizerSettingsWidgetViewModel(UserProfileService userProfileService)
         {
@@ -1127,6 +1128,10 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnManualTransitionProgressChanged(double value)
         {
+            // Prevent recursive calls during transition
+            if (_isApplyingManualTransition)
+                return;
+
             // Apply manual transition when slider moves
             ApplyManualTransition(value / 100.0); // Convert 0-100 to 0-1
         }
@@ -1639,6 +1644,10 @@ namespace BalatroSeedOracle.ViewModels
         /// <param name="progress">0.0 = Preset A, 1.0 = Preset B</param>
         private async void ApplyManualTransition(double progress)
         {
+            // Prevent recursive calls
+            if (_isApplyingManualTransition)
+                return;
+
             // Skip if presets not selected
             if (string.IsNullOrWhiteSpace(ManualTransitionPresetA) ||
                 string.IsNullOrWhiteSpace(ManualTransitionPresetB))
@@ -1646,6 +1655,7 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
+            _isApplyingManualTransition = true;
             try
             {
                 // Build preset file paths
@@ -1696,6 +1706,10 @@ namespace BalatroSeedOracle.ViewModels
                     "AudioVisualizerWidget",
                     $"Failed to apply manual transition: {ex.Message}"
                 );
+            }
+            finally
+            {
+                _isApplyingManualTransition = false;
             }
         }
 
