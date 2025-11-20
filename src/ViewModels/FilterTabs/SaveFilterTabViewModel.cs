@@ -129,6 +129,51 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch { }
         }
 
+        /// <summary>
+        /// Save filter and navigate to Search Modal
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task GoToSearch()
+        {
+            try
+            {
+                // First save the filter
+                await SaveCurrentFilter();
+
+                // Close the filters modal and open search modal with this filter
+                if (!string.IsNullOrWhiteSpace(CurrentFileName))
+                {
+                    _parentViewModel.RequestNavigateToSearch?.Invoke(CurrentFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Error navigating to search: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Save filter and close the Filters Modal
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task SaveAndClose()
+        {
+            try
+            {
+                // Save the filter
+                await SaveCurrentFilter();
+
+                // Close the filters modal
+                _parentViewModel.RequestClose?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Error saving and closing: {ex.Message}");
+            }
+        }
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,

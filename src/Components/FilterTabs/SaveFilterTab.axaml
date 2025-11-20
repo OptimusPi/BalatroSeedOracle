@@ -213,11 +213,18 @@
 
                 <!-- Buttons -->
                 <StackPanel Grid.Row="2" Spacing="8">
-                    <Button Content="Save Filter" Command="{Binding SaveCurrentFilterCommand}" Classes="btn-blue" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
-                    <Button Content="Save As..." Command="{Binding SaveAsCommand}" Classes="btn-red" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
-                    <Button Content="Export JSON" Command="{Binding ExportFilterCommand}" Classes="btn-green" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
-                    <Button Content="Configure Jokers" Command="{Binding OpenJokerConfigCommand}" Classes="btn-blue" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
-                    <Button Content="Test Filter" Command="{Binding TestFilterCommand}" Classes="btn-green" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                    <!-- Primary Actions -->
+                    <Button Content="🔍 GO TO SEARCH" Command="{Binding GoToSearchCommand}" Classes="btn-green" Height="40" FontSize="14" FontFamily="{StaticResource BalatroFont}" FontWeight="Bold"/>
+                    <Button Content="💾 SAVE AND CLOSE" Command="{Binding SaveAndCloseCommand}" Classes="btn-blue" Height="40" FontSize="14" FontFamily="{StaticResource BalatroFont}" FontWeight="Bold"/>
+
+                    <!-- Separator -->
+                    <Border Height="1" Background="{StaticResource ModalBorder}" Margin="0,4"/>
+
+                    <!-- Secondary Actions -->
+                    <Button Content="Save Filter" Command="{Binding SaveCurrentFilterCommand}" Classes="btn-blue" Height="34" FontSize="12" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Save As..." Command="{Binding SaveAsCommand}" Classes="btn-red" Height="34" FontSize="12" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Export JSON" Command="{Binding ExportFilterCommand}" Classes="btn-green" Height="34" FontSize="12" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Test Filter" Command="{Binding TestFilterCommand}" Classes="btn-green" Height="34" FontSize="12" FontFamily="{StaticResource BalatroFont}"/>
                 </StackPanel>
 
                 <!-- Test Results Area -->
