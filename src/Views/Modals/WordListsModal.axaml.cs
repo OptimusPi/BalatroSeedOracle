@@ -20,10 +20,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _statusText;
         private Button? _saveButton;
 
-        private string _wordListsPath = System.IO.Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "WordLists"
-        );
+        private string _wordListsPath = AppPaths.WordListsDir;
         private string? _currentFile;
         private bool _hasUnsavedChanges = false;
 

@@ -160,11 +160,7 @@ namespace BalatroSeedOracle.Services
             if (string.IsNullOrEmpty(_dbPath))
             {
                 var filterName = Path.GetFileNameWithoutExtension(configPath);
-                var searchResultsDir = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "SearchResults"
-                );
-                Directory.CreateDirectory(searchResultsDir);
+                var searchResultsDir = AppPaths.SearchResultsDir;
                 _dbPath = Path.Combine(searchResultsDir, $"{filterName}.db");
                 _connectionString = $"Data Source={_dbPath}";
             }
@@ -623,13 +619,7 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Ensure WordLists directory exists
-                var wordListsDir = Path.Combine(
-                    Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? ".",
-                    "WordLists"
-                );
-                Directory.CreateDirectory(wordListsDir);
+                var wordListsDir = AppPaths.WordListsDir;
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
 

@@ -369,27 +369,13 @@ public partial class App : Application
     {
         try
         {
-            // Create JsonItemFilters directory
-            var jsonFiltersDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "JsonItemFilters"
-            );
-            if (!System.IO.Directory.Exists(jsonFiltersDir))
-            {
-                System.IO.Directory.CreateDirectory(jsonFiltersDir);
-                DebugLogger.Log("App", $"Created directory: {jsonFiltersDir}");
-            }
+            // Directories are now managed by AppPaths - they are auto-created on access
+            // No need to explicitly create them here since AppPaths.EnsureDir() handles it
+            DebugLogger.Log("App", "Using AppPaths for directory management");
 
-            // Create other required directories
-            var searchResultsDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "SearchResults"
-            );
-            if (!System.IO.Directory.Exists(searchResultsDir))
-            {
-                System.IO.Directory.CreateDirectory(searchResultsDir);
-                DebugLogger.Log("App", $"Created directory: {searchResultsDir}");
-            }
+            // Touch directories to ensure they exist
+            _ = AppPaths.FiltersDir;
+            _ = AppPaths.SearchResultsDir;
         }
         catch (Exception ex)
         {

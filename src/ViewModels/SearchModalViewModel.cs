@@ -917,10 +917,7 @@ namespace BalatroSeedOracle.ViewModels
                         var filterName = System.IO.Path.GetFileNameWithoutExtension(
                             CurrentFilterPath
                         );
-                        var searchResultsDir = System.IO.Path.Combine(
-                            System.IO.Directory.GetCurrentDirectory(),
-                            "SearchResults"
-                        );
+                        var searchResultsDir = AppPaths.SearchResultsDir;
                         var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
 
                         AddConsoleMessage($"Checking for saved state at: {dbPath}");
@@ -1542,10 +1539,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     // CRITICAL FIX: Convert JSON filter path to database path for saving state
                     var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                    var searchResultsDir = System.IO.Path.Combine(
-                        System.IO.Directory.GetCurrentDirectory(),
-                        "SearchResults"
-                    );
+                    var searchResultsDir = AppPaths.SearchResultsDir;
                     var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
 
                     var state = new SearchState
@@ -1808,10 +1802,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Convert JSON filter path to database path
                 var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchResultsDir = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "SearchResults"
-                );
+                var searchResultsDir = AppPaths.SearchResultsDir;
                 var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
 
                 if (!System.IO.File.Exists(dbPath))

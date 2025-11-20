@@ -24,26 +24,14 @@ jobs:
     - name: Install Parcel
       run: dotnet tool install --global AvaloniaUI.Parcel
 
-    - name: Package DEB Package
+    - name: Package with Parcel
       run: |
-        echo "Building Linux DEB package..."
-        parcel pack BalatroSeedOracle.parcel.json -r linux-x64 -p deb
+        cd src
+        dotnet parcel BalatroSeedOracle.parcel --runtimes linux-x64 --packages deb zip
 
-    - name: Package ZIP Archive
-      run: |
-        echo "Building Linux ZIP archive..."
-        parcel pack BalatroSeedOracle.parcel.json -r linux-x64 -p zip
-
-    - name: Upload DEB Package
+    - name: Upload Linux Packages
       uses: actions/upload-artifact@v4
       with:
-        name: linux-deb
-        path: bin/packages/*.deb
-        if-no-files-found: error
-
-    - name: Upload ZIP Archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-zip
-        path: bin/packages/*.zip
+        name: linux-packages
+        path: src/bin/packages/*
         if-no-files-found: error

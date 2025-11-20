@@ -333,10 +333,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Get filter name from path for database cleanup
                 var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchResultsDir = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "SearchResults"
-                );
+                var searchResultsDir = AppPaths.SearchResultsDir;
 
                 DebugLogger.Log(
                     "FiltersModalViewModel",
@@ -443,8 +440,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Ensure WordLists directory exists
-                var wordListsDir = Path.Combine(Directory.GetCurrentDirectory(), "WordLists");
-                Directory.CreateDirectory(wordListsDir);
+                var wordListsDir = AppPaths.WordListsDir;
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
                 var allSeeds = new List<string>();
@@ -1758,7 +1754,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     var directory =
                         System.IO.Path.GetDirectoryName(originalPath)
-                        ?? Directory.GetCurrentDirectory();
+                        ?? AppPaths.FiltersDir;
                     var baseName = System.IO.Path.GetFileNameWithoutExtension(originalPath);
                     var extension = System.IO.Path.GetExtension(originalPath);
 

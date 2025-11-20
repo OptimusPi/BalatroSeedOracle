@@ -35,11 +35,7 @@ namespace BalatroSeedOracle.Services
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
 
             // Preallocate a database file path so SearchInstance always has a connection string
-            var searchResultsDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "SearchResults"
-            );
-            System.IO.Directory.CreateDirectory(searchResultsDir);
+            var searchResultsDir = AppPaths.SearchResultsDir;
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
             var searchInstance = new SearchInstance(searchId, dbPath);
 

@@ -322,10 +322,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Get FilterService to perform the deletion
                 var filterService =
                     Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
-                var filtersDir = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "JsonItemFilters"
-                );
+                var filtersDir = AppPaths.FiltersDir;
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
 
                 // Perform deletion (this also removes from cache)

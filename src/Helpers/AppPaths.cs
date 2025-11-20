@@ -13,6 +13,8 @@ namespace BalatroSeedOracle.Helpers
         public static string MixerPresetsDir => EnsureDir(Path.Combine(DataRoot, "MixerPresets"));
         public static string SearchResultsDir => EnsureDir(Path.Combine(DataRoot, "SearchResults"));
         public static string UserDir => EnsureDir(Path.Combine(DataRoot, "User"));
+        public static string FiltersDir => EnsureDir(Path.Combine(DataRoot, "JsonItemFilters"));
+        public static string WordListsDir => EnsureDir(Path.Combine(DataRoot, "WordLists"));
 
         public static string EnsureDir(string path)
         {

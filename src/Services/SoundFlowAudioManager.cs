@@ -158,24 +158,12 @@ namespace BalatroSeedOracle.Services
 
         private void LoadTracks(AudioFormat format)
         {
-            // Get executable directory (works for both dev and installed)
-            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-
-            // Find audio directory
-            var possiblePaths = new[]
+            var audioDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio");
+            if (!Directory.Exists(audioDir))
             {
-                Path.Combine(exeDir, "Assets", "Audio"),  // Installed/published
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio"),  // Dev
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio"),  // Dev from root
-            };
-
-            string? audioDir = possiblePaths.FirstOrDefault(Directory.Exists);
-            if (audioDir == null)
-            {
-                Console.WriteLine(
-                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio directory"
+                throw new DirectoryNotFoundException(
+                    $"[SoundFlowAudioManager] Assets/Audio directory not found at: {audioDir}"
                 );
-                return;
             }
 
             // Load each track - FLAC ONLY (OGG Vorbis decoder not available in MiniAudio build)
@@ -242,24 +230,12 @@ namespace BalatroSeedOracle.Services
 
         private void LoadSoundEffects(AudioFormat format)
         {
-            // Get executable directory (works for both dev and installed)
-            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-
-            // Find audio directory
-            var possiblePaths = new[]
+            var sfxDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio", "SFX");
+            if (!Directory.Exists(sfxDir))
             {
-                Path.Combine(exeDir, "Assets", "Audio", "SFX"),  // Installed/published
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio", "SFX"),  // Dev
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio", "SFX"),  // Dev from root
-            };
-
-            string? sfxDir = possiblePaths.FirstOrDefault(Directory.Exists);
-            if (sfxDir == null)
-            {
-                Console.WriteLine(
-                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio/SFX directory"
+                throw new DirectoryNotFoundException(
+                    $"[SoundFlowAudioManager] Assets/Audio/SFX directory not found at: {sfxDir}"
                 );
-                return;
             }
 
             // Load each sound effect

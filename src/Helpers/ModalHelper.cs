@@ -455,12 +455,7 @@ namespace BalatroSeedOracle.Helpers
         /// </summary>
         private static async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var baseDir =
-                System.IO.Path.GetDirectoryName(
-                    System.Reflection.Assembly.GetExecutingAssembly().Location
-                ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
-            var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
-            System.IO.Directory.CreateDirectory(filtersDir);
+            var filtersDir = AppPaths.FiltersDir;
 
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
@@ -517,11 +512,7 @@ namespace BalatroSeedOracle.Helpers
                         ?? "Unknown";
                     config.DateCreated = System.DateTime.UtcNow;
 
-                    var baseDir =
-                        System.IO.Path.GetDirectoryName(
-                            System.Reflection.Assembly.GetExecutingAssembly().Location
-                        ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
-                    var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
+                    var filtersDir = AppPaths.FiltersDir;
                     var clonedPath = System.IO.Path.Combine(filtersDir, $"{config.Name}.json");
 
                     var json = System.Text.Json.JsonSerializer.Serialize(

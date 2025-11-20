@@ -34,12 +34,12 @@ jobs:
 
     - name: Package DMG (${{ matrix.arch }})
       run: |
-        echo "Building macOS DMG for ${{ matrix.arch }}..."
-        parcel pack BalatroSeedOracle.parcel.json -r ${{ matrix.runtime }} -p dmg
+        cd src
+        dotnet parcel BalatroSeedOracle.parcel --runtimes ${{ matrix.runtime }} --packages dmg
 
     - name: Upload DMG (${{ matrix.arch }})
       uses: actions/upload-artifact@v4
       with:
         name: macos-${{ matrix.arch }}
-        path: bin/packages/*.dmg
+        path: src/bin/packages/*.dmg
         if-no-files-found: error

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackagingProject>
+  <DisplayName>Balatro Seed Oracle</DisplayName>
+  <Publisher>pifreak</Publisher>
+  <Version>auto</Version>
+  <Identifier>com.pifreak.balatroseedoracle</Identifier>
+  <Description>Balatro seed searching and analysis tool powered by Motely</Description>
+  <Icon>src/Assets/BalatroSeedOracle.ico</Icon>
+
+  <Input>
+    <Project>src/BalatroSeedOracle.csproj</Project>
+    <Configuration>Release</Configuration>
+  </Input>
+
+  <Output>
+    <Directory>bin/packages</Directory>
+  </Output>
+
+  <Runtimes>
+    <Runtime>win-x64</Runtime>
+    <Runtime>osx-x64</Runtime>
+    <Runtime>osx-arm64</Runtime>
+    <Runtime>linux-x64</Runtime>
+  </Runtimes>
+
+  <Packages>
+    <Package Runtime="win-x64" Type="nsis" />
+    <Package Runtime="win-x64" Type="zip" />
+    <Package Runtime="osx-x64" Type="dmg" />
+    <Package Runtime="osx-arm64" Type="dmg" />
+    <Package Runtime="linux-x64" Type="deb" />
+    <Package Runtime="linux-x64" Type="zip" />
+  </Packages>
+
+  <Publish>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </Publish>
+
+  <NSIS>
+    <InstallScope>currentUser</InstallScope>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <CreateStartMenuShortcut>true</CreateStartMenuShortcut>
+    <CompressionLevel>maximum</CompressionLevel>
+    <LicensePath>LICENSE</LicensePath>
+  </NSIS>
+
+  <DMG>
+    <SignIdentity></SignIdentity>
+    <BackgroundColor>#1a1a1a</BackgroundColor>
+    <IconSize>100</IconSize>
+    <WindowSize>
+      <Width>600</Width>
+      <Height>400</Height>
+    </WindowSize>
+  </DMG>
+
+  <DEB>
+    <Maintainer>pifreak</Maintainer>
+    <Section>utils</Section>
+    <Priority>optional</Priority>
+  </DEB>
+</PackagingProject>

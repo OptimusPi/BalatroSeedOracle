@@ -295,10 +295,7 @@ namespace BalatroSeedOracle.Views
                             _previousModalTitle = "🔍 SELECT FILTER";
 
                             // Resolve filter id to full path
-                            var filtersDir = System.IO.Path.Combine(
-                                System.IO.Directory.GetCurrentDirectory(),
-                                "JsonItemFilters"
-                            );
+                            var filtersDir = AppPaths.FiltersDir;
                             var configPath = System.IO.Path.Combine(
                                 filtersDir,
                                 result.FilterId + ".json"
@@ -581,11 +578,7 @@ namespace BalatroSeedOracle.Views
                     }
 
                     // Create new filter file with user's chosen name
-                    var filtersDir = System.IO.Path.Combine(
-                        System.IO.Directory.GetCurrentDirectory(),
-                        "JsonItemFilters"
-                    );
-                    System.IO.Directory.CreateDirectory(filtersDir);
+                    var filtersDir = AppPaths.FiltersDir;
 
                     // Sanitize filename
                     var sanitizedName = string.Join(
@@ -640,10 +633,7 @@ namespace BalatroSeedOracle.Views
                 // Load the filter data FIRST if provided
                 if (!string.IsNullOrEmpty(filterId))
                 {
-                    var filtersDir = System.IO.Path.Combine(
-                        System.IO.Directory.GetCurrentDirectory(),
-                        "JsonItemFilters"
-                    );
+                    var filtersDir = AppPaths.FiltersDir;
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
                     filtersModal.ViewModel.CurrentFilterPath = filterPath;
@@ -864,10 +854,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var filtersDir = System.IO.Path.Combine(
-                    System.IO.Directory.GetCurrentDirectory(),
-                    "JsonItemFilters"
-                );
+                var filtersDir = AppPaths.FiltersDir;
 
                 System.IO.Directory.CreateDirectory(filtersDir);
 
