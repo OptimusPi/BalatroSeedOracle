@@ -16,13 +16,13 @@ jobs:
     uses: ./.github/workflows/release-linux.yml
     secrets: inherit
 
-  build-macos:
-    uses: ./.github/workflows/release-macos.yml
-    secrets: inherit
+  # build-macos:
+  #   uses: ./.github/workflows/release-macos.yml
+  #   secrets: inherit
 
   # Create final release with all artifacts
   create-release:
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     if: always()
 
