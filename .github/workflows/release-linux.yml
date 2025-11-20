@@ -24,15 +24,6 @@ jobs:
     - name: Install Parcel
       run: dotnet tool install --global AvaloniaUI.Parcel
 
-    - name: Restore dependencies
-      run: dotnet restore src/BalatroSeedOracle.csproj -r linux-x64
-
-    - name: Build
-      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
-
-    - name: Publish
-      run: dotnet publish src/BalatroSeedOracle.csproj --configuration Release --no-restore --self-contained true -r linux-x64
-
     - name: Package DEB Package
       run: |
         echo "Building Linux DEB package..."
