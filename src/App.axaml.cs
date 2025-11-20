@@ -29,6 +29,9 @@ public partial class App : Application
             // Ensure required directories exist
             EnsureDirectoriesExist();
 
+            // Copy sample content to AppData on first run
+            CopySamplesToAppData();
+
             // Set up services
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -380,6 +383,84 @@ public partial class App : Application
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Copies sample content from the installed location to AppData on first run.
+    /// This provides new users with example filters and default presets.
+    /// </summary>
+    private static void CopySamplesToAppData()
+    {
+        // Only run once - check for marker file
+        var markerFile = System.IO.Path.Combine(AppPaths.DataRootDir, ".samples_imported");
+        if (System.IO.File.Exists(markerFile))
+        {
+            return;
+        }
+
+        try
+        {
+            // Copy sample filter
+            var sampleFilter = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "TelescopeObservatory.json"
+            );
+            var targetFilter = System.IO.Path.Combine(
+                AppPaths.FiltersDir,
+                "TelescopeObservatory.json"
+            );
+            if (System.IO.File.Exists(sampleFilter) && !System.IO.File.Exists(targetFilter))
+            {
+                System.IO.File.Copy(sampleFilter, targetFilter);
+            }
+
+            // Copy visualizer presets
+            var samplePresetsDir = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "VisualizerPresets"
+            );
+            if (System.IO.Directory.Exists(samplePresetsDir))
+            {
+                foreach (var file in System.IO.Directory.GetFiles(samplePresetsDir, "*.json"))
+                {
+                    var fileName = System.IO.Path.GetFileName(file);
+                    var target = System.IO.Path.Combine(AppPaths.VisualizerPresetsDir, fileName);
+                    if (!System.IO.File.Exists(target))
+                    {
+                        System.IO.File.Copy(file, target);
+                    }
+                }
+            }
+
+            // Copy mixer presets
+            var sampleMixerDir = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "MixerPresets"
+            );
+            if (System.IO.Directory.Exists(sampleMixerDir))
+            {
+                foreach (var file in System.IO.Directory.GetFiles(sampleMixerDir, "*.json"))
+                {
+                    var fileName = System.IO.Path.GetFileName(file);
+                    var target = System.IO.Path.Combine(AppPaths.MixerPresetsDir, fileName);
+                    if (!System.IO.File.Exists(target))
+                    {
+                        System.IO.File.Copy(file, target);
+                    }
+                }
+            }
+
+            // Mark as done
+            System.IO.File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
+            DebugLogger.Log("App", "Sample content copied to AppData successfully");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to copy samples: {ex.Message}");
         }
     }
 

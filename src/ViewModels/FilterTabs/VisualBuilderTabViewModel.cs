@@ -2146,7 +2146,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// Triggers a debounced auto-save operation.
         /// Cancels any pending save and schedules a new one after the debounce delay.
         /// </summary>
-        private void TriggerAutoSave()
+        public void TriggerAutoSave()
         {
             // Cancel any pending auto-save
             _autoSaveCts?.Cancel();

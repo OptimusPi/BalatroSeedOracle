@@ -1,0 +1,226 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.ItemConfigPanel"
+             x:DataType="vm:ItemConfigPanelViewModel">
+
+    <Border Background="{StaticResource ModalBackground}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="0"
+            CornerRadius="8"
+            Padding="0"
+            MaxWidth="400"
+            MaxHeight="500">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource DarkBackground}"
+                    BorderThickness="0,0,0,2"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    Padding="16,12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding ItemName}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource Gold}"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="1"
+                            Content="×"
+                            Command="{Binding CloseCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{StaticResource LightGrey}"
+                            FontSize="24"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Cursor="Hand">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Foreground" Value="{StaticResource White}"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Scrollable Configuration Area -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="12">
+                <StackPanel Spacing="8">
+
+                    <!-- Label Configuration -->
+                    <Expander IsExpanded="True">
+                        <Expander.Header>
+                            <TextBlock Text="Label (Score Column)"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"/>
+                        </Expander.Header>
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="4"
+                                Padding="8"
+                                Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Custom label for this item in score columns"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"
+                                           TextWrapping="Wrap"/>
+                                <TextBox Text="{Binding Label, Mode=TwoWay}"
+                                         Watermark="e.g., 'Bram Neg', 'Foil Mime'"
+                                         FontSize="12"
+                                         FontFamily="{StaticResource BalatroFont}"/>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <!-- Antes Configuration -->
+                    <Expander IsExpanded="False">
+                        <Expander.Header>
+                            <TextBlock Text="Antes (Which antes to check)"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"/>
+                        </Expander.Header>
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="4"
+                                Padding="8"
+                                Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Select which antes to check for this item"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <CheckBox Content="All Antes" IsChecked="{Binding AllAntesSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
+                                    <CheckBox Content="Ante 1" IsChecked="{Binding Ante1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 2" IsChecked="{Binding Ante2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 3" IsChecked="{Binding Ante3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 4" IsChecked="{Binding Ante4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 5" IsChecked="{Binding Ante5Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 6" IsChecked="{Binding Ante6Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 7" IsChecked="{Binding Ante7Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                    <CheckBox Content="Ante 8" IsChecked="{Binding Ante8Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <!-- Shop Slots Configuration -->
+                    <Expander IsExpanded="False">
+                        <Expander.Header>
+                            <TextBlock Text="Shop Slots (Which slots to check)"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"/>
+                        </Expander.Header>
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="4"
+                                Padding="8"
+                                Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Select which shop slots to check for this item"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <CheckBox Content="All Slots" IsChecked="{Binding AllShopSlotsSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
+                                    <CheckBox Content="Slot 1" IsChecked="{Binding ShopSlot1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                                    <CheckBox Content="Slot 2" IsChecked="{Binding ShopSlot2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                                    <CheckBox Content="Slot 3" IsChecked="{Binding ShopSlot3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                                    <CheckBox Content="Slot 4" IsChecked="{Binding ShopSlot4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <!-- Pack Positions Configuration -->
+                    <Expander IsExpanded="False">
+                        <Expander.Header>
+                            <TextBlock Text="Pack Positions (Which positions to check)"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"/>
+                        </Expander.Header>
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="4"
+                                Padding="8"
+                                Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Select which booster pack positions to check"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <CheckBox Content="All Positions" IsChecked="{Binding AllPackPositionsSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
+                                    <CheckBox Content="Pos 1" IsChecked="{Binding PackPos1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                                    <CheckBox Content="Pos 2" IsChecked="{Binding PackPos2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                                    <CheckBox Content="Pos 3" IsChecked="{Binding PackPos3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                                    <CheckBox Content="Pos 4" IsChecked="{Binding PackPos4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                                    <CheckBox Content="Pos 5" IsChecked="{Binding PackPos5Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <!-- Sources Configuration -->
+                    <Expander IsExpanded="False">
+                        <Expander.Header>
+                            <TextBlock Text="Sources (Where to check)"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="13"
+                                       Foreground="{StaticResource White}"/>
+                        </Expander.Header>
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                CornerRadius="4"
+                                Padding="8"
+                                Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Select which sources to check for this item"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"/>
+                                <CheckBox Content="Include Booster Packs" IsChecked="{Binding IncludeBoosterPacks, Mode=TwoWay}" Margin="0,0,0,4"/>
+                                <CheckBox Content="Include Shop Stream" IsChecked="{Binding IncludeShopStream, Mode=TwoWay}" Margin="0,0,0,4"/>
+                                <CheckBox Content="Include Skip Tags" IsChecked="{Binding IncludeSkipTags, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer Buttons -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource DarkBackground}"
+                    BorderThickness="0,2,0,0"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    Padding="12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Button Grid.Column="0"
+                            Content="Reset to Defaults"
+                            Command="{Binding ResetCommand}"
+                            Classes="btn-red"
+                            Height="32"
+                            FontSize="11"
+                            Margin="0,0,8,0"/>
+                    <Button Grid.Column="1"
+                            Content="Apply"
+                            Command="{Binding ApplyCommand}"
+                            Classes="btn-green"
+                            Height="32"
+                            FontSize="12"
+                            Width="100"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

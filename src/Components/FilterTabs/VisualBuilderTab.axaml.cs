@@ -1392,16 +1392,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (vm == null)
                 return;
 
-            var config = vm.ItemConfigs.TryGetValue(item.ItemKey, out var existingConfig)
-                ? existingConfig
-                : new Models.ItemConfig { ItemKey = item.ItemKey, ItemType = item.ItemType };
-            var popupViewModel = new ViewModels.ItemConfigPopupViewModel(config);
-            popupViewModel.ItemName = item.DisplayName;
-            popupViewModel.ItemImage = item.ItemImage;
-
-            // Create the View
-            var configPopup = new Controls.ItemConfigPopup { DataContext = popupViewModel };
-
             // Find overlay controls
             var overlay = this.FindControl<Grid>("PopupOverlay");
             var popupContent = this.FindControl<ContentControl>("PopupContent");
@@ -1415,30 +1405,30 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
             }
 
-            // Set up event handlers
-            popupViewModel.ConfigApplied += (appliedConfig) =>
-            {
-                vm.UpdateItemConfig(item.ItemKey, appliedConfig);
-                overlay.IsVisible = false;
-                popupContent.Content = null;
-            };
+            // Create new ItemConfigPanelViewModel with cleaner expander-based UI
+            var popupViewModel = new ViewModels.ItemConfigPanelViewModel(
+                item,
+                onApply: () =>
+                {
+                    // Trigger auto-save when config changes
+                    vm.TriggerAutoSave();
+                    DebugLogger.Log("ItemConfig", $"Configuration applied for {item.DisplayName}");
+                },
+                onClose: () =>
+                {
+                    overlay.IsVisible = false;
+                    popupContent.Content = null;
+                }
+            );
 
-            popupViewModel.Cancelled += () =>
-            {
-                overlay.IsVisible = false;
-                popupContent.Content = null;
-            };
-
-            popupViewModel.DeleteRequested += () =>
-            {
-                vm.RemoveItem(item);
-                overlay.IsVisible = false;
-                popupContent.Content = null;
-            };
+            // Create the View
+            var configPanel = new Components.ItemConfigPanel { DataContext = popupViewModel };
 
             // Show the overlay with the popup
-            popupContent.Content = configPopup;
+            popupContent.Content = configPanel;
             overlay.IsVisible = true;
+
+            DebugLogger.Log("ItemConfig", $"Opened configuration panel for {item.DisplayName}");
         }
 
         /// <summary>

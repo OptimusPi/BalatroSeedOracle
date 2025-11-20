@@ -106,6 +106,10 @@ namespace BalatroSeedOracle.ViewModels
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0;
 
+        // Callbacks for child view models
+        public Action<string>? RequestNavigateToSearch { get; set; }
+        public Action? RequestClose { get; set; }
+
         // Computed properties
         public bool HasLoadedFilter => !string.IsNullOrEmpty(CurrentFilterPath);
 

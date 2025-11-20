@@ -322,7 +322,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     var voucherPairs = GetVoucherPairs();
                     var organizedVouchers = new List<FilterItem>();
 
-                    var firstSet = voucherPairs.Take(8).ToList();
+                    var firstSet = voucherPairs.Take(6).ToList();
                     foreach (var (baseName, _) in firstSet)
                     {
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>

@@ -51,14 +51,18 @@
         <Border Classes="widget-window"
                 IsVisible="{Binding !IsMinimized}"
                 MinWidth="320"
-                MaxWidth="380">
+                MaxWidth="380"
+                MaxHeight="650">
 
             <Grid RowDefinitions="Auto,*">
                 <!-- Header using shared component -->
                 <local:WidgetHeader Grid.Row="0" />
 
-                <!-- Content Area -->
-                <StackPanel Grid.Row="1" Margin="15" Spacing="12">
+                <!-- Content Area with ScrollViewer -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15" Spacing="12">
 
                     <!-- Track Selector -->
                     <StackPanel Spacing="4">
@@ -235,7 +239,8 @@
                         </StackPanel>
                     </Border>
 
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>
