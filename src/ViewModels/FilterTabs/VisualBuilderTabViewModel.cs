@@ -261,11 +261,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private int _selectedStakeIndex = 0;
 
         // Computed properties for button visibility based on category
+        // Hide helper buttons when search is active (mixed results)
         public bool ShowEditionButtons =>
-            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
-        public bool ShowStickerButtons => SelectedMainCategory == "Joker";
-        public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
-        public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
+            string.IsNullOrWhiteSpace(SearchFilter) &&
+            (SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard");
+        public bool ShowStickerButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) &&
+            SelectedMainCategory == "Joker";
+        public bool ShowSealButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) &&
+            SelectedMainCategory == "StandardCard";
+        public bool ShowEnhancementButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) &&
+            SelectedMainCategory == "StandardCard";
 
         // Negative edition is not available for Standard Cards
         public bool AllowNegativeEdition => SelectedMainCategory == "Joker";
@@ -503,6 +511,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     // When search text changes, rebuild filtered collections from All*
                     ApplyFilter();
+
+                    // Notify button visibility properties to update
+                    OnPropertyChanged(nameof(ShowEditionButtons));
+                    OnPropertyChanged(nameof(ShowStickerButtons));
+                    OnPropertyChanged(nameof(ShowSealButtons));
+                    OnPropertyChanged(nameof(ShowEnhancementButtons));
                 }
             };
 

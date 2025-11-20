@@ -1866,6 +1866,41 @@ namespace BalatroSeedOracle.Services
                     $"Failed to composite playing card {rank} of {suit}!"
                 );
 
+            // Apply edition effect if specified
+            if (!string.IsNullOrEmpty(edition) && edition != "None")
+            {
+                if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Negative: Invert colors
+                    var inverted = InvertImageColors(result);
+                    if (inverted != null)
+                        result = inverted;
+                }
+                else
+                {
+                    // Other editions: Composite overlay (Foil, Holographic, Polychrome)
+                    var editionOverlay = GetEditionImage(edition);
+                    if (editionOverlay != null)
+                    {
+                        var composited = CompositeImages(result, editionOverlay, 142, 190);
+                        if (composited != null)
+                            result = composited;
+                    }
+                }
+            }
+
+            // Apply seal overlay if specified
+            if (!string.IsNullOrEmpty(seal) && seal != "None")
+            {
+                var sealOverlay = GetSealImage(seal);
+                if (sealOverlay != null)
+                {
+                    var composited = CompositeImages(result, sealOverlay, 142, 190);
+                    if (composited != null)
+                        result = composited;
+                }
+            }
+
             return result;
         }
 
