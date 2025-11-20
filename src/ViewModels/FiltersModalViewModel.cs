@@ -249,6 +249,24 @@ namespace BalatroSeedOracle.ViewModels
             FilterNameDisplayMode = !value;
         }
 
+        partial void OnSelectedDeckChanged(string value)
+        {
+            // Regenerate JSON when deck changes
+            if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+            {
+                RegenerateJsonFromState(jsonVm);
+            }
+        }
+
+        partial void OnSelectedStakeChanged(int value)
+        {
+            // Regenerate JSON when stake changes
+            if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+            {
+                RegenerateJsonFromState(jsonVm);
+            }
+        }
+
         // ===== EVENTS =====
         /// <summary>
         /// Raised when filter name edit mode is activated (for focus request)

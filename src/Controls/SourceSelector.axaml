@@ -15,7 +15,7 @@
         </Style>
         
         <Style Selector="ComboBox:pointerover">
-            <Setter Property="BorderBrush" Value="{StaticResource Cyan}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
         </Style>
         
         <Style Selector="TextBlock.source-label">

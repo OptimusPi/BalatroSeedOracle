@@ -30,10 +30,10 @@
   </ItemGroup>
   <!-- Copy Audio files to output directory -->
   <ItemGroup>
-    <None Update="Assets\Audio\*.flac">
+    <None Update="Assets\Audio\*.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Audio\SFX\*.ogg">
+    <None Update="Assets\Audio\SFX\*.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

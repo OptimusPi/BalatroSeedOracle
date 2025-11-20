@@ -243,7 +243,7 @@
                 <!-- Favorites drop overlay - covers category nav area only -->
                 <Border Grid.Row="4"
                         Name="FavoritesDropOverlay"
-                        Background="{StaticResource SemiTransparentGold}"
+                        Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
                         BorderThickness="3"
                         CornerRadius="8"
@@ -338,9 +338,9 @@
                         </Button>
 
                         <Button Command="{Binding SetEditionCommand}"
-                                CommandParameter="Holo"
+                                CommandParameter="Holographic"
                                 Classes="icon-button"
-                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holo}"
+                                Classes.active="{Binding SelectedEdition, Converter={x:Static converters:StringEqualityConverter.Instance}, ConverterParameter=Holographic}"
                                 ToolTip.Tip="Holographic (+10 mult)"
                                 Width="38"
                                 Padding="2"

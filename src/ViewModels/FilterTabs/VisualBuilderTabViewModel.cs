@@ -2361,7 +2361,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for ALL palette items AND future drops
+        /// Sets the edition for currently visible items in the shelf AND future drops
         /// Does NOT modify items already in drop zones
         /// </summary>
         [RelayCommand]
@@ -2370,23 +2370,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Set the selection for future drops
             SelectedEdition = edition;
 
-            // Apply to ALL palette items (but NOT drop zone items)
-            foreach (var item in AllJokers.Concat(AllTags).Concat(AllVouchers)
-                .Concat(AllTarots).Concat(AllPlanets).Concat(AllSpectrals)
-                .Concat(AllBosses).Concat(AllWildcards).Concat(AllStandardCards))
+            // Apply to currently visible items only (GroupedItems)
+            foreach (var group in GroupedItems)
             {
-                item.Edition = edition == "None" ? null : edition;
+                foreach (var item in group.Items)
+                {
+                    item.Edition = edition == "None" ? null : edition;
+                }
             }
 
-            // Also apply to filtered items (they're references to the same objects but just in case)
-            foreach (var item in FilteredJokers.Concat(FilteredTags).Concat(FilteredVouchers)
-                .Concat(FilteredTarots).Concat(FilteredPlanets).Concat(FilteredSpectrals)
-                .Concat(FilteredBosses).Concat(FilteredWildcards).Concat(FilteredStandardCards))
-            {
-                item.Edition = edition == "None" ? null : edition;
-            }
-
-            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to all palette items");
+            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to visible shelf items");
         }
 
         /// <summary>
@@ -2477,7 +2470,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
-        /// Sets the seal for ALL StandardCard palette items AND future drops
+        /// Sets the seal for currently visible StandardCard items in the shelf AND future drops
         /// Does NOT modify items already in drop zones
         /// </summary>
         [RelayCommand]
@@ -2496,19 +2489,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Set the selection for future drops
             SelectedSeal = seal;
 
-            // Apply to ALL StandardCard palette items (but NOT drop zone items)
-            foreach (var item in AllStandardCards)
+            // Apply to currently visible items only (GroupedItems)
+            foreach (var group in GroupedItems)
             {
-                item.Seal = seal == "None" ? null : seal;
+                foreach (var item in group.Items)
+                {
+                    // Only apply seal to StandardCards
+                    if (item.Type == "StandardCard")
+                    {
+                        item.Seal = seal == "None" ? null : seal;
+                    }
+                }
             }
 
-            // Also apply to filtered StandardCards
-            foreach (var item in FilteredStandardCards)
-            {
-                item.Seal = seal == "None" ? null : seal;
-            }
-
-            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to all StandardCard palette items");
+            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to visible StandardCard shelf items");
         }
 
         /// <summary>

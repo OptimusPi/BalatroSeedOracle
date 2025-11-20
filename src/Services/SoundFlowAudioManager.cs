@@ -166,17 +166,14 @@ namespace BalatroSeedOracle.Services
                 );
             }
 
-            // Load each track - FLAC ONLY (OGG Vorbis decoder not available in MiniAudio build)
+            // Load each track - MP3 format (cross-platform)
             foreach (var trackName in _trackNames)
             {
-                var filePath = Path.Combine(audioDir, $"{trackName}.flac");
+                var filePath = Path.Combine(audioDir, $"{trackName}.mp3");
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {trackName}.flac - FLAC files required!"
-                    );
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] Convert OGG files with: ffmpeg -i {trackName}.ogg -c:a flac {trackName}.flac"
+                        $"[SoundFlowAudioManager] ERROR: Missing {trackName}.mp3"
                     );
                     continue;
                 }
@@ -241,11 +238,11 @@ namespace BalatroSeedOracle.Services
             // Load each sound effect
             foreach (var sfxName in _sfxNames)
             {
-                var filePath = Path.Combine(sfxDir, $"{sfxName}.flac");
+                var filePath = Path.Combine(sfxDir, $"{sfxName}.mp3");
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.flac at {filePath}"
+                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.mp3 at {filePath}"
                     );
                     continue;
                 }
@@ -271,7 +268,7 @@ namespace BalatroSeedOracle.Services
 
                     _sfxPlayers[sfxName] = player;
 
-                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.flac");
+                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.mp3");
                 }
                 catch (Exception ex)
                 {

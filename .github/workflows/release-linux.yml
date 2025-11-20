@@ -29,6 +29,11 @@ jobs:
         cd src
         dotnet parcel pack BalatroSeedOracle.parcel --runtimes linux-x64 --packages deb zip
 
+    - name: Rename ZIP for platform specificity
+      run: |
+        cd src/bin/packages
+        mv BalatroSeedOracle.x64.2.0.0.zip BalatroSeedOracle-linux-x64-2.0.0.zip
+
     - name: Upload Linux Packages
       uses: actions/upload-artifact@v4
       with:
