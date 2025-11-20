@@ -27,7 +27,7 @@ jobs:
     - name: Package with Parcel
       run: |
         cd src
-        parcel pack BalatroSeedOracle.parcel --runtimes linux-x64 --packages deb zip
+        dotnet parcel pack BalatroSeedOracle.parcel --runtimes linux-x64 --packages deb zip
 
     - name: Upload Linux Packages
       uses: actions/upload-artifact@v4

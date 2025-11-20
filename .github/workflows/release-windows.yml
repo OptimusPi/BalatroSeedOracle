@@ -27,7 +27,7 @@ jobs:
     - name: Package with Parcel
       run: |
         cd src
-        parcel pack BalatroSeedOracle.parcel --runtimes win-x64 --packages nsis zip
+        dotnet parcel pack BalatroSeedOracle.parcel --runtimes win-x64 --packages nsis zip
 
     - name: Upload Windows Packages
       uses: actions/upload-artifact@v4

@@ -35,7 +35,7 @@ jobs:
     - name: Package DMG (${{ matrix.arch }})
       run: |
         cd src
-        parcel pack BalatroSeedOracle.parcel --runtimes ${{ matrix.runtime }} --packages dmg
+        dotnet parcel pack BalatroSeedOracle.parcel --runtimes ${{ matrix.runtime }} --packages dmg
 
     - name: Upload DMG (${{ matrix.arch }})
       uses: actions/upload-artifact@v4
