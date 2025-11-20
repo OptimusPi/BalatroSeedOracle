@@ -157,7 +157,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Save to filters directory
                 var filtersPath = System.IO.Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
+                    AppContext.BaseDirectory,
                     "filters"
                 );
 

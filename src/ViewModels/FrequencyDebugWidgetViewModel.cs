@@ -39,7 +39,7 @@ namespace BalatroSeedOracle.ViewModels
         private const int SAVE_DEBOUNCE_MS = 250;
 
         private static readonly string MetadataDirectory = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
+            AppContext.BaseDirectory,
             "Assets",
             "Audio",
             "Metadata"
@@ -490,7 +490,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Create trigger point directory if it doesn't exist
                 var triggerPointsDir = Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
+                    AppContext.BaseDirectory,
                     "visualizer",
                     "audio_triggers"
                 );

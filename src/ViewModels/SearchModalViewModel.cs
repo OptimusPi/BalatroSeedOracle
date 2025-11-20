@@ -1704,7 +1704,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var wordListDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WordLists");
+                var wordListDir = Path.Combine(AppContext.BaseDirectory, "WordLists");
                 if (Directory.Exists(wordListDir))
                 {
                     var files = Directory

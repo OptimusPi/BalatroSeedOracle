@@ -464,7 +464,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var appDir = AppContext.BaseDirectory;
                 var audioTriggersDir = Path.Combine(appDir, "visualizer", "audio_triggers");
 
                 if (!Directory.Exists(audioTriggersDir))
@@ -1253,7 +1253,7 @@ namespace BalatroSeedOracle.ViewModels
             if (window == null)
                 return;
 
-            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+            var presetsPath = Path.Combine(AppContext.BaseDirectory, "Presets");
             var dialog = new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
                 Title = "Load Visualizer Preset",
@@ -1286,7 +1286,7 @@ namespace BalatroSeedOracle.ViewModels
             if (window == null)
                 return;
 
-            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+            var presetsPath = Path.Combine(AppContext.BaseDirectory, "Presets");
             var dialog = new Avalonia.Platform.Storage.FilePickerSaveOptions
             {
                 Title = "Save Visualizer Preset",
@@ -1659,7 +1659,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Build preset file paths
-                var presetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+                var presetsDir = Path.Combine(AppContext.BaseDirectory, "Presets");
                 var presetAPath = Path.Combine(presetsDir, $"{ManualTransitionPresetA}.json");
                 var presetBPath = Path.Combine(presetsDir, $"{ManualTransitionPresetB}.json");
 

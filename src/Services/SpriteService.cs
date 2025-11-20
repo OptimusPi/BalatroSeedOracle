@@ -990,16 +990,16 @@ namespace BalatroSeedOracle.Services
                     baseDir = Path.GetDirectoryName(baseDir);
                 }
 
-                // Also try the workspace relative path (relative to current working directory)
-                var cwdCandidate = Path.Combine(Environment.CurrentDirectory, relativePath);
+                // Also try the workspace relative path (relative to app base directory)
+                var cwdCandidate = Path.Combine(AppContext.BaseDirectory, relativePath);
                 if (File.Exists(cwdCandidate))
                 {
                     return File.OpenRead(cwdCandidate);
                 }
 
-                // And CWD/src path
+                // And app base directory/src path
                 var cwdSrcCandidate = Path.Combine(
-                    Environment.CurrentDirectory,
+                    AppContext.BaseDirectory,
                     "src",
                     relativePath
                 );

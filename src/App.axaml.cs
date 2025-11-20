@@ -376,79 +376,10 @@ public partial class App : Application
             // Touch directories to ensure they exist
             _ = AppPaths.FiltersDir;
             _ = AppPaths.SearchResultsDir;
-
-            // Copy bundled filters to AppData on first run
-            CopyBundledFiltersIfNeeded();
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Copies bundled filters from installation directory to AppData on first run.
-    /// This ensures users have access to default filters even though we save to AppData.
-    /// </summary>
-    private void CopyBundledFiltersIfNeeded()
-    {
-        try
-        {
-            var appDataFiltersDir = AppPaths.FiltersDir;
-
-            // Check if this looks like a first run (no filters in AppData)
-            var existingFilters = System.IO.Directory.GetFiles(appDataFiltersDir, "*.json");
-            if (existingFilters.Length > 0)
-            {
-                // Filters already exist, skip copy
-                DebugLogger.Log("App", $"Found {existingFilters.Length} filters in AppData, skipping bundled copy");
-                return;
-            }
-
-            // Find bundled filters directory (next to the exe)
-            var exeDir = System.IO.Path.GetDirectoryName(
-                System.Reflection.Assembly.GetExecutingAssembly().Location
-            );
-            if (string.IsNullOrEmpty(exeDir))
-            {
-                DebugLogger.LogError("App", "Could not determine exe directory");
-                return;
-            }
-
-            var bundledFiltersDir = System.IO.Path.Combine(exeDir, "JsonItemFilters");
-            if (!System.IO.Directory.Exists(bundledFiltersDir))
-            {
-                DebugLogger.Log("App", $"No bundled filters found at: {bundledFiltersDir}");
-                return;
-            }
-
-            // Copy all bundled .json files to AppData
-            var bundledFilters = System.IO.Directory.GetFiles(bundledFiltersDir, "*.json");
-            var copiedCount = 0;
-
-            foreach (var sourceFile in bundledFilters)
-            {
-                var fileName = System.IO.Path.GetFileName(sourceFile);
-
-                // Skip temp/unsaved files
-                if (fileName.StartsWith("_UNSAVED_") || fileName.StartsWith("__TEMP_"))
-                    continue;
-
-                var destFile = System.IO.Path.Combine(appDataFiltersDir, fileName);
-
-                System.IO.File.Copy(sourceFile, destFile, overwrite: false);
-                copiedCount++;
-            }
-
-            DebugLogger.LogImportant(
-                "App",
-                $"Copied {copiedCount} bundled filters to AppData on first run"
-            );
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to copy bundled filters: {ex.Message}");
-            // Non-fatal - app can continue without bundled filters
         }
     }
 

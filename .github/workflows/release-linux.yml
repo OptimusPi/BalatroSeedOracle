@@ -31,12 +31,12 @@ jobs:
 
     - name: Rename ZIP for platform specificity
       run: |
-        cd src/bin/packages
+        cd src/bin/packages/Linux
         mv BalatroSeedOracle.x64.2.0.0.zip BalatroSeedOracle-linux-x64-2.0.0.zip
 
     - name: Upload Linux Packages
       uses: actions/upload-artifact@v4
       with:
         name: linux-packages
-        path: src/bin/packages/*
+        path: src/bin/packages/Linux/*
         if-no-files-found: error

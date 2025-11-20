@@ -133,7 +133,7 @@ namespace BalatroSeedOracle.Services
             // Try to load from disk
             try
             {
-                var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+                var presetsPath = Path.Combine(AppContext.BaseDirectory, "Presets");
                 var presetFile = Path.Combine(presetsPath, $"{presetName}.json");
 
                 if (!File.Exists(presetFile))

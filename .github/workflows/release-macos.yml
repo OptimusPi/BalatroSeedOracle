@@ -41,5 +41,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: macos-${{ matrix.arch }}
-        path: src/bin/packages/*.dmg
+        path: src/bin/packages/macOS/*.dmg
         if-no-files-found: error
