@@ -47,6 +47,18 @@ namespace BalatroSeedOracle.ViewModels
 
         // Deck details for Preferred Deck tab
         public string SelectedDeckName => SelectedFilter?.DeckName ?? "Red";
+        public string SelectedStakeName => SelectedFilter?.StakeName ?? "White";
+
+        public Avalonia.Media.IImage? DeckCardImage
+        {
+            get
+            {
+                var deckName = SelectedDeckName;
+                var stakeName = SelectedStakeName;
+                return Services.SpriteService.Instance.GetDeckWithStakeSticker(deckName, stakeName);
+            }
+        }
+
         public string SelectedDeckDescription
         {
             get
@@ -128,6 +140,8 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(FilterDescription));
             OnPropertyChanged(nameof(CreatedDate));
             OnPropertyChanged(nameof(SelectedDeckName));
+            OnPropertyChanged(nameof(SelectedStakeName));
+            OnPropertyChanged(nameof(DeckCardImage));
             OnPropertyChanged(nameof(SelectedDeckDescription));
             OnPropertyChanged(nameof(MustHaveCount));
             OnPropertyChanged(nameof(ShouldHaveCount));

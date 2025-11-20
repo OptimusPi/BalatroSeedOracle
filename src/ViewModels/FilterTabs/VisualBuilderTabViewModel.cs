@@ -133,6 +133,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
+        // Expose parent's filter name edit mode properties
+        public bool FilterNameEditMode => _parentViewModel?.FilterNameEditMode ?? false;
+        public bool FilterNameDisplayMode => _parentViewModel?.FilterNameDisplayMode ?? true;
+
+        // Expose parent's filter name commands
+        public IRelayCommand? FilterNameClickCommand => _parentViewModel?.FilterNameClickCommand;
+        public IRelayCommand? SaveFilterNameCommand => _parentViewModel?.SaveFilterNameCommand;
+        public IRelayCommand? CancelFilterNameEditCommand => _parentViewModel?.CancelFilterNameEditCommand;
+
         // Expose parent's SelectedDeck for flip animation
         public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
 
@@ -258,6 +267,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
 
+        // Negative edition is not available for Standard Cards
+        public bool AllowNegativeEdition => SelectedMainCategory == "Joker";
+
         // Notify property changes when category changes
         partial void OnSelectedMainCategoryChanged(string value)
         {
@@ -265,6 +277,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(ShowStickerButtons));
             OnPropertyChanged(nameof(ShowSealButtons));
             OnPropertyChanged(nameof(ShowEnhancementButtons));
+            OnPropertyChanged(nameof(AllowNegativeEdition));
 
             // Reset edition/sticker/seal state when switching categories
             // Cards should start fresh with no enhancements
@@ -327,7 +340,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             _parentViewModel = parentViewModel;
 
-            // Subscribe to parent's property changes to update FilterName
+            // Subscribe to parent's property changes to update FilterName and edit mode
             if (_parentViewModel != null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
@@ -335,6 +348,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
                     {
                         OnPropertyChanged(nameof(FilterName));
+                    }
+                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameEditMode))
+                    {
+                        OnPropertyChanged(nameof(FilterNameEditMode));
+                    }
+                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameDisplayMode))
+                    {
+                        OnPropertyChanged(nameof(FilterNameDisplayMode));
                     }
                 };
             }
@@ -2783,7 +2804,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Determine category from ItemType
             string category = config.ItemType switch
             {
-                "Joker" or "SoulJoker" => "Joker",
+                "SoulJoker" => "SoulJokers",
+                "Joker" => "Joker",
                 "Tarot" or "TarotCard" => "Consumable",
                 "Spectral" or "SpectralCard" => "Consumable",
                 "Planet" or "PlanetCard" => "Consumable",
@@ -2837,8 +2859,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             else if (config.ItemType == "PlayingCard" || config.ItemType == "StandardCard")
             {
-                // TODO: Handle playing cards properly
-                filterItem.ItemImage = ss.GetSpecialImage("BlankCard");
+                var suit = string.IsNullOrWhiteSpace(config.Suit) ? "Spades" : config.Suit;
+                var rank = string.IsNullOrWhiteSpace(config.Rank) ? "10" : config.Rank;
+                filterItem.ItemImage = ss.GetPlayingCardImage(suit, rank, config.Enhancement);
             }
 
             return filterItem;

@@ -61,22 +61,46 @@
 
             <!-- LEFT COLUMN - Filter Name + Search + Categories (Operator Tray moved to center column) -->
             <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
-                <!-- Filter Name Display (Auto-Save Status removed - was causing layout shift) -->
-                <Border Grid.Row="0"
+                <!-- Filter Name Display (Editable like author name) -->
+                <Button x:Name="FilterNameButton"
+                        Grid.Row="0"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"
                         Padding="12,8"
-                        MaxHeight="56">
-                    <TextBlock Text="{Binding FilterName, FallbackValue='New Filter'}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
-                               Foreground="{StaticResource Gold}"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"
-                               TextWrapping="Wrap"
-                               MaxWidth="110"/>
-                </Border>
+                        MaxHeight="56"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding FilterNameClickCommand}">
+                    <Grid>
+                        <!-- Display mode -->
+                        <TextBlock x:Name="FilterNameDisplay"
+                                   Text="{Binding FilterName, FallbackValue='New Filter'}"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource Gold}"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="110"
+                                   IsVisible="{Binding FilterNameDisplayMode}"/>
+
+                        <!-- Edit mode -->
+                        <TextBox x:Name="FilterNameEdit"
+                                 Text="{Binding FilterName, Mode=TwoWay}"
+                                 FontFamily="{StaticResource BalatroFont}"
+                                 FontSize="14"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Stretch"
+                                 TextAlignment="Center"
+                                 MaxWidth="110"
+                                 IsVisible="{Binding FilterNameEditMode}"
+                                 Focusable="True"
+                                 IsHitTestVisible="True"
+                                 KeyDown="OnFilterNameTextBoxKeyDown"
+                                 LostFocus="OnFilterNameTextBoxLostFocus"/>
+                    </Grid>
+                </Button>
 
                 <!-- Category buttons with arrow indicator on the left -->
                 <Grid Grid.Row="4">
@@ -233,14 +257,16 @@
                                           BlurRadius="30"
                                           Opacity="1.0"/>
                     </Border.Effect>
-                    <!-- Balatro-style drop zone - BIG and prominent text -->
+                    <!-- Balatro-style drop zone - Readable text with wrapping -->
                     <TextBlock Text="ADD TO FAVORITES"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="28"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               TextAlignment="Center">
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="100">
                     </TextBlock>
                 </Border>
             </Grid>
@@ -348,7 +374,8 @@
                                 ToolTip.Tip="Negative (+1 joker slot)"
                                 Width="38"
                                 Padding="2"
-                                Margin="0">
+                                Margin="0"
+                                IsVisible="{Binding AllowNegativeEdition}">
                             <Grid>
                                 <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
                                 <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
@@ -510,9 +537,9 @@
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <UniformGrid Columns="5" ClipToBounds="False"/>
-                                                </ItemsPanelTemplate>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="6" ClipToBounds="False"/>
+                                        </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
                                     </StackPanel>
@@ -614,62 +641,33 @@
                                            VerticalAlignment="Center"/>
                             </Border>
 
-                            <!-- Card display area -->
-                            <Grid Grid.Row="1" Margin="8">
-                                <!-- Less than 5 cards: side-by-side layout -->
-                                <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}"
-                                              IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
+                            <!-- Card display area (single ItemsControl with programmatic fan/overlap) -->
+                            <Grid Grid.Row="1" Margin="8" ClipToBounds="False">
+                                <ItemsControl Name="UnifiedTrayItemsControl" ItemsSource="{Binding UnifiedOperator.Children}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                            <Canvas/>
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Width="71" Height="95" Margin="3">
-                                                <!-- Card image -->
-                                                <Image Source="{Binding ItemImage}"
-                                                       Width="71"
-                                                       Height="95"
-                                                       Stretch="Uniform"/>
-                                                <Image Source="{Binding SoulFaceImage}"
-                                                       Width="71"
-                                                       Height="95"
-                                                       Stretch="Uniform"
-                                                       IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                            </Grid>
+                                            <Border Width="71" Height="95" Background="Transparent" RenderTransformOrigin="0.5,0.8">
+                                                <Border.RenderTransform>
+                                                    <TransformGroup>
+                                                        <RotateTransform Angle="0"/>
+                                                        <TranslateTransform X="0" Y="0"/>
+                                                    </TransformGroup>
+                                                </Border.RenderTransform>
+                                                <Grid Width="71" Height="95">
+                                                    <Image Source="{Binding ItemImage}" Width="71" Height="95" Stretch="Uniform"/>
+                                                    <Image Source="{Binding SoulFaceImage}"
+                                                           Width="71" Height="95" Stretch="Uniform"
+                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                </Grid>
+                                            </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-
-                                <!-- 5 or more cards: fanned layout using Canvas -->
-                                <Canvas IsVisible="{Binding UnifiedOperator.Children.Count, Converter={x:Static converters:GreaterThanFourConverter.Instance}}"
-                                        Height="120"
-                                        ClipToBounds="False">
-                                    <ItemsControl ItemsSource="{Binding UnifiedOperator.Children}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <Canvas/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <!-- TODO: Need to compute Canvas.Left, Canvas.Top, and RenderTransform in code-behind -->
-                                                <Grid Width="71" Height="95">
-                                                    <Image Source="{Binding ItemImage}"
-                                                           Width="71"
-                                                           Height="95"
-                                                           Stretch="Uniform"/>
-                                                    <Image Source="{Binding SoulFaceImage}"
-                                                           Width="71"
-                                                           Height="95"
-                                                           Stretch="Uniform"
-                                                           IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Canvas>
                             </Grid>
                         </Grid>
                     </Border>

@@ -737,12 +737,22 @@ namespace BalatroSeedOracle.ViewModels
             shader?.SetMainColor(color);
         }
 
+        public void ApplyMainColor(BalatroShaderBackground? shader, SkiaSharp.SKColor color)
+        {
+            shader?.SetMainColor(color);
+        }
+
         /// <summary>
         /// Apply accent color to shader
         /// </summary>
         public void ApplyAccentColor(BalatroShaderBackground? shader, int colorIndex)
         {
             var color = IndexToSKColor(colorIndex);
+            shader?.SetAccentColor(color);
+        }
+
+        public void ApplyAccentColor(BalatroShaderBackground? shader, SkiaSharp.SKColor color)
+        {
             shader?.SetAccentColor(color);
         }
 

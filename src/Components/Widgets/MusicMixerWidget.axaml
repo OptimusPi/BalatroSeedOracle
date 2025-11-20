@@ -59,15 +59,21 @@
 
                         <!-- Save/Load/Reset Buttons -->
                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
-                            <Button Content="Save Mix"
+                            <Button Content="Save Mix As..."
                                     Classes="btn-blue"
-                                    Command="{Binding SaveMixerSettingsCommand}"
+                                    Command="{Binding SaveMixAsCommand}"
                                     Height="24"
                                     Padding="8,3"
                                     FontSize="10"/>
-                            <Button Content="Load Mix"
+                            <Button Content="Load Mix..."
                                     Classes="btn-green"
-                                    Command="{Binding LoadMixerSettingsCommand}"
+                                    Command="{Binding LoadMixFromCommand}"
+                                    Height="24"
+                                    Padding="8,3"
+                                    FontSize="10"/>
+                            <Button Content="Animate To..."
+                                    Classes="btn-green"
+                                    Command="{Binding AnimateToMixCommand}"
                                     Height="24"
                                     Padding="8,3"
                                     FontSize="10"/>
@@ -132,12 +138,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Drums1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
 
                             <!-- Volume Slider -->
@@ -208,12 +214,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Drums2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -280,12 +286,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Bass1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -352,12 +358,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Bass2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -424,12 +430,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Chords1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -496,12 +502,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Chords2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -568,12 +574,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Melody1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -640,12 +646,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Melody2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"

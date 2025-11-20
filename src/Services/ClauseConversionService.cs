@@ -271,7 +271,7 @@ namespace BalatroSeedOracle.Services
             return category?.ToLower() switch
             {
                 "souljokers" => "SoulJoker",
-                "jokers" => itemName.StartsWith("j_") ? "Joker" : itemName,
+                "jokers" => "Joker",
                 "tarots" => "TarotCard",
                 "planets" => "PlanetCard",
                 "spectrals" => "SpectralCard",

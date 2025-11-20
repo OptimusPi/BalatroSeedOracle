@@ -105,6 +105,7 @@
                    TextWrapping="Wrap"
                    MaxWidth="72"
                    MinHeight="40"
-                   MaxLines="2"/>
+                   MaxLines="2"
+                   Margin="0,2,0,6"/>
     </StackPanel>
 </UserControl>

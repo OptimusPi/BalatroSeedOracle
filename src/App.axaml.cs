@@ -97,8 +97,8 @@ public partial class App : Application
             // SMOOTH INTRO TRANSITION - Dark pixelated → Vibrant Balatro
             DebugLogger.LogImportant("App", "Starting SMOOTH intro transition (Dark → Normal)");
 
-            var introParams = Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters();
-            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+            var introParams = Helpers.ShaderPresetHelper.Load("intro");
+            var normalParams = Helpers.ShaderPresetHelper.Load("normal");
 
             // Apply intro state immediately
             ApplyShaderParametersToMainMenu(mainMenu, introParams);
@@ -135,6 +135,12 @@ public partial class App : Application
             catch (Exception ex)
             {
                 DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
+            }
+
+            // Complete the intro transition NOW (after everything is ready)
+            if (transitionService != null)
+            {
+                transitionService.SetProgress(1.0f);
             }
 
             DebugLogger.LogImportant(
@@ -216,47 +222,46 @@ public partial class App : Application
         try
         {
             var spriteService = Services.SpriteService.Instance;
+            var introStart = DateTime.UtcNow;
+            var minIntro = TimeSpan.FromSeconds(3.14);
 
-            // Track total sprites loaded across all categories
-            int totalLoaded = 0;
-            int totalSprites = 150; // Approximate total (will be updated as we go)
+            var uniformProgressTask = System.Threading.Tasks.Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var elapsed = DateTime.UtcNow - introStart;
+                    if (elapsed >= minIntro)
+                    {
+                        // Stop at 95% - caller will complete to 100% when fully ready
+                        transitionService.SetProgress(0.95f);
+                        break;
+                    }
+                    float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
+                    float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
+                    transitionService.SetProgress(p);
+                    await System.Threading.Tasks.Task.Delay(16).ConfigureAwait(false);
+                }
+            });
 
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
-                // Update total if we have more accurate count
-                totalSprites = Math.Max(totalSprites, totalLoaded + update.total);
-
-                // Calculate overall progress (0.0 to 1.0)
-                float overallProgress = (float)totalLoaded / totalSprites;
-
-                // Drive the transition! 0% loaded = dark/pixelated, 100% = vibrant/normal
-                transitionService.SetProgress(overallProgress);
-
                 DebugLogger.Log(
                     "App",
-                    $"Loading {update.category}: {update.current}/{update.total} " +
-                    $"(Overall: {overallProgress * 100:F0}%)"
+                    $"Loading {update.category}: {update.current}/{update.total}"
                 );
-
-                // Update total after processing this batch
-                if (update.current >= update.total)
-                {
-                    totalLoaded += update.total;
-                }
             });
 
             await spriteService.PreloadAllSpritesAsync(progress);
 
-            // Ensure we hit 100% at the end
-            transitionService.SetProgress(1.0f);
+            await uniformProgressTask.ConfigureAwait(false);
 
             DebugLogger.LogImportant("App", "Sprites pre-loaded with smooth transition!");
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
-            // Ensure transition completes even if sprite loading fails
-            transitionService.SetProgress(1.0f);
+            // Don't complete transition here - let caller handle it
+            transitionService.SetProgress(0.95f);
         }
     }
 

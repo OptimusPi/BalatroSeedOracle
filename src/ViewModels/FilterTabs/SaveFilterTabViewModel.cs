@@ -105,6 +105,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string[] DeckDisplayValues => _parentViewModel.DeckDisplayValues;
         public string[] StakeDisplayValues => _parentViewModel.StakeDisplayValues;
 
+        // Deck/Stake preview image
+        public Avalonia.Media.IImage? DeckStakePreviewImage
+        {
+            get
+            {
+                var sprites = Services.SpriteService.Instance;
+                var deck = _parentViewModel.SelectedDeck;
+                var stakeName = StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
+                return sprites.GetDeckWithStakeSticker(deck, stakeName);
+            }
+        }
+
+        // Quick action: open Joker configuration in Build tab
+        [RelayCommand]
+        private void OpenJokerConfig()
+        {
+            try
+            {
+                _parentViewModel.SelectedTabIndex = 0; // Build Filter
+                _parentViewModel.CurrentCategory = "Joker";
+            }
+            catch { }
+        }
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
@@ -152,6 +176,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // CRITICAL: Refresh criteria display when tab becomes visible
                 RefreshCriteriaDisplay();
+
+                OnPropertyChanged(nameof(DeckStakePreviewImage));
             }
             catch (Exception ex)
             {
@@ -640,10 +666,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ShowFoundSeed = true;
                     IsFilterVerified = true;
 
-                    // Extract the seed from results
-                    if (results.Seeds != null && results.Seeds.Count > 0)
+                    // Find seed with highest TotalScore
+                    string? verifiedSeed = null;
+                    if (results.Results != null && results.Results.Count > 0)
                     {
-                        FoundSeed = results.Seeds[0].ToString() ?? "Unknown";
+                        var bestResult = results.Results.OrderByDescending(r => r.TotalScore).First();
+                        verifiedSeed = bestResult.Seed;
+                        FoundSeed = verifiedSeed ?? "Unknown";
+                        DebugLogger.Log("SaveFilterTab",
+                            $"Selected seed {FoundSeed} with TotalScore {bestResult.TotalScore}");
+                    }
+                    else if (results.Seeds != null && results.Seeds.Count > 0)
+                    {
+                        // Fallback to first seed if Results not available
+                        verifiedSeed = results.Seeds[0];
+                        FoundSeed = verifiedSeed ?? "Unknown";
+                    }
+
+                    // Save verified seed to config and persist to file
+                    if (!string.IsNullOrEmpty(verifiedSeed))
+                    {
+                        config.VerifiedSeed = verifiedSeed;
+                        var filePath = _filterService.GenerateFilterFileName(config.Name ?? "filter");
+                        await _configurationService.SaveFilterAsync(filePath, config);
+                        DebugLogger.Log("SaveFilterTab",
+                            $"Saved verified seed {verifiedSeed} to filter config");
                     }
 
                     TestResultMessage =

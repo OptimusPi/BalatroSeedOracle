@@ -65,6 +65,12 @@ namespace BalatroSeedOracle.ViewModels
         private string _filterName = "";
 
         [ObservableProperty]
+        private bool _filterNameEditMode = false;
+
+        [ObservableProperty]
+        private bool _filterNameDisplayMode = true;
+
+        [ObservableProperty]
         private string _filterDescription = "";
 
         [ObservableProperty]
@@ -236,6 +242,18 @@ namespace BalatroSeedOracle.ViewModels
                 return (index >= 0 && index < TabItems.Count) ? TabItems[index].Content : null;
             }
         }
+
+        // ===== PARTIAL METHODS (Property change handlers) =====
+        partial void OnFilterNameEditModeChanged(bool value)
+        {
+            FilterNameDisplayMode = !value;
+        }
+
+        // ===== EVENTS =====
+        /// <summary>
+        /// Raised when filter name edit mode is activated (for focus request)
+        /// </summary>
+        public event EventHandler? OnFilterNameEditActivated;
 
         // ===== COMMANDS (using [RelayCommand] source generator) =====
         [RelayCommand]
@@ -537,6 +555,36 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error creating new filter: {ex.Message}"
                 );
             }
+        }
+
+        [RelayCommand]
+        private void FilterNameClick()
+        {
+            FilterNameEditMode = true;
+            OnFilterNameEditActivated?.Invoke(this, EventArgs.Empty);
+        }
+
+        [RelayCommand]
+        private void SaveFilterName()
+        {
+            var newName = FilterName?.Trim();
+            if (!string.IsNullOrEmpty(newName))
+            {
+                FilterName = newName;
+                DebugLogger.Log("FiltersModalViewModel", $"Filter name updated to: {newName}");
+            }
+            FilterNameEditMode = false;
+        }
+
+        [RelayCommand]
+        private void CancelFilterNameEdit()
+        {
+            // Restore original value from loaded config if available
+            if (LoadedConfig != null && !string.IsNullOrEmpty(LoadedConfig.Name))
+            {
+                FilterName = LoadedConfig.Name;
+            }
+            FilterNameEditMode = false;
         }
 
         [RelayCommand(CanExecute = nameof(HasLoadedFilter))]
@@ -1538,6 +1586,18 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DataContext = visualBuilderViewModel,
             };
+
+            // Wire up filter name edit activation event
+            OnFilterNameEditActivated += (s, e) =>
+            {
+                var filterNameEdit = visualBuilderTab.FindControl<Avalonia.Controls.TextBox>("FilterNameEdit");
+                if (filterNameEdit != null)
+                {
+                    filterNameEdit.Focus();
+                    filterNameEdit.SelectAll();
+                }
+            };
+
             TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
             // Deck/Stake tab (NEW - between Build Filter and JSON Editor)

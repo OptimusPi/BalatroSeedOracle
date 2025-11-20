@@ -31,6 +31,7 @@
                     BorderThickness="2"
                     CornerRadius="12"
                     Width="64" Height="64"
+                    Classes="widget-header"
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
@@ -60,7 +61,7 @@
 
                     <StackPanel Margin="15" Spacing="16">
 
-                        <!-- PRESET LOAD/SAVE -->
+                        <!-- PRESET LOAD/SAVE ROW 1 -->
                         <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
                             <TextBlock Text="Preset:"
                                        Foreground="{StaticResource White}"
@@ -85,18 +86,109 @@
                                     Padding="16,4"/>
                         </StackPanel>
 
+                        <!-- PRESET LOAD/SAVE ROW 2 -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+                            <Button Content="Save Transition..." Classes="btn-blue" Command="{Binding SaveTransitionCommand}" Height="32" Padding="16,4"/>
+                            <Button Content="Load Transition..." Classes="btn-green" Command="{Binding LoadTransitionCommand}" Height="32" Padding="16,4"/>
+                            <Button Content="Animate Visual + Mix → B" Classes="btn-green" Command="{Binding AnimateVisualAndMixToBCommand}" Height="32" Padding="16,4"/>
+                        </StackPanel>
+
+                        <!-- STARTUP PRESETS -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="STARTUP PRESETS" Foreground="{StaticResource White}" FontSize="16"/>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <TextBlock Text="Intro Preset" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <ComboBox ItemsSource="{Binding AvailableShaderPresetNames}" SelectedItem="{Binding StartupIntroPresetName}" HorizontalAlignment="Stretch" FontSize="13"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <TextBlock Text="End Preset" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <ComboBox ItemsSource="{Binding AvailableShaderPresetNames}" SelectedItem="{Binding StartupEndPresetName}" HorizontalAlignment="Stretch" FontSize="13"/>
+                                </StackPanel>
+                            </Grid>
+                            <Button Content="Refresh Presets" Command="{Binding RefreshShaderPresetListCommand}" Classes="btn-blue" Padding="12,6" FontSize="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <!-- CUSTOM COLORS -->
+                        <StackPanel Spacing="8" Margin="0,8,0,0">
+                            <TextBlock Text="CUSTOM COLORS" Foreground="{StaticResource White}" FontSize="16"/>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Main (RGB)" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="R" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding MainColorR}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding MainColorR}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="G" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding MainColorG}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding MainColorG}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="B" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding MainColorB}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding MainColorB}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                            </StackPanel>
+                            <StackPanel Spacing="4" Margin="0,6,0,0">
+                                <TextBlock Text="Accent (RGB)" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="R" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding AccentColorR}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding AccentColorR}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="G" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding AccentColorG}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding AccentColorG}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="B" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding AccentColorB}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding AccentColorB}" Foreground="{StaticResource LightTextGrey}"/>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- BLEND -->
+                        <StackPanel Spacing="6" Margin="0,8,0,0">
+                            <TextBlock Text="🌈 Psychedelic Blend" Foreground="{StaticResource Gold}" FontSize="14"/>
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0" Text="0" Foreground="{StaticResource LightTextGrey}"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding PsychedelicBlendValue}"/>
+                                <TextBlock Grid.Column="2" Text="1" Foreground="{StaticResource LightTextGrey}"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,6,0,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Speed" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <Slider Minimum="0" Maximum="3" Value="{Binding PsychedelicSpeed}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Complexity" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <Slider Minimum="0" Maximum="5" Value="{Binding PsychedelicComplexity}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Color Cycle" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <Slider Minimum="0" Maximum="5" Value="{Binding PsychedelicColorCycle}"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,6,0,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Kaleidoscope" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <Slider Minimum="0" Maximum="12" Value="{Binding PsychedelicKaleidoscope}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Fluid Flow" Foreground="{StaticResource BodyText}" FontSize="12"/>
+                                    <Slider Minimum="0" Maximum="1" Value="{Binding PsychedelicFluidFlow}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
                         <!-- THEME SELECTION -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="THEME" Foreground="{StaticResource White}" FontSize="16"/>
+                            <TextBlock Text="BASE MODE" Foreground="{StaticResource White}" FontSize="16"/>
                             <ComboBox SelectedIndex="{Binding ThemeIndex}" HorizontalAlignment="Stretch" FontSize="14">
                                 <ComboBoxItem Content="Default"/>
-                                <ComboBoxItem Content="Wave Rider"/>
-                                <ComboBoxItem Content="Inferno"/>
-                                <ComboBoxItem Content="Frozen"/>
-                                <ComboBoxItem Content="Rainbow Cascade"/>
-                                <ComboBoxItem Content="Electric Storm"/>
-                                <ComboBoxItem Content="Sakura Dream"/>
-                                <ComboBoxItem Content="Lunar Eclipse"/>
                                 <ComboBoxItem Content="CUSTOMIZE..."/>
                             </ComboBox>
                         </StackPanel>
@@ -943,8 +1035,8 @@
                             <CheckBox Content="Search Done" IsChecked="{Binding EnableSearchCompleteTrigger}" Foreground="{StaticResource White}" FontSize="14"/>
                         </StackPanel>
 
-                        <!-- FREQUENCY BREAKPOINTS -->
-                        <Expander Header="FREQUENCY BREAKPOINTS" FontSize="15" Foreground="{StaticResource White}" Margin="0,12,0,0">
+                        <!-- FREQUENCY BREAKPOINTS (managed in FFT widget) -->
+                        <Expander Header="FREQUENCY BREAKPOINTS (use FFT widget)" FontSize="15" Foreground="{StaticResource White}" Margin="0,12,0,0" IsVisible="False">
                             <StackPanel Spacing="8" Margin="0,8,0,0">
                                 <TextBlock Text="Define custom frequency-based audio triggers"
                                            Foreground="{StaticResource LightTextGrey}"
@@ -1040,8 +1132,8 @@
                             </StackPanel>
                         </Expander>
 
-                        <!-- MELODIC BREAKPOINTS -->
-                        <Expander Header="MELODIC BREAKPOINTS" FontSize="15" Foreground="{StaticResource White}" Margin="0,8,0,0">
+                        <!-- MELODIC BREAKPOINTS (managed in FFT widget) -->
+                        <Expander Header="MELODIC BREAKPOINTS (use FFT widget)" FontSize="15" Foreground="{StaticResource White}" Margin="0,8,0,0" IsVisible="False">
                             <StackPanel Spacing="8" Margin="0,8,0,0">
                                 <TextBlock Text="Define melodic/harmonic pattern triggers"
                                            Foreground="{StaticResource LightTextGrey}"

@@ -1565,6 +1565,10 @@ namespace BalatroSeedOracle.Services
         // New methods for deck, enhancement, and seal sprites
         public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "red";
+            }
             var normalized = NormalizeSpriteName(name);
             if (!deckPositions.TryGetValue(normalized, out var pos))
             {
@@ -1607,8 +1611,8 @@ namespace BalatroSeedOracle.Services
         // Create a composite image with deck and stake sticker
         public IImage? GetDeckWithStakeSticker(string deckName, string stakeName)
         {
-            ArgumentNullException.ThrowIfNull(deckName);
-            ArgumentNullException.ThrowIfNull(stakeName);
+            if (string.IsNullOrWhiteSpace(deckName)) deckName = "red";
+            if (string.IsNullOrWhiteSpace(stakeName)) stakeName = "white";
 
             // Get the base deck image
             var deckImage = GetDeckImage(deckName);

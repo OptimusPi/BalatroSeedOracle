@@ -183,38 +183,46 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Vertical Label on left edge -->
-                                            <TextBlock Grid.Column="0"
-                                                       Text="JOKERS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Gold}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="JOKERS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Gold}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Sprite content area -->
                                             <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Must.Jokers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -242,18 +250,26 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Vertical Label on left edge -->
-                                            <TextBlock Grid.Column="0"
-                                                       Text="VOUCHERS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource VoucherOrange}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="VOUCHERS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource VoucherOrange}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Sprite content area -->
                                             <StackPanel Grid.Column="1" Spacing="6">
@@ -261,21 +277,21 @@
                                                 <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -296,7 +312,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="58" Height="78" Margin="2" ClipToBounds="False">
                                                             <!-- Base sprite -->
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Stretch="Uniform"/>
@@ -334,18 +350,26 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Vertical Label on left edge -->
-                                            <TextBlock Grid.Column="0"
-                                                       Text="CONSUMABLES"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Purple}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="CONSUMABLES"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Purple}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Sprite content area -->
                                             <StackPanel Grid.Column="1" Spacing="6">
@@ -353,21 +377,21 @@
                                                 <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -388,7 +412,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="2">
+                                                        <Grid Width="58" Height="78" Margin="2" ClipToBounds="False">
                                                             <!-- Base sprite -->
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Stretch="Uniform"/>
@@ -436,37 +460,45 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="JOKERS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Gold}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="JOKERS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Gold}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Jokers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -493,37 +525,45 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="VOUCHERS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource VoucherOrange}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="VOUCHERS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource VoucherOrange}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Vouchers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -550,37 +590,45 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="CONSUMABLES"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Purple}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="CONSUMABLES"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Purple}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Should.Consumables}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="38" ItemHeight="50" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="36" Height="48" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform">
                                                                 <i:Interaction.Behaviors>
                                                                     <behaviors:BalatroCardSwayBehavior />
                                                                 </i:Interaction.Behaviors>
                                                             </Image>
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
-                                                                   Width="36" Height="48"
+                                                                   Width="58" Height="78"
                                                                    Stretch="Uniform"
                                                                    IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                                 <i:Interaction.Behaviors>
@@ -618,18 +666,26 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="CARDS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Gold}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="CARDS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Gold}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Erratic Deck Support Display -->
                                             <Grid Grid.Column="1">
@@ -691,18 +747,26 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="VOUCHERS"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource VoucherOrange}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="VOUCHERS"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource VoucherOrange}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Placeholder - will be populated when deck defaults are implemented -->
                                             <ItemsControl Grid.Column="1">
@@ -728,18 +792,26 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0"
-                                                       Text="CONSUMABLES"
-                                                       FontFamily="{StaticResource BalatroFont}"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource Purple}"
-                                                      
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0">
-                                                <TextBlock.RenderTransform>
-                                                    <RotateTransform Angle="-90"/>
-                                                </TextBlock.RenderTransform>
-                                            </TextBlock>
+                                            <Border Grid.Column="0"
+                                                    Background="{StaticResource ModalGrey}"
+                                                    CornerRadius="4"
+                                                    Padding="6,12"
+                                                    Width="180"
+                                                    Height="80"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="CONSUMABLES"
+                                                           FontFamily="{StaticResource BalatroFont}"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource Purple}"
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="-90"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
 
                                             <!-- Placeholder - will be populated when deck defaults are implemented -->
                                             <ItemsControl Grid.Column="1">
@@ -788,30 +860,37 @@
                                                     <!-- Content -->
                                                     <StackPanel Grid.Row="1" Margin="15" Spacing="10">
                                                         <!-- Filter Name and Author (Title Row) -->
-                                                        <Grid Margin="0,0,0,5">
-                                                            <TextBlock Text="{Binding FilterName}"
+                                                        <Grid Margin="0,0,0,5" RowDefinitions="Auto,Auto">
+                                                            <!-- Row 0: Filter Name -->
+                                                            <TextBlock Grid.Row="0"
+                                                                       Text="{Binding FilterName}"
                                                                        FontFamily="{StaticResource BalatroFont}"
                                                                        FontSize="18"
-                                                                      
                                                                        Foreground="Black"
                                                                        HorizontalAlignment="Left"
-                                                                       VerticalAlignment="Top"/>
+                                                                       Margin="0,0,0,4"/>
 
-                                                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
-                                                                           FontSize="14"
-                                                                           Foreground="{StaticResource BodyText}"
-                                                                           HorizontalAlignment="Right">
-                                                                    <Run Text="by "/>
+                                                            <!-- Row 1: Author (Left) and Date (Right) -->
+                                                            <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                                                                <!-- Author on left -->
+                                                                <TextBlock Grid.Column="0"
+                                                                           FontFamily="{StaticResource BalatroFont}"
+                                                                           FontSize="12"
+                                                                           Foreground="Black"
+                                                                           HorizontalAlignment="Left">
+                                                                    <Run Text="by: "/>
                                                                     <Run Text="{Binding FilterAuthor}"/>
                                                                 </TextBlock>
-                                                                <TextBlock FontFamily="{StaticResource BalatroFont}"
+
+                                                                <!-- Date on right -->
+                                                                <TextBlock Grid.Column="1"
+                                                                           FontFamily="{StaticResource BalatroFont}"
                                                                            FontSize="11"
                                                                            Foreground="{StaticResource LightGrey}"
                                                                            HorizontalAlignment="Right">
                                                                     <Run Text="{Binding CreatedDate}"/>
                                                                 </TextBlock>
-                                                            </StackPanel>
+                                                            </Grid>
                                                         </Grid>
 
                                                         <!-- Description Text -->
@@ -1202,23 +1281,37 @@
                                                                    Foreground="{StaticResource White}"
                                                                    HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Display-only: Deck sprite with stake seal (NO ARROWS!) -->
-                                                    <components:DeckSpinner Grid.Row="1"
-                                                        ShowArrows="False"
-                                                        SelectedDeckIndex="{Binding SelectedDeckIndex}"
-                                                        StakeIndex="{Binding SelectedStakeIndex}"
-                                                        Margin="10"
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Top"
-                                                        IsHitTestVisible="False">
-                                                        <components:DeckSpinner.Styles>
-                                                            <Style Selector="Border.panel-content">
-                                                                <Setter Property="Background" Value="Transparent"/>
-                                                                <Setter Property="MinHeight" Value="180"/>
-                                                                <Setter Property="MaxHeight" Value="240"/>
-                                                            </Style>
-                                                        </components:DeckSpinner.Styles>
-                                                    </components:DeckSpinner>
+                                                    <!-- Display-only: Deck card back with stake seal overlay -->
+                                                    <StackPanel Grid.Row="1"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Top"
+                                                                Margin="10"
+                                                                Spacing="8">
+                                                        <!-- Deck Name -->
+                                                        <TextBlock Text="{Binding SelectedDeckName}"
+                                                                   FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="18"
+                                                                   Foreground="{StaticResource Gold}"
+                                                                   HorizontalAlignment="Center"
+                                                                   TextAlignment="Center"/>
+
+                                                        <!-- Stake Name -->
+                                                        <TextBlock FontFamily="{StaticResource BalatroFont}"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource White}"
+                                                                   HorizontalAlignment="Left">
+                                                            <Run Text="{Binding SelectedStakeName}"/>
+                                                            <Run Text=" Stake"/>
+                                                        </TextBlock>
+
+                                                        <!-- Card Sprite -->
+                                                        <Image Source="{Binding DeckCardImage}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"
+                                                               HorizontalAlignment="Center"
+                                                               IsHitTestVisible="False"/>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
 
@@ -1361,7 +1454,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Height" Value="20"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -1376,8 +1469,15 @@
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
         </Style>
 
+        <!-- Pressed state: Scoot down 3px and hide shadow (Balatro flat 2D effect) -->
         <Style Selector="Button.filter-list-item:pressed">
             <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.filter-list-item:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
 
         <Style Selector="Button.filter-list-item.selected">

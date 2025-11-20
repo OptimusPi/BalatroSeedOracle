@@ -103,6 +103,19 @@ namespace BalatroSeedOracle.Controls
 
         public void SetSpinTime(float spinTime) => _renderer?.SetUniform("spin_time", spinTime);
 
+        public float GetTimeSpeed() => _renderer != null ? _renderer.GetTimeSpeed() : 1.0f;
+        public float GetSpinTimeSpeed() => _renderer != null ? _renderer.GetSpinTimeSpeed() : 1.0f;
+        public float GetContrast() => _renderer != null ? _renderer.GetContrast() : 2.0f;
+        public float GetSpinAmount() => _renderer != null ? _renderer.GetSpinAmount() : 0.3f;
+        public float GetParallaxX() => _renderer != null ? _renderer.GetParallaxX() : 0f;
+        public float GetParallaxY() => _renderer != null ? _renderer.GetParallaxY() : 0f;
+        public float GetZoomScale() => _renderer != null ? _renderer.GetZoomScale() : 0f;
+        public float GetSaturationAmount() => _renderer != null ? _renderer.GetSaturationAmount() : 0f;
+        public float GetSaturationAmount2() => _renderer != null ? _renderer.GetSaturationAmount2() : 0f;
+        public float GetPixelSize() => _renderer != null ? _renderer.GetPixelSize() : 1440.0f;
+        public float GetSpinEase() => _renderer != null ? _renderer.GetSpinEase() : 0.5f;
+        public float GetLoopCount() => _renderer != null ? _renderer.GetLoopCount() : 5.0f;
+
         // Color controls (accept SKColor for flexibility)
         public void SetMainColor(SKColor color) => _renderer?.SetColor1(color);
 
@@ -112,34 +125,34 @@ namespace BalatroSeedOracle.Controls
 
         // Effect parameters
         public void SetContrast(float value) =>
-            _renderer?.SetUniform("contrast", Math.Clamp(value, 0.1f, 10.0f));
+            _renderer?.SetUniform("contrast", value);
 
         public void SetSpinAmount(float value) =>
-            _renderer?.SetUniform("spin_amount", Math.Clamp(value, 0.0f, 1.0f));
+            _renderer?.SetUniform("spin_amount", value);
 
         public void SetParallaxX(float value) =>
-            _renderer?.SetUniform("parallax_x", Math.Clamp(value, -1.0f, 1.0f));
+            _renderer?.SetUniform("parallax_x", value);
 
         public void SetParallaxY(float value) =>
-            _renderer?.SetUniform("parallax_y", Math.Clamp(value, -1.0f, 1.0f));
+            _renderer?.SetUniform("parallax_y", value);
 
         public void SetZoomScale(float value) =>
-            _renderer?.SetUniform("zoom_scale", Math.Clamp(value, -50.0f, 50.0f));
+            _renderer?.SetUniform("zoom_scale", value);
 
         public void SetSaturationAmount(float value) =>
-            _renderer?.SetUniform("saturation_amount", Math.Clamp(value, 0.0f, 1.0f));
+            _renderer?.SetUniform("saturation_amount", value);
 
         public void SetSaturationAmount2(float value) =>
-            _renderer?.SetUniform("saturation_amount_2", Math.Clamp(value, 0.0f, 1.0f));
+            _renderer?.SetUniform("saturation_amount_2", value);
 
         public void SetPixelSize(float value) =>
-            _renderer?.SetUniform("pixel_size", Math.Clamp(value, 100.0f, 5000.0f));
+            _renderer?.SetUniform("pixel_size", value);
 
         public void SetSpinEase(float value) =>
-            _renderer?.SetUniform("spin_ease", Math.Clamp(value, 0.0f, 2.0f));
+            _renderer?.SetUniform("spin_ease", value);
 
         public void SetLoopCount(float value) =>
-            _renderer?.SetUniform("loop_count", Math.Clamp(value, 1.0f, 10.0f));
+            _renderer?.SetUniform("loop_count", value);
 
         // Convenience method for setting parallax from mouse position
         public void SetParallax(float x, float y)
@@ -156,6 +169,7 @@ namespace BalatroSeedOracle.Controls
         private class ShaderRenderer : CompositionCustomVisualHandler, IDisposable
         {
             private SKRuntimeShaderBuilder? _shaderBuilder;
+            private SKRuntimeShaderBuilder? _psyShaderBuilder;
             private bool _isDisposed;
             private bool _isAnimating = true;
             private readonly System.Diagnostics.Stopwatch _stopwatch =
@@ -181,6 +195,30 @@ namespace BalatroSeedOracle.Controls
             private float _pixelSize = 1440.0f; // Default from const
             private float _spinEase = 0.5f; // Default from const
             private float _loopCount = 5.0f; // Default loop count for paint effect
+            // Psychedelic parameters
+            private float _psySpeed = 1.0f;
+            private float _psyComplexity = 1.0f;
+            private float _psyColorCycle = 1.0f;
+            private float _psyKaleidoscope = 0.0f;
+            private float _psyFluidFlow = 0.0f;
+            private SKPoint _psyMouse = new SKPoint(0.5f, 0.5f);
+            private float _psyMelody = 0.0f;
+            private float _psyChords = 0.0f;
+            private float _psyBass = 0.0f;
+            private float _psyBlend = 0.0f; // 0..1 blend factor for psychedelic overlay
+
+            public float GetTimeSpeed() => _timeSpeed;
+            public float GetSpinTimeSpeed() => _spinTimeSpeed;
+            public float GetContrast() => _contrast;
+            public float GetSpinAmount() => _spinAmount;
+            public float GetParallaxX() => _parallaxX;
+            public float GetParallaxY() => _parallaxY;
+            public float GetZoomScale() => _zoomScale;
+            public float GetSaturationAmount() => _saturationAmount;
+            public float GetSaturationAmount2() => _saturationAmount2;
+            public float GetPixelSize() => _pixelSize;
+            public float GetSpinEase() => _spinEase;
+            public float GetLoopCount() => _loopCount;
 
             public override void OnMessage(object message)
             {
@@ -238,6 +276,24 @@ namespace BalatroSeedOracle.Controls
                     case "loop_count":
                         _loopCount = value;
                         break;
+                    case "psy_blend":
+                        _psyBlend = value;
+                        break;
+                    case "psy_speed":
+                        _psySpeed = value;
+                        break;
+                    case "psy_complexity":
+                        _psyComplexity = value;
+                        break;
+                    case "psy_color_cycle":
+                        _psyColorCycle = value;
+                        break;
+                    case "psy_kaleidoscope":
+                        _psyKaleidoscope = value;
+                        break;
+                    case "psy_fluid_flow":
+                        _psyFluidFlow = value;
+                        break;
                 }
             }
 
@@ -286,6 +342,16 @@ namespace BalatroSeedOracle.Controls
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"Shader compilation failed: {error}");
+                }
+
+                var psyEffect = SKRuntimeEffect.CreateShader(ShaderConstants.PSYCHEDELIC_SHADER, out var perr);
+                if (psyEffect != null)
+                {
+                    _psyShaderBuilder = new SKRuntimeShaderBuilder(psyEffect);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Psychedelic shader compilation failed: {perr}");
                 }
             }
 
@@ -350,6 +416,26 @@ namespace BalatroSeedOracle.Controls
 
                 var rect = new SKRect(0, 0, currentSize.Width, currentSize.Height);
                 canvas.DrawRect(rect, paint);
+
+                if (_psyShaderBuilder != null && _psyBlend > 0.001f)
+                {
+                    _psyShaderBuilder.Uniforms["resolution"] = currentSize;
+                    _psyShaderBuilder.Uniforms["time"] = _time;
+                    _psyShaderBuilder.Uniforms["speed"] = _psySpeed;
+                    _psyShaderBuilder.Uniforms["fractal_complexity"] = _psyComplexity;
+                    _psyShaderBuilder.Uniforms["color_cycle"] = _psyColorCycle;
+                    _psyShaderBuilder.Uniforms["kaleidoscope"] = _psyKaleidoscope;
+                    _psyShaderBuilder.Uniforms["fluid_flow"] = _psyFluidFlow;
+                    _psyShaderBuilder.Uniforms["mouse"] = new float[] { _psyMouse.X, _psyMouse.Y };
+                    _psyShaderBuilder.Uniforms["melody"] = _psyMelody;
+                    _psyShaderBuilder.Uniforms["chords"] = _psyChords;
+                    _psyShaderBuilder.Uniforms["bass"] = _psyBass;
+
+                    using var psyShader = _psyShaderBuilder.Build();
+                    using var paint2 = new SKPaint { Shader = psyShader };
+                    paint2.Color = new SKColor(255, 255, 255, (byte)(Math.Clamp(_psyBlend, 0f, 1f) * 255));
+                    canvas.DrawRect(rect, paint2);
+                }
             }
 
             public override void OnAnimationFrameUpdate()
@@ -368,7 +454,16 @@ namespace BalatroSeedOracle.Controls
                 _isDisposed = true;
                 _shaderBuilder?.Dispose();
                 _shaderBuilder = null;
+                _psyShaderBuilder?.Dispose();
+                _psyShaderBuilder = null;
             }
         }
+
+        public void SetPsychedelicBlend(float blend) => _renderer?.SetUniform("psy_blend", blend);
+        public void SetPsychedelicSpeed(float speed) => _renderer?.SetUniform("psy_speed", speed);
+        public void SetPsychedelicComplexity(float value) => _renderer?.SetUniform("psy_complexity", value);
+        public void SetPsychedelicColorCycle(float value) => _renderer?.SetUniform("psy_color_cycle", value);
+        public void SetPsychedelicKaleidoscope(float value) => _renderer?.SetUniform("psy_kaleidoscope", value);
+        public void SetPsychedelicFluidFlow(float value) => _renderer?.SetUniform("psy_fluid_flow", value);
     }
 }

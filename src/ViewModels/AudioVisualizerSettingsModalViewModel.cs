@@ -687,6 +687,31 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
+        /// Admin: Clear all user presets from disk
+        /// </summary>
+        [RelayCommand]
+        private void ClearAllPresets()
+        {
+            try
+            {
+                var count = PresetHelper.ClearAllPresets();
+                LoadPresetsFromDisk();
+                ErrorMessage = string.Empty;
+                DebugLogger.Log(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Cleared {count} preset files"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Failed to clear presets: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
         /// Saves the current settings as a new preset
         /// </summary>
         [RelayCommand]

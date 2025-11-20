@@ -49,6 +49,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         OnPropertyChanged(nameof(FilterFileName));
                     }
+                    else if (
+                        e.PropertyName == nameof(FiltersModalViewModel.SelectedDeckIndex)
+                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedStakeIndex)
+                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedDeck)
+                    )
+                    {
+                        AutoGenerateFromVisual();
+                    }
                 };
             }
         }

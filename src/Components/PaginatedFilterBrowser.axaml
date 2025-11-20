@@ -32,6 +32,7 @@
                         <Canvas Name="TriangleCanvas" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="2">
                         <Polygon Name="SelectionTriangle"
                                  Points="15,0 0,10 15,20"
+                                 Fill="{StaticResource Red}"
                                  Classes="balatro-triangle balatro-bounce-horizontal"
                                  Canvas.Left="0"
                                  Canvas.Top="{Binding SelectedItemTriangleY}"
@@ -70,21 +71,25 @@
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"/>
 
-                    <!-- Page indicator -->
-                    <Border Background="{StaticResource Red}"
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
-                            CornerRadius="8"
-                            Padding="16,8"
-                            MinWidth="100"
-                            VerticalAlignment="Center">
-                        <TextBlock Text="{Binding PageIndicatorText}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   
-                                   Foreground="White"
-                                   TextAlignment="Center"/>
-                    </Border>
+                    <!-- Page indicator with Balatro badge edge -->
+                    <Grid MinWidth="100" VerticalAlignment="Center">
+                        <!-- Shadow/Edge (darker red, offset down) -->
+                        <Border Background="{StaticResource RedBadgeEdge}"
+                                CornerRadius="8"
+                                Margin="0,4,0,0"/>
+
+                        <!-- Face (bright red, offset up) -->
+                        <Border Background="{StaticResource RedBadgeFace}"
+                                CornerRadius="8"
+                                Padding="16,8"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="{Binding PageIndicatorText}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       TextAlignment="Center"/>
+                        </Border>
+                    </Grid>
 
                     <Button Content="&gt;"
                             Classes="btn-red"

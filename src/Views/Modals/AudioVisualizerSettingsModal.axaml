@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.AudioVisualizerSettingsModal"
@@ -16,7 +16,7 @@
 
                         <!-- THEME SELECTION SECTION -->
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Select Theme"
+                            <TextBlock Text="Select Base Mode"
                                        Foreground="{StaticResource White}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
@@ -25,13 +25,6 @@
                                       HorizontalAlignment="Stretch"
                                       FontSize="13">
                                 <ComboBoxItem Content="Default"/>
-                                <ComboBoxItem Content="Wave Rider"/>
-                                <ComboBoxItem Content="Inferno"/>
-                                <ComboBoxItem Content="Frozen"/>
-                                <ComboBoxItem Content="Rainbow Cascade"/>
-                                <ComboBoxItem Content="Electric Storm"/>
-                                <ComboBoxItem Content="Sakura Dream"/>
-                                <ComboBoxItem Content="Lunar Eclipse"/>
                                 <ComboBoxItem Content="CUSTOMIZE..."/>
                             </ComboBox>
                         </StackPanel>
@@ -146,7 +139,7 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"/>
 
-                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                                 <ComboBox Grid.Column="0" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" HorizontalAlignment="Stretch" FontSize="12">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
@@ -156,6 +149,7 @@
                                 </ComboBox>
                                 <Button Grid.Column="1" Content="Load" Command="{Binding LoadPresetCommand}" Classes="btn-blue" Padding="12,6" FontSize="12"/>
                                 <Button Grid.Column="2" Content="Save" Command="{Binding SavePresetCommand}" Classes="btn-red" Padding="12,6" FontSize="12"/>
+                                <Button Grid.Column="3" Content="Clear All" Command="{Binding ClearAllPresetsCommand}" Classes="btn-red" Padding="12,6" FontSize="12"/>
                             </Grid>
 
                             <Button Content="Delete Preset" Command="{Binding DeletePresetCommand}" HorizontalAlignment="Left" Padding="10,5" FontSize="11"/>

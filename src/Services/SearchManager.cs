@@ -241,6 +241,7 @@ namespace BalatroSeedOracle.Services
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var seeds = new List<string>();
+            var fullResults = new List<Models.SearchResult>();
             var batchesChecked = 0;
 
             try
@@ -287,6 +288,7 @@ namespace BalatroSeedOracle.Services
                             false,
                             maxResults
                         );
+                        fullResults = results; // Store full results with TotalScore
                         seeds = results.Select(r => r.Seed).ToList();
                         DebugLogger.Log("SearchManager", $"Quick search found {seeds.Count} seeds");
                     }
@@ -318,6 +320,7 @@ namespace BalatroSeedOracle.Services
                 return new QuickSearchResults
                 {
                     Seeds = seeds,
+                    Results = fullResults,
                     Count = seeds.Count,
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
@@ -331,6 +334,7 @@ namespace BalatroSeedOracle.Services
                 return new QuickSearchResults
                 {
                     Seeds = new List<string>(),
+                    Results = new List<Models.SearchResult>(),
                     Count = 0,
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
@@ -359,6 +363,7 @@ namespace BalatroSeedOracle.Services
     public class QuickSearchResults
     {
         public List<string> Seeds { get; set; } = new();
+        public List<Models.SearchResult> Results { get; set; } = new();
         public int Count { get; set; }
         public int BatchesChecked { get; set; }
         public double ElapsedTime { get; set; }

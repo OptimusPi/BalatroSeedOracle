@@ -124,12 +124,8 @@ namespace BalatroSeedOracle.Services
                 return null;
             }
 
-            // Handle built-in presets
-            if (presetName == "Default Dark")
-            {
-                return VisualizerPresetExtensions.CreateDefaultIntroParameters();
-            }
-            else if (presetName == "Default Normal")
+            // Handle built-in presets (consolidated)
+            if (presetName == "Default Balatro")
             {
                 return VisualizerPresetExtensions.CreateDefaultNormalParameters();
             }

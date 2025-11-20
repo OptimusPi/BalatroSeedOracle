@@ -1881,10 +1881,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load start and end presets (or use defaults)
                 var startParams = LoadPresetParameters(
-                    settings.SearchTransitionStartPresetName,
+                    settings.SearchTransitionStartPresetName ?? "Default Balatro",
                     true
                 );
-                var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName, false);
+                var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName ?? "Default Balatro", false);
 
                 // Create transition
                 ActiveSearchTransition = new Models.VisualizerPresetTransition
@@ -1896,7 +1896,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 DebugLogger.Log(
                     "SearchModalViewModel",
-                    $"Search transition configured: Start='{settings.SearchTransitionStartPresetName ?? "Default Dark"}', End='{settings.SearchTransitionEndPresetName ?? "Default Normal"}'"
+                    $"Search transition configured: Start='{settings.SearchTransitionStartPresetName ?? "Default Balatro"}', End='{settings.SearchTransitionEndPresetName ?? "Default Balatro"}'"
                 );
             }
             catch (Exception ex)
@@ -1917,8 +1917,7 @@ namespace BalatroSeedOracle.ViewModels
             // If no preset name specified or it's a default preset, use built-in defaults
             if (
                 string.IsNullOrWhiteSpace(presetName)
-                || presetName == "Default Dark"
-                || presetName == "Default Normal"
+                || presetName == "Default Balatro"
             )
             {
                 return isDarkPreset

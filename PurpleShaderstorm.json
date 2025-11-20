@@ -1,0 +1,30 @@
+{
+  "Id": "d32f2835-154d-4163-b63c-fe006557eb87",
+  "Name": "PurpleShaderstorm",
+  "ThemeIndex": 1,
+  "MainColor": 5,
+  "AccentColor": 0,
+  "AudioIntensity": 0,
+  "ParallaxStrength": 0,
+  "TimeSpeed": 1,
+  "SeedFoundTrigger": false,
+  "HighScoreSeedTrigger": false,
+  "SearchCompleteTrigger": false,
+  "SeedFoundAudioSource": 1,
+  "HighScoreAudioSource": 4,
+  "SearchCompleteAudioSource": 3,
+  "CustomEffects": {
+    "ShadowFlicker": 0,
+    "Spin": 0,
+    "BeatPulse": 0,
+    "Twirl": 0,
+    "ZoomThump": 0,
+    "ColorSaturation": 0
+  },
+  "FrequencyBreakpoints": null,
+  "MelodicBreakpoints": null,
+  "ParameterRanges": null,
+  "EffectMappings": null,
+  "CreatedAt": "2025-11-19T05:41:54.6653921Z",
+  "ModifiedAt": "2025-11-19T05:41:54.6653935Z"
+}

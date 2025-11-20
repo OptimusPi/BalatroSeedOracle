@@ -6,10 +6,17 @@
              x:DataType="vm:SaveFilterTabViewModel">
 
     <Grid RowDefinitions="Auto,20,*">
-        <!-- Row 0: Compact Filter Metadata -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,2*" Margin="20,20,20,0">
+        <!-- Row 0: Compact Filter Metadata + Deck/Stake Preview -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,2*" Margin="20,20,20,0">
+            <!-- Deck/Stake Preview -->
+            <Border Grid.Column="0" Background="{StaticResource DarkBackground}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="8" Padding="8" Margin="0,0,12,0">
+                <StackPanel>
+                    <Image Source="{Binding DeckStakePreviewImage}" Width="90" Height="120" Stretch="Uniform"/>
+                    <TextBlock Text="{Binding DeckDisplayValues[SelectedDeckIndex]}" FontSize="12" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
             <!-- Filter Name -->
-            <StackPanel Grid.Column="0" Spacing="5">
+            <StackPanel Grid.Column="1" Spacing="5">
                 <TextBlock Text="Filter Name"
                            FontSize="12"
                            Foreground="{StaticResource LightGrey}"
@@ -21,7 +28,7 @@
             </StackPanel>
 
             <!-- Filter ID (Read-only, auto-generated) -->
-            <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,0" Width="200">
+            <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0" Width="200">
                 <TextBlock Text="Filter ID (auto)"
                            FontSize="12"
                            Foreground="{StaticResource LightGrey}"
@@ -36,7 +43,7 @@
             </StackPanel>
 
             <!-- Description -->
-            <StackPanel Grid.Column="2" Spacing="5">
+            <StackPanel Grid.Column="3" Spacing="5">
                 <TextBlock Text="Description"
                            FontSize="12"
                            Foreground="{StaticResource LightGrey}"
@@ -186,32 +193,32 @@
                 </ScrollViewer>
             </Border>
 
-            <!-- RIGHT COLUMN (20%): Filter Test -->
+            <!-- RIGHT COLUMN (20%): Actions + Filter Test -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>  <!-- Header -->
                     <RowDefinition Height="15"/>    <!-- Spacer -->
-                    <RowDefinition Height="Auto"/>  <!-- Test Button -->
+                    <RowDefinition Height="Auto"/>  <!-- Buttons -->
                     <RowDefinition Height="15"/>    <!-- Spacer -->
                     <RowDefinition Height="*"/>     <!-- Test Results -->
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
                 <TextBlock Grid.Row="0"
-                           Text="FILTER TEST"
+                           Text="Finish"
                            FontSize="18"
-                           Foreground="{StaticResource Gold}"
+                           Foreground="{StaticResource White}"
                            FontFamily="{StaticResource BalatroFont}"
                            HorizontalAlignment="Center"/>
 
-                <!-- Test Button -->
-                <Button Grid.Row="2"
-                        Content="TEST FILTER"
-                        Command="{Binding TestFilterCommand}"
-                        Classes="btn-green"
-                        Height="40"
-                        FontSize="14"
-                        FontFamily="{StaticResource BalatroFont}"/>
+                <!-- Buttons -->
+                <StackPanel Grid.Row="2" Spacing="8">
+                    <Button Content="Save Filter" Command="{Binding SaveCurrentFilterCommand}" Classes="btn-blue" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Save As..." Command="{Binding SaveAsCommand}" Classes="btn-red" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Export JSON" Command="{Binding ExportFilterCommand}" Classes="btn-green" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Configure Jokers" Command="{Binding OpenJokerConfigCommand}" Classes="btn-blue" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                    <Button Content="Test Filter" Command="{Binding TestFilterCommand}" Classes="btn-green" Height="36" FontSize="13" FontFamily="{StaticResource BalatroFont}"/>
+                </StackPanel>
 
                 <!-- Test Results Area -->
                 <Border Grid.Row="4"
@@ -225,7 +232,7 @@
                         <Border IsVisible="{Binding IsTestRunning}"
                                 Background="{StaticResource ColorDarkGrey}"
                                 BorderThickness="2"
-                                BorderBrush="{StaticResource Gold}"
+                                BorderBrush="{StaticResource ModalBorder}"
                                 CornerRadius="8"
                                 Padding="15">
                             <StackPanel Spacing="12" HorizontalAlignment="Center">
@@ -248,9 +255,9 @@
 
                         <!-- STATE 2: SUCCESS - Filter Verified -->
                         <Border IsVisible="{Binding ShowTestSuccess}"
-                                Background="{StaticResource Green}"
+                                Background="{StaticResource DarkBackground}"
                                 BorderThickness="2"
-                                BorderBrush="{StaticResource Gold}"
+                                BorderBrush="{StaticResource ModalBorder}"
                                 CornerRadius="8"
                                 Padding="15">
                             <StackPanel Spacing="10">
@@ -307,9 +314,9 @@
 
                         <!-- STATE 3: NO MATCH - Warning -->
                         <Border IsVisible="{Binding ShowTestError}"
-                                Background="{StaticResource Red}"
+                                Background="{StaticResource DarkBackground}"
                                 BorderThickness="2"
-                                BorderBrush="{StaticResource Gold}"
+                                BorderBrush="{StaticResource ModalBorder}"
                                 CornerRadius="8"
                                 Padding="15">
                             <StackPanel Spacing="8">

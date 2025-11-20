@@ -2615,5 +2615,44 @@ namespace BalatroSeedOracle.Components.FilterTabs
         }
 
         #endregion
+
+        #region Filter Name Edit Event Handlers
+
+        private void OnFilterNameTextBoxKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (DataContext is ViewModels.FiltersModalViewModel vm)
+            {
+                if (e.Key == Key.Enter)
+                {
+                    // Save and exit edit mode
+                    vm.SaveFilterNameCommand.Execute(null);
+                    e.Handled = true;
+
+                    // Remove focus from textbox
+                    if (sender is TextBox textBox)
+                    {
+                        var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+                        focusManager?.ClearFocus();
+                    }
+                }
+                else if (e.Key == Key.Escape)
+                {
+                    // Cancel editing
+                    vm.CancelFilterNameEditCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void OnFilterNameTextBoxLostFocus(object? sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.FiltersModalViewModel vm)
+            {
+                // Auto-save when losing focus
+                vm.SaveFilterNameCommand.Execute(null);
+            }
+        }
+
+        #endregion
     }
 }

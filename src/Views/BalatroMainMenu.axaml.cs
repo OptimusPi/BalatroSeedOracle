@@ -1478,11 +1478,27 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        internal void ApplyMainColor(SkiaSharp.SKColor color)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyMainColor(shader, color);
+            }
+        }
+
         internal void ApplyAccentColor(int colorIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.ApplyAccentColor(shader, colorIndex);
+            }
+        }
+
+        internal void ApplyAccentColor(SkiaSharp.SKColor color)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                ViewModel.ApplyAccentColor(shader, color);
             }
         }
 
@@ -1567,6 +1583,24 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        internal float GetTimeSpeed()
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                return shader.GetTimeSpeed();
+            }
+            return 1f;
+        }
+
+        internal float GetSpinTimeSpeed()
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                return shader.GetSpinTimeSpeed();
+            }
+            return 1f;
+        }
+
         internal void ApplyShaderSpinTime(float spinTime)
         {
             if (_background is BalatroShaderBackground shader)
@@ -1596,6 +1630,54 @@ namespace BalatroSeedOracle.Views
             if (_background is BalatroShaderBackground shader)
             {
                 shader.SetLoopCount(loopCount);
+            }
+        }
+
+        internal void ApplyPsychedelicBlend(float blend)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicBlend(blend);
+            }
+        }
+
+        internal void ApplyPsychedelicSpeed(float speed)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicSpeed(speed);
+            }
+        }
+
+        internal void ApplyPsychedelicComplexity(float value)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicComplexity(value);
+            }
+        }
+
+        internal void ApplyPsychedelicColorCycle(float value)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicColorCycle(value);
+            }
+        }
+
+        internal void ApplyPsychedelicKaleidoscope(float value)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicKaleidoscope(value);
+            }
+        }
+
+        internal void ApplyPsychedelicFluidFlow(float value)
+        {
+            if (_background is BalatroShaderBackground shader)
+            {
+                shader.SetPsychedelicFluidFlow(value);
             }
         }
 
