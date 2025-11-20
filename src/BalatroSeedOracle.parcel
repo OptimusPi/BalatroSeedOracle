@@ -41,10 +41,17 @@
     "PublishSettings": {
         "PublishSingleFile": "True",
         "PublishReadyToRun": "False",
+        "PublishTrimmed": "True",
         "ExtraBuildProperties": {
             "Configuration": "Release",
             "DebugType": "None",
-            "DebugSymbols": "False"
+            "DebugSymbols": "False",
+            "EnableCompressionInSingleFile": "True",
+            "TrimMode": "partial",
+            "DebuggerSupport": "False",
+            "EventSourceSupport": "False",
+            "HttpActivityPropagationSupport": "False",
+            "MetadataUpdaterSupport": "False"
         }
     }
 }
