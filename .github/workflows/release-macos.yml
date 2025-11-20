@@ -33,7 +33,7 @@ jobs:
       run: dotnet tool install --global AvaloniaUI.Parcel.macOS
 
     - name: Restore dependencies
-      run: dotnet restore src/BalatroSeedOracle.csproj
+      run: dotnet restore src/BalatroSeedOracle.csproj -r ${{ matrix.runtime }}
 
     - name: Build
       run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
