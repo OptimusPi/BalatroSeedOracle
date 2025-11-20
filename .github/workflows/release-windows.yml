@@ -30,6 +30,9 @@ jobs:
     - name: Build
       run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
 
+    - name: Publish
+      run: dotnet publish src/BalatroSeedOracle.csproj --configuration Release --no-restore --self-contained true -r win-x64
+
     - name: Package NSIS Installer
       run: |
         Write-Host "Building Windows NSIS installer..."

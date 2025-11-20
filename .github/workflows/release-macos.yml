@@ -38,6 +38,9 @@ jobs:
     - name: Build
       run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
 
+    - name: Publish
+      run: dotnet publish src/BalatroSeedOracle.csproj --configuration Release --no-restore --self-contained true -r ${{ matrix.runtime }}
+
     - name: Package DMG (${{ matrix.arch }})
       run: |
         echo "Building macOS DMG for ${{ matrix.arch }}..."
