@@ -40,7 +40,11 @@
     },
     "PublishSettings": {
         "PublishSingleFile": "True",
-        "PublishReadyToRun": "True",
-        "ExtraBuildProperties": {}
+        "PublishReadyToRun": "False",
+        "ExtraBuildProperties": {
+            "Configuration": "Release",
+            "DebugType": "None",
+            "DebugSymbols": "False"
+        }
     }
 }

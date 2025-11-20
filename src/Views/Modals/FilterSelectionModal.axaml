@@ -176,44 +176,35 @@
                                             Padding="8"
                                             Height="80"
                                             ClipToBounds="False">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Vertical Label on left edge -->
-                                            <Border Grid.Column="0"
-                                                    Background="{StaticResource ModalGrey}"
-                                                    CornerRadius="4"
-                                                    Padding="6,12"
-                                                    MinWidth="180"
-                                                    Height="80"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0">
+                                        <Border Background="{StaticResource ModalGrey}"
+                                                CornerRadius="4"
+                                                Height="80"
+                                                Padding="80,0,0,0">
+                                            <Grid>
+                                                <!-- Sideways label at left edge -->
                                                 <TextBlock Text="JOKERS"
                                                            FontFamily="{StaticResource BalatroFont}"
                                                            FontSize="12"
                                                            Foreground="{StaticResource Gold}"
                                                            FontWeight="Bold"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center">
+                                                           HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center"
+                                                           Margin="-70,0,0,0">
                                                     <TextBlock.RenderTransform>
                                                         <RotateTransform Angle="-90"/>
                                                     </TextBlock.RenderTransform>
                                                 </TextBlock>
-                                            </Border>
 
-                                            <!-- Sprite content area -->
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding SelectedFilter.Must.Jokers}" ClipToBounds="False">
+                                                <!-- Cards on top of border -->
+                                                <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Jokers}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80" ClipToBounds="False"/>
+                                                        <WrapPanel Orientation="Horizontal" ItemWidth="60" ItemHeight="80"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">
@@ -233,7 +224,8 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                        </Grid>
+                                            </Grid>
+                                        </Border>
                                     </Border>
 
                                     <!-- VOUCHERS Strip (Center) - ALWAYS VISIBLE -->
@@ -243,36 +235,27 @@
                                             Padding="8"
                                             Height="80"
                                             ClipToBounds="False">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Vertical Label on left edge -->
-                                            <Border Grid.Column="0"
-                                                    Background="{StaticResource ModalGrey}"
-                                                    CornerRadius="4"
-                                                    Padding="6,12"
-                                                    MinWidth="180"
-                                                    Height="80"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0">
+                                        <Border Background="{StaticResource ModalGrey}"
+                                                CornerRadius="4"
+                                                Height="80"
+                                                Padding="80,0,0,0">
+                                            <Grid>
+                                                <!-- Sideways label at left edge -->
                                                 <TextBlock Text="VOUCHERS"
                                                            FontFamily="{StaticResource BalatroFont}"
                                                            FontSize="12"
                                                            Foreground="{StaticResource VoucherOrange}"
                                                            FontWeight="Bold"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center">
+                                                           HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center"
+                                                           Margin="-70,0,0,0">
                                                     <TextBlock.RenderTransform>
                                                         <RotateTransform Angle="-90"/>
                                                     </TextBlock.RenderTransform>
                                                 </TextBlock>
-                                            </Border>
 
-                                            <!-- Sprite content area -->
-                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Cards on top of border -->
+                                                <StackPanel Spacing="6">
                                                 <!-- Must Vouchers (normal sprites) -->
                                                 <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Vouchers}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
@@ -335,6 +318,7 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
+                                    </Border>
 
                                     <!-- CONSUMABLES Strip (Right) - ALWAYS VISIBLE -->
                                     <Border Grid.Column="4"
@@ -343,36 +327,27 @@
                                             Padding="8"
                                             Height="80"
                                             ClipToBounds="False">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <!-- Vertical Label on left edge -->
-                                            <Border Grid.Column="0"
-                                                    Background="{StaticResource ModalGrey}"
-                                                    CornerRadius="4"
-                                                    Padding="6,12"
-                                                    MinWidth="180"
-                                                    Height="80"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0">
+                                        <Border Background="{StaticResource ModalGrey}"
+                                                CornerRadius="4"
+                                                Height="80"
+                                                Padding="80,0,0,0">
+                                            <Grid>
+                                                <!-- Sideways label at left edge -->
                                                 <TextBlock Text="CONSUMABLES"
                                                            FontFamily="{StaticResource BalatroFont}"
                                                            FontSize="12"
                                                            Foreground="{StaticResource Purple}"
                                                            FontWeight="Bold"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center">
+                                                           HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center"
+                                                           Margin="-70,0,0,0">
                                                     <TextBlock.RenderTransform>
                                                         <RotateTransform Angle="-90"/>
                                                     </TextBlock.RenderTransform>
                                                 </TextBlock>
-                                            </Border>
 
-                                            <!-- Sprite content area -->
-                                            <StackPanel Grid.Column="1" Spacing="6">
+                                                <!-- Cards on top of border -->
+                                                <StackPanel Spacing="6">
                                                 <!-- Must Consumables (normal sprites) -->
                                                 <ItemsControl ItemsSource="{Binding SelectedFilter.Must.Consumables}" ClipToBounds="False">
                                                 <ItemsControl.ItemsPanel>
@@ -434,6 +409,7 @@
                                             </ItemsControl>
                                             </StackPanel>
                                         </Grid>
+                                    </Border>
                                     </Border>
                                 </Grid>
 
@@ -660,35 +636,27 @@
                                             Padding="8"
                                             Height="80"
                                             ClipToBounds="False">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <Border Grid.Column="0"
-                                                    Background="{StaticResource ModalGrey}"
-                                                    CornerRadius="4"
-                                                    Padding="6,12"
-                                                    MinWidth="180"
-                                                    Height="80"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0">
+                                        <Border Background="{StaticResource ModalGrey}"
+                                                CornerRadius="4"
+                                                Height="80"
+                                                Padding="80,0,0,0">
+                                            <Grid>
+                                                <!-- Sideways label at left edge -->
                                                 <TextBlock Text="CARDS"
                                                            FontFamily="{StaticResource BalatroFont}"
                                                            FontSize="12"
                                                            Foreground="{StaticResource Gold}"
                                                            FontWeight="Bold"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center">
+                                                           HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center"
+                                                           Margin="-70,0,0,0">
                                                     <TextBlock.RenderTransform>
                                                         <RotateTransform Angle="-90"/>
                                                     </TextBlock.RenderTransform>
                                                 </TextBlock>
-                                            </Border>
 
-                                            <!-- Erratic Deck Support Display -->
-                                            <Grid Grid.Column="1">
+                                                <!-- Erratic Deck Support Display -->
+                                                <Grid>
                                                 <!-- Show when NOT Erratic Deck -->
                                                 <Border Background="{StaticResource DarkBackground}"
                                                         CornerRadius="4"
@@ -732,6 +700,7 @@
                                                 </Border>
                                             </Grid>
                                         </Grid>
+                                    </Border>
                                     </Border>
 
                                     <!-- VOUCHERS Strip (Center) - Auto-activated vouchers for deck -->
