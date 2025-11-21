@@ -13,7 +13,7 @@
 
     <UserControl.Resources>
         <!-- CARD SIZE CONTROL: Change this ONE value to resize all cards everywhere -->
-        <x:Double x:Key="CardScaleFactor">0.85</x:Double>
+        <x:Double x:Key="CardScaleFactor">1.0</x:Double>
 
         <!-- BoxShadows for selection/hover effects -->
         <BoxShadows x:Key="WhiteBoxShadowNone">0 0 0 0 #FFFFFF</BoxShadows>
@@ -54,56 +54,15 @@
                 <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
                 <Grid Margin="16,0,16,16" VerticalAlignment="Stretch" ClipToBounds="False">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="115"/>   <!-- Left: Category Buttons -->
+                <ColumnDefinition Width="135"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Right: Drop Zones (balanced spacing) -->
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT COLUMN - Filter Name + Search + Categories (Operator Tray moved to center column) -->
-            <Grid Grid.Column="0" Margin="0,0,8,0" RowDefinitions="Auto,8,Auto,8,*">
-                <!-- Filter Name Display (Editable like author name) -->
-                <Button x:Name="FilterNameButton"
-                        Grid.Row="0"
-                        Background="{StaticResource DarkBackground}"
-                        BorderThickness="0"
-                        CornerRadius="12"
-                        Padding="12,8"
-                        MaxHeight="56"
-                        HorizontalAlignment="Stretch"
-                        Command="{Binding FilterNameClickCommand}">
-                    <Grid>
-                        <!-- Display mode -->
-                        <TextBlock x:Name="FilterNameDisplay"
-                                   Text="{Binding FilterName, FallbackValue='New Filter'}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="14"
-                                   Foreground="{StaticResource Gold}"
-                                   HorizontalAlignment="Center"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   MaxWidth="110"
-                                   IsVisible="{Binding FilterNameDisplayMode}"/>
-
-                        <!-- Edit mode -->
-                        <TextBox x:Name="FilterNameEdit"
-                                 Text="{Binding FilterName, Mode=TwoWay}"
-                                 FontFamily="{StaticResource BalatroFont}"
-                                 FontSize="14"
-                                 BorderThickness="0"
-                                 VerticalAlignment="Center"
-                                 HorizontalAlignment="Stretch"
-                                 TextAlignment="Center"
-                                 MaxWidth="110"
-                                 IsVisible="{Binding FilterNameEditMode}"
-                                 Focusable="True"
-                                 IsHitTestVisible="True"
-                                 KeyDown="OnFilterNameTextBoxKeyDown"
-                                 LostFocus="OnFilterNameTextBoxLostFocus"/>
-                    </Grid>
-                </Button>
-
+            <!-- LEFT COLUMN - Categories only (search bar in center column) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0">
                 <!-- Category buttons with arrow indicator on the left -->
-                <Grid Grid.Row="4">
+                <Grid Grid.Row="0">
                     <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
                         <!-- Favorites -->
                         <Grid ColumnDefinitions="15,*">
@@ -121,6 +80,25 @@
                                     Classes="nav-button special"
                                     Click="OnCategoryClick"
                                     Tag="Favorites"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
+
+                        <!-- Wild Cards -->
+                        <Grid ColumnDefinitions="15,*">
+                            <Polygon Grid.Column="0"
+                                     Points="0,0 10,7 0,14"
+                                     Classes="balatro-triangle balatro-bounce-horizontal"
+                                     VerticalAlignment="Center"
+                                     Margin="-5,0,0,0">
+                                <Polygon.IsVisible>
+                                    <Binding Path="SelectedMainCategory" Converter="{StaticResource EqualityConverter}" ConverterParameter="Wildcard"/>
+                                </Polygon.IsVisible>
+                            </Polygon>
+                            <Button Grid.Column="1"
+                                    Content="Wild Cards"
+                                    Classes="nav-button special-purple"
+                                    Click="OnCategoryClick"
+                                    Tag="Wildcard"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -241,7 +219,7 @@
                 </Grid>
 
                 <!-- Favorites drop overlay - covers category nav area only -->
-                <Border Grid.Row="4"
+                <Border Grid.Row="0"
                         Name="FavoritesDropOverlay"
                         Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
@@ -304,12 +282,20 @@
                         BorderThickness="0"
                         CornerRadius="12"
                         Padding="12"
+                        ClipToBounds="False"
                         DragDrop.AllowDrop="True">
                     <DockPanel>
                         <!-- Edition/Sticker/Seal Toolbar - Sticky at top of items shelf -->
                         <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0">
                     <!-- Edition Buttons (Jokers and Standard Cards only) -->
-                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowEditionButtons}">
+                    <StackPanel IsVisible="{Binding ShowEditionButtons}" Margin="0,0,0,0">
+                        <TextBlock Text="EDITION"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,2"/>
+                        <StackPanel Orientation="Horizontal">
                         <Button Command="{Binding SetEditionCommand}"
                                 CommandParameter="None"
                                 Classes="icon-button"
@@ -382,10 +368,18 @@
                                        Stretch="Uniform"/>
                             </Grid>
                         </Button>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Sticker Buttons (Jokers only) -->
-                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowStickerButtons}">
+                    <StackPanel IsVisible="{Binding ShowStickerButtons}" Margin="4,0,0,0">
+                        <TextBlock Text="STICKERS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,2"/>
+                        <StackPanel Orientation="Horizontal">
                         <Button Command="{Binding ToggleStickerPerishableCommand}"
                                 Classes="icon-button"
                                 Classes.active="{Binding StickerPerishable}"
@@ -418,10 +412,18 @@
                             <Image Source="{Binding Converter={x:Static converters:StickerSpriteConverter.Instance}, ConverterParameter=rental}"
                                    Stretch="Uniform"/>
                         </Button>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Seal Buttons (StandardCard only) - Show 10 of Spades with seal on top -->
-                    <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowSealButtons}">
+                    <StackPanel IsVisible="{Binding ShowSealButtons}" Margin="4,0,0,0">
+                        <TextBlock Text="SEALS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,2"/>
+                        <StackPanel Orientation="Horizontal">
                         <Button Command="{Binding SetSealCommand}"
                                 CommandParameter="Purple"
                                 Classes="icon-button"
@@ -481,6 +483,7 @@
                                        Stretch="Uniform"/>
                             </Grid>
                         </Button>
+                        </StackPanel>
                     </StackPanel>
                         </WrapPanel>
 
@@ -510,8 +513,8 @@
                                         <ItemsControl ItemsSource="{Binding Items}" ClipToBounds="False">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="models:FilterItem" x:DataType="models:FilterItem">
-                                                    <Grid Margin="1,2,1,8" Height="105" ClipToBounds="False">
-                                                        <!-- Scale down cards in item shelf for breathing room (hover brings to ~0.95x) -->
+                                                    <Grid Margin="1,2,1,8" Height="145" ClipToBounds="False">
+                                                        <!-- Cards at original size with room for 2-line labels -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
                                                         </Grid.RenderTransform>
@@ -537,7 +540,7 @@
                                             </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <UniformGrid Columns="6" ClipToBounds="False"/>
+                                            <UniformGrid Columns="5" ClipToBounds="False"/>
                                         </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
@@ -891,8 +894,8 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
-                                                        <!-- Scale down drop zone cards to match item shelf -->
+                                                    <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
+                                                        <!-- Cards at original size with room for 2-line labels -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
                                                         </Grid.RenderTransform>
@@ -1007,8 +1010,8 @@
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->
-                                                    <Grid Height="105" ClipToBounds="False" IsHitTestVisible="False">
-                                                        <!-- Scale down drop zone cards to match item shelf -->
+                                                    <Grid Height="145" ClipToBounds="False" IsHitTestVisible="False">
+                                                        <!-- Cards at original size with room for 2-line labels -->
                                                         <Grid.RenderTransform>
                                                             <ScaleTransform ScaleX="{StaticResource CardScaleFactor}" ScaleY="{StaticResource CardScaleFactor}"/>
                                                         </Grid.RenderTransform>

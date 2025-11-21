@@ -65,15 +65,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var filtersDir = System.IO.Path.Combine(
-                    AppContext.BaseDirectory,
-                    "JsonItemFilters"
-                );
-
-                if (!System.IO.Directory.Exists(filtersDir))
-                {
-                    System.IO.Directory.CreateDirectory(filtersDir);
-                }
+                // Use AppPaths for proper cross-platform user data directory
+                var filtersDir = Helpers.AppPaths.FiltersDir;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())

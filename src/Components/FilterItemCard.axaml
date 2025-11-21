@@ -11,13 +11,13 @@
              x:DataType="models:FilterItem">
 
     <!-- SELF-CONTAINED Balatro card component -->
-    <StackPanel Spacing="6" Width="72" IsHitTestVisible="False">
+    <StackPanel Spacing="6" Width="71" IsHitTestVisible="False"
+                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}">
         <!-- Card image with all overlays and behaviors (adaptive size for different item types) -->
         <Border Background="Transparent"
                 Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
                 Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"
                 IsHitTestVisible="True"
-                Opacity="{Binding IsBeingDragged, Converter={x:Static converters:BoolToOpacityConverter.Dragging}}"
                 RenderTransformOrigin="0.5,0.5">
 
 
@@ -103,7 +103,7 @@
                    Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"
-                   MaxWidth="72"
+                   MaxWidth="71"
                    MinHeight="40"
                    MaxLines="2"
                    Margin="0,2,0,6"/>

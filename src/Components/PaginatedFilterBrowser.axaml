@@ -71,18 +71,18 @@
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"/>
 
-                    <!-- Page indicator with Balatro badge edge -->
-                    <Grid MinWidth="100" VerticalAlignment="Center">
-                        <!-- Shadow/Edge (darker red, offset down) -->
+                    <!-- Page indicator with Balatro badge edge (same technique as PanelSpinner) -->
+                    <Grid MinWidth="100" VerticalAlignment="Center" ClipToBounds="False">
+                        <!-- Shadow/Edge (darker red, offset down) - rendered first -->
                         <Border Background="{StaticResource RedBadgeEdge}"
                                 CornerRadius="8"
-                                Margin="0,4,0,0"/>
+                                Margin="0,3,0,0"/>
 
-                        <!-- Face (bright red, offset up) -->
+                        <!-- Face (bright red, offset up) - rendered second (on top) -->
                         <Border Background="{StaticResource RedBadgeFace}"
                                 CornerRadius="8"
                                 Padding="16,8"
-                                Margin="0,0,0,4">
+                                Margin="0,0,0,3">
                             <TextBlock Text="{Binding PageIndicatorText}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"

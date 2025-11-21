@@ -236,7 +236,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEditionImage("debuffed");
 
         // Base image for edition buttons - 10 of Spades for Standard Cards, joker for Jokers
-        public IImage? EditionBaseImage => SelectedCategory == "StandardCard"
+        public IImage? EditionBaseImage => SelectedMainCategory == "StandardCard"
             ? TenOfSpadesImage
             : Services.SpriteService.Instance.GetJokerImage("Joker");
 
@@ -286,6 +286,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(ShowSealButtons));
             OnPropertyChanged(nameof(ShowEnhancementButtons));
             OnPropertyChanged(nameof(AllowNegativeEdition));
+            OnPropertyChanged(nameof(EditionBaseImage));
 
             // Reset edition/sticker/seal state when switching categories
             // Cards should start fresh with no enhancements
@@ -558,12 +559,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             switch (SelectedMainCategory)
             {
                 case "Favorites":
-                    // Section 1: Favorite Items (user's frequently used items)
+                    // Favorite Items (user's frequently used items)
                     var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
                     AddGroup("Favorite Items", favoriteItems);
+                    break;
 
-                    // Section 2: Wildcards (ALL wildcards in one place)
-                    AddGroup("Wildcards", FilteredWildcards);
+                case "Wildcard":
+                    // Wildcards - "Any" type items for flexible filtering
+                    AddGroup("Joker Wildcards", FilteredWildcards.Where(w => w.Type == "Joker" || w.Type == "SoulJoker"));
+                    AddGroup("Consumable Wildcards", FilteredWildcards.Where(w => w.Type == "Tarot" || w.Type == "Planet" || w.Type == "Spectral"));
                     break;
 
                 case "Joker":
@@ -2375,8 +2379,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for currently visible items in the shelf AND future drops
-        /// Does NOT modify items already in drop zones
+        /// Sets edition for currently visible shelf items (NOT favorites) AND future drops
+        /// Visual feedback so user knows what edition they're selecting
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
@@ -2384,16 +2388,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Set the selection for future drops
             SelectedEdition = edition;
 
-            // Apply to currently visible items only (GroupedItems)
+            // Apply to currently visible shelf items (for visual feedback)
+            // BUT skip the Favorites group to avoid modifying favorited items
             foreach (var group in GroupedItems)
             {
+                // Skip Favorites group - don't modify user's saved favorites!
+                if (group.GroupName == "Favorites")
+                    continue;
+
                 foreach (var item in group.Items)
                 {
                     item.Edition = edition == "None" ? null : edition;
                 }
             }
 
-            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to visible shelf items");
+            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to visible shelf items (excluding Favorites)");
         }
 
         /// <summary>

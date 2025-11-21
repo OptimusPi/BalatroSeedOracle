@@ -5,8 +5,7 @@ using Avalonia.Data.Converters;
 namespace BalatroSeedOracle.Converters
 {
     /// <summary>
-    /// Converter that returns appropriate width based on item category
-    /// Tags and Bosses get wider but shorter dimensions (more horizontal)
+    /// Returns standard card width (71px - original sprite size)
     /// </summary>
     public class CategoryToWidthConverter : IValueConverter
     {
@@ -14,19 +13,7 @@ namespace BalatroSeedOracle.Converters
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is string category)
-            {
-                var lowerCategory = category.ToLower();
-
-                // Tags and Bosses get wider horizontal layout (80% width)
-                if (lowerCategory == "tags" || lowerCategory == "bosses")
-                {
-                    return 72.0; // Wider for better horizontal display
-                }
-            }
-
-            // Default size for cards, jokers, etc.
-            return 64.0;
+            return 71.0; // Standard card width
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -36,8 +23,7 @@ namespace BalatroSeedOracle.Converters
     }
 
     /// <summary>
-    /// Converter that returns appropriate height based on item category
-    /// Tags and Bosses are 50% the height of regular items
+    /// Returns standard card height (95px - proportional to 71px width)
     /// </summary>
     public class CategoryToHeightConverter : IValueConverter
     {
@@ -45,19 +31,7 @@ namespace BalatroSeedOracle.Converters
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is string category)
-            {
-                var lowerCategory = category.ToLower();
-
-                // Tags and Bosses are 50% height (43 instead of 86)
-                if (lowerCategory == "tags" || lowerCategory == "bosses")
-                {
-                    return 43.0; // 50% of normal height
-                }
-            }
-
-            // Default size for cards, jokers, etc.
-            return 86.0;
+            return 95.0; // Standard card height
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

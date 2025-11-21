@@ -1,0 +1,236 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+             x:Class="BalatroSeedOracle.Components.FilterItemConfigRow"
+             x:DataType="vm:FilterItemConfigRowViewModel">
+
+    <Border Background="{StaticResource DarkBackground}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Margin="2,1"
+            MinHeight="32">
+        <Grid RowDefinitions="Auto,Auto">
+
+            <!-- Row 0: Collapsed View (Always Visible) - COMPACT HORIZONTAL ROW -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" Margin="4,2">
+
+                <!-- Small Icon (30x40 instead of 60x80) -->
+                <Border Grid.Column="0"
+                        Width="30"
+                        Height="40"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Margin="0,0,6,0">
+                    <Grid>
+                        <Image Source="{Binding Item.ItemImage}"
+                               Width="30" Height="40"
+                               Stretch="Uniform"/>
+                        <Image Source="{Binding Item.EditionImage}"
+                               Width="30" Height="40"
+                               Stretch="Uniform"
+                               IsVisible="{Binding Item.EditionImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                        <Image Source="{Binding Item.SoulFaceImage}"
+                               Width="30" Height="40"
+                               Stretch="Uniform"
+                               IsVisible="{Binding Item.SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    </Grid>
+                </Border>
+
+                <!-- SINGLE LINE: Name + Config Summary -->
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           Margin="4,0"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           Foreground="{StaticResource LightGrey}">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} • {1}">
+                            <Binding Path="Item.DisplayName"/>
+                            <Binding Path="ConfigSummary"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+
+                <!-- Expand/Collapse Button (smaller) -->
+                <Button Grid.Column="2"
+                        Command="{Binding ToggleExpandCommand}"
+                        Width="24"
+                        Height="24"
+                        Margin="2,0"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        CornerRadius="3"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="Configure">
+                    <TextBlock Text="{Binding IsExpanded, Converter={x:Static converters:BoolToExpandIconConverter.Instance}}"
+                               FontSize="12"
+                               Foreground="{StaticResource LightGrey}"/>
+                </Button>
+
+                <!-- Remove Button (smaller) -->
+                <Button Grid.Column="3"
+                        Command="{Binding RemoveCommand}"
+                        Width="24"
+                        Height="24"
+                        Margin="2,0"
+                        Background="{StaticResource Red}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="Remove">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                        </Style>
+                    </Button.Styles>
+                    <TextBlock Text="×"
+                               FontSize="16"
+                               Foreground="{StaticResource White}"/>
+                </Button>
+            </Grid>
+
+            <!-- Row 1: Expanded Config Panel - COMPACT HORIZONTAL LAYOUT -->
+            <Border Grid.Row="1"
+                    IsVisible="{Binding IsExpanded}"
+                    Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="1,0,1,1"
+                    CornerRadius="0,0,4,4"
+                    Padding="6,4"
+                    Margin="0,0,0,2">
+                <StackPanel Spacing="3">
+
+                    <!-- Line 1: Antes (compact horizontal) -->
+                    <WrapPanel Orientation="Horizontal">
+                        <TextBlock Text="Antes:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0"/>
+                        <CheckBox Content="1" IsChecked="{Binding Ante1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="2" IsChecked="{Binding Ante2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="3" IsChecked="{Binding Ante3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="4" IsChecked="{Binding Ante4}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="5" IsChecked="{Binding Ante5}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="6" IsChecked="{Binding Ante6}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="7" IsChecked="{Binding Ante7}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="8" IsChecked="{Binding Ante8}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+                        <!-- Inline quick buttons -->
+                        <Button Content="1-3" Command="{Binding QuickAntes1to3Command}" Classes="mini-button" ToolTip.Tip="Quick set 1-3"/>
+                        <Button Content="All" Command="{Binding QuickAntesAllCommand}" Classes="mini-button" ToolTip.Tip="All Antes"/>
+                        <Button Content="×" Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear"/>
+                    </WrapPanel>
+
+                    <!-- Line 2: Shop Slots + Pack Positions (compact horizontal) -->
+                    <WrapPanel Orientation="Horizontal">
+                        <TextBlock Text="Slots:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0"/>
+                        <CheckBox Content="1" IsChecked="{Binding Slot1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="2" IsChecked="{Binding Slot2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="3" IsChecked="{Binding Slot3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="4" IsChecked="{Binding Slot4}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+
+                        <TextBlock Text="Packs:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,6,0"/>
+                        <CheckBox Content="1" IsChecked="{Binding Pack1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="2" IsChecked="{Binding Pack2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="3" IsChecked="{Binding Pack3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="4" IsChecked="{Binding Pack4}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="5" IsChecked="{Binding Pack5}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+                    </WrapPanel>
+
+                    <!-- Line 3: Score + Label (compact horizontal) -->
+                    <WrapPanel Orientation="Horizontal">
+                        <!-- Score (SHOULD items only) -->
+                        <StackPanel Orientation="Horizontal" IsVisible="{Binding IsShouldItem}" Margin="0,0,12,0">
+                            <TextBlock Text="Score:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource Gold}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,6,0"/>
+                            <NumericUpDown Value="{Binding Score, Mode=TwoWay}"
+                                           Minimum="0"
+                                           Maximum="999"
+                                           Increment="1"
+                                           Width="60"
+                                           Height="22"
+                                           FontSize="10"
+                                           Watermark="0"/>
+                        </StackPanel>
+
+                        <!-- Label (Optional) -->
+                        <TextBlock Text="Label:"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource Gold}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0"/>
+                        <TextBox Text="{Binding Label, Mode=TwoWay}"
+                                 Watermark="Optional label..."
+                                 FontSize="10"
+                                 Height="22"
+                                 MinWidth="150"
+                                 MaxLength="100"/>
+                    </WrapPanel>
+
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Border>
+
+    <!-- Styles for mini-buttons (compact helper buttons) -->
+    <UserControl.Styles>
+        <Style Selector="Button.mini-button">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.mini-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+
+        <Style Selector="Button.mini-button-red">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.mini-button-red:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+        </Style>
+    </UserControl.Styles>
+
+</UserControl>

@@ -713,11 +713,11 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private void SaveMixAs()
+        private async System.Threading.Tasks.Task SaveMixAs()
         {
             try
             {
-                var name = ShowNameDialog("Save Mix", "Enter a name for this mix:", "MyMix");
+                var name = await ShowNameDialog("Save Mix", "Enter a name for this mix:", "MyMix");
                 if (string.IsNullOrWhiteSpace(name))
                     return;
 
@@ -734,7 +734,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private void LoadMixFrom()
+        private async System.Threading.Tasks.Task LoadMixFrom()
         {
             try
             {
@@ -745,7 +745,7 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var selected = ShowSelectionDialog("Load Mix", "Choose a saved mix:", names);
+                var selected = await ShowSelectionDialog("Load Mix", "Choose a saved mix:", names);
                 if (string.IsNullOrWhiteSpace(selected))
                     return;
 
@@ -763,13 +763,13 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
-        private void AnimateToMix()
+        private async System.Threading.Tasks.Task AnimateToMix()
         {
             try
             {
                 var names = MixerHelper.LoadAllMixerNames();
                 if (names.Count == 0) return;
-                var selected = ShowSelectionDialog("Animate To Mix", "Choose a saved mix:", names);
+                var selected = await ShowSelectionDialog("Animate To Mix", "Choose a saved mix:", names);
                 if (string.IsNullOrWhiteSpace(selected)) return;
                 var target = MixerHelper.LoadMixer(selected);
                 if (target == null) return;
@@ -879,7 +879,7 @@ namespace BalatroSeedOracle.ViewModels
             Melody2Solo = settings.Melody2.Solo;
         }
 
-        private string? ShowNameDialog(string title, string labelText, string watermark)
+        private async System.Threading.Tasks.Task<string?> ShowNameDialog(string title, string labelText, string watermark)
         {
             try
             {
@@ -935,13 +935,13 @@ namespace BalatroSeedOracle.ViewModels
                 dialog.Content = panel;
 
                 var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop ? desktop.MainWindow : null;
-                if (owner != null) { dialog.ShowDialog(owner).GetAwaiter().GetResult(); }
+                if (owner != null) { await dialog.ShowDialog(owner); }
                 return result;
             }
             catch { return null; }
         }
 
-        private string? ShowSelectionDialog(string title, string labelText, System.Collections.Generic.List<string> options)
+        private async System.Threading.Tasks.Task<string?> ShowSelectionDialog(string title, string labelText, System.Collections.Generic.List<string> options)
         {
             try
             {
@@ -971,7 +971,7 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
                 var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop ? desktop.MainWindow : null;
-                if (owner != null) { dialog.ShowDialog(owner).GetAwaiter().GetResult(); }
+                if (owner != null) { await dialog.ShowDialog(owner); }
                 return result;
             }
             catch { return null; }

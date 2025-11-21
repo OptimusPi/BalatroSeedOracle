@@ -336,6 +336,22 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
 
+        <Style Selector="Button.btn-purple">
+            <Setter Property="Background" Value="{StaticResource Purple}" />
+        </Style>
+        <Style Selector="Button.btn-purple:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+        </Style>
+        <Style Selector="Button.btn-purple:pressed">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-purple:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
         <Style Selector="Button.btn-gold">
             <Setter Property="Background" Value="{StaticResource Gold}" />
         </Style>
@@ -350,6 +366,24 @@
         </Style>
         <Style Selector="Button.btn-gold:pressed /template/ Border#DropShadow">
             <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- Author button (grey - 1 shade lighter) -->
+        <Style Selector="Button.author-button">
+            <Setter Property="Background" Value="{StaticResource LightGrey}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="12,8" />
+        </Style>
+        <Style Selector="Button.author-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}" />
+        </Style>
+        <Style Selector="Button.author-button:pressed">
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}" />
         </Style>
 
         <!-- Button disabled state -->
@@ -882,7 +916,7 @@
         <Style Selector="Button.back-button">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="FontSize" Value="28"/>
-            <Setter Property="Foreground" Value="{StaticResource PureBlack}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Background" Value="{StaticResource Orange}"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Height" Value="42"/>
@@ -911,14 +945,13 @@
 
         <Style Selector="Button.nav-button">
             <Setter Property="Background" Value="{StaticResource Red}" />
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,1" />
             <Setter Property="MinHeight" Value="44" />
-            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Padding" Value="8,4" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="MaxWidth" Value="160" />
             <Setter Property="Focusable" Value="False" />
         </Style>
         <Style Selector="Button.nav-button.active">
@@ -932,6 +965,16 @@
             <Setter Property="Background" Value="{StaticResource GoldHover}" />
         </Style>
         <Style Selector="Button.nav-button.special.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="Button.nav-button.special-purple">
+            <Setter Property="Background" Value="{StaticResource Purple}" />
+        </Style>
+        <Style Selector="Button.nav-button.special-purple:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+        </Style>
+        <Style Selector="Button.nav-button.special-purple.active">
             <Setter Property="Background" Value="{StaticResource Blue}" />
         </Style>
 
