@@ -2089,7 +2089,7 @@ namespace BalatroSeedOracle.ViewModels
                     // Get appropriate sprite image based on type
                     ItemImage = effectiveType switch
                     {
-                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName),
+                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName, itemConfig.Edition),
                         "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
                             itemConfig.ItemName
                         ),
