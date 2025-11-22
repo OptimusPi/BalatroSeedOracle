@@ -537,7 +537,8 @@
                                                                 IsHitTestVisible="True"
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
-                                                                Height="105"/>
+                                                                VerticalAlignment="Top"
+                                                                Height="95"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
