@@ -606,8 +606,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 case "Boss":
-                    // For now, show all bosses (regular/finisher split can be added later)
-                    AddGroup("Boss Blinds", FilteredBosses);
+                    // Boss Blinds split into Regular and Finishers
+                    var finisherNames = new[] { "amber_acorn", "cerulean_bell", "crimson_heart", "verdant_leaf", "violet_vessel" };
+                    AddGroup("Regular Boss Blinds", FilteredBosses.Where(b => !finisherNames.Contains(b.Name.ToLowerInvariant())));
+                    AddGroup("Finisher Boss Blinds", FilteredBosses.Where(b => finisherNames.Contains(b.Name.ToLowerInvariant())));
                     break;
 
                 case "Voucher":
@@ -620,25 +622,35 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // Standard playing cards organized by suit and enhancement
                     AddGroup("Hearts", FilteredStandardCards.Where(c => c.Category == "Hearts"));
                     AddGroup("Spades", FilteredStandardCards.Where(c => c.Category == "Spades"));
-                    AddGroup(
-                        "Diamonds",
-                        FilteredStandardCards.Where(c => c.Category == "Diamonds")
-                    );
+                    AddGroup("Diamonds", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
                     AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
-                    AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
-                    AddGroup(
-                        "Bonus Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Bonus")
-                    );
-                    AddGroup(
-                        "Glass Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Glass")
-                    );
-                    AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
-                    AddGroup(
-                        "Steel Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Steel")
-                    );
+
+                    // Enhancement cards split by suit
+                    AddGroup("Mult Cards - Hearts", FilteredStandardCards.Where(c => c.Category == "Mult_Hearts"));
+                    AddGroup("Mult Cards - Spades", FilteredStandardCards.Where(c => c.Category == "Mult_Spades"));
+                    AddGroup("Mult Cards - Diamonds", FilteredStandardCards.Where(c => c.Category == "Mult_Diamonds"));
+                    AddGroup("Mult Cards - Clubs", FilteredStandardCards.Where(c => c.Category == "Mult_Clubs"));
+
+                    AddGroup("Bonus Cards - Hearts", FilteredStandardCards.Where(c => c.Category == "Bonus_Hearts"));
+                    AddGroup("Bonus Cards - Spades", FilteredStandardCards.Where(c => c.Category == "Bonus_Spades"));
+                    AddGroup("Bonus Cards - Diamonds", FilteredStandardCards.Where(c => c.Category == "Bonus_Diamonds"));
+                    AddGroup("Bonus Cards - Clubs", FilteredStandardCards.Where(c => c.Category == "Bonus_Clubs"));
+
+                    AddGroup("Glass Cards - Hearts", FilteredStandardCards.Where(c => c.Category == "Glass_Hearts"));
+                    AddGroup("Glass Cards - Spades", FilteredStandardCards.Where(c => c.Category == "Glass_Spades"));
+                    AddGroup("Glass Cards - Diamonds", FilteredStandardCards.Where(c => c.Category == "Glass_Diamonds"));
+                    AddGroup("Glass Cards - Clubs", FilteredStandardCards.Where(c => c.Category == "Glass_Clubs"));
+
+                    AddGroup("Gold Cards - Hearts", FilteredStandardCards.Where(c => c.Category == "Gold_Hearts"));
+                    AddGroup("Gold Cards - Spades", FilteredStandardCards.Where(c => c.Category == "Gold_Spades"));
+                    AddGroup("Gold Cards - Diamonds", FilteredStandardCards.Where(c => c.Category == "Gold_Diamonds"));
+                    AddGroup("Gold Cards - Clubs", FilteredStandardCards.Where(c => c.Category == "Gold_Clubs"));
+
+                    AddGroup("Steel Cards - Hearts", FilteredStandardCards.Where(c => c.Category == "Steel_Hearts"));
+                    AddGroup("Steel Cards - Spades", FilteredStandardCards.Where(c => c.Category == "Steel_Spades"));
+                    AddGroup("Steel Cards - Diamonds", FilteredStandardCards.Where(c => c.Category == "Steel_Diamonds"));
+                    AddGroup("Steel Cards - Clubs", FilteredStandardCards.Where(c => c.Category == "Steel_Clubs"));
+
                     AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
@@ -1740,33 +1752,35 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         }
                     }
 
-                    // Generate enhanced variants (Type B1 and B2)
+                    // Generate enhanced variants (Type B1 and B2) - ALL suits for each enhancement
                     var enhancements = new[] { "Mult", "Bonus", "Glass", "Gold", "Steel" };
                     foreach (var enhancement in enhancements)
                     {
-                        foreach (var rank in ranks)
+                        foreach (var suit in suits)
                         {
-                            var suit = "Hearts"; // Use Hearts as default suit for enhanced cards
-                            var displayName = $"{enhancement} {rank}";
-                            if (rank == "Ace")
-                                displayName = $"{enhancement} Ace";
-
-                            var item = new FilterItem
+                            foreach (var rank in ranks)
                             {
-                                Name = $"{enhancement}_{rank}_{suit}",
-                                Type = "StandardCard",
-                                Category = enhancement,
-                                DisplayName = displayName,
-                                Rank = rank,
-                                Suit = suit,
-                                Enhancement = enhancement,
-                                ItemImage = spriteService.GetPlayingCardImage(
-                                    suit,
-                                    rank,
-                                    enhancement
-                                ),
-                            };
-                            AllStandardCards.Add(item);
+                                var displayName = $"{enhancement} {rank}";
+                                if (rank == "Ace")
+                                    displayName = $"{enhancement} Ace";
+
+                                var item = new FilterItem
+                                {
+                                    Name = $"{enhancement}_{rank}_{suit}",
+                                    Type = "StandardCard",
+                                    Category = $"{enhancement}_{suit}", // Category includes both enhancement AND suit
+                                    DisplayName = displayName,
+                                    Rank = rank,
+                                    Suit = suit,
+                                    Enhancement = enhancement,
+                                    ItemImage = spriteService.GetPlayingCardImage(
+                                        suit,
+                                        rank,
+                                        enhancement
+                                    ),
+                                };
+                                AllStandardCards.Add(item);
+                            }
                         }
                     }
 
@@ -2513,8 +2527,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedSeal = seal;
 
             // Apply to currently visible items only (GroupedItems)
+            // BUT skip Favorites group - don't modify user's saved favorites!
             foreach (var group in GroupedItems)
             {
+                if (group.GroupName == "Favorites")
+                    continue;
+
                 foreach (var item in group.Items)
                 {
                     // Only apply seal to StandardCards
@@ -2525,7 +2543,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to visible StandardCard shelf items");
+            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to visible StandardCard shelf items (excluding Favorites)");
         }
 
         /// <summary>

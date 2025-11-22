@@ -885,13 +885,18 @@ namespace BalatroSeedOracle.ViewModels
 
         private SearchCriteria BuildSearchCriteria()
         {
+            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'");
+            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}");
+
             if (string.IsNullOrEmpty(CurrentFilterPath))
             {
+                DebugLogger.LogError("SearchModalViewModel", "❌ CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!");
                 throw new InvalidOperationException(
                     "No filter path available - filter must be loaded first!"
                 );
             }
 
+            DebugLogger.Log("SearchModalViewModel", $"✅ Using CurrentFilterPath: {CurrentFilterPath}");
             var criteria = new SearchCriteria
             {
                 ConfigPath = CurrentFilterPath,
@@ -1330,13 +1335,22 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.Log("SearchModalViewModel", $"Loading config from: {configPath}");
+                DebugLogger.LogImportant("SearchModalViewModel", $"🔍 LoadConfigFromPath called with: {configPath}");
+                DebugLogger.Log("SearchModalViewModel", $"🔍 File.Exists check: {System.IO.File.Exists(configPath)}");
 
                 if (!System.IO.File.Exists(configPath))
                 {
                     DebugLogger.LogError(
                         "SearchModalViewModel",
-                        $"Filter file not found: {configPath}"
+                        $"❌ Filter file not found: {configPath}"
+                    );
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        $"❌ Current directory: {System.IO.Directory.GetCurrentDirectory()}"
+                    );
+                    DebugLogger.LogError(
+                        "SearchModalViewModel",
+                        $"❌ Path.IsPathRooted: {System.IO.Path.IsPathRooted(configPath)}"
                     );
                     return;
                 }
@@ -1352,6 +1366,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
+                    DebugLogger.LogImportant("SearchModalViewModel", $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}");
 
                     // Update deck and stake from the loaded config
                     if (!string.IsNullOrEmpty(config.Deck))

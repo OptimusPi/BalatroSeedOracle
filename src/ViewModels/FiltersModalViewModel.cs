@@ -87,6 +87,9 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isVisualTabVisible = false;
 
         [ObservableProperty]
+        private bool _isDeckStakeTabVisible = false;
+
+        [ObservableProperty]
         private bool _isJsonTabVisible = false;
 
         [ObservableProperty]
@@ -255,19 +258,31 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedDeckChanged(string value)
         {
+            DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 OnSelectedDeckChanged called! New deck: {value}");
             // Regenerate JSON when deck changes
             if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
             {
+                DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 Regenerating JSON because deck changed to: {value}");
                 RegenerateJsonFromState(jsonVm);
+            }
+            else
+            {
+                DebugLogger.LogError("FiltersModalViewModel", "❌ JsonEditorTab is NULL! Cannot regenerate JSON");
             }
         }
 
         partial void OnSelectedStakeChanged(int value)
         {
+            DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 OnSelectedStakeChanged called! New stake index: {value}");
             // Regenerate JSON when stake changes
             if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
             {
+                DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 Regenerating JSON because stake changed to index: {value}");
                 RegenerateJsonFromState(jsonVm);
+            }
+            else
+            {
+                DebugLogger.LogError("FiltersModalViewModel", "❌ JsonEditorTab is NULL! Cannot regenerate JSON");
             }
         }
 
@@ -757,7 +772,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=Build Filter, 1=JSON Editor, 2=Save</param>
+        /// <param name="tabIndex">0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=Validate Filter</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log(
@@ -768,6 +783,7 @@ namespace BalatroSeedOracle.ViewModels
             // Hide all tabs first
             IsLoadSaveTabVisible = false;
             IsVisualTabVisible = false;
+            IsDeckStakeTabVisible = false;
             IsJsonTabVisible = false;
             IsTestTabVisible = false;
             IsSaveTabVisible = false;
@@ -777,23 +793,20 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case 0:
                     IsVisualTabVisible = true;
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "Build Filter tab visible, all others hidden"
-                    );
+                    DebugLogger.Log("FiltersModalViewModel", "Build Filter tab visible");
                     break;
                 case 1:
-                    IsJsonTabVisible = true;
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "JSON Editor tab visible, all others hidden"
-                    );
+                    IsDeckStakeTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Deck/Stake tab visible");
                     break;
                 case 2:
+                    IsJsonTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible");
+                    break;
+                case 3:
                     IsSaveTabVisible = true;
-                    // Refresh Save tab data when it becomes visible
                     RefreshSaveTabData();
-                    DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
+                    DebugLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
                     break;
             }
 
@@ -860,57 +873,16 @@ namespace BalatroSeedOracle.ViewModels
         // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"🔄 Tab switching: FROM tab {_previousTabIndex} TO tab {value}");
-
-            // CRITICAL: Save current tab's data to the shared filter state BEFORE switching
-            SaveCurrentTabData(_previousTabIndex);
+            DebugLogger.LogImportant("FiltersModalViewModel", $"🔄 Tab switch: Deck={SelectedDeck} Stake={SelectedStake}");
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
 
-            // CRITICAL: Load fresh data into the new tab AFTER switching
-            LoadTabData(value);
-        }
-
-        /// <summary>
-        /// Save the current tab's data to the parent ViewModel's shared state.
-        /// Called BEFORE switching tabs to ensure changes aren't lost.
-        /// </summary>
-        private void SaveCurrentTabData(int tabIndex)
-        {
-            try
+            // Regenerate JSON when IsJsonTabVisible becomes true (switching TO JSON Editor)
+            if (IsJsonTabVisible && JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
             {
-                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {tabIndex} TO DISK");
-
-                // SIMPLE SOLUTION: ALWAYS SAVE TO DISK WHEN LEAVING ANY TAB
-                _ = SaveCurrentFilterCommand.ExecuteAsync(null);
-
-                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data saved to disk");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error saving current tab data: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Load fresh data into the newly selected tab from the parent ViewModel's shared state.
-        /// Called AFTER switching tabs to ensure the tab shows current data.
-        /// </summary>
-        private void LoadTabData(int tabIndex)
-        {
-            try
-            {
-                DebugLogger.Log("FiltersModalViewModel", $"📂 Loading data into tab index {tabIndex} FROM DISK");
-
-                // SIMPLE SOLUTION: ALWAYS RELOAD FROM DISK WHEN ENTERING ANY TAB
-                _ = ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
-
-                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data loaded from disk");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error loading tab data: {ex.Message}");
+                DebugLogger.LogImportant("FiltersModalViewModel", $"🔄 JSON tab visible - regenerating with Deck={SelectedDeck}, Stake={SelectedStake}");
+                RegenerateJsonFromState(jsonVm);
             }
         }
 

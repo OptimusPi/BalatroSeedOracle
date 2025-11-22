@@ -301,6 +301,22 @@ namespace BalatroSeedOracle.Views
                                 result.FilterId + ".json"
                             );
 
+                            // Load filter config to get the display name
+                            try
+                            {
+                                var json = System.IO.File.ReadAllText(configPath);
+                                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json);
+                                if (config != null && !string.IsNullOrEmpty(config.Name))
+                                {
+                                    // Update modal title to show selected filter name
+                                    SetTitle($"🔍 {config.Name}");
+                                }
+                            }
+                            catch
+                            {
+                                // If loading fails, keep default title
+                            }
+
                             DebugLogger.Log(
                                 "BalatroMainMenu",
                                 $"🗂️ Loading filter from: {configPath}"

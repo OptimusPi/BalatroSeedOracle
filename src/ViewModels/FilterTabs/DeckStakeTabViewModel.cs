@@ -24,7 +24,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (_parentViewModel.SelectedDeckIndex != value)
                 {
+                    Helpers.DebugLogger.LogImportant("DeckStakeTab", $"🎯🎯🎯 DECK CHANGED: index {_parentViewModel.SelectedDeckIndex} → {value}");
                     _parentViewModel.SelectedDeckIndex = value;
+                    Helpers.DebugLogger.LogImportant("DeckStakeTab", $"🎯🎯🎯 Parent SelectedDeck is now: {_parentViewModel.SelectedDeck}");
                     OnPropertyChanged(nameof(SelectedDeckIndex));
                 }
             }
@@ -38,7 +40,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (_parentViewModel.SelectedStakeIndex != value)
                 {
+                    Helpers.DebugLogger.LogImportant("DeckStakeTab", $"🎯🎯🎯 STAKE CHANGED: index {_parentViewModel.SelectedStakeIndex} → {value}");
                     _parentViewModel.SelectedStakeIndex = value;
+                    Helpers.DebugLogger.LogImportant("DeckStakeTab", $"🎯🎯🎯 Parent SelectedStake is now: {_parentViewModel.SelectedStake}");
                     OnPropertyChanged(nameof(SelectedStakeIndex));
                 }
             }

@@ -491,6 +491,7 @@
                         <ScrollViewer Name="ItemScrollViewer"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
+                                      Padding="0,0,4,0"
                                       ClipToBounds="False">
                         <ItemsControl ItemsSource="{Binding GroupedItems}" ClipToBounds="False">
                             <ItemsControl.ItemTemplate>

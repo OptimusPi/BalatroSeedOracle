@@ -131,30 +131,13 @@ namespace BalatroSeedOracle.Services
 
         private void SetupDatabase(Motely.Filters.MotelyJsonConfig config, string configPath)
         {
-            // Build column names from the Should[] criteria
-            _columnNames.Clear();
-            _columnNames.Add("seed");
-            _columnNames.Add("score");
-
-            if (config.Should != null && config.Should.Count > 0)
-            {
-                var seenNames = new HashSet<string>();
-                foreach (var should in config.Should)
-                {
-                    var baseName = FormatColumnName(should);
-                    var colName = baseName;
-
-                    int suffix = 2;
-                    while (seenNames.Contains(colName))
-                    {
-                        colName = $"{baseName}_{suffix}";
-                        suffix++;
-                    }
-
-                    seenNames.Add(colName);
-                    _columnNames.Add(colName);
-                }
-            }
+            // CRITICAL: Use shared GetColumnNames() method from MotelyJsonConfig
+            // This ensures DuckDB schema matches CSV export format exactly!
+            _columnNames = config.GetColumnNames();
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Using shared column schema: {string.Join(", ", _columnNames)}"
+            );
 
             // If constructor already supplied a path, keep it; otherwise derive from filter name
             if (string.IsNullOrEmpty(_dbPath))
@@ -172,64 +155,116 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
 
-        private string FormatColumnName(
-            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause should
-        )
+
+        /// <summary>
+        /// Validates existing database schema matches current filter requirements.
+        /// If schema mismatch detected, closes connection, deletes database, and reopens connection.
+        /// Returns true if schema matched (or didn't exist), false if database was deleted.
+        /// </summary>
+        private bool ValidateOrDeleteDatabase()
         {
-            if (should == null)
-                return "should";
-
-            // FIXED: Handle both single value and values array
-            string name;
-            if (!string.IsNullOrEmpty(should.Value))
+            try
             {
-                // Single value case
-                name = should.Value;
-            }
-            else if (should.Values != null && should.Values.Length > 0)
-            {
-                // Multi-value case: Use first value + count indicator
-                if (should.Values.Length == 1)
+                // Check if results table exists
+                using (var checkTable = _connection.CreateCommand())
                 {
-                    name = should.Values[0];
+                    checkTable.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='results'";
+                    var result = checkTable.ExecuteScalar();
+
+                    if (result == null)
+                    {
+                        // Table doesn't exist yet - schema will be created fresh
+                        return true;
+                    }
                 }
-                else
+
+                // Table exists - check if columns match expected schema
+                using (var getColumns = _connection.CreateCommand())
                 {
-                    // Multiple values: create descriptive name
-                    name = $"{should.Values[0]}_Plus{should.Values.Length - 1}More";
+                    getColumns.CommandText = "PRAGMA table_info(results)";
+                    var existingColumns = new List<string>();
+                    using (var reader = getColumns.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var columnName = reader.GetString(1); // Column name is at index 1
+                            existingColumns.Add(columnName);
+                        }
+                    }
+
+                    // Compare with expected columns
+                    var expectedColumns = _columnNames;
+
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Existing columns: {string.Join(", ", existingColumns)}"
+                    );
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Expected columns: {string.Join(", ", expectedColumns)}"
+                    );
+
+                    bool match = existingColumns.Count == expectedColumns.Count &&
+                                 existingColumns.SequenceEqual(expectedColumns);
+
+                    if (!match)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"⚠️ SCHEMA MISMATCH! Deleting old database: {_dbPath}"
+                        );
+
+                        // Close connection before deleting file
+                        _connection.Close();
+
+                        // Delete database file and WAL file
+                        if (File.Exists(_dbPath))
+                        {
+                            File.Delete(_dbPath);
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}");
+                        }
+                        if (File.Exists(_dbPath + ".wal"))
+                        {
+                            File.Delete(_dbPath + ".wal");
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}.wal");
+                        }
+
+                        // Reopen connection to create fresh database
+                        _connection.Open();
+
+                        return false; // Schema didn't match, database was deleted
+                    }
                 }
+
+                return true; // Schema matches
             }
-            else
+            catch (Exception ex)
             {
-                // Fallback to type
-                name = should.Type;
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Schema validation failed: {ex.Message}"
+                );
+                // If validation fails, assume we need fresh database
+                return false;
             }
-
-            // Add edition prefix if specified
-            if (!string.IsNullOrEmpty(should.Edition))
-                name = should.Edition + "_" + name;
-
-            // Add ante suffix if specified
-            if (should.Antes != null && should.Antes.Length > 0)
-                name += "_ante" + should.Antes[0];
-
-            if (string.IsNullOrEmpty(name))
-                name = "column";
-
-            var safeName = System
-                .Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9_]", "_")
-                .ToLower();
-
-            if (char.IsDigit(safeName[0]))
-                safeName = "col_" + safeName;
-
-            return safeName;
         }
 
         private void InitializeDatabase()
         {
             try
             {
+                // CRITICAL: Check if database exists with DIFFERENT schema
+                // If schema mismatch detected, delete the old database and create fresh one
+                bool schemaMatches = ValidateOrDeleteDatabase();
+
+                if (!schemaMatches)
+                {
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        "Schema mismatch detected - database was deleted, creating fresh schema"
+                    );
+                }
+
                 var columnDefs = new List<string> { "seed VARCHAR PRIMARY KEY", "score INT" };
                 for (int i = 2; i < _columnNames.Count; i++)
                     columnDefs.Add($"{_columnNames[i]} INT");
