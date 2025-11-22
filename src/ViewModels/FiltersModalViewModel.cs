@@ -74,9 +74,11 @@ namespace BalatroSeedOracle.ViewModels
         private string _filterDescription = "";
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
         private string _selectedDeck = "Red";
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedStakeIndex))]
         private int _selectedStake = 0;
 
         // Tab visibility properties - proper MVVM pattern
@@ -209,8 +211,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (value >= 0 && value < decks.Length)
                 {
                     SelectedDeck = decks[value];
-                    OnPropertyChanged(nameof(SelectedDeck));
-                    OnPropertyChanged(nameof(SelectedDeckIndex));
+                    // Don't manually call OnPropertyChanged - let auto-generated property handle it
                 }
             }
         }
@@ -223,8 +224,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (SelectedStake != value)
                 {
                     SelectedStake = value;
-                    OnPropertyChanged(nameof(SelectedStake));
-                    OnPropertyChanged(nameof(SelectedStakeIndex));
+                    // Don't manually call OnPropertyChanged - let auto-generated property handle it
                 }
             }
         }
@@ -293,11 +293,6 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler? OnFilterNameEditActivated;
 
         // ===== COMMANDS (using [RelayCommand] source generator) =====
-        [RelayCommand]
-        private void OpenItemConfigPopup(ItemConfig itemConfig)
-        {
-            CurrentPopup = new ItemConfigPopupViewModel(itemConfig);
-        }
 
         [RelayCommand]
         private async Task SaveCurrentFilter()

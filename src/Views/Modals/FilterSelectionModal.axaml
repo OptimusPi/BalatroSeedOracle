@@ -265,7 +265,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False" ZIndex="100">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">
@@ -357,7 +357,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False" ZIndex="100">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">
@@ -465,7 +465,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False" ZIndex="100">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">
@@ -530,7 +530,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False" ZIndex="100">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">
@@ -595,7 +595,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False">
+                                                        <Grid Width="58" Height="78" Margin="1" ClipToBounds="False" ZIndex="100">
                                                             <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
                                                                    Width="58" Height="78"
                                                                    Stretch="Uniform">

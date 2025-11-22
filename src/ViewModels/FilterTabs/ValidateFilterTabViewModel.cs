@@ -328,27 +328,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_parentViewModel.ItemConfigs.TryGetValue(row.ItemKey, out var config))
             {
                 // Create and show the ItemConfigPopup through the parent ViewModel
-                var popupViewModel = new ItemConfigPopupViewModel(config);
-
-                // Set item details for display
-                popupViewModel.ItemName = row.DisplayText;
-                // Note: ItemImage would need to be loaded from sprite service if needed
-
-                // Subscribe to config applied event to refresh display
-                popupViewModel.ConfigApplied += (updatedConfig) =>
-                {
-                    // Update the ItemConfig in parent's collection
-                    _parentViewModel.ItemConfigs[row.ItemKey] = updatedConfig;
-
-                    // Refresh the clause display when config is applied
-                    RefreshClauseDisplay();
-                    DebugLogger.Log("ValidateFilterTab", $"Updated config for clause: {row.ItemKey}");
-                };
-
-                // Show popup through parent's CurrentPopup property
-                _parentViewModel.CurrentPopup = popupViewModel;
-
-                DebugLogger.Log("ValidateFilterTab", $"Opened config popup for clause: {row.ItemKey}");
+                // TODO: Item config from ValidateFilterTab not yet implemented
+                // Use VisualBuilderTab right-click for item configuration
+                return;
             }
             else
             {

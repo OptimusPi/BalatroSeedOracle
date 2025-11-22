@@ -165,10 +165,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Check if results table exists
+                // Check if results table exists (DuckDB syntax)
                 using (var checkTable = _connection.CreateCommand())
                 {
-                    checkTable.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='results'";
+                    checkTable.CommandText = "SELECT table_name FROM information_schema.tables WHERE table_name='results'";
                     var result = checkTable.ExecuteScalar();
 
                     if (result == null)
@@ -178,16 +178,16 @@ namespace BalatroSeedOracle.Services
                     }
                 }
 
-                // Table exists - check if columns match expected schema
+                // Table exists - check if columns match expected schema (DuckDB syntax)
                 using (var getColumns = _connection.CreateCommand())
                 {
-                    getColumns.CommandText = "PRAGMA table_info(results)";
+                    getColumns.CommandText = "SELECT column_name FROM information_schema.columns WHERE table_name='results' ORDER BY ordinal_position";
                     var existingColumns = new List<string>();
                     using (var reader = getColumns.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var columnName = reader.GetString(1); // Column name is at index 1
+                            var columnName = reader.GetString(0); // Column name is at index 0 for SELECT
                             existingColumns.Add(columnName);
                         }
                     }
@@ -393,7 +393,8 @@ namespace BalatroSeedOracle.Services
             if (!_dbInitialized)
                 return list;
 
-            // Rely on row.EndRow() visibility; do NOT close appender mid-search.
+            // CRITICAL: Flush appender before query to see latest results!
+            ForceFlush();
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";

@@ -2013,7 +2013,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var dragBehavior = new Behaviors.CardDragBehavior
                 {
                     IsEnabled = true,
-                    JuiceAmount = 0.4, // Balatro default juice on pickup
+                    JuiceAmount = 0.05, // Balatro actual value from card.lua:4307
                 };
                 Avalonia.Xaml.Interactivity.Interaction.GetBehaviors(cardContent).Add(dragBehavior);
 

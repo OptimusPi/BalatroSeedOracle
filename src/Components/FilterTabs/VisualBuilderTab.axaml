@@ -364,8 +364,10 @@
                                 IsVisible="{Binding AllowNegativeEdition}">
                             <Grid>
                                 <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
-                                <Image Source="{Binding Converter={x:Static converters:EditionSpriteConverter.Instance}, ConverterParameter=negative}"
-                                       Stretch="Uniform"/>
+                                <TextBlock Text="−" FontSize="28" FontWeight="Black"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Background="#AA000000"/>
                             </Grid>
                         </Button>
                         </StackPanel>
@@ -1057,7 +1059,7 @@
             </Grid>
         </Grid>
 
-        <!-- ItemConfigPopup Overlay - replaces Primitives.Popup -->
+        <!-- ItemConfig Full-Screen Mode Overlay - dim background, config panel in center -->
         <Grid Name="PopupOverlay"
               IsVisible="False"
               Background="{StaticResource SemiTransparentBlack}"
@@ -1069,8 +1071,8 @@
                     CornerRadius="8"
                     Padding="0"
                     BoxShadow="{StaticResource DeepBoxShadow}"
-                    MaxWidth="320"
-                    MaxHeight="600"
+                    MaxWidth="650"
+                    MaxHeight="750"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     PointerPressed="OnPopupContentClick">

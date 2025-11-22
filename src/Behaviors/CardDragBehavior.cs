@@ -199,6 +199,13 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.ZIndex = 1000;
             }
 
+            // Trigger juice animation on hover (matches Balatro behavior!)
+            // Only trigger if not already playing (prevents infinite retrigger on edge hover)
+            if (!_juiceStartTime.HasValue)
+            {
+                _juiceStartTime = DateTime.Now;
+            }
+
             // Play Balatro card hover sound (paper1.ogg with random pitch)
             var sfxService = ServiceHelper.GetService<SoundEffectsService>();
             sfxService?.PlayCardHover();
@@ -232,8 +239,7 @@ namespace BalatroSeedOracle.Behaviors
             _isDragging = true;
             _pointerPressedPosition = e.GetPosition(_hitboxElement);
 
-            // Trigger juice animation (Balatro's bounce effect on pickup)
-            _juiceStartTime = DateTime.Now;
+            // Juice is triggered on hover (OnPointerEntered), not here
 
             // Ensure animation timer is running when dragging
             if (_animationTimer != null && !_animationTimer.IsEnabled)

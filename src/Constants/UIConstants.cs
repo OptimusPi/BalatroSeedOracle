@@ -32,8 +32,6 @@ public static class UIConstants
     public const int MinModalHeight = 120;
     public const int MinFilterHeight = 60;
 
-    public const string BorderGold = "#EAC058"; // RGB(234, 192, 88)
-
     // Grid Proportions
     public const string StandardGridProportion = "0.95*";
 
@@ -93,15 +91,4 @@ public static class UIConstants
     public const double ShadowOffsetMediumX = 2;
     public const double ShadowOffsetMediumY = 4;
     public const double ShadowOffsetLargeX = 3;
-
-    // File Extensions
-    public static readonly string[] ConfigFilePatterns = ["*.json"];
-    public static readonly string[] CsvFilePatterns = ["*.csv"];
-
-    // UI Text
-    public const string ConfigFileTypeDescription = "Config Files";
-    public const string CsvFileTypeDescription = "CSV Files";
-    public const string LoadConfigTitle = "Select Motely Config File";
-    public const string ExportResultsTitle = "Export Search Results";
-    public const string SearchModalTitle = "SEED SEARCH - MAXIMIZED";
 }

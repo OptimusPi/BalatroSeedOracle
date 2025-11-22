@@ -50,11 +50,11 @@
                                HorizontalAlignment="Center"
                                Margin="0,0,0,5"/>
 
-                    <!-- Vertical Volume Slider - swapped min/max so visual matches interaction -->
+                    <!-- Vertical Volume Slider - keeping default for now, will fix visual later -->
                     <Slider x:Name="VolumeSlider"
                             Orientation="Vertical"
-                            Minimum="100"
-                            Maximum="0"
+                            Minimum="0"
+                            Maximum="100"
                             Value="{Binding Volume, Mode=TwoWay}"
                             Height="120"
                             Width="40"

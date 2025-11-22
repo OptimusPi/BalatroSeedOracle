@@ -8,9 +8,7 @@
             BorderBrush="{StaticResource ModalBorder}"
             BorderThickness="0"
             CornerRadius="8"
-            Padding="0"
-            MaxWidth="400"
-            MaxHeight="500">
+            Padding="0">
         <Grid RowDefinitions="Auto,*,Auto">
             <!-- Header -->
             <Border Grid.Row="0"

@@ -1141,7 +1141,7 @@ namespace BalatroSeedOracle.ViewModels
                     RefreshSearchStats();
 
                     // Switch to Results tab to show the reconnected search
-                    SelectedTabIndex = 3; // Results tab
+                    SelectedTabIndex = 1; // Results tab (0=Search, 1=Results)
 
                     DebugLogger.Log(
                         "SearchModalViewModel",
