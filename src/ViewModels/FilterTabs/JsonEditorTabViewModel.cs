@@ -465,7 +465,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     Name = name,
                     Type = type ?? "Joker",
-                    DisplayName = FormatDisplayName(name),
+                    DisplayName = Motely.FormatUtils.FormatDisplayName(name),
                     ItemImage = type?.ToLower() switch
                     {
                         "joker" => spriteService.GetJokerImage(name),
@@ -542,21 +542,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return item;
         }
 
-        private string FormatDisplayName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return name;
-
-            var words = name.Replace('_', ' ').Split(' ');
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (words[i].Length > 0)
-                {
-                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
-                }
-            }
-            return string.Join(" ", words);
-        }
 
         // Convert index to deck name via enum
         private string GetDeckName(int index)
