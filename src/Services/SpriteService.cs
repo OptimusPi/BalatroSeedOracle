@@ -38,6 +38,7 @@ namespace BalatroSeedOracle.Services
         }
 
         private Dictionary<string, SpritePosition> jokerPositions = null!;
+        private Dictionary<string, SpritePosition> jokerNegativePositions = null!;
         private Dictionary<string, SpritePosition> tagPositions = null!;
         private Dictionary<string, SpritePosition> tarotPositions = null!;
         private Dictionary<string, SpritePosition> spectralPositions = null!;
@@ -55,6 +56,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> stickerPositions = null!;
         private Dictionary<string, SpritePosition> boosterPositions = null!;
         private Bitmap? jokerSheet;
+        private Bitmap? jokerNegativeSheet;
         private Bitmap? tagSheet;
         private Bitmap? tarotSheet;
         private Bitmap? spectralSheet;
@@ -653,6 +655,11 @@ namespace BalatroSeedOracle.Services
                     "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
                 );
 
+                // Load negative joker positions from json
+                jokerNegativePositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.json"
+                );
+
                 // Load tag positions from json
                 tagPositions = LoadSpritePositions(
                     "avares://BalatroSeedOracle/Assets/Tags/tags.json"
@@ -757,6 +764,7 @@ namespace BalatroSeedOracle.Services
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
+                jokerNegativeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png");
                 tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
                 tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
                 voucherSheet = LoadBitmap(
@@ -1109,6 +1117,7 @@ namespace BalatroSeedOracle.Services
 
         public IImage? GetJokerImage(
             string name,
+            string? edition = null,
             int spriteWidth = UIConstants.JokerSpriteWidth,
             int spriteHeight = UIConstants.JokerSpriteHeight
         )
@@ -1121,10 +1130,15 @@ namespace BalatroSeedOracle.Services
                 name = "anyjoker";
             }
 
+            // Use negative sprite sheet for Negative edition
+            var isNegative = edition?.Equals("negative", StringComparison.OrdinalIgnoreCase) == true;
+            var positions = isNegative ? jokerNegativePositions : jokerPositions;
+            var sheet = isNegative ? jokerNegativeSheet : jokerSheet;
+
             var baseImage = GetSpriteImage(
                 name,
-                jokerPositions,
-                jokerSheet,
+                positions,
+                sheet,
                 spriteWidth,
                 spriteHeight,
                 "joker"
@@ -1168,7 +1182,7 @@ namespace BalatroSeedOracle.Services
         )
         {
             // Get the base joker image
-            var jokerImage = GetJokerImage(name, spriteWidth, spriteHeight);
+            var jokerImage = GetJokerImage(name, edition: null, spriteWidth, spriteHeight);
             if (jokerImage == null)
                 return null;
 
