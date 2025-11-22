@@ -38,6 +38,7 @@ namespace BalatroSeedOracle.Services
         }
 
         private Dictionary<string, SpritePosition> jokerPositions = null!;
+        private Dictionary<string, SpritePosition> jokerNegativePositions = null!;
         private Dictionary<string, SpritePosition> tagPositions = null!;
         private Dictionary<string, SpritePosition> tarotPositions = null!;
         private Dictionary<string, SpritePosition> spectralPositions = null!;
@@ -55,6 +56,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> stickerPositions = null!;
         private Dictionary<string, SpritePosition> boosterPositions = null!;
         private Bitmap? jokerSheet;
+        private Bitmap? jokerNegativeSheet;
         private Bitmap? tagSheet;
         private Bitmap? tarotSheet;
         private Bitmap? spectralSheet;
@@ -757,6 +759,7 @@ namespace BalatroSeedOracle.Services
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
+                jokerNegativeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png");
                 tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
                 tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
                 voucherSheet = LoadBitmap(

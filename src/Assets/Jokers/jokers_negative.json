@@ -1,0 +1,1087 @@
+[
+    {
+        "name": "joker",
+        "pos": {
+            "x": 0,
+            "y": 0
+        }
+    },
+    {
+        "name": "greedyjoker",
+        "pos": {
+            "x": 6,
+            "y": 1
+        }
+    },
+    {
+        "name": "lustyjoker",
+        "pos": {
+            "x": 7,
+            "y": 1
+        }
+    },
+    {
+        "name": "wrathfuljoker",
+        "pos": {
+            "x": 8,
+            "y": 1
+        }
+    },
+    {
+        "name": "gluttonousjoker",
+        "pos": {
+            "x": 9,
+            "y": 1
+        }
+    },
+    {
+        "name": "jollyjoker",
+        "pos": {
+            "x": 2,
+            "y": 0
+        }
+    },
+    {
+        "name": "zanyjoker",
+        "pos": {
+            "x": 3,
+            "y": 0
+        }
+    },
+    {
+        "name": "madjoker",
+        "pos": {
+            "x": 4,
+            "y": 0
+        }
+    },
+    {
+        "name": "crazyjoker",
+        "pos": {
+            "x": 5,
+            "y": 0
+        }
+    },
+    {
+        "name": "drolljoker",
+        "pos": {
+            "x": 6,
+            "y": 0
+        }
+    },
+    {
+        "name": "slyjoker",
+        "pos": {
+            "x": 0,
+            "y": 14
+        }
+    },
+    {
+        "name": "wilyjoker",
+        "pos": {
+            "x": 1,
+            "y": 14
+        }
+    },
+    {
+        "name": "cleverjoker",
+        "pos": {
+            "x": 2,
+            "y": 14
+        }
+    },
+    {
+        "name": "deviousjoker",
+        "pos": {
+            "x": 3,
+            "y": 14
+        }
+    },
+    {
+        "name": "craftyjoker",
+        "pos": {
+            "x": 4,
+            "y": 14
+        }
+    },
+    {
+        "name": "halfjoker",
+        "pos": {
+            "x": 7,
+            "y": 0
+        }
+    },
+    {
+        "name": "jokerstencil",
+        "pos": {
+            "x": 2,
+            "y": 5
+        }
+    },
+    {
+        "name": "fourfingers",
+        "pos": {
+            "x": 6,
+            "y": 6
+        }
+    },
+    {
+        "name": "mime",
+        "pos": {
+            "x": 4,
+            "y": 1
+        }
+    },
+    {
+        "name": "creditcard",
+        "pos": {
+            "x": 5,
+            "y": 1
+        }
+    },
+    {
+        "name": "ceremonialdagger",
+        "pos": {
+            "x": 5,
+            "y": 5
+        }
+    },
+    {
+        "name": "banner",
+        "pos": {
+            "x": 1,
+            "y": 2
+        }
+    },
+    {
+        "name": "mysticsummit",
+        "pos": {
+            "x": 2,
+            "y": 2
+        }
+    },
+    {
+        "name": "marblejoker",
+        "pos": {
+            "x": 3,
+            "y": 2
+        }
+    },
+    {
+        "name": "loyaltycard",
+        "pos": {
+            "x": 4,
+            "y": 2
+        }
+    },
+    {
+        "name": "eightball",
+        "pos": {
+            "x": 0,
+            "y": 5
+        }
+    },
+    {
+        "name": "misprint",
+        "pos": {
+            "x": 6,
+            "y": 2
+        }
+    },
+    {
+        "name": "dusk",
+        "pos": {
+            "x": 4,
+            "y": 7
+        }
+    },
+    {
+        "name": "raisedfist",
+        "pos": {
+            "x": 8,
+            "y": 2
+        }
+    },
+    {
+        "name": "chaostheclown",
+        "pos": {
+            "x": 1,
+            "y": 0
+        }
+    },
+    {
+        "name": "fibonacci",
+        "pos": {
+            "x": 1,
+            "y": 5
+        }
+    },
+    {
+        "name": "steeljoker",
+        "pos": {
+            "x": 7,
+            "y": 2
+        }
+    },
+    {
+        "name": "scaryface",
+        "pos": {
+            "x": 2,
+            "y": 3
+        }
+    },
+    {
+        "name": "abstractjoker",
+        "pos": {
+            "x": 3,
+            "y": 3
+        }
+    },
+    {
+        "name": "delayedgratification",
+        "pos": {
+            "x": 4,
+            "y": 3
+        }
+    },
+    {
+        "name": "hack",
+        "pos": {
+            "x": 5,
+            "y": 2
+        }
+    },
+    {
+        "name": "pareidolia",
+        "pos": {
+            "x": 6,
+            "y": 3
+        }
+    },
+    {
+        "name": "grosmichel",
+        "pos": {
+            "x": 7,
+            "y": 6
+        }
+    },
+    {
+        "name": "evensteven",
+        "pos": {
+            "x": 8,
+            "y": 3
+        }
+    },
+    {
+        "name": "oddtodd",
+        "pos": {
+            "x": 9,
+            "y": 3
+        }
+    },
+    {
+        "name": "scholar",
+        "pos": {
+            "x": 3,
+            "y": 6
+        }
+    },
+    {
+        "name": "businesscard",
+        "pos": {
+            "x": 1,
+            "y": 4
+        }
+    },
+    {
+        "name": "supernova",
+        "pos": {
+            "x": 2,
+            "y": 4
+        }
+    },
+    {
+        "name": "ridethebus",
+        "pos": {
+            "x": 1,
+            "y": 6
+        }
+    },
+    {
+        "name": "spacejoker",
+        "pos": {
+            "x": 3,
+            "y": 5
+        }
+    },
+    {
+        "name": "egg",
+        "pos": {
+            "x": 0,
+            "y": 10
+        }
+    },
+    {
+        "name": "burglar",
+        "pos": {
+            "x": 1,
+            "y": 10
+        }
+    },
+    {
+        "name": "blackboard",
+        "pos": {
+            "x": 2,
+            "y": 10
+        }
+    },
+    {
+        "name": "runner",
+        "pos": {
+            "x": 3,
+            "y": 10
+        }
+    },
+    {
+        "name": "icecream",
+        "pos": {
+            "x": 4,
+            "y": 10
+        }
+    },
+    {
+        "name": "dna",
+        "pos": {
+            "x": 5,
+            "y": 10
+        }
+    },
+    {
+        "name": "splash",
+        "pos": {
+            "x": 6,
+            "y": 10
+        }
+    },
+    {
+        "name": "bluejoker",
+        "pos": {
+            "x": 7,
+            "y": 10
+        }
+    },
+    {
+        "name": "sixthsense",
+        "pos": {
+            "x": 8,
+            "y": 10
+        }
+    },
+    {
+        "name": "constellation",
+        "pos": {
+            "x": 9,
+            "y": 10
+        }
+    },
+    {
+        "name": "hiker",
+        "pos": {
+            "x": 0,
+            "y": 11
+        }
+    },
+    {
+        "name": "facelessjoker",
+        "pos": {
+            "x": 1,
+            "y": 11
+        }
+    },
+    {
+        "name": "greenjoker",
+        "pos": {
+            "x": 2,
+            "y": 11
+        }
+    },
+    {
+        "name": "superposition",
+        "pos": {
+            "x": 3,
+            "y": 11
+        }
+    },
+    {
+        "name": "todolist",
+        "pos": {
+            "x": 4,
+            "y": 11
+        }
+    },
+    {
+        "name": "cavendish",
+        "pos": {
+            "x": 5,
+            "y": 11
+        }
+    },
+    {
+        "name": "cardsharp",
+        "pos": {
+            "x": 6,
+            "y": 11
+        }
+    },
+    {
+        "name": "redcard",
+        "pos": {
+            "x": 7,
+            "y": 11
+        }
+    },
+    {
+        "name": "madness",
+        "pos": {
+            "x": 8,
+            "y": 11
+        }
+    },
+    {
+        "name": "squarejoker",
+        "pos": {
+            "x": 9,
+            "y": 11
+        }
+    },
+    {
+        "name": "seance",
+        "pos": {
+            "x": 0,
+            "y": 12
+        }
+    },
+    {
+        "name": "riffraff",
+        "pos": {
+            "x": 1,
+            "y": 12
+        }
+    },
+    {
+        "name": "vampire",
+        "pos": {
+            "x": 2,
+            "y": 12
+        }
+    },
+    {
+        "name": "shortcut",
+        "pos": {
+            "x": 3,
+            "y": 12
+        }
+    },
+    {
+        "name": "hologram",
+        "pos": {
+            "x": 4,
+            "y": 12
+        }
+    },
+    {
+        "name": "vagabond",
+        "pos": {
+            "x": 5,
+            "y": 12
+        }
+    },
+    {
+        "name": "baron",
+        "pos": {
+            "x": 6,
+            "y": 12
+        }
+    },
+    {
+        "name": "cloud9",
+        "pos": {
+            "x": 7,
+            "y": 12
+        }
+    },
+    {
+        "name": "rocket",
+        "pos": {
+            "x": 8,
+            "y": 12
+        }
+    },
+    {
+        "name": "obelisk",
+        "pos": {
+            "x": 9,
+            "y": 12
+        }
+    },
+    {
+        "name": "midasmask",
+        "pos": {
+            "x": 0,
+            "y": 13
+        }
+    },
+    {
+        "name": "luchador",
+        "pos": {
+            "x": 1,
+            "y": 13
+        }
+    },
+    {
+        "name": "photograph",
+        "pos": {
+            "x": 2,
+            "y": 13
+        }
+    },
+    {
+        "name": "giftcard",
+        "pos": {
+            "x": 3,
+            "y": 13
+        }
+    },
+    {
+        "name": "turtlebean",
+        "pos": {
+            "x": 4,
+            "y": 13
+        }
+    },
+    {
+        "name": "erosion",
+        "pos": {
+            "x": 5,
+            "y": 13
+        }
+    },
+    {
+        "name": "reservedparking",
+        "pos": {
+            "x": 6,
+            "y": 13
+        }
+    },
+    {
+        "name": "mailinrebate",
+        "pos": {
+            "x": 7,
+            "y": 13
+        }
+    },
+    {
+        "name": "tothemoon",
+        "pos": {
+            "x": 8,
+            "y": 13
+        }
+    },
+    {
+        "name": "hallucination",
+        "pos": {
+            "x": 9,
+            "y": 13
+        }
+    },
+    {
+        "name": "fortuneteller",
+        "pos": {
+            "x": 7,
+            "y": 5
+        }
+    },
+    {
+        "name": "juggler",
+        "pos": {
+            "x": 0,
+            "y": 1
+        }
+    },
+    {
+        "name": "drunkard",
+        "pos": {
+            "x": 1,
+            "y": 1
+        }
+    },
+    {
+        "name": "stonejoker",
+        "pos": {
+            "x": 9,
+            "y": 0
+        }
+    },
+    {
+        "name": "goldenjoker",
+        "pos": {
+            "x": 9,
+            "y": 2
+        }
+    },
+    {
+        "name": "luckycat",
+        "pos": {
+            "x": 5,
+            "y": 14
+        }
+    },
+    {
+        "name": "baseballcard",
+        "pos": {
+            "x": 6,
+            "y": 14
+        }
+    },
+    {
+        "name": "bull",
+        "pos": {
+            "x": 7,
+            "y": 14
+        }
+    },
+    {
+        "name": "dietcola",
+        "pos": {
+            "x": 8,
+            "y": 14
+        }
+    },
+    {
+        "name": "tradingcard",
+        "pos": {
+            "x": 9,
+            "y": 14
+        }
+    },
+    {
+        "name": "flashcard",
+        "pos": {
+            "x": 0,
+            "y": 15
+        }
+    },
+    {
+        "name": "popcorn",
+        "pos": {
+            "x": 1,
+            "y": 15
+        }
+    },
+    {
+        "name": "sparetrousers",
+        "pos": {
+            "x": 4,
+            "y": 15
+        }
+    },
+    {
+        "name": "ancientjoker",
+        "pos": {
+            "x": 7,
+            "y": 15
+        }
+    },
+    {
+        "name": "ramen",
+        "pos": {
+            "x": 2,
+            "y": 15
+        }
+    },
+    {
+        "name": "walkietalkie",
+        "pos": {
+            "x": 8,
+            "y": 15
+        }
+    },
+    {
+        "name": "seltzer",
+        "pos": {
+            "x": 3,
+            "y": 15
+        }
+    },
+    {
+        "name": "castle",
+        "pos": {
+            "x": 9,
+            "y": 15
+        }
+    },
+    {
+        "name": "smileyface",
+        "pos": {
+            "x": 6,
+            "y": 15
+        }
+    },
+    {
+        "name": "campfire",
+        "pos": {
+            "x": 5,
+            "y": 15
+        }
+    },
+    {
+        "name": "goldenticket",
+        "pos": {
+            "x": 5,
+            "y": 3
+        }
+    },
+    {
+        "name": "mrbones",
+        "pos": {
+            "x": 3,
+            "y": 4
+        }
+    },
+    {
+        "name": "acrobat",
+        "pos": {
+            "x": 2,
+            "y": 1
+        }
+    },
+    {
+        "name": "sockandbuskin",
+        "pos": {
+            "x": 3,
+            "y": 1
+        }
+    },
+    {
+        "name": "swashbuckler",
+        "pos": {
+            "x": 9,
+            "y": 5
+        }
+    },
+    {
+        "name": "troubadour",
+        "pos": {
+            "x": 0,
+            "y": 2
+        }
+    },
+    {
+        "name": "certificate",
+        "pos": {
+            "x": 8,
+            "y": 8
+        }
+    },
+    {
+        "name": "smearedjoker",
+        "pos": {
+            "x": 4,
+            "y": 6
+        }
+    },
+    {
+        "name": "throwback",
+        "pos": {
+            "x": 5,
+            "y": 7
+        }
+    },
+    {
+        "name": "hangingchad",
+        "pos": {
+            "x": 9,
+            "y": 6
+        }
+    },
+    {
+        "name": "roughgem",
+        "pos": {
+            "x": 9,
+            "y": 7
+        }
+    },
+    {
+        "name": "bloodstone",
+        "pos": {
+            "x": 0,
+            "y": 8
+        }
+    },
+    {
+        "name": "arrowhead",
+        "pos": {
+            "x": 1,
+            "y": 8
+        }
+    },
+    {
+        "name": "onyxagate",
+        "pos": {
+            "x": 2,
+            "y": 8
+        }
+    },
+    {
+        "name": "glassjoker",
+        "pos": {
+            "x": 1,
+            "y": 3
+        }
+    },
+    {
+        "name": "showman",
+        "pos": {
+            "x": 6,
+            "y": 5
+        }
+    },
+    {
+        "name": "flowerpot",
+        "pos": {
+            "x": 0,
+            "y": 6
+        }
+    },
+    {
+        "name": "blueprint",
+        "pos": {
+            "x": 0,
+            "y": 3
+        }
+    },
+    {
+        "name": "weejoker",
+        "pos": {
+            "x": 0,
+            "y": 0
+        }
+    },
+    {
+        "name": "merryandy",
+        "pos": {
+            "x": 8,
+            "y": 0
+        }
+    },
+    {
+        "name": "oopsall6s",
+        "pos": {
+            "x": 5,
+            "y": 6
+        }
+    },
+    {
+        "name": "theidol",
+        "pos": {
+            "x": 6,
+            "y": 7
+        }
+    },
+    {
+        "name": "seeingdouble",
+        "pos": {
+            "x": 4,
+            "y": 4
+        }
+    },
+    {
+        "name": "matador",
+        "pos": {
+            "x": 4,
+            "y": 5
+        }
+    },
+    {
+        "name": "hittheroad",
+        "pos": {
+            "x": 8,
+            "y": 5
+        }
+    },
+    {
+        "name": "theduo",
+        "pos": {
+            "x": 5,
+            "y": 4
+        }
+    },
+    {
+        "name": "thetrio",
+        "pos": {
+            "x": 6,
+            "y": 4
+        }
+    },
+    {
+        "name": "thefamily",
+        "pos": {
+            "x": 7,
+            "y": 4
+        }
+    },
+    {
+        "name": "theorder",
+        "pos": {
+            "x": 8,
+            "y": 4
+        }
+    },
+    {
+        "name": "thetribe",
+        "pos": {
+            "x": 9,
+            "y": 4
+        }
+    },
+    {
+        "name": "stuntman",
+        "pos": {
+            "x": 8,
+            "y": 6
+        }
+    },
+    {
+        "name": "invisiblejoker",
+        "pos": {
+            "x": 1,
+            "y": 7
+        }
+    },
+    {
+        "name": "brainstorm",
+        "pos": {
+            "x": 7,
+            "y": 7
+        }
+    },
+    {
+        "name": "satellite",
+        "pos": {
+            "x": 8,
+            "y": 7
+        }
+    },
+    {
+        "name": "shootthemoon",
+        "pos": {
+            "x": 2,
+            "y": 6
+        }
+    },
+    {
+        "name": "driverslicense",
+        "pos": {
+            "x": 0,
+            "y": 7
+        }
+    },
+    {
+        "name": "cartomancer",
+        "pos": {
+            "x": 7,
+            "y": 3
+        }
+    },
+    {
+        "name": "astronomer",
+        "pos": {
+            "x": 2,
+            "y": 7
+        }
+    },
+    {
+        "name": "burntjoker",
+        "pos": {
+            "x": 3,
+            "y": 7
+        }
+    },
+    {
+        "name": "bootstraps",
+        "pos": {
+            "x": 9,
+            "y": 8
+        }
+    },
+    {
+        "name": "canio",
+        "pos": {
+            "x": 3,
+            "y": 8
+        }
+    },
+    {
+        "name": "triboulet",
+        "pos": {
+            "x": 4,
+            "y": 8
+        }
+    },
+    {
+        "name": "yorick",
+        "pos": {
+            "x": 5,
+            "y": 8
+        }
+    },
+    {
+        "name": "chicot",
+        "pos": {
+            "x": 6,
+            "y": 8
+        }
+    },
+    {
+        "name": "perkeo",
+        "pos": {
+            "x": 7,
+            "y": 8
+        }
+    },
+    {
+        "name": "anylegendary",
+        "pos": {
+            "x": 9,
+            "y": 9
+        }
+    },
+    {
+        "name": "anyrare",
+        "pos": {
+            "x": 9,
+            "y": 9
+        }
+    },
+    {
+        "name": "anyuncommon",
+        "pos": {
+            "x": 9,
+            "y": 9
+        }
+    },
+    {
+        "name": "anycommon",
+        "pos": {
+            "x": 9,
+            "y": 9
+        }
+    },
+    {
+        "name": "anyjoker",
+        "pos": {
+            "x": 9,
+            "y": 9
+        }
+    }
+]
