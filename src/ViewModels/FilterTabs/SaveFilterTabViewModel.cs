@@ -111,9 +111,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             get
             {
                 var sprites = Services.SpriteService.Instance;
-                var deck = _parentViewModel.SelectedDeck;
+                var deckName = _parentViewModel.SelectedDeck.ToString();
                 var stakeName = StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
-                return sprites.GetDeckWithStakeSticker(deck, stakeName);
+                return sprites.GetDeckWithStakeSticker(deckName, stakeName);
             }
         }
 
@@ -323,7 +323,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Export to desktop as JSON
                 var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
                 var exportPath = Path.Combine(desktopPath, exportFileName);
 
                 // Use custom serializer to include mode and preserve score formatting

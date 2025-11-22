@@ -143,7 +143,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public IRelayCommand? CancelFilterNameEditCommand => _parentViewModel?.CancelFilterNameEditCommand;
 
         // Expose parent's SelectedDeck for flip animation
-        public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+        public string SelectedDeck => _parentViewModel?.SelectedDeck.ToString() ?? "Red";
 
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
