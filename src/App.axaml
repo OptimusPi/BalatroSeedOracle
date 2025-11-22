@@ -687,7 +687,6 @@
                                     HorizontalAlignment="Center"
                                     ClipToBounds="True">
                                 <Track Name="PART_Track"
-                                       IsDirectionReversed="True"
                                        Minimum="{TemplateBinding Minimum}"
                                        Maximum="{TemplateBinding Maximum}"
                                        Value="{TemplateBinding Value, Mode=TwoWay}"
@@ -696,7 +695,7 @@
                                         <RepeatButton Background="Transparent" Focusable="False">
                                             <RepeatButton.Template>
                                                 <ControlTemplate>
-                                                    <Border Background="Transparent" />
+                                                    <Border Background="{StaticResource Red}" CornerRadius="0,0,8,8" />
                                                 </ControlTemplate>
                                             </RepeatButton.Template>
                                         </RepeatButton>

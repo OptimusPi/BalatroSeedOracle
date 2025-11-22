@@ -49,149 +49,93 @@
                           Padding="12">
                 <StackPanel Spacing="8">
 
-                    <!-- Label Configuration -->
-                    <Expander IsExpanded="True">
-                        <Expander.Header>
-                            <TextBlock Text="Label (Score Column)"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource White}"/>
-                        </Expander.Header>
-                        <Border Background="{StaticResource DarkBackground}"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                CornerRadius="4"
-                                Padding="8"
-                                Margin="0,4,0,0">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Custom label for this item in score columns"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"
-                                           TextWrapping="Wrap"/>
-                                <TextBox Text="{Binding Label, Mode=TwoWay}"
-                                         Watermark="e.g., 'Bram Neg', 'Foil Mime'"
-                                         FontSize="12"
-                                         FontFamily="{StaticResource BalatroFont}"/>
-                            </StackPanel>
-                        </Border>
-                    </Expander>
+                    <!-- Label Configuration (ONLY FOR SHOULD ITEMS!) -->
+                    <StackPanel Spacing="4" IsVisible="{Binding IsLabelVisible}">
+                        <TextBlock Text="LABEL"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <TextBox Text="{Binding Label, Mode=TwoWay}"
+                                 Watermark="e.g., 'Bram Neg'"
+                                 FontSize="12"
+                                 Height="28"/>
+                    </StackPanel>
 
-                    <!-- Antes Configuration -->
-                    <Expander IsExpanded="False">
-                        <Expander.Header>
-                            <TextBlock Text="Antes (Which antes to check)"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource White}"/>
-                        </Expander.Header>
-                        <Border Background="{StaticResource DarkBackground}"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                CornerRadius="4"
-                                Padding="8"
-                                Margin="0,4,0,0">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Select which antes to check for this item"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"/>
-                                <WrapPanel Orientation="Horizontal">
-                                    <CheckBox Content="All Antes" IsChecked="{Binding AllAntesSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
-                                    <CheckBox Content="Ante 1" IsChecked="{Binding Ante1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 2" IsChecked="{Binding Ante2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 3" IsChecked="{Binding Ante3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 4" IsChecked="{Binding Ante4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 5" IsChecked="{Binding Ante5Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 6" IsChecked="{Binding Ante6Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 7" IsChecked="{Binding Ante7Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                    <CheckBox Content="Ante 8" IsChecked="{Binding Ante8Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
-                    </Expander>
+                    <!-- Antes -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="ANTES"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" Margin="0,0,6,2"/>
+                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                        </WrapPanel>
+                    </StackPanel>
 
-                    <!-- Shop Slots Configuration -->
-                    <Expander IsExpanded="False">
-                        <Expander.Header>
-                            <TextBlock Text="Shop Slots (Which slots to check)"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource White}"/>
-                        </Expander.Header>
-                        <Border Background="{StaticResource DarkBackground}"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                CornerRadius="4"
-                                Padding="8"
-                                Margin="0,4,0,0">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Select which shop slots to check for this item"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"/>
-                                <WrapPanel Orientation="Horizontal">
-                                    <CheckBox Content="All Slots" IsChecked="{Binding AllShopSlotsSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
-                                    <CheckBox Content="Slot 1" IsChecked="{Binding ShopSlot1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                                    <CheckBox Content="Slot 2" IsChecked="{Binding ShopSlot2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                                    <CheckBox Content="Slot 3" IsChecked="{Binding ShopSlot3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                                    <CheckBox Content="Slot 4" IsChecked="{Binding ShopSlot4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
-                    </Expander>
+                    <!-- Shop Slots -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SHOP SLOTS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <CheckBox Content="All" IsChecked="{Binding AllShopSlotsSelected}" Margin="0,0,6,2"/>
+                            <CheckBox Content="1" IsChecked="{Binding ShopSlot1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding ShopSlot2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding ShopSlot3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding ShopSlot4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
+                        </WrapPanel>
+                    </StackPanel>
 
-                    <!-- Pack Positions Configuration -->
-                    <Expander IsExpanded="False">
-                        <Expander.Header>
-                            <TextBlock Text="Pack Positions (Which positions to check)"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource White}"/>
-                        </Expander.Header>
-                        <Border Background="{StaticResource DarkBackground}"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                CornerRadius="4"
-                                Padding="8"
-                                Margin="0,4,0,0">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Select which booster pack positions to check"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"/>
-                                <WrapPanel Orientation="Horizontal">
-                                    <CheckBox Content="All Positions" IsChecked="{Binding AllPackPositionsSelected, Mode=TwoWay}" Margin="0,0,8,4"/>
-                                    <CheckBox Content="Pos 1" IsChecked="{Binding PackPos1Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                                    <CheckBox Content="Pos 2" IsChecked="{Binding PackPos2Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                                    <CheckBox Content="Pos 3" IsChecked="{Binding PackPos3Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                                    <CheckBox Content="Pos 4" IsChecked="{Binding PackPos4Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                                    <CheckBox Content="Pos 5" IsChecked="{Binding PackPos5Selected, Mode=TwoWay}" Margin="0,0,8,4" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
-                    </Expander>
+                    <!-- Pack Positions -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="PACK POSITIONS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <CheckBox Content="All" IsChecked="{Binding AllPackPositionsSelected}" Margin="0,0,6,2"/>
+                            <CheckBox Content="1" IsChecked="{Binding PackPos1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding PackPos2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding PackPos3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding PackPos4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                            <CheckBox Content="5" IsChecked="{Binding PackPos5Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
+                        </WrapPanel>
+                    </StackPanel>
 
-                    <!-- Sources Configuration -->
-                    <Expander IsExpanded="False">
-                        <Expander.Header>
-                            <TextBlock Text="Sources (Where to check)"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="13"
-                                       Foreground="{StaticResource White}"/>
-                        </Expander.Header>
-                        <Border Background="{StaticResource DarkBackground}"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                CornerRadius="4"
-                                Padding="8"
-                                Margin="0,4,0,0">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="Select which sources to check for this item"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"/>
-                                <CheckBox Content="Include Booster Packs" IsChecked="{Binding IncludeBoosterPacks, Mode=TwoWay}" Margin="0,0,0,4"/>
-                                <CheckBox Content="Include Shop Stream" IsChecked="{Binding IncludeShopStream, Mode=TwoWay}" Margin="0,0,0,4"/>
-                                <CheckBox Content="Include Skip Tags" IsChecked="{Binding IncludeSkipTags, Mode=TwoWay}"/>
-                            </StackPanel>
-                        </Border>
-                    </Expander>
+                    <!-- Edition Setting Helper (Joker/SoulJoker/StandardCard only) -->
+                    <StackPanel Spacing="4" IsVisible="{Binding IsEditionHelperVisible}">
+                        <TextBlock Text="EDITION"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <Button Content="Edit Edition"
+                                Height="32"
+                                FontSize="11"
+                                Classes="btn-blue"
+                                Margin="0,0,0,4"/>
+                    </StackPanel>
+
+                    <!-- Sources -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SOURCES"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource Gold}"/>
+                        <StackPanel>
+                            <CheckBox Content="Booster Packs" IsChecked="{Binding IncludeBoosterPacks}" Margin="0,0,0,2"/>
+                            <CheckBox Content="Shop Stream" IsChecked="{Binding IncludeShopStream}" Margin="0,0,0,2"/>
+                            <CheckBox Content="Skip Tags" IsChecked="{Binding IncludeSkipTags}"/>
+                        </StackPanel>
+                    </StackPanel>
 
                 </StackPanel>
             </ScrollViewer>
@@ -202,18 +146,18 @@
                     BorderThickness="0,2,0,0"
                     BorderBrush="{StaticResource ModalBorder}"
                     Padding="12">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="Auto,8,Auto">
                     <Button Grid.Column="0"
-                            Content="Reset to Defaults"
-                            Command="{Binding ResetCommand}"
-                            Classes="btn-red"
+                            Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Classes="btn-cancel"
                             Height="32"
-                            FontSize="11"
-                            Margin="0,0,8,0"/>
-                    <Button Grid.Column="1"
+                            FontSize="12"
+                            Width="100"/>
+                    <Button Grid.Column="2"
                             Content="Apply"
                             Command="{Binding ApplyCommand}"
-                            Classes="btn-green"
+                            Classes="btn-blue"
                             Height="32"
                             FontSize="12"
                             Width="100"/>

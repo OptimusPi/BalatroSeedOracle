@@ -35,7 +35,6 @@
                IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
                Placement="Top"
                PlacementTarget="{Binding ElementName=MusicToggleButton}"
-               VerticalOffset="-10"
                IsLightDismissEnabled="True">
             <Border Background="{StaticResource DarkBorder}"
                     BorderBrush="{StaticResource ModalBorder}"
@@ -50,7 +49,7 @@
                                HorizontalAlignment="Center"
                                Margin="0,0,0,5"/>
 
-                    <!-- Vertical Volume Slider - keeping default for now, will fix visual later -->
+                    <!-- Vertical Volume Slider  -->
                     <Slider x:Name="VolumeSlider"
                             Orientation="Vertical"
                             Minimum="0"

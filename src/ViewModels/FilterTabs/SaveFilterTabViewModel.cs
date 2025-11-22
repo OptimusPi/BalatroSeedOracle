@@ -270,6 +270,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 UpdateStatus($"Save error: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Error saving filter: {ex.Message}");
+                DebugLogger.LogError("SaveFilterTab", $"Stack trace: {ex.StackTrace}");
+                // Throw to make it visible instead of silent fail
+                throw new InvalidOperationException($"Failed to save filter: {ex.Message}", ex);
             }
         }
 
@@ -790,43 +793,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             };
         }
 
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white",
-                "red",
-                "green",
-                "black",
-                "blue",
-                "purple",
-                "orange",
-                "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+            return stake.ToString().ToLower();
         }
 
         private void UpdateStatus(string message, bool isError)

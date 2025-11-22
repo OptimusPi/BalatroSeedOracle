@@ -65,8 +65,10 @@ namespace BalatroSeedOracle.ViewModels.Controls
         public IRelayCommand ExportAllCommand { get; }
         public IRelayCommand PreviousPageCommand { get; }
         public IRelayCommand NextPageCommand { get; }
+        public IRelayCommand PopOutCommand { get; }
 
         // Events (for parent communication)
+        public event EventHandler? PopOutRequested;
         public event EventHandler<SearchResult>? SeedCopied;
         public event EventHandler<SearchResult>? SearchSimilarRequested;
         public event EventHandler<SearchResult>? AddToFavoritesRequested;
@@ -85,9 +87,15 @@ namespace BalatroSeedOracle.ViewModels.Controls
             ExportAllCommand = new RelayCommand(ExportAll);
             PreviousPageCommand = new RelayCommand(PreviousPage, () => IsPreviousEnabled);
             NextPageCommand = new RelayCommand(NextPage, () => IsNextEnabled);
+            PopOutCommand = new RelayCommand(PopOut);
 
             // Listen to property changes for auto-updates
             AllResults.CollectionChanged += (s, e) => UpdateDisplay();
+        }
+
+        private void PopOut()
+        {
+            PopOutRequested?.Invoke(this, EventArgs.Empty);
         }
 
         // Sorting logic

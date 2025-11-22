@@ -3,7 +3,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
              x:DataType="vm:SortableResultsGridViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="False">
 
     <UserControl.Resources>
     </UserControl.Resources>
@@ -60,6 +60,11 @@
                     <!-- Export button -->
                     <Button Content="📤 Export"
                             Command="{Binding ExportAllCommand}"/>
+
+                    <!-- Pop Out button -->
+                    <Button Content="⬈ Pop Out"
+                            Command="{Binding PopOutCommand}"
+                            ToolTip.Tip="Open results in separate window"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -69,8 +74,19 @@
                   Name="ResultsDataGrid"
                   ItemsSource="{Binding DisplayedResults}"
                   AutoGenerateColumns="False"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
                   IsReadOnly="True"
-                  SelectionMode="Single">
+                  SelectionMode="Extended"
+                  MinHeight="200"
+                  Background="{StaticResource DarkBackground}"
+                  Foreground="{StaticResource White}"
+                  RowBackground="{StaticResource DarkBackground}"
+                  GridLinesVisibility="All"
+                  HeadersVisibility="Column"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
             <DataGrid.Columns>
                 <!-- Seed column with copy button -->
                 <DataGridTemplateColumn Header="SEED" Width="150" SortMemberPath="Seed">

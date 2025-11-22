@@ -364,10 +364,7 @@
                                 IsVisible="{Binding AllowNegativeEdition}">
                             <Grid>
                                 <Image Source="{Binding EditionBaseImage}" Stretch="Uniform"/>
-                                <TextBlock Text="−" FontSize="28" FontWeight="Black"
-                                           Foreground="{StaticResource White}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Background="#AA000000"/>
+                                <Image Source="{Binding NegativeEditionImage}" Stretch="Uniform"/>
                             </Grid>
                         </Button>
                         </StackPanel>

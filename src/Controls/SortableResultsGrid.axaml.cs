@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -49,6 +50,12 @@ namespace BalatroSeedOracle.Controls
         {
             add => ViewModel.ExportAllRequested += value;
             remove => ViewModel.ExportAllRequested -= value;
+        }
+
+        public event EventHandler? PopOutRequested
+        {
+            add => ViewModel.PopOutRequested += value;
+            remove => ViewModel.PopOutRequested -= value;
         }
 
         public event EventHandler<SearchResult>? AnalyzeRequested
@@ -194,17 +201,29 @@ namespace BalatroSeedOracle.Controls
         public IEnumerable<SearchResult> GetDisplayedResults() => ViewModel.GetDisplayedResults();
 
         // Bind an external collection of results. Updates grid as collection changes.
+        public static readonly StyledProperty<ObservableCollection<SearchResult>?> ItemsSourceProperty =
+            AvaloniaProperty.Register<SortableResultsGrid, ObservableCollection<SearchResult>?>(
+                nameof(ItemsSource),
+                defaultBindingMode: Avalonia.Data.BindingMode.OneWay);
+
         public ObservableCollection<SearchResult>? ItemsSource
         {
-            get => _itemsSource;
-            set
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemsSourceProperty)
             {
-                if (_itemsSource != null)
+                if (change.OldValue is ObservableCollection<SearchResult> oldCollection)
                 {
-                    _itemsSource.CollectionChanged -= OnItemsSourceChanged;
+                    oldCollection.CollectionChanged -= OnItemsSourceChanged;
                 }
 
-                _itemsSource = value;
+                _itemsSource = change.NewValue as ObservableCollection<SearchResult>;
 
                 if (_itemsSource != null)
                 {

@@ -962,11 +962,13 @@ namespace BalatroSeedOracle.ViewModels
                     break;
 
                 case SearchMode.SingleSeed:
-                    // Single seed debug mode
-                    criteria.DebugSeed = SeedInput;
+                    // Single seed mode = WordList mode with 1 seed
+                    // Create temp wordlist file
+                    var tempWordListPath = Path.Combine(AppPaths.WordListsDir, "_temp_single_seed.txt");
+                    File.WriteAllText(tempWordListPath, SeedInput);
+                    criteria.WordList = "_temp_single_seed"; // Without .txt extension
                     criteria.ThreadCount = 1;
                     criteria.BatchSize = 1;
-                    criteria.EnableDebugOutput = true;
                     break;
 
                 case SearchMode.WordList:

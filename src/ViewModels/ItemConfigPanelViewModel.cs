@@ -18,6 +18,15 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string? _label;
 
+        // Show Label input ONLY for SHOULD items (for score columns)
+        public bool IsLabelVisible => _item?.Status == FilterItemStatus.ShouldHave;
+
+        // Show Edition Helper ONLY for items that support editions
+        public bool IsEditionHelperVisible =>
+            _item?.ItemType == "Joker" ||
+            _item?.ItemType == "SoulJoker" ||
+            _item?.ItemType == "StandardCard";
+
         // Antes checkboxes
         [ObservableProperty]
         private bool _allAntesSelected = true;
@@ -260,6 +269,12 @@ namespace BalatroSeedOracle.ViewModels
 
         [RelayCommand]
         private void Close()
+        {
+            _onClose?.Invoke();
+        }
+
+        [RelayCommand]
+        private void Cancel()
         {
             _onClose?.Invoke();
         }

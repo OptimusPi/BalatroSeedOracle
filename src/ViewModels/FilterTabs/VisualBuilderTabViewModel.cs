@@ -13,6 +13,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -124,6 +125,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isCantHovered = false;
 
+        // Item Config Panel visibility toggle
+        [ObservableProperty]
+        private bool _isItemConfigPanelOpen = false;
+
+        // Item Config Panel ViewModel reference
+        [ObservableProperty]
+        private ItemConfigPanelViewModel? _itemConfigPanelViewModel;
+
+        public void OpenItemConfigPanel()
+        {
+            IsItemConfigPanelOpen = true;
+        }
+
+        public void CloseItemConfigPanel()
+        {
+            IsItemConfigPanelOpen = false;
+        }
+
         // Carousel pagination - show arrows when there are multiple pages
         // TODO: Implement actual pagination logic - for now always false (arrows hidden)
         public bool MustHasMultiplePages => false;
@@ -234,6 +253,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Button icon images
         public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEditionImage("debuffed");
+        public IImage? NegativeEditionImage => Services.SpriteService.Instance.GetEditionImage("negative");
 
         // Base image for edition buttons - 10 of Spades for Standard Cards, joker for Jokers
         public IImage? EditionBaseImage => SelectedMainCategory == "StandardCard"
@@ -2413,6 +2433,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in group.Items)
                 {
                     item.Edition = edition == "None" ? null : edition;
+
+                    // For Negative edition, reload base sprite from negative sheet
+                    if (edition == "Negative" && (item.Type == "Joker" || item.Type == "SoulJoker"))
+                    {
+                        item.ItemImage = Services.SpriteService.Instance.GetJokerImage(item.Name, edition: "negative");
+                    }
+                    // When clearing Negative, reload regular sprite
+                    else if (edition == "None" && item.Edition == "negative" && (item.Type == "Joker" || item.Type == "SoulJoker"))
+                    {
+                        item.ItemImage = Services.SpriteService.Instance.GetJokerImage(item.Name, edition: null);
+                    }
                 }
             }
 
@@ -2724,6 +2755,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 config.Edition = SelectedEdition.ToLower();
                 item.Edition = config.Edition; // CRITICAL: Update item to trigger EditionImage binding
+
+                // For Negative edition, reload the base ItemImage from negative sprite sheet
+                if (config.Edition == "negative" && (item.Type == "Joker" || item.Type == "SoulJoker"))
+                {
+                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(item.Name, edition: "negative");
+                }
+            }
+            else if (item.Type == "Joker" || item.Type == "SoulJoker")
+            {
+                // If edition is None but item was previously negative, reload regular sprite
+                if (item.Edition == "negative")
+                {
+                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(item.Name, edition: null);
+                }
             }
 
             // Apply Stickers with Eternal restrictions
