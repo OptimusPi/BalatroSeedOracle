@@ -655,6 +655,11 @@ namespace BalatroSeedOracle.Services
                     "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
                 );
 
+                // Load negative joker positions from json
+                jokerNegativePositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.json"
+                );
+
                 // Load tag positions from json
                 tagPositions = LoadSpritePositions(
                     "avares://BalatroSeedOracle/Assets/Tags/tags.json"
@@ -1112,6 +1117,7 @@ namespace BalatroSeedOracle.Services
 
         public IImage? GetJokerImage(
             string name,
+            string? edition = null,
             int spriteWidth = UIConstants.JokerSpriteWidth,
             int spriteHeight = UIConstants.JokerSpriteHeight
         )
@@ -1124,10 +1130,15 @@ namespace BalatroSeedOracle.Services
                 name = "anyjoker";
             }
 
+            // Use negative sprite sheet for Negative edition
+            var isNegative = edition?.Equals("negative", StringComparison.OrdinalIgnoreCase) == true;
+            var positions = isNegative ? jokerNegativePositions : jokerPositions;
+            var sheet = isNegative ? jokerNegativeSheet : jokerSheet;
+
             var baseImage = GetSpriteImage(
                 name,
-                jokerPositions,
-                jokerSheet,
+                positions,
+                sheet,
                 spriteWidth,
                 spriteHeight,
                 "joker"
