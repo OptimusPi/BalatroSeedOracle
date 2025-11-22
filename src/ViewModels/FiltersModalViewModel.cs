@@ -75,11 +75,11 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
-        private string _selectedDeck = "Red";
+        private Motely.MotelyDeck _selectedDeck = Motely.MotelyDeck.Red;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedStakeIndex))]
-        private int _selectedStake = 0;
+        private Motely.MotelyStake _selectedStake = Motely.MotelyStake.White;
 
         // Tab visibility properties - proper MVVM pattern
         [ObservableProperty]
@@ -166,66 +166,49 @@ namespace BalatroSeedOracle.ViewModels
         // Deck/Stake index helpers
         public int SelectedDeckIndex
         {
-            get
-            {
-                var decks = new[]
-                {
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Black",
-                    "Magic",
-                    "Nebula",
-                    "Ghost",
-                    "Abandoned",
-                    "Checkered",
-                    "Zodiac",
-                    "Painted",
-                    "Anaglyph",
-                    "Plasma",
-                    "Erratic",
-                };
-                return Array.IndexOf(decks, SelectedDeck);
-            }
+            get => (int)SelectedDeck;
             set
             {
-                var decks = new[]
+                if (value >= 0 && value <= 14) // 0-14 for 15 decks
                 {
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Black",
-                    "Magic",
-                    "Nebula",
-                    "Ghost",
-                    "Abandoned",
-                    "Checkered",
-                    "Zodiac",
-                    "Painted",
-                    "Anaglyph",
-                    "Plasma",
-                    "Erratic",
-                };
-                if (value >= 0 && value < decks.Length)
-                {
-                    SelectedDeck = decks[value];
-                    // Don't manually call OnPropertyChanged - let auto-generated property handle it
+                    SelectedDeck = (Motely.MotelyDeck)value;
                 }
             }
         }
 
         public int SelectedStakeIndex
         {
-            get => SelectedStake;
+            get
+            {
+                // Map enum to UI index (0-7)
+                return SelectedStake switch
+                {
+                    Motely.MotelyStake.White => 0,
+                    Motely.MotelyStake.Red => 1,
+                    Motely.MotelyStake.Green => 2,
+                    Motely.MotelyStake.Black => 3,
+                    Motely.MotelyStake.Blue => 4,
+                    Motely.MotelyStake.Purple => 5,
+                    Motely.MotelyStake.Orange => 6,
+                    Motely.MotelyStake.Gold => 7,
+                    _ => 0
+                };
+            }
             set
             {
-                if (SelectedStake != value)
+                // Map UI index (0-7) to enum
+                SelectedStake = value switch
                 {
-                    SelectedStake = value;
-                    // Don't manually call OnPropertyChanged - let auto-generated property handle it
-                }
+                    0 => Motely.MotelyStake.White,
+                    1 => Motely.MotelyStake.Red,
+                    2 => Motely.MotelyStake.Green,
+                    3 => Motely.MotelyStake.Black,
+                    4 => Motely.MotelyStake.Blue,
+                    5 => Motely.MotelyStake.Purple,
+                    6 => Motely.MotelyStake.Orange,
+                    7 => Motely.MotelyStake.Gold,
+                    _ => Motely.MotelyStake.White
+                };
             }
         }
 
@@ -256,7 +239,7 @@ namespace BalatroSeedOracle.ViewModels
             FilterNameDisplayMode = !value;
         }
 
-        partial void OnSelectedDeckChanged(string value)
+        partial void OnSelectedDeckChanged(Motely.MotelyDeck value)
         {
             DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 OnSelectedDeckChanged called! New deck: {value}");
             // Regenerate JSON when deck changes
@@ -271,13 +254,13 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        partial void OnSelectedStakeChanged(int value)
+        partial void OnSelectedStakeChanged(Motely.MotelyStake value)
         {
-            DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 OnSelectedStakeChanged called! New stake index: {value}");
+            DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 OnSelectedStakeChanged called! New stake: {value}");
             // Regenerate JSON when stake changes
             if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
             {
-                DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 Regenerating JSON because stake changed to index: {value}");
+                DebugLogger.LogImportant("FiltersModalViewModel", $"🎯 Regenerating JSON because stake changed to: {value}");
                 RegenerateJsonFromState(jsonVm);
             }
             else
@@ -1009,10 +992,9 @@ namespace BalatroSeedOracle.ViewModels
                 // BUG FIX: Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
-                // BUG FIX: Use SelectedDeck directly instead of converting from index
-                // The SelectedDeck property already contains the correct deck name!
-                Deck = SelectedDeck,
-                Stake = GetStakeName(SelectedStake), // SelectedStake is already the index
+                // Use enum ToString() for JSON serialization
+                Deck = SelectedDeck.ToString(),
+                Stake = SelectedStake.ToString().ToLower(),
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
@@ -1328,25 +1310,14 @@ namespace BalatroSeedOracle.ViewModels
             _originalDateCreated = config.DateCreated;
             _originalAuthor = config.Author;
 
-            // Load deck and stake
-            if (!string.IsNullOrEmpty(config.Deck))
-                SelectedDeck = config.Deck;
-            if (!string.IsNullOrEmpty(config.Stake))
+            // Load deck and stake from JSON strings → parse to enums
+            if (!string.IsNullOrEmpty(config.Deck) && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck))
             {
-                var stakes = new[]
-                {
-                    "white",
-                    "red",
-                    "green",
-                    "black",
-                    "blue",
-                    "purple",
-                    "orange",
-                    "gold",
-                };
-                SelectedStake = Array.IndexOf(stakes, config.Stake.ToLower());
-                if (SelectedStake < 0)
-                    SelectedStake = 0;
+                SelectedDeck = deck;
+            }
+            if (!string.IsNullOrEmpty(config.Stake) && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake))
+            {
+                SelectedStake = stake;
             }
 
             // Load Must clauses
@@ -1934,43 +1905,30 @@ namespace BalatroSeedOracle.ViewModels
             return filterSelector;
         }
 
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white",
-                "red",
-                "green",
-                "black",
-                "blue",
-                "purple",
-                "orange",
-                "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+            return stake.ToString().ToLower();
         }
 
         /// <summary>
