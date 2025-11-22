@@ -1182,7 +1182,7 @@ namespace BalatroSeedOracle.Services
         )
         {
             // Get the base joker image
-            var jokerImage = GetJokerImage(name, spriteWidth, spriteHeight);
+            var jokerImage = GetJokerImage(name, edition: null, spriteWidth, spriteHeight);
             if (jokerImage == null)
                 return null;
 
