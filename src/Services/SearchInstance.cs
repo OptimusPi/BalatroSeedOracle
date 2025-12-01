@@ -139,12 +139,12 @@ namespace BalatroSeedOracle.Services
                 $"Using shared column schema: {string.Join(", ", _columnNames)}"
             );
 
-            // If constructor already supplied a path, keep it; otherwise derive from filter name
+            // If constructor already supplied a path, keep it; otherwise use searchId
+            // (which already includes filter+deck+stake for uniqueness)
             if (string.IsNullOrEmpty(_dbPath))
             {
-                var filterName = Path.GetFileNameWithoutExtension(configPath);
                 var searchResultsDir = AppPaths.SearchResultsDir;
-                _dbPath = Path.Combine(searchResultsDir, $"{filterName}.db");
+                _dbPath = Path.Combine(searchResultsDir, $"{_searchId}.db");
                 _connectionString = $"Data Source={_dbPath}";
             }
             DebugLogger.LogImportant(
@@ -154,6 +154,7 @@ namespace BalatroSeedOracle.Services
 
             InitializeDatabase();
         }
+
 
         /// <summary>
         /// Validates existing database schema matches current filter requirements.
@@ -167,8 +168,7 @@ namespace BalatroSeedOracle.Services
                 // Check if results table exists (DuckDB syntax)
                 using (var checkTable = _connection.CreateCommand())
                 {
-                    checkTable.CommandText =
-                        "SELECT table_name FROM information_schema.tables WHERE table_name='results'";
+                    checkTable.CommandText = "SELECT table_name FROM information_schema.tables WHERE table_name='results'";
                     var result = checkTable.ExecuteScalar();
 
                     if (result == null)
@@ -181,8 +181,7 @@ namespace BalatroSeedOracle.Services
                 // Table exists - check if columns match expected schema (DuckDB syntax)
                 using (var getColumns = _connection.CreateCommand())
                 {
-                    getColumns.CommandText =
-                        "SELECT column_name FROM information_schema.columns WHERE table_name='results' ORDER BY ordinal_position";
+                    getColumns.CommandText = "SELECT column_name FROM information_schema.columns WHERE table_name='results' ORDER BY ordinal_position";
                     var existingColumns = new List<string>();
                     using (var reader = getColumns.ExecuteReader())
                     {
@@ -205,9 +204,8 @@ namespace BalatroSeedOracle.Services
                         $"Expected columns: {string.Join(", ", expectedColumns)}"
                     );
 
-                    bool match =
-                        existingColumns.Count == expectedColumns.Count
-                        && existingColumns.SequenceEqual(expectedColumns);
+                    bool match = existingColumns.Count == expectedColumns.Count &&
+                                 existingColumns.SequenceEqual(expectedColumns);
 
                     if (!match)
                     {
@@ -228,10 +226,7 @@ namespace BalatroSeedOracle.Services
                         if (File.Exists(_dbPath + ".wal"))
                         {
                             File.Delete(_dbPath + ".wal");
-                            DebugLogger.Log(
-                                $"SearchInstance[{_searchId}]",
-                                $"Deleted: {_dbPath}.wal"
-                            );
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}.wal");
                         }
 
                         // Reopen connection to create fresh database
@@ -943,13 +938,11 @@ namespace BalatroSeedOracle.Services
             if (
                 !Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
                     criteria.ConfigPath,
-                    out var config,
-                    out var parseError
+                    out var config
                 )
             )
             {
-                var errorMsg =
-                    $"Failed to load or parse config from {criteria.ConfigPath}. Motely error: {parseError}";
+                var errorMsg = $"Failed to load or parse config from {criteria.ConfigPath}";
                 DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
                 throw new Exception(errorMsg);
             }
@@ -1791,12 +1784,13 @@ namespace BalatroSeedOracle.Services
                     )
                         compositeSettings = compositeSettings.WithStake(compositeStake);
 
-                    // CRITICAL FIX: Always apply scoring provider AND CsvOutput to trigger result callback
-                    // Even filters with no Should[] clauses need the callback for results to appear in UI
-                    // BUG FIX: WithCsvOutput(true) MUST be set unconditionally - otherwise seeds bypass scoring!
-                    compositeSettings = compositeSettings
-                        .WithSeedScoreProvider(scoreDesc)
-                        .WithCsvOutput(true);
+                    // Apply scoring if needed
+                    bool compositeNeedsScoring = (config.Should?.Count > 0);
+                    if (compositeNeedsScoring)
+                    {
+                        compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+                        compositeSettings = compositeSettings.WithCsvOutput(true);
+                    }
 
                     DebugLogger.LogImportant(
                         $"SearchInstance[{_searchId}]",
@@ -1848,10 +1842,9 @@ namespace BalatroSeedOracle.Services
                         )
                             compositeSettings = compositeSettings.WithStake(stake);
 
-                        // BUG FIX: WithCsvOutput(true) MUST be set unconditionally - otherwise seeds bypass scoring!
-                        compositeSettings = compositeSettings
-                            .WithSeedScoreProvider(scoreDesc)
-                            .WithCsvOutput(true);
+                        compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+                        if (config.Should?.Count > 0)
+                            compositeSettings = compositeSettings.WithCsvOutput(true);
 
                         search = compositeSettings.WithSequentialSearch().Start();
                     }
@@ -1881,10 +1874,7 @@ namespace BalatroSeedOracle.Services
                                 (long)criteria.EndBatch
                             );
 
-                        // BUG FIX: WithCsvOutput(true) MUST be set unconditionally - otherwise seeds bypass scoring!
-                        searchSettings = searchSettings
-                            .WithSeedScoreProvider(scoreDesc)
-                            .WithCsvOutput(true);
+                        searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
 
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
@@ -1897,23 +1887,23 @@ namespace BalatroSeedOracle.Services
                 }
                 _currentSearch = search;
 
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search created with {categories.Count} filter category(ies): {string.Join(", ", categories)}"
+                    $"Search created with {categories.Count} filter category(ies): {string.Join(", ", categories)}"
                 );
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}"
+                    $"Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}"
                 );
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search started! New status: {_currentSearch.Status}"
+                    $"Search started! Status: {_currentSearch.Status}"
                 );
 
                 // Wait for search completion
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🔄 Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}"
+                    $"Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}"
                 );
                 while (
                     _currentSearch.Status == MotelySearchStatus.Running

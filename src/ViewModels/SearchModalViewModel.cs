@@ -44,9 +44,6 @@ namespace BalatroSeedOracle.ViewModels
         // Callback for CREATE NEW FILTER button (set by View)
         private Action? _newFilterRequestedAction;
 
-        // Callback for EDIT FILTER button (set by View) - passes current filter path
-        private Action<string?>? _editFilterRequestedAction;
-
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
         private bool _isSearching = false;
@@ -67,6 +64,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public Models.VisualizerPresetTransition? ActiveSearchTransition { get; set; }
 
+        // PROPER MVVM: Tab visibility controlled by ViewModel, not code-behind
         [ObservableProperty]
         private bool _isSettingsTabVisible = false;
 
@@ -85,6 +83,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _lastKnownResultCount = 0;
 
+        // UX: generic Balatro-styled info text for the Results tab panel
         [ObservableProperty]
         private string _panelText = "Tip: Results appear below. Use Export to save seeds.";
 
@@ -156,7 +155,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Search parameters
         [ObservableProperty]
-        private int _minScore = -1; // -1 disables AutoCutoff while accepting all results
+        private int _minScore = 0;
 
         [ObservableProperty]
         private bool _isDebugMode = false;
@@ -207,23 +206,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             get
             {
-                // AllSeeds mode always auto-saves, so always show Resume/Pause
-                bool shouldSave = SelectedSearchMode == SearchMode.AllSeeds || ContinueFromLast;
-
                 if (!IsSearching)
-                    return shouldSave ? "Resume Search" : "Start Search";
+                    return ContinueFromLast ? "Resume Search" : "Start Search";
 
-                // If Continue is enabled (or AllSeeds mode), show PAUSE (saves state)
-                // Otherwise show STOP (doesn't save state)
-                return shouldSave ? "Pause Search" : "Stop Search";
+                // If Continue is enabled, show PAUSE (saves state)
+                // If Continue is disabled, show STOP (doesn't save state)
+                return ContinueFromLast ? "Pause Search" : "Stop Search";
             }
         }
 
         // Button color class - Blue when stopped, Yellow-Orange when running
         public string CookButtonClass => IsSearching ? "btn-warning" : "btn-blue";
-
-        // Edit Filter button text - Shows "Stop First..." when search is running
-        public string EditFilterButtonText => IsSearching ? "Stop First..." : "Edit Filter";
 
         // Results filtering
         [ObservableProperty]
@@ -268,18 +261,9 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnIsSearchingChanged(bool value)
         {
             StopSearchCommand.NotifyCanExecuteChanged();
-            MinimizeToDesktopCommand.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(CookButtonText));
             OnPropertyChanged(nameof(CookButtonClass));
-            OnPropertyChanged(nameof(EditFilterButtonText));
-            OnPropertyChanged(nameof(CanMinimizeToDesktopVisible)); // Update Minimize button visibility
         }
-
-        /// <summary>
-        /// Property for binding visibility of Minimize & Continue button
-        /// </summary>
-        public bool CanMinimizeToDesktopVisible =>
-            _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
 
         partial void OnContinueFromLastChanged(bool value)
         {
@@ -402,10 +386,6 @@ namespace BalatroSeedOracle.ViewModels
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
                 _currentSearchId = _searchInstance.SearchId;
 
-                // Update minimize button visibility now that search instance exists
-                OnPropertyChanged(nameof(CanMinimizeToDesktopVisible));
-                MinimizeToDesktopCommand.NotifyCanExecuteChanged();
-
                 // Subscribe to SearchInstance events directly
                 _searchInstance.SearchCompleted += OnSearchCompleted;
                 _searchInstance.ProgressUpdated += OnProgressUpdated;
@@ -446,9 +426,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (_searchInstance != null)
                 {
                     // CRITICAL: Different behavior based on Continue checkbox state
-                    // AllSeeds mode ALWAYS saves state (auto-save), other modes respect checkbox
-                    bool shouldSaveState =
-                        SelectedSearchMode == SearchMode.AllSeeds || ContinueFromLast;
+                    bool shouldSaveState = ContinueFromLast;
 
                     if (shouldSaveState)
                     {
@@ -623,7 +601,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case SearchMode.AllSeeds:
                     IsThreadsVisible = true;
-                    IsContinueVisible = false; // Sequential mode always auto-saves, hide checkbox
+                    IsContinueVisible = true;
                     IsSeedInputVisible = false;
                     IsWordListVisible = false;
                     break;
@@ -690,37 +668,6 @@ namespace BalatroSeedOracle.ViewModels
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        [RelayCommand(CanExecute = nameof(CanEditFilter))]
-        private void EditFilter()
-        {
-            try
-            {
-                DebugLogger.Log("SearchModalViewModel", "Edit Filter button clicked");
-                
-                // Open FiltersModal with current filter loaded for editing
-                if (LoadedConfig != null && MainMenu != null)
-                {
-                    MainMenu.ShowFiltersModal(LoadedConfig);
-                    DebugLogger.Log("SearchModalViewModel", $"Opening filter editor for: {LoadedConfig.Name}");
-                }
-                else
-                {
-                    // Fallback to old callback pattern
-                    _editFilterRequestedAction?.Invoke(CurrentFilterPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                AddConsoleMessage($"Error opening filter editor: {ex.Message}");
-                DebugLogger.LogError("SearchModalViewModel", $"Error opening filter editor: {ex.Message}");
-            }
-        }
-
-        private bool CanEditFilter()
-        {
-            return !IsSearching && LoadedConfig != null;
-        }
-
         [RelayCommand]
         private void Maximize()
         {
@@ -752,14 +699,6 @@ namespace BalatroSeedOracle.ViewModels
         public void SetNewFilterRequestedCallback(Action callback)
         {
             _newFilterRequestedAction = callback;
-        }
-
-        /// <summary>
-        /// Set callback for EDIT FILTER button (called from View)
-        /// </summary>
-        public void SetEditFilterRequestedCallback(Action<string?> callback)
-        {
-            _editFilterRequestedAction = callback;
         }
 
         /// <summary>
@@ -865,7 +804,6 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("SearchModalViewModel", "Results sorted by score");
         }
 
-
         [RelayCommand]
         private async Task CopySeedsAsync()
         {
@@ -927,30 +865,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
-                try
-                {
-                    IsSearching = false;
+                IsSearching = false;
 
-                    // CRITICAL FIX: Load results from DuckDB into ObservableCollection
-                    await LoadExistingResults();
+                // CRITICAL FIX: Load results from DuckDB into ObservableCollection
+                await LoadExistingResults();
 
-                    AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
-                    PanelText = $"Search complete: {ResultsCount} seeds";
-                    DebugLogger.Log(
-                        "SearchModalViewModel",
-                        $"Search completed with {ResultsCount} results"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    // CRITICAL: Don't silently swallow exceptions in async Post
-                    DebugLogger.LogError(
-                        "SearchModalViewModel",
-                        $"❌ Error loading search results: {ex.Message}"
-                    );
-                    AddConsoleMessage($"Error loading results: {ex.Message}");
-                    PanelText = "Error loading results";
-                }
+                AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
+                PanelText = $"Search complete: {ResultsCount} seeds";
+                DebugLogger.Log(
+                    "SearchModalViewModel",
+                    $"Search completed with {ResultsCount} results"
+                );
             });
         }
 
@@ -958,70 +883,56 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Helper Methods
 
+        /// <summary>
+        /// Gets the unique search ID that includes filter name, deck, and stake.
+        /// This ensures different deck/stake combinations have separate result databases.
+        /// </summary>
+        private string GetSearchId()
+        {
+            if (string.IsNullOrEmpty(CurrentFilterPath))
+                return string.Empty;
+
+            var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+            var normalizedFilterName = filterName?.Replace(" ", "_") ?? "unknown";
+
+            // Use the current deck/stake selection, defaulting to "Red" and "White"
+            var deck = string.IsNullOrEmpty(DeckSelection) || DeckSelection == "All Decks"
+                ? "Red"
+                : DeckSelection.Replace(" Deck", "");
+            var stake = string.IsNullOrEmpty(StakeSelection) || StakeSelection == "All Stakes"
+                ? "White"
+                : StakeSelection;
+
+            return $"{normalizedFilterName}_{deck}_{stake}";
+        }
+
+        /// <summary>
+        /// Gets the database path for the current filter/deck/stake combination.
+        /// </summary>
+        private string GetDatabasePath()
+        {
+            var searchId = GetSearchId();
+            if (string.IsNullOrEmpty(searchId))
+                return string.Empty;
+
+            var searchResultsDir = AppPaths.SearchResultsDir;
+            return System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
+        }
+
         private SearchCriteria BuildSearchCriteria()
         {
-            DebugLogger.LogImportant(
-                "SearchModalViewModel",
-                $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'"
-            );
-            DebugLogger.LogImportant(
-                "SearchModalViewModel",
-                $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}"
-            );
+            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'");
+            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}");
 
             if (string.IsNullOrEmpty(CurrentFilterPath))
             {
-                DebugLogger.LogError(
-                    "SearchModalViewModel",
-                    "❌ CRITICAL BUG: CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!"
+                DebugLogger.LogError("SearchModalViewModel", "❌ CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!");
+                throw new InvalidOperationException(
+                    "No filter path available - filter must be loaded first!"
                 );
-                DebugLogger.LogError(
-                    "SearchModalViewModel",
-                    $"❌ LoadedConfig state: {(LoadedConfig != null ? $"NOT NULL (Name={LoadedConfig.Name})" : "NULL")}"
-                );
-                DebugLogger.LogError(
-                    "SearchModalViewModel",
-                    "❌ This indicates SearchModalViewModel was created without loading a filter, or filter path was cleared."
-                );
-
-                // DEFENSIVE: Try to find filter path from AppPaths if we have a loaded config
-                if (LoadedConfig != null && !string.IsNullOrEmpty(LoadedConfig.Name))
-                {
-                    var inferredPath = System.IO.Path.Combine(
-                        AppPaths.FiltersDir,
-                        LoadedConfig.Name.Replace(" ", "_") + ".json"
-                    );
-                    if (System.IO.File.Exists(inferredPath))
-                    {
-                        DebugLogger.LogImportant(
-                            "SearchModalViewModel",
-                            $"✅ RECOVERED: Inferred filter path from config name: {inferredPath}"
-                        );
-                        CurrentFilterPath = inferredPath;
-                    }
-                    else
-                    {
-                        DebugLogger.LogError(
-                            "SearchModalViewModel",
-                            $"❌ RECOVERY FAILED: Inferred path does not exist: {inferredPath}"
-                        );
-                        throw new InvalidOperationException(
-                            $"Filter path not available. Tried to infer path from config name '{LoadedConfig.Name}' but file does not exist at: {inferredPath}"
-                        );
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        "No filter loaded. Please select a filter from the Filter Selection screen first."
-                    );
-                }
             }
 
-            DebugLogger.Log(
-                "SearchModalViewModel",
-                $"✅ Using CurrentFilterPath: {CurrentFilterPath}"
-            );
+            DebugLogger.Log("SearchModalViewModel", $"✅ Using CurrentFilterPath: {CurrentFilterPath}");
             var criteria = new SearchCriteria
             {
                 ConfigPath = CurrentFilterPath,
@@ -1034,21 +945,15 @@ namespace BalatroSeedOracle.ViewModels
             switch (SelectedSearchMode)
             {
                 case SearchMode.AllSeeds:
-                    // Normal sequential search (always auto-saves progress)
+                    // Normal sequential search
                     criteria.ThreadCount = ThreadCount;
                     criteria.BatchSize = BatchSize;
 
-                    // Handle Continue feature - AllSeeds mode ALWAYS continues from saved state if available
-                    if (!string.IsNullOrEmpty(CurrentFilterPath))
+                    // Handle Continue feature
+                    if (ContinueFromLast && !string.IsNullOrEmpty(CurrentFilterPath))
                     {
-                        // CRITICAL FIX: Convert JSON filter path to database path
-                        // CurrentFilterPath is like: "JsonItemFilters/MyFilter.json"
-                        // Database path should be: "SearchResults/MyFilter.db"
-                        var filterName = System.IO.Path.GetFileNameWithoutExtension(
-                            CurrentFilterPath
-                        );
-                        var searchResultsDir = AppPaths.SearchResultsDir;
-                        var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+                        // Use helper method that includes deck/stake in the database path
+                        var dbPath = GetDatabasePath();
 
                         AddConsoleMessage($"Checking for saved state at: {dbPath}");
                         var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
@@ -1089,10 +994,7 @@ namespace BalatroSeedOracle.ViewModels
                 case SearchMode.SingleSeed:
                     // Single seed mode = WordList mode with 1 seed
                     // Create temp wordlist file
-                    var tempWordListPath = Path.Combine(
-                        AppPaths.WordListsDir,
-                        "_temp_single_seed.txt"
-                    );
+                    var tempWordListPath = Path.Combine(AppPaths.WordListsDir, "_temp_single_seed.txt");
                     File.WriteAllText(tempWordListPath, SeedInput);
                     criteria.WordList = "_temp_single_seed"; // Without .txt extension
                     criteria.ThreadCount = 1;
@@ -1260,6 +1162,20 @@ namespace BalatroSeedOracle.ViewModels
                     _searchInstance.SearchStarted += OnSearchStarted;
                     _searchInstance.SearchCompleted += OnSearchCompleted;
                     _searchInstance.ProgressUpdated += OnProgressUpdated;
+
+                    // CRITICAL FIX: Set CurrentFilterPath from search instance's ConfigPath
+                    // This ensures state save/resume features work after reconnecting
+                    if (!string.IsNullOrEmpty(_searchInstance.ConfigPath))
+                    {
+                        CurrentFilterPath = _searchInstance.ConfigPath;
+                        DebugLogger.Log(
+                            "SearchModalViewModel",
+                            $"✅ CurrentFilterPath restored from search instance: {CurrentFilterPath}"
+                        );
+
+                        // Also load the config to restore LoadedConfig, deck/stake, etc.
+                        LoadConfigFromPath(_searchInstance.ConfigPath);
+                    }
 
                     // CRITICAL: Update UI state from existing search
                     IsSearching = _searchInstance?.IsRunning ?? false;
@@ -1465,14 +1381,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.LogImportant(
-                    "SearchModalViewModel",
-                    $"🔍 LoadConfigFromPath called with: {configPath}"
-                );
-                DebugLogger.Log(
-                    "SearchModalViewModel",
-                    $"🔍 File.Exists check: {System.IO.File.Exists(configPath)}"
-                );
+                DebugLogger.LogImportant("SearchModalViewModel", $"🔍 LoadConfigFromPath called with: {configPath}");
+                DebugLogger.Log("SearchModalViewModel", $"🔍 File.Exists check: {System.IO.File.Exists(configPath)}");
 
                 if (!System.IO.File.Exists(configPath))
                 {
@@ -1502,10 +1412,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
-                    DebugLogger.LogImportant(
-                        "SearchModalViewModel",
-                        $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}"
-                    );
+                    DebugLogger.LogImportant("SearchModalViewModel", $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}");
 
                     // Update deck and stake from the loaded config
                     if (!string.IsNullOrEmpty(config.Deck))
@@ -1565,6 +1472,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsSearching = true;
                 DebugLogger.Log("SearchModalViewModel", "Search started");
+                // TODO AFTER pifreak configures the visualizer THEN we can make the search mode audio!
             });
         }
 
@@ -1608,16 +1516,6 @@ namespace BalatroSeedOracle.ViewModels
             var now = DateTime.Now;
             var canCheckResults = (now - _lastResultsLoad).TotalSeconds >= 0.5; // Reduced from 1.0s for snappier updates
 
-            // DEBUG: Log polling check
-            var hasNew = _searchInstance?.HasNewResultsSinceLastQuery ?? false;
-            if (hasNew && canCheckResults && !_isLoadingResults)
-            {
-                DebugLogger.LogImportant(
-                    "SearchModalViewModel",
-                    $"🔍 OnProgressUpdated: Checking for new results (ResultsFound={e.ResultsFound}, SearchResults.Count={SearchResults.Count})"
-                );
-            }
-
             if (
                 canCheckResults
                 && _searchInstance != null
@@ -1648,21 +1546,11 @@ namespace BalatroSeedOracle.ViewModels
 
                         if (newResults != null && newResults.Count > 0)
                         {
-                            DebugLogger.LogImportant(
-                                "SearchModalViewModel",
-                                $"📦 Loaded {newResults.Count} new results from database"
-                            );
-
                             // Inject tally labels from SearchInstance column names (seed, score, then tallies)
                             var labels =
                                 _searchInstance.ColumnNames.Count > 2
                                     ? _searchInstance.ColumnNames.Skip(2).ToArray()
                                     : Array.Empty<string>();
-
-                            DebugLogger.LogImportant(
-                                "SearchModalViewModel",
-                                $"📊 Column names: {string.Join(", ", _searchInstance.ColumnNames)}"
-                            );
 
                             // Add results on UI thread
                             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -1676,22 +1564,10 @@ namespace BalatroSeedOracle.ViewModels
                                     }
                                     SearchResults.Add(result);
 
-                                    DebugLogger.LogImportant(
-                                        "SearchModalViewModel",
-                                        $"✅ Added seed {result.Seed} to UI (Total: {SearchResults.Count})"
-                                    );
-
                                     // Add seed found message to console with copy button
                                     AddSeedFoundMessage(result.Seed, result.TotalScore);
                                 }
                             });
-                        }
-                        else
-                        {
-                            DebugLogger.Log(
-                                "SearchModalViewModel",
-                                "No new results from database query"
-                            );
                         }
                     }
                     catch (Exception ex)
@@ -1722,10 +1598,8 @@ namespace BalatroSeedOracle.ViewModels
                     && !string.IsNullOrEmpty(CurrentFilterPath)
                 )
                 {
-                    // CRITICAL FIX: Convert JSON filter path to database path for saving state
-                    var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                    var searchResultsDir = AppPaths.SearchResultsDir;
-                    var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+                    // Use helper method that includes deck/stake in the database path
+                    var dbPath = GetDatabasePath();
 
                     var state = new SearchState
                     {
@@ -1985,10 +1859,8 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Convert JSON filter path to database path
-                var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchResultsDir = AppPaths.SearchResultsDir;
-                var dbPath = System.IO.Path.Combine(searchResultsDir, $"{filterName}.db");
+                // Use helper method that includes deck/stake in the database path
+                var dbPath = GetDatabasePath();
 
                 if (!System.IO.File.Exists(dbPath))
                 {
@@ -2060,10 +1932,7 @@ namespace BalatroSeedOracle.ViewModels
                     settings.SearchTransitionStartPresetName ?? "Default Balatro",
                     true
                 );
-                var endParams = LoadPresetParameters(
-                    settings.SearchTransitionEndPresetName ?? "Default Balatro",
-                    false
-                );
+                var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName ?? "Default Balatro", false);
 
                 // Create transition
                 ActiveSearchTransition = new Models.VisualizerPresetTransition
@@ -2094,7 +1963,10 @@ namespace BalatroSeedOracle.ViewModels
         private Models.ShaderParameters LoadPresetParameters(string? presetName, bool isDarkPreset)
         {
             // If no preset name specified or it's a default preset, use built-in defaults
-            if (string.IsNullOrWhiteSpace(presetName) || presetName == "Default Balatro")
+            if (
+                string.IsNullOrWhiteSpace(presetName)
+                || presetName == "Default Balatro"
+            )
             {
                 return isDarkPreset
                     ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
