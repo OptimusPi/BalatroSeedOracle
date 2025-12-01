@@ -12,12 +12,14 @@ namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
     /// ViewModel for GenieWidget - AI-powered filter generation
-    /// Uses Cloudflare Workers AI (FREE!) to convert natural language to Motely JSON
+    /// Uses local Host API (/genie endpoint) for keyword-based JAML generation
+    /// Falls back to Cloudflare Workers AI if configured
     /// </summary>
     public partial class GenieWidgetViewModel : BaseWidgetViewModel
     {
         private static readonly HttpClient _httpClient = new();
-        private const string GENIE_API = "https://balatrogenie.app/generate";
+        private const string LOCAL_GENIE_API = "http://localhost:3141/genie";
+        private const string CLOUD_GENIE_API = "https://balatrogenie.app/generate";
         private readonly SearchManager _searchManager;
 
         [ObservableProperty]
@@ -90,51 +92,68 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                // Call Cloudflare Workers AI via your existing balatrogenie.app
                 var requestBody = new { prompt = UserPrompt };
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(GENIE_API, content);
-                var responseText = await response.Content.ReadAsStringAsync();
+                // Try local Host API first (fast, no network dependency)
+                string? jamlResult = null;
 
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    var result = JsonSerializer.Deserialize<GenieResponse>(responseText);
+                    _httpClient.Timeout = TimeSpan.FromSeconds(5);
+                    var localResponse = await _httpClient.PostAsync(LOCAL_GENIE_API, content);
 
-                    if (result?.success == true && result.config != null)
+                    if (localResponse.IsSuccessStatusCode)
                     {
-                        // Extract filter info
-                        GeneratedFilterName = result.config.name ?? "Generated Filter";
-                        GeneratedJson = JsonSerializer.Serialize(
-                            result.config,
-                            new JsonSerializerOptions { WriteIndented = true }
-                        );
-
-                        // Create summary
-                        int mustCount = result.config.must?.Count ?? 0;
-                        int shouldCount = result.config.should?.Count ?? 0;
-                        int mustNotCount = result.config.mustNot?.Count ?? 0;
-
-                        GeneratedFilterSummary =
-                            $"Deck: {result.config.deck ?? "Any"} | Stake: {result.config.stake ?? "Any"}\n";
-                        GeneratedFilterSummary +=
-                            $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
-
-                        HasGeneratedConfig = true;
-                        SetStatus("✅ Filter generated!", "#22C55E");
+                        var localResponseText = await localResponse.Content.ReadAsStringAsync();
+                        var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
+                        jamlResult = localResult?.jaml;
+                        SetStatus("🧞 Local genie responded!", "#6B46C1");
                     }
-                    else
-                    {
-                        SetStatus(
-                            $"❌ Generation failed: {result?.error ?? "Unknown error"}",
-                            "#EF4444"
-                        );
-                    }
+                }
+                catch (Exception localEx)
+                {
+                    DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
+                    // Local not available - that's OK, we'll show helpful message
+                }
+
+                if (string.IsNullOrWhiteSpace(jamlResult))
+                {
+                    // Local API not running - show helpful message
+                    SetStatus("💡 Start Host API widget first! (localhost:3141)", "#F59E0B");
+                    return;
+                }
+
+                // Parse the JAML to get a JSON config for display
+                if (Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError) && config != null)
+                {
+                    GeneratedFilterName = config.Name ?? "Generated Filter";
+                    GeneratedJson = JsonSerializer.Serialize(
+                        config,
+                        new JsonSerializerOptions { WriteIndented = true }
+                    );
+
+                    int mustCount = config.Must?.Count ?? 0;
+                    int shouldCount = config.Should?.Count ?? 0;
+                    int mustNotCount = config.MustNot?.Count ?? 0;
+
+                    GeneratedFilterSummary =
+                        $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
+                    GeneratedFilterSummary +=
+                        $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
+
+                    HasGeneratedConfig = true;
+                    SetStatus("✅ Filter generated!", "#22C55E");
                 }
                 else
                 {
-                    SetStatus($"❌ API error: {response.StatusCode}", "#EF4444");
+                    // JAML parsing failed - show the raw JAML anyway
+                    GeneratedFilterName = "Generated Filter";
+                    GeneratedJson = jamlResult;
+                    GeneratedFilterSummary = "Raw JAML (parsing issue)";
+                    HasGeneratedConfig = true;
+                    SetStatus($"⚠️ Generated but couldn't parse: {parseError}", "#F59E0B");
                 }
             }
             catch (Exception ex)
@@ -257,23 +276,10 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         // Response models
-        private class GenieResponse
+        private class LocalGenieResponse
         {
-            public bool success { get; set; }
+            public string? jaml { get; set; }
             public string? error { get; set; }
-            public FilterConfig? config { get; set; }
-        }
-
-        private class FilterConfig
-        {
-            public string? name { get; set; }
-            public string? description { get; set; }
-            public string? author { get; set; }
-            public string? deck { get; set; }
-            public string? stake { get; set; }
-            public System.Collections.Generic.List<object>? must { get; set; }
-            public System.Collections.Generic.List<object>? should { get; set; }
-            public System.Collections.Generic.List<object>? mustNot { get; set; }
         }
     }
 }
