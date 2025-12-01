@@ -83,6 +83,18 @@ namespace BalatroSeedOracle.Models
         /// Show Transition Designer widget (default OFF)
         /// </summary>
         public bool ShowTransitionDesigner { get; set; } = false;
+
+        /// <summary>
+        /// Show Host Server widget (default OFF)
+        /// API server hosting with request counter badge
+        /// </summary>
+        public bool ShowHostServer { get; set; } = false;
+
+        /// <summary>
+        /// Show Fertilizer widget (default OFF)
+        /// Manages the shared seed pile for faster searching
+        /// </summary>
+        public bool ShowFertilizer { get; set; } = false;
     }
 
     /// <summary>

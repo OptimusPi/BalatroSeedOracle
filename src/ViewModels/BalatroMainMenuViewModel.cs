@@ -104,6 +104,12 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isMusicMixerWidgetVisible = false;
 
         [ObservableProperty]
+        private bool _isFertilizerWidgetVisible = false;
+
+        [ObservableProperty]
+        private bool _isHostApiWidgetVisible = false;
+
+        [ObservableProperty]
         private bool _isVibeOutMode = false;
 
         // New: Hide/show all widgets
@@ -481,11 +487,13 @@ namespace BalatroSeedOracle.ViewModels
                 IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
                 IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
                 IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
+                IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
+                IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
                     $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}, "
-                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}"
+                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}"
                 );
             }
             catch (Exception ex)
@@ -507,9 +515,11 @@ namespace BalatroSeedOracle.ViewModels
             IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
             IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
             IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
+            IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
+            IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
             DebugLogger.Log(
                 "BalatroMainMenuViewModel",
-                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}"
+                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}"
             );
         }
 

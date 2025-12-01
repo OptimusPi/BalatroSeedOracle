@@ -26,6 +26,12 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _showTransitionDesignerWidget = false;
 
+        [ObservableProperty]
+        private bool _showFertilizerWidget = false;
+
+        [ObservableProperty]
+        private bool _showHostApiWidget = false;
+
         partial void OnVisualizerThemeChanged(int value)
         {
             SaveVisualizerTheme();
@@ -42,6 +48,16 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         partial void OnShowTransitionDesignerWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
+        }
+
+        partial void OnShowFertilizerWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
+        }
+
+        partial void OnShowHostApiWidgetChanged(bool value)
         {
             SaveFeatureToggles();
         }
@@ -75,10 +91,12 @@ namespace BalatroSeedOracle.ViewModels
             ShowMusicMixerWidget = profile.FeatureToggles?.ShowMusicMixer ?? false;
             ShowVisualizerWidget = profile.FeatureToggles?.ShowVisualizer ?? false;
             ShowTransitionDesignerWidget = profile.FeatureToggles?.ShowTransitionDesigner ?? false;
+            ShowFertilizerWidget = profile.FeatureToggles?.ShowFertilizer ?? false;
+            ShowHostApiWidget = profile.FeatureToggles?.ShowHostServer ?? false;
 
             DebugLogger.Log(
                 "SettingsModalViewModel",
-                $"Settings loaded - Visualizer theme: {VisualizerTheme}, Features: Mixer={ShowMusicMixerWidget}, Viz={ShowVisualizerWidget}, Trans={ShowTransitionDesignerWidget}"
+                $"Settings loaded - Visualizer theme: {VisualizerTheme}, Features: Mixer={ShowMusicMixerWidget}, Viz={ShowVisualizerWidget}, Trans={ShowTransitionDesignerWidget}, Fert={ShowFertilizerWidget}, Host={ShowHostApiWidget}"
             );
         }
 
@@ -93,6 +111,8 @@ namespace BalatroSeedOracle.ViewModels
             profile.FeatureToggles.ShowMusicMixer = ShowMusicMixerWidget;
             profile.FeatureToggles.ShowVisualizer = ShowVisualizerWidget;
             profile.FeatureToggles.ShowTransitionDesigner = ShowTransitionDesignerWidget;
+            profile.FeatureToggles.ShowFertilizer = ShowFertilizerWidget;
+            profile.FeatureToggles.ShowHostServer = ShowHostApiWidget;
 
             _userProfileService.SaveProfile(profile);
             FeatureTogglesChanged?.Invoke(this, EventArgs.Empty);

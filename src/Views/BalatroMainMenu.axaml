@@ -115,6 +115,16 @@
                                                  IsVisible="{Binding IsTransitionDesignerWidgetVisible}"
                                                  ClipToBounds="False"/>
 
+            <!-- 🌱 FERTILIZER WIDGET - Global seed pile management -->
+            <components:FertilizerWidget x:Name="FertilizerWidget"
+                                         IsVisible="{Binding IsFertilizerWidgetVisible}"
+                                         ClipToBounds="False"/>
+
+            <!-- 🌐 HOST API WIDGET - MotelyApiServer controls -->
+            <components:HostApiWidget x:Name="HostApiWidget"
+                                      IsVisible="{Binding IsHostApiWidgetVisible}"
+                                      ClipToBounds="False"/>
+
         </Grid>
         
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->

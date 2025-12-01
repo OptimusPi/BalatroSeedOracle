@@ -73,6 +73,40 @@
                 </StackPanel>
             </Button>
 
+            <Button x:Name="FertilizerButton"
+                    Width="280"
+                    Height="50"
+                    Click="OnFertilizerClick">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="🌱 Fertilizer"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FertilizerStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="HostApiButton"
+                    Width="280"
+                    Height="50"
+                    Click="OnHostApiClick">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="🌐 Host API"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="HostApiStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
             <!-- Info Text -->
             <TextBlock Text="Click to toggle widget visibility"
                        FontSize="11"

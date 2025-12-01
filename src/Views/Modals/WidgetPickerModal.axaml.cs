@@ -19,9 +19,13 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _musicMixerButton;
         private Button? _visualizerButton;
         private Button? _transitionDesignerButton;
+        private Button? _fertilizerButton;
+        private Button? _hostApiButton;
         private TextBlock? _musicMixerStatus;
         private TextBlock? _visualizerStatus;
         private TextBlock? _transitionDesignerStatus;
+        private TextBlock? _fertilizerStatus;
+        private TextBlock? _hostApiStatus;
 
         public WidgetPickerModal()
         {
@@ -34,9 +38,13 @@ namespace BalatroSeedOracle.Views.Modals
             _musicMixerButton = this.FindControl<Button>("MusicMixerButton");
             _visualizerButton = this.FindControl<Button>("VisualizerButton");
             _transitionDesignerButton = this.FindControl<Button>("TransitionDesignerButton");
+            _fertilizerButton = this.FindControl<Button>("FertilizerButton");
+            _hostApiButton = this.FindControl<Button>("HostApiButton");
             _musicMixerStatus = this.FindControl<TextBlock>("MusicMixerStatus");
             _visualizerStatus = this.FindControl<TextBlock>("VisualizerStatus");
             _transitionDesignerStatus = this.FindControl<TextBlock>("TransitionDesignerStatus");
+            _fertilizerStatus = this.FindControl<TextBlock>("FertilizerStatus");
+            _hostApiStatus = this.FindControl<TextBlock>("HostApiStatus");
 
             UpdateButtonStates();
         }
@@ -55,6 +63,8 @@ namespace BalatroSeedOracle.Views.Modals
                 _transitionDesignerStatus,
                 _toggles.ShowTransitionDesigner
             );
+            UpdateButton(_fertilizerButton, _fertilizerStatus, _toggles.ShowFertilizer);
+            UpdateButton(_hostApiButton, _hostApiStatus, _toggles.ShowHostServer);
         }
 
         private void UpdateButton(Button? button, TextBlock? status, bool isEnabled)
@@ -88,6 +98,18 @@ namespace BalatroSeedOracle.Views.Modals
             SaveAndRefresh();
         }
 
+        private void OnFertilizerClick(object? sender, RoutedEventArgs e)
+        {
+            _toggles.ShowFertilizer = !_toggles.ShowFertilizer;
+            SaveAndRefresh();
+        }
+
+        private void OnHostApiClick(object? sender, RoutedEventArgs e)
+        {
+            _toggles.ShowHostServer = !_toggles.ShowHostServer;
+            SaveAndRefresh();
+        }
+
         private void SaveAndRefresh()
         {
             // Save to profile
@@ -98,7 +120,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _userProfileService.SaveProfile(profile);
                 DebugLogger.Log(
                     "WidgetPickerModal",
-                    $"Saved toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}"
+                    $"Saved toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}"
                 );
             }
 
