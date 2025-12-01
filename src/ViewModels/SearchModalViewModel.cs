@@ -44,6 +44,9 @@ namespace BalatroSeedOracle.ViewModels
         // Callback for CREATE NEW FILTER button (set by View)
         private Action? _newFilterRequestedAction;
 
+        // Callback for EDIT FILTER button (set by View) - takes filter path
+        private Action<string?>? _editFilterRequestedAction;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
         private bool _isSearching = false;
@@ -699,6 +702,14 @@ namespace BalatroSeedOracle.ViewModels
         public void SetNewFilterRequestedCallback(Action callback)
         {
             _newFilterRequestedAction = callback;
+        }
+
+        /// <summary>
+        /// Set callback for EDIT FILTER button (called from View)
+        /// </summary>
+        public void SetEditFilterRequestedCallback(Action<string?> callback)
+        {
+            _editFilterRequestedAction = callback;
         }
 
         /// <summary>
