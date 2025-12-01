@@ -227,7 +227,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Cannot search with blank filter
                 DebugLogger.Log("FilterSelectionModal", "Cannot search with CREATE NEW filter");
-                return;
+                throw new ArgumentException("Cannot search with CREATE NEW filter");
             }
 
             Result = new FilterSelectionResult
@@ -412,6 +412,13 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Back()
         {
+            // If a filter is selected, go back to placeholder view instead of closing
+            if (TryGoBack())
+            {
+                return; // Stayed in modal, just reset view
+            }
+
+            // Only close if we're already on the placeholder page
             Result = new FilterSelectionResult
             {
                 Cancelled = true,

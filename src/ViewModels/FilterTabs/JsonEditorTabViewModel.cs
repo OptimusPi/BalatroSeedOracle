@@ -384,6 +384,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
+        private async Task CopyJson()
+        {
+            try
+            {
+                await Services.ClipboardService.CopyToClipboardAsync(JsonContent);
+
+                ValidationStatus = "✓ JSON copied to clipboard";
+                ValidationStatusColor = Brushes.Green;
+            }
+            catch (Exception ex)
+            {
+                ValidationStatus = $"Copy error: {ex.Message}";
+                ValidationStatusColor = Brushes.Red;
+            }
+        }
+
         #endregion
 
         #region Helper Methods - Copied from original FiltersModal
@@ -542,7 +559,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return item;
         }
 
-
         // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
@@ -564,7 +580,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 5 => Motely.MotelyStake.Purple,
                 6 => Motely.MotelyStake.Orange,
                 7 => Motely.MotelyStake.Gold,
-                _ => Motely.MotelyStake.White
+                _ => Motely.MotelyStake.White,
             };
             return stake.ToString().ToLower();
         }

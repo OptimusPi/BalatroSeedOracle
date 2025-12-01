@@ -84,6 +84,31 @@ namespace BalatroSeedOracle.Helpers
         }
 
         /// <summary>
+        /// Creates and shows the filter designer modal with a specific filter loaded for editing
+        /// </summary>
+        /// <param name="menu">The main menu to show the modal on</param>
+        /// <param name="config">The filter config to load for editing</param>
+        /// <returns>The created modal</returns>
+        public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
+        {
+            var filtersContent = new Views.Modals.FiltersModal();
+            
+            // Load the filter into the modal for editing
+            _ = System.Threading.Tasks.Task.Run(async () =>
+            {
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    if (filtersContent.ViewModel != null)
+                    {
+                        await filtersContent.ViewModel.LoadFilterForEditing(config);
+                    }
+                });
+            });
+            
+            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+        }
+
+        /// <summary>
         /// Creates and shows a search modal
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
@@ -123,7 +148,8 @@ namespace BalatroSeedOracle.Helpers
                     {
                         await searchContent.ViewModel.LoadFilterAsync(configPath);
                         // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                        Dispatcher.UIThread.Post(() => searchContent.ViewModel.SelectedTabIndex = 1
+                        Dispatcher.UIThread.Post(() =>
+                            searchContent.ViewModel.SelectedTabIndex = 1
                         );
                     });
                 }
@@ -282,14 +308,7 @@ namespace BalatroSeedOracle.Helpers
                 var vm = audioVisualizerView.ViewModel;
 
                 // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
-                vm.ThemeChangedEvent += (s, themeIndex) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Theme changed to {themeIndex}"
-                    );
-                    menu.ApplyVisualizerTheme(themeIndex);
-                };
+                // ThemeChangedEvent removed - ApplyVisualizerTheme was empty stub
 
                 vm.MainColorChangedEvent += (s, colorIndex) =>
                 {
@@ -309,23 +328,8 @@ namespace BalatroSeedOracle.Helpers
                     menu.ApplyAccentColor(colorIndex);
                 };
 
-                vm.AudioIntensityChangedEvent += (s, intensity) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Audio intensity changed to {intensity}"
-                    );
-                    menu.ApplyAudioIntensity(intensity);
-                };
-
-                vm.ParallaxStrengthChangedEvent += (s, strength) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Parallax changed to {strength}"
-                    );
-                    menu.ApplyParallaxStrength(strength);
-                };
+                // AudioIntensityChangedEvent removed - ApplyAudioIntensity was empty stub
+                // ParallaxStrengthChangedEvent removed - ApplyParallaxStrength was empty stub
 
                 vm.TimeSpeedChangedEvent += (s, speed) =>
                 {
@@ -407,11 +411,7 @@ namespace BalatroSeedOracle.Helpers
                     menu.ApplyColorSaturationSource(sourceIndex);
                 };
 
-                vm.BeatPulseSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Beat pulse source changed to {sourceIndex}");
-                    menu.ApplyBeatPulseSource(sourceIndex);
-                };
+                // BeatPulseSourceChangedEvent removed - ApplyBeatPulseSource was empty stub
 
                 // Range events (advanced)
                 /*
@@ -451,6 +451,120 @@ namespace BalatroSeedOracle.Helpers
         }
 
         /// <summary>
+        /// Shows a simple text input dialog and returns the entered text
+        /// </summary>
+        /// <param name="window">Parent window</param>
+        /// <param name="title">Dialog title</param>
+        /// <param name="prompt">Prompt text to show</param>
+        /// <param name="defaultValue">Default value for the text box</param>
+        /// <returns>The entered text, or null if cancelled</returns>
+        public static async Task<string?> ShowTextInputDialogAsync(
+            Window window,
+            string title,
+            string prompt,
+            string defaultValue = ""
+        )
+        {
+            var tcs = new TaskCompletionSource<string?>();
+
+            var dialog = new Window
+            {
+                Width = 400,
+                Height = 180,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                SystemDecorations = SystemDecorations.None,
+                Background = Avalonia.Media.Brushes.Transparent,
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
+            };
+
+            var textBox = new TextBox
+            {
+                Text = defaultValue,
+                FontSize = 14,
+                Margin = new Avalonia.Thickness(0, 8, 0, 0),
+            };
+
+            var okButton = new Button
+            {
+                Content = "Save",
+                Classes = { "btn-blue" },
+                MinWidth = 100,
+                Height = 40,
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Classes = { "btn-red" },
+                MinWidth = 100,
+                Height = 40,
+            };
+
+            okButton.Click += (s, e) =>
+            {
+                tcs.TrySetResult(textBox.Text);
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, e) =>
+            {
+                tcs.TrySetResult(null);
+                dialog.Close();
+            };
+
+            // Build UI
+            var mainBorder = new Border
+            {
+                Background = window.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                BorderBrush = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                BorderThickness = new Avalonia.Thickness(3),
+                CornerRadius = new Avalonia.CornerRadius(12),
+                Padding = new Avalonia.Thickness(20),
+            };
+
+            var stack = new StackPanel { Spacing = 12 };
+
+            stack.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 20,
+                Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            });
+
+            stack.Children.Add(new TextBlock
+            {
+                Text = prompt,
+                FontSize = 14,
+                Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
+            });
+
+            stack.Children.Add(textBox);
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Spacing = 12,
+                Margin = new Avalonia.Thickness(0, 8, 0, 0),
+            };
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+            stack.Children.Add(buttonPanel);
+
+            mainBorder.Child = stack;
+            dialog.Content = mainBorder;
+
+            // Focus text box when shown
+            dialog.Opened += (s, e) => textBox.Focus();
+
+            await dialog.ShowDialog(window);
+
+            return await tcs.Task;
+        }
+
+        /// <summary>
         /// Creates a temp filter file for new filter creation
         /// </summary>
         private static async System.Threading.Tasks.Task<string> CreateTempFilter()
@@ -480,7 +594,12 @@ namespace BalatroSeedOracle.Helpers
                 new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    DefaultIgnoreCondition = System
+                        .Text
+                        .Json
+                        .Serialization
+                        .JsonIgnoreCondition
+                        .WhenWritingNull,
                 }
             );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
@@ -520,7 +639,12 @@ namespace BalatroSeedOracle.Helpers
                         new System.Text.Json.JsonSerializerOptions
                         {
                             WriteIndented = true,
-                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                            DefaultIgnoreCondition = System
+                                .Text
+                                .Json
+                                .Serialization
+                                .JsonIgnoreCondition
+                                .WhenWritingNull,
                         }
                     );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);

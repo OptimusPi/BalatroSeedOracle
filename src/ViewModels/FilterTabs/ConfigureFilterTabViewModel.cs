@@ -683,13 +683,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsLoading = false;
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                // Log error before rethrowing (since this is called from fire-and-forget Task.Run)
+                DebugLogger.LogError(
+                    "ConfigureFilterTab",
+                    $"❌ Error loading game data: {ex.Message}"
+                );
+
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
                 });
-                throw;
+                // Don't rethrow - this is fire-and-forget, rethrowing will crash the app
+                // The error is logged and loading state is reset
             }
         }
 

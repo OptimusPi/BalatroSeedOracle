@@ -29,15 +29,18 @@
     </Window.Styles>
     
     <Panel>
-        <Grid RowDefinitions="*,Auto">
-            <!-- Main content -->
-            <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
+        <!-- Main window border with south edge highlight -->
+        <Border BorderBrush="{StaticResource BrightSilver}" 
+                BorderThickness="0,0,0,2">
+            <Grid RowDefinitions="*,Auto">
+                <!-- Main content -->
+                <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
 
-            <!-- Attribution line (hidden in Vibe Out Mode) -->
-            <Border Grid.Row="1"
-                    Background="{StaticResource DarkBackground}"
-                    Padding="4,3"
-                    IsVisible="{Binding !IsVibeOutMode}">
+                <!-- Attribution line (hidden in Vibe Out Mode) -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource DarkBackground}"
+                        Padding="4,3"
+                        IsVisible="{Binding !IsVibeOutMode}">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="5">
@@ -52,7 +55,8 @@
 
                 </StackPanel>
             </Border>
-        </Grid>
+            </Grid>
+        </Border>
 
         <AdornerLayer />
     </Panel>

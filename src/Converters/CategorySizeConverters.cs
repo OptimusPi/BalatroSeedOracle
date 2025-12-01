@@ -11,14 +11,24 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly CategoryToWidthConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             return 71.0; // Standard card width
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -29,14 +39,24 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly CategoryToHeightConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             return 95.0; // Standard card height
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 }

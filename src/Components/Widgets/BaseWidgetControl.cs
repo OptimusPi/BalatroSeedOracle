@@ -37,8 +37,9 @@ namespace BalatroSeedOracle.Components
         protected void OnMinimizedIconReleased(object? sender, PointerReleasedEventArgs e)
         {
             var currentPosition = e.GetPosition((Control)sender!);
-            var distance = Math.Abs(_iconPressedPosition.X - currentPosition.X) +
-                          Math.Abs(_iconPressedPosition.Y - currentPosition.Y);
+            var distance =
+                Math.Abs(_iconPressedPosition.X - currentPosition.X)
+                + Math.Abs(_iconPressedPosition.Y - currentPosition.Y);
 
             // If pointer moved less than 5px, treat as click and expand
             if (distance < 5 && DataContext is BaseWidgetViewModel vm)

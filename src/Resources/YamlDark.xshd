@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<SyntaxDefinition name="YAML" extensions=".yaml,.yml" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Digits" foreground="#B5CEA8" />
+  <Color name="String" foreground="#CE9178" />
+  <Color name="Keywords" foreground="#569CD6"  />
+  <Color name="PropertyName" foreground="#9CDCFE" />
+  <Color name="Comment" foreground="#6A9955" fontStyle="italic" />
+  <Color name="Anchor" foreground="#4EC9B0" fontWeight="bold" />
+
+  <RuleSet ignoreCase="false">
+    <!-- Comments -->
+    <Span color="Comment" begin="#" />
+
+    <!-- Anchors and Aliases (&anchor, *alias) -->
+    <Rule color="Anchor">
+      [&amp;*][a-zA-Z0-9_-]+
+    </Rule>
+
+    <!-- Property Names (keys in YAML) -->
+    <Rule color="PropertyName">
+      ^\s*[a-zA-Z0-9_-]+(?=\s*:)
+    </Rule>
+
+    <!-- Quoted Strings -->
+    <Span color="String" begin="&quot;" end="&quot;" />
+    <Span color="String" begin="'" end="'" />
+
+    <!-- Numbers (integers, floats, hex, octal) -->
+    <Rule color="Digits">
+      \b-?(\d+\.?\d*([eE][+-]?\d+)?|0x[0-9A-Fa-f]+|0o[0-7]+)\b
+    </Rule>
+
+    <!-- Keywords (true, false, null, yes, no, on, off) -->
+    <Keywords color="Keywords">
+      <Word>true</Word>
+      <Word>false</Word>
+      <Word>null</Word>
+      <Word>yes</Word>
+      <Word>no</Word>
+      <Word>on</Word>
+      <Word>off</Word>
+    </Keywords>
+  </RuleSet>
+</SyntaxDefinition>

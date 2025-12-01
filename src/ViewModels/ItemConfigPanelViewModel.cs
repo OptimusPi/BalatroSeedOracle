@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using BalatroSeedOracle.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -18,14 +18,51 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string? _label;
 
-        // Show Label input ONLY for SHOULD items (for score columns)
-        public bool IsLabelVisible => _item?.Status == FilterItemStatus.ShouldHave;
+        [ObservableProperty]
+        private int _score = 1;
 
-        // Show Edition Helper ONLY for items that support editions
-        public bool IsEditionHelperVisible =>
-            _item?.ItemType == "Joker" ||
-            _item?.ItemType == "SoulJoker" ||
-            _item?.ItemType == "StandardCard";
+        [ObservableProperty]
+        private int _minCount = 1;
+
+        [ObservableProperty]
+        private string _edition = "None";
+
+        [ObservableProperty]
+        private string _seal = "None";
+
+        [ObservableProperty]
+        private string _enhancement = "None";
+
+        [ObservableProperty]
+        private string? _rank;
+
+        [ObservableProperty]
+        private string? _suit;
+
+        [ObservableProperty]
+        private bool _isEternal;
+
+        [ObservableProperty]
+        private bool _isPerishable;
+
+        [ObservableProperty]
+        private bool _isRental;
+
+        public bool IsLabelVisible => _item?.Status == FilterItemStatus.ShouldHave;
+        public bool IsScoreVisible => _item?.Status == FilterItemStatus.ShouldHave;
+        public bool IsMinCountVisible => _item?.Status == FilterItemStatus.MustHave;
+
+        public bool IsEditionVisible =>
+            _item?.ItemType == "Joker"
+            || _item?.ItemType == "SoulJoker"
+            || _item?.ItemType == "StandardCard";
+
+        public bool IsStickersVisible =>
+            _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker";
+
+        public bool IsSealVisible => _item?.ItemType == "StandardCard";
+        public bool IsEnhancementVisible => _item?.ItemType == "StandardCard";
+        public bool IsRankSuitVisible => _item?.ItemType == "StandardCard";
 
         // Antes checkboxes
         [ObservableProperty]
@@ -100,7 +137,11 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _includeSkipTags = true;
 
-        public ItemConfigPanelViewModel(FilterItem item, Action? onApply = null, Action? onClose = null)
+        public ItemConfigPanelViewModel(
+            FilterItem item,
+            Action? onApply = null,
+            Action? onClose = null
+        )
         {
             _item = item;
             _onApply = onApply;
@@ -109,6 +150,21 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize from item
             ItemName = item.DisplayName;
             Label = item.Label;
+
+            // Initialize edition, seal, enhancement, rank, suit
+            Edition = item.Edition ?? "None";
+            Seal = item.Seal ?? "None";
+            Enhancement = item.Enhancement ?? "None";
+            Rank = item.Rank;
+            Suit = item.Suit;
+
+            // Initialize stickers
+            if (item.Stickers != null)
+            {
+                IsEternal = item.Stickers.Contains("eternal");
+                IsPerishable = item.Stickers.Contains("perishable");
+                IsRental = item.Stickers.Contains("rental");
+            }
 
             // Load antes configuration
             if (item.Antes != null && item.Antes.Length > 0)
@@ -204,14 +260,22 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 var antes = new System.Collections.Generic.List<int>();
-                if (Ante1Selected) antes.Add(1);
-                if (Ante2Selected) antes.Add(2);
-                if (Ante3Selected) antes.Add(3);
-                if (Ante4Selected) antes.Add(4);
-                if (Ante5Selected) antes.Add(5);
-                if (Ante6Selected) antes.Add(6);
-                if (Ante7Selected) antes.Add(7);
-                if (Ante8Selected) antes.Add(8);
+                if (Ante1Selected)
+                    antes.Add(1);
+                if (Ante2Selected)
+                    antes.Add(2);
+                if (Ante3Selected)
+                    antes.Add(3);
+                if (Ante4Selected)
+                    antes.Add(4);
+                if (Ante5Selected)
+                    antes.Add(5);
+                if (Ante6Selected)
+                    antes.Add(6);
+                if (Ante7Selected)
+                    antes.Add(7);
+                if (Ante8Selected)
+                    antes.Add(8);
                 _item.Antes = antes.Count > 0 ? antes.ToArray() : null;
             }
 
@@ -223,10 +287,14 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 var slots = new System.Collections.Generic.List<int>();
-                if (ShopSlot1Selected) slots.Add(1);
-                if (ShopSlot2Selected) slots.Add(2);
-                if (ShopSlot3Selected) slots.Add(3);
-                if (ShopSlot4Selected) slots.Add(4);
+                if (ShopSlot1Selected)
+                    slots.Add(1);
+                if (ShopSlot2Selected)
+                    slots.Add(2);
+                if (ShopSlot3Selected)
+                    slots.Add(3);
+                if (ShopSlot4Selected)
+                    slots.Add(4);
                 _item.ShopSlots = slots.Count > 0 ? slots.ToArray() : null;
             }
 
@@ -238,11 +306,16 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 var positions = new System.Collections.Generic.List<int>();
-                if (PackPos1Selected) positions.Add(1);
-                if (PackPos2Selected) positions.Add(2);
-                if (PackPos3Selected) positions.Add(3);
-                if (PackPos4Selected) positions.Add(4);
-                if (PackPos5Selected) positions.Add(5);
+                if (PackPos1Selected)
+                    positions.Add(1);
+                if (PackPos2Selected)
+                    positions.Add(2);
+                if (PackPos3Selected)
+                    positions.Add(3);
+                if (PackPos4Selected)
+                    positions.Add(4);
+                if (PackPos5Selected)
+                    positions.Add(5);
                 _item.PackPositions = positions.Count > 0 ? positions.ToArray() : null;
             }
 
@@ -250,6 +323,23 @@ namespace BalatroSeedOracle.ViewModels
             _item.IncludeBoosterPacks = IncludeBoosterPacks;
             _item.IncludeShopStream = IncludeShopStream;
             _item.IncludeSkipTags = IncludeSkipTags;
+
+            // Save edition, seal, enhancement, rank, suit
+            _item.Edition = Edition == "None" ? null : Edition;
+            _item.Seal = Seal == "None" ? null : Seal;
+            _item.Enhancement = Enhancement == "None" ? null : Enhancement;
+            _item.Rank = Rank;
+            _item.Suit = Suit;
+
+            // Save stickers
+            var stickers = new System.Collections.Generic.List<string>();
+            if (IsEternal)
+                stickers.Add("eternal");
+            if (IsPerishable)
+                stickers.Add("perishable");
+            if (IsRental)
+                stickers.Add("rental");
+            _item.Stickers = stickers.Count > 0 ? stickers : null;
 
             _onApply?.Invoke();
             _onClose?.Invoke();
@@ -259,6 +349,16 @@ namespace BalatroSeedOracle.ViewModels
         private void Reset()
         {
             Label = null;
+            Score = 1;
+            MinCount = 1;
+            Edition = "None";
+            Seal = "None";
+            Enhancement = "None";
+            Rank = null;
+            Suit = null;
+            IsEternal = false;
+            IsPerishable = false;
+            IsRental = false;
             AllAntesSelected = true;
             AllShopSlotsSelected = true;
             AllPackPositionsSelected = true;

@@ -61,7 +61,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -102,7 +102,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -143,7 +143,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -184,7 +184,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -237,14 +237,21 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
     public class ItemNameToSoulFaceConverter : IValueConverter
     {
         // Legendary jokers that have soul faces (same list as SpriteService)
-        private static readonly string[] LegendaryJokers = { "perkeo", "canio", "chicot", "triboulet", "yorick" };
+        private static readonly string[] LegendaryJokers =
+        {
+            "perkeo",
+            "canio",
+            "chicot",
+            "triboulet",
+            "yorick",
+        };
 
         public object? Convert(
             object? value,
@@ -301,7 +308,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -350,7 +357,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -399,7 +406,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -467,7 +474,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -512,7 +519,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -557,7 +564,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -602,7 +609,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -647,7 +654,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -694,7 +701,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -738,7 +745,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 }

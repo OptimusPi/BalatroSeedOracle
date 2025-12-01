@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.FilterTabs.SaveFilterTab"
              x:DataType="vm:SaveFilterTabViewModel">
 
@@ -62,25 +63,35 @@
         <StackPanel Grid.Row="2" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
 
             <!-- Primary Action Buttons (BIG AND OBVIOUS) -->
-            <Button Content="🔍 GO TO SEARCH"
-                    Command="{Binding GoToSearchCommand}"
+            <Button Command="{Binding GoToSearchCommand}"
                     Classes="btn-green"
                     Height="60"
                     MinWidth="400"
-                    FontSize="24"
-                    FontFamily="{StaticResource BalatroFont}"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Center"/>
+                    HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <icons:PackIconMaterial Kind="Magnify" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <TextBlock Text="GO TO SEARCH"
+                               FontSize="24"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
-            <Button Content="💾 SAVE AND CLOSE"
-                    Command="{Binding SaveAndCloseCommand}"
+            <Button Command="{Binding SaveAndCloseCommand}"
                     Classes="btn-blue"
                     Height="60"
                     MinWidth="400"
-                    FontSize="24"
-                    FontFamily="{StaticResource BalatroFont}"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Center"/>
+                    HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <icons:PackIconMaterial Kind="ContentSave" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <TextBlock Text="SAVE AND CLOSE"
+                               FontSize="24"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
             <!-- Secondary Actions (Smaller) -->
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">

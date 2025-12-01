@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Xaml.Interactivity;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Behaviors
@@ -101,16 +102,21 @@ namespace BalatroSeedOracle.Behaviors
 
             _lastPlayTime = now;
 
-            // Default to whoosh if specific sound isn't exposed
-            // Sound effects disabled - NAudio removed for cross-platform compatibility
-            // if (string.Equals(Sound, "whoosh", StringComparison.OrdinalIgnoreCase))
-            // {
-            //     SoundEffectService.Instance.PlayWhoosh();
-            // }
-            // else
-            // {
-            //     SoundEffectService.Instance.PlayButtonClick();
-            // }
+            // Play the configured sound effect
+            try
+            {
+                // Use DI container instance, fallback to singleton
+                var audioManager =
+                    ServiceHelper.GetService<SoundFlowAudioManager>()
+                    ?? SoundFlowAudioManager.Instance;
+                audioManager?.PlaySfx(Sound, 1.0f);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[PlaySfxOnValueChangeBehavior] Error playing {Sound}: {ex.Message}"
+                );
+            }
         }
     }
 }

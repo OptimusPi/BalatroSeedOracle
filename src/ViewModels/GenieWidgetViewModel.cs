@@ -18,6 +18,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private static readonly HttpClient _httpClient = new();
         private const string GENIE_API = "https://balatrogenie.app/generate";
+        private readonly SearchManager _searchManager;
 
         [ObservableProperty]
         private string _userPrompt = string.Empty;
@@ -55,8 +56,13 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string ButtonContent => GenerateButtonText + " " + GeneratingSpinner;
 
-        public GenieWidgetViewModel()
+        public GenieWidgetViewModel(
+            SearchManager searchManager,
+            WidgetPositionService? widgetPositionService = null
+        )
+            : base(widgetPositionService)
         {
+            _searchManager = searchManager;
             WidgetTitle = "Filter Genie";
             WidgetIcon = "🧞";
             IsMinimized = true;
@@ -156,10 +162,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Save to filters directory
-                var filtersPath = System.IO.Path.Combine(
-                    AppContext.BaseDirectory,
-                    "filters"
-                );
+                var filtersPath = System.IO.Path.Combine(AppContext.BaseDirectory, "filters");
 
                 if (!System.IO.Directory.Exists(filtersPath))
                     System.IO.Directory.CreateDirectory(filtersPath);
@@ -214,9 +217,6 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Get the SearchManager service
-                var searchManager = ServiceHelper.GetRequiredService<Services.SearchManager>();
-
                 // Create search criteria with defaults
                 var criteria = new Models.SearchCriteria
                 {
@@ -227,12 +227,9 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Start the search
-                var searchInstance = await searchManager.StartSearchAsync(criteria, config);
+                var searchInstance = await _searchManager.StartSearchAsync(criteria, config);
 
                 SetStatus($"🔍 Search started: {GeneratedFilterName}", "#22C55E");
-
-                // Future enhancement: Add progress tracking UI
-                // Currently the search runs successfully in background
             }
             catch (Exception ex)
             {

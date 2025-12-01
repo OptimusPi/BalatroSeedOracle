@@ -145,7 +145,11 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        public FilterItemConfigRowViewModel(FilterItem item, bool isShouldItem, Action<FilterItem>? removeCallback = null)
+        public FilterItemConfigRowViewModel(
+            FilterItem item,
+            bool isShouldItem,
+            Action<FilterItem>? removeCallback = null
+        )
         {
             _item = item;
             _isShouldItem = isShouldItem;
@@ -242,35 +246,52 @@ namespace BalatroSeedOracle.ViewModels
         private List<int> GetSelectedAntes()
         {
             var antes = new List<int>();
-            if (Ante1) antes.Add(1);
-            if (Ante2) antes.Add(2);
-            if (Ante3) antes.Add(3);
-            if (Ante4) antes.Add(4);
-            if (Ante5) antes.Add(5);
-            if (Ante6) antes.Add(6);
-            if (Ante7) antes.Add(7);
-            if (Ante8) antes.Add(8);
+            if (Ante1)
+                antes.Add(1);
+            if (Ante2)
+                antes.Add(2);
+            if (Ante3)
+                antes.Add(3);
+            if (Ante4)
+                antes.Add(4);
+            if (Ante5)
+                antes.Add(5);
+            if (Ante6)
+                antes.Add(6);
+            if (Ante7)
+                antes.Add(7);
+            if (Ante8)
+                antes.Add(8);
             return antes;
         }
 
         private List<int> GetSelectedSlots()
         {
             var slots = new List<int>();
-            if (Slot1) slots.Add(1);
-            if (Slot2) slots.Add(2);
-            if (Slot3) slots.Add(3);
-            if (Slot4) slots.Add(4);
+            if (Slot1)
+                slots.Add(1);
+            if (Slot2)
+                slots.Add(2);
+            if (Slot3)
+                slots.Add(3);
+            if (Slot4)
+                slots.Add(4);
             return slots;
         }
 
         private List<int> GetSelectedPacks()
         {
             var packs = new List<int>();
-            if (Pack1) packs.Add(1);
-            if (Pack2) packs.Add(2);
-            if (Pack3) packs.Add(3);
-            if (Pack4) packs.Add(4);
-            if (Pack5) packs.Add(5);
+            if (Pack1)
+                packs.Add(1);
+            if (Pack2)
+                packs.Add(2);
+            if (Pack3)
+                packs.Add(3);
+            if (Pack4)
+                packs.Add(4);
+            if (Pack5)
+                packs.Add(5);
             return packs;
         }
 

@@ -104,7 +104,10 @@ namespace BalatroSeedOracle.Helpers
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("MixerHelper", $"Failed to delete '{file}': {ex.Message}");
+                        DebugLogger.LogError(
+                            "MixerHelper",
+                            $"Failed to delete '{file}': {ex.Message}"
+                        );
                     }
                 }
                 return deleted;

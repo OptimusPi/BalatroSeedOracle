@@ -5,6 +5,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True"
@@ -59,7 +60,7 @@
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
 
-                    <StackPanel Margin="15" Spacing="16">
+                    <StackPanel Margin="15,15,20,15" Spacing="16">
 
                         <!-- PRESET LOAD/SAVE ROW 1 -->
                         <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
@@ -109,9 +110,9 @@
                             <Button Content="Refresh Presets" Command="{Binding RefreshShaderPresetListCommand}" Classes="btn-blue" Padding="12,6" FontSize="12" HorizontalAlignment="Left"/>
                         </StackPanel>
 
-                        <!-- CUSTOM COLORS -->
-                        <StackPanel Spacing="8" Margin="0,8,0,0">
-                            <TextBlock Text="CUSTOM COLORS" Foreground="{StaticResource White}" FontSize="16"/>
+                        <!-- CUSTOM COLORS (RGB sliders - only shown when CUSTOMIZE selected) -->
+                        <StackPanel Spacing="8" Margin="0,8,0,0" IsVisible="{Binding IsCustomTheme}">
+                            <TextBlock Text="CUSTOM COLORS (RGB)" Foreground="{StaticResource White}" FontSize="16"/>
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Main (RGB)" Foreground="{StaticResource BodyText}" FontSize="12"/>
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
@@ -158,29 +159,24 @@
                                 <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding PsychedelicBlendValue}"/>
                                 <TextBlock Grid.Column="2" Text="1" Foreground="{StaticResource LightTextGrey}"/>
                             </Grid>
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,6,0,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Speed" Foreground="{StaticResource BodyText}" FontSize="12"/>
-                                    <Slider Minimum="0" Maximum="3" Value="{Binding PsychedelicSpeed}"/>
-                                </StackPanel>
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Complexity" Foreground="{StaticResource BodyText}" FontSize="12"/>
-                                    <Slider Minimum="0" Maximum="5" Value="{Binding PsychedelicComplexity}"/>
-                                </StackPanel>
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Color Cycle" Foreground="{StaticResource BodyText}" FontSize="12"/>
-                                    <Slider Minimum="0" Maximum="5" Value="{Binding PsychedelicColorCycle}"/>
-                                </StackPanel>
+                            <!-- Row 1: Speed, Complexity -->
+                            <Grid ColumnDefinitions="70,*,70,*" ColumnSpacing="8" Margin="0,6,0,0">
+                                <TextBlock Grid.Column="0" Text="Speed" Foreground="{StaticResource BodyText}" FontSize="12" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="3" Value="{Binding PsychedelicSpeed}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Complex" Foreground="{StaticResource BodyText}" FontSize="12" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="3" Minimum="0" Maximum="5" Value="{Binding PsychedelicComplexity}" VerticalAlignment="Center"/>
                             </Grid>
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,6,0,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Kaleidoscope" Foreground="{StaticResource BodyText}" FontSize="12"/>
-                                    <Slider Minimum="0" Maximum="12" Value="{Binding PsychedelicKaleidoscope}"/>
-                                </StackPanel>
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Fluid Flow" Foreground="{StaticResource BodyText}" FontSize="12"/>
-                                    <Slider Minimum="0" Maximum="1" Value="{Binding PsychedelicFluidFlow}"/>
-                                </StackPanel>
+                            <!-- Row 2: Color Cycle, Kaleidoscope -->
+                            <Grid ColumnDefinitions="70,*,70,*" ColumnSpacing="8" Margin="0,6,0,0">
+                                <TextBlock Grid.Column="0" Text="Color" Foreground="{StaticResource BodyText}" FontSize="12" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="5" Value="{Binding PsychedelicColorCycle}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Kaleido" Foreground="{StaticResource BodyText}" FontSize="12" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="3" Minimum="0" Maximum="12" Value="{Binding PsychedelicKaleidoscope}" VerticalAlignment="Center"/>
+                            </Grid>
+                            <!-- Row 3: Fluid Flow -->
+                            <Grid ColumnDefinitions="70,*" ColumnSpacing="8" Margin="0,6,0,0">
+                                <TextBlock Grid.Column="0" Text="Fluid" Foreground="{StaticResource BodyText}" FontSize="12" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding PsychedelicFluidFlow}" VerticalAlignment="Center"/>
                             </Grid>
                         </StackPanel>
 
@@ -193,9 +189,9 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <!-- CUSTOM COLORS (only shown when CUSTOMIZE selected) -->
+                        <!-- CUSTOM COLOR PRESETS (only shown when CUSTOMIZE selected) -->
                         <StackPanel Spacing="10" IsVisible="{Binding IsCustomTheme}">
-                            <TextBlock Text="CUSTOM COLORS" Foreground="{StaticResource White}" FontSize="16"/>
+                            <TextBlock Text="COLOR PRESETS" Foreground="{StaticResource White}" FontSize="16"/>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                 <StackPanel Grid.Column="0" Spacing="4">
                                     <TextBlock Text="Main" Foreground="{StaticResource White}" FontSize="14"/>
@@ -252,16 +248,25 @@
                                         Padding="8"
                                         Margin="0,0,0,4">
                                     <StackPanel Spacing="4">
-                                        <TextBlock Text="🔹 SetValue: Direct mapping (snappy, instant)"
-                                                   Foreground="{StaticResource LightTextGrey}"
-                                                   FontSize="11"/>
-                                        <TextBlock Text="🔹 AddInertia: Physics-based (smooth, alive feel with decay)"
-                                                   Foreground="{StaticResource LightTextGrey}"
-                                                   FontSize="11"/>
-                                        <TextBlock Text="💡 Create triggers in FFT Window first!"
-                                                   Foreground="{StaticResource Gold}"
-                                                   FontSize="11"
-                                                   FontStyle="Italic"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <icons:PackIconMaterial Kind="CircleSmall" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="SetValue: Direct mapping (snappy, instant)"
+                                                       Foreground="{StaticResource LightTextGrey}"
+                                                       FontSize="11"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <icons:PackIconMaterial Kind="CircleSmall" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="AddInertia: Physics-based (smooth, alive feel with decay)"
+                                                       Foreground="{StaticResource LightTextGrey}"
+                                                       FontSize="11"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <icons:PackIconMaterial Kind="LightbulbOn" Width="12" Height="12" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Create triggers in FFT Window first!"
+                                                       Foreground="{StaticResource Gold}"
+                                                       FontSize="11"
+                                                       FontStyle="Italic"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
 
@@ -381,7 +386,7 @@
                             <TextBlock Text="Adjust ranges and values for complete control" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,0"/>
 
                             <!-- Time -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Time"
                                            Foreground="{StaticResource White}"
@@ -419,7 +424,7 @@
                             </Grid>
 
                             <!-- SpinTime -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Spin Time"
                                            Foreground="{StaticResource White}"
@@ -457,7 +462,7 @@
                             </Grid>
 
                             <!-- Contrast -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Contrast"
                                            Foreground="{StaticResource White}"
@@ -495,7 +500,7 @@
                             </Grid>
 
                             <!-- SpinAmount -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Spin Amount"
                                            Foreground="{StaticResource White}"
@@ -533,7 +538,7 @@
                             </Grid>
 
                             <!-- ParallaxX -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Parallax X"
                                            Foreground="{StaticResource White}"
@@ -571,7 +576,7 @@
                             </Grid>
 
                             <!-- ParallaxY -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Parallax Y"
                                            Foreground="{StaticResource White}"
@@ -609,7 +614,7 @@
                             </Grid>
 
                             <!-- ZoomScale -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Zoom Scale"
                                            Foreground="{StaticResource White}"
@@ -647,7 +652,7 @@
                             </Grid>
 
                             <!-- Saturation -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Saturation"
                                            Foreground="{StaticResource White}"
@@ -685,7 +690,7 @@
                             </Grid>
 
                             <!-- PixelSize -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Pixel Size"
                                            Foreground="{StaticResource White}"
@@ -723,7 +728,7 @@
                             </Grid>
 
                             <!-- SpinEase -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Spin Ease"
                                            Foreground="{StaticResource White}"
@@ -761,7 +766,7 @@
                             </Grid>
 
                             <!-- LoopCount (Paint Complexity) -->
-                            <Grid ColumnDefinitions="Auto,60,*,60,35" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="Auto,65,*,65,60" ColumnSpacing="12">
                                 <TextBlock Grid.Column="0"
                                            Text="Loop Count"
                                            Foreground="{StaticResource White}"
@@ -1134,86 +1139,7 @@
                                     Margin="0,4,0,0"/>
                         </StackPanel>
 
-                        <!-- MANUAL TRANSITION TESTER -->
-                        <StackPanel Spacing="6" Margin="0,12,0,0">
-                            <TextBlock Text="MANUAL TRANSITION TESTER" Foreground="{StaticResource White}" FontSize="16"/>
-                            <TextBlock Text="Test shader transitions between two presets with manual control" Foreground="{StaticResource LightTextGrey}" FontSize="12" Margin="0,-4,0,4"/>
-
-                            <!-- Preset A Dropdown -->
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                <TextBlock Grid.Column="0"
-                                           Text="Preset A:"
-                                           Foreground="{StaticResource White}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           MinWidth="120"/>
-                                <ComboBox Grid.Column="1"
-                                          ItemsSource="{Binding AvailablePresetNames}"
-                                          SelectedItem="{Binding ManualTransitionPresetA}"
-                                          HorizontalAlignment="Stretch"
-                                          FontSize="13"/>
-                            </Grid>
-
-                            <!-- Preset B Dropdown -->
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                <TextBlock Grid.Column="0"
-                                           Text="Preset B:"
-                                           Foreground="{StaticResource White}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           MinWidth="120"/>
-                                <ComboBox Grid.Column="1"
-                                          ItemsSource="{Binding AvailablePresetNames}"
-                                          SelectedItem="{Binding ManualTransitionPresetB}"
-                                          HorizontalAlignment="Stretch"
-                                          FontSize="13"/>
-                            </Grid>
-
-                            <!-- Progress Slider -->
-                            <Grid ColumnDefinitions="Auto,*,60" ColumnSpacing="8" Margin="0,4,0,0">
-                                <TextBlock Grid.Column="0"
-                                           Text="Progress:"
-                                           Foreground="{StaticResource White}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           MinWidth="120"/>
-                                <Slider Grid.Column="1"
-                                        Minimum="0"
-                                        Maximum="100"
-                                        Value="{Binding ManualTransitionProgress}"
-                                        TickFrequency="10"
-                                        IsSnapToTickEnabled="False"
-                                        VerticalAlignment="Center">
-                                    <Slider.Transitions>
-                                        <Transitions>
-                                            <DoubleTransition Property="Value" Duration="0:0:3" Easing="CubicEaseInOut"/>
-                                        </Transitions>
-                                    </Slider.Transitions>
-                                </Slider>
-                                <TextBlock Grid.Column="2"
-                                           Text="{Binding ManualTransitionProgress, StringFormat='{}{0:F0}%'}"
-                                           Foreground="{StaticResource Gold}"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"/>
-                            </Grid>
-
-                            <!-- Play Transition Button -->
-                            <Button Content="Play Transition (Auto 0% → 100%)"
-                                    Classes="btn-gold"
-                                    Command="{Binding PlayManualTransitionCommand}"
-                                    HorizontalAlignment="Stretch"
-                                    Height="32"
-                                    Padding="16,4"
-                                    Margin="0,4,0,0"/>
-
-                            <TextBlock Text="Use the progress slider for manual control, or click Play Transition for automatic animation"
-                                       Foreground="{StaticResource LightTextGrey}"
-                                       FontSize="11"
-                                       TextWrapping="Wrap"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
+                        <!-- NOTE: Manual Transition Tester moved to TransitionDesignerWidget -->
 
                     </StackPanel>
                 </ScrollViewer>

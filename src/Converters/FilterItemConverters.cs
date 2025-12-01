@@ -134,7 +134,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -181,7 +181,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
 
         private static string FormatAntesWithRanges(List<int> sorted)
@@ -263,7 +263,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 

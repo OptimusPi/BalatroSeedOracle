@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -33,7 +34,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="Music" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
             <TextBlock Text="Mixer"
                        FontSize="16"
@@ -102,7 +103,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -184,7 +185,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Drums2Solo}"
@@ -256,7 +257,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass1Solo}"
@@ -328,7 +329,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass2Solo}"
@@ -400,7 +401,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords1Solo}"
@@ -472,7 +473,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords2Solo}"
@@ -544,7 +545,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody1Solo}"
@@ -616,7 +617,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody2Solo}"

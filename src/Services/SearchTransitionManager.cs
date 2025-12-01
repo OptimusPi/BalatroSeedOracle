@@ -62,11 +62,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // Start the transition
-            _transitionService.StartTransition(
-                startParams,
-                endParams,
-                ApplyShaderParameters
-            );
+            _transitionService.StartTransition(startParams, endParams, ApplyShaderParameters);
 
             // Hook into search progress
             _activeSearch = searchInstance;
@@ -108,7 +104,10 @@ namespace BalatroSeedOracle.Services
 
             if (progress.IsComplete)
             {
-                DebugLogger.LogImportant("SearchTransitionManager", "Search complete - transition finished!");
+                DebugLogger.LogImportant(
+                    "SearchTransitionManager",
+                    "Search complete - transition finished!"
+                );
                 StopSearchTransition();
             }
         }
@@ -179,8 +178,10 @@ namespace BalatroSeedOracle.Services
             {
                 // Find the main window and apply shader parameters
                 // This is a bit hacky but works for now - could be improved with dependency injection
-                if (Avalonia.Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                if (
+                    Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                )
                 {
                     if (desktop.MainWindow is Views.MainWindow mainWindow)
                     {
@@ -210,11 +211,14 @@ namespace BalatroSeedOracle.Services
             {
                 var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
                     "_shaderBackground",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
                 );
 
-                if (shaderBackgroundField?.GetValue(mainMenu)
-                    is Controls.BalatroShaderBackground shaderBackground)
+                if (
+                    shaderBackgroundField?.GetValue(mainMenu)
+                    is Controls.BalatroShaderBackground shaderBackground
+                )
                 {
                     shaderBackground.SetTime(parameters.TimeSpeed);
                     shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);

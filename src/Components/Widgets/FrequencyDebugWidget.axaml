@@ -5,6 +5,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
              x:DataType="vm:FrequencyDebugWidgetViewModel"
              x:CompileBindings="True"
@@ -38,7 +39,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="📊" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="ChartBar" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
             <TextBlock Text="FFT"
                        FontSize="16"

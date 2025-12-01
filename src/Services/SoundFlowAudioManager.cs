@@ -172,9 +172,7 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(audioDir, $"{trackName}.mp3");
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {trackName}.mp3"
-                    );
+                    Console.WriteLine($"[SoundFlowAudioManager] ERROR: Missing {trackName}.mp3");
                     continue;
                 }
 

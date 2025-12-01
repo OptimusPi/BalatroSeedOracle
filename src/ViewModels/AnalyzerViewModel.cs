@@ -39,16 +39,16 @@ public partial class AnalyzerViewModel : ObservableObject
     // Display values for spinners
     public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
     public string[] StakeDisplayValues { get; } =
-        [
-            "White Stake",
-            "Red Stake",
-            "Green Stake",
-            "Black Stake",
-            "Blue Stake",
-            "Purple Stake",
-            "Orange Stake",
-            "Gold Stake",
-        ];
+    [
+        "White Stake",
+        "Red Stake",
+        "Green Stake",
+        "Black Stake",
+        "Blue Stake",
+        "Purple Stake",
+        "Orange Stake",
+        "Gold Stake",
+    ];
 
     [ObservableProperty]
     private MotelySeedAnalysis? _currentAnalysis;

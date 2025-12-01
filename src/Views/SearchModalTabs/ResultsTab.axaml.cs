@@ -29,8 +29,13 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             var grid = this.FindControl<SortableResultsGrid>("ResultsGrid");
             if (DataContext is SearchModalViewModel vm && grid != null)
             {
-                // Bind results to the sortable grid
-                grid.ItemsSource = vm.SearchResults;
+                // The ItemsSource binding is handled via XAML - no need to set explicitly
+                // This allows the proper binding flow: SearchResults -> grid.ItemsSource -> grid.ViewModel.DisplayedResults
+
+                DebugLogger.Log(
+                    "ResultsTab", 
+                    $"OnAttachedToVisualTree: Grid found with {vm.SearchResults.Count} search results available for binding"
+                );
 
                 // CRITICAL FIX: Export to EXCEL with ClosedXML for proper data handling
                 grid.ExportAllRequested += async (s, results) =>
@@ -192,6 +197,53 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var analyzeModal = new AnalyzeModal();
                         analyzeModal.SetSeedAndAnalyze(result.Seed);
                         vm.MainMenu.ShowModal("SEED ANALYZER", analyzeModal);
+                    }
+                };
+
+                // Wire up pop-out to separate window
+                grid.PopOutRequested += (s, e) =>
+                {
+                    try
+                    {
+                        // Get the search manager to find the active search instance
+                        var searchManager = App.GetService<SearchManager>();
+                        if (searchManager == null || string.IsNullOrEmpty(vm.CurrentSearchId))
+                        {
+                            DebugLogger.LogError(
+                                "ResultsTab",
+                                "Cannot pop out - no active search manager or search ID"
+                            );
+                            return;
+                        }
+
+                        var searchInstance = searchManager.GetSearch(vm.CurrentSearchId);
+                        if (searchInstance == null)
+                        {
+                            DebugLogger.LogError(
+                                "ResultsTab",
+                                $"Cannot pop out - search instance not found: {vm.CurrentSearchId}"
+                            );
+                            return;
+                        }
+
+                        // Create and show the pop-out window
+                        var popOutWindow = new Windows.DataGridResultsWindow(
+                            searchInstance,
+                            vm.LoadedConfig?.Name
+                        );
+                        popOutWindow.Show();
+
+                        DebugLogger.Log(
+                            "ResultsTab",
+                            $"Popped out results to separate window for search: {vm.CurrentSearchId}"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "ResultsTab",
+                            $"Failed to pop out results: {ex.Message}"
+                        );
                     }
                 };
             }

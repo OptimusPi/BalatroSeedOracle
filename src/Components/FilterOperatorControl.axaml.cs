@@ -45,8 +45,10 @@ namespace BalatroSeedOracle.Components
             {
                 if (DataContext is FilterOperatorItem operatorItem)
                 {
-                    Helpers.DebugLogger.Log("FilterOperatorControl",
-                        $"DataContext set - Type: {operatorItem.OperatorType}, Children: {operatorItem.Children.Count}");
+                    Helpers.DebugLogger.Log(
+                        "FilterOperatorControl",
+                        $"DataContext set - Type: {operatorItem.OperatorType}, Children: {operatorItem.Children.Count}"
+                    );
 
                     // Subscribe to Children collection changes to update fanned layout
                     operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
@@ -54,11 +56,17 @@ namespace BalatroSeedOracle.Components
                     // Initial layout update
                     UpdateFannedLayout();
 
-                    Helpers.DebugLogger.Log("FilterOperatorControl", "UpdateFannedLayout() called from DataContext");
+                    Helpers.DebugLogger.Log(
+                        "FilterOperatorControl",
+                        "UpdateFannedLayout() called from DataContext"
+                    );
                 }
                 else
                 {
-                    Helpers.DebugLogger.Log("FilterOperatorControl", "DataContext changed but not FilterOperatorItem");
+                    Helpers.DebugLogger.Log(
+                        "FilterOperatorControl",
+                        "DataContext changed but not FilterOperatorItem"
+                    );
                 }
             };
 
@@ -259,7 +267,10 @@ namespace BalatroSeedOracle.Components
                     }
 
                     var operatorContainer = this.FindControl<Border>("OperatorContainer");
-                    if (operatorContainer != null && !operatorContainer.Classes.Contains("drag-over"))
+                    if (
+                        operatorContainer != null
+                        && !operatorContainer.Classes.Contains("drag-over")
+                    )
                     {
                         operatorContainer.Classes.Add("drag-over");
                     }

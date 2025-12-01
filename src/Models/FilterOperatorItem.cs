@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Models
                 return OperatorType switch
                 {
                     "BannedItems" => "Banned Items",
-                    _ => OperatorType // OR, AND stay as-is
+                    _ => OperatorType, // OR, AND stay as-is
                 };
             }
             set

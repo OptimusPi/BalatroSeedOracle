@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Media;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels.Controls;
 
@@ -71,12 +72,35 @@ namespace BalatroSeedOracle.Controls
 
             InitializeComponent();
             InitializeDataGrid();
+
+            // CRITICAL FIX: Listen to DisplayedResults changes to force DataGrid refresh
+            ViewModel.DisplayedResults.CollectionChanged += OnDisplayedResultsChanged;
+        }
+
+        private void OnDisplayedResultsChanged(
+            object? sender,
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e
+        )
+        {
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                $"OnDisplayedResultsChanged: Action={e.Action}, NewItems={e.NewItems?.Count ?? 0}, DisplayedResults.Count={ViewModel.DisplayedResults.Count}"
+            );
+
+            // Ensure tally columns are updated when results change
+            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                EnsureTallyColumns();
+            }
         }
 
         private void InitializeDataGrid()
         {
             // Tally columns will be initialized when results are added
             EnsureTallyColumns();
+            
+            // DataGrid is bound to DisplayedResults via XAML - no need to set explicitly
+            DebugLogger.Log("SortableResultsGrid", "DataGrid initialized with XAML binding to DisplayedResults");
         }
 
         private void EnsureTallyColumns()
@@ -114,7 +138,7 @@ namespace BalatroSeedOracle.Controls
             if (!needsRebuild)
                 return;
 
-            // Clear existing tally columns (keep SEED and TOTALSCORE)
+            // Clear existing tally columns (keep SEED and SCORE)
             if (_tallyColumnsInitialized)
             {
                 var columnsToRemove = dataGrid
@@ -147,7 +171,7 @@ namespace BalatroSeedOracle.Controls
                     Width = new DataGridLength(80),
                 };
 
-                // Bind TextBlock to Scores[i]
+                // Bind TextBlock to Scores[i] using proper AvaloniaUI binding
                 var template = new FuncDataTemplate<Models.SearchResult>(
                     (item, _) =>
                     {
@@ -155,8 +179,11 @@ namespace BalatroSeedOracle.Controls
                         {
                             FontFamily = new FontFamily("Consolas"),
                             FontSize = 11,
+                            Foreground = Brushes.White,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            Text = (item?.Scores != null && i < item.Scores.Length) ? item.Scores[i].ToString() : "0"
                         };
-                        tb.Bind(TextBlock.TextProperty, new Binding($"Scores[{i}]"));
                         return tb;
                     },
                     true
@@ -172,11 +199,26 @@ namespace BalatroSeedOracle.Controls
 
         private void ResetFromItemsSource()
         {
+            DebugLogger.LogImportant("SortableResultsGrid", "ResetFromItemsSource: Clearing existing results");
             ViewModel.ClearResults();
+            
             if (_itemsSource != null)
             {
+                DebugLogger.LogImportant(
+                    "SortableResultsGrid", 
+                    $"ResetFromItemsSource: Adding {_itemsSource.Count} results from bound collection"
+                );
                 ViewModel.AddResults(_itemsSource);
+                DebugLogger.LogImportant(
+                    "SortableResultsGrid", 
+                    $"ResetFromItemsSource: After adding - DisplayedResults.Count={ViewModel.DisplayedResults.Count}"
+                );
             }
+            else
+            {
+                DebugLogger.Log("SortableResultsGrid", "ResetFromItemsSource: No ItemsSource to add from");
+            }
+            
             // Rebuild tally columns if needed
             EnsureTallyColumns();
         }
@@ -204,7 +246,8 @@ namespace BalatroSeedOracle.Controls
         public static readonly StyledProperty<ObservableCollection<SearchResult>?> ItemsSourceProperty =
             AvaloniaProperty.Register<SortableResultsGrid, ObservableCollection<SearchResult>?>(
                 nameof(ItemsSource),
-                defaultBindingMode: Avalonia.Data.BindingMode.OneWay);
+                defaultBindingMode: Avalonia.Data.BindingMode.OneWay
+            );
 
         public ObservableCollection<SearchResult>? ItemsSource
         {
@@ -218,20 +261,34 @@ namespace BalatroSeedOracle.Controls
 
             if (change.Property == ItemsSourceProperty)
             {
+                var oldCount = (change.OldValue as ObservableCollection<SearchResult>)?.Count ?? 0;
+                var newCount = (change.NewValue as ObservableCollection<SearchResult>)?.Count ?? 0;
+                
+                DebugLogger.LogImportant(
+                    "SortableResultsGrid",
+                    $"ItemsSource CHANGED: Old collection had {oldCount} items, new collection has {newCount} items"
+                );
+
                 if (change.OldValue is ObservableCollection<SearchResult> oldCollection)
                 {
                     oldCollection.CollectionChanged -= OnItemsSourceChanged;
+                    DebugLogger.Log("SortableResultsGrid", "Unsubscribed from old collection");
                 }
 
                 _itemsSource = change.NewValue as ObservableCollection<SearchResult>;
 
                 if (_itemsSource != null)
                 {
+                    DebugLogger.LogImportant(
+                        "SortableResultsGrid",
+                        $"New ItemsSource bound with {_itemsSource.Count} items - subscribing to changes and resetting grid"
+                    );
                     _itemsSource.CollectionChanged += OnItemsSourceChanged;
                     ResetFromItemsSource();
                 }
                 else
                 {
+                    DebugLogger.Log("SortableResultsGrid", "ItemsSource set to null - clearing results");
                     ClearResults();
                 }
             }
@@ -239,6 +296,11 @@ namespace BalatroSeedOracle.Controls
 
         private void OnItemsSourceChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                $"OnItemsSourceChanged: Action={e.Action}, NewItems={e.NewItems?.Count ?? 0}, DisplayedResults={ViewModel.DisplayedResults.Count}"
+            );
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Reset:
@@ -247,6 +309,10 @@ namespace BalatroSeedOracle.Controls
                 case NotifyCollectionChangedAction.Add:
                     if (e.NewItems != null)
                     {
+                        DebugLogger.Log(
+                            "SortableResultsGrid",
+                            $"Adding {e.NewItems.Count} items to grid"
+                        );
                         foreach (var item in e.NewItems)
                         {
                             if (item is SearchResult r)
@@ -258,25 +324,9 @@ namespace BalatroSeedOracle.Controls
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    if (e.OldItems != null)
-                    {
-                        foreach (var item in e.OldItems)
-                        {
-                            if (item is SearchResult r)
-                            {
-                                var existing = ViewModel.AllResults.FirstOrDefault(x =>
-                                    x.Seed == r.Seed && x.TotalScore == r.TotalScore
-                                );
-                                if (existing != null)
-                                {
-                                    ViewModel.AllResults.Remove(existing);
-                                }
-                            }
-                        }
-                    }
-                    break;
                 case NotifyCollectionChangedAction.Replace:
                 case NotifyCollectionChangedAction.Move:
+                    // For remove/replace/move, just reset from source
                     ResetFromItemsSource();
                     break;
             }

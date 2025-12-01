@@ -46,7 +46,8 @@ namespace BalatroSeedOracle.Models
 
         private SKColor? TryParseColor(string? s)
         {
-            if (string.IsNullOrWhiteSpace(s)) return null;
+            if (string.IsNullOrWhiteSpace(s))
+                return null;
             try
             {
                 return SKColor.Parse(s);

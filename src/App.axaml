@@ -32,6 +32,7 @@
 
         <!-- Modal/Panel Colors -->
         <Color x:Key="ColorGrey">#3a5055</Color>
+        <Color x:Key="ColorMediumGrey">#33464b</Color>
         <Color x:Key="ColorDarkGrey">#1e2b2d</Color>
         <Color x:Key="ColorBrightSilver">#b9c2d2</Color>
         <Color x:Key="ColorLightGrey">#777e89</Color>
@@ -52,10 +53,6 @@
         <Color x:Key="ColorBurntRed">#8f3b36</Color>
         <Color x:Key="ColorLightSilver">#a3acb9</Color>
         <Color x:Key="ColorGreySilver">#686e78</Color>
-
-        <!-- Card Colors -->
-        <Color x:Key="ColorCardFaceTop">#F5F5F0</Color>
-        <Color x:Key="ColorCardFaceBottom">#EEEEE8</Color>
 
         <!-- Additional Purple Colors for Card Flip Animations -->
         <Color x:Key="ColorPurpleViolet">#9B7EDE</Color>
@@ -118,7 +115,7 @@
         <SolidColorBrush x:Key="DarkTealGrey" Color="{StaticResource ColorDarkGrey}"/>
 
         <!-- Grey Scale Brushes -->
-        <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorFadedGrey}"/>
+        <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorMediumGrey}"/>
         <SolidColorBrush x:Key="VeryLightGrey" Color="{StaticResource ColorBrightSilver}"/>
         <SolidColorBrush x:Key="LightTextGrey" Color="{StaticResource ColorLightGrey}"/>
         <SolidColorBrush x:Key="TextInactive" Color="{StaticResource ColorFadedGrey}"/>
@@ -530,15 +527,15 @@
         </Style>
 
         <Style Selector="ScrollBar:vertical">
-            <Setter Property="Width" Value="20" />
-            <Setter Property="Margin" Value="0,0,-20,0" />
+            <Setter Property="Width" Value="14" />
+            <Setter Property="Margin" Value="1,0,1,0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Border Name="PART_Border"
                                 Background="{StaticResource RedHover}"
-                                CornerRadius="8"
-                                Width="16"
+                                CornerRadius="6"
+                                Width="12"
                                 HorizontalAlignment="Center"
                                 ClipToBounds="True">
                             <Track Name="PART_Track"
@@ -553,8 +550,8 @@
                                         <Thumb.Template>
                                             <ControlTemplate>
                                                 <Border Background="{StaticResource Red}"
-                                                        CornerRadius="8"
-                                                        Width="16"
+                                                        CornerRadius="6"
+                                                        Width="12"
                                                         MinHeight="40"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
@@ -568,15 +565,15 @@
         </Style>
 
         <Style Selector="ScrollBar:horizontal">
-            <Setter Property="Height" Value="20" />
-            <Setter Property="Margin" Value="0,0,0,-20" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="Margin" Value="0,1,0,1" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Border Name="PART_Border"
                                 Background="{StaticResource RedHover}"
-                                CornerRadius="8"
-                                Height="16"
+                                CornerRadius="6"
+                                Height="12"
                                 VerticalAlignment="Center"
                                 ClipToBounds="True">
                             <Track Name="PART_Track"
@@ -590,8 +587,8 @@
                                         <Thumb.Template>
                                             <ControlTemplate>
                                                 <Border Background="{StaticResource Red}"
-                                                        CornerRadius="8"
-                                                        Height="16"
+                                                        CornerRadius="6"
+                                                        Height="12"
                                                         MinWidth="40"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
@@ -773,7 +770,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Margin" Value="4,0"/>
             <Setter Property="MinWidth" Value="144"/>
             <Setter Property="Height" Value="34"/>
@@ -795,7 +792,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="12"
+                                CornerRadius="8"
                                 Margin="0">
                             <ContentPresenter Name="PART_ContentPresenter"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"
@@ -914,14 +911,14 @@
 
         <Style Selector="Button.back-button">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontSize" Value="26"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Background" Value="{StaticResource Orange}"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Height" Value="42"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="8,4,8,4"/>
+            <Setter Property="Margin" Value="10,1,10,2"/>
         </Style>
         <Style Selector="Button.back-button:pointerover">
             <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
@@ -1082,7 +1079,7 @@
 
         <Style Selector="Border.modal-content-panel">
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="8"/>
@@ -1090,7 +1087,7 @@
 
         <Style Selector="Border.modal-content-box">
             <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="24"/>
         </Style>
@@ -1111,7 +1108,7 @@
 
         <Style Selector="Border.notification-badge">
             <Setter Property="Background" Value="{StaticResource Red}"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="MinWidth" Value="24"/>
             <Setter Property="Height" Value="24"/>
             <Setter Property="BoxShadow" Value="{StaticResource TextBoxShadow}"/>
@@ -1227,7 +1224,7 @@
             <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
         </Style>
 
@@ -1239,7 +1236,7 @@
             <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="BoxShadow" Value="{StaticResource WidgetWindowShadow}"/>
         </Style>
 
@@ -1400,7 +1397,7 @@
             <Setter Property="Background" Value="{StaticResource PopupBackground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="0"/>
         </Style>
 

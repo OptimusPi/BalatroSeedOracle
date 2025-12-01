@@ -499,7 +499,7 @@ namespace BalatroSeedOracle.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     SystemDecorations = SystemDecorations.None,
                     Background = Avalonia.Media.Brushes.Transparent,
-                    TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+                    TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 };
 
                 string? result = null;
@@ -510,7 +510,7 @@ namespace BalatroSeedOracle.ViewModels
                     Margin = new Avalonia.Thickness(0, 10, 0, 0),
                     FontSize = 18,
                     Padding = new Avalonia.Thickness(12, 8),
-                    MinHeight = 45
+                    MinHeight = 45,
                 };
 
                 var okButton = new Button
@@ -518,7 +518,7 @@ namespace BalatroSeedOracle.ViewModels
                     Content = "SAVE",
                     Classes = { "btn-blue" },
                     MinWidth = 120,
-                    Height = 45
+                    Height = 45,
                 };
 
                 var cancelButton = new Button
@@ -526,7 +526,7 @@ namespace BalatroSeedOracle.ViewModels
                     Content = "CANCEL",
                     Classes = { "btn-red" },
                     MinWidth = 120,
-                    Height = 45
+                    Height = 45,
                 };
 
                 okButton.Click += (s, e) =>
@@ -556,13 +556,10 @@ namespace BalatroSeedOracle.ViewModels
                     Background = mainWindow.FindResource("DarkBorder") as Avalonia.Media.IBrush,
                     BorderBrush = mainWindow.FindResource("LightGrey") as Avalonia.Media.IBrush,
                     BorderThickness = new Avalonia.Thickness(3),
-                    CornerRadius = new Avalonia.CornerRadius(16)
+                    CornerRadius = new Avalonia.CornerRadius(16),
                 };
 
-                var mainGrid = new Grid
-                {
-                    RowDefinitions = new RowDefinitions("Auto,*,Auto")
-                };
+                var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
 
                 // Title bar
                 var titleBar = new Border
@@ -570,7 +567,7 @@ namespace BalatroSeedOracle.ViewModels
                     [Grid.RowProperty] = 0,
                     Background = mainWindow.FindResource("ModalGrey") as Avalonia.Media.IBrush,
                     CornerRadius = new Avalonia.CornerRadius(14, 14, 0, 0),
-                    Padding = new Avalonia.Thickness(20, 12)
+                    Padding = new Avalonia.Thickness(20, 12),
                 };
 
                 var titleText = new TextBlock
@@ -578,7 +575,7 @@ namespace BalatroSeedOracle.ViewModels
                     Text = "Save Audio Trigger",
                     FontSize = 24,
                     Foreground = mainWindow.FindResource("White") as Avalonia.Media.IBrush,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 };
 
                 titleBar.Child = titleText;
@@ -589,16 +586,18 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     [Grid.RowProperty] = 1,
                     Background = mainWindow.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                    Padding = new Avalonia.Thickness(24)
+                    Padding = new Avalonia.Thickness(24),
                 };
 
                 var contentStack = new StackPanel { Spacing = 8 };
-                contentStack.Children.Add(new TextBlock
-                {
-                    Text = "Trigger Name:",
-                    FontSize = 16,
-                    Foreground = mainWindow.FindResource("White") as Avalonia.Media.IBrush
-                });
+                contentStack.Children.Add(
+                    new TextBlock
+                    {
+                        Text = "Trigger Name:",
+                        FontSize = 16,
+                        Foreground = mainWindow.FindResource("White") as Avalonia.Media.IBrush,
+                    }
+                );
                 contentStack.Children.Add(textBox);
 
                 contentBorder.Child = contentStack;
@@ -610,14 +609,14 @@ namespace BalatroSeedOracle.ViewModels
                     [Grid.RowProperty] = 2,
                     Background = mainWindow.FindResource("DarkBackground") as Avalonia.Media.IBrush,
                     CornerRadius = new Avalonia.CornerRadius(0, 0, 14, 14),
-                    Padding = new Avalonia.Thickness(20, 12, 20, 20)
+                    Padding = new Avalonia.Thickness(20, 12, 20, 20),
                 };
 
                 var buttonPanel = new StackPanel
                 {
                     Orientation = Avalonia.Layout.Orientation.Horizontal,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    Spacing = 12
+                    Spacing = 12,
                 };
                 buttonPanel.Children.Add(okButton);
                 buttonPanel.Children.Add(cancelButton);

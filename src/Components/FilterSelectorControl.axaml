@@ -6,6 +6,7 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterListViewModel">
 
@@ -504,29 +505,41 @@
                             <!-- COPY button (blue) -->
                             <Button Grid.Column="0"
                                     Name="CopyFilterButton"
-                                    Content="📋 COPY"
                                     Classes="btn-blue"
                                     Height="40"
                                     FontSize="14"
-                                    Click="OnCopyFilterClick"/>
+                                    Click="OnCopyFilterClick">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="ContentCopy" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="COPY" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- EDIT button (orange) -->
                             <Button Grid.Column="1"
                                     Name="EditFilterButton"
-                                    Content="✏️ EDIT"
                                     Classes="btn-orange"
                                     Height="40"
                                     FontSize="14"
-                                    Click="OnEditFilterClick"/>
+                                    Click="OnEditFilterClick">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="Pencil" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="EDIT" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
 
                             <!-- DELETE button (red) -->
                             <Button Grid.Column="2"
                                     Name="DeleteFilterButton"
-                                    Content="🗑️ DELETE"
                                     Classes="btn-red"
                                     Height="40"
                                     FontSize="14"
-                                    Click="OnDeleteFilterClick"/>
+                                    Click="OnDeleteFilterClick">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="Delete" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="DELETE" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </Grid>
                 </Grid>

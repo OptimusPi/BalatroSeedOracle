@@ -141,8 +141,11 @@ namespace BalatroSeedOracle.Models
                 parts.AddRange(Stickers);
             }
 
-            // Add edition (if present)
-            if (!string.IsNullOrEmpty(Edition))
+            // Add edition (if present and not "none")
+            if (
+                !string.IsNullOrEmpty(Edition)
+                && !Edition.Equals("none", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 parts.Add(Edition);
             }
@@ -158,8 +161,11 @@ namespace BalatroSeedOracle.Models
         {
             var parts = new List<string>();
 
-            // Add edition (if present)
-            if (!string.IsNullOrEmpty(Edition))
+            // Add edition (if present and not "none")
+            if (
+                !string.IsNullOrEmpty(Edition)
+                && !Edition.Equals("none", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 parts.Add(Edition);
             }

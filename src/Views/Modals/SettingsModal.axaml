@@ -25,25 +25,45 @@
         <!-- Settings Content - Simple vertical stack like Balatro -->
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="12" HorizontalAlignment="Center">
+            <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button Content="Word Lists"
                         Classes="btn-red"
-                        Width="300"
+                        Width="320"
+                        Height="50"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
                         Click="OnWordListsClick"/>
 
                 <Button Content="Open Filters Folder"
                         Classes="btn-red"
-                        Width="300"
+                        Width="320"
+                        Height="50"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
                         Click="OnOpenFiltersDirectoryClick"/>
 
                 <Button Content="Open App Folder"
                         Classes="btn-red"
-                        Width="300"
+                        Width="320"
+                        Height="50"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
                         Click="OnOpenAppDirectoryClick"/>
+
+                <Button Content="Add Widgets"
+                        Classes="btn-blue"
+                        Width="320"
+                        Height="50"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
+                        Click="OnAddWidgetsClick"/>
 
                 <Button Content="Credits"
                         Classes="btn-purple"
-                        Width="300"
+                        Width="320"
+                        Height="50"
+                        FontSize="18"
+                        FontFamily="{StaticResource BalatroFont}"
                         Click="OnCreditsClick"/>
             </StackPanel>
         </ScrollViewer>

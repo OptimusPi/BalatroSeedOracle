@@ -4,6 +4,7 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
              x:DataType="vm:AnalyzerViewModel">
 
@@ -80,22 +81,22 @@
                                Foreground="{StaticResource White}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
-                    <Button Content="◀"
-                            Command="{Binding PreviousResultCommand}"
+                    <Button Command="{Binding PreviousResultCommand}"
                             IsEnabled="{Binding HasPreviousResult}"
                             ToolTip.Tip="Previous Seed (PgUp)"
                             Width="32"
                             Height="32"
-                            Padding="0"
-                            FontSize="14"/>
-                    <Button Content="▶"
-                            Command="{Binding NextResultCommand}"
+                            Padding="0">
+                        <icons:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16"/>
+                    </Button>
+                    <Button Command="{Binding NextResultCommand}"
                             IsEnabled="{Binding HasNextResult}"
                             ToolTip.Tip="Next Seed (PgDn)"
                             Width="32"
                             Height="32"
-                            Padding="0"
-                            FontSize="14"/>
+                            Padding="0">
+                        <icons:PackIconMaterial Kind="ChevronRight" Width="16" Height="16"/>
+                    </Button>
                 </StackPanel>
 
                 <!-- Ante Navigation -->

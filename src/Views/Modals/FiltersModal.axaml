@@ -20,7 +20,8 @@
                 <TabItem Header="Build Filter"/>
                 <TabItem Header="Deck/Stake"/>
                 <TabItem Header="JSON Editor"/>
-                <TabItem Header="Finish"/>
+                <TabItem Header="JAML Editor"/>
+                <TabItem Header="Validate Filter"/>
             </controls:BalatroTabControl.Items>
         </controls:BalatroTabControl>
 

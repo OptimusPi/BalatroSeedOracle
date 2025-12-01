@@ -582,6 +582,18 @@ namespace BalatroSeedOracle.ViewModels
         public List<ItemConfig> Tags { get; set; } = new();
         public List<ItemConfig> Bosses { get; set; } = new();
         public List<ItemConfig> StandardCards { get; set; } = new();
+
+        /// <summary>
+        /// All items combined for fanned card hand display
+        /// </summary>
+        public List<ItemConfig> AllItems =>
+            Jokers
+                .Concat(Vouchers)
+                .Concat(Consumables)
+                .Concat(Tags)
+                .Concat(Bosses)
+                .Concat(StandardCards)
+                .ToList();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

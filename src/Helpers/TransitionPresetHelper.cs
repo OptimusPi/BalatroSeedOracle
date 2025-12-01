@@ -9,18 +9,24 @@ namespace BalatroSeedOracle.Helpers
 {
     public static class TransitionPresetHelper
     {
-        private static readonly string Dir = AppPaths.EnsureDir(Path.Combine(AppPaths.UserDir, "Transitions"));
+        private static readonly string Dir = AppPaths.EnsureDir(
+            Path.Combine(AppPaths.UserDir, "Transitions")
+        );
         private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
         public static bool Save(TransitionPreset preset)
         {
             try
             {
-                if (preset == null || string.IsNullOrWhiteSpace(preset.Name)) return false;
+                if (preset == null || string.IsNullOrWhiteSpace(preset.Name))
+                    return false;
                 var safe = Normalize(preset.Name);
                 var path = Path.Combine(Dir, safe + ".json");
                 File.WriteAllText(path, JsonSerializer.Serialize(preset, JsonOptions));
-                DebugLogger.Log("TransitionPresetHelper", $"Saved transition '{preset.Name}' → {path}");
+                DebugLogger.Log(
+                    "TransitionPresetHelper",
+                    $"Saved transition '{preset.Name}' → {path}"
+                );
                 return true;
             }
             catch (Exception ex)
@@ -36,7 +42,8 @@ namespace BalatroSeedOracle.Helpers
             {
                 var safe = Normalize(name);
                 var path = Path.Combine(Dir, safe + ".json");
-                if (!File.Exists(path)) return null;
+                if (!File.Exists(path))
+                    return null;
                 return JsonSerializer.Deserialize<TransitionPreset>(File.ReadAllText(path));
             }
             catch (Exception ex)
@@ -50,8 +57,10 @@ namespace BalatroSeedOracle.Helpers
         {
             try
             {
-                if (!Directory.Exists(Dir)) return new List<string>();
-                return Directory.GetFiles(Dir, "*.json")
+                if (!Directory.Exists(Dir))
+                    return new List<string>();
+                return Directory
+                    .GetFiles(Dir, "*.json")
                     .Select(f => Path.GetFileNameWithoutExtension(f))
                     .OrderBy(n => n)
                     .ToList();

@@ -12,9 +12,9 @@ namespace BalatroSeedOracle.Behaviors
     /// <summary>
     /// REAL Balatro magnetic tilt behavior - EXACTLY like the game!
     /// Based on external/Balatro/card.lua:4371-4383 hover.is state
-    /// 
+    ///
     /// self.tilt_var.mx = G.CONTROLLER.cursor_position.x
-    /// self.tilt_var.my = G.CONTROLLER.cursor_position.y  
+    /// self.tilt_var.my = G.CONTROLLER.cursor_position.y
     /// self.tilt_var.amt = math.abs(hover_offset) * tilt_factor
     /// </summary>
     public class MagneticTiltBehavior : Behavior<Control>
@@ -27,7 +27,8 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnAttached();
 
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Track pointer events for magnetic tilt
             AssociatedObject.PointerEntered += OnPointerEntered;
@@ -35,10 +36,7 @@ namespace BalatroSeedOracle.Behaviors
             AssociatedObject.PointerMoved += OnPointerMoved;
 
             // High-frequency timer for smooth magnetic tracking (60 FPS)
-            _tiltTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(16)
-            };
+            _tiltTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
             _tiltTimer.Tick += UpdateMagneticTilt;
             _tiltTimer.Start();
         }
@@ -80,12 +78,14 @@ namespace BalatroSeedOracle.Behaviors
 
         private void UpdateMagneticTilt(object? sender, EventArgs e)
         {
-            if (AssociatedObject == null) return;
+            if (AssociatedObject == null)
+                return;
 
             // Get card dimensions first
             var cardWidth = AssociatedObject.Bounds.Width;
             var cardHeight = AssociatedObject.Bounds.Height;
-            if (cardWidth <= 0 || cardHeight <= 0) return;
+            if (cardWidth <= 0 || cardHeight <= 0)
+                return;
 
             // Get or create MatrixTransform for TRUE 3D-like magnetic tilt
             MatrixTransform? matrixTransform = null;
@@ -106,7 +106,11 @@ namespace BalatroSeedOracle.Behaviors
             {
                 matrixTransform = new MatrixTransform();
                 AssociatedObject.RenderTransform = matrixTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
             }
 
             // If not hovering, reset to identity matrix
@@ -137,9 +141,12 @@ namespace BalatroSeedOracle.Behaviors
             // Negative signs make card tilt TOWARD mouse position
 
             var m = new Matrix(
-                1.0, -offsetY * tiltStrength,  // M11, M12
-                -offsetX * tiltStrength, 1.0,  // M21, M22
-                0, 0
+                1.0,
+                -offsetY * tiltStrength, // M11, M12
+                -offsetX * tiltStrength,
+                1.0, // M21, M22
+                0,
+                0
             );
 
             matrixTransform.Matrix = m;

@@ -42,7 +42,9 @@ namespace BalatroSeedOracle.Windows
         private TextEditor? _sqlEditor;
         private ComboBox? _exampleQueriesCombo;
 
-        private const int INITIAL_RESULTS_PAGE_SIZE = 1000; // Initial number of results to load
+        // Pagination constants - balance between initial load speed and data completeness
+        private const int INITIAL_RESULTS_PAGE_SIZE = 1000;
+        private const int LOAD_MORE_INCREMENT = 1000;
 
         private ObservableCollection<DataGridResultItem> _results = new();
         private ObservableCollection<DataGridResultItem> _filteredResults = new();
@@ -301,7 +303,7 @@ LIMIT 100;";
             if (_searchInstance == null)
                 return;
 
-            _currentLoadedCount += 1000;
+            _currentLoadedCount += LOAD_MORE_INCREMENT;
             await LoadDataAsync();
         }
 

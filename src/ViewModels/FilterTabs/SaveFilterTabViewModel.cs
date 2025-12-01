@@ -112,7 +112,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 var sprites = Services.SpriteService.Instance;
                 var deckName = _parentViewModel.SelectedDeck.ToString();
-                var stakeName = StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
+                var stakeName =
+                    StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
                 return sprites.GetDeckWithStakeSticker(deckName, stakeName);
             }
         }
@@ -126,7 +127,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _parentViewModel.SelectedTabIndex = 0; // Build Filter
                 _parentViewModel.CurrentCategory = "Joker";
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // FAIL LOUD: User clicked button, they need to know if navigation failed
+                DebugLogger.LogError(
+                    "SaveFilterTab",
+                    $"❌ Failed to navigate to Joker config: {ex.Message}"
+                );
+                StatusMessage = "Failed to open Joker configuration";
+            }
         }
 
         /// <summary>
@@ -385,8 +394,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualVm.SelectedMust)
                 {
                     // SPECIAL HANDLING: BannedItems operator → MustNot[]
-                    if (item is Models.FilterOperatorItem operatorItem &&
-                        operatorItem.OperatorType == "BannedItems")
+                    if (
+                        item is Models.FilterOperatorItem operatorItem
+                        && operatorItem.OperatorType == "BannedItems"
+                    )
                     {
                         DebugLogger.Log(
                             "SaveFilterTab",
@@ -396,7 +407,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Add each child to MustNot array
                         foreach (var child in operatorItem.Children)
                         {
-                            var clause = ConvertFilterItemToClause(child, _parentViewModel.ItemConfigs);
+                            var clause = ConvertFilterItemToClause(
+                                child,
+                                _parentViewModel.ItemConfigs
+                            );
                             if (clause != null)
                                 config.MustNot.Add(clause);
                         }
@@ -510,7 +524,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     case "joker":
                         clause.Type = "Joker";
                         clause.Value = itemConfig.ItemName;
-                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
+                        if (
+                            !string.IsNullOrEmpty(itemConfig.Edition)
+                            && itemConfig.Edition != "none"
+                        )
                         {
                             clause.Edition = itemConfig.Edition;
                         }
@@ -542,7 +559,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         break;
 
                     default:
-                        DebugLogger.Log("SaveFilterTab", $"Unknown item type: {itemConfig.ItemType}");
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Unknown item type: {itemConfig.ItemType}"
+                        );
                         return null;
                 }
 
@@ -718,11 +738,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     string? verifiedSeed = null;
                     if (results.Results != null && results.Results.Count > 0)
                     {
-                        var bestResult = results.Results.OrderByDescending(r => r.TotalScore).First();
+                        var bestResult = results
+                            .Results.OrderByDescending(r => r.TotalScore)
+                            .First();
                         verifiedSeed = bestResult.Seed;
                         FoundSeed = verifiedSeed ?? "Unknown";
-                        DebugLogger.Log("SaveFilterTab",
-                            $"Selected seed {FoundSeed} with TotalScore {bestResult.TotalScore}");
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Selected seed {FoundSeed} with TotalScore {bestResult.TotalScore}"
+                        );
                     }
                     else if (results.Seeds != null && results.Seeds.Count > 0)
                     {
@@ -735,10 +759,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (!string.IsNullOrEmpty(verifiedSeed))
                     {
                         config.VerifiedSeed = verifiedSeed;
-                        var filePath = _filterService.GenerateFilterFileName(config.Name ?? "filter");
+                        var filePath = _filterService.GenerateFilterFileName(
+                            config.Name ?? "filter"
+                        );
                         await _configurationService.SaveFilterAsync(filePath, config);
-                        DebugLogger.Log("SaveFilterTab",
-                            $"Saved verified seed {verifiedSeed} to filter config");
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Saved verified seed {verifiedSeed} to filter config"
+                        );
                     }
 
                     TestResultMessage =
@@ -814,7 +842,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 5 => Motely.MotelyStake.Purple,
                 6 => Motely.MotelyStake.Orange,
                 7 => Motely.MotelyStake.Gold,
-                _ => Motely.MotelyStake.White
+                _ => Motely.MotelyStake.White,
             };
             return stake.ToString().ToLower();
         }
@@ -871,7 +899,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         else
                         {
                             // OR/AND operators
-                            MustItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                            MustItems.Add(
+                                $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
+                            );
                             foreach (var child in operatorItem.Children)
                             {
                                 MustItems.Add($"  {child.Type}: {child.DisplayName}");
@@ -890,7 +920,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     if (item is Models.FilterOperatorItem operatorItem)
                     {
-                        ShouldItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                        ShouldItems.Add(
+                            $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
+                        );
                         foreach (var child in operatorItem.Children)
                         {
                             ShouldItems.Add($"  {child.Type}: {child.DisplayName}");
@@ -911,8 +943,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(HasNoShouldItems));
             OnPropertyChanged(nameof(HasNoBannedItems));
 
-            DebugLogger.Log("SaveFilterTab",
-                $"Refreshed criteria display: {MustItems.Count} must, {ShouldItems.Count} should, {BannedItems.Count} banned");
+            DebugLogger.Log(
+                "SaveFilterTab",
+                $"Refreshed criteria display: {MustItems.Count} must, {ShouldItems.Count} should, {BannedItems.Count} banned"
+            );
         }
 
         [RelayCommand]

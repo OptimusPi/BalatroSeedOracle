@@ -9,6 +9,7 @@ using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
+using AvaloniaEdit.Folding;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
 using BalatroSeedOracle.Helpers;
@@ -23,6 +24,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
     public partial class JsonEditorTab : UserControl
     {
         private TextEditor? _jsonEditor;
+        private FoldingManager? _foldingManager;
+        private readonly BraceFoldingStrategy _foldingStrategy = new();
+
         public JsonEditorTabViewModel? ViewModel => DataContext as JsonEditorTabViewModel;
 
         public JsonEditorTab()
@@ -52,6 +56,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Load custom dark mode syntax highlighting
                 LoadCustomJsonSyntaxHighlighting();
 
+                // Install code folding
+                InstallCodeFolding();
+
                 // When ViewModel changes, update editor
                 DataContextChanged += (s, e) =>
                 {
@@ -70,6 +77,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (ViewModel != null)
                     {
                         ViewModel.JsonContent = _jsonEditor.Text ?? "";
+
+                        // Update code folding when document changes
+                        UpdateCodeFolding();
                     }
                 };
             }
@@ -115,6 +125,47 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     "JsonEditorTab",
                     $"Failed to load custom syntax highlighting: {ex.Message}"
                 );
+            }
+        }
+
+        private void InstallCodeFolding()
+        {
+            if (_jsonEditor?.TextArea == null)
+                return;
+
+            try
+            {
+                // Install folding manager
+                _foldingManager = FoldingManager.Install(_jsonEditor.TextArea);
+
+                // Initial folding update
+                UpdateCodeFolding();
+
+                DebugLogger.Log("JsonEditorTab", "Code folding installed successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "JsonEditorTab",
+                    $"Failed to install code folding: {ex.Message}"
+                );
+            }
+        }
+
+        private void UpdateCodeFolding()
+        {
+            if (_foldingManager == null || _jsonEditor?.Document == null)
+                return;
+
+            try
+            {
+                // Update foldings using brace folding strategy (handles {} and [] for JSON)
+                _foldingStrategy.UpdateFoldings(_foldingManager, _jsonEditor.Document);
+            }
+            catch (Exception ex)
+            {
+                // Silently ignore folding errors to avoid disrupting editing
+                DebugLogger.LogError("JsonEditorTab", $"Error updating foldings: {ex.Message}");
             }
         }
 

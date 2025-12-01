@@ -34,6 +34,14 @@ namespace BalatroSeedOracle.Services
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
 
+            // BUGFIX: Remove any existing search with this ID before creating new one
+            // This allows restarting searches after they've been stopped
+            if (_activeSearches.TryRemove(searchId, out var oldSearch))
+            {
+                DebugLogger.Log("SearchManager", $"Removed existing search instance: {searchId}");
+                oldSearch.Dispose();
+            }
+
             // Preallocate a database file path so SearchInstance always has a connection string
             var searchResultsDir = AppPaths.SearchResultsDir;
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
@@ -109,6 +117,59 @@ namespace BalatroSeedOracle.Services
         public IEnumerable<SearchInstance> GetAllSearches()
         {
             return _activeSearches.Values;
+        }
+
+        /// <summary>
+        /// Gets or restores a SearchInstance from an existing database file.
+        /// If the SearchInstance isn't in memory but the DB file exists, creates it.
+        /// </summary>
+        /// <param name="searchInstanceId">The SearchInstance ID to get or restore</param>
+        /// <returns>The SearchInstance if found/restored, null if DB file doesn't exist</returns>
+        public SearchInstance? GetOrRestoreSearch(string searchInstanceId)
+        {
+            // First check if already in memory
+            if (_activeSearches.TryGetValue(searchInstanceId, out var existingSearch))
+            {
+                return existingSearch;
+            }
+
+            // Check if database file exists
+            var searchResultsDir = AppPaths.SearchResultsDir;
+            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchInstanceId}.db");
+
+            if (!System.IO.File.Exists(dbPath))
+            {
+                DebugLogger.Log(
+                    "SearchManager",
+                    $"Cannot restore search '{searchInstanceId}' - database file not found"
+                );
+                return null;
+            }
+
+            // Database exists, create SearchInstance to reconnect to it
+            try
+            {
+                var searchInstance = new SearchInstance(searchInstanceId, dbPath);
+
+                if (_activeSearches.TryAdd(searchInstanceId, searchInstance))
+                {
+                    DebugLogger.Log(
+                        "SearchManager",
+                        $"Restored search instance from database: {searchInstanceId}"
+                    );
+                    return searchInstance;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchManager",
+                    $"Failed to restore search '{searchInstanceId}': {ex.Message}"
+                );
+                return null;
+            }
         }
 
         /// <summary>

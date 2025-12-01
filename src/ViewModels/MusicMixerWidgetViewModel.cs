@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Layout;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -21,6 +21,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class MusicMixerWidgetViewModel : BaseWidgetViewModel
     {
         private readonly UserProfileService _userProfileService;
+        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
         private static readonly string MIXER_SETTINGS_DIR = AppPaths.MixerSettingsDir;
 
         private static readonly string MIXER_SETTINGS_FILE = System.IO.Path.Combine(
@@ -31,10 +32,16 @@ namespace BalatroSeedOracle.ViewModels
         // Store previous mute states before applying solo
         private Dictionary<string, bool> _previousMuteStates = new();
 
-        public MusicMixerWidgetViewModel(UserProfileService userProfileService)
+        public MusicMixerWidgetViewModel(
+            UserProfileService userProfileService,
+            SoundFlowAudioManager? soundFlowAudioManager = null,
+            WidgetPositionService? widgetPositionService = null
+        )
+            : base(widgetPositionService)
         {
             _userProfileService =
                 userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _soundFlowAudioManager = soundFlowAudioManager;
 
             // Configure widget appearance and position - fourth position (90px spacing)
             WidgetTitle = "Music Mixer";
@@ -355,8 +362,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackVolume(string trackName, float volume)
         {
-            var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
-            if (audioManager == null)
+            if (_soundFlowAudioManager == null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
@@ -365,7 +371,7 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
-            audioManager.SetTrackVolume(trackName, volume);
+            _soundFlowAudioManager.SetTrackVolume(trackName, volume);
             DebugLogger.Log("MusicMixerWidgetViewModel", $"{trackName} volume → {volume:P0}");
         }
 
@@ -374,8 +380,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackPan(string trackName, float pan)
         {
-            var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
-            if (audioManager == null)
+            if (_soundFlowAudioManager == null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
@@ -384,7 +389,7 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
-            audioManager.SetTrackPan(trackName, pan);
+            _soundFlowAudioManager.SetTrackPan(trackName, pan);
             DebugLogger.Log("MusicMixerWidgetViewModel", $"{trackName} pan → {pan:F2}");
         }
 
@@ -729,7 +734,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"SaveMixAs failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"SaveMixAs failed: {ex.Message}"
+                );
             }
         }
 
@@ -758,7 +766,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"LoadMixFrom failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"LoadMixFrom failed: {ex.Message}"
+                );
             }
         }
 
@@ -768,55 +779,116 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var names = MixerHelper.LoadAllMixerNames();
-                if (names.Count == 0) return;
-                var selected = await ShowSelectionDialog("Animate To Mix", "Choose a saved mix:", names);
-                if (string.IsNullOrWhiteSpace(selected)) return;
+                if (names.Count == 0)
+                    return;
+                var selected = await ShowSelectionDialog(
+                    "Animate To Mix",
+                    "Choose a saved mix:",
+                    names
+                );
+                if (string.IsNullOrWhiteSpace(selected))
+                    return;
                 var target = MixerHelper.LoadMixer(selected);
-                if (target == null) return;
+                if (target == null)
+                    return;
                 _ = AnimateToMixer(target, TimeSpan.FromSeconds(2.0));
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"AnimateToMix failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"AnimateToMix failed: {ex.Message}"
+                );
             }
         }
 
-        private async System.Threading.Tasks.Task AnimateToMixer(MixerSettings target, TimeSpan duration)
+        private async System.Threading.Tasks.Task AnimateToMixer(
+            MixerSettings target,
+            TimeSpan duration
+        )
         {
             var start = DateTime.UtcNow;
-            var sD1V = Drums1Volume; var sD1P = Drums1Pan; var sD1M = Drums1Muted;
-            var sD2V = Drums2Volume; var sD2P = Drums2Pan; var sD2M = Drums2Muted;
-            var sB1V = Bass1Volume; var sB1P = Bass1Pan; var sB1M = Bass1Muted;
-            var sB2V = Bass2Volume; var sB2P = Bass2Pan; var sB2M = Bass2Muted;
-            var sC1V = Chords1Volume; var sC1P = Chords1Pan; var sC1M = Chords1Muted;
-            var sC2V = Chords2Volume; var sC2P = Chords2Pan; var sC2M = Chords2Muted;
-            var sM1V = Melody1Volume; var sM1P = Melody1Pan; var sM1M = Melody1Muted;
-            var sM2V = Melody2Volume; var sM2P = Melody2Pan; var sM2M = Melody2Muted;
+            var sD1V = Drums1Volume;
+            var sD1P = Drums1Pan;
+            var sD1M = Drums1Muted;
+            var sD2V = Drums2Volume;
+            var sD2P = Drums2Pan;
+            var sD2M = Drums2Muted;
+            var sB1V = Bass1Volume;
+            var sB1P = Bass1Pan;
+            var sB1M = Bass1Muted;
+            var sB2V = Bass2Volume;
+            var sB2P = Bass2Pan;
+            var sB2M = Bass2Muted;
+            var sC1V = Chords1Volume;
+            var sC1P = Chords1Pan;
+            var sC1M = Chords1Muted;
+            var sC2V = Chords2Volume;
+            var sC2P = Chords2Pan;
+            var sC2M = Chords2Muted;
+            var sM1V = Melody1Volume;
+            var sM1P = Melody1Pan;
+            var sM1M = Melody1Muted;
+            var sM2V = Melody2Volume;
+            var sM2P = Melody2Pan;
+            var sM2M = Melody2Muted;
             while (true)
             {
                 var elapsed = DateTime.UtcNow - start;
                 if (elapsed >= duration)
                 {
-                    Drums1Volume = target.Drums1.Volume; Drums1Pan = target.Drums1.Pan; Drums1Muted = target.Drums1.Muted;
-                    Drums2Volume = target.Drums2.Volume; Drums2Pan = target.Drums2.Pan; Drums2Muted = target.Drums2.Muted;
-                    Bass1Volume = target.Bass1.Volume; Bass1Pan = target.Bass1.Pan; Bass1Muted = target.Bass1.Muted;
-                    Bass2Volume = target.Bass2.Volume; Bass2Pan = target.Bass2.Pan; Bass2Muted = target.Bass2.Muted;
-                    Chords1Volume = target.Chords1.Volume; Chords1Pan = target.Chords1.Pan; Chords1Muted = target.Chords1.Muted;
-                    Chords2Volume = target.Chords2.Volume; Chords2Pan = target.Chords2.Pan; Chords2Muted = target.Chords2.Muted;
-                    Melody1Volume = target.Melody1.Volume; Melody1Pan = target.Melody1.Pan; Melody1Muted = target.Melody1.Muted;
-                    Melody2Volume = target.Melody2.Volume; Melody2Pan = target.Melody2.Pan; Melody2Muted = target.Melody2.Muted;
+                    Drums1Volume = target.Drums1.Volume;
+                    Drums1Pan = target.Drums1.Pan;
+                    Drums1Muted = target.Drums1.Muted;
+                    Drums2Volume = target.Drums2.Volume;
+                    Drums2Pan = target.Drums2.Pan;
+                    Drums2Muted = target.Drums2.Muted;
+                    Bass1Volume = target.Bass1.Volume;
+                    Bass1Pan = target.Bass1.Pan;
+                    Bass1Muted = target.Bass1.Muted;
+                    Bass2Volume = target.Bass2.Volume;
+                    Bass2Pan = target.Bass2.Pan;
+                    Bass2Muted = target.Bass2.Muted;
+                    Chords1Volume = target.Chords1.Volume;
+                    Chords1Pan = target.Chords1.Pan;
+                    Chords1Muted = target.Chords1.Muted;
+                    Chords2Volume = target.Chords2.Volume;
+                    Chords2Pan = target.Chords2.Pan;
+                    Chords2Muted = target.Chords2.Muted;
+                    Melody1Volume = target.Melody1.Volume;
+                    Melody1Pan = target.Melody1.Pan;
+                    Melody1Muted = target.Melody1.Muted;
+                    Melody2Volume = target.Melody2.Volume;
+                    Melody2Pan = target.Melody2.Pan;
+                    Melody2Muted = target.Melody2.Muted;
                     break;
                 }
                 float t = (float)(elapsed.TotalMilliseconds / duration.TotalMilliseconds);
                 float p = 1f - (1f - t) * (1f - t);
-                Drums1Volume = sD1V + (target.Drums1.Volume - sD1V) * p; Drums1Pan = sD1P + (target.Drums1.Pan - sD1P) * p; Drums1Muted = p >= 1f ? target.Drums1.Muted : sD1M;
-                Drums2Volume = sD2V + (target.Drums2.Volume - sD2V) * p; Drums2Pan = sD2P + (target.Drums2.Pan - sD2P) * p; Drums2Muted = p >= 1f ? target.Drums2.Muted : sD2M;
-                Bass1Volume = sB1V + (target.Bass1.Volume - sB1V) * p; Bass1Pan = sB1P + (target.Bass1.Pan - sB1P) * p; Bass1Muted = p >= 1f ? target.Bass1.Muted : sB1M;
-                Bass2Volume = sB2V + (target.Bass2.Volume - sB2V) * p; Bass2Pan = sB2P + (target.Bass2.Pan - sB2P) * p; Bass2Muted = p >= 1f ? target.Bass2.Muted : sB2M;
-                Chords1Volume = sC1V + (target.Chords1.Volume - sC1V) * p; Chords1Pan = sC1P + (target.Chords1.Pan - sC1P) * p; Chords1Muted = p >= 1f ? target.Chords1.Muted : sC1M;
-                Chords2Volume = sC2V + (target.Chords2.Volume - sC2V) * p; Chords2Pan = sC2P + (target.Chords2.Pan - sC2P) * p; Chords2Muted = p >= 1f ? target.Chords2.Muted : sC2M;
-                Melody1Volume = sM1V + (target.Melody1.Volume - sM1V) * p; Melody1Pan = sM1P + (target.Melody1.Pan - sM1P) * p; Melody1Muted = p >= 1f ? target.Melody1.Muted : sM1M;
-                Melody2Volume = sM2V + (target.Melody2.Volume - sM2V) * p; Melody2Pan = sM2P + (target.Melody2.Pan - sM2P) * p; Melody2Muted = p >= 1f ? target.Melody2.Muted : sM2M;
+                Drums1Volume = sD1V + (target.Drums1.Volume - sD1V) * p;
+                Drums1Pan = sD1P + (target.Drums1.Pan - sD1P) * p;
+                Drums1Muted = p >= 1f ? target.Drums1.Muted : sD1M;
+                Drums2Volume = sD2V + (target.Drums2.Volume - sD2V) * p;
+                Drums2Pan = sD2P + (target.Drums2.Pan - sD2P) * p;
+                Drums2Muted = p >= 1f ? target.Drums2.Muted : sD2M;
+                Bass1Volume = sB1V + (target.Bass1.Volume - sB1V) * p;
+                Bass1Pan = sB1P + (target.Bass1.Pan - sB1P) * p;
+                Bass1Muted = p >= 1f ? target.Bass1.Muted : sB1M;
+                Bass2Volume = sB2V + (target.Bass2.Volume - sB2V) * p;
+                Bass2Pan = sB2P + (target.Bass2.Pan - sB2P) * p;
+                Bass2Muted = p >= 1f ? target.Bass2.Muted : sB2M;
+                Chords1Volume = sC1V + (target.Chords1.Volume - sC1V) * p;
+                Chords1Pan = sC1P + (target.Chords1.Pan - sC1P) * p;
+                Chords1Muted = p >= 1f ? target.Chords1.Muted : sC1M;
+                Chords2Volume = sC2V + (target.Chords2.Volume - sC2V) * p;
+                Chords2Pan = sC2P + (target.Chords2.Pan - sC2P) * p;
+                Chords2Muted = p >= 1f ? target.Chords2.Muted : sC2M;
+                Melody1Volume = sM1V + (target.Melody1.Volume - sM1V) * p;
+                Melody1Pan = sM1P + (target.Melody1.Pan - sM1P) * p;
+                Melody1Muted = p >= 1f ? target.Melody1.Muted : sM1M;
+                Melody2Volume = sM2V + (target.Melody2.Volume - sM2V) * p;
+                Melody2Pan = sM2P + (target.Melody2.Pan - sM2P) * p;
+                Melody2Muted = p >= 1f ? target.Melody2.Muted : sM2M;
                 await System.Threading.Tasks.Task.Delay(16);
             }
         }
@@ -825,14 +897,62 @@ namespace BalatroSeedOracle.ViewModels
         {
             return new MixerSettings
             {
-                Drums1 = new TrackSettings { Volume = Drums1Volume, Pan = Drums1Pan, Muted = Drums1Muted, Solo = Drums1Solo },
-                Drums2 = new TrackSettings { Volume = Drums2Volume, Pan = Drums2Pan, Muted = Drums2Muted, Solo = Drums2Solo },
-                Bass1 = new TrackSettings { Volume = Bass1Volume, Pan = Bass1Pan, Muted = Bass1Muted, Solo = Bass1Solo },
-                Bass2 = new TrackSettings { Volume = Bass2Volume, Pan = Bass2Pan, Muted = Bass2Muted, Solo = Bass2Solo },
-                Chords1 = new TrackSettings { Volume = Chords1Volume, Pan = Chords1Pan, Muted = Chords1Muted, Solo = Chords1Solo },
-                Chords2 = new TrackSettings { Volume = Chords2Volume, Pan = Chords2Pan, Muted = Chords2Muted, Solo = Chords2Solo },
-                Melody1 = new TrackSettings { Volume = Melody1Volume, Pan = Melody1Pan, Muted = Melody1Muted, Solo = Melody1Solo },
-                Melody2 = new TrackSettings { Volume = Melody2Volume, Pan = Melody2Pan, Muted = Melody2Muted, Solo = Melody2Solo },
+                Drums1 = new TrackSettings
+                {
+                    Volume = Drums1Volume,
+                    Pan = Drums1Pan,
+                    Muted = Drums1Muted,
+                    Solo = Drums1Solo,
+                },
+                Drums2 = new TrackSettings
+                {
+                    Volume = Drums2Volume,
+                    Pan = Drums2Pan,
+                    Muted = Drums2Muted,
+                    Solo = Drums2Solo,
+                },
+                Bass1 = new TrackSettings
+                {
+                    Volume = Bass1Volume,
+                    Pan = Bass1Pan,
+                    Muted = Bass1Muted,
+                    Solo = Bass1Solo,
+                },
+                Bass2 = new TrackSettings
+                {
+                    Volume = Bass2Volume,
+                    Pan = Bass2Pan,
+                    Muted = Bass2Muted,
+                    Solo = Bass2Solo,
+                },
+                Chords1 = new TrackSettings
+                {
+                    Volume = Chords1Volume,
+                    Pan = Chords1Pan,
+                    Muted = Chords1Muted,
+                    Solo = Chords1Solo,
+                },
+                Chords2 = new TrackSettings
+                {
+                    Volume = Chords2Volume,
+                    Pan = Chords2Pan,
+                    Muted = Chords2Muted,
+                    Solo = Chords2Solo,
+                },
+                Melody1 = new TrackSettings
+                {
+                    Volume = Melody1Volume,
+                    Pan = Melody1Pan,
+                    Muted = Melody1Muted,
+                    Solo = Melody1Solo,
+                },
+                Melody2 = new TrackSettings
+                {
+                    Volume = Melody2Volume,
+                    Pan = Melody2Pan,
+                    Muted = Melody2Muted,
+                    Solo = Melody2Solo,
+                },
             };
         }
 
@@ -879,7 +999,11 @@ namespace BalatroSeedOracle.ViewModels
             Melody2Solo = settings.Melody2.Solo;
         }
 
-        private async System.Threading.Tasks.Task<string?> ShowNameDialog(string title, string labelText, string watermark)
+        private async System.Threading.Tasks.Task<string?> ShowNameDialog(
+            string title,
+            string labelText,
+            string watermark
+        )
         {
             try
             {
@@ -900,7 +1024,12 @@ namespace BalatroSeedOracle.ViewModels
                     Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
                     FontSize = 14,
                 };
-                var textBox = new TextBox { Watermark = watermark, FontSize = 14, Padding = new Avalonia.Thickness(10) };
+                var textBox = new TextBox
+                {
+                    Watermark = watermark,
+                    FontSize = 14,
+                    Padding = new Avalonia.Thickness(10),
+                };
                 var buttons = new StackPanel
                 {
                     Orientation = Avalonia.Layout.Orientation.Horizontal,
@@ -908,7 +1037,12 @@ namespace BalatroSeedOracle.ViewModels
                     Spacing = 10,
                 };
 
-                var cancelBtn = new Button { Content = "Cancel", Width = 90, Padding = new Avalonia.Thickness(10, 5) };
+                var cancelBtn = new Button
+                {
+                    Content = "Cancel",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                };
                 var saveBtn = new Button
                 {
                     Content = "Save",
@@ -920,11 +1054,28 @@ namespace BalatroSeedOracle.ViewModels
 
                 string? result = null;
                 cancelBtn.Click += (s, e) => dialog.Close();
-                saveBtn.Click += (s, e) => { if (!string.IsNullOrWhiteSpace(textBox.Text)) { result = textBox.Text; dialog.Close(); } };
+                saveBtn.Click += (s, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(textBox.Text))
+                    {
+                        result = textBox.Text;
+                        dialog.Close();
+                    }
+                };
                 textBox.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Avalonia.Input.Key.Enter && !string.IsNullOrWhiteSpace(textBox.Text)) { result = textBox.Text; dialog.Close(); }
-                    else if (e.Key == Avalonia.Input.Key.Escape) { dialog.Close(); }
+                    if (
+                        e.Key == Avalonia.Input.Key.Enter
+                        && !string.IsNullOrWhiteSpace(textBox.Text)
+                    )
+                    {
+                        result = textBox.Text;
+                        dialog.Close();
+                    }
+                    else if (e.Key == Avalonia.Input.Key.Escape)
+                    {
+                        dialog.Close();
+                    }
                 };
 
                 buttons.Children.Add(cancelBtn);
@@ -934,14 +1085,27 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
 
-                var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop ? desktop.MainWindow : null;
-                if (owner != null) { await dialog.ShowDialog(owner); }
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
                 return result;
             }
-            catch { return null; }
+            catch
+            {
+                return null;
+            }
         }
 
-        private async System.Threading.Tasks.Task<string?> ShowSelectionDialog(string title, string labelText, System.Collections.Generic.List<string> options)
+        private async System.Threading.Tasks.Task<string?> ShowSelectionDialog(
+            string title,
+            string labelText,
+            System.Collections.Generic.List<string> options
+        )
         {
             try
             {
@@ -956,25 +1120,64 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 var panel = new StackPanel { Margin = new Avalonia.Thickness(16), Spacing = 12 };
-                var label = new TextBlock { Text = labelText, Foreground = new SolidColorBrush(Color.Parse("#FFD700")), FontSize = 14 };
-                var combo = new ComboBox { ItemsSource = options, SelectedIndex = options.Count > 0 ? 0 : -1 };
-                var buttons = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Spacing = 10 };
-                var cancelBtn = new Button { Content = "Cancel", Width = 90, Padding = new Avalonia.Thickness(10, 5) };
-                var loadBtn = new Button { Content = "Load", Width = 90, Padding = new Avalonia.Thickness(10, 5), Background = new SolidColorBrush(Color.Parse("#FFD700")), Foreground = new SolidColorBrush(Color.Parse("#0D0D0D")) };
+                var label = new TextBlock
+                {
+                    Text = labelText,
+                    Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
+                    FontSize = 14,
+                };
+                var combo = new ComboBox
+                {
+                    ItemsSource = options,
+                    SelectedIndex = options.Count > 0 ? 0 : -1,
+                };
+                var buttons = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Spacing = 10,
+                };
+                var cancelBtn = new Button
+                {
+                    Content = "Cancel",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                };
+                var loadBtn = new Button
+                {
+                    Content = "Load",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                    Background = new SolidColorBrush(Color.Parse("#FFD700")),
+                    Foreground = new SolidColorBrush(Color.Parse("#0D0D0D")),
+                };
                 string? result = null;
                 cancelBtn.Click += (s, e) => dialog.Close();
-                loadBtn.Click += (s, e) => { result = combo.SelectedItem as string; dialog.Close(); };
+                loadBtn.Click += (s, e) =>
+                {
+                    result = combo.SelectedItem as string;
+                    dialog.Close();
+                };
                 buttons.Children.Add(cancelBtn);
                 buttons.Children.Add(loadBtn);
                 panel.Children.Add(label);
                 panel.Children.Add(combo);
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
-                var owner = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop ? desktop.MainWindow : null;
-                if (owner != null) { await dialog.ShowDialog(owner); }
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
                 return result;
             }
-            catch { return null; }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

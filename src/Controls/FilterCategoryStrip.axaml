@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Controls.FilterCategoryStrip">
+
+    <UserControl.Resources>
+        <converters:ItemNameToSpriteConverter x:Key="ItemNameToSpriteConverter"/>
+        <converters:ItemNameToSoulFaceConverter x:Key="ItemNameToSoulFaceConverter"/>
+    </UserControl.Resources>
+
+    <!-- Fixed 250x100 strip matching Balatro Challenges -->
+    <Border Background="{StaticResource MediumGrey}"
+            CornerRadius="6"
+            Padding="8"
+            Width="250"
+            Height="100"
+            ClipToBounds="False">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sideways Label on ModalGrey background -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource ModalGrey}"
+                    CornerRadius="4"
+                    Padding="6,12"
+                    Width="80"
+                    Height="100"
+                    VerticalAlignment="Center"
+                    Margin="0,0,8,0">
+                <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="12"
+                           Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+                    <TextBlock.RenderTransform>
+                        <RotateTransform Angle="-90"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </Border>
+
+            <!-- Cards on MediumGrey background -->
+            <ItemsControl Grid.Column="1"
+                          ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          ClipToBounds="False"
+                          Margin="0,0,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" ItemWidth="73" ItemHeight="97" ClipToBounds="False"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="71" Height="95" Margin="1" ClipToBounds="False" ZIndex="100">
+                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}"
+                                   Width="71" Height="95"
+                                   Stretch="Uniform">
+                                <i:Interaction.Behaviors>
+                                    <behaviors:BalatroCardSwayBehavior />
+                                </i:Interaction.Behaviors>
+                            </Image>
+                            <Image Source="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}}"
+                                   Width="71" Height="95"
+                                   Stretch="Uniform"
+                                   IsVisible="{Binding ., Converter={StaticResource ItemNameToSoulFaceConverter}, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <i:Interaction.Behaviors>
+                                    <behaviors:BalatroCardSwayBehavior />
+                                </i:Interaction.Behaviors>
+                            </Image>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

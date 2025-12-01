@@ -1,355 +1,110 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
-             xmlns:controls="using:BalatroSeedOracle.Controls"
-             xmlns:components="using:BalatroSeedOracle.Components.FilterTabs"
              x:Class="BalatroSeedOracle.Components.FilterTabs.ValidateFilterTab"
              x:DataType="vm:ValidateFilterTabViewModel">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- Row 0: Header -->
-                <RowDefinition Height="10"/>    <!-- Row 1: Spacer -->
-                <RowDefinition Height="Auto"/>  <!-- Row 2: Side-by-side layout -->
-            </Grid.RowDefinitions>
+    <!-- Clean flat modal styling -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+        <StackPanel Spacing="20" MaxWidth="500" HorizontalAlignment="Center">
+            
+            <!-- Header -->
+            <TextBlock Text="FINISH"
+                       FontSize="24"
+                       FontFamily="{StaticResource BalatroFont}"
+                       Foreground="{StaticResource Gold}"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
 
-        <!-- Row 0: Main Header -->
-        <TextBlock Grid.Row="0"
-                   Text="FINISH"
-                   FontSize="24"
-                   FontFamily="{StaticResource BalatroFont}"
-                   Foreground="{StaticResource Gold}"
-                   HorizontalAlignment="Center"/>
-
-        <!-- Row 2: Side-by-side layout -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>    <!-- Left: Metadata & Save -->
-                <ColumnDefinition Width="20"/>   <!-- Spacer -->
-                <ColumnDefinition Width="*"/>    <!-- Right: Test & Validate -->
-            </Grid.ColumnDefinitions>
-
-            <!-- LEFT SIDE: Filter Metadata & Save Actions -->
-            <Border Grid.Column="0"
-                    Background="{StaticResource VeryDarkBackground}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="1"
+            <!-- Main Content Panel - Flat ModalGrey style -->
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderThickness="0"
                     CornerRadius="8"
-                    Padding="15">
-                <StackPanel Spacing="15">
-                    <!-- Section Header -->
-                    <TextBlock Text="FILTER DETAILS"
-                               FontSize="16"
-                               Foreground="{StaticResource Gold}"
+                    Padding="20">
+            <StackPanel Spacing="15">
+                <!-- Filter Name -->
+                <StackPanel>
+                    <TextBlock Text="Filter Name"
+                               FontSize="13"
+                               Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
-                               HorizontalAlignment="Center"/>
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding FilterName}"
+                             Watermark="Enter filter name..."
+                             FontSize="13"
+                             Height="32"/>
+                </StackPanel>
 
-                    <!-- Filter Name -->
-                    <StackPanel>
-                        <TextBlock Text="Filter Name"
-                                   FontSize="13"
-                                   Foreground="{StaticResource White}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding FilterName}"
-                                 Watermark="Enter filter name..."
-                                 FontSize="13"
-                                 Height="32"/>
-                    </StackPanel>
+                <!-- Description -->
+                <StackPanel>
+                    <TextBlock Text="Description"
+                               FontSize="13"
+                               Foreground="{StaticResource White}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding FilterDescription}"
+                             Watermark="Enter description..."
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             FontSize="13"
+                             Height="80"/>
+                </StackPanel>
 
-                    <!-- Description -->
-                    <StackPanel>
-                        <TextBlock Text="Description"
-                                   FontSize="13"
-                                   Foreground="{StaticResource White}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding FilterDescription}"
-                                 Watermark="Enter description..."
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"
-                                 FontSize="13"
-                                 Height="80"/>
-                    </StackPanel>
+                <!-- Action Buttons -->
+                <StackPanel Spacing="12" Margin="0,10,0,0">
+                    <!-- Copy JSON Button -->
+                    <Button Content="COPY JSON"
+                            Command="{Binding CopyJsonCommand}"
+                            Classes="btn-blue"
+                            Foreground="{StaticResource White}"
+                            Height="40"
+                            FontSize="14"/>
 
-                    <!-- Separator -->
-                    <Border Height="1"
-                            Background="{StaticResource ModalBorder}"
-                            Margin="0,5"/>
+                    <!-- Save Filter Button -->
+                    <Button Content="SAVE FILTER"
+                            Command="{Binding SaveCurrentFilterCommand}"
+                            Classes="btn-green"
+                            Foreground="{StaticResource White}"
+                            Height="40"
+                            FontSize="14"
+                            IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-                    <!-- Save Actions -->
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="SAVE OPTIONS"
-                                   FontSize="13"
-                                   Foreground="{StaticResource White}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,0,0,5"/>
+                    <!-- Go to Search Button -->
+                    <Button Content="GO TO SEARCH"
+                            Command="{Binding GoToSearchCommand}"
+                            Classes="btn-orange"
+                            Foreground="{StaticResource White}"
+                            Height="45"
+                            FontSize="15"
+                            FontWeight="Bold"
+                            IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-                        <Button Content="💾 SAVE FILTER"
-                                Command="{Binding SaveCurrentFilterCommand}"
-                                Classes="btn-green"
-                                Height="40"
-                                FontSize="14"
-                                IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    <!-- Finish &amp; Close Button -->
+                    <Button Content="FINISH &amp; CLOSE"
+                            Command="{Binding FinishAndCloseCommand}"
+                            Classes="btn-red"
+                            Foreground="{StaticResource White}"
+                            Height="40"
+                            FontSize="14"/>
+                </StackPanel>
 
-                        <Button Content="📄 SAVE AS..."
-                                Command="{Binding SaveAsCommand}"
-                                Classes="btn-blue"
-                                Height="35"
-                                FontSize="13"
-                                IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-
-                        <Button Content="📤 EXPORT TO DESKTOP"
-                                Command="{Binding ExportFilterCommand}"
-                                Classes="btn-blue"
-                                Height="35"
-                                FontSize="13"
-                                IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                    </StackPanel>
-
-                    <!-- Status Message -->
-                    <Border Background="{StaticResource DarkBackground}"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            CornerRadius="6"
-                            Padding="10"
-                            IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                        <TextBlock Text="{Binding StatusMessage}"
-                                   FontSize="11"
-                                   Foreground="{Binding StatusColor}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   TextWrapping="Wrap"
-                                   HorizontalAlignment="Center"/>
-                    </Border>
                 </StackPanel>
             </Border>
 
-            <!-- RIGHT SIDE: Test & Validate -->
-            <Border Grid.Column="2"
-                    Background="{StaticResource VeryDarkBackground}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="1"
+            <!-- Status Message - Flat panel in DarkGrey -->
+            <Border Background="{StaticResource DarkGrey}"
+                    BorderThickness="0"
                     CornerRadius="8"
-                    Padding="15">
-                <Grid RowDefinitions="Auto,15,*">
-                    <!-- Section Header -->
-                    <TextBlock Grid.Row="0"
-                               Text="🧪 TEST &amp; VALIDATE"
-                               FontSize="16"
-                               Foreground="{StaticResource Gold}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               HorizontalAlignment="Center"/>
-
-                    <!-- Test Content Area -->
-                    <Border Grid.Row="2"
-                            Background="{StaticResource DarkBackground}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
-                            CornerRadius="8"
-                            Padding="15">
-
-                        <!-- Validation Warning (if any) -->
-                        <Panel>
-                            <!-- Warning State -->
-                            <Border IsVisible="{Binding HasValidationWarnings}"
-                                    Background="{StaticResource Orange}"
-                                    CornerRadius="6"
-                                    Padding="10"
-                                    Margin="0,0,0,10"
-                                    VerticalAlignment="Top">
-                                <TextBlock Text="{Binding ValidationWarningText}"
-                                           FontSize="12"
-                                           Foreground="{StaticResource White}"
-                                           TextWrapping="Wrap"
-                                           HorizontalAlignment="Center"/>
-                            </Border>
-
-                            <!-- Main Test States -->
-                            <Grid>
-                                <!-- Idle State -->
-                                <StackPanel Spacing="15"
-                                            VerticalAlignment="Center">
-                                    <StackPanel.IsVisible>
-                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="!IsLiveSearchActive"/>
-                                            <Binding Path="!ShowTestSuccess"/>
-                                            <Binding Path="!ShowTestError"/>
-                                        </MultiBinding>
-                                    </StackPanel.IsVisible>
-
-                                    <TextBlock Text="🔍 FILTER VALIDATION"
-                                               FontSize="14"
-                                               Foreground="{StaticResource Gold}"
-                                               HorizontalAlignment="Center"/>
-
-                                    <TextBlock Text="Test your filter to find matching seeds"
-                                               FontSize="12"
-                                               Foreground="{StaticResource LightGrey}"
-                                               HorizontalAlignment="Center"
-                                               TextWrapping="Wrap"/>
-
-                                    <Button Content="🧪 TEST FILTER"
-                                            Command="{Binding TestFilterCommand}"
-                                            Classes="btn-green"
-                                            Height="45"
-                                            FontSize="15"
-                                            HorizontalAlignment="Center"
-                                            MinWidth="180"/>
-
-                                    <!-- Ready Icon -->
-                                    <Border Background="{StaticResource ColorDarkGrey}"
-                                            BorderThickness="2"
-                                            BorderBrush="{StaticResource ModalBorder}"
-                                            CornerRadius="50"
-                                            Width="80"
-                                            Height="80"
-                                            HorizontalAlignment="Center">
-                                        <TextBlock Text="?"
-                                                   FontSize="36"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
-                                    </Border>
-
-                                    <TextBlock Text="No test results yet"
-                                               FontSize="10"
-                                               Foreground="{StaticResource ColorDarkGrey}"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-
-                                <!-- Active Search State -->
-                                <StackPanel IsVisible="{Binding IsLiveSearchActive}"
-                                            Spacing="12"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="⚙ SEARCHING..."
-                                               FontSize="14"
-                                               Foreground="{StaticResource Gold}"
-                                               HorizontalAlignment="Center"/>
-
-                                    <ProgressBar Value="{Binding LiveSearchProgress}"
-                                                 Maximum="100"
-                                                 Height="10"
-                                                 MinWidth="250"/>
-
-                                    <TextBlock Text="{Binding LiveSearchStatus}"
-                                               FontSize="11"
-                                               Foreground="{StaticResource LightGrey}"
-                                               HorizontalAlignment="Center"/>
-
-                                    <TextBlock FontSize="11"
-                                               Foreground="{StaticResource Blue}"
-                                               HorizontalAlignment="Center">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="Matches found: {0}">
-                                                <Binding Path="LiveSearchMatchCount"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-
-                                    <TextBlock Text="Searching 1 BILLION seeds (1,071,875,000)..."
-                                               FontSize="10"
-                                               Foreground="{StaticResource LightGrey}"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-
-                                <!-- Success State -->
-                                <StackPanel IsVisible="{Binding ShowTestSuccess}"
-                                            Spacing="12"
-                                            VerticalAlignment="Center">
-                                    <Border Background="{StaticResource Green}"
-                                            CornerRadius="6"
-                                            Padding="10,6">
-                                        <TextBlock Text="✓ FILTER VERIFIED"
-                                                   FontSize="16"
-                                                   Foreground="{StaticResource White}"
-                                                   FontWeight="Bold"
-                                                   HorizontalAlignment="Center"/>
-                                    </Border>
-
-                                    <Border Background="{StaticResource ColorDarkGrey}"
-                                            CornerRadius="6"
-                                            Padding="12">
-                                        <StackPanel Spacing="10">
-                                            <TextBlock Text="EXAMPLE SEED FOUND:"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource LightGrey}"
-                                                       HorizontalAlignment="Center"/>
-
-                                            <TextBlock Text="{Binding FoundSeed}"
-                                                       FontSize="16"
-                                                       Foreground="{StaticResource Gold}"
-                                                       FontFamily="Consolas"
-                                                       FontWeight="Bold"
-                                                       HorizontalAlignment="Center"/>
-
-                                            <Button Content="📋 COPY SEED"
-                                                    Command="{Binding CopySeedCommand}"
-                                                    Classes="copy-btn"
-                                                    Width="120"
-                                                    Height="32"
-                                                    HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <TextBlock Text="{Binding TestResultMessage}"
-                                               FontSize="11"
-                                               Foreground="{StaticResource LightGrey}"
-                                               HorizontalAlignment="Center"
-                                               TextWrapping="Wrap"/>
-
-                                    <Button Content="🧪 TEST AGAIN"
-                                            Command="{Binding TestFilterCommand}"
-                                            Classes="btn-blue"
-                                            Height="32"
-                                            FontSize="11"
-                                            HorizontalAlignment="Center"
-                                            MinWidth="100"/>
-                                </StackPanel>
-
-                                <!-- Error State -->
-                                <StackPanel IsVisible="{Binding ShowTestError}"
-                                            Spacing="12"
-                                            VerticalAlignment="Center">
-                                    <Border Background="{StaticResource Red}"
-                                            CornerRadius="6"
-                                            Padding="10,6">
-                                        <TextBlock Text="⚠ TEST FAILED"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource White}"
-                                                   HorizontalAlignment="Center"/>
-                                    </Border>
-
-                                    <TextBlock Text="{Binding TestResultMessage}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource White}"
-                                               HorizontalAlignment="Center"
-                                               TextWrapping="Wrap"
-                                               TextAlignment="Center"/>
-
-                                    <TextBlock Text="Try adjusting your filter criteria or search settings"
-                                               FontSize="10"
-                                               Foreground="{StaticResource LightGrey}"
-                                               HorizontalAlignment="Center"
-                                               TextWrapping="Wrap"/>
-
-                                    <Button Content="🧪 RETRY TEST"
-                                            Command="{Binding TestFilterCommand}"
-                                            Classes="btn-blue"
-                                            Height="35"
-                                            FontSize="12"
-                                            HorizontalAlignment="Center"
-                                            MinWidth="120"/>
-                                </StackPanel>
-                            </Grid>
-                        </Panel>
-                    </Border>
-                </Grid>
+                    Padding="16"
+                    IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           Foreground="{Binding StatusColor}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"/>
             </Border>
-        </Grid>
-        </Grid>
+
+        </StackPanel>
     </ScrollViewer>
 </UserControl>

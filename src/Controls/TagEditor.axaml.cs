@@ -182,7 +182,6 @@ namespace BalatroSeedOracle.Controls
                 // Check if tag already exists
                 if (!_currentTags.Contains(newTag))
                 {
-                    // Add to available tags for future autocomplete
                     _availableTags.Add(newTag);
                     if (_tagInput.ItemsSource is IEnumerable<string>)
                     {

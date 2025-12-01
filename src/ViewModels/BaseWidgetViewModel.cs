@@ -14,9 +14,12 @@ namespace BalatroSeedOracle.ViewModels
     {
         // Static counter to ensure unique Z-indexes for proper layering
         private static int _nextZIndexCounter = 0;
+        private readonly WidgetPositionService? _widgetPositionService;
 
-        public BaseWidgetViewModel()
+        public BaseWidgetViewModel(WidgetPositionService? widgetPositionService = null)
         {
+            _widgetPositionService = widgetPositionService;
+
             // Register with position service when created
             RegisterWithPositionService();
 
@@ -28,8 +31,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var positionService = ServiceHelper.GetService<WidgetPositionService>();
-                positionService?.RegisterWidget(this);
+                _widgetPositionService?.RegisterWidget(this);
             }
             catch
             {
@@ -164,8 +166,7 @@ namespace BalatroSeedOracle.ViewModels
             // Unregister from position service when closed
             try
             {
-                var positionService = ServiceHelper.GetService<WidgetPositionService>();
-                positionService?.UnregisterWidget(this);
+                _widgetPositionService?.UnregisterWidget(this);
             }
             catch
             {

@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ namespace BalatroSeedOracle;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+
+    public IServiceProvider Services => _serviceProvider!;
 
     public override void Initialize()
     {
@@ -46,6 +49,9 @@ public partial class App : Application
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Set up UI thread exception handler
+                Dispatcher.UIThread.UnhandledException += OnUIThreadException;
+
                 // Show loading window and pre-load sprites before showing main window
                 ShowLoadingWindowAndPreloadSprites(desktop);
 
@@ -64,6 +70,40 @@ public partial class App : Application
             Console.ReadLine();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Handles unhandled exceptions on the UI thread
+    /// </summary>
+    private void OnUIThreadException(object? sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        var ex = e.Exception;
+        DebugLogger.LogError("UI_THREAD", $"❌ UI thread exception: {ex.Message}");
+        DebugLogger.LogError("UI_THREAD", $"Stack trace: {ex.StackTrace}");
+
+        // Write to crash log
+        try
+        {
+            var crashLog = System.IO.Path.Combine(AppPaths.DataRootDir, "crash.log");
+            var errorMsg =
+                $"=== UI THREAD EXCEPTION: {DateTime.Now} ===\n"
+                + $"Exception: {ex.GetType().FullName}\n"
+                + $"Message: {ex.Message}\n"
+                + $"Stack Trace:\n{ex.StackTrace}\n\n";
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(crashLog)!);
+            System.IO.File.AppendAllText(crashLog, errorMsg);
+        }
+        catch
+        {
+            // If crash log writing fails, at least we logged to debug
+        }
+
+        // Mark as handled to prevent app crash
+        // The error is logged, and the app will continue running
+        e.Handled = true;
+
+        // TODO: In the future, show a user-friendly error dialog here
+        // For now, just log it - user can check debug logs
     }
 
     private async void ShowLoadingWindowAndPreloadSprites(
@@ -122,7 +162,10 @@ public partial class App : Application
             }
             else
             {
-                DebugLogger.LogError("App", "TransitionService not found - falling back to instant transition");
+                DebugLogger.LogError(
+                    "App",
+                    "TransitionService not found - falling back to instant transition"
+                );
                 ApplyShaderParametersToMainMenu(mainMenu, normalParams);
                 await PreloadSpritesWithoutTransition();
             }
@@ -224,7 +267,7 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = Services.SpriteService.Instance;
+            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
             var introStart = DateTime.UtcNow;
             var minIntro = TimeSpan.FromSeconds(3.14);
 
@@ -262,7 +305,10 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
+            DebugLogger.LogError(
+                "App",
+                $"Failed to pre-load sprites with transition: {ex.Message}"
+            );
             // Don't complete transition here - let caller handle it
             transitionService.SetProgress(0.95f);
         }
@@ -275,7 +321,7 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = Services.SpriteService.Instance;
+            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
             await spriteService.PreloadAllSpritesAsync(null);
             DebugLogger.Log("App", "Sprites pre-loaded (no transition)");
         }
@@ -339,7 +385,9 @@ public partial class App : Application
         services.AddBalatroSeedOracleServices();
 
         // Register existing singleton services
-        services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
+        services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
+            BalatroSeedOracle.Services.SpriteService.Instance
+        );
         // ClipboardService is static, no need to register
     }
 
@@ -465,7 +513,7 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Get a service from the DI container
+    /// Get a service from the DI container (temporary until full DI migration)
     /// </summary>
     public static T? GetService<T>()
         where T : class

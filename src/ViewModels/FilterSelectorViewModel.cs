@@ -105,9 +105,6 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
-        /// <summary>
-        /// Initialize the ViewModel - loads available filters
-        /// </summary>
         public async Task InitializeAsync()
         {
             await LoadAvailableFiltersAsync();

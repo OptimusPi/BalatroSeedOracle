@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Components.ItemConfigPanel"
              x:DataType="vm:ItemConfigPanelViewModel">
@@ -43,98 +44,125 @@
                 </Grid>
             </Border>
 
-            <!-- Scrollable Configuration Area -->
+            <!-- Scrollable Configuration Area - SIMPLE AND COMPLETE -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
-                          Padding="12">
-                <StackPanel Spacing="8">
+                          Padding="16,12">
+                <StackPanel Spacing="12">
 
-                    <!-- Label Configuration (ONLY FOR SHOULD ITEMS!) -->
-                    <StackPanel Spacing="4" IsVisible="{Binding IsLabelVisible}">
-                        <TextBlock Text="LABEL"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <TextBox Text="{Binding Label, Mode=TwoWay}"
-                                 Watermark="e.g., 'Bram Neg'"
-                                 FontSize="12"
-                                 Height="28"/>
-                    </StackPanel>
+                    <!-- 2-COLUMN LAYOUT FOR COMPACTNESS -->
+                    <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,12,Auto,12,Auto,12,Auto,12,Auto,12,Auto">
+
+                        <!-- LEFT COLUMN -->
+
+                        <!-- Label (Should items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" IsVisible="{Binding IsLabelVisible}">
+                            <TextBlock Text="LABEL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <TextBox Text="{Binding Label}" Watermark="e.g., 'Bram Neg'" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Score (Should items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" IsVisible="{Binding IsScoreVisible}">
+                            <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <NumericUpDown Value="{Binding Score}" Minimum="1" Maximum="1000" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Min Count (Must items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="4" Spacing="4" IsVisible="{Binding IsMinCountVisible}">
+                            <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Edition (Jokers + StandardCards) -->
+                        <StackPanel Grid.Column="0" Grid.Row="6" Spacing="4" IsVisible="{Binding IsEditionVisible}">
+                            <TextBlock Text="EDITION" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Edition}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Foil</sys:String>
+                                <sys:String>Holographic</sys:String>
+                                <sys:String>Polychrome</sys:String>
+                                <sys:String>Negative</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Stickers (Jokers only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="8" Spacing="4" IsVisible="{Binding IsStickersVisible}">
+                            <TextBlock Text="STICKERS" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <StackPanel>
+                                <CheckBox Content="Eternal" IsChecked="{Binding IsEternal}" FontSize="11" Margin="0,0,0,2"/>
+                                <CheckBox Content="Perishable" IsChecked="{Binding IsPerishable}" FontSize="11" Margin="0,0,0,2"/>
+                                <CheckBox Content="Rental" IsChecked="{Binding IsRental}" FontSize="11"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- RIGHT COLUMN -->
+
+                        <!-- Seal (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="0" Spacing="4" IsVisible="{Binding IsSealVisible}">
+                            <TextBlock Text="SEAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Seal}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Gold</sys:String>
+                                <sys:String>Red</sys:String>
+                                <sys:String>Blue</sys:String>
+                                <sys:String>Purple</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Enhancement (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="2" Spacing="4" IsVisible="{Binding IsEnhancementVisible}">
+                            <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Enhancement}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Bonus</sys:String>
+                                <sys:String>Mult</sys:String>
+                                <sys:String>Wild</sys:String>
+                                <sys:String>Glass</sys:String>
+                                <sys:String>Steel</sys:String>
+                                <sys:String>Stone</sys:String>
+                                <sys:String>Lucky</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Rank (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="4" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                            <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Rank}" FontSize="11" Height="24">
+                                <sys:String>2</sys:String><sys:String>3</sys:String><sys:String>4</sys:String><sys:String>5</sys:String>
+                                <sys:String>6</sys:String><sys:String>7</sys:String><sys:String>8</sys:String><sys:String>9</sys:String>
+                                <sys:String>10</sys:String><sys:String>J</sys:String><sys:String>Q</sys:String><sys:String>K</sys:String><sys:String>A</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Suit (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="6" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                            <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Suit}" FontSize="11" Height="24">
+                                <sys:String>Spades</sys:String>
+                                <sys:String>Hearts</sys:String>
+                                <sys:String>Diamonds</sys:String>
+                                <sys:String>Clubs</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                    </Grid>
+
+                    <!-- FULL-WIDTH SECTIONS BELOW -->
 
                     <!-- Antes -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="ANTES"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <WrapPanel Orientation="Horizontal">
-                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" Margin="0,0,6,2"/>
-                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                        <TextBlock Text="ANTES" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                        <WrapPanel>
+                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" FontSize="11" Margin="0,0,8,4"/>
+                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
                         </WrapPanel>
-                    </StackPanel>
-
-                    <!-- Shop Slots -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="SHOP SLOTS"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <WrapPanel Orientation="Horizontal">
-                            <CheckBox Content="All" IsChecked="{Binding AllShopSlotsSelected}" Margin="0,0,6,2"/>
-                            <CheckBox Content="1" IsChecked="{Binding ShopSlot1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                            <CheckBox Content="2" IsChecked="{Binding ShopSlot2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                            <CheckBox Content="3" IsChecked="{Binding ShopSlot3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                            <CheckBox Content="4" IsChecked="{Binding ShopSlot4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllShopSlotsSelected}"/>
-                        </WrapPanel>
-                    </StackPanel>
-
-                    <!-- Pack Positions -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="PACK POSITIONS"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <WrapPanel Orientation="Horizontal">
-                            <CheckBox Content="All" IsChecked="{Binding AllPackPositionsSelected}" Margin="0,0,6,2"/>
-                            <CheckBox Content="1" IsChecked="{Binding PackPos1Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                            <CheckBox Content="2" IsChecked="{Binding PackPos2Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                            <CheckBox Content="3" IsChecked="{Binding PackPos3Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                            <CheckBox Content="4" IsChecked="{Binding PackPos4Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                            <CheckBox Content="5" IsChecked="{Binding PackPos5Selected}" Margin="0,0,6,2" IsEnabled="{Binding !AllPackPositionsSelected}"/>
-                        </WrapPanel>
-                    </StackPanel>
-
-                    <!-- Edition Setting Helper (Joker/SoulJoker/StandardCard only) -->
-                    <StackPanel Spacing="4" IsVisible="{Binding IsEditionHelperVisible}">
-                        <TextBlock Text="EDITION"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <Button Content="Edit Edition"
-                                Height="32"
-                                FontSize="11"
-                                Classes="btn-blue"
-                                Margin="0,0,0,4"/>
-                    </StackPanel>
-
-                    <!-- Sources -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="SOURCES"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="11"
-                                   Foreground="{StaticResource Gold}"/>
-                        <StackPanel>
-                            <CheckBox Content="Booster Packs" IsChecked="{Binding IncludeBoosterPacks}" Margin="0,0,0,2"/>
-                            <CheckBox Content="Shop Stream" IsChecked="{Binding IncludeShopStream}" Margin="0,0,0,2"/>
-                            <CheckBox Content="Skip Tags" IsChecked="{Binding IncludeSkipTags}"/>
-                        </StackPanel>
                     </StackPanel>
 
                 </StackPanel>

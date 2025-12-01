@@ -7,5 +7,7 @@ namespace BalatroSeedOracle.Models
         public string VisualPresetBName { get; set; } = string.Empty;
         public string MixAName { get; set; } = string.Empty;
         public string MixBName { get; set; } = string.Empty;
+        public string Easing { get; set; } = "Linear";
+        public double Duration { get; set; } = 2.0;
     }
 }

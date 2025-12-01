@@ -425,7 +425,6 @@ namespace BalatroSeedOracle.Models
             return FormatUtils.FormatDisplayName(spriteName);
         }
 
-
         /// <summary>
         /// Gets the correct item ID
         /// </summary>

@@ -179,7 +179,8 @@ namespace BalatroSeedOracle.Controls
         private string GetDisplayValue()
         {
             // Check if we should show "Auto" for special values
-            if (AllowAuto && Value <= 0)
+            // Use -1 for Auto so that 0 can be a valid explicit value
+            if (AllowAuto && Value < 0)
             {
                 return "Auto";
             }
@@ -360,7 +361,7 @@ namespace BalatroSeedOracle.Controls
                         AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase)
                     )
                     {
-                        Value = 0; // Auto value
+                        Value = -1; // Auto value (-1 so that 0 can be a valid explicit value)
                     }
                     // Try to find in display values if available
                     else if (DisplayValues != null)

@@ -16,9 +16,34 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _visualizerTheme;
 
+        // Feature toggles (default OFF)
+        [ObservableProperty]
+        private bool _showMusicMixerWidget = false;
+
+        [ObservableProperty]
+        private bool _showVisualizerWidget = false;
+
+        [ObservableProperty]
+        private bool _showTransitionDesignerWidget = false;
+
         partial void OnVisualizerThemeChanged(int value)
         {
             SaveVisualizerTheme();
+        }
+
+        partial void OnShowMusicMixerWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
+        }
+
+        partial void OnShowVisualizerWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
+        }
+
+        partial void OnShowTransitionDesignerWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
         }
 
         public SettingsModalViewModel()
@@ -35,6 +60,7 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler? CloseRequested;
         public event EventHandler? AdvancedSettingsRequested;
         public event EventHandler<int>? VisualizerThemeChanged;
+        public event EventHandler? FeatureTogglesChanged;
 
         #endregion
 
@@ -44,10 +70,33 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
+
+            // Load feature toggles (default OFF if not in profile)
+            ShowMusicMixerWidget = profile.FeatureToggles?.ShowMusicMixer ?? false;
+            ShowVisualizerWidget = profile.FeatureToggles?.ShowVisualizer ?? false;
+            ShowTransitionDesignerWidget = profile.FeatureToggles?.ShowTransitionDesigner ?? false;
+
             DebugLogger.Log(
                 "SettingsModalViewModel",
-                $"Settings loaded - Visualizer theme: {VisualizerTheme}"
+                $"Settings loaded - Visualizer theme: {VisualizerTheme}, Features: Mixer={ShowMusicMixerWidget}, Viz={ShowVisualizerWidget}, Trans={ShowTransitionDesignerWidget}"
             );
+        }
+
+        private void SaveFeatureToggles()
+        {
+            var profile = _userProfileService.GetProfile();
+            if (profile.FeatureToggles == null)
+            {
+                profile.FeatureToggles = new Models.FeatureToggles();
+            }
+
+            profile.FeatureToggles.ShowMusicMixer = ShowMusicMixerWidget;
+            profile.FeatureToggles.ShowVisualizer = ShowVisualizerWidget;
+            profile.FeatureToggles.ShowTransitionDesigner = ShowTransitionDesignerWidget;
+
+            _userProfileService.SaveProfile(profile);
+            FeatureTogglesChanged?.Invoke(this, EventArgs.Empty);
+            DebugLogger.Log("SettingsModalViewModel", "Feature toggles saved");
         }
 
         private void SaveVisualizerTheme()

@@ -132,7 +132,10 @@ tag"
         {
             try
             {
-                if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+                if (
+                    _fileSelector?.SelectedItem is ComboBoxItem item
+                    && item.Content is string fileName
+                )
                 {
                     if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
@@ -149,7 +152,10 @@ tag"
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                DebugLogger.LogError(
+                    "WordListsModal",
+                    $"Error in OnFileSelectionChanged: {ex.Message}"
+                );
                 UpdateStatus($"Error loading file: {ex.Message}");
             }
         }

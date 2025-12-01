@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Views.Modals.AudioVisualizerSettingsModal"
              x:DataType="vm:AudioVisualizerSettingsModalViewModel">
 
@@ -106,10 +107,13 @@
 
                         <!-- AUDIO EVENT TRIGGERS -->
                         <StackPanel Spacing="12">
-                            <TextBlock Text="🔊 Audio Event Triggers"
-                                       Foreground="{StaticResource White}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <icons:PackIconMaterial Kind="VolumeHigh" Width="16" Height="16" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Audio Event Triggers"
+                                           Foreground="{StaticResource White}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"/>
+                            </StackPanel>
                             <TextBlock Text="Play sound effect jingles when events happen (you'll add the SFX files later!)"
                                        Foreground="{StaticResource LightGrey}"
                                        FontFamily="{StaticResource BalatroFont}"
@@ -118,18 +122,30 @@
                                        Margin="0,-8,0,8"/>
 
                             <!-- Simple checkboxes - just enable/disable, no dropdown -->
-                            <CheckBox Content="🎵 Seed Found (any seed)"
-                                      IsChecked="{Binding SeedFoundTrigger}"
+                            <CheckBox IsChecked="{Binding SeedFoundTrigger}"
                                       Foreground="{StaticResource BodyText}"
-                                      FontSize="12"/>
-                            <CheckBox Content="🏆 New High Score Seed"
-                                      IsChecked="{Binding HighScoreSeedTrigger}"
+                                      FontSize="12">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="MusicNote" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Seed Found (any seed)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding HighScoreSeedTrigger}"
                                       Foreground="{StaticResource BodyText}"
-                                      FontSize="12"/>
-                            <CheckBox Content="✅ Search Complete"
-                                      IsChecked="{Binding SearchCompleteTrigger}"
+                                      FontSize="12">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="Trophy" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="New High Score Seed" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding SearchCompleteTrigger}"
                                       Foreground="{StaticResource BodyText}"
-                                      FontSize="12"/>
+                                      FontSize="12">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icons:PackIconMaterial Kind="CheckCircle" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Search Complete" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </CheckBox>
                         </StackPanel>
 
                         <!-- PRESETS -->
@@ -157,10 +173,13 @@
 
                         <!-- SHADER EFFECT AUDIO MAPPING -->
                         <StackPanel Spacing="12">
-                            <TextBlock Text="🎵 Shader Effect Audio Mapping"
-                                       Foreground="{StaticResource White}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <icons:PackIconMaterial Kind="Music" Width="16" Height="16" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Shader Effect Audio Mapping"
+                                           Foreground="{StaticResource White}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"/>
+                            </StackPanel>
 
                             <TextBlock Text="Map audio sources to visual effects. Choose which part of the music controls each shader effect!"
                                        Foreground="{StaticResource LightGrey}"
@@ -272,15 +291,23 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- 🐛 SHADER DEBUG CONTROLS (Advanced Users Only!) -->
-                        <Expander Header="🐛 Advanced Shader Debug" IsExpanded="False">
+                        <!-- SHADER DEBUG CONTROLS (Advanced Users Only!) -->
+                        <Expander IsExpanded="False">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <icons:PackIconMaterial Kind="Bug" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Advanced Shader Debug" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Expander.Header>
                             <Border Background="{StaticResource DarkBackground}" CornerRadius="6" Padding="15" Margin="0,8,0,0">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="⚠️ WARNING: These are LOW-LEVEL shader parameters. Only adjust if you know what you're doing!"
-                                               Foreground="{StaticResource Red}"
-                                               FontSize="10"
-                                               TextWrapping="Wrap"
-                                               />
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <icons:PackIconMaterial Kind="Alert" Width="14" Height="14" Foreground="{StaticResource Red}" VerticalAlignment="Top"/>
+                                        <TextBlock Text="WARNING: These are LOW-LEVEL shader parameters. Only adjust if you know what you're doing!"
+                                                   Foreground="{StaticResource Red}"
+                                                   FontSize="10"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
 
                                     <!-- Contrast -->
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
@@ -318,18 +345,26 @@
                                         </Border>
                                     </Grid>
 
-                                    <TextBlock Text="💡 TIP: Start with all values at their defaults. Change ONE at a time to see the effect!"
-                                               Foreground="#888"
-                                               FontSize="10"
-                                               TextWrapping="Wrap"
-                                               FontStyle="Italic"
-                                               Margin="0,8,0,0"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                                        <icons:PackIconMaterial Kind="LightbulbOn" Width="14" Height="14" Foreground="#888" VerticalAlignment="Top"/>
+                                        <TextBlock Text="TIP: Start with all values at their defaults. Change ONE at a time to see the effect!"
+                                                   Foreground="#888"
+                                                   FontSize="10"
+                                                   TextWrapping="Wrap"
+                                                   FontStyle="Italic"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </Expander>
 
                         <!-- ADVANCED MAPPING RANGES -->
-                        <Expander Header="🎚 Advanced Mapping Ranges" IsExpanded="False">
+                        <Expander IsExpanded="False">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <icons:PackIconMaterial Kind="TuneVertical" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Advanced Mapping Ranges" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Expander.Header>
                             <Border Background="{StaticResource VeryLightGrey}" CornerRadius="6" Padding="15" Margin="0,8,0,0">
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="Adjust how audio intensities map into shader parameter ranges. These let you amplify or compress the effect of each audio source." Foreground="#666" FontSize="11" TextWrapping="Wrap"/>
