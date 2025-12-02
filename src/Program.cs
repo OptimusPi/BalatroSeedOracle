@@ -156,9 +156,10 @@ public class Program
         }
         catch
         {
-            // Fallback if AppPaths fails during startup
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            return Path.Combine(appData, "BalatroSeedOracle", "crash.log");
+            var localAppData = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.Create);
+            return Path.Combine(localAppData, "BalatroSeedOracle", "crash.log");
         }
     }
 

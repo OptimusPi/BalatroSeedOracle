@@ -97,7 +97,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -179,7 +179,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Drums2Solo}"
@@ -251,7 +251,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass1Solo}"
@@ -323,7 +323,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass2Solo}"
@@ -395,7 +395,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords1Solo}"
@@ -467,7 +467,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords2Solo}"
@@ -539,7 +539,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody1Solo}"
@@ -611,7 +611,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <TextBlock Text="M" FontSize="11"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody2Solo}"

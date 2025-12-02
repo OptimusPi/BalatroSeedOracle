@@ -87,13 +87,6 @@
                                     Padding="16,4"/>
                         </StackPanel>
 
-                        <!-- PRESET LOAD/SAVE ROW 2 -->
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
-                            <Button Content="Save Transition..." Classes="btn-blue" Command="{Binding SaveTransitionCommand}" Height="32" Padding="16,4"/>
-                            <Button Content="Load Transition..." Classes="btn-green" Command="{Binding LoadTransitionCommand}" Height="32" Padding="16,4"/>
-                            <Button Content="Animate Visual + Mix → B" Classes="btn-green" Command="{Binding AnimateVisualAndMixToBCommand}" Height="32" Padding="16,4"/>
-                        </StackPanel>
-
                         <!-- STARTUP PRESETS -->
                         <StackPanel Spacing="8">
                             <TextBlock Text="STARTUP PRESETS" Foreground="{StaticResource White}" FontSize="16"/>

@@ -51,11 +51,7 @@ public class FertilizerService : IDisposable
 
     private FertilizerService()
     {
-        var dataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "BalatroSeedOracle"
-        );
-        Directory.CreateDirectory(dataDir);
+        var dataDir = Helpers.AppPaths.DataRootDir;
 
         _dbPath = Path.Combine(dataDir, "fertilizer.db");
         _txtPath = Path.Combine(dataDir, "fertilizer.txt");

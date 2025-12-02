@@ -31,29 +31,20 @@ namespace BalatroSeedOracle.Helpers
             var overrideDir = Environment.GetEnvironmentVariable("BSO_DATA_DIR");
             if (!string.IsNullOrWhiteSpace(overrideDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(overrideDir);
-                    return overrideDir;
-                }
-                catch
-                {
-                }
+                Directory.CreateDirectory(overrideDir);
+                return overrideDir;
             }
 
-            var exeDir = AppContext.BaseDirectory;
-            var localData = Path.Combine(exeDir, "Data");
-            try
+            var workingDir = Directory.GetCurrentDirectory();
+            if (Directory.GetFiles(workingDir, "*.slnx").Length > 0)
             {
-                Directory.CreateDirectory(localData);
-                return localData;
-            }
-            catch
-            {
+                return workingDir;
             }
 
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var root = Path.Combine(appData, "BalatroSeedOracle");
+            var localAppData = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.Create);
+            var root = Path.Combine(localAppData, "BalatroSeedOracle");
             Directory.CreateDirectory(root);
             return root;
         }
