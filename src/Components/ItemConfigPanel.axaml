@@ -1,0 +1,196 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.ItemConfigPanel"
+             x:DataType="vm:ItemConfigPanelViewModel">
+
+    <Border Background="{StaticResource ModalBackground}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="0"
+            CornerRadius="8"
+            Padding="0">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource DarkBackground}"
+                    BorderThickness="0,0,0,2"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    Padding="16,12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding ItemName}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource Gold}"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="1"
+                            Content="×"
+                            Command="{Binding CloseCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{StaticResource LightGrey}"
+                            FontSize="24"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Cursor="Hand">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Foreground" Value="{StaticResource White}"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Scrollable Configuration Area - SIMPLE AND COMPLETE -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="16,12">
+                <StackPanel Spacing="12">
+
+                    <!-- 2-COLUMN LAYOUT FOR COMPACTNESS -->
+                    <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,12,Auto,12,Auto,12,Auto,12,Auto,12,Auto">
+
+                        <!-- LEFT COLUMN -->
+
+                        <!-- Label (Should items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" IsVisible="{Binding IsLabelVisible}">
+                            <TextBlock Text="LABEL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <TextBox Text="{Binding Label}" Watermark="e.g., 'Bram Neg'" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Score (Should items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" IsVisible="{Binding IsScoreVisible}">
+                            <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <NumericUpDown Value="{Binding Score}" Minimum="1" Maximum="1000" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Min Count (Must items only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="4" Spacing="4" IsVisible="{Binding IsMinCountVisible}">
+                            <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="11" Height="24"/>
+                        </StackPanel>
+
+                        <!-- Edition (Jokers + StandardCards) -->
+                        <StackPanel Grid.Column="0" Grid.Row="6" Spacing="4" IsVisible="{Binding IsEditionVisible}">
+                            <TextBlock Text="EDITION" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Edition}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Foil</sys:String>
+                                <sys:String>Holographic</sys:String>
+                                <sys:String>Polychrome</sys:String>
+                                <sys:String>Negative</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Stickers (Jokers only) -->
+                        <StackPanel Grid.Column="0" Grid.Row="8" Spacing="4" IsVisible="{Binding IsStickersVisible}">
+                            <TextBlock Text="STICKERS" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <StackPanel>
+                                <CheckBox Content="Eternal" IsChecked="{Binding IsEternal}" FontSize="11" Margin="0,0,0,2"/>
+                                <CheckBox Content="Perishable" IsChecked="{Binding IsPerishable}" FontSize="11" Margin="0,0,0,2"/>
+                                <CheckBox Content="Rental" IsChecked="{Binding IsRental}" FontSize="11"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- RIGHT COLUMN -->
+
+                        <!-- Seal (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="0" Spacing="4" IsVisible="{Binding IsSealVisible}">
+                            <TextBlock Text="SEAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Seal}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Gold</sys:String>
+                                <sys:String>Red</sys:String>
+                                <sys:String>Blue</sys:String>
+                                <sys:String>Purple</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Enhancement (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="2" Spacing="4" IsVisible="{Binding IsEnhancementVisible}">
+                            <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Enhancement}" FontSize="11" Height="24">
+                                <sys:String>None</sys:String>
+                                <sys:String>Bonus</sys:String>
+                                <sys:String>Mult</sys:String>
+                                <sys:String>Wild</sys:String>
+                                <sys:String>Glass</sys:String>
+                                <sys:String>Steel</sys:String>
+                                <sys:String>Stone</sys:String>
+                                <sys:String>Lucky</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Rank (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="4" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                            <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Rank}" FontSize="11" Height="24">
+                                <sys:String>2</sys:String><sys:String>3</sys:String><sys:String>4</sys:String><sys:String>5</sys:String>
+                                <sys:String>6</sys:String><sys:String>7</sys:String><sys:String>8</sys:String><sys:String>9</sys:String>
+                                <sys:String>10</sys:String><sys:String>J</sys:String><sys:String>Q</sys:String><sys:String>K</sys:String><sys:String>A</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Suit (StandardCards only) -->
+                        <StackPanel Grid.Column="2" Grid.Row="6" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                            <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                            <ComboBox SelectedItem="{Binding Suit}" FontSize="11" Height="24">
+                                <sys:String>Spades</sys:String>
+                                <sys:String>Hearts</sys:String>
+                                <sys:String>Diamonds</sys:String>
+                                <sys:String>Clubs</sys:String>
+                            </ComboBox>
+                        </StackPanel>
+
+                    </Grid>
+
+                    <!-- FULL-WIDTH SECTIONS BELOW -->
+
+                    <!-- Antes -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="ANTES" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
+                        <WrapPanel>
+                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" FontSize="11" Margin="0,0,8,4"/>
+                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer Buttons -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource DarkBackground}"
+                    BorderThickness="0,2,0,0"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    Padding="12">
+                <Grid ColumnDefinitions="Auto,8,Auto">
+                    <Button Grid.Column="0"
+                            Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Classes="btn-cancel"
+                            Height="32"
+                            FontSize="12"
+                            Width="100"/>
+                    <Button Grid.Column="2"
+                            Content="Apply"
+                            Command="{Binding ApplyCommand}"
+                            Classes="btn-blue"
+                            Height="32"
+                            FontSize="12"
+                            Width="100"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

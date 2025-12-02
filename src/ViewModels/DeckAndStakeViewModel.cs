@@ -13,10 +13,9 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly DeckAndStakeSelectorViewModel _inner;
 
-        public DeckAndStakeViewModel(SpriteService? spriteService = null)
+        public DeckAndStakeViewModel(SpriteService spriteService)
         {
-            var svc = spriteService ?? ServiceHelper.GetRequiredService<SpriteService>();
-            _inner = new DeckAndStakeSelectorViewModel(svc);
+            _inner = new DeckAndStakeSelectorViewModel(spriteService);
             UpdateImages();
         }
 

@@ -21,35 +21,23 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Install Parcel
-      run: dotnet tool install --global AvaloniaUI.Parcel
+    - name: Restore .NET tools
+      run: dotnet tool restore
 
-    - name: Restore dependencies
-      run: dotnet restore src/BalatroSeedOracle.csproj
-
-    - name: Build
-      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
-
-    - name: Package NSIS Installer
+    - name: Package with Parcel
       run: |
-        Write-Host "Building Windows NSIS installer..."
-        parcel pack BalatroSeedOracle.parcel.json -r win-x64 -p nsis
+        cd src
+        dotnet parcel pack BalatroSeedOracle.parcel --runtimes win-x64 --packages nsis zip
 
-    - name: Package ZIP Archive
+    - name: Rename ZIP for platform specificity
       run: |
-        Write-Host "Building Windows ZIP archive..."
-        parcel pack BalatroSeedOracle.parcel.json -r win-x64 -p zip
+        cd src/bin/packages/Windows
+        mv BalatroSeedOracle.x64.2.0.0.zip BalatroSeedOracle-windows-x64-2.0.0.zip
+      shell: bash
 
-    - name: Upload NSIS Installer
+    - name: Upload Windows Packages
       uses: actions/upload-artifact@v4
       with:
-        name: windows-nsis
-        path: bin/packages/*.exe
-        if-no-files-found: error
-
-    - name: Upload ZIP Archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-zip
-        path: bin/packages/*.zip
+        name: windows-packages
+        path: src/bin/packages/Windows/*
         if-no-files-found: error

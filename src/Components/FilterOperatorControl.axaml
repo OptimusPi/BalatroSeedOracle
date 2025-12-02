@@ -112,7 +112,7 @@
                 Background="Transparent"
                 BorderThickness="0"
                 CornerRadius="0,0,6,6"
-                MinHeight="100"
+                MinHeight="111"
                 ClipToBounds="False"
                 DragDrop.AllowDrop="True">
 
@@ -128,19 +128,19 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Width="50" Height="70" Margin="3">
+                                <Grid Width="71" Height="95" Margin="3">
                                     <Image Source="{Binding ItemImage}"
-                                           Width="50"
-                                           Height="70"
+                                           Width="71"
+                                           Height="95"
                                            Stretch="Uniform"/>
                                     <Image Source="{Binding SoulFaceImage}"
-                                           Width="50"
-                                           Height="70"
+                                           Width="71"
+                                           Height="95"
                                            Stretch="Uniform"
                                            IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                     <Image Source="{Binding DebuffedOverlayImage}"
-                                           Width="50"
-                                           Height="70"
+                                           Width="71"
+                                           Height="95"
                                            Stretch="Uniform"
                                            IsVisible="{Binding IsInBannedItemsTray}"/>
                                 </Grid>
@@ -176,19 +176,19 @@
                                             </TransformGroup>
                                         </Border.RenderTransform>
 
-                                        <Grid Width="50" Height="70">
+                                        <Grid Width="71" Height="95">
                                             <Image Source="{Binding ItemImage}"
-                                                   Width="50"
-                                                   Height="70"
+                                                   Width="71"
+                                                   Height="95"
                                                    Stretch="Uniform"/>
                                             <Image Source="{Binding SoulFaceImage}"
-                                                   Width="50"
-                                                   Height="70"
+                                                   Width="71"
+                                                   Height="95"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding SoulFaceImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                             <Image Source="{Binding DebuffedOverlayImage}"
-                                                   Width="50"
-                                                   Height="70"
+                                                   Width="71"
+                                                   Height="95"
                                                    Stretch="Uniform"
                                                    IsVisible="{Binding IsInBannedItemsTray}"/>
                                         </Grid>

@@ -19,27 +19,54 @@
     <AnalysisMode>Default</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
-    <!-- Suppress only the most problematic warnings -->
-    <NoWarn>$(NoWarn);CS0108;CA1515;CA2227;CA1002;CA1707;CA1819;CA1034;CA1003;CA1052;CA2263</NoWarn>
+  </PropertyGroup>
+  <!-- Optimizations for smaller published bundle size -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
-  <!-- Copy Audio files to output directory -->
+  <!-- Copy Audio and Sprite files to output directory -->
   <ItemGroup>
-    <None Update="Assets\Audio\*.flac">
+    <None Update="Assets\Audio\*.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Audio\SFX\*.ogg">
+    <None Update="Assets\Audio\SFX\*.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!-- Copy all sprite assets -->
+    <None Update="Assets\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <!-- Copy syntax highlighting files to output directory -->
   <ItemGroup>
     <None Update="Resources\*.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Copy sample files to output directory -->
+  <ItemGroup>
+    <None Update="Samples\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -52,7 +79,6 @@
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
-    <PackageReference Include="Avalonia.Win32" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
@@ -64,11 +90,21 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />
+    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj">
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- Explicitly exclude external folder from publish -->
+  <ItemGroup>
+    <Content Remove="..\external\**\*" />
+    <Compile Remove="..\external\**\*" />
+    <None Remove="..\external\**\*" />
+    <EmbeddedResource Remove="..\external\**\*" />
   </ItemGroup>
 </Project>

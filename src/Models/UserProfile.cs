@@ -19,6 +19,11 @@ namespace BalatroSeedOracle.Models
         // public List<SearchWidgetConfig> ActiveWidgets { get; set; } = new();
 
         /// <summary>
+        /// Saved search widgets for persistence across app restarts
+        /// </summary>
+        public List<SavedSearchWidget> SavedSearchWidgets { get; set; } = new();
+
+        /// <summary>
         /// Background theme preference
         /// </summary>
         public string? BackgroundTheme { get; set; }
@@ -52,6 +57,76 @@ namespace BalatroSeedOracle.Models
         /// Advanced music settings
         /// </summary>
         public AdvancedMusicSettings AdvancedMusicSettings { get; set; } = new();
+
+        /// <summary>
+        /// Feature toggles for experimental widgets (all default OFF)
+        /// </summary>
+        public FeatureToggles FeatureToggles { get; set; } = new();
+
+        /// <summary>
+        /// Host API server settings
+        /// </summary>
+        public HostApiSettings HostApiSettings { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Settings for the Host API server widget
+    /// </summary>
+    public class HostApiSettings
+    {
+        /// <summary>
+        /// Host address (default: localhost)
+        /// </summary>
+        public string Host { get; set; } = "localhost";
+
+        /// <summary>
+        /// Port number (default: 3141)
+        /// </summary>
+        public int Port { get; set; } = 3141;
+
+        /// <summary>
+        /// Number of threads to use for searches (default: all cores)
+        /// </summary>
+        public int ThreadCount { get; set; } = Environment.ProcessorCount;
+    }
+
+    /// <summary>
+    /// Feature toggles for experimental widgets
+    /// </summary>
+    public class FeatureToggles
+    {
+        /// <summary>
+        /// Show Music Mixer widget (default OFF)
+        /// </summary>
+        public bool ShowMusicMixer { get; set; } = false;
+
+        /// <summary>
+        /// Show Visualizer Settings widget (default OFF)
+        /// </summary>
+        public bool ShowVisualizer { get; set; } = false;
+
+        /// <summary>
+        /// Show Transition Designer widget (default OFF)
+        /// </summary>
+        public bool ShowTransitionDesigner { get; set; } = false;
+
+        /// <summary>
+        /// Show Host Server widget (default OFF)
+        /// API server hosting with request counter badge
+        /// </summary>
+        public bool ShowHostServer { get; set; } = false;
+
+        /// <summary>
+        /// Show Fertilizer widget (default OFF)
+        /// Manages the shared seed pile for faster searching
+        /// </summary>
+        public bool ShowFertilizer { get; set; } = false;
+
+        /// <summary>
+        /// Show Event FX widget (default OFF)
+        /// Configure animations for app events like intro
+        /// </summary>
+        public bool ShowEventFX { get; set; } = false;
     }
 
     /// <summary>
@@ -158,6 +233,43 @@ namespace BalatroSeedOracle.Models
     }
 
     // SearchWidgetConfig removed - using desktop icons now
+
+    /// <summary>
+    /// Represents a saved search widget for persistence across app restarts
+    /// </summary>
+    public class SavedSearchWidget
+    {
+        /// <summary>
+        /// SearchInstance ID (e.g., "PERKEO_Red_White")
+        /// Matches the SearchInstance.SearchId and DuckDB database file name
+        /// </summary>
+        public string SearchInstanceId { get; set; } = "";
+
+        /// <summary>
+        /// Widget X position
+        /// </summary>
+        public double PositionX { get; set; }
+
+        /// <summary>
+        /// Widget Y position
+        /// </summary>
+        public double PositionY { get; set; }
+
+        /// <summary>
+        /// Whether widget is minimized
+        /// </summary>
+        public bool IsMinimized { get; set; }
+
+        /// <summary>
+        /// Widget Z-index offset for layering
+        /// </summary>
+        public int ZIndexOffset { get; set; }
+
+        /// <summary>
+        /// Last time this widget was used (for cleanup)
+        /// </summary>
+        public DateTime LastUsed { get; set; }
+    }
 
     /// <summary>
     /// Audio visualizer settings for music-reactive shader parameters

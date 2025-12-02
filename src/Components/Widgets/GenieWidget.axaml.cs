@@ -1,4 +1,6 @@
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components
@@ -13,7 +15,9 @@ namespace BalatroSeedOracle.Components
 
         public GenieWidget()
         {
-            ViewModel = new GenieWidgetViewModel();
+            var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
+            var positionService = ServiceHelper.GetService<WidgetPositionService>();
+            ViewModel = new GenieWidgetViewModel(searchManager, positionService);
             DataContext = ViewModel;
 
             InitializeComponent();

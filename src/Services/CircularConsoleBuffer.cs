@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.Services
         public event Action<string>? LineAdded;
         public event Action? BufferChanged;
 
-        public CircularConsoleBuffer(int capacity = 1000)
+        public CircularConsoleBuffer(int capacity = 10000)
         {
             _capacity = capacity;
             _lines = new string[capacity];

@@ -153,9 +153,6 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        /// <summary>
-        /// Public method to refresh filters - delegates to ViewModel
-        /// </summary>
         public async Task RefreshFiltersAsync()
         {
             try

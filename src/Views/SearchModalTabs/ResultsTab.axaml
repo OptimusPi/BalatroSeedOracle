@@ -80,6 +80,7 @@
         <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->
         <controls:SortableResultsGrid Grid.Row="1"
                                       Name="ResultsGrid"
+                                      ItemsSource="{Binding SearchResults}"
                                       Margin="0"/>
 
         <!-- Loading overlay (shown when searching with 0 results) -->

@@ -32,8 +32,6 @@ public static class UIConstants
     public const int MinModalHeight = 120;
     public const int MinFilterHeight = 60;
 
-    public const string BorderGold = "#EAC058"; // RGB(234, 192, 88)
-
     // Grid Proportions
     public const string StandardGridProportion = "0.95*";
 
@@ -49,10 +47,10 @@ public static class UIConstants
     public const int StandardAnimationDurationMs = 250; // Standard transitions
     public const int MediumAnimationDurationMs = 300; // Card flip reveal
     public const int SlowAnimationDurationMs = 320; // Modal content slide
-    public const int JuiceDurationMs = 400; // Juice effect on card grab
+    public const int JuiceDurationMs = 400; // Juice effect on card grab (Balatro: 0.4s exact!)
     public const int BounceAnimationDurationMs = 600; // Modal rise with bounce
     public const int GravityAnimationDurationMs = 800; // Modal gravity fall
-    public const double JuiceDurationSeconds = 0.4; // Juice duration in seconds for math
+    public const double JuiceDurationSeconds = 0.4; // Juice duration in seconds for math (Balatro: 0.4s exact!)
 
     // Animation Durations (in seconds for TimeSpan)
     public const double StandardTimeoutSeconds = 1.0;
@@ -61,8 +59,8 @@ public static class UIConstants
 
     // Scale Factors
     public const double DefaultScaleFactor = 1.0;
-    public const double CardJuiceScaleFactor = 0.4; // Scale bounce on card grab
-    public const double CardJuiceRotationFactor = 0.6; // Rotation wobble multiplier
+    public const double CardJuiceScaleFactor = 0.4; // Scale bounce on card grab (Balatro default: 0.4)
+    public const double CardJuiceRotationFactor = 0.6; // Rotation wobble multiplier (Balatro: 0.6*amount)
     public const double CardFlipJuiceScalePeak = 1.3; // Peak scale during flip juice animation
 
     // Balatro card animation multipliers (unitless)
@@ -71,9 +69,10 @@ public static class UIConstants
     public const double CardRotationToDegrees = 10.0; // Multiplier to convert to degrees
     public const double CardSwayRotationAmplitude = 0.02; // ~1.15° max wobble
 
-    // Physics Constants
-    public const double JuiceBounceFrequency = 50.8; // Scale oscillation Hz
-    public const double JuiceWobbleFrequency = 40.8; // Rotation wobble Hz
+    // Physics Constants - EXACT Balatro values from moveable.lua:272-273
+    // These are ANGULAR VELOCITIES (rad/s), not Hz! sin(50.8*t) creates ~8Hz oscillation
+    public const double JuiceBounceFrequency = 50.8; // Scale oscillation angular velocity (Balatro exact!)
+    public const double JuiceWobbleFrequency = 40.8; // Rotation wobble angular velocity (Balatro exact!)
     public const double FloatingFrequency = 0.666; // ~1.5 second cycle
     public const double FloatingVerticalAmplitude = 0.3; // 30% breathing variation
     public const double FloatingHorizontalAmplitude = 0.2; // 20% sway variation
@@ -93,15 +92,4 @@ public static class UIConstants
     public const double ShadowOffsetMediumX = 2;
     public const double ShadowOffsetMediumY = 4;
     public const double ShadowOffsetLargeX = 3;
-
-    // File Extensions
-    public static readonly string[] ConfigFilePatterns = ["*.json"];
-    public static readonly string[] CsvFilePatterns = ["*.csv"];
-
-    // UI Text
-    public const string ConfigFileTypeDescription = "Config Files";
-    public const string CsvFileTypeDescription = "CSV Files";
-    public const string LoadConfigTitle = "Select Motely Config File";
-    public const string ExportResultsTitle = "Export Search Results";
-    public const string SearchModalTitle = "SEED SEARCH - MAXIMIZED";
 }

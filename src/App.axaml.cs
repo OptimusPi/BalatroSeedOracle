@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ namespace BalatroSeedOracle;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+
+    public IServiceProvider Services => _serviceProvider!;
 
     public override void Initialize()
     {
@@ -29,6 +32,9 @@ public partial class App : Application
             // Ensure required directories exist
             EnsureDirectoriesExist();
 
+            // Copy sample content to AppData on first run
+            CopySamplesToAppData();
+
             // Set up services
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -43,6 +49,9 @@ public partial class App : Application
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Set up UI thread exception handler
+                Dispatcher.UIThread.UnhandledException += OnUIThreadException;
+
                 // Show loading window and pre-load sprites before showing main window
                 ShowLoadingWindowAndPreloadSprites(desktop);
 
@@ -61,6 +70,40 @@ public partial class App : Application
             Console.ReadLine();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Handles unhandled exceptions on the UI thread
+    /// </summary>
+    private void OnUIThreadException(object? sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        var ex = e.Exception;
+        DebugLogger.LogError("UI_THREAD", $"❌ UI thread exception: {ex.Message}");
+        DebugLogger.LogError("UI_THREAD", $"Stack trace: {ex.StackTrace}");
+
+        // Write to crash log
+        try
+        {
+            var crashLog = System.IO.Path.Combine(AppPaths.DataRootDir, "crash.log");
+            var errorMsg =
+                $"=== UI THREAD EXCEPTION: {DateTime.Now} ===\n"
+                + $"Exception: {ex.GetType().FullName}\n"
+                + $"Message: {ex.Message}\n"
+                + $"Stack Trace:\n{ex.StackTrace}\n\n";
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(crashLog)!);
+            System.IO.File.AppendAllText(crashLog, errorMsg);
+        }
+        catch
+        {
+            // If crash log writing fails, at least we logged to debug
+        }
+
+        // Mark as handled to prevent app crash
+        // The error is logged, and the app will continue running
+        e.Handled = true;
+
+        // TODO: In the future, show a user-friendly error dialog here
+        // For now, just log it - user can check debug logs
     }
 
     private async void ShowLoadingWindowAndPreloadSprites(
@@ -97,8 +140,8 @@ public partial class App : Application
             // SMOOTH INTRO TRANSITION - Dark pixelated → Vibrant Balatro
             DebugLogger.LogImportant("App", "Starting SMOOTH intro transition (Dark → Normal)");
 
-            var introParams = Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters();
-            var normalParams = Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+            var introParams = Helpers.ShaderPresetHelper.Load("intro");
+            var normalParams = Helpers.ShaderPresetHelper.Load("normal");
 
             // Apply intro state immediately
             ApplyShaderParametersToMainMenu(mainMenu, introParams);
@@ -119,7 +162,10 @@ public partial class App : Application
             }
             else
             {
-                DebugLogger.LogError("App", "TransitionService not found - falling back to instant transition");
+                DebugLogger.LogError(
+                    "App",
+                    "TransitionService not found - falling back to instant transition"
+                );
                 ApplyShaderParametersToMainMenu(mainMenu, normalParams);
                 await PreloadSpritesWithoutTransition();
             }
@@ -135,6 +181,12 @@ public partial class App : Application
             catch (Exception ex)
             {
                 DebugLogger.LogError("App", $"Failed to initialize audio: {ex.Message}");
+            }
+
+            // Complete the intro transition NOW (after everything is ready)
+            if (transitionService != null)
+            {
+                transitionService.SetProgress(1.0f);
             }
 
             DebugLogger.LogImportant(
@@ -215,48 +267,50 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = Services.SpriteService.Instance;
+            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
+            var introStart = DateTime.UtcNow;
+            var minIntro = TimeSpan.FromSeconds(3.14);
 
-            // Track total sprites loaded across all categories
-            int totalLoaded = 0;
-            int totalSprites = 150; // Approximate total (will be updated as we go)
+            var uniformProgressTask = System.Threading.Tasks.Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var elapsed = DateTime.UtcNow - introStart;
+                    if (elapsed >= minIntro)
+                    {
+                        // Stop at 95% - caller will complete to 100% when fully ready
+                        transitionService.SetProgress(0.95f);
+                        break;
+                    }
+                    float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
+                    float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
+                    transitionService.SetProgress(p);
+                    await System.Threading.Tasks.Task.Delay(16).ConfigureAwait(false);
+                }
+            });
 
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
-                // Update total if we have more accurate count
-                totalSprites = Math.Max(totalSprites, totalLoaded + update.total);
-
-                // Calculate overall progress (0.0 to 1.0)
-                float overallProgress = (float)totalLoaded / totalSprites;
-
-                // Drive the transition! 0% loaded = dark/pixelated, 100% = vibrant/normal
-                transitionService.SetProgress(overallProgress);
-
                 DebugLogger.Log(
                     "App",
-                    $"Loading {update.category}: {update.current}/{update.total} " +
-                    $"(Overall: {overallProgress * 100:F0}%)"
+                    $"Loading {update.category}: {update.current}/{update.total}"
                 );
-
-                // Update total after processing this batch
-                if (update.current >= update.total)
-                {
-                    totalLoaded += update.total;
-                }
             });
 
             await spriteService.PreloadAllSpritesAsync(progress);
 
-            // Ensure we hit 100% at the end
-            transitionService.SetProgress(1.0f);
+            await uniformProgressTask.ConfigureAwait(false);
 
             DebugLogger.LogImportant("App", "Sprites pre-loaded with smooth transition!");
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
-            // Ensure transition completes even if sprite loading fails
-            transitionService.SetProgress(1.0f);
+            DebugLogger.LogError(
+                "App",
+                $"Failed to pre-load sprites with transition: {ex.Message}"
+            );
+            // Don't complete transition here - let caller handle it
+            transitionService.SetProgress(0.95f);
         }
     }
 
@@ -267,7 +321,7 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = Services.SpriteService.Instance;
+            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
             await spriteService.PreloadAllSpritesAsync(null);
             DebugLogger.Log("App", "Sprites pre-loaded (no transition)");
         }
@@ -331,7 +385,9 @@ public partial class App : Application
         services.AddBalatroSeedOracleServices();
 
         // Register existing singleton services
-        services.AddSingleton<Services.SpriteService>(provider => Services.SpriteService.Instance);
+        services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
+            BalatroSeedOracle.Services.SpriteService.Instance
+        );
         // ClipboardService is static, no need to register
     }
 
@@ -364,27 +420,13 @@ public partial class App : Application
     {
         try
         {
-            // Create JsonItemFilters directory
-            var jsonFiltersDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "JsonItemFilters"
-            );
-            if (!System.IO.Directory.Exists(jsonFiltersDir))
-            {
-                System.IO.Directory.CreateDirectory(jsonFiltersDir);
-                DebugLogger.Log("App", $"Created directory: {jsonFiltersDir}");
-            }
+            // Directories are now managed by AppPaths - they are auto-created on access
+            // No need to explicitly create them here since AppPaths.EnsureDir() handles it
+            DebugLogger.Log("App", "Using AppPaths for directory management");
 
-            // Create other required directories
-            var searchResultsDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "SearchResults"
-            );
-            if (!System.IO.Directory.Exists(searchResultsDir))
-            {
-                System.IO.Directory.CreateDirectory(searchResultsDir);
-                DebugLogger.Log("App", $"Created directory: {searchResultsDir}");
-            }
+            // Touch directories to ensure they exist
+            _ = AppPaths.FiltersDir;
+            _ = AppPaths.SearchResultsDir;
         }
         catch (Exception ex)
         {
@@ -393,7 +435,85 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Get a service from the DI container
+    /// Copies sample content from the installed location to AppData on first run.
+    /// This provides new users with example filters and default presets.
+    /// </summary>
+    private static void CopySamplesToAppData()
+    {
+        // Only run once - check for marker file
+        var markerFile = System.IO.Path.Combine(AppPaths.DataRootDir, ".samples_imported");
+        if (System.IO.File.Exists(markerFile))
+        {
+            return;
+        }
+
+        try
+        {
+            // Copy sample filter
+            var sampleFilter = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "TelescopeObservatory.json"
+            );
+            var targetFilter = System.IO.Path.Combine(
+                AppPaths.FiltersDir,
+                "TelescopeObservatory.json"
+            );
+            if (System.IO.File.Exists(sampleFilter) && !System.IO.File.Exists(targetFilter))
+            {
+                System.IO.File.Copy(sampleFilter, targetFilter);
+            }
+
+            // Copy visualizer presets
+            var samplePresetsDir = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "VisualizerPresets"
+            );
+            if (System.IO.Directory.Exists(samplePresetsDir))
+            {
+                foreach (var file in System.IO.Directory.GetFiles(samplePresetsDir, "*.json"))
+                {
+                    var fileName = System.IO.Path.GetFileName(file);
+                    var target = System.IO.Path.Combine(AppPaths.VisualizerPresetsDir, fileName);
+                    if (!System.IO.File.Exists(target))
+                    {
+                        System.IO.File.Copy(file, target);
+                    }
+                }
+            }
+
+            // Copy mixer presets
+            var sampleMixerDir = System.IO.Path.Combine(
+                AppContext.BaseDirectory,
+                "Samples",
+                "MixerPresets"
+            );
+            if (System.IO.Directory.Exists(sampleMixerDir))
+            {
+                foreach (var file in System.IO.Directory.GetFiles(sampleMixerDir, "*.json"))
+                {
+                    var fileName = System.IO.Path.GetFileName(file);
+                    var target = System.IO.Path.Combine(AppPaths.MixerPresetsDir, fileName);
+                    if (!System.IO.File.Exists(target))
+                    {
+                        System.IO.File.Copy(file, target);
+                    }
+                }
+            }
+
+            // Mark as done
+            System.IO.File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
+            DebugLogger.Log("App", "Sample content copied to AppData successfully");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to copy samples: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Get a service from the DI container (temporary until full DI migration)
     /// </summary>
     public static T? GetService<T>()
         where T : class

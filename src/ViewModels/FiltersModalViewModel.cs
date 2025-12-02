@@ -65,13 +65,21 @@ namespace BalatroSeedOracle.ViewModels
         private string _filterName = "";
 
         [ObservableProperty]
+        private bool _filterNameEditMode = false;
+
+        [ObservableProperty]
+        private bool _filterNameDisplayMode = true;
+
+        [ObservableProperty]
         private string _filterDescription = "";
 
         [ObservableProperty]
-        private string _selectedDeck = "Red";
+        [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
+        private Motely.MotelyDeck _selectedDeck = Motely.MotelyDeck.Red;
 
         [ObservableProperty]
-        private int _selectedStake = 0;
+        [NotifyPropertyChangedFor(nameof(SelectedStakeIndex))]
+        private Motely.MotelyStake _selectedStake = Motely.MotelyStake.White;
 
         // Tab visibility properties - proper MVVM pattern
         [ObservableProperty]
@@ -79,6 +87,9 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private bool _isVisualTabVisible = false;
+
+        [ObservableProperty]
+        private bool _isDeckStakeTabVisible = false;
 
         [ObservableProperty]
         private bool _isJsonTabVisible = false;
@@ -99,6 +110,10 @@ namespace BalatroSeedOracle.ViewModels
         // Counters
         private int _itemKeyCounter = 0;
         private int _instanceCounter = 0;
+
+        // Callbacks for child view models
+        public Action<string>? RequestNavigateToSearch { get; set; }
+        public Action? RequestClose { get; set; }
 
         // Computed properties
         public bool HasLoadedFilter => !string.IsNullOrEmpty(CurrentFilterPath);
@@ -151,68 +166,49 @@ namespace BalatroSeedOracle.ViewModels
         // Deck/Stake index helpers
         public int SelectedDeckIndex
         {
-            get
-            {
-                var decks = new[]
-                {
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Black",
-                    "Magic",
-                    "Nebula",
-                    "Ghost",
-                    "Abandoned",
-                    "Checkered",
-                    "Zodiac",
-                    "Painted",
-                    "Anaglyph",
-                    "Plasma",
-                    "Erratic",
-                };
-                return Array.IndexOf(decks, SelectedDeck);
-            }
+            get => (int)SelectedDeck;
             set
             {
-                var decks = new[]
+                if (value >= 0 && value <= 14) // 0-14 for 15 decks
                 {
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Black",
-                    "Magic",
-                    "Nebula",
-                    "Ghost",
-                    "Abandoned",
-                    "Checkered",
-                    "Zodiac",
-                    "Painted",
-                    "Anaglyph",
-                    "Plasma",
-                    "Erratic",
-                };
-                if (value >= 0 && value < decks.Length)
-                {
-                    SelectedDeck = decks[value];
-                    OnPropertyChanged(nameof(SelectedDeck));
-                    OnPropertyChanged(nameof(SelectedDeckIndex));
+                    SelectedDeck = (Motely.MotelyDeck)value;
                 }
             }
         }
 
         public int SelectedStakeIndex
         {
-            get => SelectedStake;
+            get
+            {
+                // Map enum to UI index (0-7)
+                return SelectedStake switch
+                {
+                    Motely.MotelyStake.White => 0,
+                    Motely.MotelyStake.Red => 1,
+                    Motely.MotelyStake.Green => 2,
+                    Motely.MotelyStake.Black => 3,
+                    Motely.MotelyStake.Blue => 4,
+                    Motely.MotelyStake.Purple => 5,
+                    Motely.MotelyStake.Orange => 6,
+                    Motely.MotelyStake.Gold => 7,
+                    _ => 0,
+                };
+            }
             set
             {
-                if (SelectedStake != value)
+                // Map UI index (0-7) to enum
+                SelectedStake = value switch
                 {
-                    SelectedStake = value;
-                    OnPropertyChanged(nameof(SelectedStake));
-                    OnPropertyChanged(nameof(SelectedStakeIndex));
-                }
+                    0 => Motely.MotelyStake.White,
+                    1 => Motely.MotelyStake.Red,
+                    2 => Motely.MotelyStake.Green,
+                    3 => Motely.MotelyStake.Black,
+                    4 => Motely.MotelyStake.Blue,
+                    5 => Motely.MotelyStake.Purple,
+                    6 => Motely.MotelyStake.Orange,
+                    7 => Motely.MotelyStake.Gold,
+                    _ => Motely.MotelyStake.White,
+                };
             }
         }
 
@@ -222,7 +218,7 @@ namespace BalatroSeedOracle.ViewModels
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
         public object? DeckStakeTab { get; set; }
-        public object? JsonEditorTab { get; set; }
+        public object? JamlEditorTab { get; set; }
 
         [ObservableProperty]
         private object? _currentPopup;
@@ -237,12 +233,37 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        // ===== COMMANDS (using [RelayCommand] source generator) =====
-        [RelayCommand]
-        private void OpenItemConfigPopup(ItemConfig itemConfig)
+        // ===== PARTIAL METHODS (Property change handlers) =====
+        partial void OnFilterNameEditModeChanged(bool value)
         {
-            CurrentPopup = new ItemConfigPopupViewModel(itemConfig);
+            FilterNameDisplayMode = !value;
         }
+
+        partial void OnSelectedDeckChanged(Motely.MotelyDeck value)
+        {
+            DebugLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
+            if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+            {
+                jamlVm.AutoGenerateFromVisual();
+            }
+        }
+
+        partial void OnSelectedStakeChanged(Motely.MotelyStake value)
+        {
+            DebugLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
+            if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+            {
+                jamlVm.AutoGenerateFromVisual();
+            }
+        }
+
+        // ===== EVENTS =====
+        /// <summary>
+        /// Raised when filter name edit mode is activated (for focus request)
+        /// </summary>
+        public event EventHandler? OnFilterNameEditActivated;
+
+        // ===== COMMANDS (using [RelayCommand] source generator) =====
 
         [RelayCommand]
         private async Task SaveCurrentFilter()
@@ -315,10 +336,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Get filter name from path for database cleanup
                 var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchResultsDir = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "SearchResults"
-                );
+                var searchResultsDir = AppPaths.SearchResultsDir;
 
                 DebugLogger.Log(
                     "FiltersModalViewModel",
@@ -425,8 +443,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Ensure WordLists directory exists
-                var wordListsDir = Path.Combine(Directory.GetCurrentDirectory(), "WordLists");
-                Directory.CreateDirectory(wordListsDir);
+                var wordListsDir = AppPaths.WordListsDir;
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
                 var allSeeds = new List<string>();
@@ -517,6 +534,48 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        /// <summary>
+        /// Loads a specific filter config for editing (called from other modals)
+        /// </summary>
+        /// <param name="config">The filter config to load</param>
+        public async Task LoadFilterForEditing(MotelyJsonConfig config)
+        {
+            try
+            {
+                LoadedConfig = config;
+                FilterName = config.Name ?? "Unnamed Filter";
+                FilterDescription = config.Description ?? "";
+                // Convert string deck/stake to enum values
+                if (!string.IsNullOrEmpty(config.Deck) && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck))
+                {
+                    SelectedDeck = deck;
+                }
+                if (!string.IsNullOrEmpty(config.Stake) && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake))
+                {
+                    SelectedStake = stake;
+                }
+                
+                // Store original metadata
+                _originalAuthor = config.Author;
+                _originalDateCreated = config.DateCreated;
+                
+                // TODO: Calculate criteria hash for change detection if method exists
+                // _originalCriteriaHash = CalculateCriteriaHash(config);
+                
+                // TODO: Load clauses into tabs when proper ViewModels are available
+                // For now, just load basic info
+                
+                // Don't set CurrentFilterPath since this is editing, not loading from file
+                CurrentFilterPath = null;
+                
+                DebugLogger.Log("FiltersModalViewModel", $"Loaded filter for editing: {config.Name}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
+            }
+        }
+
         [RelayCommand]
         private void CreateNewFilter()
         {
@@ -537,6 +596,36 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error creating new filter: {ex.Message}"
                 );
             }
+        }
+
+        [RelayCommand]
+        private void FilterNameClick()
+        {
+            FilterNameEditMode = true;
+            OnFilterNameEditActivated?.Invoke(this, EventArgs.Empty);
+        }
+
+        [RelayCommand]
+        private void SaveFilterName()
+        {
+            var newName = FilterName?.Trim();
+            if (!string.IsNullOrEmpty(newName))
+            {
+                FilterName = newName;
+                DebugLogger.Log("FiltersModalViewModel", $"Filter name updated to: {newName}");
+            }
+            FilterNameEditMode = false;
+        }
+
+        [RelayCommand]
+        private void CancelFilterNameEdit()
+        {
+            // Restore original value from loaded config if available
+            if (LoadedConfig != null && !string.IsNullOrEmpty(LoadedConfig.Name))
+            {
+                FilterName = LoadedConfig.Name;
+            }
+            FilterNameEditMode = false;
         }
 
         [RelayCommand(CanExecute = nameof(HasLoadedFilter))]
@@ -664,8 +753,11 @@ namespace BalatroSeedOracle.ViewModels
                     LoadConfigIntoState(config);
                     LoadedConfig = config;
 
-                    // Update JSON editor with loaded content
-                    UpdateJsonEditorFromConfig(config);
+                    // Update JAML editor with loaded content
+                    if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+                    {
+                        jamlVm.AutoGenerateFromVisual();
+                    }
 
                     // Update Visual Builder with FilterItem objects
                     await UpdateVisualBuilderFromItemConfigs();
@@ -691,7 +783,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Updates tab visibility based on the selected tab index
         /// Follows proper MVVM pattern - no direct UI manipulation
         /// </summary>
-        /// <param name="tabIndex">0=Build Filter, 1=JSON Editor, 2=Save</param>
+        /// <param name="tabIndex">0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=JAML Editor, 4=Validate Filter</param>
         public void UpdateTabVisibility(int tabIndex)
         {
             DebugLogger.Log(
@@ -702,6 +794,7 @@ namespace BalatroSeedOracle.ViewModels
             // Hide all tabs first
             IsLoadSaveTabVisible = false;
             IsVisualTabVisible = false;
+            IsDeckStakeTabVisible = false;
             IsJsonTabVisible = false;
             IsTestTabVisible = false;
             IsSaveTabVisible = false;
@@ -711,23 +804,23 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case 0:
                     IsVisualTabVisible = true;
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "Build Filter tab visible, all others hidden"
-                    );
+                    DebugLogger.Log("FiltersModalViewModel", "Build Filter tab visible");
                     break;
                 case 1:
-                    IsJsonTabVisible = true;
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "JSON Editor tab visible, all others hidden"
-                    );
+                    IsDeckStakeTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "Deck/Stake tab visible");
                     break;
                 case 2:
+                    IsJsonTabVisible = true;
+                    DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible");
+                    break;
+                case 3:
+                    DebugLogger.Log("FiltersModalViewModel", "JAML Editor tab visible");
+                    break;
+                case 4:
                     IsSaveTabVisible = true;
-                    // Refresh Save tab data when it becomes visible
-                    RefreshSaveTabData();
-                    DebugLogger.Log("FiltersModalViewModel", "Save tab visible, all others hidden");
+                    _ = RefreshSaveTabData(); // Fire-and-forget when switching tabs
+                    DebugLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
                     break;
             }
 
@@ -738,11 +831,10 @@ namespace BalatroSeedOracle.ViewModels
             );
         }
 
-
         /// <summary>
         /// Refresh Save tab data when switching to it
         /// </summary>
-        private void RefreshSaveTabData()
+        private async Task RefreshSaveTabData()
         {
             try
             {
@@ -751,12 +843,14 @@ namespace BalatroSeedOracle.ViewModels
                     t.Content is Components.FilterTabs.ValidateFilterTab
                 );
                 if (
-                    validateTab?.Content is Components.FilterTabs.ValidateFilterTab validateFilterTab
-                    && validateFilterTab.DataContext is FilterTabs.ValidateFilterTabViewModel validateVm
+                    validateTab?.Content
+                        is Components.FilterTabs.ValidateFilterTab validateFilterTab
+                    && validateFilterTab.DataContext
+                        is FilterTabs.ValidateFilterTabViewModel validateVm
                 )
                 {
                     validateVm.PreFillFilterData();
-                    validateVm.RefreshClauseDisplay();
+                    await validateVm.RefreshClauseDisplay();
                     DebugLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
                 }
             }
@@ -789,137 +883,101 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSelectedTabIndexChanging(int value)
         {
             _previousTabIndex = SelectedTabIndex;
+
+            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
+            switch (_previousTabIndex)
+            {
+                case 2: // Leaving JAML Editor - parse JAML and update state
+                    if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+                    {
+                        SaveJamlEditorToState(jamlVm);
+                    }
+                    break;
+            }
         }
 
-        // Automatically update tab visibility and content when header selection changes
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"🔄 Tab switching: FROM tab {_previousTabIndex} TO tab {value}");
-
-            // CRITICAL: Save current tab's data to the shared filter state BEFORE switching
-            SaveCurrentTabData(_previousTabIndex);
+            DebugLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
 
-            // CRITICAL: Load fresh data into the new tab AFTER switching
-            LoadTabData(value);
-        }
-
-        /// <summary>
-        /// Save the current tab's data to the parent ViewModel's shared state.
-        /// Called BEFORE switching tabs to ensure changes aren't lost.
-        /// </summary>
-        private void SaveCurrentTabData(int tabIndex)
-        {
-            try
+            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
+            switch (value)
             {
-                DebugLogger.Log("FiltersModalViewModel", $"💾 Saving data from tab index {tabIndex} TO DISK");
-
-                // SIMPLE SOLUTION: ALWAYS SAVE TO DISK WHEN LEAVING ANY TAB
-                _ = SaveCurrentFilterCommand.ExecuteAsync(null);
-
-                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data saved to disk");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error saving current tab data: {ex.Message}");
+                case 0: // Entering Visual Builder - refresh from state
+                    if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+                    {
+                        visualVm.LoadFromParentCollections();
+                        ExpandDropZonesWithItems();
+                    }
+                    break;
+                case 2: // Entering JAML Editor - regenerate from state
+                    if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+                    {
+                        jamlVm.AutoGenerateFromVisual();
+                    }
+                    break;
+                case 3: // Entering Validate Filter - refresh clause display
+                    _ = RefreshSaveTabData();
+                    break;
             }
         }
 
         /// <summary>
-        /// Load fresh data into the newly selected tab from the parent ViewModel's shared state.
-        /// Called AFTER switching tabs to ensure the tab shows current data.
+        /// Parse JAML from JAML Editor and update parent ViewModel's state
+        /// JAML (Joker Ante Markup Language) is a YAML-based format
         /// </summary>
-        private void LoadTabData(int tabIndex)
+        private void SaveJamlEditorToState(FilterTabs.JamlEditorTabViewModel jamlVm)
         {
             try
             {
-                DebugLogger.Log("FiltersModalViewModel", $"📂 Loading data into tab index {tabIndex} FROM DISK");
-
-                // SIMPLE SOLUTION: ALWAYS RELOAD FROM DISK WHEN ENTERING ANY TAB
-                _ = ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
-
-                DebugLogger.Log("FiltersModalViewModel", $"✅ Tab {tabIndex} data loaded from disk");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error loading tab data: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Parse JSON from JSON Editor and update parent ViewModel's state
-        /// </summary>
-        private void SaveJsonEditorToState(FilterTabs.JsonEditorTabViewModel jsonVm)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(jsonVm.JsonContent))
+                if (string.IsNullOrWhiteSpace(jamlVm.JamlContent))
                 {
-                    DebugLogger.Log("FiltersModalViewModel", "⚠️ JSON Editor is empty - skipping save");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        "⚠️ JAML Editor is empty - skipping save"
+                    );
                     return;
                 }
 
-                // Validate JSON first
-                var config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                    jsonVm.JsonContent,
-                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                );
+                // Parse JAML to config using YamlDotNet (JAML is YAML-based)
+                var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+                    .WithNamingConvention(
+                        YamlDotNet
+                            .Serialization
+                            .NamingConventions
+                            .CamelCaseNamingConvention
+                            .Instance
+                    )
+                    .Build();
+
+                var config = deserializer.Deserialize<MotelyJsonConfig>(jamlVm.JamlContent);
 
                 if (config == null)
                 {
-                    DebugLogger.LogError("FiltersModalViewModel", "❌ Failed to parse JSON - skipping save");
+                    DebugLogger.LogError(
+                        "FiltersModalViewModel",
+                        "❌ Failed to parse JAML - skipping save"
+                    );
                     return;
                 }
 
                 // Load config into parent state (updates SelectedMust/Should/MustNot, deck, stake, etc.)
                 LoadConfigIntoState(config);
 
-                DebugLogger.Log("FiltersModalViewModel",
-                    $"✅ JSON Editor saved to state: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModalViewModel", $"❌ Error parsing JSON: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Regenerate JSON content from current parent ViewModel state
-        /// </summary>
-        private void RegenerateJsonFromState(FilterTabs.JsonEditorTabViewModel jsonVm)
-        {
-            try
-            {
-                // Build config from current state (includes deck/stake from parent)
-                var config = BuildConfigFromCurrentState();
-
-                // DEBUG: Log actual deck/stake values being used
-                DebugLogger.LogImportant("FiltersModalViewModel",
-                    $"RegenerateJsonFromState: Using Deck={SelectedDeck} (index={SelectedDeckIndex}), Stake={SelectedStake} (index={SelectedStakeIndex})");
-
-                // Serialize to JSON with proper formatting
-                var json = System.Text.Json.JsonSerializer.Serialize(
-                    config,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                    }
+                DebugLogger.Log(
+                    "FiltersModalViewModel",
+                    $"✅ JAML Editor saved to state: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}"
                 );
-
-                jsonVm.JsonContent = json;
-                jsonVm.ValidationStatus = "Loaded from current filter";
-                jsonVm.ValidationStatusColor = Brushes.Gray;
-
-                DebugLogger.Log("FiltersModalViewModel",
-                    $"✅ JSON regenerated: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"❌ Error regenerating JSON: {ex.Message}");
+                DebugLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error parsing JAML: {ex.Message}"
+                );
             }
         }
 
@@ -976,10 +1034,9 @@ namespace BalatroSeedOracle.ViewModels
                 // BUG FIX: Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
-                // BUG FIX: Use SelectedDeck directly instead of converting from index
-                // The SelectedDeck property already contains the correct deck name!
-                Deck = SelectedDeck,
-                Stake = GetStakeName(SelectedStake), // SelectedStake is already the index
+                // Use enum ToString() for JSON serialization
+                Deck = SelectedDeck.ToString(),
+                Stake = SelectedStake.ToString().ToLower(),
                 Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
@@ -987,8 +1044,10 @@ namespace BalatroSeedOracle.ViewModels
 
             // CRITICAL FIX: Read from VisualBuilderTab's collections if available
             // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
-            DebugLogger.LogImportant("FiltersModalViewModel",
-                $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}");
+            DebugLogger.LogImportant(
+                "FiltersModalViewModel",
+                $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}"
+            );
 
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
@@ -1000,20 +1059,26 @@ namespace BalatroSeedOracle.ViewModels
                 // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
                 foreach (var filterItem in visualVm.SelectedMust)
                 {
-                    DebugLogger.LogImportant("FiltersModalViewModel",
-                        $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}");
+                    DebugLogger.LogImportant(
+                        "FiltersModalViewModel",
+                        $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
+                    );
 
                     var clause = ConvertFilterItemToClause(filterItem);
                     if (clause != null)
                     {
                         config.Must.Add(clause);
-                        DebugLogger.Log("FiltersModalViewModel",
-                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses != null}, ClausesCount={clause.Clauses?.Count ?? 0}");
+                        DebugLogger.Log(
+                            "FiltersModalViewModel",
+                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses != null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                        );
                     }
                     else
                     {
-                        DebugLogger.LogError("FiltersModalViewModel",
-                            $"Failed to convert {filterItem.Name} to clause!");
+                        DebugLogger.LogError(
+                            "FiltersModalViewModel",
+                            $"Failed to convert {filterItem.Name} to clause!"
+                        );
                     }
                 }
             }
@@ -1210,8 +1275,10 @@ namespace BalatroSeedOracle.ViewModels
                 if (operatorItem.OperatorType == "BannedItems")
                     return null;
 
-                DebugLogger.LogImportant("FiltersModalViewModel",
-                    $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}");
+                DebugLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}"
+                );
 
                 var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
                 {
@@ -1223,33 +1290,59 @@ namespace BalatroSeedOracle.ViewModels
                 // Recursively convert children
                 foreach (var child in operatorItem.Children)
                 {
-                    DebugLogger.Log("FiltersModalViewModel",
-                        $"  Converting child: {child.Name} (Type={child.Type})");
+                    DebugLogger.Log(
+                        "FiltersModalViewModel",
+                        $"  Converting child: {child.Name} (Type={child.Type})"
+                    );
                     var childClause = ConvertFilterItemToClause(child);
                     if (childClause != null)
                     {
                         operatorClause.Clauses.Add(childClause);
-                        DebugLogger.Log("FiltersModalViewModel",
-                            $"  ✓ Added child clause: Type={childClause.Type}, Value={childClause.Value}");
+                        DebugLogger.Log(
+                            "FiltersModalViewModel",
+                            $"  ✓ Added child clause: Type={childClause.Type}, Value={childClause.Value}"
+                        );
                     }
                     else
                     {
-                        DebugLogger.LogError("FiltersModalViewModel",
-                            $"  ✗ Failed to convert child: {child.Name}");
+                        DebugLogger.LogError(
+                            "FiltersModalViewModel",
+                            $"  ✗ Failed to convert child: {child.Name}"
+                        );
                     }
                 }
 
-                DebugLogger.LogImportant("FiltersModalViewModel",
-                    $"✓ Created {operatorItem.OperatorType} operator with {operatorClause.Clauses.Count} clauses");
+                DebugLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"✓ Created {operatorItem.OperatorType} operator with {operatorClause.Clauses.Count} clauses"
+                );
 
                 return operatorClause;
             }
 
             // Regular FilterItem
+            // Convert wildcard names to Motely-compatible values
+            string clauseValue = filterItem.Name;
+            if (filterItem.Name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
+            {
+                // SoulJoker wildcards ALWAYS use "Any" regardless of rarity
+                if (filterItem.Type == "SoulJoker")
+                {
+                    clauseValue = "Any";
+                }
+                else
+                {
+                    // Regular joker wildcards: Wildcard_JokerLegendary → anylegendary
+                    clauseValue = filterItem
+                        .Name.Replace("Wildcard_Joker", "any", StringComparison.OrdinalIgnoreCase)
+                        .ToLowerInvariant();
+                }
+            }
+
             var clause = new MotelyJsonConfig.MotleyJsonFilterClause
             {
                 Type = filterItem.Type,
-                Value = filterItem.Name,
+                Value = clauseValue,
             };
 
             // Add antes if configured
@@ -1259,7 +1352,11 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Add edition if not default
-            if (!string.IsNullOrEmpty(filterItem.Edition) && filterItem.Edition != "none" && filterItem.Edition != "None")
+            if (
+                !string.IsNullOrEmpty(filterItem.Edition)
+                && filterItem.Edition != "none"
+                && filterItem.Edition != "None"
+            )
             {
                 clause.Edition = filterItem.Edition;
             }
@@ -1275,7 +1372,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (!string.IsNullOrEmpty(filterItem.Seal) && filterItem.Seal != "None")
                     clause.Seal = filterItem.Seal;
-                if (!string.IsNullOrEmpty(filterItem.Enhancement) && filterItem.Enhancement != "None")
+                if (
+                    !string.IsNullOrEmpty(filterItem.Enhancement)
+                    && filterItem.Enhancement != "None"
+                )
                     clause.Enhancement = filterItem.Enhancement;
             }
 
@@ -1295,25 +1395,20 @@ namespace BalatroSeedOracle.ViewModels
             _originalDateCreated = config.DateCreated;
             _originalAuthor = config.Author;
 
-            // Load deck and stake
-            if (!string.IsNullOrEmpty(config.Deck))
-                SelectedDeck = config.Deck;
-            if (!string.IsNullOrEmpty(config.Stake))
+            // Load deck and stake from JSON strings → parse to enums
+            if (
+                !string.IsNullOrEmpty(config.Deck)
+                && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck)
+            )
             {
-                var stakes = new[]
-                {
-                    "white",
-                    "red",
-                    "green",
-                    "black",
-                    "blue",
-                    "purple",
-                    "orange",
-                    "gold",
-                };
-                SelectedStake = Array.IndexOf(stakes, config.Stake.ToLower());
-                if (SelectedStake < 0)
-                    SelectedStake = 0;
+                SelectedDeck = deck;
+            }
+            if (
+                !string.IsNullOrEmpty(config.Stake)
+                && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake)
+            )
+            {
+                SelectedStake = stake;
             }
 
             // Load Must clauses
@@ -1445,7 +1540,7 @@ namespace BalatroSeedOracle.ViewModels
                 var operatorConfig = new ItemConfig
                 {
                     ItemKey = itemKey,
-                    ItemType = "Operator",  // CRITICAL FIX: Was "Clause", must be "Operator"!
+                    ItemType = "Operator", // CRITICAL FIX: Was "Clause", must be "Operator"!
                     ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
                     OperatorType =
                         normalizedType.Substring(0, 1).ToUpper()
@@ -1470,11 +1565,31 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Regular item (not a clause operator)
+            // CRITICAL: Convert "Any" back to wildcard name for round-trip compatibility
+            string itemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "";
+            if (
+                itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
+                && normalizedType == "SoulJoker"
+            )
+            {
+                // Reconstruct wildcard name based on edition
+                if (!string.IsNullOrEmpty(clause.Edition) && clause.Edition != "none")
+                {
+                    // Any Negative/Polychrome/etc SoulJoker → Wildcard_JokerLegendary (assumed Legendary if has edition)
+                    itemName = "Wildcard_JokerLegendary";
+                }
+                else
+                {
+                    // Any SoulJoker with no edition → generic wildcard
+                    itemName = "Wildcard_JokerLegendary"; // Default to legendary wildcard
+                }
+            }
+
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemKey,
                 ItemType = normalizedType,
-                ItemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "",
+                ItemName = itemName,
                 Score = clause.Score,
                 Label = clause.Label,
                 Min = clause.Min,
@@ -1538,6 +1653,20 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DataContext = visualBuilderViewModel,
             };
+
+            // Wire up filter name edit activation event
+            OnFilterNameEditActivated += (s, e) =>
+            {
+                var filterNameEdit = visualBuilderTab.FindControl<Avalonia.Controls.TextBox>(
+                    "FilterNameEdit"
+                );
+                if (filterNameEdit != null)
+                {
+                    filterNameEdit.Focus();
+                    filterNameEdit.SelectAll();
+                }
+            };
+
             TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
             // Deck/Stake tab (NEW - between Build Filter and JSON Editor)
@@ -1546,18 +1675,17 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DataContext = deckStakeViewModel,
             };
-            DeckStakeTab = deckStakeViewModel; // Store reference like JsonEditorTab
+            DeckStakeTab = deckStakeViewModel;
             TabItems.Add(new TabItemViewModel("DECK/STAKE", deckStakeTab));
 
-            // JSON Editor tab
-            var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
-            var jsonEditorTab = new Components.FilterTabs.JsonEditorTab
+            // JAML Editor tab (JAML = Joker Ante Markup Language, a YAML-based format)
+            var jamlEditorViewModel = new FilterTabs.JamlEditorTabViewModel(this);
+            var jamlEditorTab = new Components.FilterTabs.JamlEditorTab
             {
-                DataContext = jsonEditorViewModel,
+                DataContext = jamlEditorViewModel,
             };
-            JsonEditorTab = jsonEditorViewModel; // Store reference
-
-            TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
+            JamlEditorTab = jamlEditorViewModel; // Store reference
+            TabItems.Add(new TabItemViewModel("JAML EDITOR", jamlEditorTab));
 
             // Save Filter tab
             var configService =
@@ -1583,12 +1711,12 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize the ValidateFilterTab with current filter data
             validateFilterViewModel.PreFillFilterData();
-            validateFilterViewModel.RefreshClauseDisplay();
+            _ = validateFilterViewModel.RefreshClauseDisplay();
 
             TabItems.Add(new TabItemViewModel("VALIDATE FILTER", validateFilterTab));
 
             // Ensure initial tab content and visibility are set
-            // Order now: 0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=Validate Filter
+            // Order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }
@@ -1697,8 +1825,7 @@ namespace BalatroSeedOracle.ViewModels
                 try
                 {
                     var directory =
-                        System.IO.Path.GetDirectoryName(originalPath)
-                        ?? Directory.GetCurrentDirectory();
+                        System.IO.Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
                     var baseName = System.IO.Path.GetFileNameWithoutExtension(originalPath);
                     var extension = System.IO.Path.GetExtension(originalPath);
 
@@ -1734,7 +1861,12 @@ namespace BalatroSeedOracle.ViewModels
                         var options = new System.Text.Json.JsonSerializerOptions
                         {
                             WriteIndented = true,
-                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                            DefaultIgnoreCondition = System
+                                .Text
+                                .Json
+                                .Serialization
+                                .JsonIgnoreCondition
+                                .WhenWritingNull,
                         };
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
@@ -1889,82 +2021,30 @@ namespace BalatroSeedOracle.ViewModels
             return filterSelector;
         }
 
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white",
-                "red",
-                "green",
-                "black",
-                "blue",
-                "purple",
-                "orange",
-                "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White,
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
-        }
-
-        /// <summary>
-        /// Update JSON editor content from loaded config
-        /// </summary>
-        private void UpdateJsonEditorFromConfig(Motely.Filters.MotelyJsonConfig config)
-        {
-            try
-            {
-                // Find JSON Editor tab by checking Content property (which is the view, with DataContext as ViewModel)
-                var jsonEditorTab = TabItems.FirstOrDefault(t =>
-                    t.Content is Components.FilterTabs.JsonEditorTab
-                );
-
-                if (
-                    jsonEditorTab?.Content is Components.FilterTabs.JsonEditorTab jsonEditorView
-                    && jsonEditorView.DataContext is FilterTabs.JsonEditorTabViewModel jsonEditorVm
-                )
-                {
-                    var json = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                        }
-                    );
-                    jsonEditorVm.JsonContent = json;
-                    DebugLogger.Log("FiltersModalViewModel", "Updated JSON editor from config");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error updating JSON editor: {ex.Message}"
-                );
-            }
+            return stake.ToString().ToLower();
         }
 
         /// <summary>
@@ -2086,7 +2166,10 @@ namespace BalatroSeedOracle.ViewModels
                     // Get appropriate sprite image based on type
                     ItemImage = effectiveType switch
                     {
-                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(itemConfig.ItemName),
+                        "Joker" or "SoulJoker" => spriteService.GetJokerImage(
+                            itemConfig.ItemName,
+                            itemConfig.Edition
+                        ),
                         "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(
                             itemConfig.ItemName
                         ),
@@ -2125,6 +2208,7 @@ namespace BalatroSeedOracle.ViewModels
                 "Boss" => "Bosses",
                 "Voucher" => "Vouchers",
                 "Tarot" or "Planet" or "Spectral" => "Consumables",
+                "StandardCard" or "PlayingCard" => "PlayingCards",
                 _ => "Other",
             };
         }

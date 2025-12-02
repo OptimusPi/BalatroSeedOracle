@@ -21,10 +21,13 @@ namespace BalatroSeedOracle.Helpers
             // Determine context - what property are we in?
             var context = DetermineContext(textBeforeCursor);
 
+            // Check if we're inside a criteria object (between { and })
+            bool insideCriteriaObject = IsInsideCriteriaObject(textBeforeCursor);
+
             switch (context)
             {
                 case CompletionContext.PropertyName:
-                    AddPropertyNameCompletions(completions);
+                    AddPropertyNameCompletions(completions, insideCriteriaObject);
                     break;
 
                 case CompletionContext.TypeValue:
@@ -74,11 +77,45 @@ namespace BalatroSeedOracle.Helpers
 
                 default:
                     // Fallback: show all common properties
-                    AddPropertyNameCompletions(completions);
+                    AddPropertyNameCompletions(completions, insideCriteriaObject);
                     break;
             }
 
             return completions;
+        }
+
+        private static bool IsInsideCriteriaObject(string textBefore)
+        {
+            // Count unmatched braces - if we have more { than }, we're inside an object
+            int openBraces = 0;
+            int lastOpenBraceIndex = -1;
+
+            for (int i = 0; i < textBefore.Length; i++)
+            {
+                if (textBefore[i] == '{')
+                {
+                    openBraces++;
+                    lastOpenBraceIndex = i;
+                }
+                else if (textBefore[i] == '}')
+                {
+                    openBraces--;
+                }
+            }
+
+            // If we have unmatched braces, check if there's already a "type" property after the last {
+            // This indicates we're editing an existing criteria object, not creating a new one
+            if (openBraces > 0 && lastOpenBraceIndex >= 0)
+            {
+                string textAfterLastBrace = textBefore.Substring(lastOpenBraceIndex);
+                // If we already have "type": property after the last {, we're inside a criteria object
+                if (Regex.IsMatch(textAfterLastBrace, @"""type""\s*:\s*""[^""]*"""))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static CompletionContext DetermineContext(string textBefore)
@@ -108,7 +145,7 @@ namespace BalatroSeedOracle.Helpers
                         _ => CompletionContext.ValueField,
                     };
                 }
-                return CompletionContext.ValueField; // Generic fallback
+                return CompletionContext.ValueField;
             }
 
             // Check if we're after "edition":
@@ -135,33 +172,41 @@ namespace BalatroSeedOracle.Helpers
             return CompletionContext.PropertyName;
         }
 
-        private static void AddPropertyNameCompletions(List<ICompletionData> completions)
+        private static void AddPropertyNameCompletions(
+            List<ICompletionData> completions,
+            bool insideCriteriaObject
+        )
         {
-            // SNIPPETS - Complete filter condition objects
-            completions.Add(
-                new SmartCompletionData(
-                    "snippet-joker",
-                    "{\n  \"type\": \"Joker\",\n  \"value\": \"Blueprint\",\n  \"antes\": [1, 2],\n  \"score\": 1\n}",
-                    "Complete joker condition",
-                    priority: 15
-                )
-            );
-            completions.Add(
-                new SmartCompletionData(
-                    "snippet-multi",
-                    "{\n  \"type\": \"Joker\",\n  \"values\": [\"Blueprint\", \"Brainstorm\"],\n  \"antes\": [1, 2],\n  \"score\": 1\n}",
-                    "Multiple values (OR)",
-                    priority: 15
-                )
-            );
-            completions.Add(
-                new SmartCompletionData(
-                    "snippet-edition",
-                    "{\n  \"type\": \"Joker\",\n  \"value\": \"Blueprint\",\n  \"edition\": \"Negative\",\n  \"antes\": [1, 2],\n  \"score\": 10\n}",
-                    "Edition requirement",
-                    priority: 15
-                )
-            );
+            // SNIPPETS - Only show complete criteria objects if NOT already inside one
+            if (!insideCriteriaObject)
+            {
+                completions.Add(
+                    new SmartCompletionData(
+                        "snippet-joker",
+                        "{\n  \"type\": \"Joker\",\n  \"value\": \"Blueprint\",\n  \"antes\": [1, 2],\n  \"score\": 1\n}",
+                        "Complete joker condition",
+                        priority: 15
+                    )
+                );
+                completions.Add(
+                    new SmartCompletionData(
+                        "snippet-multi",
+                        "{\n  \"type\": \"Joker\",\n  \"values\": [\"Blueprint\", \"Brainstorm\"],\n  \"antes\": [1, 2],\n  \"score\": 1\n}",
+                        "Multiple values (OR)",
+                        priority: 15
+                    )
+                );
+                completions.Add(
+                    new SmartCompletionData(
+                        "snippet-edition",
+                        "{\n  \"type\": \"Joker\",\n  \"value\": \"Blueprint\",\n  \"edition\": \"Negative\",\n  \"antes\": [1, 2],\n  \"score\": 10\n}",
+                        "Edition requirement",
+                        priority: 15
+                    )
+                );
+            }
+
+            // Always show "sources" snippet (can be used inside criteria objects)
             completions.Add(
                 new SmartCompletionData(
                     "snippet-sources",

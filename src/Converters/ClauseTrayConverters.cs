@@ -54,7 +54,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -86,7 +86,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -118,7 +118,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -150,7 +150,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -183,7 +183,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 }

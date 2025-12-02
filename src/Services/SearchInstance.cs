@@ -109,6 +109,9 @@ namespace BalatroSeedOracle.Services
         public event EventHandler? SearchStarted;
         public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgress>? ProgressUpdated;
+        public event EventHandler<int>? NewHighScoreFound;
+        private volatile int _bestScore = 0;
+        private DateTime _lastHighScoreTime = DateTime.MinValue;
 
         public SearchInstance(string searchId, string dbPath)
         {
@@ -131,41 +134,20 @@ namespace BalatroSeedOracle.Services
 
         private void SetupDatabase(Motely.Filters.MotelyJsonConfig config, string configPath)
         {
-            // Build column names from the Should[] criteria
-            _columnNames.Clear();
-            _columnNames.Add("seed");
-            _columnNames.Add("score");
+            // CRITICAL: Use shared GetColumnNames() method from MotelyJsonConfig
+            // This ensures DuckDB schema matches CSV export format exactly!
+            _columnNames = config.GetColumnNames();
+            DebugLogger.LogImportant(
+                $"SearchInstance[{_searchId}]",
+                $"Using shared column schema: {string.Join(", ", _columnNames)}"
+            );
 
-            if (config.Should != null && config.Should.Count > 0)
-            {
-                var seenNames = new HashSet<string>();
-                foreach (var should in config.Should)
-                {
-                    var baseName = FormatColumnName(should);
-                    var colName = baseName;
-
-                    int suffix = 2;
-                    while (seenNames.Contains(colName))
-                    {
-                        colName = $"{baseName}_{suffix}";
-                        suffix++;
-                    }
-
-                    seenNames.Add(colName);
-                    _columnNames.Add(colName);
-                }
-            }
-
-            // If constructor already supplied a path, keep it; otherwise derive from filter name
+            // If constructor already supplied a path, keep it; otherwise use searchId
+            // (which already includes filter+deck+stake for uniqueness)
             if (string.IsNullOrEmpty(_dbPath))
             {
-                var filterName = Path.GetFileNameWithoutExtension(configPath);
-                var searchResultsDir = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "SearchResults"
-                );
-                Directory.CreateDirectory(searchResultsDir);
-                _dbPath = Path.Combine(searchResultsDir, $"{filterName}.db");
+                var searchResultsDir = AppPaths.SearchResultsDir;
+                _dbPath = Path.Combine(searchResultsDir, $"{_searchId}.db");
                 _connectionString = $"Data Source={_dbPath}";
             }
             DebugLogger.LogImportant(
@@ -176,64 +158,116 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
 
-        private string FormatColumnName(
-            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause should
-        )
+
+        /// <summary>
+        /// Validates existing database schema matches current filter requirements.
+        /// If schema mismatch detected, closes connection, deletes database, and reopens connection.
+        /// Returns true if schema matched (or didn't exist), false if database was deleted.
+        /// </summary>
+        private bool ValidateOrDeleteDatabase()
         {
-            if (should == null)
-                return "should";
-
-            // FIXED: Handle both single value and values array
-            string name;
-            if (!string.IsNullOrEmpty(should.Value))
+            try
             {
-                // Single value case
-                name = should.Value;
-            }
-            else if (should.Values != null && should.Values.Length > 0)
-            {
-                // Multi-value case: Use first value + count indicator
-                if (should.Values.Length == 1)
+                // Check if results table exists (DuckDB syntax)
+                using (var checkTable = _connection.CreateCommand())
                 {
-                    name = should.Values[0];
+                    checkTable.CommandText = "SELECT table_name FROM information_schema.tables WHERE table_name='results'";
+                    var result = checkTable.ExecuteScalar();
+
+                    if (result == null)
+                    {
+                        // Table doesn't exist yet - schema will be created fresh
+                        return true;
+                    }
                 }
-                else
+
+                // Table exists - check if columns match expected schema (DuckDB syntax)
+                using (var getColumns = _connection.CreateCommand())
                 {
-                    // Multiple values: create descriptive name
-                    name = $"{should.Values[0]}_Plus{should.Values.Length - 1}More";
+                    getColumns.CommandText = "SELECT column_name FROM information_schema.columns WHERE table_name='results' ORDER BY ordinal_position";
+                    var existingColumns = new List<string>();
+                    using (var reader = getColumns.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var columnName = reader.GetString(0); // Column name is at index 0 for SELECT
+                            existingColumns.Add(columnName);
+                        }
+                    }
+
+                    // Compare with expected columns
+                    var expectedColumns = _columnNames;
+
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Existing columns: {string.Join(", ", existingColumns)}"
+                    );
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Expected columns: {string.Join(", ", expectedColumns)}"
+                    );
+
+                    bool match = existingColumns.Count == expectedColumns.Count &&
+                                 existingColumns.SequenceEqual(expectedColumns);
+
+                    if (!match)
+                    {
+                        DebugLogger.LogImportant(
+                            $"SearchInstance[{_searchId}]",
+                            $"⚠️ SCHEMA MISMATCH! Deleting old database: {_dbPath}"
+                        );
+
+                        // Close connection before deleting file
+                        _connection.Close();
+
+                        // Delete database file and WAL file
+                        if (File.Exists(_dbPath))
+                        {
+                            File.Delete(_dbPath);
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}");
+                        }
+                        if (File.Exists(_dbPath + ".wal"))
+                        {
+                            File.Delete(_dbPath + ".wal");
+                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}.wal");
+                        }
+
+                        // Reopen connection to create fresh database
+                        _connection.Open();
+
+                        return false; // Schema didn't match, database was deleted
+                    }
                 }
+
+                return true; // Schema matches
             }
-            else
+            catch (Exception ex)
             {
-                // Fallback to type
-                name = should.Type;
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Schema validation failed: {ex.Message}"
+                );
+                // If validation fails, assume we need fresh database
+                return false;
             }
-
-            // Add edition prefix if specified
-            if (!string.IsNullOrEmpty(should.Edition))
-                name = should.Edition + "_" + name;
-
-            // Add ante suffix if specified
-            if (should.Antes != null && should.Antes.Length > 0)
-                name += "_ante" + should.Antes[0];
-
-            if (string.IsNullOrEmpty(name))
-                name = "column";
-
-            var safeName = System
-                .Text.RegularExpressions.Regex.Replace(name, @"[^a-zA-Z0-9_]", "_")
-                .ToLower();
-
-            if (char.IsDigit(safeName[0]))
-                safeName = "col_" + safeName;
-
-            return safeName;
         }
 
         private void InitializeDatabase()
         {
             try
             {
+                // CRITICAL: Check if database exists with DIFFERENT schema
+                // If schema mismatch detected, delete the old database and create fresh one
+                bool schemaMatches = ValidateOrDeleteDatabase();
+
+                if (!schemaMatches)
+                {
+                    DebugLogger.LogImportant(
+                        $"SearchInstance[{_searchId}]",
+                        "Schema mismatch detected - database was deleted, creating fresh schema"
+                    );
+                }
+
                 var columnDefs = new List<string> { "seed VARCHAR PRIMARY KEY", "score INT" };
                 for (int i = 2; i < _columnNames.Count; i++)
                     columnDefs.Add($"{_columnNames[i]} INT");
@@ -362,7 +396,8 @@ namespace BalatroSeedOracle.Services
             if (!_dbInitialized)
                 return list;
 
-            // Rely on row.EndRow() visibility; do NOT close appender mid-search.
+            // CRITICAL: Flush appender before query to see latest results!
+            ForceFlush();
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";
@@ -623,13 +658,7 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Ensure WordLists directory exists
-                var wordListsDir = Path.Combine(
-                    Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) ?? ".",
-                    "WordLists"
-                );
-                Directory.CreateDirectory(wordListsDir);
+                var wordListsDir = AppPaths.WordListsDir;
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
 
@@ -1649,8 +1678,25 @@ namespace BalatroSeedOracle.Services
                         // LOG THE SEED TO CONSOLE for immediate user feedback
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
-                            $"✅ FOUND SEED: {result.Seed} (Score: {result.Score})"
+                            $"FOUND SEED: {result.Seed} (Score: {result.Score})"
                         );
+
+                        // Check for new high score (with 10s cooldown after search start)
+                        var elapsed = DateTime.UtcNow - _searchStartTime;
+                        if (elapsed.TotalSeconds > 10 && result.Score > _bestScore)
+                        {
+                            var timeSinceLast = DateTime.UtcNow - _lastHighScoreTime;
+                            if (timeSinceLast.TotalSeconds > 2)
+                            {
+                                _bestScore = result.Score;
+                                _lastHighScoreTime = DateTime.UtcNow;
+                                NewHighScoreFound?.Invoke(this, result.Score);
+                            }
+                        }
+                        else if (result.Score > _bestScore)
+                        {
+                            _bestScore = result.Score;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -1861,23 +1907,23 @@ namespace BalatroSeedOracle.Services
                 }
                 _currentSearch = search;
 
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search created with {categories.Count} filter category(ies): {string.Join(", ", categories)}"
+                    $"Search created with {categories.Count} filter category(ies): {string.Join(", ", categories)}"
                 );
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}"
+                    $"Search settings: Threads={criteria.ThreadCount}, StartBatch={criteria.StartBatch}, EndBatch={criteria.EndBatch}"
                 );
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🚀 Search started! New status: {_currentSearch.Status}"
+                    $"Search started! Status: {_currentSearch.Status}"
                 );
 
                 // Wait for search completion
-                DebugLogger.LogError(
+                DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"🔄 Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}"
+                    $"Entering wait loop - Status: {_currentSearch.Status}, Cancelled: {cancellationToken.IsCancellationRequested}, Running: {_isRunning}"
                 );
                 while (
                     _currentSearch.Status == MotelySearchStatus.Running

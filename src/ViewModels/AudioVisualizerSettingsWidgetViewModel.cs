@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -23,13 +26,24 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly AudioVisualizerSettingsModalViewModel _settingsViewModel;
         private readonly UserProfileService _userProfileService;
+        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly TransitionService? _transitionService;
         private Control? _ownerControl;
+        private bool _isApplyingManualTransition = false;
 
-        public AudioVisualizerSettingsWidgetViewModel(UserProfileService userProfileService)
+        public AudioVisualizerSettingsWidgetViewModel(
+            UserProfileService userProfileService,
+            SoundFlowAudioManager? soundFlowAudioManager = null,
+            TransitionService? transitionService = null,
+            WidgetPositionService? widgetPositionService = null
+        )
+            : base(widgetPositionService)
         {
             // Inject UserProfileService via DI
             _userProfileService =
                 userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _soundFlowAudioManager = soundFlowAudioManager;
+            _transitionService = transitionService;
 
             // Create the underlying settings ViewModel (handles presets, themes, etc.)
             _settingsViewModel = new AudioVisualizerSettingsModalViewModel();
@@ -181,6 +195,210 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         #endregion
+
+        [ObservableProperty]
+        private string? _manualTransitionMixAName;
+
+        [ObservableProperty]
+        private string? _manualTransitionMixBName;
+
+        [RelayCommand]
+        private async Task AnimateVisualAndMixToB()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ManualTransitionMixBName))
+                    return;
+                var mixB = MixerHelper.LoadMixer(ManualTransitionMixBName!);
+                if (mixB == null)
+                    return;
+
+                var mixA = !string.IsNullOrWhiteSpace(ManualTransitionMixAName)
+                    ? MixerHelper.LoadMixer(ManualTransitionMixAName!)
+                    : null;
+
+                var duration = TimeSpan.FromSeconds(2.0);
+                var start = DateTime.UtcNow;
+                var s = mixA ?? mixB;
+                if (_soundFlowAudioManager == null)
+                    return;
+
+                // Blend visuals using TransitionService over the same duration
+                if (
+                    _transitionService != null
+                    && !string.IsNullOrWhiteSpace(ManualTransitionPresetA)
+                    && !string.IsNullOrWhiteSpace(ManualTransitionPresetB)
+                )
+                {
+                    var startParams = ShaderPresetHelper.Load(ManualTransitionPresetA!);
+                    var endParams = ShaderPresetHelper.Load(ManualTransitionPresetB!);
+                    _transitionService.StartTransition(
+                        startParams,
+                        endParams,
+                        ApplyShaderParameters,
+                        duration
+                    );
+                }
+
+                while (true)
+                {
+                    var elapsed = DateTime.UtcNow - start;
+
+                    if (elapsed >= duration)
+                    {
+                        ApplyMixerToEngine(mixB);
+                        if (!string.IsNullOrWhiteSpace(ManualTransitionPresetB))
+                            CurrentPresetName = ManualTransitionPresetB;
+                        break;
+                    }
+
+                    float t = (float)(elapsed.TotalMilliseconds / duration.TotalMilliseconds);
+                    float p = 1f - (1f - t) * (1f - t);
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Drums1",
+                        (float)(
+                            ((s.Drums1.Volume + (mixB.Drums1.Volume - s.Drums1.Volume) * p)) / 100.0
+                        )
+                    );
+                    var d1PanUi = (s.Drums1.Pan + (mixB.Drums1.Pan - s.Drums1.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Drums1",
+                        (float)Math.Clamp((d1PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Drums2",
+                        (float)(
+                            ((s.Drums2.Volume + (mixB.Drums2.Volume - s.Drums2.Volume) * p)) / 100.0
+                        )
+                    );
+                    var d2PanUi = (s.Drums2.Pan + (mixB.Drums2.Pan - s.Drums2.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Drums2",
+                        (float)Math.Clamp((d2PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Bass1",
+                        (float)(
+                            ((s.Bass1.Volume + (mixB.Bass1.Volume - s.Bass1.Volume) * p)) / 100.0
+                        )
+                    );
+                    var b1PanUi = (s.Bass1.Pan + (mixB.Bass1.Pan - s.Bass1.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Bass1",
+                        (float)Math.Clamp((b1PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Bass2",
+                        (float)(
+                            ((s.Bass2.Volume + (mixB.Bass2.Volume - s.Bass2.Volume) * p)) / 100.0
+                        )
+                    );
+                    var b2PanUi = (s.Bass2.Pan + (mixB.Bass2.Pan - s.Bass2.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Bass2",
+                        (float)Math.Clamp((b2PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Chords1",
+                        (float)(
+                            ((s.Chords1.Volume + (mixB.Chords1.Volume - s.Chords1.Volume) * p))
+                            / 100.0
+                        )
+                    );
+                    var c1PanUi = (s.Chords1.Pan + (mixB.Chords1.Pan - s.Chords1.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Chords1",
+                        (float)Math.Clamp((c1PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Chords2",
+                        (float)(
+                            ((s.Chords2.Volume + (mixB.Chords2.Volume - s.Chords2.Volume) * p))
+                            / 100.0
+                        )
+                    );
+                    var c2PanUi = (s.Chords2.Pan + (mixB.Chords2.Pan - s.Chords2.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Chords2",
+                        (float)Math.Clamp((c2PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Melody1",
+                        (float)(
+                            ((s.Melody1.Volume + (mixB.Melody1.Volume - s.Melody1.Volume) * p))
+                            / 100.0
+                        )
+                    );
+                    var m1PanUi = (s.Melody1.Pan + (mixB.Melody1.Pan - s.Melody1.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Melody1",
+                        (float)Math.Clamp((m1PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    _soundFlowAudioManager.SetTrackVolume(
+                        "Melody2",
+                        (float)(
+                            ((s.Melody2.Volume + (mixB.Melody2.Volume - s.Melody2.Volume) * p))
+                            / 100.0
+                        )
+                    );
+                    var m2PanUi = (s.Melody2.Pan + (mixB.Melody2.Pan - s.Melody2.Pan) * p);
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Melody2",
+                        (float)Math.Clamp((m2PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
+
+                    await Task.Delay(16);
+                }
+
+                _soundFlowAudioManager.SetTrackMuted("Drums1", mixB.Drums1.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Drums2", mixB.Drums2.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Bass1", mixB.Bass1.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Bass2", mixB.Bass2.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Chords1", mixB.Chords1.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Chords2", mixB.Chords2.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Melody1", mixB.Melody1.Muted);
+                _soundFlowAudioManager.SetTrackMuted("Melody2", mixB.Melody2.Muted);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"AnimateVisualAndMixToB failed: {ex.Message}"
+                );
+            }
+        }
+
+        private void ApplyShaderParameters(ShaderParameters p)
+        {
+            if (_ownerControl == null)
+                return;
+            var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu == null)
+                return;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                mainMenu.ApplyShaderTime(p.TimeSpeed);
+                mainMenu.ApplyShaderSpinTime(p.SpinTimeSpeed);
+                mainMenu.ApplyShaderContrast(p.Contrast);
+                mainMenu.ApplyShaderSpinAmount(p.SpinAmount);
+                mainMenu.ApplyShaderParallaxX(p.ParallaxX);
+                mainMenu.ApplyShaderParallaxY(p.ParallaxY);
+                mainMenu.ApplyShaderZoomPunch(p.ZoomScale);
+                mainMenu.ApplyShaderMelodySaturation(p.SaturationAmount);
+                mainMenu.ApplyShaderPixelSize(p.PixelSize);
+                mainMenu.ApplyShaderSpinEase(p.SpinEase);
+                mainMenu.ApplyShaderLoopCount(p.LoopCount);
+            });
+        }
 
         #region Test Effect Properties and Commands
 
@@ -341,7 +559,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var appDir = AppContext.BaseDirectory;
                 var audioTriggersDir = Path.Combine(appDir, "visualizer", "audio_triggers");
 
                 if (!Directory.Exists(audioTriggersDir))
@@ -408,7 +626,7 @@ namespace BalatroSeedOracle.ViewModels
         #region Shader Parameters - Time
 
         [ObservableProperty]
-        private double _timeValue = 0;
+        private double _timeValue = 1;
 
         [ObservableProperty]
         private double _timeMin = 0;
@@ -418,6 +636,8 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnTimeValueChanged(double value)
         {
+            if (_syncingFromShader)
+                return;
             ApplyShaderParameter(menu => menu.ApplyShaderTime((float)value));
         }
 
@@ -426,7 +646,7 @@ namespace BalatroSeedOracle.ViewModels
         #region Shader Parameters - SpinTime
 
         [ObservableProperty]
-        private double _spinTimeValue = 0;
+        private double _spinTimeValue = 1;
 
         [ObservableProperty]
         private double _spinTimeMin = 0;
@@ -436,6 +656,8 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSpinTimeValueChanged(double value)
         {
+            if (_syncingFromShader)
+                return;
             ApplyShaderParameter(menu => menu.ApplyShaderSpinTime((float)value));
         }
 
@@ -591,10 +813,10 @@ namespace BalatroSeedOracle.ViewModels
         private double _loopCountValue = 5; // Default 5 (original hardcoded value)
 
         [ObservableProperty]
-        private double _loopCountMin = 1;
+        private double _loopCountMin = 0;
 
         [ObservableProperty]
-        private double _loopCountMax = 10;
+        private double _loopCountMax = 100;
 
         partial void OnLoopCountValueChanged(double value)
         {
@@ -603,16 +825,71 @@ namespace BalatroSeedOracle.ViewModels
 
         #endregion
 
+        #region Shader Parameters - Psychedelic Blend
+
+        [ObservableProperty]
+        private double _psychedelicBlendValue = 0.0;
+
+        partial void OnPsychedelicBlendValueChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicBlend((float)value));
+        }
+
+        [ObservableProperty]
+        private double _psychedelicSpeed = 1.0;
+
+        partial void OnPsychedelicSpeedChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicSpeed((float)value));
+        }
+
+        [ObservableProperty]
+        private double _psychedelicComplexity = 1.0;
+
+        partial void OnPsychedelicComplexityChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicComplexity((float)value));
+        }
+
+        [ObservableProperty]
+        private double _psychedelicColorCycle = 1.0;
+
+        partial void OnPsychedelicColorCycleChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicColorCycle((float)value));
+        }
+
+        [ObservableProperty]
+        private double _psychedelicKaleidoscope = 0.0;
+
+        partial void OnPsychedelicKaleidoscopeChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicKaleidoscope((float)value));
+        }
+
+        [ObservableProperty]
+        private double _psychedelicFluidFlow = 0.0;
+
+        partial void OnPsychedelicFluidFlowChanged(double value)
+        {
+            ApplyShaderParameter(menu => menu.ApplyPsychedelicFluidFlow((float)value));
+        }
+
+        #endregion
+
         #region Delegate Properties to Underlying ViewModel (Theme, Audio, etc.)
 
         // Theme
+        private int ClampThemeIndex(int value) => value < 0 ? 0 : (value > 1 ? 1 : value);
+
         public int ThemeIndex
         {
-            get => _settingsViewModel.ThemeIndex;
+            get => ClampThemeIndex(_settingsViewModel.ThemeIndex);
             set
             {
-                _settingsViewModel.ThemeIndex = value;
-                ApplyShaderParameter(menu => menu.ApplyVisualizerTheme(value));
+                var v = ClampThemeIndex(value);
+                _settingsViewModel.ThemeIndex = v;
+                // ApplyVisualizerTheme was empty stub - removed
             }
         }
 
@@ -644,6 +921,90 @@ namespace BalatroSeedOracle.ViewModels
                     ApplyShaderParameter(menu => menu.ApplyAccentColor(value));
                 }
             }
+        }
+
+        [ObservableProperty]
+        private int _mainColorR = 255;
+
+        partial void OnMainColorRChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
+            );
+        }
+
+        [ObservableProperty]
+        private int _mainColorG = 76;
+
+        partial void OnMainColorGChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
+            );
+        }
+
+        [ObservableProperty]
+        private int _mainColorB = 64;
+
+        partial void OnMainColorBChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
+            );
+        }
+
+        [ObservableProperty]
+        private int _accentColorR = 0;
+
+        partial void OnAccentColorRChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyAccentColor(
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
+                )
+            );
+        }
+
+        [ObservableProperty]
+        private int _accentColorG = 147;
+
+        partial void OnAccentColorGChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyAccentColor(
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
+                )
+            );
+        }
+
+        [ObservableProperty]
+        private int _accentColorB = 255;
+
+        partial void OnAccentColorBChanged(int value)
+        {
+            ApplyShaderParameter(menu =>
+                menu.ApplyAccentColor(
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
+                )
+            );
         }
 
         // Audio Event Triggers
@@ -692,7 +1053,7 @@ namespace BalatroSeedOracle.ViewModels
             set
             {
                 _settingsViewModel.BeatPulseSource = value;
-                ApplyShaderParameter(menu => menu.ApplyBeatPulseSource(value));
+                // ApplyBeatPulseSource was empty stub - removed
             }
         }
 
@@ -789,13 +1150,9 @@ namespace BalatroSeedOracle.ViewModels
             _ownerControl = null;
         }
 
-        /// <summary>
-        /// Initialize shader parameters to default values
-        /// </summary>
         private void InitializeShaderParameters()
         {
             // Default values are already set in the field initializers
-            // This method is here for future customization if needed
         }
 
         /// <summary>
@@ -840,7 +1197,7 @@ namespace BalatroSeedOracle.ViewModels
             mainMenu.ApplyShaderLoopCount((float)LoopCountValue);
 
             // Apply theme settings
-            mainMenu.ApplyVisualizerTheme(ThemeIndex);
+            // ApplyVisualizerTheme was empty stub - removed
             if (IsCustomTheme)
             {
                 mainMenu.ApplyMainColor(MainColor);
@@ -850,7 +1207,7 @@ namespace BalatroSeedOracle.ViewModels
             // Apply effect sources
             mainMenu.ApplyShadowFlickerSource(ShadowFlickerSource);
             mainMenu.ApplySpinSource(SpinSource);
-            mainMenu.ApplyBeatPulseSource(BeatPulseSource);
+            // ApplyBeatPulseSource was empty stub - removed
         }
 
         #endregion
@@ -874,7 +1231,10 @@ namespace BalatroSeedOracle.ViewModels
         /// List of available preset names for dropdown selection
         /// </summary>
         public ObservableCollection<string> AvailablePresetNames { get; } =
-            new ObservableCollection<string> { "Default Dark", "Default Normal" };
+            new ObservableCollection<string> { "Default Balatro" };
+
+        public ObservableCollection<string> AvailableShaderPresetNames { get; } =
+            new ObservableCollection<string> { "Default" };
 
         /// <summary>
         /// Selected start preset name for search transitions
@@ -908,6 +1268,10 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnManualTransitionProgressChanged(double value)
         {
+            // Prevent recursive calls during transition
+            if (_isApplyingManualTransition)
+                return;
+
             // Apply manual transition when slider moves
             ApplyManualTransition(value / 100.0); // Convert 0-100 to 0-1
         }
@@ -981,11 +1345,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 AvailablePresetNames.Clear();
 
-                // Add default presets
-                AvailablePresetNames.Add("Default Dark");
-                AvailablePresetNames.Add("Default Normal");
+                // Keep only default Balatro
+                AvailablePresetNames.Add("Default Balatro");
 
-                // Load all saved presets
+                // Load user-created presets from disk
                 var presets = Helpers.PresetHelper.LoadAllPresets();
                 foreach (var preset in presets)
                 {
@@ -1010,14 +1373,35 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void RefreshShaderPresetList()
+        {
+            try
+            {
+                AvailableShaderPresetNames.Clear();
+                AvailableShaderPresetNames.Add("Default");
+                var names = ShaderPresetHelper.ListNames();
+                foreach (var n in names)
+                    AvailableShaderPresetNames.Add(n);
+            }
+            catch (Exception ex)
+            {
+                // Log the failure - user needs to know if preset list doesn't refresh
+                Helpers.DebugLogger.LogError(
+                    "AudioVisualizerSettings",
+                    $"❌ Failed to refresh shader preset list: {ex.Message}"
+                );
+            }
+        }
+
+        [RelayCommand]
         private async Task LoadPreset()
         {
-            // Open file dialog
+            // Open file dialog in the correct VisualizerPresets folder
             var window = GetMainWindow();
             if (window == null)
                 return;
 
-            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+            var presetsPath = AppPaths.VisualizerPresetsDir;
             var dialog = new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
                 Title = "Load Visualizer Preset",
@@ -1045,35 +1429,42 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private async Task SavePreset()
         {
-            // Open save dialog
+            // Show simple name input dialog instead of full file picker
             var window = GetMainWindow();
             if (window == null)
                 return;
 
-            var presetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
-            var dialog = new Avalonia.Platform.Storage.FilePickerSaveOptions
-            {
-                Title = "Save Visualizer Preset",
-                SuggestedFileName = "MyPreset.json",
-                DefaultExtension = "json",
-                FileTypeChoices = new[]
-                {
-                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files")
-                    {
-                        Patterns = new[] { "*.json" },
-                    },
-                },
-                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
-                    new Uri(presetsPath)
-                ),
-            };
+            // Prompt for preset name
+            var presetName = await ModalHelper.ShowTextInputDialogAsync(
+                window,
+                "Save Preset",
+                "Enter preset name:",
+                CurrentPresetName ?? "MyPreset"
+            );
 
-            var result = await window.StorageProvider.SaveFilePickerAsync(dialog);
-            if (result != null)
-            {
-                var filePath = result.Path.LocalPath;
-                await SavePresetToFile(filePath);
-            }
+            if (string.IsNullOrWhiteSpace(presetName))
+                return;
+
+            // Sanitize the name for a safe filename
+            var safeName = SanitizeFileName(presetName);
+            var filePath = Path.Combine(AppPaths.VisualizerPresetsDir, $"{safeName}.json");
+
+            await SavePresetToFile(filePath);
+
+            // Refresh the preset list so it shows up in dropdowns
+            RefreshShaderPresetList();
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            // Remove invalid filename characters
+            var invalidChars = Path.GetInvalidFileNameChars();
+            var sanitized = new string(name.Where(c => !invalidChars.Contains(c)).ToArray());
+            // Trim and replace spaces with underscores for safety
+            sanitized = sanitized.Trim();
+            if (string.IsNullOrEmpty(sanitized))
+                sanitized = "Preset";
+            return sanitized;
         }
 
         private async Task LoadPresetFromFile(string filePath)
@@ -1088,7 +1479,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (preset != null)
                 {
                     // Apply all settings from preset
-                    ThemeIndex = preset.ThemeIndex;
+                    ThemeIndex = ClampThemeIndex(preset.ThemeIndex);
                     if (preset.MainColor.HasValue)
                         MainColor = preset.MainColor.Value;
                     if (preset.AccentColor.HasValue)
@@ -1164,7 +1555,7 @@ namespace BalatroSeedOracle.ViewModels
                 var preset = new Models.VisualizerPreset
                 {
                     Name = Path.GetFileNameWithoutExtension(filePath),
-                    ThemeIndex = ThemeIndex,
+                    ThemeIndex = ClampThemeIndex(ThemeIndex),
                     MainColor = MainColor,
                     AccentColor = AccentColor,
                     SeedFoundTrigger = SeedFoundTrigger,
@@ -1225,7 +1616,416 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ExportToJson()
         {
-            System.Diagnostics.Debug.WriteLine("Export to JSON - Not yet implemented");
+            // Feature coming in future update - settings export to JSON
+            DebugLogger.Log("AudioVisualizerSettingsWidget", "Export to JSON requested");
+        }
+
+        [RelayCommand]
+        private async Task SaveTransition()
+        {
+            try
+            {
+                var name = await ShowNameDialogAsync(
+                    "Save Transition",
+                    "Enter a name:",
+                    "MyTransition"
+                );
+                if (string.IsNullOrWhiteSpace(name))
+                    return;
+
+                var mixNames = MixerHelper.LoadAllMixerNames();
+                var mixA =
+                    await ShowSelectionDialogAsync(
+                        "Select Mix (A)",
+                        "Choose a saved mix for Point A:",
+                        mixNames
+                    ) ?? string.Empty;
+                var mixB =
+                    await ShowSelectionDialogAsync(
+                        "Select Mix (B)",
+                        "Choose a saved mix for Point B:",
+                        mixNames
+                    ) ?? string.Empty;
+
+                var visualNames = new System.Collections.Generic.List<string> { "Default Balatro" };
+                foreach (var p in PresetHelper.LoadAllPresets())
+                    if (!string.IsNullOrWhiteSpace(p.Name))
+                        visualNames.Add(p.Name);
+                var visA =
+                    await ShowSelectionDialogAsync(
+                        "Select Visual (A)",
+                        "Choose a visual preset for Point A:",
+                        visualNames
+                    ) ?? "Default Balatro";
+                var visB =
+                    await ShowSelectionDialogAsync(
+                        "Select Visual (B)",
+                        "Choose a visual preset for Point B:",
+                        visualNames
+                    ) ?? "Default Balatro";
+
+                var tp = new TransitionPreset
+                {
+                    Name = name,
+                    VisualPresetAName = visA,
+                    VisualPresetBName = visB,
+                    MixAName = mixA,
+                    MixBName = mixB,
+                };
+                if (TransitionPresetHelper.Save(tp))
+                {
+                    DebugLogger.Log(
+                        "AudioVisualizerWidget",
+                        $"Saved transition '{name}' → VisualA='{visA}', VisualB='{visB}', MixA='{mixA}', MixB='{mixB}'"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"SaveTransition failed: {ex.Message}"
+                );
+            }
+        }
+
+        [RelayCommand]
+        private async Task LoadTransition()
+        {
+            try
+            {
+                var names = TransitionPresetHelper.ListNames();
+                if (names.Count == 0)
+                    return;
+                var selected = await ShowSelectionDialogAsync(
+                    "Load Transition",
+                    "Choose a transition:",
+                    names
+                );
+                if (string.IsNullOrWhiteSpace(selected))
+                    return;
+
+                var tp = TransitionPresetHelper.Load(selected);
+                if (tp == null)
+                    return;
+
+                ManualTransitionPresetA = tp.VisualPresetAName;
+                ManualTransitionPresetB = tp.VisualPresetBName;
+                ManualTransitionMixAName = tp.MixAName;
+                ManualTransitionMixBName = tp.MixBName;
+                CurrentPresetName = tp.VisualPresetAName;
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Loaded transition visuals A='{tp.VisualPresetAName}' B='{tp.VisualPresetBName}'"
+                );
+
+                var mixA = MixerHelper.LoadMixer(tp.MixAName);
+                if (mixA != null)
+                {
+                    ApplyMixerToEngine(mixA);
+                    DebugLogger.Log(
+                        "AudioVisualizerWidget",
+                        $"Applied mix A '{tp.MixAName}' to audio engine"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"LoadTransition failed: {ex.Message}"
+                );
+            }
+        }
+
+        [ObservableProperty]
+        private string? _startupIntroPresetName = "Default";
+
+        [ObservableProperty]
+        private string? _startupEndPresetName = "Default";
+
+        partial void OnStartupIntroPresetNameChanged(string? value)
+        {
+            try
+            {
+                ShaderPresetHelper.Activate("intro", value ?? "Default");
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "AudioVisualizerSettings",
+                    $"❌ Failed to activate intro preset '{value}': {ex.Message}"
+                );
+            }
+        }
+
+        partial void OnStartupEndPresetNameChanged(string? value)
+        {
+            try
+            {
+                ShaderPresetHelper.Activate("normal", value ?? "Default");
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError(
+                    "AudioVisualizerSettings",
+                    $"❌ Failed to activate normal preset '{value}': {ex.Message}"
+                );
+            }
+        }
+
+        private void ApplyMixerToEngine(MixerSettings settings)
+        {
+            if (_soundFlowAudioManager == null)
+                return;
+            _soundFlowAudioManager.SetTrackVolume(
+                "Drums1",
+                (float)(settings.Drums1.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Drums1",
+                (float)Math.Clamp((settings.Drums1.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Drums1", settings.Drums1.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume(
+                "Drums2",
+                (float)(settings.Drums2.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Drums2",
+                (float)Math.Clamp((settings.Drums2.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Drums2", settings.Drums2.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume("Bass1", (float)(settings.Bass1.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackPan(
+                "Bass1",
+                (float)Math.Clamp((settings.Bass1.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Bass1", settings.Bass1.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume("Bass2", (float)(settings.Bass2.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackPan(
+                "Bass2",
+                (float)Math.Clamp((settings.Bass2.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Bass2", settings.Bass2.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume(
+                "Chords1",
+                (float)(settings.Chords1.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Chords1",
+                (float)Math.Clamp((settings.Chords1.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Chords1", settings.Chords1.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume(
+                "Chords2",
+                (float)(settings.Chords2.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Chords2",
+                (float)Math.Clamp((settings.Chords2.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Chords2", settings.Chords2.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume(
+                "Melody1",
+                (float)(settings.Melody1.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Melody1",
+                (float)Math.Clamp((settings.Melody1.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Melody1", settings.Melody1.Muted);
+
+            _soundFlowAudioManager.SetTrackVolume(
+                "Melody2",
+                (float)(settings.Melody2.Volume / 100.0)
+            );
+            _soundFlowAudioManager.SetTrackPan(
+                "Melody2",
+                (float)Math.Clamp((settings.Melody2.Pan + 100.0) / 200.0, 0.0, 1.0)
+            );
+            _soundFlowAudioManager.SetTrackMuted("Melody2", settings.Melody2.Muted);
+        }
+
+        private async Task<string?> ShowNameDialogAsync(
+            string title,
+            string labelText,
+            string watermark
+        )
+        {
+            try
+            {
+                var dialog = new Window
+                {
+                    Title = title,
+                    Width = 480,
+                    Height = 220,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false,
+                    Background = new SolidColorBrush(Color.Parse("#0D0D0D")),
+                };
+                var panel = new StackPanel { Margin = new Avalonia.Thickness(16), Spacing = 12 };
+                var label = new TextBlock
+                {
+                    Text = labelText,
+                    Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
+                    FontSize = 14,
+                };
+                var textBox = new TextBox
+                {
+                    Watermark = watermark,
+                    FontSize = 14,
+                    Padding = new Avalonia.Thickness(10),
+                };
+                var buttons = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Spacing = 10,
+                };
+                var cancelBtn = new Button
+                {
+                    Content = "Cancel",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                };
+                var saveBtn = new Button
+                {
+                    Content = "Save",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                    Background = new SolidColorBrush(Color.Parse("#FFD700")),
+                    Foreground = new SolidColorBrush(Color.Parse("#0D0D0D")),
+                };
+                string? result = null;
+                cancelBtn.Click += (s, e) => dialog.Close();
+                saveBtn.Click += (s, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(textBox.Text))
+                    {
+                        result = textBox.Text;
+                        dialog.Close();
+                    }
+                };
+                textBox.KeyDown += (s, e) =>
+                {
+                    if (
+                        e.Key == Avalonia.Input.Key.Enter
+                        && !string.IsNullOrWhiteSpace(textBox.Text)
+                    )
+                    {
+                        result = textBox.Text;
+                        dialog.Close();
+                    }
+                    else if (e.Key == Avalonia.Input.Key.Escape)
+                    {
+                        dialog.Close();
+                    }
+                };
+                buttons.Children.Add(cancelBtn);
+                buttons.Children.Add(saveBtn);
+                panel.Children.Add(label);
+                panel.Children.Add(textBox);
+                panel.Children.Add(buttons);
+                dialog.Content = panel;
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task<string?> ShowSelectionDialogAsync(
+            string title,
+            string labelText,
+            System.Collections.Generic.List<string> options
+        )
+        {
+            try
+            {
+                var dialog = new Window
+                {
+                    Title = title,
+                    Width = 520,
+                    Height = 260,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false,
+                    Background = new SolidColorBrush(Color.Parse("#0D0D0D")),
+                };
+                var panel = new StackPanel { Margin = new Avalonia.Thickness(16), Spacing = 12 };
+                var label = new TextBlock
+                {
+                    Text = labelText,
+                    Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
+                    FontSize = 14,
+                };
+                var combo = new ComboBox
+                {
+                    ItemsSource = options,
+                    SelectedIndex = options.Count > 0 ? 0 : -1,
+                };
+                var buttons = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Spacing = 10,
+                };
+                var cancelBtn = new Button
+                {
+                    Content = "Cancel",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                };
+                var loadBtn = new Button
+                {
+                    Content = "OK",
+                    Width = 90,
+                    Padding = new Avalonia.Thickness(10, 5),
+                    Background = new SolidColorBrush(Color.Parse("#FFD700")),
+                    Foreground = new SolidColorBrush(Color.Parse("#0D0D0D")),
+                };
+                string? result = null;
+                cancelBtn.Click += (s, e) => dialog.Close();
+                loadBtn.Click += (s, e) =>
+                {
+                    result = combo.SelectedItem as string;
+                    dialog.Close();
+                };
+                buttons.Children.Add(cancelBtn);
+                buttons.Children.Add(loadBtn);
+                panel.Children.Add(label);
+                panel.Children.Add(combo);
+                panel.Children.Add(buttons);
+                dialog.Content = panel;
+                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+                if (owner != null)
+                {
+                    await dialog.ShowDialog(owner);
+                }
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -1238,17 +2038,24 @@ namespace BalatroSeedOracle.ViewModels
         /// <param name="progress">0.0 = Preset A, 1.0 = Preset B</param>
         private async void ApplyManualTransition(double progress)
         {
+            // Prevent recursive calls
+            if (_isApplyingManualTransition)
+                return;
+
             // Skip if presets not selected
-            if (string.IsNullOrWhiteSpace(ManualTransitionPresetA) ||
-                string.IsNullOrWhiteSpace(ManualTransitionPresetB))
+            if (
+                string.IsNullOrWhiteSpace(ManualTransitionPresetA)
+                || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
+            )
             {
                 return;
             }
 
+            _isApplyingManualTransition = true;
             try
             {
                 // Build preset file paths
-                var presetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Presets");
+                var presetsDir = Path.Combine(AppContext.BaseDirectory, "Presets");
                 var presetAPath = Path.Combine(presetsDir, $"{ManualTransitionPresetA}.json");
                 var presetBPath = Path.Combine(presetsDir, $"{ManualTransitionPresetB}.json");
 
@@ -1264,11 +2071,15 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load preset A
                 var jsonA = await File.ReadAllTextAsync(presetAPath);
-                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonA);
+                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    jsonA
+                );
 
                 // Load preset B
                 var jsonB = await File.ReadAllTextAsync(presetBPath);
-                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonB);
+                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    jsonB
+                );
 
                 if (presetA != null && presetB != null)
                 {
@@ -1276,12 +2087,13 @@ namespace BalatroSeedOracle.ViewModels
                     // Full shader parameter interpolation would go here
 
                     // LERP theme index (rounded to nearest int)
-                    var lerpedThemeIndex = (int)Math.Round(
-                        presetA.ThemeIndex * (1 - progress) + presetB.ThemeIndex * progress
-                    );
+                    var lerpedThemeIndex = (int)
+                        Math.Round(
+                            presetA.ThemeIndex * (1 - progress) + presetB.ThemeIndex * progress
+                        );
 
                     // Apply the interpolated theme
-                    ThemeIndex = lerpedThemeIndex;
+                    ThemeIndex = ClampThemeIndex(lerpedThemeIndex);
 
                     DebugLogger.Log(
                         "AudioVisualizerWidget",
@@ -1296,6 +2108,10 @@ namespace BalatroSeedOracle.ViewModels
                     $"Failed to apply manual transition: {ex.Message}"
                 );
             }
+            finally
+            {
+                _isApplyingManualTransition = false;
+            }
         }
 
         /// <summary>
@@ -1304,6 +2120,17 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private async Task PlayManualTransition()
         {
+            if (
+                string.IsNullOrWhiteSpace(ManualTransitionPresetA)
+                || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
+            )
+            {
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    "Manual transition skipped: select Preset A and Preset B first"
+                );
+                return;
+            }
             // Reset to 0% first
             ManualTransitionProgress = 0;
 
@@ -1313,18 +2140,22 @@ namespace BalatroSeedOracle.ViewModels
             // Set to 100% - the DoubleTransition in XAML will smoothly animate from 0 to 100
             ManualTransitionProgress = 100;
 
-            DebugLogger.Log("AudioVisualizerWidget", "Manual transition animation started (Avalonia Transitions)");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                "Manual transition animation started (Avalonia Transitions)"
+            );
         }
 
         #endregion
 
         #region Base Widget Overrides
 
+        private bool _syncingFromShader;
+
         protected override void OnExpanded()
         {
             base.OnExpanded();
-            // Refresh shader parameters when expanded
-            ApplyAllShaderParameters();
+            SyncFromShader();
         }
 
         protected override void OnMinimized()
@@ -1334,5 +2165,17 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         #endregion
+        private void SyncFromShader()
+        {
+            if (_ownerControl == null)
+                return;
+            var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu == null)
+                return;
+            _syncingFromShader = true;
+            TimeValue = mainMenu.GetTimeSpeed();
+            SpinTimeValue = mainMenu.GetSpinTimeSpeed();
+            _syncingFromShader = false;
+        }
     }
 }

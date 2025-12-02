@@ -91,7 +91,6 @@ namespace BalatroSeedOracle.Services
 
     public class FilterCacheService : IFilterCacheService
     {
-        private readonly IConfigurationService _configurationService;
         private readonly ConcurrentDictionary<string, CachedFilter> _cache;
         private readonly ReaderWriterLockSlim _cacheLock;
         private bool _isInitialized;
@@ -99,9 +98,8 @@ namespace BalatroSeedOracle.Services
 
         public int Count => _cache.Count;
 
-        public FilterCacheService(IConfigurationService configurationService)
+        public FilterCacheService()
         {
-            _configurationService = configurationService;
             _cache = new ConcurrentDictionary<string, CachedFilter>(
                 StringComparer.OrdinalIgnoreCase
             );
@@ -123,7 +121,7 @@ namespace BalatroSeedOracle.Services
                 var startTime = DateTime.UtcNow;
                 DebugLogger.Log("FilterCacheService", "Initializing filter cache...");
 
-                var filtersDir = _configurationService.GetFiltersDirectory();
+                var filtersDir = Helpers.AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
                     DebugLogger.Log(
@@ -242,7 +240,7 @@ namespace BalatroSeedOracle.Services
             _cacheLock.EnterWriteLock();
             try
             {
-                var filtersDir = _configurationService.GetFiltersDirectory();
+                var filtersDir = Helpers.AppPaths.FiltersDir;
                 var filePath = Path.Combine(filtersDir, $"{filterId}.json");
 
                 if (!File.Exists(filePath))

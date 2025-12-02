@@ -18,6 +18,18 @@ namespace BalatroSeedOracle.Services
 
     public class ConfigurationService : IConfigurationService
     {
+        private readonly UserProfileService? _userProfileService;
+        private readonly IFilterCacheService? _filterCacheService;
+
+        public ConfigurationService(
+            UserProfileService? userProfileService = null,
+            IFilterCacheService? filterCacheService = null
+        )
+        {
+            _userProfileService = userProfileService;
+            _filterCacheService = filterCacheService;
+        }
+
         public async Task<bool> SaveFilterAsync(string filePath, object config)
         {
             try
@@ -28,16 +40,14 @@ namespace BalatroSeedOracle.Services
                 {
                     // Use FilterSerializationService for consistent, clean JSON output
                     // This omits null properties, empty arrays, and empty strings
-                    var userProfileService = Helpers.ServiceHelper.GetService<UserProfileService>();
-                    var serializationService = new FilterSerializationService(userProfileService!);
+                    var serializationService = new FilterSerializationService(_userProfileService!);
                     var json = serializationService.SerializeConfig(motelyConfig);
 
                     await File.WriteAllTextAsync(filePath, json);
 
-                    // Invalidate cache for this filter (use ServiceHelper to avoid circular dependency)
+                    // Invalidate cache for this filter
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
-                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
-                    filterCache?.InvalidateFilter(filterId);
+                    _filterCacheService?.InvalidateFilter(filterId);
 
                     return true;
                 }
@@ -62,10 +72,9 @@ namespace BalatroSeedOracle.Services
                 // For MotelyJsonConfig, try cache first for better performance
                 if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                 {
-                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
-                    if (filterCache != null)
+                    if (_filterCacheService != null)
                     {
-                        var cached = filterCache.GetFilterByPath(filePath);
+                        var cached = _filterCacheService.GetFilterByPath(filePath);
                         if (cached != null)
                         {
                             return cached as T;
@@ -100,18 +109,15 @@ namespace BalatroSeedOracle.Services
 
         public string GetTempFilterPath()
         {
-            // Use current working directory so filters are loaded from project root when running with `dotnet run`
-            var baseDir = Environment.CurrentDirectory;
-            var filtersDir = Path.Combine(baseDir, "JsonItemFilters");
-            EnsureDirectoryExists(filtersDir);
+            // Use AppPaths which handles both dev and installed scenarios correctly
+            var filtersDir = Helpers.AppPaths.FiltersDir;
             return Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
         }
 
         public string GetFiltersDirectory()
         {
-            // Use current working directory so filters are loaded from project root when running with `dotnet run`
-            var baseDir = Environment.CurrentDirectory;
-            return Path.Combine(baseDir, "JsonItemFilters");
+            // Use AppPaths which handles both dev and installed scenarios correctly
+            return Helpers.AppPaths.FiltersDir;
         }
 
         public bool FileExists(string filePath)

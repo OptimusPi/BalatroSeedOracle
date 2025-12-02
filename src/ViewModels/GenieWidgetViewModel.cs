@@ -12,12 +12,15 @@ namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
     /// ViewModel for GenieWidget - AI-powered filter generation
-    /// Uses Cloudflare Workers AI (FREE!) to convert natural language to Motely JSON
+    /// Uses local Host API (/genie endpoint) for keyword-based JAML generation
+    /// Falls back to Cloudflare Workers AI if configured
     /// </summary>
     public partial class GenieWidgetViewModel : BaseWidgetViewModel
     {
         private static readonly HttpClient _httpClient = new();
-        private const string GENIE_API = "https://balatrogenie.app/generate";
+        private const string LOCAL_GENIE_API = "http://localhost:3141/genie";
+        private const string CLOUD_GENIE_API = "https://balatrogenie.app/generate";
+        private readonly SearchManager _searchManager;
 
         [ObservableProperty]
         private string _userPrompt = string.Empty;
@@ -55,8 +58,13 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string ButtonContent => GenerateButtonText + " " + GeneratingSpinner;
 
-        public GenieWidgetViewModel()
+        public GenieWidgetViewModel(
+            SearchManager searchManager,
+            WidgetPositionService? widgetPositionService = null
+        )
+            : base(widgetPositionService)
         {
+            _searchManager = searchManager;
             WidgetTitle = "Filter Genie";
             WidgetIcon = "🧞";
             IsMinimized = true;
@@ -80,55 +88,99 @@ namespace BalatroSeedOracle.ViewModels
 
             IsGenerating = true;
             HasGeneratedConfig = false;
-            SetStatus("🧞 Asking the genie...", "#6B46C1");
+            SetStatus("Asking the genie...", "#6B46C1");
 
             try
             {
-                // Call Cloudflare Workers AI via your existing balatrogenie.app
                 var requestBody = new { prompt = UserPrompt };
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(GENIE_API, content);
-                var responseText = await response.Content.ReadAsStringAsync();
+                string? jamlResult = null;
 
-                if (response.IsSuccessStatusCode)
+                // Try Cloudflare Workers AI first
+                try
                 {
-                    var result = JsonSerializer.Deserialize<GenieResponse>(responseText);
+                    _httpClient.Timeout = TimeSpan.FromSeconds(30);
+                    SetStatus("Consulting cloud AI...", "#6B46C1");
+                    var cloudResponse = await _httpClient.PostAsync(CLOUD_GENIE_API, content);
 
-                    if (result?.success == true && result.config != null)
+                    if (cloudResponse.IsSuccessStatusCode)
                     {
-                        // Extract filter info
-                        GeneratedFilterName = result.config.name ?? "Generated Filter";
-                        GeneratedJson = JsonSerializer.Serialize(
-                            result.config,
-                            new JsonSerializerOptions { WriteIndented = true }
+                        var cloudResponseText = await cloudResponse.Content.ReadAsStringAsync();
+                        var cloudResult = JsonSerializer.Deserialize<CloudGenieResponse>(
+                            cloudResponseText,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                         );
-
-                        // Create summary
-                        int mustCount = result.config.must?.Count ?? 0;
-                        int shouldCount = result.config.should?.Count ?? 0;
-                        int mustNotCount = result.config.mustNot?.Count ?? 0;
-
-                        GeneratedFilterSummary =
-                            $"Deck: {result.config.deck ?? "Any"} | Stake: {result.config.stake ?? "Any"}\n";
-                        GeneratedFilterSummary +=
-                            $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
-
-                        HasGeneratedConfig = true;
-                        SetStatus("✅ Filter generated!", "#22C55E");
+                        jamlResult = cloudResult?.Jaml ?? cloudResult?.Filter;
+                        if (!string.IsNullOrWhiteSpace(jamlResult))
+                        {
+                            SetStatus("Cloud AI responded!", "#6B46C1");
+                        }
                     }
-                    else
+                }
+                catch (Exception cloudEx)
+                {
+                    DebugLogger.Log("GenieWidget", $"Cloud API error: {cloudEx.Message}");
+                }
+
+                // Fall back to local Host API if cloud failed
+                if (string.IsNullOrWhiteSpace(jamlResult))
+                {
+                    try
                     {
-                        SetStatus(
-                            $"❌ Generation failed: {result?.error ?? "Unknown error"}",
-                            "#EF4444"
-                        );
+                        _httpClient.Timeout = TimeSpan.FromSeconds(5);
+                        SetStatus("Trying local genie...", "#6B46C1");
+                        var localResponse = await _httpClient.PostAsync(LOCAL_GENIE_API, content);
+
+                        if (localResponse.IsSuccessStatusCode)
+                        {
+                            var localResponseText = await localResponse.Content.ReadAsStringAsync();
+                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
+                            jamlResult = localResult?.jaml;
+                        }
                     }
+                    catch (Exception localEx)
+                    {
+                        DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(jamlResult))
+                {
+                    SetStatus("Both cloud and local APIs unavailable", "#EF4444");
+                    return;
+                }
+
+                // Parse the JAML to get a JSON config for display
+                if (Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError) && config != null)
+                {
+                    GeneratedFilterName = config.Name ?? "Generated Filter";
+                    GeneratedJson = JsonSerializer.Serialize(
+                        config,
+                        new JsonSerializerOptions { WriteIndented = true }
+                    );
+
+                    int mustCount = config.Must?.Count ?? 0;
+                    int shouldCount = config.Should?.Count ?? 0;
+                    int mustNotCount = config.MustNot?.Count ?? 0;
+
+                    GeneratedFilterSummary =
+                        $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
+                    GeneratedFilterSummary +=
+                        $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
+
+                    HasGeneratedConfig = true;
+                    SetStatus("✅ Filter generated!", "#22C55E");
                 }
                 else
                 {
-                    SetStatus($"❌ API error: {response.StatusCode}", "#EF4444");
+                    // JAML parsing failed - show the raw JAML anyway
+                    GeneratedFilterName = "Generated Filter";
+                    GeneratedJson = jamlResult;
+                    GeneratedFilterSummary = "Raw JAML (parsing issue)";
+                    HasGeneratedConfig = true;
+                    SetStatus($"⚠️ Generated but couldn't parse: {parseError}", "#F59E0B");
                 }
             }
             catch (Exception ex)
@@ -155,39 +207,29 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                // Save to filters directory
-                var filtersPath = System.IO.Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
-                    "filters"
-                );
-
-                if (!System.IO.Directory.Exists(filtersPath))
-                    System.IO.Directory.CreateDirectory(filtersPath);
-
-                // Sanitize filename
                 var fileName = GeneratedFilterName
                     .Replace(" ", "_")
-                    .Replace("/", "_")
-                    .Replace("\\", "_");
+                    .Replace("/", "-")
+                    .Replace("\\", "-")
+                    .Replace(":", "-");
 
-                var filePath = System.IO.Path.Combine(filtersPath, $"{fileName}.json");
+                var filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}.jaml");
 
-                // Check if file exists, add number if needed
                 int counter = 1;
                 while (System.IO.File.Exists(filePath))
                 {
-                    filePath = System.IO.Path.Combine(filtersPath, $"{fileName}_{counter}.json");
+                    filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}_{counter}.jaml");
                     counter++;
                 }
 
                 await System.IO.File.WriteAllTextAsync(filePath, GeneratedJson);
 
-                SetStatus($"💾 Saved to {System.IO.Path.GetFileName(filePath)}", "#22C55E");
+                SetStatus($"Saved to {System.IO.Path.GetFileName(filePath)}", "#22C55E");
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("GenieWidget", $"Save failed: {ex.Message}");
-                SetStatus($"❌ Save failed: {ex.Message}", "#EF4444");
+                SetStatus($"Save failed: {ex.Message}", "#EF4444");
             }
         }
 
@@ -214,9 +256,6 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Get the SearchManager service
-                var searchManager = ServiceHelper.GetRequiredService<Services.SearchManager>();
-
                 // Create search criteria with defaults
                 var criteria = new Models.SearchCriteria
                 {
@@ -227,12 +266,9 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Start the search
-                var searchInstance = await searchManager.StartSearchAsync(criteria, config);
+                var searchInstance = await _searchManager.StartSearchAsync(criteria, config);
 
                 SetStatus($"🔍 Search started: {GeneratedFilterName}", "#22C55E");
-
-                // Future enhancement: Add progress tracking UI
-                // Currently the search runs successfully in background
             }
             catch (Exception ex)
             {
@@ -259,24 +295,17 @@ namespace BalatroSeedOracle.ViewModels
             GenerateFilterCommand.NotifyCanExecuteChanged();
         }
 
-        // Response models
-        private class GenieResponse
+        private class LocalGenieResponse
         {
-            public bool success { get; set; }
+            public string? jaml { get; set; }
             public string? error { get; set; }
-            public FilterConfig? config { get; set; }
         }
 
-        private class FilterConfig
+        private class CloudGenieResponse
         {
-            public string? name { get; set; }
-            public string? description { get; set; }
-            public string? author { get; set; }
-            public string? deck { get; set; }
-            public string? stake { get; set; }
-            public System.Collections.Generic.List<object>? must { get; set; }
-            public System.Collections.Generic.List<object>? should { get; set; }
-            public System.Collections.Generic.List<object>? mustNot { get; set; }
+            public string? Jaml { get; set; }
+            public string? Filter { get; set; }
+            public string? Error { get; set; }
         }
     }
 }

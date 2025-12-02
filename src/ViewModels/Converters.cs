@@ -42,7 +42,7 @@ namespace BalatroSeedOracle.ViewModels
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -101,7 +101,7 @@ namespace BalatroSeedOracle.ViewModels
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 }

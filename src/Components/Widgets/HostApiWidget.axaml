@@ -1,0 +1,225 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             x:Class="BalatroSeedOracle.Components.HostApiWidget"
+             x:DataType="vm:HostApiWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Globe Icon with Badge -->
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <StackPanel Spacing="4">
+                <Grid>
+                    <!-- Icon with status indicator -->
+                    <Border Background="{StaticResource ModalGrey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Width="64" Height="64"
+                            Classes="widget-header"
+                            Cursor="Hand"
+                            PointerPressed="OnMinimizedIconPressed"
+                            PointerReleased="OnMinimizedIconReleased">
+                        <Grid>
+                            <TextBlock Text="🌐" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <!-- Status dot -->
+                            <Ellipse Width="12" Height="12"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Bottom"
+                                     Margin="0,0,4,4">
+                                <Ellipse.Fill>
+                                    <SolidColorBrush Color="{Binding ServerStatusColor}"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Grid>
+                    </Border>
+
+                    <!-- Notification badge for background searches -->
+                    <Border Background="{StaticResource Red}"
+                            BorderBrush="{StaticResource White}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            MinWidth="20" Height="20"
+                            Padding="4,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="{Binding ShowNotificationBadge}">
+                        <TextBlock Text="{Binding NotificationText}"
+                                   FontSize="10"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <TextBlock Text="Host API"
+                           FontSize="14"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Expanded State -->
+        <Border Name="ExpandedView"
+                Classes="widget-window"
+                Width="400"
+                IsVisible="{Binding !IsMinimized}">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <local:WidgetHeader Grid.Row="0" />
+
+                <!-- Content -->
+                <StackPanel Grid.Row="1" Spacing="12" Margin="15">
+
+                    <!-- Status Display -->
+                    <Border Background="{StaticResource DarkBackground}"
+                            CornerRadius="8"
+                            Padding="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="Server Status"
+                                           FontSize="12"
+                                           Foreground="{StaticResource LightGrey}"/>
+                                <TextBlock Text="{Binding ServerStatus}"
+                                           FontSize="24"
+                                           FontFamily="{StaticResource BalatroFont}">
+                                    <TextBlock.Foreground>
+                                        <SolidColorBrush Color="{Binding ServerStatusColor}"/>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                                <TextBlock Text="{Binding ServerUrl}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource LightGrey}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                                <Button Classes="btn-green"
+                                        Command="{Binding StartServerCommand}"
+                                        IsVisible="{Binding !IsServerRunning}"
+                                        Width="80">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <icons:PackIconMaterial Kind="Play" Width="12" Height="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Start" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="btn-red"
+                                        Command="{Binding StopServerCommand}"
+                                        IsVisible="{Binding IsServerRunning}"
+                                        Width="80">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <icons:PackIconMaterial Kind="Stop" Width="12" Height="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Server Settings -->
+                    <Border Background="{StaticResource DarkBackground}"
+                            CornerRadius="8"
+                            Padding="12"
+                            IsEnabled="{Binding !IsServerRunning}">
+                        <Grid ColumnDefinitions="*,80" RowDefinitions="Auto,Auto">
+                            <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,10,0">
+                                <TextBlock Text="Host" FontSize="11" Foreground="{StaticResource LightGrey}"/>
+                                <TextBox Text="{Binding Host}"
+                                         Background="{StaticResource ModalGrey}"
+                                         BorderThickness="1"
+                                         Padding="8,4"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4">
+                                <TextBlock Text="Port" FontSize="11" Foreground="{StaticResource LightGrey}"/>
+                                <TextBox Text="{Binding Port}"
+                                         Background="{StaticResource ModalGrey}"
+                                         BorderThickness="1"
+                                         Padding="8,4"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Spacing="4" Margin="0,8,0,0">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Threads" FontSize="11" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" 
+                                            Minimum="1" 
+                                            Maximum="{Binding MaxThreads}" 
+                                            Value="{Binding ThreadCount}"
+                                            Margin="10,0"/>
+                                    <TextBlock Grid.Column="2" 
+                                               Text="{Binding ThreadCount}" 
+                                               FontSize="11" 
+                                               Foreground="{StaticResource White}" 
+                                               VerticalAlignment="Center"
+                                               Width="20"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Open Web UI Button -->
+                    <Button Classes="btn-blue"
+                            Command="{Binding OpenWebUiCommand}"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding IsServerRunning}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <icons:PackIconMaterial Kind="OpenInNew" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Open Web UI" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Request Log -->
+                    <Border Background="{StaticResource DarkBackground}"
+                            CornerRadius="6"
+                            Padding="8"
+                            Height="150">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0"
+                                           Text="Request Log"
+                                           FontSize="11"
+                                           Foreground="{StaticResource White}"/>
+                                <Button Grid.Column="1"
+                                        Content="Clear"
+                                        FontSize="10"
+                                        Padding="6,2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Command="{Binding ClearLogCommand}"/>
+                            </Grid>
+                            <TextBox Grid.Row="1"
+                                     Text="{Binding LogText}"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     FontSize="10"
+                                     FontFamily="Consolas, monospace"
+                                     Foreground="{StaticResource White}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

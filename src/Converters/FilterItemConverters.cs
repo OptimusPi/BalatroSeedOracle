@@ -31,36 +31,48 @@ namespace BalatroSeedOracle.Converters
 
         private static string FormatItemConfig(ItemConfig config)
         {
-            var parts = new List<string>();
-
-            // Add Edition (Polychrome, Negative, Foil, Holographic)
-            if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+            // Check if this is a wildcard item (needs special formatting)
+            if (IsWildcardItem(config.ItemName))
             {
-                parts.Add(config.Edition);
+                // For wildcard items, use special formatting
+                var parts = new List<string>();
+
+                // Add stickers for wildcard jokers
+                if (config.Stickers != null && config.Stickers.Count > 0)
+                {
+                    parts.AddRange(config.Stickers);
+                }
+
+                // Add edition for wildcard jokers
+                if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                {
+                    parts.Add(config.Edition);
+                }
+
+                // Add the wildcard name
+                parts.Add(FormatItemNameWithWildcards(config.ItemName, config.IsSoulJoker));
+
+                return string.Join(" ", parts);
             }
 
-            // Add Seal (Red, Blue, Gold, Purple)
-            if (!string.IsNullOrEmpty(config.Seal) && config.Seal != "None")
-            {
-                parts.Add(config.Seal);
-            }
+            // For non-wildcard items, use the ItemConfig.ToString() method
+            return config.ToString();
+        }
 
-            // Add Enhancement (Bonus, Mult, Wild, Glass, Steel, Stone, Lucky)
-            if (!string.IsNullOrEmpty(config.Enhancement) && config.Enhancement != "None")
-            {
-                parts.Add(config.Enhancement);
-            }
+        private static bool IsWildcardItem(string? itemName)
+        {
+            if (string.IsNullOrWhiteSpace(itemName))
+                return true; // Empty names are wildcards ("Any")
 
-            // Add Stickers (Eternal, Perishable, Rental)
-            if (config.Stickers != null && config.Stickers.Count > 0)
-            {
-                parts.AddRange(config.Stickers);
-            }
-
-            // Add formatted item name with wildcard handling (check for Soul Joker)
-            parts.Add(FormatItemNameWithWildcards(config.ItemName, config.IsSoulJoker));
-
-            return string.Join(" ", parts);
+            var normalized = itemName.Trim();
+            return normalized.Equals("AnyJoker", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyCommon", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyUncommon", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyRare", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyLegendary", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyTarot", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("AnyPlanet", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("Any", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string FormatItemNameWithWildcards(
@@ -122,7 +134,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 
@@ -169,7 +181,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
 
         private static string FormatAntesWithRanges(List<int> sorted)
@@ -251,7 +263,7 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("One-way binding only");
         }
     }
 

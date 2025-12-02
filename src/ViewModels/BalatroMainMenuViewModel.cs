@@ -10,7 +10,6 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using AudioSource = BalatroSeedOracle.Controls.BalatroShaderBackground.AudioSource;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -22,6 +21,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly EventFXService? _eventFXService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -31,19 +31,13 @@ namespace BalatroSeedOracle.ViewModels
         private int _zoomThumpSource = 0;
         private int _colorSaturationSource = 0;
 
-        // Effect state for decay (reserved for future audio-reactive implementation)
-        // private float _zoomThumpDecay = 0f;
-        // private float _spinDecay = 0f;
-        // private float _twirlDecay = 0f;
-        // private float _shadowFlickerDecay = 0f;
-
         /// <summary>
         /// Expose audio manager for widgets to access frequency data
         /// </summary>
         public SoundFlowAudioManager? AudioManager => _soundFlowAudioManager;
 
         [ObservableProperty]
-        private string _mainTitle = "Welcome!";
+        private string _mainTitle = "";
 
         [ObservableProperty]
         private bool _isAnimating = true;
@@ -105,6 +99,21 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isVisualizerWidgetVisible = false;
 
         [ObservableProperty]
+        private bool _isTransitionDesignerWidgetVisible = false;
+
+        [ObservableProperty]
+        private bool _isMusicMixerWidgetVisible = false;
+
+        [ObservableProperty]
+        private bool _isFertilizerWidgetVisible = false;
+
+        [ObservableProperty]
+        private bool _isHostApiWidgetVisible = false;
+
+        [ObservableProperty]
+        private bool _isEventFXWidgetVisible = false;
+
+        [ObservableProperty]
         private bool _isVibeOutMode = false;
 
         // New: Hide/show all widgets
@@ -131,9 +140,12 @@ namespace BalatroSeedOracle.ViewModels
             if (_soundFlowAudioManager != null)
             {
                 Console.WriteLine(
-                    "[ViewModel] 🎵 Using SoundFlowAudioManager (8 independent tracks)"
+                    "[ViewModel] Using SoundFlowAudioManager (8 independent tracks)"
                 );
             }
+
+            // Get EventFX service for triggering configured animations
+            _eventFXService = ServiceHelper.GetService<EventFXService>();
 
             // Load settings
             LoadSettings();
@@ -211,6 +223,7 @@ namespace BalatroSeedOracle.ViewModels
         private void SeedSearch()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.SearchLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -235,6 +248,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Editor()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.DesignerLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -257,6 +271,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Analyze()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.AnalyzerLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -279,6 +294,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Tool()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.SettingsLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -309,6 +325,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             PlayButtonClickSound();
             IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
+        }
+
+        [RelayCommand]
+        private void ToggleTransitionDesignerWidget()
+        {
+            PlayButtonClickSound();
+            IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible;
         }
 
         [RelayCommand]
@@ -345,7 +368,14 @@ namespace BalatroSeedOracle.ViewModels
         private void ToggleVibeOutMode()
         {
             IsVibeOutMode = !IsVibeOutMode;
-            DebugLogger.Log("BalatroMainMenu", $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}");
+
+            // In vibe out mode: hide dock buttons and widgets, keep only modal visible
+            AreWidgetsHidden = IsVibeOutMode;
+
+            DebugLogger.Log(
+                "BalatroMainMenu",
+                $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}, Widgets hidden: {AreWidgetsHidden}"
+            );
 
             // Request window state change (true = fullscreen, false = normal)
             WindowStateChangeRequested?.Invoke(this, IsVibeOutMode);
@@ -355,6 +385,7 @@ namespace BalatroSeedOracle.ViewModels
         private void AuthorClick()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.AuthorLaunchEdit);
             AuthorEditMode = true;
             OnAuthorEditActivated?.Invoke(this, EventArgs.Empty);
         }
@@ -416,7 +447,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void HideModal()
         {
-            MainTitle = "Welcome!";
+            MainTitle = "";
             IsModalVisible = false;
             HideModalRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -463,9 +494,19 @@ namespace BalatroSeedOracle.ViewModels
                     Volume = 0;
                 }
 
+                // Load feature toggles for widget visibility
+                var toggles = profile.FeatureToggles;
+                IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
+                IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
+                IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
+                IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
+                IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
+                IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
+
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
-                    $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}"
+                    $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}, "
+                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
                 );
             }
             catch (Exception ex)
@@ -475,6 +516,25 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error loading settings: {ex.Message}"
                 );
             }
+        }
+
+        /// <summary>
+        /// Refreshes feature toggle visibility from profile. Call this when settings change.
+        /// </summary>
+        public void RefreshFeatureToggles()
+        {
+            var profile = _userProfileService.GetProfile();
+            var toggles = profile.FeatureToggles;
+            IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
+            IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
+            IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
+            IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
+            IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
+            IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
+            DebugLogger.Log(
+                "BalatroMainMenuViewModel",
+                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
+            );
         }
 
         private void SaveVolumeToProfile()
@@ -518,10 +578,7 @@ namespace BalatroSeedOracle.ViewModels
                     _userProfileService.SaveProfile(profile);
                 }
 
-                // Theme + color selections
-                var themeIndex = Math.Clamp(settings.ThemeIndex, 0, 8);
-                ApplyVisualizerTheme(shader, themeIndex);
-
+                // Color selections (themes removed - using direct color control)
                 var mainColorIndex = Math.Clamp(settings.MainColor, 0, 8);
                 ApplyMainColor(shader, mainColorIndex);
 
@@ -532,13 +589,7 @@ namespace BalatroSeedOracle.ViewModels
                 var timeSpeed = Math.Clamp(settings.TimeSpeed, 0f, 3f);
                 ApplyTimeSpeed(shader, timeSpeed);
 
-                var audioIntensity = Math.Clamp(settings.AudioIntensity, 0f, 2f);
-                ApplyAudioIntensity(shader, audioIntensity);
-
-                var parallaxStrength = Math.Clamp(settings.ParallaxStrength, 0f, 2f);
-                ApplyParallaxStrength(shader, parallaxStrength);
-
-                // Audio effect source mappings (effect binding stubs for future work)
+                // Audio source bindings for effects
                 ApplyShadowFlickerSource(shader, Math.Clamp(settings.ShadowFlickerSource, 0, 4));
                 ApplySpinSource(shader, Math.Clamp(settings.SpinSource, 0, 4));
                 ApplyTwirlSource(shader, Math.Clamp(settings.TwirlSource, 0, 4));
@@ -547,7 +598,6 @@ namespace BalatroSeedOracle.ViewModels
                     shader,
                     Math.Clamp(settings.ColorSaturationSource, 0, 4)
                 );
-                ApplyBeatPulseSource(shader, Math.Clamp(settings.BeatPulseSource, 0, 4));
 
                 // Per-track volume balancing for SoundFlow audio stems
                 if (_soundFlowAudioManager != null)
@@ -564,7 +614,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
-                    $"Visualizer settings applied (Theme={themeIndex}, MainColor={mainColorIndex}, AccentColor={accentColorIndex}, TimeSpeed={timeSpeed:F2}, AudioIntensity={audioIntensity:F2})"
+                    $"Visualizer settings applied (MainColor={mainColorIndex}, AccentColor={accentColorIndex}, TimeSpeed={timeSpeed:F2})"
                 );
             }
             catch (Exception ex)
@@ -635,7 +685,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // No click sounds with SoundFlow for now
+                SoundFlowAudioManager.Instance.PlaySfx("button", 1.0f);
             }
             catch (Exception ex)
             {
@@ -696,8 +746,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_soundFlowAudioManager != null)
                 {
-                    _audioAnalysisHandler = (bass, mid, treble, peak) =>
-                    {
+                    _audioAnalysisHandler = (bass, mid, treble, peak) => {
                         // Audio reactivity handled by effect binding system
                     };
 
@@ -721,19 +770,16 @@ namespace BalatroSeedOracle.ViewModels
         #region Shader Management
 
         /// <summary>
-        /// Apply visualizer theme change to shader
-        /// </summary>
-        public void ApplyVisualizerTheme(BalatroShaderBackground? shader, int themeIndex)
-        {
-            // Removed - themes replaced by direct color control
-        }
-
-        /// <summary>
         /// Apply main color to shader
         /// </summary>
         public void ApplyMainColor(BalatroShaderBackground? shader, int colorIndex)
         {
             var color = IndexToSKColor(colorIndex);
+            shader?.SetMainColor(color);
+        }
+
+        public void ApplyMainColor(BalatroShaderBackground? shader, SkiaSharp.SKColor color)
+        {
             shader?.SetMainColor(color);
         }
 
@@ -743,6 +789,11 @@ namespace BalatroSeedOracle.ViewModels
         public void ApplyAccentColor(BalatroShaderBackground? shader, int colorIndex)
         {
             var color = IndexToSKColor(colorIndex);
+            shader?.SetAccentColor(color);
+        }
+
+        public void ApplyAccentColor(BalatroShaderBackground? shader, SkiaSharp.SKColor color)
+        {
             shader?.SetAccentColor(color);
         }
 
@@ -764,22 +815,6 @@ namespace BalatroSeedOracle.ViewModels
                 8 => new SkiaSharp.SKColor(30, 43, 45), // None (Dark background)
                 _ => new SkiaSharp.SKColor(255, 76, 64), // Default to Red
             };
-        }
-
-        /// <summary>
-        /// Apply audio intensity to shader
-        /// </summary>
-        public void ApplyAudioIntensity(BalatroShaderBackground? shader, float intensity)
-        {
-            // Removed - will be handled by effect binding system
-        }
-
-        /// <summary>
-        /// Apply parallax strength to shader
-        /// </summary>
-        public void ApplyParallaxStrength(BalatroShaderBackground? shader, float strength)
-        {
-            // Removed - use SetParallax() directly for now
         }
 
         /// <summary>
@@ -876,14 +911,6 @@ namespace BalatroSeedOracle.ViewModels
         public void ApplyColorSaturationSource(BalatroShaderBackground? shader, int sourceIndex)
         {
             _colorSaturationSource = sourceIndex;
-        }
-
-        /// <summary>
-        /// Apply beat pulse source to shader
-        /// </summary>
-        public void ApplyBeatPulseSource(BalatroShaderBackground? shader, int sourceIndex)
-        {
-            // DELETED - not used
         }
 
         #endregion

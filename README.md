@@ -23,7 +23,7 @@ Built for the Balatro community to discover optimal seeds for challenge runs, hi
 
 - Windows, Linux, or macOS*
 - Intel, AMD, or Apple Silicon CPU**
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [git](https://git-scm.com/downloads)]
 
 ### NOTE on other compatibilities
@@ -234,7 +234,7 @@ This is a community project. Contributions welcome:
 
 Built on:
 
-- **.NET 9** - Modern C# with high performance features
+- **.NET 10 / C# 14** - Modern C# with high performance features
 - **Avalonia UI** - Cross-platform desktop framework  
 - **DuckDB** - Fast analytical database for results
 - **Motely** - Custom vectorized Balatro seed analysis engine

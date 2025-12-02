@@ -18,8 +18,8 @@ namespace BalatroSeedOracle.Services
         private readonly DateTime _startupTime = DateTime.Now; // Track startup time
         private const double GridSpacingX = 90.0; // Horizontal grid spacing (widget width + spacing)
         private const double GridSpacingY = 90.0; // Vertical grid spacing (widget height + spacing)
-        private const double GridOriginX = 20.0; // Grid starts at x=20 to match widget positions
-        private const double GridOriginY = 80.0; // Grid starts at y=80 to match widget positions (below "Welcome!" text)
+        private const double GridOriginX = 20.0; // Grid starts 20px from left edge
+        private const double GridOriginY = 45.0; // Grid starts at y=45 (no more Welcome text, allows stacking)
         private const double MinimizedWidgetSize = 80.0; // Size of minimized widget icons (with padding)
         private const double ExpandedWidgetWidth = 350.0; // Standard expanded widget width
         private const double ExpandedWidgetHeight = 450.0; // Standard expanded widget height
@@ -40,8 +40,8 @@ namespace BalatroSeedOracle.Services
 
             return new List<(double X, double Y, double Width, double Height)>
             {
-                // Top area - title bar and "Welcome!" text (top 8% of window, minimum 60px)
-                (0, 0, parentWidth, Math.Max(60, parentHeight * 0.08)),
+                // Top area - just title bar (top 40px only, not Welcome text)
+                (0, 0, parentWidth, 40),
                 // Bottom area - menu buttons (bottom 15% of window, minimum 100px)
                 (
                     0,
@@ -229,10 +229,10 @@ namespace BalatroSeedOracle.Services
                 return false;
             }
 
-            // Normal collision detection for after startup
-            var normalTolerance = isMinimized
-                ? 70.0
-                : Math.Max(ExpandedWidgetWidth, ExpandedWidgetHeight);
+            // Normal collision detection using proper bounding box overlap
+            // Calculate the size of the widget we're trying to place
+            var widget1Width = isMinimized ? MinimizedWidgetSize : ExpandedWidgetWidth;
+            var widget1Height = isMinimized ? MinimizedWidgetSize : ExpandedWidgetHeight;
 
             foreach (var kvp in _widgetPositions)
             {
@@ -243,13 +243,22 @@ namespace BalatroSeedOracle.Services
                 if (excludeWidget != null && widget == excludeWidget)
                     continue;
 
-                // Check if positions are too close (within tolerance)
-                if (
-                    Math.Abs(x - widgetX) < normalTolerance
-                    && Math.Abs(y - widgetY) < normalTolerance
-                )
+                // Get the size of the existing widget
+                var widget2Width = widget.IsMinimized ? MinimizedWidgetSize : ExpandedWidgetWidth;
+                var widget2Height = widget.IsMinimized ? MinimizedWidgetSize : ExpandedWidgetHeight;
+
+                // Add small padding between widgets (10px)
+                var padding = 10.0;
+
+                // Check if rectangles overlap using proper AABB collision
+                bool overlapsX =
+                    x < widgetX + widget2Width + padding && x + widget1Width + padding > widgetX;
+                bool overlapsY =
+                    y < widgetY + widget2Height + padding && y + widget1Height + padding > widgetY;
+
+                if (overlapsX && overlapsY)
                 {
-                    return true;
+                    return true; // Widgets actually overlap!
                 }
             }
 
@@ -287,6 +296,7 @@ namespace BalatroSeedOracle.Services
             // Fallback to the grid origin if everything is occupied
             return SnapToGrid(startX, startY);
         }
+
 
         /// <summary>
         /// Snap a position to the grid with collision avoidance

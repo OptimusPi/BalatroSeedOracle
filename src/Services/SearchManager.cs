@@ -16,10 +16,12 @@ namespace BalatroSeedOracle.Services
     public class SearchManager : IDisposable
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
+        private readonly EventFXService? _eventFXService;
 
         public SearchManager()
         {
             _activeSearches = new ConcurrentDictionary<string, SearchInstance>();
+            _eventFXService = ServiceHelper.GetService<EventFXService>();
         }
 
         /// <summary>
@@ -34,14 +36,18 @@ namespace BalatroSeedOracle.Services
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
 
-            // Preallocate a database file path so SearchInstance always has a connection string
-            var searchResultsDir = System.IO.Path.Combine(
-                System.IO.Directory.GetCurrentDirectory(),
-                "SearchResults"
-            );
-            System.IO.Directory.CreateDirectory(searchResultsDir);
+            // REUSE existing search instance if it exists - preserves the fertilizer pile!
+            if (_activeSearches.TryGetValue(searchId, out var existingSearch))
+            {
+                DebugLogger.Log("SearchManager", $"Reusing existing search instance: {searchId}");
+                return searchId;
+            }
+
+            // Create new search instance only if one doesn't exist
+            var searchResultsDir = AppPaths.SearchResultsDir;
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
             var searchInstance = new SearchInstance(searchId, dbPath);
+            WireEventFXToSearchInstance(searchInstance);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
             {
@@ -113,6 +119,60 @@ namespace BalatroSeedOracle.Services
         public IEnumerable<SearchInstance> GetAllSearches()
         {
             return _activeSearches.Values;
+        }
+
+        /// <summary>
+        /// Gets or restores a SearchInstance from an existing database file.
+        /// If the SearchInstance isn't in memory but the DB file exists, creates it.
+        /// </summary>
+        /// <param name="searchInstanceId">The SearchInstance ID to get or restore</param>
+        /// <returns>The SearchInstance if found/restored, null if DB file doesn't exist</returns>
+        public SearchInstance? GetOrRestoreSearch(string searchInstanceId)
+        {
+            // First check if already in memory
+            if (_activeSearches.TryGetValue(searchInstanceId, out var existingSearch))
+            {
+                return existingSearch;
+            }
+
+            // Check if database file exists
+            var searchResultsDir = AppPaths.SearchResultsDir;
+            var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchInstanceId}.db");
+
+            if (!System.IO.File.Exists(dbPath))
+            {
+                DebugLogger.Log(
+                    "SearchManager",
+                    $"Cannot restore search '{searchInstanceId}' - database file not found"
+                );
+                return null;
+            }
+
+            // Database exists, create SearchInstance to reconnect to it
+            try
+            {
+                var searchInstance = new SearchInstance(searchInstanceId, dbPath);
+                WireEventFXToSearchInstance(searchInstance);
+
+                if (_activeSearches.TryAdd(searchInstanceId, searchInstance))
+                {
+                    DebugLogger.Log(
+                        "SearchManager",
+                        $"Restored search instance from database: {searchInstanceId}"
+                    );
+                    return searchInstance;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchManager",
+                    $"Failed to restore search '{searchInstanceId}': {ex.Message}"
+                );
+                return null;
+            }
         }
 
         /// <summary>
@@ -241,6 +301,7 @@ namespace BalatroSeedOracle.Services
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var seeds = new List<string>();
+            var fullResults = new List<Models.SearchResult>();
             var batchesChecked = 0;
 
             try
@@ -287,6 +348,7 @@ namespace BalatroSeedOracle.Services
                             false,
                             maxResults
                         );
+                        fullResults = results; // Store full results with TotalScore
                         seeds = results.Select(r => r.Seed).ToList();
                         DebugLogger.Log("SearchManager", $"Quick search found {seeds.Count} seeds");
                     }
@@ -318,6 +380,7 @@ namespace BalatroSeedOracle.Services
                 return new QuickSearchResults
                 {
                     Seeds = seeds,
+                    Results = fullResults,
                     Count = seeds.Count,
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
@@ -331,6 +394,7 @@ namespace BalatroSeedOracle.Services
                 return new QuickSearchResults
                 {
                     Seeds = new List<string>(),
+                    Results = new List<Models.SearchResult>(),
                     Count = 0,
                     BatchesChecked = batchesChecked,
                     ElapsedTime = stopwatch.Elapsed.TotalSeconds,
@@ -338,6 +402,22 @@ namespace BalatroSeedOracle.Services
                     Error = ex.Message,
                 };
             }
+        }
+
+        private void WireEventFXToSearchInstance(SearchInstance instance)
+        {
+            if (_eventFXService == null)
+                return;
+
+            instance.SearchStarted += (s, e) =>
+            {
+                _eventFXService.TriggerEvent(EventFXType.SearchInstanceStart);
+            };
+
+            instance.NewHighScoreFound += (s, score) =>
+            {
+                _eventFXService.TriggerEvent(EventFXType.SearchInstanceFind);
+            };
         }
 
         public void Dispose()
@@ -359,6 +439,7 @@ namespace BalatroSeedOracle.Services
     public class QuickSearchResults
     {
         public List<string> Seeds { get; set; } = new();
+        public List<Models.SearchResult> Results { get; set; } = new();
         public int Count { get; set; }
         public int BatchesChecked { get; set; }
         public double ElapsedTime { get; set; }

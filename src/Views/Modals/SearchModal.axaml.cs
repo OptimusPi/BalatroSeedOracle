@@ -50,6 +50,9 @@ namespace BalatroSeedOracle.Views.Modals
             // CREATE NEW FILTER button callback (FilterSelectorControl is created dynamically by ViewModel)
             ViewModel.SetNewFilterRequestedCallback(OpenFiltersModal);
 
+            // EDIT FILTER button callback - opens FiltersModal with current filter loaded
+            ViewModel.SetEditFilterRequestedCallback(EditCurrentFilter);
+
             // DeckAndStakeSelector → ViewModel properties
             var deckStakeSelector = this.FindControl<Components.DeckAndStakeSelector>(
                 "DeckStakeSelector"
@@ -131,6 +134,51 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Edits the current filter - closes SearchModal and opens FiltersModal with the filter loaded
+        /// </summary>
+        private void EditCurrentFilter(string? filterPath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filterPath))
+                {
+                    DebugLogger.LogError(
+                        "SearchModal",
+                        "Cannot edit filter: filterPath is null or empty"
+                    );
+                    return;
+                }
+
+                if (ViewModel.MainMenu == null)
+                {
+                    DebugLogger.LogError(
+                        "SearchModal",
+                        "ViewModel.MainMenu is NULL! Can't open FiltersModal"
+                    );
+                    return;
+                }
+
+                DebugLogger.Log("SearchModal", $"EditCurrentFilter called with path: {filterPath}");
+
+                // Convert filter path to filter ID (remove extension and directory)
+                // Example: "JsonItemFilters/MyFilter.json" -> "MyFilter"
+                var filterId = System.IO.Path.GetFileNameWithoutExtension(filterPath);
+
+                // Close SearchModal
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+
+                // Open FiltersModal with the filter loaded
+                _ = ViewModel.MainMenu.ShowFiltersModalDirectAsync(filterId);
+
+                DebugLogger.Log("SearchModal", $"Opened FiltersModal with filter: {filterId}");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModal", $"Error editing current filter: {ex.Message}");
             }
         }
 

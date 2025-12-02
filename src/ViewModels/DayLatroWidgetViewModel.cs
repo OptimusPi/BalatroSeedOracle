@@ -173,6 +173,7 @@ namespace BalatroSeedOracle.ViewModels
         public ICommand CopySeedCommand { get; }
         public ICommand RefreshScoresCommand { get; }
         public ICommand AnalyzeSeedCommand { get; }
+        public ICommand OpenDaylatroWebsiteCommand { get; }
 
         #endregion
 
@@ -188,9 +189,6 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Constructor
 
-        /// <summary>
-        /// Constructor with dependency injection
-        /// </summary>
         public DayLatroWidgetViewModel(
             DaylatroHighScoreService scoreService,
             UserProfileService profileService
@@ -213,6 +211,7 @@ namespace BalatroSeedOracle.ViewModels
             CopySeedCommand = new AsyncRelayCommand(OnCopySeedAsync);
             RefreshScoresCommand = new AsyncRelayCommand(OnRefreshScoresAsync);
             AnalyzeSeedCommand = new RelayCommand(OnAnalyzeSeed);
+            OpenDaylatroWebsiteCommand = new RelayCommand(OnOpenDaylatroWebsite);
 
             // Set up auto-refresh timer (5 minutes)
             _autoRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
@@ -235,9 +234,6 @@ namespace BalatroSeedOracle.ViewModels
             LoadDailyChallenge();
         }
 
-        /// <summary>
-        /// Parameterless constructor for design-time support
-        /// </summary>
         public DayLatroWidgetViewModel()
             : this(DaylatroHighScoreService.Instance, new UserProfileService()) { }
 
@@ -245,9 +241,6 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Public Methods
 
-        /// <summary>
-        /// Initialize the widget (call from view when loaded)
-        /// </summary>
         public void Initialize()
         {
             LoadDailyChallenge();
@@ -417,7 +410,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnExpanded: {ex.Message}");
+                DebugLogger.LogError(
+                    "DayLatroWidgetViewModel",
+                    $"Error in OnExpanded: {ex.Message}"
+                );
             }
         }
 
@@ -451,7 +447,10 @@ namespace BalatroSeedOracle.ViewModels
                 if (!long.TryParse(ScoreInput.Replace(",", "").Trim(), out var score) || score < 0)
                 {
                     ShowSubmissionMessage($"Invalid score input: {ScoreInput}", true);
-                    DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid score input: {ScoreInput}");
+                    DebugLogger.Log(
+                        "DayLatroWidgetViewModel",
+                        $"Invalid score input: {ScoreInput}"
+                    );
                     return;
                 }
 
@@ -505,7 +504,10 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 ShowSubmissionMessage($"Error submitting score: {ex.Message}", true);
-                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnSubmitScore: {ex.Message}");
+                DebugLogger.LogError(
+                    "DayLatroWidgetViewModel",
+                    $"Error in OnSubmitScore: {ex.Message}"
+                );
             }
         }
 
@@ -533,6 +535,26 @@ namespace BalatroSeedOracle.ViewModels
         private void OnAnalyzeSeed()
         {
             AnalyzeSeedRequested?.Invoke(this, TodaySeed);
+        }
+
+        /// <summary>
+        /// Open the Daylatro website
+        /// </summary>
+        private void OnOpenDaylatroWebsite()
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://daylatro.com",
+                    UseShellExecute = true
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Failed to open Daylatro website: {ex.Message}");
+            }
         }
 
         #endregion

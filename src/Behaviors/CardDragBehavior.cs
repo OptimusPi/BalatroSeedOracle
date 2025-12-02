@@ -36,15 +36,13 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Enable/disable all animations
         /// </summary>
-        public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<
-            CardDragBehavior,
-            bool
-        >(nameof(IsEnabled), true);
+        public static readonly StyledProperty<bool> IsAnimationEnabledProperty =
+            AvaloniaProperty.Register<CardDragBehavior, bool>(nameof(IsAnimationEnabled), true);
 
-        public bool IsEnabled
+        public bool IsAnimationEnabled
         {
-            get => GetValue(IsEnabledProperty);
-            set => SetValue(IsEnabledProperty, value);
+            get => GetValue(IsAnimationEnabledProperty);
+            set => SetValue(IsAnimationEnabledProperty, value);
         }
 
         /// <summary>
@@ -66,10 +64,7 @@ namespace BalatroSeedOracle.Behaviors
         /// 3D perspective tilt strength (8 = default)
         /// </summary>
         public static readonly StyledProperty<double> TiltStrengthProperty =
-            AvaloniaProperty.Register<CardDragBehavior, double>(
-                nameof(TiltStrength),
-                8.0
-            );
+            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(TiltStrength), 8.0);
 
         public double TiltStrength
         {
@@ -199,6 +194,13 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.ZIndex = 1000;
             }
 
+            // Trigger juice animation on hover (matches Balatro behavior!)
+            // Only trigger if not already playing (prevents infinite retrigger on edge hover)
+            if (!_juiceStartTime.HasValue)
+            {
+                _juiceStartTime = DateTime.Now;
+            }
+
             // Play Balatro card hover sound (paper1.ogg with random pitch)
             var sfxService = ServiceHelper.GetService<SoundEffectsService>();
             sfxService?.PlayCardHover();
@@ -232,8 +234,7 @@ namespace BalatroSeedOracle.Behaviors
             _isDragging = true;
             _pointerPressedPosition = e.GetPosition(_hitboxElement);
 
-            // Trigger juice animation (Balatro's bounce effect on pickup)
-            _juiceStartTime = DateTime.Now;
+            // Juice is triggered on hover (OnPointerEntered), not here
 
             // Ensure animation timer is running when dragging
             if (_animationTimer != null && !_animationTimer.IsEnabled)
@@ -258,7 +259,7 @@ namespace BalatroSeedOracle.Behaviors
         private void UpdateTransforms()
         {
             if (
-                !IsEnabled
+                !IsAnimationEnabled
                 || AssociatedObject == null
                 || _translateTransform == null
                 || _scaleTransform == null
@@ -340,7 +341,8 @@ namespace BalatroSeedOracle.Behaviors
             {
                 // AMBIENT MODE: Subtle breathing sway (like real Balatro!)
                 // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
-                var tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+                var tiltAngle =
+                    elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // Balatro's ambient tilt: self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
                 var ambientTilt = UIConstants.CardAmbientTiltMultiplier; // 0.2

@@ -14,9 +14,12 @@ namespace BalatroSeedOracle.ViewModels
     {
         // Static counter to ensure unique Z-indexes for proper layering
         private static int _nextZIndexCounter = 0;
+        private readonly WidgetPositionService? _widgetPositionService;
 
-        public BaseWidgetViewModel()
+        public BaseWidgetViewModel(WidgetPositionService? widgetPositionService = null)
         {
+            _widgetPositionService = widgetPositionService;
+
             // Register with position service when created
             RegisterWithPositionService();
 
@@ -28,8 +31,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var positionService = ServiceHelper.GetService<WidgetPositionService>();
-                positionService?.RegisterWidget(this);
+                _widgetPositionService?.RegisterWidget(this);
             }
             catch
             {
@@ -164,8 +166,7 @@ namespace BalatroSeedOracle.ViewModels
             // Unregister from position service when closed
             try
             {
-                var positionService = ServiceHelper.GetService<WidgetPositionService>();
-                positionService?.UnregisterWidget(this);
+                _widgetPositionService?.UnregisterWidget(this);
             }
             catch
             {
@@ -174,19 +175,63 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Set notification badge
+        /// Set notification badge with smart formatting (K/M suffixes for large numbers)
+        /// Examples: 1, 52, 1.52k, 12.3k, 121K, 1.72M
         /// </summary>
         public void SetNotification(int count)
         {
             if (count > 0)
             {
                 ShowNotificationBadge = true;
-                NotificationText = count > 99 ? "99+" : count.ToString();
+                NotificationText = FormatNotificationCount(count);
             }
             else
             {
                 ShowNotificationBadge = false;
             }
+        }
+
+        /// <summary>
+        /// Set notification badge with long count (for large seed counts)
+        /// </summary>
+        public void SetNotification(long count)
+        {
+            if (count > 0)
+            {
+                ShowNotificationBadge = true;
+                NotificationText = FormatNotificationCount(count);
+            }
+            else
+            {
+                ShowNotificationBadge = false;
+            }
+        }
+
+        /// <summary>
+        /// Format large numbers with K/M suffixes (3 significant figures)
+        /// Examples: 1, 52, 1.52k, 12.3k, 121K, 1.72M
+        /// </summary>
+        private static string FormatNotificationCount(long count)
+        {
+            if (count < 1000)
+                return count.ToString();
+
+            if (count < 10_000)
+                return $"{count / 1000.0:0.00}k"; // 1.52k
+
+            if (count < 100_000)
+                return $"{count / 1000.0:0.0}k"; // 12.3k
+
+            if (count < 1_000_000)
+                return $"{count / 1000}K"; // 121K
+
+            if (count < 10_000_000)
+                return $"{count / 1_000_000.0:0.00}M"; // 1.72M
+
+            if (count < 100_000_000)
+                return $"{count / 1_000_000.0:0.0}M"; // 12.3M
+
+            return $"{count / 1_000_000}M"; // 121M
         }
 
         /// <summary>

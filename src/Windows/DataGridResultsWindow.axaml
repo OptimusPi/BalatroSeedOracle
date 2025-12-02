@@ -33,6 +33,8 @@
                             <MenuItem Name="ExportCsvMenuItem" Header="Export as CSV"/>
                             <MenuItem Name="ExportJsonMenuItem" Header="Export as JSON"/>
                             <MenuItem Name="ExportExcelMenuItem" Header="Export as Excel"/>
+                            <MenuItem Name="ExportWordlistMenuItem" Header="Export as Wordlist (.txt)"/>
+                            <Separator/>
                             <MenuItem Name="CopyToClipboardMenuItem" Header="Copy to Clipboard"/>
                         </MenuFlyout>
                     </Button.Flyout>

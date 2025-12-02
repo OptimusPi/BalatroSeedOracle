@@ -26,7 +26,7 @@ namespace BalatroSeedOracle.ViewModels
         private SoundFlowAudioManager? _audioManager;
 
         private static readonly string MixPresetsPath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
+            AppContext.BaseDirectory,
             "visualizer",
             "audio_mixes"
         );
