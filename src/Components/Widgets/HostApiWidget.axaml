@@ -156,6 +156,22 @@
                                          BorderThickness="1"
                                          Padding="8,4"/>
                             </StackPanel>
+                            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Spacing="4" Margin="0,8,0,0">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Threads" FontSize="11" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" 
+                                            Minimum="1" 
+                                            Maximum="{Binding MaxThreads}" 
+                                            Value="{Binding ThreadCount}"
+                                            Margin="10,0"/>
+                                    <TextBlock Grid.Column="2" 
+                                               Text="{Binding ThreadCount}" 
+                                               FontSize="11" 
+                                               Foreground="{StaticResource White}" 
+                                               VerticalAlignment="Center"
+                                               Width="20"/>
+                                </Grid>
+                            </StackPanel>
                         </Grid>
                     </Border>
 
@@ -171,41 +187,37 @@
                     </Button>
 
                     <!-- Request Log -->
-                    <Grid RowDefinitions="Auto,*">
-                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
-                            <TextBlock Grid.Column="0"
-                                       Text="Request Log"
-                                       FontSize="12"
-                                       Foreground="{StaticResource LightGrey}"/>
-                            <Button Grid.Column="1"
-                                    Content="Clear"
-                                    FontSize="10"
-                                    Padding="6,2"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Command="{Binding ClearLogCommand}"/>
+                    <Border Background="{StaticResource DarkBackground}"
+                            CornerRadius="6"
+                            Padding="8"
+                            Height="150">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                                <TextBlock Grid.Column="0"
+                                           Text="Request Log"
+                                           FontSize="11"
+                                           Foreground="{StaticResource White}"/>
+                                <Button Grid.Column="1"
+                                        Content="Clear"
+                                        FontSize="10"
+                                        Padding="6,2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Command="{Binding ClearLogCommand}"/>
+                            </Grid>
+                            <TextBox Grid.Row="1"
+                                     Text="{Binding LogText}"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="NoWrap"
+                                     FontSize="10"
+                                     FontFamily="Consolas, monospace"
+                                     Foreground="{StaticResource White}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0"/>
                         </Grid>
-                        <Border Grid.Row="1"
-                                Background="{StaticResource DarkBackground}"
-                                CornerRadius="6"
-                                Padding="8"
-                                Height="150">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <ItemsControl ItemsSource="{Binding RequestLog}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}"
-                                                       FontSize="10"
-                                                       FontFamily="Consolas, monospace"
-                                                       Foreground="{StaticResource LightGrey}"
-                                                       TextWrapping="NoWrap"
-                                                       Margin="0,1"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Border>
-                    </Grid>
+                    </Border>
                 </StackPanel>
             </Grid>
         </Border>

@@ -109,6 +109,9 @@ namespace BalatroSeedOracle.Services
         public event EventHandler? SearchStarted;
         public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgress>? ProgressUpdated;
+        public event EventHandler<int>? NewHighScoreFound;
+        private volatile int _bestScore = 0;
+        private DateTime _lastHighScoreTime = DateTime.MinValue;
 
         public SearchInstance(string searchId, string dbPath)
         {
@@ -1675,8 +1678,25 @@ namespace BalatroSeedOracle.Services
                         // LOG THE SEED TO CONSOLE for immediate user feedback
                         DebugLogger.LogImportant(
                             $"SearchInstance[{_searchId}]",
-                            $"✅ FOUND SEED: {result.Seed} (Score: {result.Score})"
+                            $"FOUND SEED: {result.Seed} (Score: {result.Score})"
                         );
+
+                        // Check for new high score (with 10s cooldown after search start)
+                        var elapsed = DateTime.UtcNow - _searchStartTime;
+                        if (elapsed.TotalSeconds > 10 && result.Score > _bestScore)
+                        {
+                            var timeSinceLast = DateTime.UtcNow - _lastHighScoreTime;
+                            if (timeSinceLast.TotalSeconds > 2)
+                            {
+                                _bestScore = result.Score;
+                                _lastHighScoreTime = DateTime.UtcNow;
+                                NewHighScoreFound?.Invoke(this, result.Score);
+                            }
+                        }
+                        else if (result.Score > _bestScore)
+                        {
+                            _bestScore = result.Score;
+                        }
                     }
                     catch (Exception ex)
                     {

@@ -1145,6 +1145,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            // Trigger intro animation event
+            var eventFXService = ServiceHelper.GetService<EventFXService>();
+            eventFXService?.TriggerEvent(EventFXType.IntroAnimation, 5.0);
+
             // Load visualizer settings
             if (_background is BalatroShaderBackground shader)
             {

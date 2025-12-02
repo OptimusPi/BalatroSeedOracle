@@ -32,6 +32,9 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _showHostApiWidget = false;
 
+        [ObservableProperty]
+        private bool _showEventFXWidget = false;
+
         partial void OnVisualizerThemeChanged(int value)
         {
             SaveVisualizerTheme();
@@ -58,6 +61,11 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         partial void OnShowHostApiWidgetChanged(bool value)
+        {
+            SaveFeatureToggles();
+        }
+
+        partial void OnShowEventFXWidgetChanged(bool value)
         {
             SaveFeatureToggles();
         }
@@ -93,6 +101,7 @@ namespace BalatroSeedOracle.ViewModels
             ShowTransitionDesignerWidget = profile.FeatureToggles?.ShowTransitionDesigner ?? false;
             ShowFertilizerWidget = profile.FeatureToggles?.ShowFertilizer ?? false;
             ShowHostApiWidget = profile.FeatureToggles?.ShowHostServer ?? false;
+            ShowEventFXWidget = profile.FeatureToggles?.ShowEventFX ?? false;
 
             DebugLogger.Log(
                 "SettingsModalViewModel",
@@ -113,6 +122,7 @@ namespace BalatroSeedOracle.ViewModels
             profile.FeatureToggles.ShowTransitionDesigner = ShowTransitionDesignerWidget;
             profile.FeatureToggles.ShowFertilizer = ShowFertilizerWidget;
             profile.FeatureToggles.ShowHostServer = ShowHostApiWidget;
+            profile.FeatureToggles.ShowEventFX = ShowEventFXWidget;
 
             _userProfileService.SaveProfile(profile);
             FeatureTogglesChanged?.Invoke(this, EventArgs.Empty);

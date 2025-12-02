@@ -218,7 +218,6 @@ namespace BalatroSeedOracle.ViewModels
         // Tab ViewModels for cross-tab communication
         public object? VisualBuilderTab { get; set; }
         public object? DeckStakeTab { get; set; }
-        public object? JsonEditorTab { get; set; }
         public object? JamlEditorTab { get; set; }
 
         [ObservableProperty]
@@ -242,49 +241,19 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedDeckChanged(Motely.MotelyDeck value)
         {
-            DebugLogger.LogImportant(
-                "FiltersModalViewModel",
-                $"🎯 OnSelectedDeckChanged called! New deck: {value}"
-            );
-            // Regenerate JSON when deck changes
-            if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+            DebugLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
+            if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
             {
-                DebugLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"🎯 Regenerating JSON because deck changed to: {value}"
-                );
-                RegenerateJsonFromState(jsonVm);
-            }
-            else
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    "❌ JsonEditorTab is NULL! Cannot regenerate JSON"
-                );
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 
         partial void OnSelectedStakeChanged(Motely.MotelyStake value)
         {
-            DebugLogger.LogImportant(
-                "FiltersModalViewModel",
-                $"🎯 OnSelectedStakeChanged called! New stake: {value}"
-            );
-            // Regenerate JSON when stake changes
-            if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
+            DebugLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
+            if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
             {
-                DebugLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"🎯 Regenerating JSON because stake changed to: {value}"
-                );
-                RegenerateJsonFromState(jsonVm);
-            }
-            else
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    "❌ JsonEditorTab is NULL! Cannot regenerate JSON"
-                );
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 
@@ -784,8 +753,11 @@ namespace BalatroSeedOracle.ViewModels
                     LoadConfigIntoState(config);
                     LoadedConfig = config;
 
-                    // Update JSON editor with loaded content
-                    UpdateJsonEditorFromConfig(config);
+                    // Update JAML editor with loaded content
+                    if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
+                    {
+                        jamlVm.AutoGenerateFromVisual();
+                    }
 
                     // Update Visual Builder with FilterItem objects
                     await UpdateVisualBuilderFromItemConfigs();
@@ -908,51 +880,30 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         // Capture the OLD tab index BEFORE the property changes
-        // CRITICAL: Save current tab's content to state BEFORE switching away
         partial void OnSelectedTabIndexChanging(int value)
         {
             _previousTabIndex = SelectedTabIndex;
 
-            // Save current tab's state before leaving
-            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=JAML Editor, 4=Validate Filter
+            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             switch (_previousTabIndex)
             {
-                case 2: // Leaving JSON Editor - parse JSON and update state
-                    if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
-                    {
-                        SaveJsonEditorToState(jsonVm);
-                        DebugLogger.Log(
-                            "FiltersModalViewModel",
-                            "💾 Saved JSON state before tab switch"
-                        );
-                    }
-                    break;
-                case 3: // Leaving JAML Editor - parse JAML and update state
+                case 2: // Leaving JAML Editor - parse JAML and update state
                     if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
                     {
                         SaveJamlEditorToState(jamlVm);
-                        DebugLogger.Log(
-                            "FiltersModalViewModel",
-                            "💾 Saved JAML state before tab switch"
-                        );
                     }
                     break;
             }
         }
 
-        // Automatically update tab visibility and content when header selection changes
-        // CRITICAL: Load state into new tab AFTER switching
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DebugLogger.LogImportant(
-                "FiltersModalViewModel",
-                $"🔄 Tab switch to {value}: Deck={SelectedDeck} Stake={SelectedStake}"
-            );
+            DebugLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
 
-            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=JAML Editor, 4=Validate Filter
+            // Tab order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             switch (value)
             {
                 case 0: // Entering Visual Builder - refresh from state
@@ -960,81 +911,17 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         visualVm.LoadFromParentCollections();
                         ExpandDropZonesWithItems();
-                        DebugLogger.Log(
-                            "FiltersModalViewModel",
-                            "📥 Loaded Visual Builder from state"
-                        );
                     }
                     break;
-                case 2: // Entering JSON Editor - regenerate from state
-                    if (JsonEditorTab is FilterTabs.JsonEditorTabViewModel jsonVm)
-                    {
-                        RegenerateJsonFromState(jsonVm);
-                        DebugLogger.Log("FiltersModalViewModel", "📥 Regenerated JSON from state");
-                    }
-                    break;
-                case 3: // Entering JAML Editor - regenerate from state
+                case 2: // Entering JAML Editor - regenerate from state
                     if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
                     {
                         jamlVm.AutoGenerateFromVisual();
-                        DebugLogger.Log("FiltersModalViewModel", "📥 Regenerated JAML from state");
                     }
                     break;
-                case 4: // Entering Validate Filter - refresh clause display
+                case 3: // Entering Validate Filter - refresh clause display
                     _ = RefreshSaveTabData();
-                    DebugLogger.Log("FiltersModalViewModel", "📥 Refreshed Validate Filter tab");
                     break;
-            }
-        }
-
-        /// <summary>
-        /// Parse JSON from JSON Editor and update parent ViewModel's state
-        /// </summary>
-        private void SaveJsonEditorToState(FilterTabs.JsonEditorTabViewModel jsonVm)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(jsonVm.JsonContent))
-                {
-                    DebugLogger.Log(
-                        "FiltersModalViewModel",
-                        "⚠️ JSON Editor is empty - skipping save"
-                    );
-                    return;
-                }
-
-                // Validate JSON first
-                var config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                    jsonVm.JsonContent,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                    }
-                );
-
-                if (config == null)
-                {
-                    DebugLogger.LogError(
-                        "FiltersModalViewModel",
-                        "❌ Failed to parse JSON - skipping save"
-                    );
-                    return;
-                }
-
-                // Load config into parent state (updates SelectedMust/Should/MustNot, deck, stake, etc.)
-                LoadConfigIntoState(config);
-
-                DebugLogger.Log(
-                    "FiltersModalViewModel",
-                    $"✅ JSON Editor saved to state: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}"
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"❌ Error parsing JSON: {ex.Message}"
-                );
             }
         }
 
@@ -1089,57 +976,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DebugLogger.LogError(
                     "FiltersModalViewModel",
-                    $"❌ Error parsing JAML: {ex.Message}"
-                );
-            }
-        }
-
-        /// <summary>
-        /// Regenerate JSON content from current parent ViewModel state
-        /// </summary>
-        private void RegenerateJsonFromState(FilterTabs.JsonEditorTabViewModel jsonVm)
-        {
-            try
-            {
-                // Build config from current state (includes deck/stake from parent)
-                var config = BuildConfigFromCurrentState();
-
-                // DEBUG: Log actual deck/stake values being used
-                DebugLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"RegenerateJsonFromState: Using Deck={SelectedDeck} (index={SelectedDeckIndex}), Stake={SelectedStake} (index={SelectedStakeIndex})"
-                );
-
-                // Serialize to JSON with proper formatting
-                var json = System.Text.Json.JsonSerializer.Serialize(
-                    config,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = System
-                            .Text
-                            .Json
-                            .Serialization
-                            .JsonIgnoreCondition
-                            .WhenWritingNull,
-                    }
-                );
-
-                jsonVm.JsonContent = json;
-                jsonVm.ValidationStatus = "Loaded from current filter";
-                jsonVm.ValidationStatusColor = Brushes.Gray;
-
-                DebugLogger.Log(
-                    "FiltersModalViewModel",
-                    $"✅ JSON regenerated: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}"
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"❌ Error regenerating JSON: {ex.Message}"
+                    $"Error parsing JAML: {ex.Message}"
                 );
             }
         }
@@ -1838,18 +1675,8 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DataContext = deckStakeViewModel,
             };
-            DeckStakeTab = deckStakeViewModel; // Store reference like JsonEditorTab
+            DeckStakeTab = deckStakeViewModel;
             TabItems.Add(new TabItemViewModel("DECK/STAKE", deckStakeTab));
-
-            // JSON Editor tab
-            var jsonEditorViewModel = new FilterTabs.JsonEditorTabViewModel(this);
-            var jsonEditorTab = new Components.FilterTabs.JsonEditorTab
-            {
-                DataContext = jsonEditorViewModel,
-            };
-            JsonEditorTab = jsonEditorViewModel; // Store reference
-
-            TabItems.Add(new TabItemViewModel("JSON EDITOR", jsonEditorTab));
 
             // JAML Editor tab (JAML = Joker Ante Markup Language, a YAML-based format)
             var jamlEditorViewModel = new FilterTabs.JamlEditorTabViewModel(this);
@@ -1889,7 +1716,7 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("VALIDATE FILTER", validateFilterTab));
 
             // Ensure initial tab content and visibility are set
-            // Order: 0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=JAML Editor, 4=Validate Filter
+            // Order: 0=Build Filter, 1=Deck/Stake, 2=JAML Editor, 3=Validate Filter
             UpdateTabVisibility(SelectedTabIndex);
             OnPropertyChanged(nameof(CurrentTabContent));
         }
@@ -2218,50 +2045,6 @@ namespace BalatroSeedOracle.ViewModels
                 _ => Motely.MotelyStake.White,
             };
             return stake.ToString().ToLower();
-        }
-
-        /// <summary>
-        /// Update JSON editor content from loaded config
-        /// </summary>
-        private void UpdateJsonEditorFromConfig(Motely.Filters.MotelyJsonConfig config)
-        {
-            try
-            {
-                // Find JSON Editor tab by checking Content property (which is the view, with DataContext as ViewModel)
-                var jsonEditorTab = TabItems.FirstOrDefault(t =>
-                    t.Content is Components.FilterTabs.JsonEditorTab
-                );
-
-                if (
-                    jsonEditorTab?.Content is Components.FilterTabs.JsonEditorTab jsonEditorView
-                    && jsonEditorView.DataContext is FilterTabs.JsonEditorTabViewModel jsonEditorVm
-                )
-                {
-                    var json = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
-                        }
-                    );
-                    jsonEditorVm.JsonContent = json;
-                    DebugLogger.Log("FiltersModalViewModel", "Updated JSON editor from config");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error updating JSON editor: {ex.Message}"
-                );
-            }
         }
 
         /// <summary>

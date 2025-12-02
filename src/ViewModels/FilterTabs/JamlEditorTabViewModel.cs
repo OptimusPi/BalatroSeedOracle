@@ -197,70 +197,49 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                // Build clean JAML output that matches the expected format (no null garbage)
                 var sb = new System.Text.StringBuilder();
 
-                // Header
                 sb.AppendLine($"name: {config.Name ?? "New Filter"}");
                 if (!string.IsNullOrWhiteSpace(config.Description))
                     sb.AppendLine($"description: {config.Description}");
                 sb.AppendLine($"author: {config.Author ?? "pifreak"}");
                 sb.AppendLine($"dateCreated: {config.DateCreated:yyyy-MM-ddTHH:mm:ss.fffffffZ}");
 
-                // Deck/Stake (only if set)
                 if (!string.IsNullOrWhiteSpace(config.Deck))
                     sb.AppendLine($"deck: {config.Deck}");
                 if (!string.IsNullOrWhiteSpace(config.Stake))
                     sb.AppendLine($"stake: {config.Stake}");
 
-                // Must clauses
                 sb.AppendLine();
                 if (config.Must?.Count > 0)
                 {
                     sb.AppendLine("must:");
                     foreach (var clause in config.Must)
-                    {
-                        sb.AppendLine($"  - type: {clause.Type}");
-                        sb.AppendLine($"    value: {clause.Value}");
-                        if (clause.Antes is { Length: > 0 })
-                            sb.AppendLine($"    antes: [{string.Join(",", clause.Antes)}]");
-                    }
+                        WriteJamlClause(sb, clause, false);
                 }
                 else
                 {
                     sb.AppendLine("must: []");
                 }
 
-                // Should clauses
                 sb.AppendLine();
                 if (config.Should?.Count > 0)
                 {
                     sb.AppendLine("should:");
                     foreach (var clause in config.Should)
-                    {
-                        sb.AppendLine($"  - type: {clause.Type}");
-                        sb.AppendLine($"    value: {clause.Value}");
-                        if (clause.Antes is { Length: > 0 })
-                            sb.AppendLine($"    antes: [{string.Join(",", clause.Antes)}]");
-                    }
+                        WriteJamlClause(sb, clause, true);
                 }
                 else
                 {
                     sb.AppendLine("should: []");
                 }
 
-                // MustNot - only show if has items
                 sb.AppendLine();
                 if (config.MustNot?.Count > 0)
                 {
                     sb.AppendLine("mustNot:");
                     foreach (var clause in config.MustNot)
-                    {
-                        sb.AppendLine($"  - type: {clause.Type}");
-                        sb.AppendLine($"    value: {clause.Value}");
-                        if (clause.Antes is { Length: > 0 })
-                            sb.AppendLine($"    antes: [{string.Join(",", clause.Antes)}]");
-                    }
+                        WriteJamlClause(sb, clause, false);
                 }
                 else
                 {
@@ -277,6 +256,55 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 );
                 return GetDefaultJamlContent();
             }
+        }
+
+        private void WriteJamlClause(
+            System.Text.StringBuilder sb,
+            MotelyJsonConfig.MotleyJsonFilterClause clause,
+            bool includeScore
+        )
+        {
+            var typeKey = MapTypeToJamlKey(clause.Type);
+            sb.AppendLine($"  - {typeKey}: {clause.Value}");
+
+            if (clause.Edition != null)
+                sb.AppendLine($"    edition: {clause.Edition}");
+            if (clause.Seal != null)
+                sb.AppendLine($"    seal: {clause.Seal}");
+            if (clause.Enhancement != null)
+                sb.AppendLine($"    enhancement: {clause.Enhancement}");
+            if (clause.Stickers?.Count > 0)
+                sb.AppendLine($"    stickers: [{string.Join(", ", clause.Stickers)}]");
+            if (clause.Min.HasValue && clause.Min.Value > 0)
+                sb.AppendLine($"    min: {clause.Min.Value}");
+            if (includeScore && clause.Score != 0)
+                sb.AppendLine($"    score: {clause.Score}");
+            if (clause.Antes is { Length: > 0 })
+                sb.AppendLine($"    antes: [{string.Join(", ", clause.Antes)}]");
+            if (clause.Sources?.ShopSlots is { Length: > 0 })
+                sb.AppendLine($"    shopSlots: [{string.Join(", ", clause.Sources.ShopSlots)}]");
+            if (clause.Sources?.PackSlots is { Length: > 0 })
+                sb.AppendLine($"    packSlots: [{string.Join(", ", clause.Sources.PackSlots)}]");
+        }
+
+        private string MapTypeToJamlKey(string? type)
+        {
+            if (string.IsNullOrEmpty(type))
+                return "unknown";
+
+            return type.ToLowerInvariant() switch
+            {
+                "joker" => "joker",
+                "souljoker" => "souljoker",
+                "tarotcard" => "tarot",
+                "planetcard" => "planet",
+                "spectralcard" => "spectral",
+                "playingcard" => "card",
+                "voucher" => "voucher",
+                "tag" => "tag",
+                "boss" => "boss",
+                _ => type.ToLowerInvariant()
+            };
         }
 
         private string GetDefaultJamlContent()

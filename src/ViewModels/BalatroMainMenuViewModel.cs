@@ -21,6 +21,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly EventFXService? _eventFXService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -110,6 +111,9 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isHostApiWidgetVisible = false;
 
         [ObservableProperty]
+        private bool _isEventFXWidgetVisible = false;
+
+        [ObservableProperty]
         private bool _isVibeOutMode = false;
 
         // New: Hide/show all widgets
@@ -136,9 +140,12 @@ namespace BalatroSeedOracle.ViewModels
             if (_soundFlowAudioManager != null)
             {
                 Console.WriteLine(
-                    "[ViewModel] 🎵 Using SoundFlowAudioManager (8 independent tracks)"
+                    "[ViewModel] Using SoundFlowAudioManager (8 independent tracks)"
                 );
             }
+
+            // Get EventFX service for triggering configured animations
+            _eventFXService = ServiceHelper.GetService<EventFXService>();
 
             // Load settings
             LoadSettings();
@@ -216,6 +223,7 @@ namespace BalatroSeedOracle.ViewModels
         private void SeedSearch()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.SearchLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -240,6 +248,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Editor()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.DesignerLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -262,6 +271,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Analyze()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.AnalyzerLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -284,6 +294,7 @@ namespace BalatroSeedOracle.ViewModels
         private void Tool()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.SettingsLaunchModal);
             try
             {
                 IsModalVisible = true;
@@ -374,6 +385,7 @@ namespace BalatroSeedOracle.ViewModels
         private void AuthorClick()
         {
             PlayButtonClickSound();
+            _eventFXService?.TriggerEvent(EventFXType.AuthorLaunchEdit);
             AuthorEditMode = true;
             OnAuthorEditActivated?.Invoke(this, EventArgs.Empty);
         }
@@ -489,11 +501,12 @@ namespace BalatroSeedOracle.ViewModels
                 IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
                 IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
                 IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
+                IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
                     $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}, "
-                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}"
+                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
                 );
             }
             catch (Exception ex)
@@ -517,9 +530,10 @@ namespace BalatroSeedOracle.ViewModels
             IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
             IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
             IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
+            IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
             DebugLogger.Log(
                 "BalatroMainMenuViewModel",
-                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}"
+                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
             );
         }
 

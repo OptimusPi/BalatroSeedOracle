@@ -226,6 +226,8 @@ namespace BalatroSeedOracle.Models
         // Additional properties for filter configuration
         public string? Value { get; set; }
         public string? Label { get; set; }
+        public int Score { get; set; } = 1;
+        public int MinCount { get; set; } = 1;
         public int[]? Antes { get; set; }
         public int[]? ShopSlots { get; set; }
         public int[]? PackPositions { get; set; }

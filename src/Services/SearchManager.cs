@@ -16,10 +16,12 @@ namespace BalatroSeedOracle.Services
     public class SearchManager : IDisposable
     {
         private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
+        private readonly EventFXService? _eventFXService;
 
         public SearchManager()
         {
             _activeSearches = new ConcurrentDictionary<string, SearchInstance>();
+            _eventFXService = ServiceHelper.GetService<EventFXService>();
         }
 
         /// <summary>
@@ -34,18 +36,18 @@ namespace BalatroSeedOracle.Services
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
 
-            // BUGFIX: Remove any existing search with this ID before creating new one
-            // This allows restarting searches after they've been stopped
-            if (_activeSearches.TryRemove(searchId, out var oldSearch))
+            // REUSE existing search instance if it exists - preserves the fertilizer pile!
+            if (_activeSearches.TryGetValue(searchId, out var existingSearch))
             {
-                DebugLogger.Log("SearchManager", $"Removed existing search instance: {searchId}");
-                oldSearch.Dispose();
+                DebugLogger.Log("SearchManager", $"Reusing existing search instance: {searchId}");
+                return searchId;
             }
 
-            // Preallocate a database file path so SearchInstance always has a connection string
+            // Create new search instance only if one doesn't exist
             var searchResultsDir = AppPaths.SearchResultsDir;
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
             var searchInstance = new SearchInstance(searchId, dbPath);
+            WireEventFXToSearchInstance(searchInstance);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
             {
@@ -150,6 +152,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var searchInstance = new SearchInstance(searchInstanceId, dbPath);
+                WireEventFXToSearchInstance(searchInstance);
 
                 if (_activeSearches.TryAdd(searchInstanceId, searchInstance))
                 {
@@ -399,6 +402,22 @@ namespace BalatroSeedOracle.Services
                     Error = ex.Message,
                 };
             }
+        }
+
+        private void WireEventFXToSearchInstance(SearchInstance instance)
+        {
+            if (_eventFXService == null)
+                return;
+
+            instance.SearchStarted += (s, e) =>
+            {
+                _eventFXService.TriggerEvent(EventFXType.SearchInstanceStart);
+            };
+
+            instance.NewHighScoreFound += (s, score) =>
+            {
+                _eventFXService.TriggerEvent(EventFXType.SearchInstanceFind);
+            };
         }
 
         public void Dispose()

@@ -25,10 +25,15 @@
                   VerticalAlignment="Center"
                   Width="1080"
                   Height="600">
+                <!-- Silver south edge highlight (2px) -->
+                <Border CornerRadius="12"
+                        Margin="0,2,0,0"
+                        BorderThickness="0,0,0,2"
+                        BorderBrush="#C0C0C0"/>
                 <!-- Main border with standard edge -->
                 <Border x:Name="ModalBorder"
                         Background="{StaticResource ModalGrey}"
-                        CornerRadius="20"
+                        CornerRadius="12"
                         BorderBrush="{StaticResource ModalBorder}"
                         BorderThickness="4"
                         BoxShadow="{StaticResource StandardModalShadow}"
@@ -38,7 +43,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>    <!-- Content -->
-                        <RowDefinition Height="60"/> <!-- Footer fixed height -->
+                        <RowDefinition Height="52"/> <!-- Footer fixed height (reduced from 60) -->
                     </Grid.RowDefinitions>
 
                     <!-- Content area -->
@@ -48,13 +53,15 @@
                                       VerticalAlignment="Stretch"
                                       Margin="0"/>
 
-                    <!-- Footer with back button -->
+                    <!-- Footer with back button - narrower, shorter, tighter margins -->
                     <Button Grid.Row="1"
                             x:Name="BackButton"
                             Content="Back"
                             Classes="back-button"
-                            HorizontalAlignment="Stretch"
-                            Margin="0"/>
+                            HorizontalAlignment="Center"
+                            Width="112"
+                            Height="36"
+                            Margin="0,2,0,6"/>
 
                 </Grid>
             </Border>

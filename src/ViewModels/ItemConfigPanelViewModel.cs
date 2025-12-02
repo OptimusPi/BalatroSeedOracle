@@ -150,6 +150,8 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize from item
             ItemName = item.DisplayName;
             Label = item.Label;
+            Score = item.Score > 0 ? item.Score : 1;
+            MinCount = item.MinCount > 0 ? item.MinCount : 1;
 
             // Initialize edition, seal, enhancement, rank, suit
             Edition = item.Edition ?? "None";
@@ -249,8 +251,10 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Apply()
         {
-            // Save label
+            // Save label, score, min count
             _item.Label = Label;
+            _item.Score = Score;
+            _item.MinCount = MinCount;
 
             // Save antes configuration
             if (AllAntesSelected)

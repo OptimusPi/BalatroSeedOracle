@@ -88,7 +88,7 @@ namespace BalatroSeedOracle.ViewModels
 
             IsGenerating = true;
             HasGeneratedConfig = false;
-            SetStatus("🧞 Asking the genie...", "#6B46C1");
+            SetStatus("Asking the genie...", "#6B46C1");
 
             try
             {
@@ -96,32 +96,59 @@ namespace BalatroSeedOracle.ViewModels
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                // Try local Host API first (fast, no network dependency)
                 string? jamlResult = null;
 
+                // Try Cloudflare Workers AI first
                 try
                 {
-                    _httpClient.Timeout = TimeSpan.FromSeconds(5);
-                    var localResponse = await _httpClient.PostAsync(LOCAL_GENIE_API, content);
+                    _httpClient.Timeout = TimeSpan.FromSeconds(30);
+                    SetStatus("Consulting cloud AI...", "#6B46C1");
+                    var cloudResponse = await _httpClient.PostAsync(CLOUD_GENIE_API, content);
 
-                    if (localResponse.IsSuccessStatusCode)
+                    if (cloudResponse.IsSuccessStatusCode)
                     {
-                        var localResponseText = await localResponse.Content.ReadAsStringAsync();
-                        var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
-                        jamlResult = localResult?.jaml;
-                        SetStatus("🧞 Local genie responded!", "#6B46C1");
+                        var cloudResponseText = await cloudResponse.Content.ReadAsStringAsync();
+                        var cloudResult = JsonSerializer.Deserialize<CloudGenieResponse>(
+                            cloudResponseText,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                        );
+                        jamlResult = cloudResult?.Jaml ?? cloudResult?.Filter;
+                        if (!string.IsNullOrWhiteSpace(jamlResult))
+                        {
+                            SetStatus("Cloud AI responded!", "#6B46C1");
+                        }
                     }
                 }
-                catch (Exception localEx)
+                catch (Exception cloudEx)
                 {
-                    DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
-                    // Local not available - that's OK, we'll show helpful message
+                    DebugLogger.Log("GenieWidget", $"Cloud API error: {cloudEx.Message}");
+                }
+
+                // Fall back to local Host API if cloud failed
+                if (string.IsNullOrWhiteSpace(jamlResult))
+                {
+                    try
+                    {
+                        _httpClient.Timeout = TimeSpan.FromSeconds(5);
+                        SetStatus("Trying local genie...", "#6B46C1");
+                        var localResponse = await _httpClient.PostAsync(LOCAL_GENIE_API, content);
+
+                        if (localResponse.IsSuccessStatusCode)
+                        {
+                            var localResponseText = await localResponse.Content.ReadAsStringAsync();
+                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
+                            jamlResult = localResult?.jaml;
+                        }
+                    }
+                    catch (Exception localEx)
+                    {
+                        DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(jamlResult))
                 {
-                    // Local API not running - show helpful message
-                    SetStatus("💡 Start Host API widget first! (localhost:3141)", "#F59E0B");
+                    SetStatus("Both cloud and local APIs unavailable", "#EF4444");
                     return;
                 }
 
@@ -180,36 +207,29 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                // Save to filters directory
-                var filtersPath = System.IO.Path.Combine(AppContext.BaseDirectory, "filters");
-
-                if (!System.IO.Directory.Exists(filtersPath))
-                    System.IO.Directory.CreateDirectory(filtersPath);
-
-                // Sanitize filename
                 var fileName = GeneratedFilterName
                     .Replace(" ", "_")
-                    .Replace("/", "_")
-                    .Replace("\\", "_");
+                    .Replace("/", "-")
+                    .Replace("\\", "-")
+                    .Replace(":", "-");
 
-                var filePath = System.IO.Path.Combine(filtersPath, $"{fileName}.json");
+                var filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}.jaml");
 
-                // Check if file exists, add number if needed
                 int counter = 1;
                 while (System.IO.File.Exists(filePath))
                 {
-                    filePath = System.IO.Path.Combine(filtersPath, $"{fileName}_{counter}.json");
+                    filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}_{counter}.jaml");
                     counter++;
                 }
 
                 await System.IO.File.WriteAllTextAsync(filePath, GeneratedJson);
 
-                SetStatus($"💾 Saved to {System.IO.Path.GetFileName(filePath)}", "#22C55E");
+                SetStatus($"Saved to {System.IO.Path.GetFileName(filePath)}", "#22C55E");
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError("GenieWidget", $"Save failed: {ex.Message}");
-                SetStatus($"❌ Save failed: {ex.Message}", "#EF4444");
+                SetStatus($"Save failed: {ex.Message}", "#EF4444");
             }
         }
 
@@ -275,11 +295,17 @@ namespace BalatroSeedOracle.ViewModels
             GenerateFilterCommand.NotifyCanExecuteChanged();
         }
 
-        // Response models
         private class LocalGenieResponse
         {
             public string? jaml { get; set; }
             public string? error { get; set; }
+        }
+
+        private class CloudGenieResponse
+        {
+            public string? Jaml { get; set; }
+            public string? Filter { get; set; }
+            public string? Error { get; set; }
         }
     }
 }

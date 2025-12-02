@@ -202,8 +202,8 @@
                                                HorizontalAlignment="Center"/>
                                 </StackPanel>
 
-                                <!-- Easing and Test Button -->
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <!-- Easing, Duration and Test Button -->
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                                     <StackPanel Grid.Column="0" Spacing="4">
                                         <TextBlock Text="Easing"
                                                    FontSize="11"
@@ -216,8 +216,20 @@
                                                   Height="28"/>
                                     </StackPanel>
 
-                                    <Button Grid.Column="1"
-                                            Content="Test Transition"
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="Duration"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Left"/>
+                                        <ComboBox ItemsSource="{Binding DurationOptions}"
+                                                  SelectedItem="{Binding SelectedDuration}"
+                                                  Width="70"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            Content="Test"
                                             Classes="btn-green"
                                             Command="{Binding TestTransitionCommand}"
                                             VerticalAlignment="Bottom"

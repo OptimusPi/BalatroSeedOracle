@@ -72,12 +72,6 @@
                                     Height="24"
                                     Padding="8,3"
                                     FontSize="10"/>
-                            <Button Content="Animate To..."
-                                    Classes="btn-green"
-                                    Command="{Binding AnimateToMixCommand}"
-                                    Height="24"
-                                    Padding="8,3"
-                                    FontSize="10"/>
                             <Button Content="Reset"
                                     Classes="btn-red"
                                     Command="{Binding ResetMixerCommand}"

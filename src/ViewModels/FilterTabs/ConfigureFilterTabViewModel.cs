@@ -596,9 +596,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void NotifyJsonEditorOfChanges()
         {
-            if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
+            if (_parentViewModel?.JamlEditorTab is JamlEditorTabViewModel jamlVm)
             {
-                jsonEditorVm.AutoGenerateFromVisual();
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 

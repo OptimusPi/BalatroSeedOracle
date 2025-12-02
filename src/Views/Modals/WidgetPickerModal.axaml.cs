@@ -21,11 +21,13 @@ namespace BalatroSeedOracle.Views.Modals
         private Button? _transitionDesignerButton;
         private Button? _fertilizerButton;
         private Button? _hostApiButton;
+        private Button? _eventFXButton;
         private TextBlock? _musicMixerStatus;
         private TextBlock? _visualizerStatus;
         private TextBlock? _transitionDesignerStatus;
         private TextBlock? _fertilizerStatus;
         private TextBlock? _hostApiStatus;
+        private TextBlock? _eventFXStatus;
 
         public WidgetPickerModal()
         {
@@ -40,11 +42,13 @@ namespace BalatroSeedOracle.Views.Modals
             _transitionDesignerButton = this.FindControl<Button>("TransitionDesignerButton");
             _fertilizerButton = this.FindControl<Button>("FertilizerButton");
             _hostApiButton = this.FindControl<Button>("HostApiButton");
+            _eventFXButton = this.FindControl<Button>("EventFXButton");
             _musicMixerStatus = this.FindControl<TextBlock>("MusicMixerStatus");
             _visualizerStatus = this.FindControl<TextBlock>("VisualizerStatus");
             _transitionDesignerStatus = this.FindControl<TextBlock>("TransitionDesignerStatus");
             _fertilizerStatus = this.FindControl<TextBlock>("FertilizerStatus");
             _hostApiStatus = this.FindControl<TextBlock>("HostApiStatus");
+            _eventFXStatus = this.FindControl<TextBlock>("EventFXStatus");
 
             UpdateButtonStates();
         }
@@ -65,6 +69,7 @@ namespace BalatroSeedOracle.Views.Modals
             );
             UpdateButton(_fertilizerButton, _fertilizerStatus, _toggles.ShowFertilizer);
             UpdateButton(_hostApiButton, _hostApiStatus, _toggles.ShowHostServer);
+            UpdateButton(_eventFXButton, _eventFXStatus, _toggles.ShowEventFX);
         }
 
         private void UpdateButton(Button? button, TextBlock? status, bool isEnabled)
@@ -110,6 +115,12 @@ namespace BalatroSeedOracle.Views.Modals
             SaveAndRefresh();
         }
 
+        private void OnEventFXClick(object? sender, RoutedEventArgs e)
+        {
+            _toggles.ShowEventFX = !_toggles.ShowEventFX;
+            SaveAndRefresh();
+        }
+
         private void SaveAndRefresh()
         {
             // Save to profile
@@ -120,7 +131,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _userProfileService.SaveProfile(profile);
                 DebugLogger.Log(
                     "WidgetPickerModal",
-                    $"Saved toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}"
+                    $"Saved toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}, EventFX={_toggles.ShowEventFX}"
                 );
             }
 

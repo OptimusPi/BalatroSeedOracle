@@ -16,6 +16,8 @@ namespace BalatroSeedOracle.Helpers
         public static string UserDir => EnsureDir(Path.Combine(DataRoot, "User"));
         public static string FiltersDir => EnsureDir(Path.Combine(DataRoot, "Filters"));
         public static string WordListsDir => EnsureDir(Path.Combine(DataRoot, "WordLists"));
+        public static string TransitionsDir => EnsureDir(Path.Combine(DataRoot, "Transitions"));
+        public static string EventFXDir => EnsureDir(Path.Combine(DataRoot, "EventFX"));
 
         public static string EnsureDir(string path)
         {
@@ -32,18 +34,22 @@ namespace BalatroSeedOracle.Helpers
                 try
                 {
                     Directory.CreateDirectory(overrideDir);
-                    DebugLogger.Log("AppPaths", $"Using custom data directory: {overrideDir}");
                     return overrideDir;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    // Log the failure so user knows why their custom dir didn't work
-                    DebugLogger.LogError(
-                        "AppPaths",
-                        $"❌ Failed to create custom data directory '{overrideDir}': {ex.Message}"
-                    );
-                    DebugLogger.LogError("AppPaths", "Falling back to default AppData location");
                 }
+            }
+
+            var exeDir = AppContext.BaseDirectory;
+            var localData = Path.Combine(exeDir, "Data");
+            try
+            {
+                Directory.CreateDirectory(localData);
+                return localData;
+            }
+            catch
+            {
             }
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

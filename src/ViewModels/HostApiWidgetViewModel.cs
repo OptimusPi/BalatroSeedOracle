@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.API;
@@ -21,6 +22,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
     private CancellationTokenSource? _serverCts;
     private bool _disposed;
     private int _backgroundSearchCount;
+    private readonly UserProfileService? _userProfileService;
 
     [ObservableProperty]
     private bool _isServerRunning;
@@ -38,6 +40,9 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
     private int _port = 3141;
 
     [ObservableProperty]
+    private int _threadCount = Environment.ProcessorCount;
+
+    [ObservableProperty]
     private string _serverUrl = "http://localhost:3141/";
 
     [ObservableProperty]
@@ -45,6 +50,11 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 
     [ObservableProperty]
     private int _requestCount;
+
+    [ObservableProperty]
+    private string _logText = "";
+
+    public int MaxThreads => Environment.ProcessorCount;
 
     public ICommand StartServerCommand { get; }
     public ICommand StopServerCommand { get; }
@@ -67,17 +77,48 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         OpenWebUiCommand = new RelayCommand(OpenWebUi, () => IsServerRunning);
         ClearLogCommand = new RelayCommand(ClearLog);
 
+        // Load saved settings
+        _userProfileService = App.GetService<UserProfileService>();
+        LoadSettings();
+
         UpdateServerUrl();
+    }
+
+    private void LoadSettings()
+    {
+        if (_userProfileService == null) return;
+        var profile = _userProfileService.GetProfile();
+        var settings = profile.HostApiSettings;
+        Host = settings.Host;
+        Port = settings.Port;
+        ThreadCount = settings.ThreadCount;
+    }
+
+    private void SaveSettings()
+    {
+        if (_userProfileService == null) return;
+        var profile = _userProfileService.GetProfile();
+        profile.HostApiSettings.Host = Host;
+        profile.HostApiSettings.Port = Port;
+        profile.HostApiSettings.ThreadCount = ThreadCount;
+        _userProfileService.SaveProfile(profile);
     }
 
     partial void OnHostChanged(string value)
     {
         UpdateServerUrl();
+        SaveSettings();
     }
 
     partial void OnPortChanged(int value)
     {
         UpdateServerUrl();
+        SaveSettings();
+    }
+
+    partial void OnThreadCountChanged(int value)
+    {
+        SaveSettings();
     }
 
     private void UpdateServerUrl()
@@ -94,7 +135,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
             AddLog("Starting server...");
 
             _serverCts = new CancellationTokenSource();
-            _server = new MotelyApiServer(Host, Port, OnServerLog);
+            _server = new MotelyApiServer(Host, Port, OnServerLog, ThreadCount);
 
             // Start server in background
             _ = Task.Run(async () =>
@@ -191,6 +232,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 
     private void OnServerLog(string message)
     {
+        Console.WriteLine(message);
         Dispatcher.UIThread.Post(() =>
         {
             AddLog(message);
@@ -214,20 +256,24 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 
     private void AddLog(string message)
     {
+        var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
+        RequestLog.Add(line);
+        
         // Keep only last 100 entries
         while (RequestLog.Count > 100)
         {
             RequestLog.RemoveAt(0);
         }
 
-        RequestLog.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
         RequestCount = RequestLog.Count;
+        LogText = string.Join("\n", RequestLog);
     }
 
     private void ClearLog()
     {
         RequestLog.Clear();
         RequestCount = 0;
+        LogText = "";
     }
 
     private void OpenWebUi()

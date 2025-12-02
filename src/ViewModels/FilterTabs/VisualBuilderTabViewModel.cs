@@ -1499,10 +1499,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_isLoadingFilter)
                 return;
 
-            if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
+            if (_parentViewModel?.JamlEditorTab is JamlEditorTabViewModel jamlVm)
             {
-                // Trigger the JSON generation automatically
-                jsonEditorVm.AutoGenerateFromVisual();
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 

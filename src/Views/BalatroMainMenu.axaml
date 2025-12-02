@@ -125,6 +125,11 @@
                                       IsVisible="{Binding IsHostApiWidgetVisible}"
                                       ClipToBounds="False"/>
 
+            <!-- ✨ EVENT FX WIDGET - Configure event animations -->
+            <components:EventFXWidget x:Name="EventFXWidget"
+                                      IsVisible="{Binding IsEventFXWidgetVisible}"
+                                      ClipToBounds="False"/>
+
         </Grid>
         
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->

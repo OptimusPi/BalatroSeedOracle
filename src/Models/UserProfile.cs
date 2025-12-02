@@ -62,6 +62,32 @@ namespace BalatroSeedOracle.Models
         /// Feature toggles for experimental widgets (all default OFF)
         /// </summary>
         public FeatureToggles FeatureToggles { get; set; } = new();
+
+        /// <summary>
+        /// Host API server settings
+        /// </summary>
+        public HostApiSettings HostApiSettings { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Settings for the Host API server widget
+    /// </summary>
+    public class HostApiSettings
+    {
+        /// <summary>
+        /// Host address (default: localhost)
+        /// </summary>
+        public string Host { get; set; } = "localhost";
+
+        /// <summary>
+        /// Port number (default: 3141)
+        /// </summary>
+        public int Port { get; set; } = 3141;
+
+        /// <summary>
+        /// Number of threads to use for searches (default: all cores)
+        /// </summary>
+        public int ThreadCount { get; set; } = Environment.ProcessorCount;
     }
 
     /// <summary>
@@ -95,6 +121,12 @@ namespace BalatroSeedOracle.Models
         /// Manages the shared seed pile for faster searching
         /// </summary>
         public bool ShowFertilizer { get; set; } = false;
+
+        /// <summary>
+        /// Show Event FX widget (default OFF)
+        /// Configure animations for app events like intro
+        /// </summary>
+        public bool ShowEventFX { get; set; } = false;
     }
 
     /// <summary>

@@ -466,30 +466,16 @@ namespace BalatroSeedOracle.Services
         public void PlaySfx(string name, float volume = 1.0f)
         {
             if (!_sfxPlayers.TryGetValue(name, out var player))
-            {
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ERROR: SFX '{name}' not found or not loaded"
-                );
                 return;
-            }
 
             try
             {
-                // Set volume
                 player.Volume = Math.Clamp(volume, 0f, 1f);
-
-                // Stop any existing playback and restart from beginning
-                player.Stop();
+                player.Seek(TimeSpan.Zero);
                 player.Play();
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] Playing SFX: {name} at volume {volume:F2}"
-                );
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ERROR playing SFX '{name}': {ex.Message}"
-                );
             }
         }
 

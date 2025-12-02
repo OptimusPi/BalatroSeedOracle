@@ -127,6 +127,23 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _selectedEasing = "Linear";
 
+        // Duration options
+        public ObservableCollection<string> DurationOptions { get; } = new()
+        {
+            "0.5s", "1s", "2s", "3s", "5s", "10s"
+        };
+
+        [ObservableProperty]
+        private string _selectedDuration = "2s";
+
+        partial void OnSelectedDurationChanged(string value)
+        {
+            if (double.TryParse(value.TrimEnd('s'), out var seconds))
+            {
+                TransitionDuration = seconds;
+            }
+        }
+
         [RelayCommand]
         private void RefreshPresets()
         {
