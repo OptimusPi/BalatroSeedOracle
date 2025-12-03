@@ -81,6 +81,7 @@
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
+    <PackageReference Include="Dock.Avalonia" />
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
