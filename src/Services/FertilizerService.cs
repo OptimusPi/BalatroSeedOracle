@@ -108,7 +108,11 @@ public class FertilizerService : IDisposable
                 .Distinct()
                 .ToList();
 
-            if (seeds.Count == 0) return;
+            if (seeds.Count == 0) 
+            {
+                File.Delete(_txtPath); // Delete empty file
+                return;
+            }
 
             DebugLogger.Log("FertilizerService", $"Migrating {seeds.Count} seeds from txt to db");
 
@@ -122,6 +126,10 @@ public class FertilizerService : IDisposable
             appender.Close();
 
             DebugLogger.Log("FertilizerService", "Migration complete");
+            
+            // Delete the txt file after successful migration
+            File.Delete(_txtPath);
+            DebugLogger.Log("FertilizerService", "fertilizer.txt deleted after successful import");
         }
         catch (Exception ex)
         {

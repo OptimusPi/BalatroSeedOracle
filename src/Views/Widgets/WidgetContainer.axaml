@@ -3,12 +3,32 @@
              xmlns:widgets="using:BalatroSeedOracle.Views.Widgets"
              xmlns:components="using:BalatroSeedOracle.Components.Widgets"
              xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:models="using:BalatroSeedOracle.Models"
              x:Class="BalatroSeedOracle.Views.Widgets.WidgetContainer">
     
+    <UserControl.DataTemplates>
+        <!-- DataTemplate for IWidget objects -->
+        <DataTemplate DataType="models:IWidget">
+            <Border Background="{StaticResource ModalBackground}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="4">
+                <TextBlock Text="{Binding Title}"
+                           FontSize="16"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
     <!-- Widget container with docking support -->
     <Grid Name="MainGrid">
         <!-- Main canvas for widgets -->
-        <Canvas Name="WidgetCanvas" Background="Transparent">
+        <Canvas Name="WidgetCanvas" 
+                Background="{x:Null}"
+                IsHitTestVisible="False">
             
             <!-- Widgets collection -->
             <ItemsControl Name="WidgetsItemsControl"
@@ -26,15 +46,12 @@
                         <Panel Canvas.Left="{Binding Position.X}" 
                                Canvas.Top="{Binding Position.Y}"
                                Width="{Binding Size.Width}"
-                               Height="{Binding Size.Height}">
+                               Height="{Binding Size.Height}"
+                               IsHitTestVisible="True">
                             
-                            <!-- Widget content based on state -->
-                            <TextBlock Text="Widget Content Placeholder" 
-                                     HorizontalAlignment="Center"
-                                     VerticalAlignment="Center"
-                                     FontSize="14"
-                                     Foreground="White"
-                                     IsVisible="{Binding State, Converter={x:Static converters:WidgetStateConverters.Instance}, ConverterParameter=isopen}"/>
+                            <!-- Widget content based on state - display actual widget content -->
+                            <ContentPresenter Content="{Binding}"
+                                            IsVisible="{Binding State, Converter={x:Static converters:WidgetStateConverters.Instance}, ConverterParameter=isopen}"/>
                             
                             <!-- Minimized widget representation -->
                             <Border IsVisible="{Binding State, Converter={x:Static converters:WidgetStateConverters.Instance}, ConverterParameter=isminimized}"
