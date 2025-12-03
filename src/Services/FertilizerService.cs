@@ -296,7 +296,10 @@ public class FertilizerService : IDisposable
             _connection?.Close();
             _connection?.Dispose();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("FertilizerService", $"Error during disposal: {ex.Message}");
+        }
 
         _disposed = true;
     }

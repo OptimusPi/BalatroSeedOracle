@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:widgets="using:BalatroSeedOracle.Views.Widgets"
+             xmlns:components="using:BalatroSeedOracle.Components.Widgets"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Views.Widgets.WidgetContainer">
+    
+    <!-- Widget container with docking support -->
+    <Grid Name="MainGrid">
+        <!-- Main canvas for widgets -->
+        <Canvas Name="WidgetCanvas" Background="Transparent">
+            
+            <!-- Widgets collection -->
+            <ItemsControl Name="WidgetsItemsControl"
+                          ItemsSource="{Binding Widgets}">
+                
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Widget display -->
+                        <Panel Canvas.Left="{Binding Position.X}" 
+                               Canvas.Top="{Binding Position.Y}"
+                               Width="{Binding Size.Width}"
+                               Height="{Binding Size.Height}">
+                            
+                            <!-- Widget content based on state -->
+                            <TextBlock Text="Widget Content Placeholder" 
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     FontSize="14"
+                                     Foreground="White"
+                                     IsVisible="{Binding State, Converter={x:Static converters:WidgetStateConverters.Instance}, ConverterParameter=isopen}"/>
+                            
+                            <!-- Minimized widget representation -->
+                            <Border IsVisible="{Binding State, Converter={x:Static converters:WidgetStateConverters.Instance}, ConverterParameter=isminimized}"
+                                    Width="100" Height="100"
+                                    Background="#40808080"
+                                    CornerRadius="8">
+                                
+                                <Grid>
+                                    <!-- Widget icon -->
+                                    <TextBlock Text="{Binding IconResource, FallbackValue=📦}"
+                                             FontSize="32"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Foreground="White"/>
+                                    
+                                    <!-- Notification badge -->
+                                    <Border Background="Red"
+                                            CornerRadius="10"
+                                            Padding="4,2"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Margin="0,5,5,0"
+                                            IsVisible="{Binding NotificationCount, Converter={x:Static converters:WidgetStateConverters.GreaterThanZero}}">
+                                        <TextBlock Text="{Binding NotificationCount}"
+                                                 Foreground="White"
+                                                 FontSize="10"
+                                                 FontWeight="Bold"/>
+                                    </Border>
+                                    
+                                    <!-- Progress bar -->
+                                    <ProgressBar Value="{Binding ProgressValue}"
+                                               Height="4"
+                                               Background="Transparent"
+                                               Foreground="Red"
+                                               VerticalAlignment="Bottom"
+                                               Margin="8"
+                                               IsVisible="{Binding ProgressValue, Converter={x:Static converters:WidgetStateConverters.GreaterThanZero}}"/>
+                                    
+                                    <!-- Widget title -->
+                                    <TextBlock Text="{Binding Title}"
+                                             FontSize="10"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Bottom"
+                                             Margin="2"
+                                             Foreground="White"
+                                             TextAlignment="Center"/>
+                                </Grid>
+                                
+                            </Border>
+                            
+                        </Panel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+        </Canvas>
+        
+        <!-- Dock zones overlay (shown during drag operations) -->
+        <Canvas Name="DockZonesCanvas"
+                Background="Transparent"
+                IsVisible="{Binding ShowDockZones}"
+                ZIndex="1000">
+            
+            <ItemsControl Name="DockZonesItemsControl"
+                          ItemsSource="{Binding DockZones}">
+                
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <components:DockZoneOverlay Canvas.Left="{Binding Bounds.X}"
+                                               Canvas.Top="{Binding Bounds.Y}"
+                                               Width="{Binding Bounds.Width}"
+                                               Height="{Binding Bounds.Height}"
+                                               DisplayText="{Binding DisplayText}"
+                                               IsHighlighted="{Binding IsHighlighted}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+        </Canvas>
+        
+        <!-- Grid overlay for positioning feedback (optional) -->
+        <Canvas Name="GridOverlay"
+                Background="Transparent"
+                IsVisible="False"
+                ZIndex="500"/>
+        
+    </Grid>
+</UserControl>

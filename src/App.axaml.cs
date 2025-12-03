@@ -95,7 +95,7 @@ public partial class App : Application
         }
         catch
         {
-            // If crash log writing fails, at least we logged to debug
+            throw;
         }
 
         // Mark as handled to prevent app crash
