@@ -76,3 +76,6 @@ avalonia.license
 **/appsettings.*.json
 !**/appsettings.json
 /node_modules
+.samples_imported
+fertilizer.db
+fertilizer.db.wal
