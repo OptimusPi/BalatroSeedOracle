@@ -24,6 +24,15 @@
     <!-- Suppress only the most problematic warnings -->
     <NoWarn>$(NoWarn);CS0108;CA1515;CA2227;CA1002;CA1707;CA1819;CA1034;CA1003;CA1052;CA2263</NoWarn>
   </PropertyGroup>
+  <!-- Release build settings for production deployment -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
@@ -69,6 +78,8 @@
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj" />
+    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj">
+      <SetConfiguration>BSO_LIBRARY</SetConfiguration>
+    </ProjectReference>
   </ItemGroup>
 </Project>
