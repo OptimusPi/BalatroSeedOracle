@@ -18,8 +18,8 @@ namespace BalatroSeedOracle.Services
         private readonly DateTime _startupTime = DateTime.Now; // Track startup time
         private const double GridSpacingX = 90.0; // Horizontal grid spacing (widget width + spacing)
         private const double GridSpacingY = 90.0; // Vertical grid spacing (widget height + spacing)
-        private const double GridOriginX = 20.0; // Grid starts 20px from left edge
-        private const double GridOriginY = 45.0; // Grid starts at y=45 (no more Welcome text, allows stacking)
+        private const double GridOriginX = 0.0; // Grid starts at true (0,0) to match DraggableWidgetBehavior
+        private const double GridOriginY = 0.0; // Grid starts at true (0,0) to match DraggableWidgetBehavior
         private const double MinimizedWidgetSize = 80.0; // Size of minimized widget icons (with padding)
         private const double ExpandedWidgetWidth = 350.0; // Standard expanded widget width
         private const double ExpandedWidgetHeight = 450.0; // Standard expanded widget height

@@ -25,8 +25,7 @@
             </i:Interaction.Behaviors>
 
             <Border Background="{StaticResource ModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
+                    BorderThickness="0"
                     CornerRadius="8"
                     Width="64" Height="64"
                     Classes="widget-header"
@@ -61,7 +60,7 @@
                         <!-- AUDIO SECTION -->
                         <Border Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Blue}"
-                                BorderThickness="2"
+                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="10">
                             <StackPanel Spacing="8">
@@ -111,7 +110,7 @@
                         <!-- VISUAL SECTION -->
                         <Border Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Purple}"
-                                BorderThickness="2"
+                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="10">
                             <StackPanel Spacing="8">
@@ -161,7 +160,7 @@
                         <!-- TEST TRANSITION SECTION -->
                         <Border Background="{StaticResource DarkBackground}"
                                 BorderBrush="{StaticResource Gold}"
-                                BorderThickness="2"
+                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="10">
                             <StackPanel Spacing="10">

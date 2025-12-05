@@ -2,50 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Components.ItemConfigPanel"
              x:DataType="vm:ItemConfigPanelViewModel">
 
-    <Border Background="{StaticResource ModalBackground}"
-            BorderBrush="{StaticResource ModalBorder}"
-            BorderThickness="0"
-            CornerRadius="8"
-            Padding="0">
-        <Grid RowDefinitions="Auto,*,Auto">
-            <!-- Header -->
-            <Border Grid.Row="0"
-                    Background="{StaticResource DarkBackground}"
-                    BorderThickness="0,0,0,2"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    Padding="16,12">
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding ItemName}"
-                               FontFamily="{StaticResource BalatroFont}"
-                               FontSize="16"
-                               Foreground="{StaticResource Gold}"
-                               VerticalAlignment="Center"/>
-                    <Button Grid.Column="1"
-                            Content="×"
-                            Command="{Binding CloseCommand}"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Foreground="{StaticResource LightGrey}"
-                            FontSize="24"
-                            Width="32"
-                            Height="32"
-                            Padding="0"
-                            Cursor="Hand">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Foreground" Value="{StaticResource White}"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
-                </Grid>
-            </Border>
-
-            <!-- Scrollable Configuration Area - SIMPLE AND COMPLETE -->
-            <ScrollViewer Grid.Row="1"
+    <Grid RowDefinitions="*,Auto">
+        <!-- Scrollable Configuration Area -->
+        <ScrollViewer Grid.Row="0"
                           VerticalScrollBarVisibility="Auto"
                           Padding="16,12">
                 <StackPanel Spacing="12">
@@ -63,14 +26,14 @@
 
                         <!-- Score (Should items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" IsVisible="{Binding IsScoreVisible}">
-                            <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <NumericUpDown Value="{Binding Score}" Minimum="1" Maximum="1000" FontSize="11" Height="24"/>
+                            <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="14" Foreground="{StaticResource Gold}"/>
+                            <controls:SpinnerControl Value="{Binding Score}" Minimum="1" Maximum="1000" Height="32"/>
                         </StackPanel>
 
                         <!-- Min Count (Must items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="4" Spacing="4" IsVisible="{Binding IsMinCountVisible}">
-                            <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="11" Height="24"/>
+                            <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="14" Foreground="{StaticResource Gold}"/>
+                            <controls:SpinnerControl Value="{Binding MinCount}" Minimum="1" Maximum="10" Height="32"/>
                         </StackPanel>
 
                         <!-- Edition (Jokers + StandardCards) -->
@@ -168,29 +131,26 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Footer Buttons -->
-            <Border Grid.Row="2"
-                    Background="{StaticResource DarkBackground}"
-                    BorderThickness="0,2,0,0"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    Padding="12">
-                <Grid ColumnDefinitions="Auto,8,Auto">
-                    <Button Grid.Column="0"
-                            Content="Cancel"
-                            Command="{Binding CancelCommand}"
-                            Classes="btn-cancel"
-                            Height="32"
-                            FontSize="12"
-                            Width="100"/>
-                    <Button Grid.Column="2"
-                            Content="Apply"
-                            Command="{Binding ApplyCommand}"
-                            Classes="btn-blue"
-                            Height="32"
-                            FontSize="12"
-                            Width="100"/>
-                </Grid>
-            </Border>
-        </Grid>
-    </Border>
+        <!-- Footer Buttons -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkBackground}"
+                BorderThickness="0"
+                CornerRadius="0,0,12,12"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Classes="btn-cancel"
+                        Height="36"
+                        FontSize="13"
+                        Width="120"/>
+                <Button Content="Apply"
+                        Command="{Binding ApplyCommand}"
+                        Classes="btn-green"
+                        Height="36"
+                        FontSize="13"
+                        Width="120"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>

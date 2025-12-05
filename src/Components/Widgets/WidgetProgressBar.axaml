@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.Widgets.WidgetProgressBar">
+    
+    <!-- Thermometer-style progress bar -->
+    <ProgressBar Name="ThermometerProgress"
+                 Classes="thermometer-progress"
+                 Value="{Binding Progress}"
+                 Minimum="0"
+                 Maximum="1"
+                 Height="6"
+                 CornerRadius="3"
+                 Background="#30FF0000"
+                 Foreground="#FFFF0000"/>
+</UserControl>

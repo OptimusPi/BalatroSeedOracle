@@ -29,8 +29,7 @@
                 <Grid>
                     <!-- Icon with status indicator -->
                     <Border Background="{StaticResource ModalGrey}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
+                                                        BorderThickness="0"
                             CornerRadius="8"
                             Width="64" Height="64"
                             Classes="widget-header"
@@ -38,7 +37,7 @@
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
                         <Grid>
-                            <TextBlock Text="🌐" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <icons:PackIconMaterial Kind="Web" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
                             <!-- Status dot -->
                             <Ellipse Width="12" Height="12"
                                      HorizontalAlignment="Right"
@@ -54,7 +53,7 @@
                     <!-- Notification badge for background searches -->
                     <Border Background="{StaticResource Red}"
                             BorderBrush="{StaticResource White}"
-                            BorderThickness="2"
+                            BorderThickness="0"
                             CornerRadius="10"
                             MinWidth="20" Height="20"
                             Padding="4,0"
@@ -71,7 +70,7 @@
                     </Border>
                 </Grid>
 
-                <TextBlock Text="Host API"
+                <TextBlock Text="{Binding WidgetTitle}"
                            FontSize="14"
                            FontFamily="{StaticResource BalatroFont}"
                            Foreground="{StaticResource White}"

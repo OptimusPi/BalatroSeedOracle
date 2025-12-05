@@ -39,8 +39,7 @@
             <Grid Width="64" Height="64">
                 <!-- Background Card -->
                 <Border Background="{StaticResource ModalGrey}"
-                        BorderBrush="{StaticResource ModalBorder}"
-                        BorderThickness="2"
+                                                BorderThickness="0"
                         CornerRadius="8"
                         Classes="widget-header">
 
@@ -58,8 +57,7 @@
                         Height="6"
                         Margin="4,0,4,4"
                         Background="{StaticResource DarkBackground}"
-                        BorderBrush="{StaticResource ModalBorder}"
-                        BorderThickness="1"
+                                                BorderThickness="1"
                         CornerRadius="2">
                     <Border Background="{StaticResource Red}"
                             HorizontalAlignment="Left"

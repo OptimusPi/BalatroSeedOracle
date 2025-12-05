@@ -57,11 +57,11 @@
                     <Button Grid.Row="1"
                             x:Name="BackButton"
                             Content="Back"
-                            Classes="back-button"
-                            HorizontalAlignment="Center"
-                            Width="112"
-                            Height="36"
-                            Margin="0,2,0,6"/>
+                            Classes="btn-orange"
+                            HorizontalAlignment="Stretch"
+                            Height="48"
+                            FontSize="16"
+                            Margin="0,8,0,8"/>
 
                 </Grid>
             </Border>

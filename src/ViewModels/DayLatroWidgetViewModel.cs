@@ -9,6 +9,9 @@ using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Components;
+using Avalonia;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
@@ -17,7 +20,7 @@ namespace BalatroSeedOracle.ViewModels
     /// ViewModel for the DayLatroWidget
     /// Manages all state, business logic, and commands for the daily Balatro challenge widget
     /// </summary>
-    public class DayLatroWidgetViewModel : BaseWidgetViewModel, IDisposable
+    public class DayLatroWidgetViewModel : BaseWidgetViewModel, IWidget, IDisposable
     {
         #region Services (Injected)
 
@@ -199,12 +202,23 @@ namespace BalatroSeedOracle.ViewModels
                 profileService ?? throw new ArgumentNullException(nameof(profileService));
 
             // Initialize widget properties
-            WidgetTitle = "Daylatro";
             WidgetIcon = "📅";
 
-            // Set fixed position for DayLatro widget - third position (90px spacing)
-            PositionX = 20;
-            PositionY = 260;
+            // Set grid-based position for DayLatro widget - grid position (0,2)
+            var layoutService = App.GetService<IWidgetLayoutService>();
+            if (layoutService != null)
+            {
+                var gridPosition = new Avalonia.Point(0, 2); // Grid coordinates
+                var pixelPosition = layoutService.CalculatePixelPosition(gridPosition);
+                PositionX = pixelPosition.X;
+                PositionY = pixelPosition.Y;
+            }
+            else
+            {
+                // Fallback to hardcoded if service not available
+                PositionX = 20;
+                PositionY = 260;
+            }
 
             // Initialize commands
             SubmitScoreCommand = new RelayCommand(OnSubmitScore, CanSubmitScore);
@@ -578,6 +592,87 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         #endregion
+
+        #region IWidget Implementation
+
+        public string Id => "daylatro";
+        public string Title 
+        {
+            get => WidgetTitle;
+            set => WidgetTitle = value;
+        }
+        public string IconResource { get; set; } = "Calendar";
+        public WidgetState State => IsMinimized ? WidgetState.Minimized : WidgetState.Open;
+        public int NotificationCount { get; set; } = 0;
+        public double ProgressValue { get; set; } = 0.0;
+        public bool ShowCloseButton { get; set; } = false;
+        public bool ShowPopOutButton { get; set; } = false;
+        public Point Position 
+        { 
+            get => new Point(PositionX, PositionY);
+            set { PositionX = value.X; PositionY = value.Y; }
+        }
+        public Size Size 
+        { 
+            get => new Size(Width, Height);
+            set { Width = value.Width; Height = value.Height; }
+        }
+        public bool IsDocked { get; set; } = false;
+        public DockPosition DockPosition { get; set; } = DockPosition.None;
+        public object? PersistedState { get; set; }
+
+        #pragma warning disable CS0067
+        public event EventHandler<WidgetStateChangedEventArgs>? StateChanged;
+        public event EventHandler<EventArgs>? CloseRequested;
+        #pragma warning restore CS0067
+
+        public async Task OpenAsync()
+        {
+            ExpandCommand?.Execute(null);
+        }
+
+        public async Task MinimizeAsync()
+        {
+            MinimizeCommand?.Execute(null);
+        }
+
+        public async Task CloseAsync()
+        {
+            CloseCommand?.Execute(null);
+        }
+
+        public UserControl GetContentView()
+        {
+            var widget = new Components.DayLatroWidget();
+            widget.DataContext = this;
+            return widget;
+        }
+
+        public void UpdateNotifications(int count)
+        {
+            NotificationCount = Math.Max(0, count);
+            // DayLatro uses ShowNewDayBadge instead
+            ShowNewDayBadge = count > 0;
+        }
+
+        public void UpdateProgress(double value)
+        {
+            ProgressValue = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        public async Task<object?> SaveStateAsync()
+        {
+            return await Task.FromResult(PersistedState);
+        }
+
+        public async Task LoadStateAsync(object? state)
+        {
+            PersistedState = state;
+            await Task.CompletedTask;
+        }
+
+        #endregion
+
     }
 
     /// <summary>

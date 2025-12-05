@@ -85,10 +85,10 @@
         <!-- USE THE WIDGET SYSTEM I BUILT TODAY -->
         <widgets:WidgetContainer x:Name="WidgetDesktop" 
                                  DataContext="{Binding WidgetContainer}"
-                                 ZIndex="1" 
+                                 ZIndex="10" 
                                  ClipToBounds="False"
                                  IsHitTestVisible="True"
-                                 IsVisible="False"/>
+                                 IsVisible="True"/>
         
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
         <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" IsHitTestVisible="True">

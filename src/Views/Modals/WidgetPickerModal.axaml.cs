@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -7,12 +8,17 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.ViewModels.Widgets;
+using BalatroSeedOracle.Views;
 
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class WidgetPickerModal : UserControl
     {
+        public event EventHandler<EventArgs>? CloseRequested;
+
         private readonly UserProfileService? _userProfileService;
+        private readonly WidgetContainerViewModel? _widgetContainer;
         private FeatureToggles _toggles;
 
         // UI Elements
@@ -35,6 +41,13 @@ namespace BalatroSeedOracle.Views.Modals
 
             _userProfileService = App.GetService<UserProfileService>();
             _toggles = _userProfileService?.GetProfile().FeatureToggles ?? new FeatureToggles();
+            
+            // Get widget container from the main menu
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu?.DataContext is BalatroMainMenuViewModel mainMenuVm)
+            {
+                _widgetContainer = mainMenuVm.WidgetContainer;
+            }
 
             // Find UI elements
             _musicMixerButton = this.FindControl<Button>("MusicMixerButton");
@@ -53,72 +66,82 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateButtonStates();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
 
         private void UpdateButtonStates()
         {
-            UpdateButton(_musicMixerButton, _musicMixerStatus, _toggles.ShowMusicMixer);
-            UpdateButton(_visualizerButton, _visualizerStatus, _toggles.ShowVisualizer);
-            UpdateButton(
-                _transitionDesignerButton,
-                _transitionDesignerStatus,
-                _toggles.ShowTransitionDesigner
-            );
-            UpdateButton(_fertilizerButton, _fertilizerStatus, _toggles.ShowFertilizer);
-            UpdateButton(_hostApiButton, _hostApiStatus, _toggles.ShowHostServer);
-            UpdateButton(_eventFXButton, _eventFXStatus, _toggles.ShowEventFX);
+            UpdateButton(_musicMixerButton, _musicMixerStatus, "Audio Mixer");
+            UpdateButton(_visualizerButton, _visualizerStatus, "Audio Visualizer");
+            UpdateButton(_transitionDesignerButton, _transitionDesignerStatus, "Transition Designer");
+            UpdateButton(_fertilizerButton, _fertilizerStatus, "Fertilizer Pile");
+            UpdateButton(_hostApiButton, _hostApiStatus, "Host API Server");
+            UpdateButton(_eventFXButton, _eventFXStatus, "Event Effects");
         }
 
-        private void UpdateButton(Button? button, TextBlock? status, bool isEnabled)
+        private void UpdateButton(Button? button, TextBlock? status, string widgetName)
         {
             if (button == null || status == null)
                 return;
 
-            // Update button class for visual styling
+            // Update button class for visual styling (always create button style)
             button.Classes.Clear();
-            button.Classes.Add(isEnabled ? "btn-green" : "btn-red");
+            button.Classes.Add("btn-green");
 
-            // Update status text
-            status.Text = isEnabled ? "(ON)" : "(OFF)";
+            // Update status text to indicate creation
+            status.Text = "(CREATE)";
         }
 
         private void OnMusicMixerClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowMusicMixer = !_toggles.ShowMusicMixer;
-            SaveAndRefresh();
+            CreateWidget("audio-mixer");
         }
 
         private void OnVisualizerClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowVisualizer = !_toggles.ShowVisualizer;
-            SaveAndRefresh();
+            CreateWidget("audio-visualizer");
         }
 
         private void OnTransitionDesignerClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowTransitionDesigner = !_toggles.ShowTransitionDesigner;
-            SaveAndRefresh();
+            CreateWidget("transition-designer");
         }
 
         private void OnFertilizerClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowFertilizer = !_toggles.ShowFertilizer;
-            SaveAndRefresh();
+            CreateWidget("fertilizer");
         }
 
         private void OnHostApiClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowHostServer = !_toggles.ShowHostServer;
-            SaveAndRefresh();
+            CreateWidget("host-api");
         }
 
         private void OnEventFXClick(object? sender, RoutedEventArgs e)
         {
-            _toggles.ShowEventFX = !_toggles.ShowEventFX;
-            SaveAndRefresh();
+            CreateWidget("event-fx");
+        }
+
+        private async void CreateWidget(string widgetId)
+        {
+            try
+            {
+                // Get widget container from main menu
+                var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                if (mainMenu?.DataContext is BalatroMainMenuViewModel mainMenuVm)
+                {
+                    var widgetContainer = mainMenuVm.WidgetContainer;
+                    if (widgetContainer != null)
+                    {
+                        await widgetContainer.CreateWidgetAsync(widgetId);
+                        
+                        // Close the modal after creating widget
+                        CloseRequested?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log("WidgetPickerModal", $"Failed to create widget {widgetId}: {ex.Message}");
+            }
         }
 
         private void SaveAndRefresh()
@@ -145,5 +168,6 @@ namespace BalatroSeedOracle.Views.Modals
                 mainMenuVm.RefreshFeatureToggles();
             }
         }
+
     }
 }

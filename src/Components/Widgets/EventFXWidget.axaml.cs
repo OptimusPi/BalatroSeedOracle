@@ -4,22 +4,14 @@ using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components;
 
-public partial class EventFXWidget : UserControl
+public partial class EventFXWidget : BaseWidgetControl
 {
     public EventFXWidget()
     {
         InitializeComponent();
     }
 
-    private void OnMinimizedIconPressed(object? sender, PointerPressedEventArgs e)
-    {
-    }
-
-    private void OnMinimizedIconReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (DataContext is EventFXWidgetViewModel vm)
-        {
-            vm.IsMinimized = false;
-        }
-    }
+    // Event handlers inherited from BaseWidgetControl:
+    // - OnMinimizedIconPressed  
+    // - OnMinimizedIconReleased
 }

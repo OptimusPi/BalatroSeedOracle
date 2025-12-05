@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.Widgets.NotificationBadge">
+    
+    <!-- Notification badge with dynamic shape based on count -->
+    <Border Name="BadgeBorder"
+            Classes="notification-badge"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        <TextBlock Name="BadgeText"
+                   Text="{Binding Count}"
+                   FontSize="10"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+    </Border>
+</UserControl>

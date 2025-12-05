@@ -29,21 +29,20 @@
                 <Grid>
                     <!-- Icon -->
                     <Border Background="{StaticResource ModalGrey}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
+                                                        BorderThickness="0"
                             CornerRadius="8"
                             Width="64" Height="64"
                             Classes="widget-header"
                             Cursor="Hand"
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
-                        <TextBlock Text="🌱" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <icons:PackIconMaterial Kind="Sprout" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
                     </Border>
 
                     <!-- Notification badge with seed count (pill shape for larger numbers) -->
                     <Border Background="{StaticResource Red}"
                             BorderBrush="{StaticResource White}"
-                            BorderThickness="2"
+                            BorderThickness="0"
                             CornerRadius="10"
                             MinWidth="20" Height="20"
                             Padding="4,0"
@@ -60,7 +59,7 @@
                     </Border>
                 </Grid>
 
-                <TextBlock Text="Fertilizer"
+                <TextBlock Text="{Binding WidgetTitle}"
                            FontSize="14"
                            FontFamily="{StaticResource BalatroFont}"
                            Foreground="{StaticResource White}"

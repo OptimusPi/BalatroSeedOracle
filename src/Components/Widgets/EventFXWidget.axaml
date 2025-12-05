@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.EventFXWidget"
              x:DataType="vm:EventFXWidgetViewModel"
              x:CompileBindings="True"
@@ -24,17 +25,16 @@
             </i:Interaction.Behaviors>
 
             <Border Background="{StaticResource ModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
+                    BorderThickness="0"
                     CornerRadius="8"
                     Width="64" Height="64"
                     Classes="widget-header"
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="✨" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="AutoFix" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
-            <TextBlock Text="Event FX"
+            <TextBlock Text="{Binding WidgetTitle}"
                        FontSize="14"
                        Foreground="White"
                        HorizontalAlignment="Center"
@@ -57,8 +57,7 @@
 
                         <!-- EVENT SELECTOR -->
                         <Border Background="{StaticResource DarkBackground}"
-                                BorderBrush="{StaticResource Gold}"
-                                BorderThickness="2"
+                                                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="10">
                             <StackPanel Spacing="8">
@@ -78,8 +77,7 @@
 
                         <!-- TRANSITION CONFIG -->
                         <Border Background="{StaticResource DarkBackground}"
-                                BorderBrush="{StaticResource Blue}"
-                                BorderThickness="2"
+                                                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="10">
                             <StackPanel Spacing="8">

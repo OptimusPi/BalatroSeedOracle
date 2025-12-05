@@ -53,9 +53,21 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "🎨";
             IsMinimized = true; // Start minimized
 
-            // Set fixed position for Audio widget - second position (90px spacing)
-            PositionX = 20;
-            PositionY = 170;
+            // Set grid-based position - grid position (0,1)
+            var layoutService = App.GetService<IWidgetLayoutService>();
+            if (layoutService != null)
+            {
+                var gridPosition = new Point(0, 1);
+                var pixelPosition = layoutService.CalculatePixelPosition(gridPosition);
+                PositionX = pixelPosition.X;
+                PositionY = pixelPosition.Y;
+            }
+            else
+            {
+                // Fallback to original position
+                PositionX = 20;
+                PositionY = 170;
+            }
 
             // Initialize shader parameters with default values
             InitializeShaderParameters();

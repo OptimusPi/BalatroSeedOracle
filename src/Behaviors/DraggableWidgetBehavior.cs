@@ -6,6 +6,7 @@ using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactivity;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Behaviors
 {
@@ -262,7 +263,7 @@ namespace BalatroSeedOracle.Behaviors
                     + Math.Abs(currentPoint.Y - _pointerPressedPoint.Y);
 
                 // Only start dragging if moved more than 20 pixels
-                if (distance > 20)
+                if (distance > 10)
                 {
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
@@ -357,8 +358,8 @@ namespace BalatroSeedOracle.Behaviors
                             // Fallback to simple grid snapping if service not available
                             // Note: Using new 90px grid spacing instead of old 20px
                             const double gridSpacing = 90.0;
-                            const double gridOriginX = 20.0;
-                            const double gridOriginY = 20.0;
+                            const double gridOriginX = 0.0;  // Allow true position (0,0)
+                            const double gridOriginY = 0.0;
 
                             // Snap to grid using consistent reference point
                             var offsetX = X - gridOriginX;
@@ -377,8 +378,8 @@ namespace BalatroSeedOracle.Behaviors
                     {
                         // Fallback to simple grid snapping if service access fails
                         const double gridSpacing = 90.0;
-                        const double gridOriginX = 20.0;
-                        const double gridOriginY = 20.0;
+                        const double gridOriginX = 0.0;  // Allow true position (0,0)
+                        const double gridOriginY = 0.0;
 
                         // Snap to grid using consistent reference point
                         var offsetX = X - gridOriginX;
@@ -413,6 +414,72 @@ namespace BalatroSeedOracle.Behaviors
             _pointerPressedPoint = new Point(double.NaN, double.NaN);
             _dragStartPoint = new Point(double.NaN, double.NaN);
             _pressOriginIsOnHandle = false;
+        }
+
+        /// <summary>
+        /// Check if widget is near screen edge for docking (expanded widgets only)
+        /// </summary>
+        private bool IsNearScreenEdge(double x, double y, double parentWidth, double parentHeight)
+        {
+            const double dockThreshold = 50; // Pixels from edge to trigger docking
+            
+            return x < dockThreshold || // Left edge
+                   x > (parentWidth - dockThreshold) || // Right edge  
+                   y < dockThreshold || // Top edge
+                   y > (parentHeight - dockThreshold); // Bottom edge
+        }
+
+        /// <summary>
+        /// Determine dock position based on widget location
+        /// </summary>
+        private DockPosition GetDockPosition(double x, double y, double parentWidth, double parentHeight)
+        {
+            const double dockThreshold = 50;
+            const double cornerThreshold = 200; // Size of corner zones
+            
+            // Left edge
+            if (x < dockThreshold)
+            {
+                if (y < cornerThreshold) return DockPosition.TopLeft;
+                if (y > (parentHeight - cornerThreshold)) return DockPosition.BottomLeft;
+                return DockPosition.LeftFull;
+            }
+            
+            // Right edge  
+            if (x > (parentWidth - dockThreshold))
+            {
+                if (y < cornerThreshold) return DockPosition.TopRight;
+                if (y > (parentHeight - cornerThreshold)) return DockPosition.BottomRight;
+                return DockPosition.RightFull;
+            }
+            
+            return DockPosition.None;
+        }
+
+        /// <summary>
+        /// Apply docking position to widget
+        /// </summary>
+        private void ApplyDockPosition(ViewModels.BaseWidgetViewModel vm, DockPosition position, double parentWidth, double parentHeight)
+        {
+            // Calculate docked bounds based on position
+            var bounds = position switch
+            {
+                DockPosition.LeftFull => new Rect(10, 10, parentWidth / 2 - 20, parentHeight - 20),
+                DockPosition.RightFull => new Rect(parentWidth / 2 + 10, 10, parentWidth / 2 - 20, parentHeight - 20),
+                DockPosition.TopLeft => new Rect(10, 10, parentWidth / 2 - 15, parentHeight / 2 - 15),
+                DockPosition.TopRight => new Rect(parentWidth / 2 + 5, 10, parentWidth / 2 - 15, parentHeight / 2 - 15),
+                DockPosition.BottomLeft => new Rect(10, parentHeight / 2 + 5, parentWidth / 2 - 15, parentHeight / 2 - 15),
+                DockPosition.BottomRight => new Rect(parentWidth / 2 + 5, parentHeight / 2 + 5, parentWidth / 2 - 15, parentHeight / 2 - 15),
+                _ => new Rect(x: X, y: Y, width: vm.Width, height: vm.Height)
+            };
+
+            // Apply docked position and size
+            X = bounds.X;
+            Y = bounds.Y;
+            vm.Width = bounds.Width;
+            vm.Height = bounds.Height;
+
+            Console.WriteLine($"[DragBehavior] Widget docked to {position} at ({bounds.X}, {bounds.Y}) size {bounds.Width}x{bounds.Height}");
         }
     }
 }

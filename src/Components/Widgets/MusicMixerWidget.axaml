@@ -26,8 +26,7 @@
             </i:Interaction.Behaviors>
 
             <Border Background="{StaticResource ModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
+                    BorderThickness="0"
                     CornerRadius="8"
                     Width="64" Height="64"
                     Classes="widget-header"

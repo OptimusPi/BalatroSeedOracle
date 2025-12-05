@@ -1,0 +1,202 @@
+{
+  "FavoriteItems": [
+    "Perkeo",
+    "Baron",
+    "Blueprint",
+    "Brainstorm",
+    "InvisibleJoker",
+    "Mime",
+    "SpaceJoker",
+    "OopsAll6s"
+  ],
+  "CommonSets": [
+    {
+      "Name": "Photo Chad",
+      "Description": "Picture perfect combo",
+      "Items": [
+        "photograph",
+        "hangingchad"
+      ],
+      "Tags": [
+        "#FaceCards",
+        "#Mult",
+        "#Synergy"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "BaronMime",
+      "Description": "Kings multiply and copy",
+      "Items": [
+        "baron",
+        "mime"
+      ],
+      "Tags": [
+        "#Kings",
+        "#Copy",
+        "#XMult"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Double Vision",
+      "Description": "Copy your best joker twice",
+      "Items": [
+        "brainstorm",
+        "blueprint"
+      ],
+      "Tags": [
+        "#Copy",
+        "#Legendary",
+        "#Synergy"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Lucky",
+      "Description": "Maximum luck manipulation",
+      "Items": [
+        "oopsall6s",
+        "luckycat",
+        "themagician"
+      ],
+      "Tags": [
+        "#Luck",
+        "#Cat",
+        "#LuckyCat",
+        "#Tarot"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Legendary Lineup",
+      "Description": "The legendary joker collection",
+      "Items": [
+        "chicot",
+        "perkeo",
+        "triboulet",
+        "yorick",
+        "canio"
+      ],
+      "Tags": [
+        "#Legendary",
+        "#LateGame",
+        "#XMult"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "ReTrigger",
+      "Description": "Maximum retrigger synergy",
+      "Items": [
+        "sockandbuskin",
+        "hangingchad",
+        "dusk",
+        "dejavu"
+      ],
+      "Tags": [
+        "#Retrigger",
+        "#FaceCards",
+        "#Spectral"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Money Makers",
+      "Description": "Economic powerhouse combo",
+      "Items": [
+        "businesscard",
+        "bull",
+        "tothemoon",
+        "bootstraps",
+        "egg"
+      ],
+      "Tags": [
+        "#Money",
+        "#Gold",
+        "#Economy"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "HandSize",
+      "Description": "Maximum hand size expansion",
+      "Items": [
+        "turtlebean",
+        "juggler",
+        "troubadour"
+      ],
+      "Tags": [
+        "#HandSize",
+        "#Voucher",
+        "#Utility"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Blueprint Bros",
+      "Description": "Copy and enhance strategy",
+      "Items": [
+        "blueprint",
+        "brainstorm",
+        "showman",
+        "dna"
+      ],
+      "Tags": [
+        "#Copy",
+        "#Synergy",
+        "#LateGame"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    },
+    {
+      "Name": "Economy",
+      "Description": "Build your gold empire",
+      "Items": [
+        "goldenticket",
+        "thedevil",
+        "businesscard",
+        "tradingcard",
+        "reservedparking",
+        "facelessjoker"
+      ],
+      "Tags": [
+        "#Gold",
+        "#Economy",
+        "#Scaling",
+        "#Tarot"
+      ],
+      "MustItems": [],
+      "ShouldItems": [],
+      "MustNotItems": [],
+      "HasZoneInfo": false
+    }
+  ]
+}

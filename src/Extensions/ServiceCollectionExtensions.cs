@@ -1,5 +1,6 @@
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using BalatroSeedOracle.ViewModels.Widgets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Extensions
@@ -28,6 +29,12 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();
             services.AddTransient<ClauseConversionService>();
+            
+            // Widget System Services
+            services.AddSingleton<IWidgetRegistry, WidgetRegistryService>();
+            services.AddSingleton<IWidgetLayoutService, WidgetLayoutService>();
+            services.AddSingleton<IDockingService, DockingService>();
+            services.AddSingleton<WidgetFactory>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
@@ -43,6 +50,8 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();
+            services.AddTransient<WidgetContainerViewModel>();
+            services.AddTransient<DockZoneViewModel>();
             services.AddTransient<GenieWidgetViewModel>();
             services.AddTransient<FilterListViewModel>();
             services.AddTransient<PaginatedFilterBrowserViewModel>();

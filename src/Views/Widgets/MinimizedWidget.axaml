@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Widgets.MinimizedWidget">
+    
+    <Grid>
+        <!-- Main widget button -->
+        <Button Name="WidgetButton" 
+                Classes="minimized-widget"
+                Command="{Binding OpenAsyncCommand}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            
+            <!-- Simple content for now -->
+            <TextBlock Text="{Binding Title}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Button>
+        
+        <!-- Widget Title Label -->
+        <TextBlock Name="TitleLabel"
+                   Text="{Binding Title}"
+                   FontSize="11"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,-20"/>
+    </Grid>
+</UserControl>

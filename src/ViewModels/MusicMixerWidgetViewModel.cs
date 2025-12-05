@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -22,7 +24,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly SoundFlowAudioManager? _soundFlowAudioManager;
-        private static readonly string MIXER_SETTINGS_DIR = AppPaths.MixerSettingsDir;
+        private static readonly string MIXER_SETTINGS_DIR = AppPaths.MixerPresetsDir;
 
         private static readonly string MIXER_SETTINGS_FILE = System.IO.Path.Combine(
             MIXER_SETTINGS_DIR,
@@ -31,6 +33,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Store previous mute states before applying solo
         private Dictionary<string, bool> _previousMuteStates = new();
+
 
         public MusicMixerWidgetViewModel(
             UserProfileService userProfileService,
@@ -48,8 +51,20 @@ namespace BalatroSeedOracle.ViewModels
             WidgetIcon = "🎵";
             IsMinimized = true; // Start minimized
 
-            PositionX = 20;
-            PositionY = 350;
+            // Set grid-based position - grid position (0,3)
+            var layoutService = App.GetService<IWidgetLayoutService>();
+            if (layoutService != null)
+            {
+                var gridPosition = new Point(0, 3);
+                var pixelPosition = layoutService.CalculatePixelPosition(gridPosition);
+                PositionX = pixelPosition.X;
+                PositionY = pixelPosition.Y;
+            }
+            else
+            {
+                PositionX = 20;
+                PositionY = 350;
+            }
 
             // Set custom size for mixer
             Width = 400;
@@ -57,6 +72,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Load saved mixer settings if they exist
             LoadMixerSettings();
+
         }
 
         #region Drums1 Track
@@ -1236,6 +1252,7 @@ namespace BalatroSeedOracle.ViewModels
 
             DebugLogger.Log("MusicMixerWidgetViewModel", "Mixer reset to defaults");
         }
+
 
         #endregion
     }

@@ -5,7 +5,7 @@ using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components.Widgets
 {
-    public partial class SearchWidget : UserControl
+    public partial class SearchWidget : BaseWidgetControl
     {
         public SearchWidgetViewModel ViewModel => (SearchWidgetViewModel)DataContext!;
 

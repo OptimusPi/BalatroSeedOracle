@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Widgets.WidgetView">
+    
+    <Border Classes="widget-container">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- Title bar -->
+                <RowDefinition Height="*"/>     <!-- Content area -->
+            </Grid.RowDefinitions>
+            
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Classes="widget-title-bar">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Widget Title -->
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding Title}"
+                               VerticalAlignment="Center"/>
+                    
+                    <!-- Control Buttons -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                        
+                        <!-- Minimize Button -->
+                        <Button Classes="widget-button"
+                                Command="{Binding MinimizeAsyncCommand}"
+                                Content="−"/>
+                        
+                        <!-- Close Button -->
+                        <Button Classes="widget-button"
+                                Command="{Binding CloseAsyncCommand}"
+                                Content="×"
+                                IsVisible="{Binding ShowCloseButton}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Content Area -->
+            <Border Grid.Row="1">
+                <TextBlock Text="Widget Content Area" 
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

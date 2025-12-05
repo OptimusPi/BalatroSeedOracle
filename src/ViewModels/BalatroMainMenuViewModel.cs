@@ -8,6 +8,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
+using BalatroSeedOracle.ViewModels.Widgets;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -23,6 +24,13 @@ namespace BalatroSeedOracle.ViewModels
         private readonly SoundFlowAudioManager? _soundFlowAudioManager;
         private readonly EventFXService? _eventFXService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
+        private IWidgetRegistry? _widgetRegistry;
+
+        /// <summary>
+        /// Widget container for the new interface system
+        /// </summary>
+        [ObservableProperty]
+        private WidgetContainerViewModel? _widgetContainer;
 
         // Effect source tracking
         private int _shadowFlickerSource = 0;
@@ -130,10 +138,20 @@ namespace BalatroSeedOracle.ViewModels
 
         public BalatroMainMenuViewModel()
         {
-            // Initialize services
-            _userProfileService =
-                App.GetService<UserProfileService>()
+            // Initialize services (temporary fallback until proper DI)
+            _userProfileService = App.GetService<UserProfileService>() 
                 ?? throw new InvalidOperationException("UserProfileService not available");
+
+            // Initialize widget system
+            WidgetContainer = App.GetService<WidgetContainerViewModel>();
+            _widgetRegistry = App.GetService<IWidgetRegistry>();
+            
+            if (WidgetContainer != null && _widgetRegistry != null)
+            {
+                InitializeWidgetSystem();
+            }
+
+
 
             // Get SoundFlow audio manager (8 independent tracks)
             _soundFlowAudioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
@@ -913,6 +931,53 @@ namespace BalatroSeedOracle.ViewModels
             _colorSaturationSource = sourceIndex;
         }
 
+        private void InitializeWidgetSystem()
+        {
+            try
+            {
+                if (_widgetRegistry != null)
+                {
+                    // Register DayLatro widget
+                    _widgetRegistry.RegisterWidget(new WidgetMetadata
+                    {
+                        Id = "daylatro",
+                        Title = "DayLatro", 
+                        IconResource = "Calendar",
+                        WidgetType = typeof(DayLatroWidgetViewModel),
+                        ViewModelType = typeof(DayLatroWidgetViewModel),
+                        AllowClose = false,
+                        AllowPopOut = false,
+                        DefaultSize = new Avalonia.Size(400, 500),
+                        Description = "Daily Balatro challenge tracking",
+                        Category = "Core"
+                    });
+
+                    // Register TransitionDesigner widget
+                    _widgetRegistry.RegisterWidget(new WidgetMetadata
+                    {
+                        Id = "transition-designer", 
+                        Title = "Transition Designer",
+                        IconResource = "MovieFilter",
+                        WidgetType = typeof(TransitionDesignerWidgetViewModel),
+                        ViewModelType = typeof(TransitionDesignerWidgetViewModel),
+                        AllowClose = false,
+                        AllowPopOut = false,
+                        DefaultSize = new Avalonia.Size(420, 600),
+                        Description = "Design and test audio/visual transitions",
+                        Category = "Effects"
+                    });
+
+                    // Create widget instances using the interface system
+                    _ = WidgetContainer?.CreateWidgetAsync("daylatro");
+                    _ = WidgetContainer?.CreateWidgetAsync("transition-designer");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.Log("BalatroMainMenu", $"Failed to initialize widget system: {ex.Message}");
+            }
+        }
+
         #endregion
     }
 
@@ -940,6 +1005,8 @@ namespace BalatroSeedOracle.ViewModels
         }
     }
 
+    #endregion
+
     /// <summary>
     /// Types of modals
     /// </summary>
@@ -952,6 +1019,4 @@ namespace BalatroSeedOracle.ViewModels
         Settings,
         Custom,
     }
-
-    #endregion
 }

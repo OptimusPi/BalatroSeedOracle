@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.Widgets.WidgetTitle">
+    
+    <!-- Floating title label for widgets -->
+    <TextBlock Name="TitleDisplay"
+               Text="{Binding TitleText}"
+               FontSize="11"
+               FontWeight="Medium"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               TextAlignment="Center"
+               TextWrapping="Wrap"
+               MaxWidth="100"/>
+</UserControl>

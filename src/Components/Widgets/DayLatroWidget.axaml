@@ -42,22 +42,21 @@
                 <Grid>
                     <!-- Icon - draggable! Has widget-header class so DraggableWidgetBehavior allows drag -->
                     <Border Background="{StaticResource ModalGrey}"
-                            BorderBrush="{StaticResource ModalBorder}"
-                            BorderThickness="2"
+                                                        BorderThickness="0"
                             CornerRadius="8"
                             Width="64" Height="64"
                             Classes="widget-header"
                             Cursor="Hand"
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
-                        <TextBlock Text="📅" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <icons:PackIconMaterial Kind="Calendar" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
                     </Border>
 
                     <!-- Notification badge overlay -->
                     <Border Classes="notification-badge small"
                             Background="{StaticResource Red}"
                             BorderBrush="{StaticResource White}"
-                            BorderThickness="2"
+                            BorderThickness="0"
                             CornerRadius="10"
                             Width="20" Height="20"
                             HorizontalAlignment="Right"
@@ -73,7 +72,7 @@
                     </Border>
                 </Grid>
 
-                <TextBlock Text="Daylatro"
+                <TextBlock Text="{Binding WidgetTitle}"
                            FontSize="16"
                            FontFamily="{StaticResource BalatroFont}"
                            Foreground="{StaticResource White}"
@@ -256,7 +255,7 @@
                                     ToolTip.Tip="Visit Daylatro Website">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <icons:PackIconMaterial Kind="Web" Width="14" Height="14" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Daylatro" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding WidgetTitle}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>

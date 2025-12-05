@@ -16,7 +16,6 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class AnalyzeModal : UserControl
     {
         private AnalyzeModalViewModel? ViewModel => DataContext as AnalyzeModalViewModel;
-        private DeckAndStakeSelector? _deckAndStakeSelector;
 
         public AnalyzeModal()
         {
@@ -28,31 +27,13 @@ namespace BalatroSeedOracle.Views.Modals
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            // Get deck/stake selector component
-            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
-        }
 
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
 
             // Subscribe to DeckSelected event to switch to analyzer tab
-            if (_deckAndStakeSelector != null && ViewModel != null)
-            {
-                _deckAndStakeSelector.DeckSelected += (s, _) =>
-                {
-                    // Update ViewModel with selected deck/stake indices
-                    ViewModel.DeckIndex = _deckAndStakeSelector.DeckIndex;
-                    ViewModel.StakeIndex = _deckAndStakeSelector.StakeIndex;
-
-                    // Notify ViewModel that deck was selected (switches to analyzer tab)
-                    ViewModel.OnDeckSelected();
-                };
-            }
+            // MVVM: Event handling should be done through data binding and commands, not FindControl
         }
 
         /// <summary>

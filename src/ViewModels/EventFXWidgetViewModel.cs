@@ -5,6 +5,7 @@ using System.Text.Json;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -27,8 +28,20 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
         WidgetIcon = "✨";
         IsMinimized = true;
 
-        PositionX = 20;
-        PositionY = 400;
+        // Set grid-based position - grid position (0,4)
+        var layoutService = App.GetService<IWidgetLayoutService>();
+        if (layoutService != null)
+        {
+            var gridPosition = new Avalonia.Point(0, 4);
+            var pixelPosition = layoutService.CalculatePixelPosition(gridPosition);
+            PositionX = pixelPosition.X;
+            PositionY = pixelPosition.Y;
+        }
+        else
+        {
+            PositionX = 20;
+            PositionY = 400;
+        }
         Width = 380;
         Height = 400;
 

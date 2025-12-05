@@ -1579,5 +1579,54 @@
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
 
+        <!-- Widget System Styles -->
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="{DynamicResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+        
+        <Style Selector="Button.minimized-widget">
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Height" Value="100"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+        
+        <Style Selector="Border.widget-title-bar">
+            <Setter Property="Background" Value="{DynamicResource ModalTitleBackground}"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+        
+        <Style Selector="Button.widget-button">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+        </Style>
+        
+        <Style Selector="Border.notification-badge">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="MinWidth" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Padding" Value="4,2"/>
+        </Style>
+        
+        <Style Selector="ProgressBar.thermometer-progress">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Foreground" Value="{StaticResource Red}"/>
+            <Setter Property="Height" Value="4"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
     </Application.Styles>
 </Application>

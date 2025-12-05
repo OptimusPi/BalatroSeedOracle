@@ -1042,10 +1042,13 @@ namespace BalatroSeedOracle.ViewModels
             // Update the ConsoleText binding
             ConsoleText += formattedMessage + "\n";
 
-            // Keep console output manageable
-            while (ConsoleOutput.Count > 1000)
+            // Keep UI responsive but show plenty of history
+            if (ConsoleOutput.Count > 2000)
             {
-                ConsoleOutput.RemoveAt(0);
+                ConsoleOutput.Clear();
+                var recent = _consoleBuffer.GetLastLines(1000);
+                foreach (var line in recent)
+                    ConsoleOutput.Add(new Models.ConsoleMessage { Text = line, CopyableText = null });
             }
         }
 
@@ -1075,10 +1078,13 @@ namespace BalatroSeedOracle.ViewModels
             // Update the ConsoleText binding
             ConsoleText += formattedMessage + "\n";
 
-            // Keep console output manageable
-            while (ConsoleOutput.Count > 1000)
+            // Keep UI responsive but show plenty of history
+            if (ConsoleOutput.Count > 2000)
             {
-                ConsoleOutput.RemoveAt(0);
+                ConsoleOutput.Clear();
+                var recent = _consoleBuffer.GetLastLines(1000);
+                foreach (var line in recent)
+                    ConsoleOutput.Add(new Models.ConsoleMessage { Text = line, CopyableText = null });
             }
         }
 

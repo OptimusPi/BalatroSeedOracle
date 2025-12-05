@@ -1434,9 +1434,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (vm == null)
                 return;
 
-            // Find overlay controls
             var overlay = this.FindControl<Grid>("PopupOverlay");
             var popupContent = this.FindControl<ContentControl>("PopupContent");
+            var popupItemPreview = this.FindControl<ContentControl>("PopupItemPreview");
+            var popupItemName = this.FindControl<TextBlock>("PopupItemName");
+            var popupItemType = this.FindControl<TextBlock>("PopupItemType");
 
             if (overlay == null || popupContent == null)
             {
@@ -1447,12 +1449,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
             }
 
-            // Create new ItemConfigPanelViewModel with cleaner expander-based UI
             var popupViewModel = new ViewModels.ItemConfigPanelViewModel(
                 item,
                 onApply: () =>
                 {
-                    // Trigger auto-save when config changes
                     vm.TriggerAutoSave();
                     DebugLogger.Log("ItemConfig", $"Configuration applied for {item.DisplayName}");
                 },
@@ -1460,13 +1460,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     overlay.IsVisible = false;
                     popupContent.Content = null;
+                    if (popupItemPreview != null) popupItemPreview.Content = null;
                 }
             );
 
-            // Create the View
             var configPanel = new Components.ItemConfigPanel { DataContext = popupViewModel };
 
-            // Show the overlay with the popup
+            if (popupItemPreview != null)
+            {
+                var cardPreview = new Components.FilterItemCard { DataContext = item };
+                popupItemPreview.Content = cardPreview;
+            }
+            if (popupItemName != null) popupItemName.Text = item.DisplayName;
+            if (popupItemType != null) popupItemType.Text = $"{item.ItemType} • {item.Status}";
+
             popupContent.Content = configPanel;
             overlay.IsVisible = true;
 

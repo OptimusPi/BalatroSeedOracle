@@ -28,17 +28,16 @@
             </i:Interaction.Behaviors>
 
             <Border Background="{StaticResource ModalGrey}"
-                    BorderBrush="{StaticResource ModalBorder}"
-                    BorderThickness="2"
+                                        BorderThickness="0"
                     CornerRadius="12"
                     Width="64" Height="64"
                     Classes="widget-header"
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="🎨" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="Palette" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
-            <TextBlock Text="Visual"
+            <TextBlock Text="{Binding WidgetTitle}"
                        FontSize="16"
                        Foreground="{StaticResource White}"
                        HorizontalAlignment="Center"/>
@@ -219,8 +218,7 @@
 
                         <!-- SHADER PARAM TO TRIGGER MAPPING (ENHANCED) -->
                         <Border Background="{StaticResource ModalGrey}"
-                                BorderBrush="{StaticResource ModalBorder}"
-                                BorderThickness="1"
+                                                                BorderThickness="0"
                                 CornerRadius="6"
                                 Padding="12"
                                 Margin="0,8,0,0">
@@ -235,8 +233,7 @@
 
                                 <!-- Instructions -->
                                 <Border Background="{StaticResource VeryDarkGrey}"
-                                        BorderBrush="{StaticResource ModalBorder}"
-                                        BorderThickness="1"
+                                                                                BorderThickness="0"
                                         CornerRadius="4"
                                         Padding="8"
                                         Margin="0,0,0,4">
@@ -907,8 +904,7 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border Background="{StaticResource ModalGrey}"
-                                                    BorderBrush="{StaticResource ModalBorder}"
-                                                    BorderThickness="1"
+                                                                                                        BorderThickness="0"
                                                     CornerRadius="4"
                                                     Padding="8"
                                                     Margin="0,0,0,6">
@@ -1004,8 +1000,7 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="models:MelodicBreakpoint">
                                             <Border Background="{StaticResource ModalGrey}"
-                                                    BorderBrush="{StaticResource ModalBorder}"
-                                                    BorderThickness="1"
+                                                                                                        BorderThickness="0"
                                                     CornerRadius="4"
                                                     Padding="8"
                                                     Margin="0,0,0,6">

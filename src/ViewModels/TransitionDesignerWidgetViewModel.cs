@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Components;
+using Avalonia;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -13,7 +16,7 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for Transition Designer Widget - Design and test audio/visual transitions
     /// </summary>
-    public partial class TransitionDesignerWidgetViewModel : BaseWidgetViewModel
+    public partial class TransitionDesignerWidgetViewModel : BaseWidgetViewModel, IWidget
     {
         private const double DefaultDuration = 2.0;
         private const string DefaultEasing = "Linear";
@@ -314,5 +317,84 @@ namespace BalatroSeedOracle.ViewModels
         {
             OnPropertyChanged(nameof(TransitionProgressText));
         }
+
+        #region IWidget Implementation
+
+        public string Id => "transition-designer";
+        public string Title 
+        {
+            get => WidgetTitle;
+            set => WidgetTitle = value;
+        }
+        public string IconResource { get; set; } = "MovieFilter";
+        public WidgetState State => IsMinimized ? WidgetState.Minimized : WidgetState.Open;
+        public int NotificationCount { get; set; } = 0;
+        public double ProgressValue { get; set; } = 0.0;
+        public bool ShowCloseButton { get; set; } = true;
+        public bool ShowPopOutButton { get; set; } = false;
+        public Point Position 
+        { 
+            get => new Point(PositionX, PositionY);
+            set { PositionX = value.X; PositionY = value.Y; }
+        }
+        public Size Size 
+        { 
+            get => new Size(Width, Height);
+            set { Width = value.Width; Height = value.Height; }
+        }
+        public bool IsDocked { get; set; } = false;
+        public DockPosition DockPosition { get; set; } = DockPosition.None;
+        public object? PersistedState { get; set; }
+
+        #pragma warning disable CS0067
+        public event EventHandler<WidgetStateChangedEventArgs>? StateChanged;
+        public event EventHandler<EventArgs>? CloseRequested;
+        #pragma warning restore CS0067
+
+        public async Task OpenAsync()
+        {
+            ExpandCommand?.Execute(null);
+        }
+
+        public async Task MinimizeAsync()
+        {
+            MinimizeCommand?.Execute(null);
+        }
+
+        public async Task CloseAsync()
+        {
+            CloseCommand?.Execute(null);
+        }
+
+        public UserControl GetContentView()
+        {
+            var widget = new Components.TransitionDesignerWidget();
+            widget.DataContext = this;
+            return widget;
+        }
+
+        public void UpdateNotifications(int count)
+        {
+            NotificationCount = Math.Max(0, count);
+        }
+
+        public void UpdateProgress(double value)
+        {
+            ProgressValue = Math.Clamp(value, 0.0, 1.0);
+        }
+
+        public async Task<object?> SaveStateAsync()
+        {
+            // Save transition designer state
+            return await Task.FromResult(PersistedState);
+        }
+
+        public async Task LoadStateAsync(object? state)
+        {
+            PersistedState = state;
+            await Task.CompletedTask;
+        }
+
+        #endregion
     }
 }

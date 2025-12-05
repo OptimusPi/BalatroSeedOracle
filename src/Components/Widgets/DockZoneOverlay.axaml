@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.Widgets.DockZoneOverlay">
+    
+    <!-- Dock zone overlay with visual feedback -->
+    <Border Name="ZoneBorder"
+            Background="#40808080"
+            BorderBrush="#80FFFFFF"
+            BorderThickness="2"
+            CornerRadius="4"
+            Opacity="{Binding IsHighlighted, FallbackValue=0.6}">
+        
+        <TextBlock Text="{Binding DisplayText, FallbackValue=DOCK WIDGET}"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"/>
+    </Border>
+</UserControl>

@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="TOGGLE WIDGETS"
+                   Text="CREATE WIDGETS"
                    FontFamily="{StaticResource BalatroFont}"
                    FontSize="18"
                    Foreground="{StaticResource Gold}"
