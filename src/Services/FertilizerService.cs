@@ -49,6 +49,12 @@ public class FertilizerService : IDisposable
     /// </summary>
     public long SeedCount { get; private set; }
 
+    /// <summary>
+    /// Path to the DuckDB database file.
+    /// Use with JsonSearchParams.DbList for zero-memory streaming search.
+    /// </summary>
+    public string DbPath => _dbPath;
+
     private FertilizerService()
     {
         var dataDir = Helpers.AppPaths.DataRootDir;
@@ -134,6 +140,64 @@ public class FertilizerService : IDisposable
         catch (Exception ex)
         {
             DebugLogger.LogError("FertilizerService", $"Migration failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Import seeds directly from DuckDB database files using ATTACH (much faster than row-by-row).
+    /// Uses SQL to copy seeds from source databases to fertilizer in a single operation.
+    /// </summary>
+    public async Task ImportFromDuckDbAsync(string[] dbPaths, CancellationToken ct = default)
+    {
+        if (_connection == null || dbPaths == null || dbPaths.Length == 0) return;
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                foreach (var dbPath in dbPaths)
+                {
+                    if (ct.IsCancellationRequested) break;
+                    if (!File.Exists(dbPath)) continue;
+
+                    try
+                    {
+                        // Use a unique alias for each attached database
+                        var alias = $"src_{Path.GetFileNameWithoutExtension(dbPath).Replace("-", "_").Replace(" ", "_")}";
+
+                        using var attachCmd = _connection.CreateCommand();
+                        attachCmd.CommandText = $"ATTACH '{dbPath.Replace("'", "''")}' AS {alias} (READ_ONLY)";
+                        attachCmd.ExecuteNonQuery();
+
+                        try
+                        {
+                            // Insert seeds that don't already exist (INSERT OR IGNORE handles dedup)
+                            using var insertCmd = _connection.CreateCommand();
+                            insertCmd.CommandText = $"INSERT OR IGNORE INTO seeds SELECT DISTINCT seed FROM {alias}.results WHERE seed IS NOT NULL AND seed != ''";
+                            var inserted = insertCmd.ExecuteNonQuery();
+
+                            DebugLogger.Log("FertilizerService", $"Imported seeds from {Path.GetFileName(dbPath)} ({inserted} new)");
+                        }
+                        finally
+                        {
+                            // Always detach
+                            using var detachCmd = _connection.CreateCommand();
+                            detachCmd.CommandText = $"DETACH {alias}";
+                            detachCmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("FertilizerService", $"Failed to import from {Path.GetFileName(dbPath)}: {ex.Message}");
+                    }
+                }
+            }, ct);
+
+            RefreshSeedCount();
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("FertilizerService", $"ImportFromDuckDbAsync failed: {ex.Message}");
         }
     }
 

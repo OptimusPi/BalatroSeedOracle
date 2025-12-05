@@ -284,7 +284,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     DebugLogger.LogImportant(
                         "FiltersModalViewModel",
-                        $"🔄 Filter criteria changed - invalidating databases and dumping to fertilizer.txt"
+                        $"🔄 Filter criteria changed - invalidating databases and dumping to fertilizer.db"
                     );
                     // CRITICAL: Clean up databases BEFORE saving filter with changed criteria
                     await CleanupFilterDatabases();
@@ -429,8 +429,9 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Dumps all seeds from multiple database files to WordLists/fertilizer.txt.
+        /// Dumps all seeds from multiple database files to FertilizerService (DuckDB).
         /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
+        /// Uses SQL ATTACH for efficient DuckDB-to-DuckDB transfer (no row-by-row reading).
         /// </summary>
         private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
         {
@@ -442,71 +443,24 @@ namespace BalatroSeedOracle.ViewModels
 
             try
             {
-                // Ensure WordLists directory exists
-                var wordListsDir = AppPaths.WordListsDir;
+                var beforeCount = FertilizerService.Instance.SeedCount;
 
-                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
-                var allSeeds = new List<string>();
+                // Use SQL ATTACH to import directly from DuckDB to DuckDB (much faster!)
+                await FertilizerService.Instance.ImportFromDuckDbAsync(dbFiles).ConfigureAwait(false);
 
-                // Collect seeds from all database files
-                foreach (var dbFile in dbFiles)
-                {
-                    if (!File.Exists(dbFile))
-                        continue;
-
-                    try
-                    {
-                        using var connection = new DuckDB.NET.Data.DuckDBConnection(
-                            $"Data Source={dbFile}"
-                        );
-                        connection.Open();
-
-                        using var cmd = connection.CreateCommand();
-                        cmd.CommandText = "SELECT seed FROM results ORDER BY seed";
-
-                        using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-                        while (await reader.ReadAsync().ConfigureAwait(false))
-                        {
-                            var seed = reader.GetString(0);
-                            if (!string.IsNullOrWhiteSpace(seed))
-                            {
-                                allSeeds.Add(seed);
-                            }
-                        }
-
-                        DebugLogger.Log(
-                            "FiltersModalViewModel",
-                            $"🌱 Collected seeds from: {Path.GetFileName(dbFile)}"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError(
-                            "FiltersModalViewModel",
-                            $"Failed to dump seeds from {Path.GetFileName(dbFile)}: {ex.Message}"
-                        );
-                    }
-                }
-
-                if (allSeeds.Count == 0)
-                {
-                    DebugLogger.Log("FiltersModalViewModel", "No seeds found in databases");
-                    return;
-                }
-
-                // Append all seeds to fertilizer.txt
-                await File.AppendAllLinesAsync(fertilizerPath, allSeeds).ConfigureAwait(false);
+                var afterCount = FertilizerService.Instance.SeedCount;
+                var newSeeds = afterCount - beforeCount;
 
                 DebugLogger.LogImportant(
                     "FiltersModalViewModel",
-                    $"🌱 Dumped {allSeeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                    $"Imported {newSeeds} new seeds to fertilizer DB (total: {afterCount})"
                 );
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "FiltersModalViewModel",
-                    $"Failed to dump databases to fertilizer.txt: {ex.Message}"
+                    $"Failed to dump databases to fertilizer: {ex.Message}"
                 );
                 // Don't throw - fertilizer dump is a nice-to-have, not critical
             }

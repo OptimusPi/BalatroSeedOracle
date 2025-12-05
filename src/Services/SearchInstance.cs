@@ -168,6 +168,17 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                // CRITICAL: Ensure connection is open before validation
+                // This handles cases where SearchInstance is reused after connection was closed
+                if (_connection.State != System.Data.ConnectionState.Open)
+                {
+                    DebugLogger.Log(
+                        $"SearchInstance[{_searchId}]",
+                        $"Connection was closed, reopening for validation..."
+                    );
+                    _connection.Open();
+                }
+
                 // Check if results table exists (DuckDB syntax)
                 using (var checkTable = _connection.CreateCommand())
                 {
@@ -247,6 +258,26 @@ namespace BalatroSeedOracle.Services
                     $"SearchInstance[{_searchId}]",
                     $"Schema validation failed: {ex.Message}"
                 );
+                // CRITICAL: Ensure connection is open after exception
+                // An exception may have left the connection in a closed state
+                if (_connection.State != System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        DebugLogger.Log(
+                            $"SearchInstance[{_searchId}]",
+                            $"Reopening connection after validation exception..."
+                        );
+                        _connection.Open();
+                    }
+                    catch (Exception reopenEx)
+                    {
+                        DebugLogger.LogError(
+                            $"SearchInstance[{_searchId}]",
+                            $"Failed to reopen connection: {reopenEx.Message}"
+                        );
+                    }
+                }
                 // If validation fails, assume we need fresh database
                 return false;
             }
@@ -641,8 +672,9 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Dumps all seeds from current database to WordLists/fertilizer.txt before database invalidation.
+        /// Dumps all seeds from current database to the global FertilizerService (DuckDB).
         /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
+        /// Uses FertilizerService for DuckDB storage instead of txt file.
         /// </summary>
         private async Task DumpSeedsToFertilizerAsync()
         {
@@ -652,15 +684,10 @@ namespace BalatroSeedOracle.Services
                 {
                     DebugLogger.Log(
                         $"SearchInstance[{_searchId}]",
-                        "No database to dump - skipping fertilizer.txt"
+                        "No database to dump - skipping fertilizer"
                     );
                     return;
                 }
-
-                // Ensure WordLists directory exists
-                var wordListsDir = AppPaths.WordListsDir;
-
-                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
 
                 // Get all seeds from database
                 using var cmd = _connection.CreateCommand();
@@ -688,19 +715,19 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                // Append seeds to fertilizer.txt
-                await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
+                // Add seeds to FertilizerService (DuckDB-backed, deduplicates automatically)
+                await FertilizerService.Instance.AddSeedsAsync(seeds).ConfigureAwait(false);
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
-                    $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                    $"Dumped {seeds.Count} seeds to fertilizer DB (total: {FertilizerService.Instance.SeedCount})"
                 );
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     $"SearchInstance[{_searchId}]",
-                    $"Failed to dump seeds to fertilizer.txt: {ex.Message}"
+                    $"Failed to dump seeds to fertilizer: {ex.Message}"
                 );
                 // Don't throw - fertilizer dump is a nice-to-have, not critical
             }
@@ -709,7 +736,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Start searching with a file path
         /// </summary>
-        private void StartSearchFromFile(
+        private async Task StartSearchFromFileAsync(
             string configPath,
             SearchConfiguration config,
             IProgress<SearchProgress>? progress = null,
@@ -748,22 +775,8 @@ namespace BalatroSeedOracle.Services
                             $"Filter modified since last search - invalidating database"
                         );
 
-                        // Dump seeds to fertilizer.txt before clearing database (fire-and-forget)
-                        // Not critical for search to work, so we don't block on this operation
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await DumpSeedsToFertilizerAsync().ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                DebugLogger.LogError(
-                                    $"SearchInstance[{_searchId}]",
-                                    $"Failed to dump seeds to fertilizer: {ex.Message}"
-                                );
-                            }
-                        });
+                        // Dump seeds to FertilizerService before clearing database
+                        await DumpSeedsToFertilizerAsync().ConfigureAwait(false);
 
                         try
                         {
@@ -1097,7 +1110,7 @@ namespace BalatroSeedOracle.Services
             };
 
             // Call the main search method with the file path
-            StartSearchFromFile(criteria.ConfigPath, searchConfig, progress, cancellationToken);
+            await StartSearchFromFileAsync(criteria.ConfigPath, searchConfig, progress, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1804,13 +1817,13 @@ namespace BalatroSeedOracle.Services
                     )
                         compositeSettings = compositeSettings.WithStake(compositeStake);
 
-                    // Apply scoring if needed
-                    bool compositeNeedsScoring = (config.Should?.Count > 0);
-                    if (compositeNeedsScoring)
-                    {
-                        compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+                    // ALWAYS register score provider - callback must fire even when Should is empty!
+                    // The callback writes results to DuckDB, so it must always be registered.
+                    compositeSettings = compositeSettings.WithSeedScoreProvider(scoreDesc);
+
+                    // Only enable CSV output when there are Should clauses (for tally columns)
+                    if (config.Should?.Count > 0)
                         compositeSettings = compositeSettings.WithCsvOutput(true);
-                    }
 
                     DebugLogger.LogImportant(
                         $"SearchInstance[{_searchId}]",

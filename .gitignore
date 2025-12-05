@@ -80,3 +80,5 @@ avalonia.license
 fertilizer.db
 fertilizer.db.wal
 /JamlFilters
+.samples_imported
+/Filters
