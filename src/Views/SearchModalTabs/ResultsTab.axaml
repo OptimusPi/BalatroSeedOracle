@@ -78,9 +78,10 @@
         </Border>
 
         <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->
+        <!-- CRITICAL: Use $parent[UserControl].DataContext to bind past SortableResultsGrid's own DataContext -->
         <controls:SortableResultsGrid Grid.Row="1"
                                       Name="ResultsGrid"
-                                      ItemsSource="{Binding SearchResults}"
+                                      ItemsSource="{Binding $parent[UserControl].DataContext.SearchResults}"
                                       Margin="0"/>
 
         <!-- Loading overlay (shown when searching with 0 results) -->
