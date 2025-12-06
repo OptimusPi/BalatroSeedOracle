@@ -22,7 +22,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <!-- Release build settings for production deployment -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -98,6 +97,9 @@
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely\Motely.csproj">
       <SetConfiguration>BSO_LIBRARY</SetConfiguration>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
   <!-- Explicitly exclude external folder from publish -->
