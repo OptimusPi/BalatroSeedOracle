@@ -10,7 +10,6 @@ using BalatroSeedOracle.Views.Modals;
 namespace BalatroSeedOracle.Components
 {
     /// <summary>
-    /// Code-behind for DayLatroWidget
     /// MVVM pattern - ALL business logic in ViewModel, drag handled by DraggableWidgetBehavior
     /// </summary>
     public partial class DayLatroWidget : BaseWidgetControl

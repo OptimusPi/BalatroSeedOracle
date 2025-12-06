@@ -21,35 +21,22 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Install Parcel
-      run: dotnet tool install --global AvaloniaUI.Parcel
+    - name: Restore .NET tools
+      run: dotnet tool restore
 
-    - name: Restore dependencies
-      run: dotnet restore src/BalatroSeedOracle.csproj
-
-    - name: Build
-      run: dotnet build src/BalatroSeedOracle.csproj --configuration Release --no-restore
-
-    - name: Package DEB Package
+    - name: Package with Parcel
       run: |
-        echo "Building Linux DEB package..."
-        parcel pack BalatroSeedOracle.parcel.json -r linux-x64 -p deb
+        cd src
+        dotnet parcel pack BalatroSeedOracle.parcel --runtimes linux-x64 --packages deb zip
 
-    - name: Package ZIP Archive
+    - name: Rename ZIP for platform specificity
       run: |
-        echo "Building Linux ZIP archive..."
-        parcel pack BalatroSeedOracle.parcel.json -r linux-x64 -p zip
+        cd src/bin/packages/Linux
+        mv BalatroSeedOracle.x64.2.0.0.zip BalatroSeedOracle-linux-x64-2.0.0.zip
 
-    - name: Upload DEB Package
+    - name: Upload Linux Packages
       uses: actions/upload-artifact@v4
       with:
-        name: linux-deb
-        path: bin/packages/*.deb
-        if-no-files-found: error
-
-    - name: Upload ZIP Archive
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-zip
-        path: bin/packages/*.zip
+        name: linux-packages
+        path: src/bin/packages/Linux/*
         if-no-files-found: error

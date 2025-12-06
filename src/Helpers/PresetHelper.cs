@@ -14,11 +14,7 @@ namespace BalatroSeedOracle.Helpers
     /// </summary>
     public static class PresetHelper
     {
-        private static readonly string PresetsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "BalatroSeedOracle",
-            "VisualizerPresets"
-        );
+        private static readonly string PresetsDirectory = AppPaths.VisualizerPresetsDir;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -28,15 +24,7 @@ namespace BalatroSeedOracle.Helpers
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         };
 
-        static PresetHelper()
-        {
-            // Ensure the presets directory exists
-            if (!Directory.Exists(PresetsDirectory))
-            {
-                Directory.CreateDirectory(PresetsDirectory);
-                DebugLogger.Log("PresetHelper", $"Created presets directory: {PresetsDirectory}");
-            }
-        }
+        static PresetHelper() { }
 
         /// <summary>
         /// Normalizes a preset name for use as a filename
@@ -228,6 +216,44 @@ namespace BalatroSeedOracle.Helpers
             {
                 DebugLogger.Log("PresetHelper", $"Error deleting preset: {ex.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Deletes all user presets from disk.
+        /// Returns the number of files deleted.
+        /// </summary>
+        public static int ClearAllPresets()
+        {
+            try
+            {
+                if (!Directory.Exists(PresetsDirectory))
+                    return 0;
+
+                var files = Directory.GetFiles(PresetsDirectory, "*.json");
+                int deleted = 0;
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                        deleted++;
+                        DebugLogger.Log("PresetHelper", $"Deleted preset file: {file}");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError(
+                            "PresetHelper",
+                            $"Failed to delete preset file '{file}': {ex.Message}"
+                        );
+                    }
+                }
+                return deleted;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("PresetHelper", $"ClearAllPresets failed: {ex.Message}");
+                return 0;
             }
         }
 

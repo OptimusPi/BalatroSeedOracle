@@ -123,8 +123,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // PRE-FILL filter name and description if available
             PreFillFilterData();
 
-            // Refresh clause display when ViewModel is created
-            RefreshClauseDisplay();
+            // Refresh clause display when ViewModel is created (fire-and-forget in constructor)
+            // Callers should explicitly await RefreshClauseDisplay() if they need synchronous initialization
+            _ = RefreshClauseDisplay();
         }
 
         /// <summary>
@@ -142,7 +143,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     FilterName = _parentViewModel.LoadedConfig.Name;
                     FilterDescription = _parentViewModel.LoadedConfig.Description ?? "";
-                    DebugLogger.Log("ValidateFilterTab", $"Pre-filled from LoadedConfig: {FilterName}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Pre-filled from LoadedConfig: {FilterName}"
+                    );
                 }
                 // Fall back to loaded filter file name
                 else if (!string.IsNullOrWhiteSpace(_parentViewModel.CurrentFilterPath))
@@ -168,39 +172,55 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Refreshes the clause display from current filter state
         /// </summary>
-        public void RefreshClauseDisplay()
+        public async Task RefreshClauseDisplay()
         {
-            Dispatcher.UIThread.Post(() =>
+            // Properly await InvokeAsync so exceptions propagate and callers can show loading indicators
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                MustClauses.Clear();
-                MustNotClauses.Clear();
-                ShouldClauses.Clear();
-
                 try
                 {
+                    MustClauses.Clear();
+                    MustNotClauses.Clear();
+                    ShouldClauses.Clear();
                     // Get VisualBuilderTab if available
                     if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
                     {
-                        DebugLogger.Log("ValidateFilterTab",
-                            $"✅ FOUND VisualBuilderTab - Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"✅ FOUND VisualBuilderTab - Refreshing from VisualBuilder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
+                        );
 
                         // Convert Must items
                         foreach (var item in visualVm.SelectedMust)
                         {
                             // Check for BannedItems operator
-                            if (item is Models.FilterOperatorItem operatorItem &&
-                                operatorItem.OperatorType == "BannedItems")
+                            if (
+                                item is Models.FilterOperatorItem operatorItem
+                                && operatorItem.OperatorType == "BannedItems"
+                            )
                             {
                                 // Add children to MustNot
                                 foreach (var child in operatorItem.Children)
                                 {
-                                    var config = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
-                                        ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                    var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                        $"{child.Category}:{child.Name}"
+                                    )
+                                        ? _parentViewModel.ItemConfigs[
+                                            $"{child.Category}:{child.Name}"
+                                        ]
                                         : new ItemConfig();
-                                    var clause = _clauseConversionService.ConvertFilterItemToClause(child, config);
+                                    var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                        child,
+                                        config
+                                    );
                                     if (clause != null)
                                     {
-                                        var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, child.Category, 0);
+                                        var clauseRow =
+                                            _clauseConversionService.ConvertToClauseViewModel(
+                                                clause,
+                                                child.Category,
+                                                0
+                                            );
                                         if (clauseRow != null)
                                             MustNotClauses.Add(clauseRow);
                                     }
@@ -208,13 +228,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             }
                             else
                             {
-                                var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                                var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                    $"{item.Category}:{item.Name}"
+                                )
                                     ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                     : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                    item,
+                                    config
+                                );
                                 if (clause != null)
                                 {
-                                    var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
+                                    var clauseRow =
+                                        _clauseConversionService.ConvertToClauseViewModel(
+                                            clause,
+                                            item.Category,
+                                            0
+                                        );
                                     if (clauseRow != null)
                                         MustClauses.Add(clauseRow);
                                 }
@@ -224,13 +254,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert Should items
                         foreach (var item in visualVm.SelectedShould)
                         {
-                            var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                            var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                $"{item.Category}:{item.Name}"
+                            )
                                 ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                 : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                item,
+                                config
+                            );
                             if (clause != null)
                             {
-                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, item.Category, 0);
+                                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
+                                    clause,
+                                    item.Category,
+                                    0
+                                );
                                 if (clauseRow != null)
                                     ShouldClauses.Add(clauseRow);
                             }
@@ -239,10 +278,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     else
                     {
                         // Fallback to parent's key-based collections
-                        DebugLogger.Log("ValidateFilterTab",
-                            $"⚠️ NO VisualBuilderTab found! Falling back to parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot");
-                        DebugLogger.Log("ValidateFilterTab",
-                            $"VisualBuilderTab is null: {_parentViewModel.VisualBuilderTab == null}, Type: {_parentViewModel.VisualBuilderTab?.GetType()?.Name ?? "null"}");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"⚠️ NO VisualBuilderTab found! Falling back to parent collections: {_parentViewModel.SelectedMust.Count()} must, {_parentViewModel.SelectedMustNot.Count()} mustNot"
+                        );
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"VisualBuilderTab is null: {_parentViewModel.VisualBuilderTab == null}, Type: {_parentViewModel.VisualBuilderTab?.GetType()?.Name ?? "null"}"
+                        );
 
                         // Convert Must items from keys
                         foreach (var itemKey in _parentViewModel.SelectedMust)
@@ -280,46 +323,88 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("ValidateFilterTab", $"Error refreshing clause display: {ex.Message}");
+                    // Log the error but don't crash the whole tab - let partial results show
+                    var errorMsg =
+                        $"❌ ERROR refreshing clause display (partial results may be shown):\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+                    DebugLogger.LogError("ValidateFilterTab", errorMsg);
+                    // Don't re-throw - individual item errors are now handled in ConvertItemConfigDirectly
                 }
             });
         }
 
-
-        private ClauseRowViewModel? ConvertItemConfigDirectly(ItemConfig config, string itemKey, int nestingLevel)
+        private ClauseRowViewModel? ConvertItemConfigDirectly(
+            ItemConfig config,
+            string itemKey,
+            int nestingLevel
+        )
         {
-            // Extract category and name from item key (format: "category:name")
-            var parts = itemKey.Split(':');
-            if (parts.Length != 2)
-                return null;
-
-            var category = parts[0];
-            var name = parts[1];
-
-            // Create a FilterItem to pass to the conversion service
-            var filterItem = new FilterItem
+            try
             {
-                Category = category,
-                Name = name,
-                ItemKey = itemKey
-            };
+                // Extract category and name from item key (format: "category:name")
+                var parts = itemKey.Split(':');
+                if (parts.Length != 2)
+                {
+                    DebugLogger.LogError(
+                        "ValidateFilterTab",
+                        $"Invalid itemKey format '{itemKey}' - expected 'category:name'"
+                    );
+                    return null;
+                }
 
-            // Use the conversion service to create the clause
-            var clause = _clauseConversionService.ConvertFilterItemToClause(filterItem, config);
-            if (clause == null)
-                return null;
+                var category = parts[0];
+                var name = parts[1];
 
-            // Convert the clause to a view model
-            var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, nestingLevel);
+                // Create a FilterItem to pass to the conversion service
+                var filterItem = new FilterItem
+                {
+                    Category = category,
+                    Name = name,
+                    ItemKey = itemKey,
+                };
 
-            // Wire up commands if the row was created successfully
-            if (clauseRow != null)
-            {
+                // Use the conversion service to create the clause
+                var clause = _clauseConversionService.ConvertFilterItemToClause(filterItem, config);
+                if (clause == null)
+                {
+                    DebugLogger.LogError(
+                        "ValidateFilterTab",
+                        $"ConvertFilterItemToClause returned null for itemKey '{itemKey}' (category: {category}, name: {name})"
+                    );
+                    return null;
+                }
+
+                // Convert the clause to a view model
+                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
+                    clause,
+                    category,
+                    nestingLevel
+                );
+
+                if (clauseRow == null)
+                {
+                    DebugLogger.LogError(
+                        "ValidateFilterTab",
+                        $"ConvertToClauseViewModel returned null for itemKey '{itemKey}'"
+                    );
+                    return null;
+                }
+
+                // Wire up commands if the row was created successfully
                 clauseRow.EditClauseCommand = new RelayCommand(() => EditClause(clauseRow));
                 clauseRow.RemoveClauseCommand = new RelayCommand(() => RemoveClause(clauseRow));
-            }
 
-            return clauseRow;
+                return clauseRow;
+            }
+            catch (Exception ex)
+            {
+                // Don't crash the whole tab - just skip this item and log the error
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"❌ Failed to convert itemKey '{itemKey}': {ex.Message}"
+                );
+                DebugLogger.LogError("ValidateFilterTab", $"Stack trace: {ex.StackTrace}");
+                return null; // Skip this item, continue with others
+            }
         }
 
         private void EditClause(ClauseRowViewModel row)
@@ -328,31 +413,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_parentViewModel.ItemConfigs.TryGetValue(row.ItemKey, out var config))
             {
                 // Create and show the ItemConfigPopup through the parent ViewModel
-                var popupViewModel = new ItemConfigPopupViewModel(config);
-
-                // Set item details for display
-                popupViewModel.ItemName = row.DisplayText;
-                // Note: ItemImage would need to be loaded from sprite service if needed
-
-                // Subscribe to config applied event to refresh display
-                popupViewModel.ConfigApplied += (updatedConfig) =>
-                {
-                    // Update the ItemConfig in parent's collection
-                    _parentViewModel.ItemConfigs[row.ItemKey] = updatedConfig;
-
-                    // Refresh the clause display when config is applied
-                    RefreshClauseDisplay();
-                    DebugLogger.Log("ValidateFilterTab", $"Updated config for clause: {row.ItemKey}");
-                };
-
-                // Show popup through parent's CurrentPopup property
-                _parentViewModel.CurrentPopup = popupViewModel;
-
-                DebugLogger.Log("ValidateFilterTab", $"Opened config popup for clause: {row.ItemKey}");
+                // TODO: Item config from ValidateFilterTab not yet implemented
+                // Use VisualBuilderTab right-click for item configuration
+                return;
             }
             else
             {
-                DebugLogger.LogError("ValidateFilterTab", $"ItemConfig not found for clause: {row.ItemKey}");
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"ItemConfig not found for clause: {row.ItemKey}"
+                );
             }
         }
 
@@ -367,11 +437,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MustClauses.Remove(row);
 
                     // Find and remove from parent's SelectedMust
-                    var itemToRemove = visualVm.SelectedMust.FirstOrDefault(item => item.ItemKey == row.ItemKey);
+                    var itemToRemove = visualVm.SelectedMust.FirstOrDefault(item =>
+                        item.ItemKey == row.ItemKey
+                    );
                     if (itemToRemove != null)
                     {
                         visualVm.SelectedMust.Remove(itemToRemove);
-                        DebugLogger.Log("ValidateFilterTab", $"Removed clause from Must: {row.ItemKey}");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"Removed clause from Must: {row.ItemKey}"
+                        );
                     }
                 }
                 // Remove from MustNot collection
@@ -384,11 +459,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         if (item.OperatorType == "BannedItems")
                         {
-                            var childToRemove = item.Children.FirstOrDefault(child => child.ItemKey == row.ItemKey);
+                            var childToRemove = item.Children.FirstOrDefault(child =>
+                                child.ItemKey == row.ItemKey
+                            );
                             if (childToRemove != null)
                             {
                                 item.Children.Remove(childToRemove);
-                                DebugLogger.Log("ValidateFilterTab", $"Removed clause from BannedItems: {row.ItemKey}");
+                                DebugLogger.Log(
+                                    "ValidateFilterTab",
+                                    $"Removed clause from BannedItems: {row.ItemKey}"
+                                );
                                 break;
                             }
                         }
@@ -400,11 +480,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ShouldClauses.Remove(row);
 
                     // Find and remove from parent's SelectedShould
-                    var itemToRemove = visualVm.SelectedShould.FirstOrDefault(item => item.ItemKey == row.ItemKey);
+                    var itemToRemove = visualVm.SelectedShould.FirstOrDefault(item =>
+                        item.ItemKey == row.ItemKey
+                    );
                     if (itemToRemove != null)
                     {
                         visualVm.SelectedShould.Remove(itemToRemove);
-                        DebugLogger.Log("ValidateFilterTab", $"Removed clause from Should: {row.ItemKey}");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"Removed clause from Should: {row.ItemKey}"
+                        );
                     }
                 }
             }
@@ -415,19 +500,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     MustClauses.Remove(row);
                     _parentViewModel.SelectedMust.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from Must (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from Must (key-based): {row.ItemKey}"
+                    );
                 }
                 else if (MustNotClauses.Contains(row))
                 {
                     MustNotClauses.Remove(row);
                     _parentViewModel.SelectedMustNot.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from MustNot (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from MustNot (key-based): {row.ItemKey}"
+                    );
                 }
                 else if (ShouldClauses.Contains(row))
                 {
                     ShouldClauses.Remove(row);
                     _parentViewModel.SelectedShould.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from Should (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from Should (key-based): {row.ItemKey}"
+                    );
                 }
             }
 
@@ -445,7 +539,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (!IsFilterVerified)
                 {
                     var result = await ShowSaveWarningDialog();
-                    if (!result) return; // User cancelled
+                    if (!result)
+                        return; // User cancelled
                 }
 
                 if (string.IsNullOrWhiteSpace(FilterName))
@@ -536,6 +631,82 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
+        private void FinishAndClose()
+        {
+            try
+            {
+                DebugLogger.Log("ValidateFilterTab", "Finish & Close button clicked");
+                _parentViewModel.RequestClose?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ValidateFilterTab", $"Error closing modal: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task CopyJson()
+        {
+            try
+            {
+                var config = BuildConfigFromCurrentState();
+                if (config == null)
+                {
+                    UpdateStatus("Cannot copy JSON - invalid filter configuration", true);
+                    return;
+                }
+
+                // Serialize to JSON
+                var userProfileService = ServiceHelper.GetService<UserProfileService>();
+                var serializer = new FilterSerializationService(userProfileService!);
+                var json = serializer.SerializeConfig(config);
+
+                // Copy to clipboard
+                await Services.ClipboardService.CopyToClipboardAsync(json);
+
+                UpdateStatus("✅ JSON copied to clipboard", false);
+                DebugLogger.Log("ValidateFilterTab", "Filter JSON copied to clipboard");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Copy error: {ex.Message}", true);
+                DebugLogger.LogError("ValidateFilterTab", $"Error copying JSON: {ex.Message}");
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task GoToSearch()
+        {
+            try
+            {
+                // Save the filter first
+                await SaveCurrentFilter();
+
+                // Close the filter modal
+                _parentViewModel.RequestClose?.Invoke();
+
+                // Open the search modal with this filter
+                // Get the filter path from the saved filter name
+                var filterPath = $"JsonItemFilters/{FilterName}.json";
+
+                // TODO: Open search modal with this filter
+                // For now, just show success message
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    $"Go to Search clicked for filter: {FilterName}"
+                );
+
+                // The main menu should open the search modal with the filter loaded
+                // This will be handled by the parent when we request close
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error: {ex.Message}", true);
+                DebugLogger.LogError("ValidateFilterTab", $"Error going to search: {ex.Message}");
+            }
+        }
+
         [RelayCommand(CanExecute = nameof(CanSave))]
         private async Task ExportFilter()
         {
@@ -613,7 +784,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager =
+                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
                     IsTestRunning = false;
@@ -646,8 +818,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (phase1Results.Count > 10)
                     {
                         HasValidationWarnings = true;
-                        ValidationWarningText = $"⚠️ Filter found {phase1Results.Count} seeds in first 35! This filter is very permissive.";
-                        DebugLogger.Log("ValidateFilterTab", $"⚠️ PHASE 1: Too permissive - found {phase1Results.Count} seeds");
+                        ValidationWarningText =
+                            $"⚠️ Filter found {phase1Results.Count} seeds in first 35! This filter is very permissive.";
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"⚠️ PHASE 1: Too permissive - found {phase1Results.Count} seeds"
+                        );
                     }
 
                     // Still mark as verified
@@ -668,13 +844,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                DebugLogger.Log("ValidateFilterTab", "✅ PHASE 1: No seeds found (good - filter not too permissive)");
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "✅ PHASE 1: No seeds found (good - filter not too permissive)"
+                );
 
                 // PHASE 2: Progressive escalation with batch size 1, CPU-1 threads
                 // Use CPU count - 1 for threads
                 var cpuCount = Environment.ProcessorCount;
                 var threadCount = Math.Max(1, cpuCount - 1);
-                DebugLogger.Log("ValidateFilterTab", $"Using {threadCount} threads (CPU count: {cpuCount})");
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    $"Using {threadCount} threads (CPU count: {cpuCount})"
+                );
 
                 // Sub-phase 2a: Try 1,000 batches (35K seeds)
                 LiveSearchStatus = "Phase 2a: Searching 1,000 batches (35K seeds)...";
@@ -690,8 +872,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1, // Stop at first match
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2a: Testing 1,000 batches (35K seeds)");
-                var phase2aResults = await searchManager.RunQuickSearchAsync(phase2aCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2a: Testing 1,000 batches (35K seeds)"
+                );
+                var phase2aResults = await searchManager.RunQuickSearchAsync(
+                    phase2aCriteria,
+                    config
+                );
 
                 if (phase2aResults.Success && phase2aResults.Count > 0)
                 {
@@ -700,7 +888,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2aResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2aResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2aResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -721,8 +910,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1,
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2b: Testing 100,000 batches (3.5M seeds)");
-                var phase2bResults = await searchManager.RunQuickSearchAsync(phase2bCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2b: Testing 100,000 batches (3.5M seeds)"
+                );
+                var phase2bResults = await searchManager.RunQuickSearchAsync(
+                    phase2bCriteria,
+                    config
+                );
 
                 if (phase2bResults.Success && phase2bResults.Count > 0)
                 {
@@ -731,7 +926,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2bResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2bResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2bResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -753,7 +949,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 };
 
                 DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2c: Testing batches 100K-100.25K");
-                var phase2cResults = await searchManager.RunQuickSearchAsync(phase2cCriteria, config);
+                var phase2cResults = await searchManager.RunQuickSearchAsync(
+                    phase2cCriteria,
+                    config
+                );
 
                 if (phase2cResults.Success && phase2cResults.Count > 0)
                 {
@@ -762,7 +961,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2cResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2cResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2cResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -783,8 +983,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1,
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2d: Testing 1M batches (35M seeds) - FINAL PUSH");
-                var phase2dResults = await searchManager.RunQuickSearchAsync(phase2dCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2d: Testing 1M batches (35M seeds) - FINAL PUSH"
+                );
+                var phase2dResults = await searchManager.RunQuickSearchAsync(
+                    phase2dCriteria,
+                    config
+                );
 
                 LiveSearchProgress = 100;
                 IsTestRunning = false;
@@ -797,17 +1003,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2dResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2dResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2dResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                 }
                 else if (phase2dResults.Success && phase2dResults.Count == 0)
                 {
                     // NO MATCH after all phases
                     ShowTestError = true;
-                    TestResultMessage = $"⚠ NO SEEDS FOUND\nSearched 35M seeds in {phase2dResults.ElapsedTime:F1}s\nFilter may be too restrictive";
+                    TestResultMessage =
+                        $"⚠ NO SEEDS FOUND\nSearched 35M seeds in {phase2dResults.ElapsedTime:F1}s\nFilter may be too restrictive";
                     UpdateStatus($"⚠ No seeds found in 35M seeds", true);
                     HasValidationWarnings = true;
-                    ValidationWarningText = "No matching seeds found. Try making filter less restrictive.";
+                    ValidationWarningText =
+                        "No matching seeds found. Try making filter less restrictive.";
                 }
                 else
                 {
@@ -878,15 +1087,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var item in visualVm.SelectedMust)
                     {
                         // Special handling for BannedItems - add children to MustNot
-                        if (item is Models.FilterOperatorItem operatorItem && operatorItem.OperatorType == "BannedItems")
+                        if (
+                            item is Models.FilterOperatorItem operatorItem
+                            && operatorItem.OperatorType == "BannedItems"
+                        )
                         {
                             // BannedItems: Add each child to MustNot array
                             foreach (var child in operatorItem.Children)
                             {
-                                var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{child.Category}:{child.Name}")
+                                var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
+                                    $"{child.Category}:{child.Name}"
+                                )
                                     ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
                                     : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(child, itemConfig);
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                    child,
+                                    itemConfig
+                                );
                                 if (clause != null)
                                     config.MustNot.Add(clause);
                             }
@@ -894,10 +1111,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         else
                         {
                             // Regular items and OR/AND operators (ClauseConversionService handles operators)
-                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
+                                $"{item.Category}:{item.Name}"
+                            )
                                 ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                 : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                item,
+                                itemConfig
+                            );
                             if (clause != null)
                                 config.Must.Add(clause);
                         }
@@ -906,10 +1128,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var item in visualVm.SelectedShould)
                     {
                         // Convert all items (ClauseConversionService handles operators)
-                        var itemConfig = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                        var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
+                            $"{item.Category}:{item.Name}"
+                        )
                             ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                             : new ItemConfig();
-                        var clause = _clauseConversionService.ConvertFilterItemToClause(item, itemConfig);
+                        var clause = _clauseConversionService.ConvertFilterItemToClause(
+                            item,
+                            itemConfig
+                        );
                         if (clause != null)
                             config.Should.Add(clause);
                     }
@@ -931,24 +1158,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             });
         }
 
-
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost",
-                "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white", "red", "green", "black", "blue", "purple", "orange", "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White,
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+            return stake.ToString().ToLower();
         }
 
         private void UpdateStatus(string message, bool isError)
@@ -957,6 +1190,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StatusColor = isError ? Brushes.Red : Brushes.Green;
             DebugLogger.Log("ValidateFilterTab", $"Status: {message} (Error: {isError})");
         }
+
 
         #endregion
     }

@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -33,7 +34,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="🎵" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="Music" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
             <TextBlock Text="Mixer"
                        FontSize="16"
@@ -59,15 +60,15 @@
 
                         <!-- Save/Load/Reset Buttons -->
                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
-                            <Button Content="Save Mix"
+                            <Button Content="Save Mix As..."
                                     Classes="btn-blue"
-                                    Command="{Binding SaveMixerSettingsCommand}"
+                                    Command="{Binding SaveMixAsCommand}"
                                     Height="24"
                                     Padding="8,3"
                                     FontSize="10"/>
-                            <Button Content="Load Mix"
+                            <Button Content="Load Mix..."
                                     Classes="btn-green"
-                                    Command="{Binding LoadMixerSettingsCommand}"
+                                    Command="{Binding LoadMixFromCommand}"
                                     Height="24"
                                     Padding="8,3"
                                     FontSize="10"/>
@@ -96,7 +97,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -132,12 +133,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Drums1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
 
                             <!-- Volume Slider -->
@@ -178,7 +179,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Drums2Solo}"
@@ -208,12 +209,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Drums2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -250,7 +251,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass1Solo}"
@@ -280,12 +281,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Bass1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -322,7 +323,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass2Solo}"
@@ -352,12 +353,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Bass2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -394,7 +395,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords1Solo}"
@@ -424,12 +425,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Chords1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -466,7 +467,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords2Solo}"
@@ -496,12 +497,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Chords2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -538,7 +539,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody1Solo}"
@@ -568,12 +569,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Melody1Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"
@@ -610,7 +611,7 @@
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <TextBlock Text="🔇" FontSize="12"/>
+                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
                             </ToggleButton>
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody2Solo}"
@@ -640,12 +641,12 @@
                                            Foreground="{StaticResource LightGrey}"
                                            FontSize="10"
                                            VerticalAlignment="Center"/>
-                                <Slider Minimum="-100"
+                                <Slider Minimum="0"
                                         Maximum="100"
                                         Value="{Binding Melody2Pan}"
                                         Width="60"
                                         VerticalAlignment="Center"
-                                        ToolTip.Tip="Pan: -100 (L) to +100 (R)"/>
+                                        ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
                             <Slider Grid.Column="4"
                                     Minimum="0"

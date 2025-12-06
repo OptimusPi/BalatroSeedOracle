@@ -18,34 +18,43 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
-            // services.AddSingleton<SoundEffectService>(); // Removed - NAudio dependency
             services.AddSingleton<SoundFlowAudioManager>();
-            services.AddSingleton<SoundEffectsService>(); // UI sound effects (card hover, button clicks, etc.)
-            services.AddSingleton<TransitionService>(); // Smooth shader transitions (startup, search, etc.)
-            services.AddSingleton<SearchTransitionManager>(); // Search progress transitions
-            // FavoritesService uses a private constructor and singleton Instance
+            services.AddSingleton<SoundEffectsService>();
+            services.AddSingleton<TransitionService>();
+            services.AddSingleton<EventFXService>();
+            services.AddSingleton<SearchTransitionManager>();
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-            // ClipboardService is static, no DI registration needed
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();
+            services.AddTransient<ClauseConversionService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<BalatroMainMenuViewModel>();
-            services.AddSingleton<FiltersModalViewModel>();       // One filter modal at a time
-            services.AddSingleton<SearchModalViewModel>();        // One search modal at a time
+            services.AddSingleton<FiltersModalViewModel>();
+            services.AddSingleton<SearchModalViewModel>();
             services.AddTransient<AnalyzeModalViewModel>();
             services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();
+            services.AddTransient<TransitionDesignerWidgetViewModel>();
+            services.AddTransient<EventFXWidgetViewModel>();
+            services.AddTransient<DeckAndStakeViewModel>();
+            services.AddTransient<BaseWidgetViewModel>();
+            services.AddTransient<GenieWidgetViewModel>();
+            services.AddTransient<FilterListViewModel>();
+            services.AddTransient<PaginatedFilterBrowserViewModel>();
+            services.AddTransient<FilterSelectionModalViewModel>();
 
             // Filter Tab ViewModels
             services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.DeckStakeTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
             services.AddTransient<ViewModels.FilterTabs.ValidateFilterTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
 
             return services;
         }

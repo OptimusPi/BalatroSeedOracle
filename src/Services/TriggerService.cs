@@ -33,7 +33,7 @@ namespace BalatroSeedOracle.Services
         public TriggerService()
         {
             _audioTriggersPath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
+                AppContext.BaseDirectory,
                 "visualizer",
                 "audio_triggers"
             );

@@ -1,17 +1,23 @@
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+
+#pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -44,6 +50,43 @@ namespace BalatroSeedOracle.Views.Modals
 
             // Load default deck (Red with White Stake) - SpriteService expects SHORT deck names!
             LoadDeckAndStake("Red", "White");
+
+            // Wire up drag-drop for import zone
+            var importDropZone = this.FindControl<Border>("ImportDropZone");
+            if (importDropZone != null)
+            {
+                importDropZone.AddHandler(DragDrop.DropEvent, OnFilterDrop);
+                importDropZone.AddHandler(DragDrop.DragOverEvent, OnFilterDragOver);
+            }
+        }
+
+        private void OnFilterDragOver(object? sender, DragEventArgs e)
+        {
+            // Check if files are being dragged
+            e.DragEffects = e.Data.GetFiles()?.Any() == true
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private async void OnFilterDrop(object? sender, DragEventArgs e)
+        {
+            var files = e.Data.GetFiles();
+            if (files == null)
+                return;
+
+            foreach (var file in files)
+            {
+                var path = file.Path.LocalPath;
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if (ext == ".jaml" || ext == ".json")
+                {
+                    await ImportFilterFile(path);
+                    break; // Only import first valid file
+                }
+            }
+
+            e.Handled = true;
         }
 
         private void LoadDeckAndStake(string deckName, string stakeName)
@@ -140,7 +183,7 @@ namespace BalatroSeedOracle.Views.Modals
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 SystemDecorations = SystemDecorations.None,
                 Background = Avalonia.Media.Brushes.Transparent,
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
             };
 
             bool? result = null;
@@ -150,7 +193,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Content = "Yes",
                 Classes = { "btn-red" },
                 MinWidth = 120,
-                Height = 45
+                Height = 45,
             };
 
             var noButton = new Button
@@ -158,7 +201,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Content = "No",
                 Classes = { "btn-blue" },
                 MinWidth = 120,
-                Height = 45
+                Height = 45,
             };
 
             yesButton.Click += (s, ev) =>
@@ -179,13 +222,10 @@ namespace BalatroSeedOracle.Views.Modals
                 Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
                 BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
                 BorderThickness = new Thickness(3),
-                CornerRadius = new CornerRadius(16)
+                CornerRadius = new CornerRadius(16),
             };
 
-            var mainGrid = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,*,Auto")
-            };
+            var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
 
             // Title bar
             var titleBar = new Border
@@ -193,7 +233,7 @@ namespace BalatroSeedOracle.Views.Modals
                 [Grid.RowProperty] = 0,
                 Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
                 CornerRadius = new CornerRadius(14, 14, 0, 0),
-                Padding = new Thickness(20, 12)
+                Padding = new Thickness(20, 12),
             };
 
             titleBar.Child = new TextBlock
@@ -201,7 +241,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Text = "Delete Filter?",
                 FontSize = 24,
                 Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
             };
 
             mainGrid.Children.Add(titleBar);
@@ -211,7 +251,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 [Grid.RowProperty] = 1,
                 Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                Padding = new Thickness(24)
+                Padding = new Thickness(24),
             };
 
             var contentStack = new StackPanel { Spacing = 12 };
@@ -221,16 +261,18 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Orientation = Orientation.Horizontal,
                 Spacing = 12,
-                MaxWidth = 380 // Constrain width to prevent overflow
+                MaxWidth = 380, // Constrain width to prevent overflow
             };
 
             var warningIcon = new TextBlock
             {
                 Text = "⚠",
                 FontSize = 32,
-                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B")),
+                Foreground = new Avalonia.Media.SolidColorBrush(
+                    Avalonia.Media.Color.Parse("#FF6B6B")
+                ),
                 VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 0, 0, 0)
+                Margin = new Thickness(0, 0, 0, 0),
             };
 
             var messageText = new TextBlock
@@ -239,20 +281,22 @@ namespace BalatroSeedOracle.Views.Modals
                 FontSize = 14,
                 Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
                 TextWrapping = TextWrapping.Wrap,
-                MaxWidth = 320 // Leave room for icon
+                MaxWidth = 320, // Leave room for icon
             };
 
             warningPanel.Children.Add(warningIcon);
             warningPanel.Children.Add(messageText);
             contentStack.Children.Add(warningPanel);
 
-            contentStack.Children.Add(new TextBlock
-            {
-                Text = "This cannot be undone.",
-                FontSize = 14,
-                Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
-                FontStyle = FontStyle.Italic
-            });
+            contentStack.Children.Add(
+                new TextBlock
+                {
+                    Text = "This cannot be undone.",
+                    FontSize = 14,
+                    Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                    FontStyle = FontStyle.Italic,
+                }
+            );
 
             contentBorder.Child = contentStack;
             mainGrid.Children.Add(contentBorder);
@@ -263,14 +307,14 @@ namespace BalatroSeedOracle.Views.Modals
                 [Grid.RowProperty] = 2,
                 Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
                 CornerRadius = new CornerRadius(0, 0, 14, 14),
-                Padding = new Thickness(20, 12, 20, 20)
+                Padding = new Thickness(20, 12, 20, 20),
             };
 
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Spacing = 12
+                Spacing = 12,
             };
             buttonPanel.Children.Add(yesButton);
             buttonPanel.Children.Add(noButton);
@@ -308,7 +352,9 @@ namespace BalatroSeedOracle.Views.Modals
         {
             // Extract deck and stake names with fallbacks (handle both null and empty strings)
             var deckName = string.IsNullOrWhiteSpace(filter.DeckName) ? "Red" : filter.DeckName;
-            var stakeName = string.IsNullOrWhiteSpace(filter.StakeName) ? "White" : filter.StakeName;
+            var stakeName = string.IsNullOrWhiteSpace(filter.StakeName)
+                ? "White"
+                : filter.StakeName;
 
             // SpriteService expects SHORT deck names (just "Red", not "Red Deck")
             // Filter JSON stores short names like "Red", "Anaglyph", etc.
@@ -360,6 +406,83 @@ namespace BalatroSeedOracle.Views.Modals
             }
 
             return await tcs.Task;
+        }
+
+        private async void OnBrowseFilterClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null)
+                return;
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+                new FilePickerOpenOptions
+                {
+                    Title = "Import Filter",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[]
+                    {
+                        new FilePickerFileType("Filter Files")
+                        {
+                            Patterns = new[] { "*.jaml", "*.json" }
+                        },
+                        new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } },
+                    },
+                }
+            );
+
+            if (files.Count > 0)
+            {
+                await ImportFilterFile(files[0].Path.LocalPath);
+            }
+        }
+
+        private async System.Threading.Tasks.Task ImportFilterFile(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    DebugLogger.LogError("FilterSelectionModal", $"File not found: {filePath}");
+                    return;
+                }
+
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                if (extension != ".jaml" && extension != ".json")
+                {
+                    DebugLogger.LogError(
+                        "FilterSelectionModal",
+                        $"Invalid file type: {extension}. Expected .jaml or .json"
+                    );
+                    return;
+                }
+
+                // Copy file to Filters directory
+                var fileName = Path.GetFileName(filePath);
+                var destPath = Path.Combine(AppPaths.FiltersDir, fileName);
+
+                // If file already exists, generate unique name
+                if (File.Exists(destPath))
+                {
+                    var baseName = Path.GetFileNameWithoutExtension(fileName);
+                    var ext = Path.GetExtension(fileName);
+                    var counter = 1;
+                    while (File.Exists(destPath))
+                    {
+                        destPath = Path.Combine(AppPaths.FiltersDir, $"{baseName}_{counter}{ext}");
+                        counter++;
+                    }
+                }
+
+                File.Copy(filePath, destPath);
+                DebugLogger.Log("FilterSelectionModal", $"Imported filter to: {destPath}");
+
+                // Refresh the filter list
+                ViewModel?.FilterList.RefreshFilters();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelectionModal", $"Failed to import filter: {ex.Message}");
+            }
         }
     }
 }

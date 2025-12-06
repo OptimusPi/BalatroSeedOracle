@@ -226,7 +226,11 @@ namespace BalatroSeedOracle.Models
         // Additional properties for filter configuration
         public string? Value { get; set; }
         public string? Label { get; set; }
+        public int Score { get; set; } = 1;
+        public int MinCount { get; set; } = 1;
         public int[]? Antes { get; set; }
+        public int[]? ShopSlots { get; set; }
+        public int[]? PackPositions { get; set; }
 
         private string? _edition;
         public string? Edition
@@ -234,11 +238,17 @@ namespace BalatroSeedOracle.Models
             get => _edition;
             set
             {
-                Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': OLD='{_edition ?? "NULL"}', NEW='{value ?? "NULL"}'");
+                Helpers.DebugLogger.Log(
+                    "Edition.SET",
+                    $"Item '{_name}': OLD='{_edition ?? "NULL"}', NEW='{value ?? "NULL"}'"
+                );
                 if (_edition != value)
                 {
                     _edition = value;
-                    Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': CHANGED! Calling OnPropertyChanged...");
+                    Helpers.DebugLogger.Log(
+                        "Edition.SET",
+                        $"Item '{_name}': CHANGED! Calling OnPropertyChanged..."
+                    );
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(EditionImage)); // Notify EditionImage to refresh
                 }

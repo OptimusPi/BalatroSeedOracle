@@ -102,12 +102,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private async System.Threading.Tasks.Task<string> CreateTempFilter()
         {
-            var baseDir =
-                System.IO.Path.GetDirectoryName(
-                    System.Reflection.Assembly.GetExecutingAssembly().Location
-                ) ?? System.AppDomain.CurrentDomain.BaseDirectory;
-            var filtersDir = System.IO.Path.Combine(baseDir, "JsonItemFilters");
-            System.IO.Directory.CreateDirectory(filtersDir);
+            var filtersDir = AppPaths.FiltersDir;
 
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
@@ -196,10 +191,9 @@ namespace BalatroSeedOracle.ViewModels
                     "Cache service not available, loading from disk"
                 );
 
-                var filtersDir = Path.Combine(Directory.GetCurrentDirectory(), "JsonItemFilters");
+                var filtersDir = AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
-                    Directory.CreateDirectory(filtersDir);
                     UpdateCurrentPage();
                     return;
                 }
@@ -588,6 +582,18 @@ namespace BalatroSeedOracle.ViewModels
         public List<ItemConfig> Tags { get; set; } = new();
         public List<ItemConfig> Bosses { get; set; } = new();
         public List<ItemConfig> StandardCards { get; set; } = new();
+
+        /// <summary>
+        /// All items combined for fanned card hand display
+        /// </summary>
+        public List<ItemConfig> AllItems =>
+            Jokers
+                .Concat(Vouchers)
+                .Concat(Consumables)
+                .Concat(Tags)
+                .Concat(Bosses)
+                .Concat(StandardCards)
+                .ToList();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

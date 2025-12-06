@@ -282,7 +282,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var seed = SeedInput ?? "";
-                var analyzerWindow = new Windows.AnalyzerWindow(seed);
+                var analyzerViewModel = new AnalyzerViewModel();
+                analyzerViewModel.AddSeed(seed);
+                var analyzerWindow = new Windows.AnalyzerWindow(analyzerViewModel);
                 analyzerWindow.Show();
 
                 DebugLogger.Log(

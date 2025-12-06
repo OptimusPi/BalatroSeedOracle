@@ -61,7 +61,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
         // Expose parent's SelectedDeck for flip animation
-        public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+        public string SelectedDeck => _parentViewModel?.SelectedDeck.ToString() ?? "Red";
 
         // Available items (reuse same collections structure as VisualBuilderTab)
         public ObservableCollection<FilterItem> AllJokers { get; }
@@ -322,7 +322,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     var voucherPairs = GetVoucherPairs();
                     var organizedVouchers = new List<FilterItem>();
 
-                    var firstSet = voucherPairs.Take(8).ToList();
+                    var firstSet = voucherPairs.Take(6).ToList();
                     foreach (var (baseName, _) in firstSet)
                     {
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
@@ -596,9 +596,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void NotifyJsonEditorOfChanges()
         {
-            if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
+            if (_parentViewModel?.JamlEditorTab is JamlEditorTabViewModel jamlVm)
             {
-                jsonEditorVm.AutoGenerateFromVisual();
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 
@@ -683,13 +683,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsLoading = false;
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                // Log error before rethrowing (since this is called from fire-and-forget Task.Run)
+                DebugLogger.LogError(
+                    "ConfigureFilterTab",
+                    $"❌ Error loading game data: {ex.Message}"
+                );
+
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
                 });
-                throw;
+                // Don't rethrow - this is fire-and-forget, rethrowing will crash the app
+                // The error is logged and loading state is reset
             }
         }
 

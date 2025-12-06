@@ -38,6 +38,7 @@ namespace BalatroSeedOracle.Services
         }
 
         private Dictionary<string, SpritePosition> jokerPositions = null!;
+        private Dictionary<string, SpritePosition> jokerNegativePositions = null!;
         private Dictionary<string, SpritePosition> tagPositions = null!;
         private Dictionary<string, SpritePosition> tarotPositions = null!;
         private Dictionary<string, SpritePosition> spectralPositions = null!;
@@ -55,6 +56,7 @@ namespace BalatroSeedOracle.Services
         private Dictionary<string, SpritePosition> stickerPositions = null!;
         private Dictionary<string, SpritePosition> boosterPositions = null!;
         private Bitmap? jokerSheet;
+        private Bitmap? jokerNegativeSheet;
         private Bitmap? tagSheet;
         private Bitmap? tarotSheet;
         private Bitmap? spectralSheet;
@@ -614,7 +616,8 @@ namespace BalatroSeedOracle.Services
                 {
                     try
                     {
-                        var key = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+                        var key =
+                            $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
                         if (!_precomputedComposites.ContainsKey(key))
                         {
                             var composite = GetJokerWithEditionImage(edition, debuff);
@@ -651,6 +654,11 @@ namespace BalatroSeedOracle.Services
                 // Load joker positions from json
                 jokerPositions = LoadSpritePositions(
                     "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
+                );
+
+                // Load negative joker positions from json
+                jokerNegativePositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.json"
                 );
 
                 // Load tag positions from json
@@ -757,6 +765,9 @@ namespace BalatroSeedOracle.Services
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
+                jokerNegativeSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png"
+                );
                 tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
                 tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
                 voucherSheet = LoadBitmap(
@@ -990,19 +1001,15 @@ namespace BalatroSeedOracle.Services
                     baseDir = Path.GetDirectoryName(baseDir);
                 }
 
-                // Also try the workspace relative path (relative to current working directory)
-                var cwdCandidate = Path.Combine(Environment.CurrentDirectory, relativePath);
+                // Also try the workspace relative path (relative to app base directory)
+                var cwdCandidate = Path.Combine(AppContext.BaseDirectory, relativePath);
                 if (File.Exists(cwdCandidate))
                 {
                     return File.OpenRead(cwdCandidate);
                 }
 
-                // And CWD/src path
-                var cwdSrcCandidate = Path.Combine(
-                    Environment.CurrentDirectory,
-                    "src",
-                    relativePath
-                );
+                // And app base directory/src path
+                var cwdSrcCandidate = Path.Combine(AppContext.BaseDirectory, "src", relativePath);
                 if (File.Exists(cwdSrcCandidate))
                 {
                     return File.OpenRead(cwdSrcCandidate);
@@ -1109,6 +1116,7 @@ namespace BalatroSeedOracle.Services
 
         public IImage? GetJokerImage(
             string name,
+            string? edition = null,
             int spriteWidth = UIConstants.JokerSpriteWidth,
             int spriteHeight = UIConstants.JokerSpriteHeight
         )
@@ -1121,10 +1129,16 @@ namespace BalatroSeedOracle.Services
                 name = "anyjoker";
             }
 
+            // Use negative sprite sheet for Negative edition
+            var isNegative =
+                edition?.Equals("negative", StringComparison.OrdinalIgnoreCase) == true;
+            var positions = isNegative ? jokerNegativePositions : jokerPositions;
+            var sheet = isNegative ? jokerNegativeSheet : jokerSheet;
+
             var baseImage = GetSpriteImage(
                 name,
-                jokerPositions,
-                jokerSheet,
+                positions,
+                sheet,
                 spriteWidth,
                 spriteHeight,
                 "joker"
@@ -1168,7 +1182,7 @@ namespace BalatroSeedOracle.Services
         )
         {
             // Get the base joker image
-            var jokerImage = GetJokerImage(name, spriteWidth, spriteHeight);
+            var jokerImage = GetJokerImage(name, edition: null, spriteWidth, spriteHeight);
             if (jokerImage == null)
                 return null;
 
@@ -1528,11 +1542,12 @@ namespace BalatroSeedOracle.Services
                 // Note: "negative" is a SHADER effect, NOT a sprite in Editions.png
                 int position = edition.ToLowerInvariant() switch
                 {
-                    "foil" => 0,                          // Position 0: Blue swirl
-                    "holographic" or "holo" => 1,         // Position 1: Sparkly
-                    "polychrome" or "poly" => 2,          // Position 2: Rainbow
-                    "debuffed" or "debuff" => 3,          // Position 3: Red X (rightmost!)
-                    "none" or "normal" or "negative" or _ => -1,  // No sprite (negative is shader effect)
+                    "none" or "normal" => 0, // Position 0: None/Normal (base)
+                    "foil" => 1, // Position 1: Foil
+                    "holographic" or "holo" => 2, // Position 2: Holographic
+                    "polychrome" or "poly" => 3, // Position 3: Polychrome
+                    "debuffed" or "debuff" => 4, // Position 4: Debuffed/Red X
+                    "negative" or _ => -1, // No sprite (negative is shader effect)
                 };
 
                 // Return null for invalid/no sprite positions
@@ -1565,6 +1580,10 @@ namespace BalatroSeedOracle.Services
         // New methods for deck, enhancement, and seal sprites
         public IImage? GetDeckImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "red";
+            }
             var normalized = NormalizeSpriteName(name);
             if (!deckPositions.TryGetValue(normalized, out var pos))
             {
@@ -1607,8 +1626,10 @@ namespace BalatroSeedOracle.Services
         // Create a composite image with deck and stake sticker
         public IImage? GetDeckWithStakeSticker(string deckName, string stakeName)
         {
-            ArgumentNullException.ThrowIfNull(deckName);
-            ArgumentNullException.ThrowIfNull(stakeName);
+            if (string.IsNullOrWhiteSpace(deckName))
+                deckName = "red";
+            if (string.IsNullOrWhiteSpace(stakeName))
+                stakeName = "white";
 
             // Get the base deck image
             var deckImage = GetDeckImage(deckName);
@@ -1732,12 +1753,20 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Cast to Bitmap to access pixel data
-                if (sourceImage is not Bitmap sourceBitmap)
+                // Check if we can save the image (both Bitmap and RenderTargetBitmap support Save)
+                // RenderTargetBitmap inherits from Bitmap, so check it first to avoid unreachable pattern
+                Bitmap? sourceBitmap = sourceImage switch
                 {
-                    DebugLogger.LogError(
+                    RenderTargetBitmap rtb => rtb,
+                    Bitmap bmp => bmp,
+                    _ => null,
+                };
+
+                if (sourceBitmap == null)
+                {
+                    DebugLogger.Log(
                         "SpriteService",
-                        "Cannot invert non-Bitmap image"
+                        $"Cannot invert image type: {sourceImage.GetType().Name}"
                     );
                     return sourceImage;
                 }
@@ -1751,10 +1780,7 @@ namespace BalatroSeedOracle.Services
                 using var skBitmap = SKBitmap.Decode(memoryStream);
                 if (skBitmap == null)
                 {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        "Failed to decode bitmap with SkiaSharp"
-                    );
+                    DebugLogger.LogError("SpriteService", "Failed to decode bitmap with SkiaSharp");
                     return sourceImage;
                 }
 
@@ -1762,10 +1788,26 @@ namespace BalatroSeedOracle.Services
                 // Matrix format: [ R, G, B, A, Offset ]
                 var invertMatrix = new float[]
                 {
-                    -1,  0,  0, 0, 255, // Red inverted: R' = 255 - R
-                     0, -1,  0, 0, 255, // Green inverted: G' = 255 - G
-                     0,  0, -1, 0, 255, // Blue inverted: B' = 255 - B
-                     0,  0,  0, 1,   0  // Alpha unchanged
+                    -1,
+                    0,
+                    0,
+                    0,
+                    255, // Red inverted: R' = 255 - R
+                    0,
+                    -1,
+                    0,
+                    0,
+                    255, // Green inverted: G' = 255 - G
+                    0,
+                    0,
+                    -1,
+                    0,
+                    255, // Blue inverted: B' = 255 - B
+                    0,
+                    0,
+                    0,
+                    1,
+                    0, // Alpha unchanged
                 };
 
                 using var colorFilter = SKColorFilter.CreateColorMatrix(invertMatrix);
@@ -1781,10 +1823,7 @@ namespace BalatroSeedOracle.Services
                 using var surface = SKSurface.Create(imageInfo);
                 if (surface == null)
                 {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        "Failed to create SkiaSharp surface"
-                    );
+                    DebugLogger.LogError("SpriteService", "Failed to create SkiaSharp surface");
                     return sourceImage;
                 }
 
@@ -1809,7 +1848,6 @@ namespace BalatroSeedOracle.Services
                 return sourceImage;
             }
         }
-
 
         // Get a composite playing card image (enhancement + card pattern)
         public IImage GetPlayingCardImage(
@@ -1861,6 +1899,41 @@ namespace BalatroSeedOracle.Services
                 throw new InvalidOperationException(
                     $"Failed to composite playing card {rank} of {suit}!"
                 );
+
+            // Apply edition effect if specified
+            if (!string.IsNullOrEmpty(edition) && edition != "None")
+            {
+                if (edition.Equals("Negative", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Negative: Invert colors
+                    var inverted = InvertImageColors(result);
+                    if (inverted != null)
+                        result = inverted;
+                }
+                else
+                {
+                    // Other editions: Composite overlay (Foil, Holographic, Polychrome)
+                    var editionOverlay = GetEditionImage(edition);
+                    if (editionOverlay != null)
+                    {
+                        var composited = CompositeImages(result, editionOverlay, 142, 190);
+                        if (composited != null)
+                            result = composited;
+                    }
+                }
+            }
+
+            // Apply seal overlay if specified
+            if (!string.IsNullOrEmpty(seal) && seal != "None")
+            {
+                var sealOverlay = GetSealImage(seal);
+                if (sealOverlay != null)
+                {
+                    var composited = CompositeImages(result, sealOverlay, 142, 190);
+                    if (composited != null)
+                        result = composited;
+                }
+            }
 
             return result;
         }
@@ -1973,7 +2046,11 @@ namespace BalatroSeedOracle.Services
         /// <param name="jokerName">Name of the joker</param>
         /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
         /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
-        public IImage? GetJokerSpriteWithEdition(string jokerName, string? edition = null, bool debuff = false)
+        public IImage? GetJokerSpriteWithEdition(
+            string jokerName,
+            string? edition = null,
+            bool debuff = false
+        )
         {
             // Get base joker sprite
             var baseJoker = GetJokerImage(jokerName);
@@ -1984,7 +2061,10 @@ namespace BalatroSeedOracle.Services
             }
 
             // No edition = return base
-            if (string.IsNullOrEmpty(edition) || edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrEmpty(edition)
+                || edition.Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
                 return baseJoker;
 
             IImage? result = baseJoker;
@@ -2031,7 +2111,8 @@ namespace BalatroSeedOracle.Services
             ArgumentNullException.ThrowIfNull(edition);
 
             // Check cache first (precomputed during loading screen)
-            var cacheKey = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+            var cacheKey =
+                $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
             if (_precomputedComposites.TryGetValue(cacheKey, out var cached))
             {
                 return cached;
@@ -2098,10 +2179,7 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    DebugLogger.LogError(
-                        "SpriteService",
-                        "Failed to get debuffed overlay"
-                    );
+                    DebugLogger.LogError("SpriteService", "Failed to get debuffed overlay");
                 }
             }
 

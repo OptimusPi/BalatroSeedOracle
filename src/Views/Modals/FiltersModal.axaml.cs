@@ -32,7 +32,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var viewModel = new FiltersModalViewModel(configService, filterService);
                 DataContext = viewModel;
 
-                // Initialize tabs now that we're on the UI thread
+                // Initialize tabs synchronously so they're ready when UI renders
                 viewModel.InitializeTabs();
             }
             catch (Exception ex)

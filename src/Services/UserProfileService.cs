@@ -29,8 +29,8 @@ namespace BalatroSeedOracle.Services
 
         public UserProfileService()
         {
-            // Just use the fucking current directory where the app is running
-            _profilePath = Path.Combine(Directory.GetCurrentDirectory(), PROFILE_FILENAME);
+            // Use AppPaths for proper cross-platform data directory
+            _profilePath = Path.Combine(AppPaths.UserDir, PROFILE_FILENAME);
 
             DebugLogger.Log("UserProfileService", $"Profile path: {_profilePath}");
 

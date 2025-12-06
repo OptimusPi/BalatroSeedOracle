@@ -10,15 +10,17 @@ namespace BalatroSeedOracle.Windows
     public partial class AnalyzerWindow : Window
     {
         private AnalyzerView? _analyzerView;
-        private AnalyzerViewModel? _viewModel;
+        private readonly AnalyzerViewModel _viewModel;
 
         public AnalyzerWindow()
+            : this(new AnalyzerViewModel()) { }
+
+        public AnalyzerWindow(AnalyzerViewModel viewModel)
         {
+            _viewModel = viewModel;
             InitializeComponent();
             _analyzerView = this.FindControl<AnalyzerView>("AnalyzerViewContent");
 
-            // Get ViewModel from DI
-            _viewModel = ServiceHelper.GetRequiredService<AnalyzerViewModel>();
             DataContext = _viewModel;
 
             if (_analyzerView != null)
@@ -27,19 +29,19 @@ namespace BalatroSeedOracle.Windows
             }
         }
 
-        public AnalyzerWindow(string seed)
-            : this()
+        public AnalyzerWindow(AnalyzerViewModel viewModel, string seed)
+            : this(viewModel)
         {
             // Set the seed after initialization
             SetSeedAndAnalyze(seed);
         }
 
-        public AnalyzerWindow(IEnumerable<string> seeds)
-            : this()
+        public AnalyzerWindow(AnalyzerViewModel viewModel, IEnumerable<string> seeds)
+            : this(viewModel)
         {
             // Set multiple seeds for navigation
-            _viewModel?.SetSeeds(seeds);
-            Title = $"Balatro Seed Analyzer - {_viewModel?.TotalResults ?? 0} seeds";
+            _viewModel.SetSeeds(seeds);
+            Title = $"Balatro Seed Analyzer - {_viewModel.TotalResults} seeds";
         }
 
         private void InitializeComponent()
@@ -52,7 +54,7 @@ namespace BalatroSeedOracle.Windows
         /// </summary>
         public void SetSeedAndAnalyze(string seed)
         {
-            _viewModel?.SetSeeds(new[] { seed });
+            _viewModel.SetSeeds(new[] { seed });
             Title = $"Balatro Seed Analyzer - {seed}";
         }
     }

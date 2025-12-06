@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
     
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -73,11 +74,14 @@
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center">
-                <TextBlock Text="🎵 Audio Visualizer"
-                           FontSize="20"
-
-                           FontFamily="{StaticResource BalatroFont}"
-                           IsHitTestVisible="False"/>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <icons:PackIconMaterial Kind="Music" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="Audio Visualizer"
+                               FontSize="20"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
             </Button>
 
 

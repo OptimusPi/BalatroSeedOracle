@@ -1,0 +1,257 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
+             x:Class="BalatroSeedOracle.Components.TransitionDesignerWidget"
+             x:DataType="vm:TransitionDesignerWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <!-- Single container with drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State -->
+        <StackPanel IsVisible="{Binding IsMinimized}"
+                    Spacing="4">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="64" Height="64"
+                    Classes="widget-header"
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
+                <TextBlock Text="🎬" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Transitions"
+                       FontSize="14"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       FontFamily="{StaticResource BalatroFont}"/>
+        </StackPanel>
+
+        <!-- Expanded State -->
+        <Border Classes="widget-window"
+                IsVisible="{Binding !IsMinimized}"
+                Width="420">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header using shared component -->
+                <local:WidgetHeader Grid.Row="0" />
+
+                <!-- Content Area with ScrollViewer -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+
+                    <StackPanel Margin="12" Spacing="12">
+
+                        <!-- AUDIO SECTION -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Blue}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="10">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Audio"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource Blue}"
+                                           HorizontalAlignment="Center"/>
+
+                                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                                    <!-- Audio Mix A -->
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Mix A"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Center"/>
+                                        <ComboBox ItemsSource="{Binding AudioMixOptions}"
+                                                  SelectedItem="{Binding SelectedAudioMixA}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <!-- Arrow -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="→"
+                                               FontSize="18"
+                                               Foreground="{StaticResource White}"
+                                               VerticalAlignment="Center"/>
+
+                                    <!-- Audio Mix B -->
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="Mix B"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Center"/>
+                                        <ComboBox ItemsSource="{Binding AudioMixOptions}"
+                                                  SelectedItem="{Binding SelectedAudioMixB}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- VISUAL SECTION -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Purple}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="10">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Visual"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource Purple}"
+                                           HorizontalAlignment="Center"/>
+
+                                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                                    <!-- Visual Preset A -->
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Preset A"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Center"/>
+                                        <ComboBox ItemsSource="{Binding VisualPresetOptions}"
+                                                  SelectedItem="{Binding SelectedVisualPresetA}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <!-- Arrow -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="→"
+                                               FontSize="18"
+                                               Foreground="{StaticResource White}"
+                                               VerticalAlignment="Center"/>
+
+                                    <!-- Visual Preset B -->
+                                    <StackPanel Grid.Column="2" Spacing="4">
+                                        <TextBlock Text="Preset B"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Center"/>
+                                        <ComboBox ItemsSource="{Binding VisualPresetOptions}"
+                                                  SelectedItem="{Binding SelectedVisualPresetB}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- TEST TRANSITION SECTION -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Gold}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="10">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Test Transition"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource Gold}"
+                                           HorizontalAlignment="Center"/>
+
+                                <!-- Slider with Balatro red thermometer style -->
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="A"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="{Binding TransitionProgress, Mode=TwoWay}"
+                                                IsEnabled="{Binding !IsTestRunning}"
+                                                Classes="balatro-red-slider"
+                                                VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="B"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0,0,0"/>
+                                    </Grid>
+
+                                    <!-- Progress indicator -->
+                                    <TextBlock Text="{Binding TransitionProgressText}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource LightGrey}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Easing, Duration and Test Button -->
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="Easing"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Left"/>
+                                        <ComboBox ItemsSource="{Binding EasingOptions}"
+                                                  SelectedItem="{Binding SelectedEasing}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="Duration"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   HorizontalAlignment="Left"/>
+                                        <ComboBox ItemsSource="{Binding DurationOptions}"
+                                                  SelectedItem="{Binding SelectedDuration}"
+                                                  Width="70"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            Content="Test"
+                                            Classes="btn-green"
+                                            Command="{Binding TestTransitionCommand}"
+                                            VerticalAlignment="Bottom"
+                                            Height="28"
+                                            Padding="12,4"
+                                            FontSize="11"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SAVE SECTION -->
+                        <Button Content="SAVE TRANSITION"
+                                Classes="btn-blue"
+                                Command="{Binding SaveTransitionCommand}"
+                                HorizontalAlignment="Stretch"
+                                Height="32"
+                                FontSize="12"
+                                Margin="0,4,0,0"/>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

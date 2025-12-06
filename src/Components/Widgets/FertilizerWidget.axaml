@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             x:Class="BalatroSeedOracle.Components.FertilizerWidget"
+             x:DataType="vm:FertilizerWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Seedling Icon with Badge -->
+        <Grid Name="MinimizedView"
+              IsVisible="{Binding IsMinimized}">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <StackPanel Spacing="4">
+                <Grid>
+                    <!-- Icon -->
+                    <Border Background="{StaticResource ModalGrey}"
+                            BorderBrush="{StaticResource ModalBorder}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Width="64" Height="64"
+                            Classes="widget-header"
+                            Cursor="Hand"
+                            PointerPressed="OnMinimizedIconPressed"
+                            PointerReleased="OnMinimizedIconReleased">
+                        <TextBlock Text="🌱" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Notification badge with seed count (pill shape for larger numbers) -->
+                    <Border Background="{StaticResource Red}"
+                            BorderBrush="{StaticResource White}"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            MinWidth="20" Height="20"
+                            Padding="4,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-5,-5,0"
+                            IsVisible="{Binding ShowNotificationBadge}">
+                        <TextBlock Text="{Binding NotificationText}"
+                                   FontSize="10"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   Foreground="{StaticResource White}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+
+                <TextBlock Text="Fertilizer"
+                           FontSize="14"
+                           FontFamily="{StaticResource BalatroFont}"
+                           Foreground="{StaticResource White}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Expanded State -->
+        <Border Name="ExpandedView"
+                Classes="widget-window"
+                Width="320"
+                IsVisible="{Binding !IsMinimized}">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <local:WidgetHeader Grid.Row="0" />
+
+                <!-- Content -->
+                <StackPanel Grid.Row="1" Spacing="15" Margin="15">
+
+                    <!-- Seed Count Display -->
+                    <Border Background="{StaticResource DarkBackground}"
+                            CornerRadius="8"
+                            Padding="15">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="Seeds in Pile"
+                                       FontSize="14"
+                                       Foreground="{StaticResource LightGrey}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding SeedCountDisplay}"
+                                       FontSize="36"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource SuccessGreen}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Global cache from all searches"
+                                       FontSize="11"
+                                       Foreground="{StaticResource LightGrey}"
+                                       HorizontalAlignment="Center"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Info Text -->
+                    <TextBlock Text="Top 1000 seeds from every search are added to this pile. Any search can use these pre-found seeds for instant results!"
+                               FontSize="11"
+                               Foreground="{StaticResource LightGrey}"
+                               TextWrapping="Wrap"
+                               Opacity="0.8"/>
+
+                    <!-- Status Message -->
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="12"
+                               Foreground="{StaticResource DaytroOrange}"
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                    <!-- Confirm Clear Dialog -->
+                    <Border Background="{StaticResource ErrorRed}"
+                            CornerRadius="6"
+                            Padding="12"
+                            IsVisible="{Binding ShowConfirmClear}">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Dump Fertilizer Seeds?"
+                                       FontSize="14"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       Foreground="{StaticResource White}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Are you sure you want to clear this seed pile cache?"
+                                       FontSize="11"
+                                       Foreground="{StaticResource White}"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                <Button Content="Clear"
+                                        Classes="btn-red"
+                                        Command="{Binding ConfirmClearCommand}"
+                                        Width="80"/>
+                                <Button Content="Cancel"
+                                        Classes="btn-blue"
+                                        Command="{Binding CancelClearCommand}"
+                                        Width="80"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10"
+                                HorizontalAlignment="Center"
+                                IsVisible="{Binding !ShowConfirmClear}">
+                        <Button Classes="btn-red"
+                                Command="{Binding ClearCommand}"
+                                IsEnabled="{Binding !IsClearing}"
+                                ToolTip.Tip="Clear all seeds from the fertilizer pile">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <icons:PackIconMaterial Kind="Delete" Width="14" Height="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Clear" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="btn-blue"
+                                Command="{Binding ExportCommand}"
+                                ToolTip.Tip="Export seeds to fertilizer.txt">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <icons:PackIconMaterial Kind="Export" Width="14" Height="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Export" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

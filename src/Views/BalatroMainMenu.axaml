@@ -35,7 +35,6 @@
                IsOpen="{Binding IsVolumePopupOpen, Mode=TwoWay}"
                Placement="Top"
                PlacementTarget="{Binding ElementName=MusicToggleButton}"
-               VerticalOffset="-10"
                IsLightDismissEnabled="True">
             <Border Background="{StaticResource DarkBorder}"
                     BorderBrush="{StaticResource ModalBorder}"
@@ -43,14 +42,14 @@
                     CornerRadius="8"
                     Padding="15,20">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="🔊 VOLUME"
-                               FontSize="14"
-                               
-                               Foreground="{StaticResource Gold}"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,0,0,5">
+                        <iconPacks:PackIconMaterial Kind="VolumeHigh" Width="14" Height="14" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
+                        <TextBlock Text="VOLUME"
+                                   FontSize="14"
+                                   Foreground="{StaticResource Gold}"/>
+                    </StackPanel>
 
-                    <!-- Vertical Volume Slider -->
+                    <!-- Vertical Volume Slider  -->
                     <Slider x:Name="VolumeSlider"
                             Orientation="Vertical"
                             Minimum="0"
@@ -85,16 +84,20 @@
     <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsVisible="{Binding AreWidgetsHidden, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}">
             <!-- Search Widgets will be added dynamically here -->
 
-            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
-            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
-                                            ClipToBounds="False"/>
-
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
                                      ClipToBounds="False"/>
 
+            <!-- ADMIN WIDGETS - Hidden by default, enable via Settings -->
+
+            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
+            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
+                                            IsVisible="False"
+                                            ClipToBounds="False"/>
+
             <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
             <components:GenieWidget x:Name="GenieWidget"
+                                   IsVisible="False"
                                    ClipToBounds="False"/>
 
             <!-- 🎨 AUDIO VISUALIZER WIDGET - Show/hide on paint palette button click -->
@@ -104,7 +107,28 @@
 
             <!-- 🎵 MUSIC MIXER WIDGET - 8-track volume and mute controls -->
             <components:MusicMixerWidget x:Name="MusicMixerWidget"
+                                        IsVisible="{Binding IsMusicMixerWidgetVisible}"
                                         ClipToBounds="False"/>
+
+            <!-- 🔀 TRANSITION DESIGNER WIDGET - Create and test transitions -->
+            <components:TransitionDesignerWidget x:Name="TransitionDesignerWidget"
+                                                 IsVisible="{Binding IsTransitionDesignerWidgetVisible}"
+                                                 ClipToBounds="False"/>
+
+            <!-- 🌱 FERTILIZER WIDGET - Global seed pile management -->
+            <components:FertilizerWidget x:Name="FertilizerWidget"
+                                         IsVisible="{Binding IsFertilizerWidgetVisible}"
+                                         ClipToBounds="False"/>
+
+            <!-- 🌐 HOST API WIDGET - MotelyApiServer controls -->
+            <components:HostApiWidget x:Name="HostApiWidget"
+                                      IsVisible="{Binding IsHostApiWidgetVisible}"
+                                      ClipToBounds="False"/>
+
+            <!-- ✨ EVENT FX WIDGET - Configure event animations -->
+            <components:EventFXWidget x:Name="EventFXWidget"
+                                      IsVisible="{Binding IsEventFXWidgetVisible}"
+                                      ClipToBounds="False"/>
 
         </Grid>
         
@@ -124,17 +148,21 @@
                         Margin="0,4,4,4"
                         IsHitTestVisible="False"/>
 
-            <!-- All Docks Container - Float off bottom of screen -->
-            <StackPanel Grid.Row="1" 
-                        Orientation="Horizontal" 
-                        HorizontalAlignment="Center" 
-                        VerticalAlignment="Bottom"
-                        Margin="0,0,0,40"
-                        Spacing="20"
-                        IsHitTestVisible="True">
-                
-                <!-- Left Side Dock (like PROFILE + Fx in real Balatro) -->
-                <Grid>
+            <!-- All Docks Container - Anchored to screen edges (always visible so user can toggle widgets) -->
+            <Grid Grid.Row="1"
+                  VerticalAlignment="Bottom"
+                  Margin="0,0,0,40"
+                  IsHitTestVisible="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Side Dock (like PROFILE + Fx in real Balatro) - ANCHORED LEFT -->
+                <Grid Grid.Column="0"
+                      HorizontalAlignment="Left"
+                      Margin="20,0,0,0">
                     <!-- Dark shadow underneath -->
                     <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
@@ -184,9 +212,10 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                
-                <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) -->
-                <Grid>
+
+                <!-- Main Menu Buttons - Real Balatro dock (gray with drop shadow below) - CENTERED -->
+                <Grid Grid.Column="1"
+                      HorizontalAlignment="Center">
                     <!-- Dark shadow underneath -->
                     <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
@@ -229,9 +258,11 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                
-                <!-- Right Side Dock (like Language selector in real Balatro) -->
-                <Grid>
+
+                <!-- Right Side Dock (like Language selector in real Balatro) - ANCHORED RIGHT -->
+                <Grid Grid.Column="2"
+                      HorizontalAlignment="Right"
+                      Margin="0,0,20,0">
                     <!-- Dark shadow underneath -->
                     <Border Background="{StaticResource HoverShadow}"
                             CornerRadius="8"
@@ -296,7 +327,7 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-            </StackPanel> <!-- End All Docks Container -->
+            </Grid> <!-- End All Docks Container -->
         </Grid> <!-- End MainContent -->
 
         <!-- Modal overlay container for code-behind modals -->

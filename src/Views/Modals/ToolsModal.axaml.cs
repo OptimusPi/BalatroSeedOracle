@@ -51,10 +51,7 @@ namespace BalatroSeedOracle.Views.Modals
                 try
                 {
                     // Create JsonItemFilters directory if it doesn't exist
-                    var jsonConfigsDir = Path.Combine(
-                        Directory.GetCurrentDirectory(),
-                        "JsonItemFilters"
-                    );
+                    var jsonConfigsDir = AppPaths.FiltersDir;
                     if (!Directory.Exists(jsonConfigsDir))
                     {
                         Directory.CreateDirectory(jsonConfigsDir);
@@ -269,10 +266,7 @@ namespace BalatroSeedOracle.Views.Modals
                     int deletedResults = 0;
 
                     // Delete all files in JsonItemFilters
-                    var filtersDir = Path.Combine(
-                        Directory.GetCurrentDirectory(),
-                        "JsonItemFilters"
-                    );
+                    var filtersDir = AppPaths.FiltersDir;
                     if (Directory.Exists(filtersDir))
                     {
                         var filterFiles = Directory.GetFiles(filtersDir, "*.json");
@@ -294,7 +288,7 @@ namespace BalatroSeedOracle.Views.Modals
                     }
 
                     // Delete all files in SearchResults
-                    var resultsDir = Path.Combine(Directory.GetCurrentDirectory(), "SearchResults");
+                    var resultsDir = AppPaths.SearchResultsDir;
                     if (Directory.Exists(resultsDir))
                     {
                         var resultFiles = Directory.GetFiles(

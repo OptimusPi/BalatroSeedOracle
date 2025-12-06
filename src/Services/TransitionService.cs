@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Threading;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Services
 {
@@ -150,7 +150,10 @@ namespace BalatroSeedOracle.Services
                 // Stop when complete
                 if (_activeTransition.CurrentProgress >= 1.0f)
                 {
-                    DebugLogger.LogImportant("TransitionService", "Time-based transition complete!");
+                    DebugLogger.LogImportant(
+                        "TransitionService",
+                        "Time-based transition complete!"
+                    );
                     StopTransition();
                 }
             };

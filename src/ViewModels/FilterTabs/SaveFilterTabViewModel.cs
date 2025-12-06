@@ -105,6 +105,84 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string[] DeckDisplayValues => _parentViewModel.DeckDisplayValues;
         public string[] StakeDisplayValues => _parentViewModel.StakeDisplayValues;
 
+        // Deck/Stake preview image
+        public Avalonia.Media.IImage? DeckStakePreviewImage
+        {
+            get
+            {
+                var sprites = Services.SpriteService.Instance;
+                var deckName = _parentViewModel.SelectedDeck.ToString();
+                var stakeName =
+                    StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
+                return sprites.GetDeckWithStakeSticker(deckName, stakeName);
+            }
+        }
+
+        // Quick action: open Joker configuration in Build tab
+        [RelayCommand]
+        private void OpenJokerConfig()
+        {
+            try
+            {
+                _parentViewModel.SelectedTabIndex = 0; // Build Filter
+                _parentViewModel.CurrentCategory = "Joker";
+            }
+            catch (Exception ex)
+            {
+                // FAIL LOUD: User clicked button, they need to know if navigation failed
+                DebugLogger.LogError(
+                    "SaveFilterTab",
+                    $"❌ Failed to navigate to Joker config: {ex.Message}"
+                );
+                StatusMessage = "Failed to open Joker configuration";
+            }
+        }
+
+        /// <summary>
+        /// Save filter and navigate to Search Modal
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task GoToSearch()
+        {
+            try
+            {
+                // First save the filter
+                await SaveCurrentFilter();
+
+                // Close the filters modal and open search modal with this filter
+                if (!string.IsNullOrWhiteSpace(CurrentFileName))
+                {
+                    _parentViewModel.RequestNavigateToSearch?.Invoke(CurrentFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Error navigating to search: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Save filter and close the Filters Modal
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanSave))]
+        private async Task SaveAndClose()
+        {
+            try
+            {
+                // Save the filter
+                await SaveCurrentFilter();
+
+                // Close the filters modal
+                _parentViewModel.RequestClose?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error: {ex.Message}", true);
+                DebugLogger.LogError("SaveFilterTab", $"Error saving and closing: {ex.Message}");
+            }
+        }
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
@@ -152,6 +230,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // CRITICAL: Refresh criteria display when tab becomes visible
                 RefreshCriteriaDisplay();
+
+                OnPropertyChanged(nameof(DeckStakePreviewImage));
             }
             catch (Exception ex)
             {
@@ -199,6 +279,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 UpdateStatus($"Save error: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Error saving filter: {ex.Message}");
+                DebugLogger.LogError("SaveFilterTab", $"Stack trace: {ex.StackTrace}");
+                // Throw to make it visible instead of silent fail
+                throw new InvalidOperationException($"Failed to save filter: {ex.Message}", ex);
             }
         }
 
@@ -252,7 +335,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Export to desktop as JSON
                 var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
                 var exportPath = Path.Combine(desktopPath, exportFileName);
 
                 // Use custom serializer to include mode and preserve score formatting
@@ -311,8 +394,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualVm.SelectedMust)
                 {
                     // SPECIAL HANDLING: BannedItems operator → MustNot[]
-                    if (item is Models.FilterOperatorItem operatorItem &&
-                        operatorItem.OperatorType == "BannedItems")
+                    if (
+                        item is Models.FilterOperatorItem operatorItem
+                        && operatorItem.OperatorType == "BannedItems"
+                    )
                     {
                         DebugLogger.Log(
                             "SaveFilterTab",
@@ -322,7 +407,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Add each child to MustNot array
                         foreach (var child in operatorItem.Children)
                         {
-                            var clause = ConvertFilterItemToClause(child, _parentViewModel.ItemConfigs);
+                            var clause = ConvertFilterItemToClause(
+                                child,
+                                _parentViewModel.ItemConfigs
+                            );
                             if (clause != null)
                                 config.MustNot.Add(clause);
                         }
@@ -436,7 +524,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     case "joker":
                         clause.Type = "Joker";
                         clause.Value = itemConfig.ItemName;
-                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
+                        if (
+                            !string.IsNullOrEmpty(itemConfig.Edition)
+                            && itemConfig.Edition != "none"
+                        )
                         {
                             clause.Edition = itemConfig.Edition;
                         }
@@ -468,7 +559,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         break;
 
                     default:
-                        DebugLogger.Log("SaveFilterTab", $"Unknown item type: {itemConfig.ItemType}");
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Unknown item type: {itemConfig.ItemType}"
+                        );
                         return null;
                 }
 
@@ -640,10 +734,39 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ShowFoundSeed = true;
                     IsFilterVerified = true;
 
-                    // Extract the seed from results
-                    if (results.Seeds != null && results.Seeds.Count > 0)
+                    // Find seed with highest TotalScore
+                    string? verifiedSeed = null;
+                    if (results.Results != null && results.Results.Count > 0)
                     {
-                        FoundSeed = results.Seeds[0].ToString() ?? "Unknown";
+                        var bestResult = results
+                            .Results.OrderByDescending(r => r.TotalScore)
+                            .First();
+                        verifiedSeed = bestResult.Seed;
+                        FoundSeed = verifiedSeed ?? "Unknown";
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Selected seed {FoundSeed} with TotalScore {bestResult.TotalScore}"
+                        );
+                    }
+                    else if (results.Seeds != null && results.Seeds.Count > 0)
+                    {
+                        // Fallback to first seed if Results not available
+                        verifiedSeed = results.Seeds[0];
+                        FoundSeed = verifiedSeed ?? "Unknown";
+                    }
+
+                    // Save verified seed to config and persist to file
+                    if (!string.IsNullOrEmpty(verifiedSeed))
+                    {
+                        config.VerifiedSeed = verifiedSeed;
+                        var filePath = _filterService.GenerateFilterFileName(
+                            config.Name ?? "filter"
+                        );
+                        await _configurationService.SaveFilterAsync(filePath, config);
+                        DebugLogger.Log(
+                            "SaveFilterTab",
+                            $"Saved verified seed {verifiedSeed} to filter config"
+                        );
                     }
 
                     TestResultMessage =
@@ -698,43 +821,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             };
         }
 
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white",
-                "red",
-                "green",
-                "black",
-                "blue",
-                "purple",
-                "orange",
-                "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White,
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+            return stake.ToString().ToLower();
         }
 
         private void UpdateStatus(string message, bool isError)
@@ -789,7 +899,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         else
                         {
                             // OR/AND operators
-                            MustItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                            MustItems.Add(
+                                $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
+                            );
                             foreach (var child in operatorItem.Children)
                             {
                                 MustItems.Add($"  {child.Type}: {child.DisplayName}");
@@ -808,7 +920,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     if (item is Models.FilterOperatorItem operatorItem)
                     {
-                        ShouldItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
+                        ShouldItems.Add(
+                            $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
+                        );
                         foreach (var child in operatorItem.Children)
                         {
                             ShouldItems.Add($"  {child.Type}: {child.DisplayName}");
@@ -829,8 +943,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(HasNoShouldItems));
             OnPropertyChanged(nameof(HasNoBannedItems));
 
-            DebugLogger.Log("SaveFilterTab",
-                $"Refreshed criteria display: {MustItems.Count} must, {ShouldItems.Count} should, {BannedItems.Count} banned");
+            DebugLogger.Log(
+                "SaveFilterTab",
+                $"Refreshed criteria display: {MustItems.Count} must, {ShouldItems.Count} should, {BannedItems.Count} banned"
+            );
         }
 
         [RelayCommand]

@@ -44,7 +44,7 @@ namespace BalatroSeedOracle.Services
 
         private DaylatroHighScoreService()
         {
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir = AppContext.BaseDirectory;
             _dataPath = Path.Combine(baseDir, "daylatro_scores.json");
             _submissionsPath = Path.Combine(baseDir, "daylatro_submissions.json");
             LoadSubmissionDates();

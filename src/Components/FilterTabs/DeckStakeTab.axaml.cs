@@ -63,7 +63,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnDeckSelected(object? sender, System.EventArgs e)
         {
             // Find the parent FiltersModal's ViewModel and advance to next tab
-            var parent = this.GetVisualAncestors().OfType<UserControl>().FirstOrDefault(uc => uc.DataContext is FiltersModalViewModel);
+            var parent = this.GetVisualAncestors()
+                .OfType<UserControl>()
+                .FirstOrDefault(uc => uc.DataContext is FiltersModalViewModel);
 
             if (parent?.DataContext is FiltersModalViewModel vm)
             {

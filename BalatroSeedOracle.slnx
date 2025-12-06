@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\BalatroSeedOracle.csproj" />
+  </Folder>
+  <Folder Name="/external/">
+    <Folder Name="/external/Motely/">
+      <Project Path="external\Motely\Motely\Motely.csproj" />
+    </Folder>
+  </Folder>
+  <Properties>
+    <Property Name="Configuration" Value="Debug|Release" />
+    <Property Name="Platform" Value="Any CPU|x64|x86" />
+  </Properties>
+</Solution>

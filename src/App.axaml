@@ -32,6 +32,7 @@
 
         <!-- Modal/Panel Colors -->
         <Color x:Key="ColorGrey">#3a5055</Color>
+        <Color x:Key="ColorMediumGrey">#33464b</Color>
         <Color x:Key="ColorDarkGrey">#1e2b2d</Color>
         <Color x:Key="ColorBrightSilver">#b9c2d2</Color>
         <Color x:Key="ColorLightGrey">#777e89</Color>
@@ -53,9 +54,9 @@
         <Color x:Key="ColorLightSilver">#a3acb9</Color>
         <Color x:Key="ColorGreySilver">#686e78</Color>
 
-        <!-- Card Colors -->
-        <Color x:Key="ColorCardFaceTop">#F5F5F0</Color>
-        <Color x:Key="ColorCardFaceBottom">#EEEEE8</Color>
+        <!-- Additional Purple Colors for Card Flip Animations -->
+        <Color x:Key="ColorPurpleViolet">#9B7EDE</Color>
+        <Color x:Key="ColorPurpleMuted">#6B5AA8</Color>
 
         <!-- ============================================================ -->
         <!-- LAYER 2: SEMANTIC BRUSHES - References to Layer 1 Only      -->
@@ -114,7 +115,7 @@
         <SolidColorBrush x:Key="DarkTealGrey" Color="{StaticResource ColorDarkGrey}"/>
 
         <!-- Grey Scale Brushes -->
-        <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorFadedGrey}"/>
+        <SolidColorBrush x:Key="MediumGrey" Color="{StaticResource ColorMediumGrey}"/>
         <SolidColorBrush x:Key="VeryLightGrey" Color="{StaticResource ColorBrightSilver}"/>
         <SolidColorBrush x:Key="LightTextGrey" Color="{StaticResource ColorLightGrey}"/>
         <SolidColorBrush x:Key="TextInactive" Color="{StaticResource ColorFadedGrey}"/>
@@ -154,8 +155,19 @@
         <SolidColorBrush x:Key="TransparentDark1" Color="{StaticResource ColorTranslucentBlack33}"/>
         <SolidColorBrush x:Key="TransparentDark3" Color="#33000000"/>
 
+        <!-- Popup/Flyout Brushes -->
+        <SolidColorBrush x:Key="PopupBackground" Color="{StaticResource ColorDarkGrey}"/>
+        <SolidColorBrush x:Key="PopupHover" Color="{StaticResource ColorGrey}"/>
 
-        
+        <!-- Slider Brushes -->
+        <SolidColorBrush x:Key="SliderEmpty" Color="{StaticResource ColorDarkRed}"/>
+
+        <!-- Card Flip Animation Brushes -->
+        <SolidColorBrush x:Key="PurpleViolet" Color="{StaticResource ColorPurpleViolet}"/>
+        <SolidColorBrush x:Key="DarkPurple" Color="{StaticResource ColorDarkPurple}"/>
+        <SolidColorBrush x:Key="PurpleMuted" Color="{StaticResource ColorPurpleMuted}"/>
+
+
 
         <!-- ============================================================ -->
         <!-- NON-COLOR RESOURCES                                          -->
@@ -178,8 +190,1394 @@
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroGlobalStyles.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/BalatroAnimations.axaml" />
-        <StyleInclude Source="avares://BalatroSeedOracle/Styles/WidgetStyles.axaml" />
+
+        <!-- ALL STYLES CONSOLIDATED HERE - ONE SOURCE OF TRUTH -->
+
+        <!-- Global resources -->
+        <Style>
+            <Style.Resources>
+                <!-- Centralized tab button font size so it can be scaled easily -->
+                <x:Double x:Key="TabButtonFontSize">72</x:Double>
+            </Style.Resources>
+        </Style>
+
+        <!-- =============================================
+             DEFAULT BUTTON STYLES - Applied automatically
+             NO CLASSES NEEDED! All buttons are beautiful by default
+             ============================================= -->
+
+        <!-- Base button style with flat 2D shadow template -->
+        <!-- DEFAULT: Balatro Red background, white text, flat drop shadow -->
+        <Style Selector="Button:not(.SystemCaptionButton)">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="Background" Value="{StaticResource Red}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- Drop shadow (flat 2D, no blur) -->
+                            <Border Name="DropShadow"
+                                    Background="{StaticResource ButtonShadow}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Margin="0,4,0,0"/>
+                            <!-- Main button face -->
+                            <Border Name="ButtonBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Margin="0,0,0,4">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Content="{TemplateBinding Content}"
+                                                  Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter.Styles>
+                                        <Style Selector="TextBlock">
+                                            <Setter Property="FontSize" Value="{Binding $parent[Button].FontSize}"/>
+                                            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+                                            <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}"/>
+                                        </Style>
+                                    </ContentPresenter.Styles>
+                                </ContentPresenter>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Default hover state - Dark Red -->
+        <Style Selector="Button:not(.SystemCaptionButton):pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+        </Style>
+
+        <!-- Default pressed state - Dark Red + shift down -->
+        <Style Selector="Button:not(.SystemCaptionButton):pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button:not(.SystemCaptionButton):pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- OPTIONAL Color classes (only use if you need non-red buttons) -->
+        <Style Selector="Button.btn-blue">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+        <Style Selector="Button.btn-blue:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}" />
+        </Style>
+        <Style Selector="Button.btn-blue:pressed">
+            <Setter Property="Background" Value="{StaticResource BlueHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-blue:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-green">
+            <Setter Property="Background" Value="{StaticResource Green}" />
+        </Style>
+        <Style Selector="Button.btn-green:pointerover">
+            <Setter Property="Background" Value="{StaticResource GreenHover}" />
+        </Style>
+        <Style Selector="Button.btn-green:pressed">
+            <Setter Property="Background" Value="{StaticResource GreenHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-green:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-orange">
+            <Setter Property="Background" Value="{StaticResource Orange}" />
+        </Style>
+        <Style Selector="Button.btn-orange:pointerover">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+        </Style>
+        <Style Selector="Button.btn-orange:pressed">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-orange:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-red">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+        </Style>
+        <Style Selector="Button.btn-red:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+        </Style>
+        <Style Selector="Button.btn-red:pressed">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-red:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-purple">
+            <Setter Property="Background" Value="{StaticResource Purple}" />
+        </Style>
+        <Style Selector="Button.btn-purple:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+        </Style>
+        <Style Selector="Button.btn-purple:pressed">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-purple:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-gold">
+            <Setter Property="Background" Value="{StaticResource Gold}" />
+        </Style>
+        <Style Selector="Button.btn-gold:pointerover">
+            <Setter Property="Background" Value="{StaticResource GoldHover}" />
+        </Style>
+        <Style Selector="Button.btn-gold:pressed">
+            <Setter Property="Background" Value="{StaticResource GoldHover}" />
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.btn-gold:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- Author button (grey - 1 shade lighter) -->
+        <Style Selector="Button.author-button">
+            <Setter Property="Background" Value="{StaticResource LightGrey}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="12,8" />
+        </Style>
+        <Style Selector="Button.author-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}" />
+        </Style>
+        <Style Selector="Button.author-button:pressed">
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}" />
+        </Style>
+
+        <!-- Button disabled state -->
+        <Style Selector="Button:not(.SystemCaptionButton):disabled">
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+
+        <!-- =============================================
+             DEFAULT TEXT CONTROLS
+             ============================================= -->
+
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+        </Style>
+
+        <Style Selector="Label">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
+            <Setter Property="CaretBrush" Value="{StaticResource White}" />
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        </Style>
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+
+        <Style Selector="CheckBox /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Red}" />
+        </Style>
+
+        <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                        <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                        <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="{StaticResource ColorRed}" Offset="0"/>
+                        <GradientStop Color="{StaticResource ColorTranslucentBlack33}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="NumericUpDown:focus">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        </Style>
+        <Style Selector="NumericUpDown:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="ListBox">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+
+        <Style Selector="DataGrid">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="RowBackground" Value="{StaticResource DarkBackground}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+        </Style>
+
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="Padding" Value="8,6" />
+        </Style>
+
+        <Style Selector="DataGridCell">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="Padding" Value="8,6" />
+        </Style>
+
+        <!-- =============================================
+             SCROLLBAR STYLES
+             ============================================= -->
+
+        <Style Selector="ScrollBar">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style Selector="ScrollBar:vertical">
+            <Setter Property="Width" Value="14" />
+            <Setter Property="Margin" Value="1,0,1,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Border Name="PART_Border"
+                                Background="{StaticResource RedHover}"
+                                CornerRadius="6"
+                                Width="12"
+                                HorizontalAlignment="Center"
+                                ClipToBounds="True">
+                            <Track Name="PART_Track"
+                                   IsDirectionReversed="True"
+                                   Minimum="{TemplateBinding Minimum}"
+                                   Maximum="{TemplateBinding Maximum}"
+                                   Value="{TemplateBinding Value, Mode=TwoWay}"
+                                   ViewportSize="{TemplateBinding ViewportSize}"
+                                   Orientation="Vertical">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate>
+                                                <Border Background="{StaticResource Red}"
+                                                        CornerRadius="6"
+                                                        Width="12"
+                                                        MinHeight="40"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="ScrollBar:horizontal">
+            <Setter Property="Height" Value="14" />
+            <Setter Property="Margin" Value="0,1,0,1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Border Name="PART_Border"
+                                Background="{StaticResource RedHover}"
+                                CornerRadius="6"
+                                Height="12"
+                                VerticalAlignment="Center"
+                                ClipToBounds="True">
+                            <Track Name="PART_Track"
+                                   Minimum="{TemplateBinding Minimum}"
+                                   Maximum="{TemplateBinding Maximum}"
+                                   Value="{TemplateBinding Value, Mode=TwoWay}"
+                                   ViewportSize="{TemplateBinding ViewportSize}"
+                                   Orientation="Horizontal">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate>
+                                                <Border Background="{StaticResource Red}"
+                                                        CornerRadius="6"
+                                                        Height="12"
+                                                        MinWidth="40"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="ScrollBar /template/ Thumb:pointerover Border">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+        </Style>
+
+        <!-- =============================================
+             SLIDER STYLES (Red Thermometer)
+             ============================================= -->
+
+        <Style Selector="Slider">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Red}" />
+        </Style>
+
+        <Style Selector="Slider:horizontal">
+            <Setter Property="MinHeight" Value="14" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <!-- Track (Background) -->
+                            <Border Name="PART_TrackBackground"
+                                    Background="{StaticResource RedHover}"
+                                    CornerRadius="8"
+                                    Height="14"
+                                    VerticalAlignment="Center"
+                                    ClipToBounds="True">
+                                <Track Name="PART_Track"
+                                       Minimum="{TemplateBinding Minimum}"
+                                       Maximum="{TemplateBinding Maximum}"
+                                       Value="{TemplateBinding Value, Mode=TwoWay}"
+                                       Orientation="Horizontal">
+                                    <Track.DecreaseButton>
+                                        <RepeatButton Background="Transparent" Focusable="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="Transparent" />
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.DecreaseButton>
+                                    <Track.IncreaseButton>
+                                        <RepeatButton Background="Transparent" Focusable="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="Transparent" />
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.IncreaseButton>
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="{StaticResource Red}"
+                                                            CornerRadius="8"
+                                                            Width="24"
+                                                            Height="14"/>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="Slider:vertical">
+            <Setter Property="MinWidth" Value="14" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <!-- Track (Background) -->
+                            <Border Name="PART_TrackBackground"
+                                    Background="{StaticResource RedHover}"
+                                    CornerRadius="8"
+                                    Width="14"
+                                    HorizontalAlignment="Center"
+                                    ClipToBounds="True">
+                                <Track Name="PART_Track"
+                                       Minimum="{TemplateBinding Minimum}"
+                                       Maximum="{TemplateBinding Maximum}"
+                                       Value="{TemplateBinding Value, Mode=TwoWay}"
+                                       Orientation="Vertical">
+                                    <Track.DecreaseButton>
+                                        <RepeatButton Background="Transparent" Focusable="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="{StaticResource Red}" CornerRadius="0,0,8,8" />
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.DecreaseButton>
+                                    <Track.IncreaseButton>
+                                        <RepeatButton Background="Transparent" Focusable="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="Transparent" />
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.IncreaseButton>
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate>
+                                                    <Border Background="{StaticResource Red}"
+                                                            CornerRadius="8"
+                                                            Width="14"
+                                                            Height="24"/>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="Slider /template/ Thumb:pointerover Border">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+        </Style>
+
+        <!-- =============================================
+             TAB CONTROL STYLES
+             ============================================= -->
+
+        <Style Selector="TabControl">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="TabItem">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="CornerRadius" Value="8,8,0,0" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+
+        <!-- Balatro-style TabControl with RED tabs -->
+        <Style Selector="TabControl.balatro-tabs">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="TabStripPlacement" Value="Top"/>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="MinWidth" Value="144"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid Height="16" ClipToBounds="True">
+                            <TextBlock Name="PART_Triangle"
+                                       Classes="balatro-triangle balatro-bounce-vertical"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       IsVisible="False"/>
+                        </Grid>
+
+                        <Border Name="PART_Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Margin="0">
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              Content="{TemplateBinding Header}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="16,8"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem:disabled">
+            <Setter Property="Foreground" Value="{StaticResource LightTextGrey}"/>
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem:selected">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem:selected /template/ TextBlock#PART_Triangle">
+            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="Opacity" Value="1.0"/>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem:pointerover:not(:selected)">
+            <Setter Property="Background" Value="{StaticResource RedHover}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+
+        <Style Selector="TabControl.balatro-tabs > TabItem > ScrollViewer">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="0,0,12,12"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <!-- =============================================
+             BALATRO ANIMATIONS
+             ============================================= -->
+
+        <Style Selector="Polygon.balatro-bounce-vertical">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8"
+                           IterationCount="Infinite"
+                           PlaybackDirection="Alternate"
+                           Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.Y" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.Y" Value="6"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="TextBlock.balatro-bounce-vertical">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8"
+                           IterationCount="Infinite"
+                           PlaybackDirection="Alternate"
+                           Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.Y" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.Y" Value="6"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="Polygon.balatro-bounce-horizontal">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8"
+                           IterationCount="Infinite"
+                           PlaybackDirection="Alternate"
+                           Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="TranslateTransform.X" Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="TranslateTransform.X" Value="8"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="Polygon.balatro-triangle">
+            <Setter Property="Fill" Value="{StaticResource Red}"/>
+        </Style>
+
+        <Style Selector="Polygon.nav-selection-arrow">
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="{StaticResource BlackColor}"
+                                      BlurRadius="4"
+                                      OffsetX="2"
+                                      OffsetY="2"
+                                      Opacity="0.8"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- =============================================
+             NAMED BUTTON CLASSES (legacy compatibility)
+             ============================================= -->
+
+        <Style Selector="Button.back-button">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="10,1,10,2"/>
+        </Style>
+        <Style Selector="Button.back-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+        </Style>
+        <Style Selector="Button.back-button:pressed">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+            <Setter Property="RenderTransform" Value="translateY(3px)" />
+        </Style>
+        <Style Selector="Button.back-button:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.btn-back">
+            <Setter Property="Background" Value="{StaticResource Orange}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="MinHeight" Value="50" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,16,0,0" />
+        </Style>
+
+        <Style Selector="Button.nav-button">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="MinHeight" Value="44" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Focusable" Value="False" />
+        </Style>
+        <Style Selector="Button.nav-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource RedHover}" />
+        </Style>
+        <Style Selector="Button.nav-button.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="Button.nav-button.special">
+            <Setter Property="Background" Value="{StaticResource BrightGold}" />
+        </Style>
+        <Style Selector="Button.nav-button.special:pointerover">
+            <Setter Property="Background" Value="{StaticResource GoldHover}" />
+        </Style>
+        <Style Selector="Button.nav-button.special.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="Button.nav-button.special-purple">
+            <Setter Property="Background" Value="{StaticResource Purple}" />
+        </Style>
+        <Style Selector="Button.nav-button.special-purple:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkPurple}" />
+        </Style>
+        <Style Selector="Button.nav-button.special-purple.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="Button.nav-button:pressed">
+            <Setter Property="RenderTransform">
+                <TranslateTransform Y="3"/>
+            </Setter>
+        </Style>
+        <Style Selector="Button.nav-button:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.small-pill-button">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource LightGrey}" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.small-pill-button.active">
+            <Setter Property="Background" Value="{StaticResource Blue}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+        </Style>
+
+        <Style Selector="Button.tab-button">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="MinHeight" Value="46"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinWidth" Value="128"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource Red}" />
+        </Style>
+
+        <Style Selector="Button.icon-button">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
+
+        <Style Selector="Button.icon-button.active">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <!-- =============================================
+             MODAL/BORDER STYLES
+             ============================================= -->
+
+        <Style Selector="Border.balatro-modal">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="3" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}" />
+        </Style>
+
+        <Style Selector="Border.balatro-card">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="8" />
+        </Style>
+
+        <Style Selector="Border.BalatroSeedOracle-modal-card">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="Padding" Value="42,34,42,34"/>
+            <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
+        </Style>
+
+        <Style Selector="Border.BalatroSeedOracle-modal-card-precise">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="Padding" Value="42,34,42,34"/>
+            <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
+        </Style>
+
+        <Style Selector="Border.modal-content-panel">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+
+        <Style Selector="Border.modal-content-box">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="24"/>
+        </Style>
+
+        <Style Selector="Border.drop-zone">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="MinHeight" Value="120" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+
+        <Style Selector="Border.drop-zone.drag-over">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}" />
+        </Style>
+
+        <Style Selector="Border.notification-badge">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="MinWidth" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="BoxShadow" Value="{StaticResource TextBoxShadow}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="Border.notification-badge.small">
+            <Setter Property="MinWidth" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="Border.notification-badge TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Border.notification-badge.small TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+
+        <!-- =============================================
+             TEXT STYLES
+             ============================================= -->
+
+        <Style Selector="TextBlock.balatro-section-header">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBlock.balatro-modal-title">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,20" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="TextBlock.BalatroSeedOracle-modal-text">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <Style Selector="TextBlock.info-display">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="TextBox.search-box">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Watermark" Value="Search items..." />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <!-- =============================================
+             MODAL BUTTON STYLES
+             ============================================= -->
+
+        <Style Selector="Button.BalatroSeedOracle-modal-btn">
+            <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
+            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="Background" Value="{StaticResource PureBlack}" />
+            <Setter Property="Foreground" Value="{StaticResource White}" />
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Name="DropShadow" Background="{StaticResource HoverShadow}" CornerRadius="8" Margin="0,4,0,0"/>
+                        <Border Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="8" Margin="0,0,0,4">
+                            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.BalatroSeedOracle-modal-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+        </Style>
+
+        <Style Selector="Button.BalatroSeedOracle-modal-btn:pressed">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}" />
+            <Setter Property="RenderTransform" Value="translateY(3px)" />
+        </Style>
+
+        <Style Selector="Button.BalatroSeedOracle-modal-btn:pressed /template/ Border#DropShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <!-- =============================================
+             WIDGET STYLES
+             ============================================= -->
+
+        <Style Selector="Border.widget-container">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BoxShadow" Value="{StaticResource StandardModalShadow}"/>
+        </Style>
+
+        <Style Selector="Border.widget-container.semi-transparent">
+            <Setter Property="Background" Value="{StaticResource SemiTransparentDarkBackground}"/>
+        </Style>
+
+        <Style Selector="Border.widget-window">
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BoxShadow" Value="{StaticResource WidgetWindowShadow}"/>
+        </Style>
+
+        <Style Selector="Border.widget-header">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="CornerRadius" Value="8,8,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Border.widget-content">
+            <Setter Property="Background" Value="{StaticResource DarkBorder}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <Style Selector="Border.widget-content.light">
+            <Setter Property="Background" Value="{StaticResource VeryLightGrey}"/>
+            <Setter Property="BoxShadow" Value="{StaticResource WidgetContentShadow}"/>
+        </Style>
+
+        <Style Selector="Button.widget-container">
+            <Setter Property="Background" Value="{StaticResource ModalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.widget-container:pointerover">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+        </Style>
+
+        <Style Selector="Button.widget-icon">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.widget-icon:pointerover Border.icon-bg">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Button.widget-minimize-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold}"/>
+        </Style>
+
+        <Style Selector="Button.widget-minimize-btn:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+        </Style>
+
+        <Style Selector="Button.widget-submit-btn">
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="Button.widget-submit-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+
+        <Style Selector="Button.widget-submit-btn:pressed">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+
+        <Style Selector="Button.widget-secondary-btn">
+            <Setter Property="Background" Value="{StaticResource Blue}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style Selector="Button.widget-secondary-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+
+        <Style Selector="Button.widget-secondary-btn:pressed">
+            <Setter Property="Background" Value="{StaticResource BlueHover}"/>
+        </Style>
+
+        <Style Selector="Button.widget-secondary-btn:disabled">
+            <Setter Property="Background" Value="{StaticResource ModalGrey}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <Style Selector="TextBox.widget-input">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="TextBox.widget-input:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <Style Selector="TextBox.widget-prompt-input">
+            <Setter Property="Background" Value="{StaticResource DarkBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="MinHeight" Value="60"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+
+        <Style Selector="TextBox.widget-prompt-input:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource Blue}"/>
+        </Style>
+
+        <Style Selector="TextBlock.widget-title">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="TextBlock.widget-label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="TextBlock.widget-muted">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+
+        <Style Selector="TextBlock.widget-info">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- =============================================
+             POPUP/FLYOUT STYLES
+             ============================================= -->
+
+        <Style Selector="FlyoutPresenter">
+            <Setter Property="Background" Value="{StaticResource PopupBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <Style Selector="Popup">
+            <Setter Property="PlacementMode" Value="AnchorAndGravity"/>
+        </Style>
+
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="{StaticResource PopupBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter RadioButton:checked /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter CheckBox:checked /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="{StaticResource AccentGreen}"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+        </Style>
+
+        <Style Selector="FlyoutPresenter TextBlock.header">
+            <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Background" Value="{StaticResource PopupBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource White}"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <Style Selector="ComboBoxItem:pointerover">
+            <Setter Property="Background" Value="{StaticResource PopupHover}"/>
+        </Style>
+
+        <Style Selector="ComboBoxItem:selected">
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="{StaticResource PopupBackground}" />
+        </Style>
+
+        <!-- =============================================
+             SLIDER STYLES
+             ============================================= -->
+
+        <Style Selector="Slider:horizontal">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="MinHeight" Value="20"/>
+            <Setter Property="Template">
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Border Background="{StaticResource SliderEmpty}"
+                                CornerRadius="4"
+                                Height="8"
+                                VerticalAlignment="Center"/>
+
+                        <Track x:Name="PART_Track"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               Orientation="Horizontal">
+                            <Track.DecreaseButton>
+                                <RepeatButton Classes="trackButton"/>
+                            </Track.DecreaseButton>
+                            <Track.IncreaseButton>
+                                <RepeatButton Classes="trackButton"/>
+                            </Track.IncreaseButton>
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Border Width="16"
+                                                    Height="16"
+                                                    Background="{StaticResource Red}"
+                                                    CornerRadius="8"
+                                                    Cursor="Hand">
+                                                <Border.Styles>
+                                                    <Style Selector="Border:pointerover">
+                                                        <Setter Property="Background" Value="{StaticResource RedHover}"/>
+                                                    </Style>
+                                                </Border.Styles>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="Slider RepeatButton.trackButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- =============================================
+             CARD FLIP ANIMATION STYLES
+             ============================================= -->
+
+        <Style Selector="Button.widget-card">
+            <Setter Property="Width" Value="96"/>
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="(ScaleTransform.ScaleX)" Duration="0:0:0.15"/>
+                    <DoubleTransition Property="(ScaleTransform.ScaleY)" Duration="0:0:0.05"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border.card-back">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Color="{StaticResource ColorPurpleViolet}" Offset="0.0"/>
+                        <GradientStop Color="{StaticResource ColorDarkPurple}" Offset="0.5"/>
+                        <GradientStop Color="{StaticResource ColorPurpleViolet}" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+
+        <Style Selector="Border.card-back-pattern">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <VisualBrush TileMode="Tile"
+                                 DestinationRect="0,0,20,20"
+                                 Stretch="None">
+                        <VisualBrush.Visual>
+                            <Canvas Width="20" Height="20">
+                                <Ellipse Width="4" Height="4" Fill="{StaticResource PurpleMuted}" Canvas.Left="8" Canvas.Top="8"/>
+                            </Canvas>
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border.card-front">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
     </Application.Styles>
 </Application>

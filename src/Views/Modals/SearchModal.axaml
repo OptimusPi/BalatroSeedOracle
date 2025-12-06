@@ -12,16 +12,41 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Balatro-style tab control with automatic triangle positioning -->
-        <controls:BalatroTabControl Grid.Row="0"
-                                    HorizontalAlignment="Center"
-                                    Margin="0,0,0,0"
-                                    SelectedIndex="{Binding SelectedTabIndex}">
-            <controls:BalatroTabControl.Items>
-                <TabItem Header="Search"/>
-                <TabItem Header="Results"/>
-            </controls:BalatroTabControl.Items>
-        </controls:BalatroTabControl>
+        <!-- Header area with tabs and minimize button -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Balatro-style tab control with automatic triangle positioning -->
+            <controls:BalatroTabControl Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,0"
+                                        SelectedIndex="{Binding SelectedTabIndex}">
+                <controls:BalatroTabControl.Items>
+                    <TabItem Header="Search"/>
+                    <TabItem Header="Results"/>
+                </controls:BalatroTabControl.Items>
+            </controls:BalatroTabControl>
+
+            <!-- Minimize & Continue button (only visible when search is active) -->
+            <Button Grid.Column="1"
+                    Content="Minimize &amp; Continue"
+                    Command="{Binding MinimizeToDesktopCommand}"
+                    IsVisible="{Binding CanMinimizeToDesktopVisible}"
+                    Background="{StaticResource Orange}"
+                    Foreground="White"
+                    FontFamily="{StaticResource BalatroFont}"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Padding="12,6"
+                    Margin="8,0,8,0"
+                    VerticalAlignment="Center"
+                    CornerRadius="6"
+                    BorderThickness="2"
+                    BorderBrush="{StaticResource ModalBorder}"/>
+        </Grid>
 
         <!-- Content area: let inner tabs provide their own dark panels -->
         <Border Grid.Row="1"

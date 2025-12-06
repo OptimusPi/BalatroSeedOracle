@@ -1,10 +1,10 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Helpers;
 
 /// <summary>
-/// Helper class to eliminate duplicate service provider retrieval code
+/// Helper class to eliminate duplicate service provider retrieval code.
+/// Delegates to App.GetService&lt;T&gt;() - no reflection needed.
 /// </summary>
 public static class ServiceHelper
 {
@@ -16,16 +16,7 @@ public static class ServiceHelper
     public static T? GetService<T>()
         where T : class
     {
-        var app = (App)App.Current!;
-        var serviceProvider =
-            app.GetType()
-                .GetField(
-                    "_serviceProvider",
-                    System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Instance
-                )
-                ?.GetValue(app) as IServiceProvider;
-        return serviceProvider?.GetService(typeof(T)) as T;
+        return App.GetService<T>();
     }
 
     /// <summary>

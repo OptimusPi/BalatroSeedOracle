@@ -158,38 +158,21 @@ namespace BalatroSeedOracle.Services
 
         private void LoadTracks(AudioFormat format)
         {
-            // Get executable directory (works for both dev and installed)
-            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-
-            // Find audio directory
-            var possiblePaths = new[]
+            var audioDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio");
+            if (!Directory.Exists(audioDir))
             {
-                Path.Combine(exeDir, "Assets", "Audio"),  // Installed/published
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio"),  // Dev
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio"),  // Dev from root
-            };
-
-            string? audioDir = possiblePaths.FirstOrDefault(Directory.Exists);
-            if (audioDir == null)
-            {
-                Console.WriteLine(
-                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio directory"
+                throw new DirectoryNotFoundException(
+                    $"[SoundFlowAudioManager] Assets/Audio directory not found at: {audioDir}"
                 );
-                return;
             }
 
-            // Load each track - FLAC ONLY (OGG Vorbis decoder not available in MiniAudio build)
+            // Load each track - MP3 format (cross-platform)
             foreach (var trackName in _trackNames)
             {
-                var filePath = Path.Combine(audioDir, $"{trackName}.flac");
+                var filePath = Path.Combine(audioDir, $"{trackName}.mp3");
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {trackName}.flac - FLAC files required!"
-                    );
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] Convert OGG files with: ffmpeg -i {trackName}.ogg -c:a flac {trackName}.flac"
-                    );
+                    Console.WriteLine($"[SoundFlowAudioManager] ERROR: Missing {trackName}.mp3");
                     continue;
                 }
 
@@ -242,34 +225,22 @@ namespace BalatroSeedOracle.Services
 
         private void LoadSoundEffects(AudioFormat format)
         {
-            // Get executable directory (works for both dev and installed)
-            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-
-            // Find audio directory
-            var possiblePaths = new[]
+            var sfxDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio", "SFX");
+            if (!Directory.Exists(sfxDir))
             {
-                Path.Combine(exeDir, "Assets", "Audio", "SFX"),  // Installed/published
-                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Audio", "SFX"),  // Dev
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Assets", "Audio", "SFX"),  // Dev from root
-            };
-
-            string? sfxDir = possiblePaths.FirstOrDefault(Directory.Exists);
-            if (sfxDir == null)
-            {
-                Console.WriteLine(
-                    "[SoundFlowAudioManager] ERROR: Could not find Assets/Audio/SFX directory"
+                throw new DirectoryNotFoundException(
+                    $"[SoundFlowAudioManager] Assets/Audio/SFX directory not found at: {sfxDir}"
                 );
-                return;
             }
 
             // Load each sound effect
             foreach (var sfxName in _sfxNames)
             {
-                var filePath = Path.Combine(sfxDir, $"{sfxName}.flac");
+                var filePath = Path.Combine(sfxDir, $"{sfxName}.mp3");
                 if (!File.Exists(filePath))
                 {
                     Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.flac at {filePath}"
+                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.mp3 at {filePath}"
                     );
                     continue;
                 }
@@ -295,7 +266,7 @@ namespace BalatroSeedOracle.Services
 
                     _sfxPlayers[sfxName] = player;
 
-                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.flac");
+                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.mp3");
                 }
                 catch (Exception ex)
                 {
@@ -449,13 +420,13 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Set pan for a specific track (-1.0 = left, 0.0 = center, 1.0 = right)
+        /// Set pan for a specific track (0.0 = left, 0.5 = center, 1.0 = right)
         /// </summary>
         public void SetTrackPan(string trackName, float pan)
         {
             if (_players.TryGetValue(trackName, out var player))
             {
-                player.Pan = Math.Clamp(pan, -1f, 1f);
+                player.Pan = Math.Clamp(pan, 0f, 1f);
                 Console.WriteLine($"[SoundFlowAudioManager] Set {trackName} pan to {pan:F2}");
             }
         }
@@ -495,30 +466,16 @@ namespace BalatroSeedOracle.Services
         public void PlaySfx(string name, float volume = 1.0f)
         {
             if (!_sfxPlayers.TryGetValue(name, out var player))
-            {
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ERROR: SFX '{name}' not found or not loaded"
-                );
                 return;
-            }
 
             try
             {
-                // Set volume
                 player.Volume = Math.Clamp(volume, 0f, 1f);
-
-                // Stop any existing playback and restart from beginning
-                player.Stop();
+                player.Seek(TimeSpan.Zero);
                 player.Play();
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] Playing SFX: {name} at volume {volume:F2}"
-                );
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ERROR playing SFX '{name}': {ex.Message}"
-                );
             }
         }
 

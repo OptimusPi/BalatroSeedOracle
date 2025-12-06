@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -13,14 +14,44 @@ namespace BalatroSeedOracle.Views.Modals
     /// </summary>
     public partial class SettingsModal : UserControl
     {
+        private SettingsModalViewModel? _viewModel;
+
         public SettingsModal()
         {
             InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            DataContext = new SettingsModalViewModel();
+        }
+
+        private void OnDataContextChanged(object? sender, EventArgs e)
+        {
+            // Unsubscribe from old VM
+            if (_viewModel != null)
+            {
+                _viewModel.FeatureTogglesChanged -= OnFeatureTogglesChanged;
+            }
+
+            // Subscribe to new VM
+            _viewModel = DataContext as SettingsModalViewModel;
+            if (_viewModel != null)
+            {
+                _viewModel.FeatureTogglesChanged += OnFeatureTogglesChanged;
+            }
+        }
+
+        private void OnFeatureTogglesChanged(object? sender, EventArgs e)
+        {
+            // Refresh main menu widget visibility
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu?.DataContext is BalatroMainMenuViewModel mainMenuVm)
+            {
+                mainMenuVm.RefreshFeatureToggles();
+            }
         }
 
         private void OnWordListsClick(object? sender, RoutedEventArgs e)
@@ -65,15 +96,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var filtersDir = System.IO.Path.Combine(
-                    AppContext.BaseDirectory,
-                    "JsonItemFilters"
-                );
-
-                if (!System.IO.Directory.Exists(filtersDir))
-                {
-                    System.IO.Directory.CreateDirectory(filtersDir);
-                }
+                // Use AppPaths for proper cross-platform user data directory
+                var filtersDir = Helpers.AppPaths.FiltersDir;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())
@@ -104,7 +128,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var appDir = AppContext.BaseDirectory;
+                // Use AppPaths.DataRootDir for the proper AppData folder, not bin folder
+                var appDir = AppPaths.DataRootDir;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())
@@ -125,6 +150,22 @@ namespace BalatroSeedOracle.Views.Modals
             catch (Exception ex)
             {
                 DebugLogger.LogError("SettingsModal", $"Error opening app directory: {ex.Message}");
+            }
+        }
+
+        private void OnAddWidgetsClick(object? sender, RoutedEventArgs e)
+        {
+            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+            if (mainMenu != null)
+            {
+                mainMenu.ShowWidgetPickerFromSettings();
+            }
+            else
+            {
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
     }

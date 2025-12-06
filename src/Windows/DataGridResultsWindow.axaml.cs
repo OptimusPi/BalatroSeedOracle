@@ -133,6 +133,11 @@ namespace BalatroSeedOracle.Windows
                 exportJson.Click += async (s, e) => await ExportToJsonAsync();
             if (exportExcel != null)
                 exportExcel.Click += async (s, e) => await ExportToExcelAsync();
+
+            var exportWordlist = this.FindControl<MenuItem>("ExportWordlistMenuItem");
+            if (exportWordlist != null)
+                exportWordlist.Click += async (s, e) => await ExportToWordlistAsync();
+
             if (copyClipboard != null)
                 copyClipboard.Click += CopyToClipboard;
 
@@ -656,6 +661,42 @@ LIMIT 50;",
             catch (Exception ex)
             {
                 DebugLogger.LogError("DataGridResultsWindow", $"Export to Excel failed: {ex}");
+                UpdateStatus($"Export failed: {ex.Message}");
+            }
+        }
+
+        private async Task ExportToWordlistAsync()
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null)
+                return;
+
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                new FilePickerSaveOptions
+                {
+                    Title = "Export to Wordlist",
+                    DefaultExtension = "txt",
+                    SuggestedFileName = $"{_filterName ?? "seeds"}_wordlist",
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } },
+                    },
+                }
+            );
+
+            if (file == null)
+                return;
+
+            try
+            {
+                // Export just the seeds, one per line - perfect for Motely wordlist input
+                var seeds = _filteredResults.Select(r => r.Seed);
+                await File.WriteAllLinesAsync(file.Path.LocalPath, seeds);
+                UpdateStatus($"Exported {_filteredResults.Count} seeds to wordlist");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("DataGridResultsWindow", $"Export to Wordlist failed: {ex}");
                 UpdateStatus($"Export failed: {ex.Message}");
             }
         }

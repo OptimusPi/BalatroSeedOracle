@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.GenieWidget"
              x:DataType="vm:GenieWidgetViewModel"
              x:CompileBindings="True"
@@ -94,10 +95,13 @@
                                     CornerRadius="6"
                                     Padding="10">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="✅ Generated Filter:"
-                                               FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="11"
-                                               Foreground="{StaticResource Blue}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <icons:PackIconMaterial Kind="CheckCircle" Width="12" Height="12" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Generated Filter:"
+                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource Blue}"/>
+                                    </StackPanel>
 
                                     <TextBlock Text="{Binding GeneratedFilterName}"
                                                FontFamily="{StaticResource BalatroFont}"
@@ -111,25 +115,39 @@
 
                                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
                                         <Button Grid.Column="0"
-                                                Content="💾 Save"
                                                 Command="{Binding SaveFilterCommand}"
                                                 Classes="btn-green"
                                                 FontSize="11"
-                                                Padding="8,4"/>
+                                                Padding="8,4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <icons:PackIconMaterial Kind="ContentSave" Width="12" Height="12" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Save" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
                                         <Button Grid.Column="1"
-                                                Content="🔍 Search"
                                                 Command="{Binding SearchFilterCommand}"
                                                 Classes="btn-blue"
                                                 FontSize="11"
-                                                Padding="8,4"/>
+                                                Padding="8,4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <icons:PackIconMaterial Kind="Magnify" Width="12" Height="12" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Search" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
                                     </Grid>
                                 </StackPanel>
                             </Border>
 
                             <!-- Quick Examples -->
-                            <Expander Header="💡 Example Prompts" FontSize="11">
+                            <Expander FontSize="11">
+                                <Expander.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <icons:PackIconMaterial Kind="LightbulbOn" Width="12" Height="12" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Example Prompts" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Expander.Header>
                                 <StackPanel Spacing="6" Margin="0,8,0,0">
-                                    <Button Content="🎴 Perkeo with Blueprint and Brainstorm"
+                                    <Button Content="Perkeo with Blueprint and Brainstorm"
                                             Command="{Binding UseExampleCommand}"
                                             CommandParameter="Find me a Ghost Deck seed with Perkeo soul joker, Blueprint, and Brainstorm in antes 1-3"
                                             HorizontalAlignment="Stretch"
@@ -137,7 +155,7 @@
                                             Background="Transparent"
                                             FontSize="10"
                                             Padding="6,4"/>
-                                    <Button Content="🏷️ Negative tags in early game"
+                                    <Button Content="Negative tags in early game"
                                             Command="{Binding UseExampleCommand}"
                                             CommandParameter="Get me seeds with Negative tags on antes 2 and 3"
                                             HorizontalAlignment="Stretch"
@@ -145,7 +163,7 @@
                                             Background="Transparent"
                                             FontSize="10"
                                             Padding="6,4"/>
-                                    <Button Content="💰 Economy build with vouchers"
+                                    <Button Content="Economy build with vouchers"
                                             Command="{Binding UseExampleCommand}"
                                             CommandParameter="Green deck with Egg, Bull, and Observatory voucher"
                                             HorizontalAlignment="Stretch"
@@ -153,7 +171,7 @@
                                             Background="Transparent"
                                             FontSize="10"
                                             Padding="6,4"/>
-                                    <Button Content="❌ Avoid specific jokers"
+                                    <Button Content="Avoid specific jokers"
                                             Command="{Binding UseExampleCommand}"
                                             CommandParameter="Any seed without Chicot or The Idol"
                                             HorizontalAlignment="Stretch"

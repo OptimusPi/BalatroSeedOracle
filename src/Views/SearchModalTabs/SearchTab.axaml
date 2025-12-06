@@ -314,7 +314,7 @@
                                                     Label="Min Score"
                                                     SpinnerType="min-score"
                                                     Value="{Binding MinScore}"
-                                                    Minimum="0"
+                                                    Minimum="-1"
                                                     Maximum="5"
                                                     AllowAuto="True"
                                                     Width="180"
@@ -340,7 +340,19 @@
                                     FontFamily="{StaticResource BalatroFont}"
                                     FontSize="24"
                                     Height="52"
-                                    MinWidth="200"/>
+                                    MinWidth="200"
+                                    Margin="0,0,12,0"/>
+
+                            <!-- Edit Filter button - Opens filter designer with current filter -->
+                            <Button Name="EditFilterButton"
+                                    Content="{Binding EditFilterButtonText}"
+                                    Classes="btn-orange"
+                                    IsEnabled="{Binding !IsSearching}"
+                                    Command="{Binding EditFilterCommand}"
+                                    FontFamily="{StaticResource BalatroFont}"
+                                    FontSize="18"
+                                    Height="52"
+                                    MinWidth="160"/>
                     </StackPanel>
                 </Grid>
             </Border>

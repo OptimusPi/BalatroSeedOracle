@@ -49,6 +49,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         OnPropertyChanged(nameof(FilterFileName));
                     }
+                    else if (
+                        e.PropertyName == nameof(FiltersModalViewModel.SelectedDeckIndex)
+                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedStakeIndex)
+                        || e.PropertyName == nameof(FiltersModalViewModel.SelectedDeck)
+                    )
+                    {
+                        AutoGenerateFromVisual();
+                    }
                 };
             }
         }
@@ -376,6 +384,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        [RelayCommand]
+        private async Task CopyJson()
+        {
+            try
+            {
+                await Services.ClipboardService.CopyToClipboardAsync(JsonContent);
+
+                ValidationStatus = "✓ JSON copied to clipboard";
+                ValidationStatusColor = Brushes.Green;
+            }
+            catch (Exception ex)
+            {
+                ValidationStatus = $"Copy error: {ex.Message}";
+                ValidationStatusColor = Brushes.Red;
+            }
+        }
+
         #endregion
 
         #region Helper Methods - Copied from original FiltersModal
@@ -457,7 +482,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     Name = name,
                     Type = type ?? "Joker",
-                    DisplayName = FormatDisplayName(name),
+                    DisplayName = Motely.FormatUtils.FormatDisplayName(name),
                     ItemImage = type?.ToLower() switch
                     {
                         "joker" => spriteService.GetJokerImage(name),
@@ -534,60 +559,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return item;
         }
 
-        private string FormatDisplayName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return name;
-
-            var words = name.Replace('_', ' ').Split(' ');
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (words[i].Length > 0)
-                {
-                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
-                }
-            }
-            return string.Join(" ", words);
-        }
-
+        // Convert index to deck name via enum
         private string GetDeckName(int index)
         {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-                "Challenge",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : "Red";
+            if (index >= 0 && index <= 14)
+                return ((Motely.MotelyDeck)index).ToString();
+            return "Red";
         }
 
+        // Convert index to stake name via enum (handles gaps in enum values)
         private string GetStakeName(int index)
         {
-            var stakeNames = new[]
+            var stake = index switch
             {
-                "white",
-                "red",
-                "green",
-                "black",
-                "blue",
-                "purple",
-                "orange",
-                "gold",
+                0 => Motely.MotelyStake.White,
+                1 => Motely.MotelyStake.Red,
+                2 => Motely.MotelyStake.Green,
+                3 => Motely.MotelyStake.Black,
+                4 => Motely.MotelyStake.Blue,
+                5 => Motely.MotelyStake.Purple,
+                6 => Motely.MotelyStake.Orange,
+                7 => Motely.MotelyStake.Gold,
+                _ => Motely.MotelyStake.White,
             };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : "white";
+            return stake.ToString().ToLower();
         }
 
         #endregion

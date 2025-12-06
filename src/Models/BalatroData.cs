@@ -65,7 +65,7 @@ namespace BalatroSeedOracle.Models
             foreach (var joker in Enum.GetValues<MotelyJokerCommon>())
             {
                 var name = joker.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Jokers[name] = displayName;
             }
 
@@ -73,7 +73,7 @@ namespace BalatroSeedOracle.Models
             foreach (var joker in Enum.GetValues<MotelyJokerUncommon>())
             {
                 var name = joker.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Jokers[name] = displayName;
             }
 
@@ -81,7 +81,7 @@ namespace BalatroSeedOracle.Models
             foreach (var joker in Enum.GetValues<MotelyJokerRare>())
             {
                 var name = joker.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Jokers[name] = displayName;
             }
 
@@ -89,7 +89,7 @@ namespace BalatroSeedOracle.Models
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {
                 var name = joker.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Jokers[name] = displayName;
             }
         }
@@ -104,7 +104,7 @@ namespace BalatroSeedOracle.Models
             foreach (var tarot in Enum.GetValues<MotelyTarotCard>())
             {
                 var name = tarot.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 TarotCards[name] = displayName;
             }
         }
@@ -114,7 +114,7 @@ namespace BalatroSeedOracle.Models
             foreach (var spectral in Enum.GetValues<MotelySpectralCard>())
             {
                 var name = spectral.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 SpectralCards[name] = displayName;
             }
         }
@@ -124,7 +124,7 @@ namespace BalatroSeedOracle.Models
             foreach (var voucher in Enum.GetValues<MotelyVoucher>())
             {
                 var name = voucher.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Vouchers[name] = displayName;
             }
         }
@@ -139,7 +139,7 @@ namespace BalatroSeedOracle.Models
             foreach (var tag in Enum.GetValues<MotelyTag>())
             {
                 var name = tag.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 Tags[name] = displayName;
             }
         }
@@ -149,7 +149,7 @@ namespace BalatroSeedOracle.Models
             foreach (var boss in Enum.GetValues<MotelyBossBlind>())
             {
                 var name = boss.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 BossBlinds[name] = displayName;
             }
         }
@@ -164,7 +164,7 @@ namespace BalatroSeedOracle.Models
             foreach (var planet in Enum.GetValues<MotelyPlanetCard>())
             {
                 var name = planet.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 PlanetCards[name] = displayName;
             }
         }
@@ -174,7 +174,7 @@ namespace BalatroSeedOracle.Models
             foreach (var pack in Enum.GetValues<MotelyBoosterPack>())
             {
                 var name = pack.ToString();
-                var displayName = FormatDisplayName(name);
+                var displayName = FormatUtils.FormatDisplayName(name);
                 BoosterPacks[name] = displayName;
             }
         }
@@ -413,7 +413,7 @@ namespace BalatroSeedOracle.Models
                     return "Any Legendary";
 
                 // For other types, just format as "Any <Type>"
-                return "Any " + FormatDisplayName(suffix);
+                return "Any " + FormatUtils.FormatDisplayName(suffix);
             }
 
             if (jokerDisplayNames.TryGetValue(spriteName.ToLowerInvariant(), out var displayName))
@@ -422,99 +422,7 @@ namespace BalatroSeedOracle.Models
             }
 
             // Fallback: try to format the sprite name
-            return FormatDisplayName(spriteName);
-        }
-
-        private static string FormatDisplayName(string enumName)
-        {
-            // Special cases that need custom formatting
-            var specialCases = new Dictionary<string, string>
-            {
-                // Numbers
-                { "EightBall", "8 Ball" },
-                { "Cloud9", "Cloud 9" },
-                { "OopsAll6s", "Oops! All 6s" },
-                // Tarot cards with "The" prefix
-                { "TheFool", "The Fool" },
-                { "TheMagician", "The Magician" },
-                { "TheHighPriestess", "The High Priestess" },
-                { "TheEmpress", "The Empress" },
-                { "TheEmperor", "The Emperor" },
-                { "TheHierophant", "The Hierophant" },
-                { "TheLovers", "The Lovers" },
-                { "TheChariot", "The Chariot" },
-                { "TheHermit", "The Hermit" },
-                { "TheWheel", "The Wheel of Fortune" },
-                { "TheJustice", "Justice" },
-                { "TheHangedMan", "The Hanged Man" },
-                { "TheDeath", "Death" },
-                { "TheTemperance", "Temperance" },
-                { "TheDevil", "The Devil" },
-                { "TheTower", "The Tower" },
-                { "TheStar", "The Star" },
-                { "TheMoon", "The Moon" },
-                { "TheSun", "The Sun" },
-                { "TheJudgement", "Judgement" },
-                { "TheWorld", "The World" },
-                // Spectral cards
-                { "Soul", "The Soul" },
-                { "TheSoul", "The Soul" },
-                { "BlackHole", "Black Hole" },
-                { "DejaVu", "Deja Vu" },
-                // Boss blinds
-                { "TheArm", "The Arm" },
-                { "TheOx", "The Ox" },
-                { "TheSerpent", "The Serpent" },
-                { "TheEye", "The Eye" },
-                { "TheClub", "The Club" },
-                { "TheFlint", "The Flint" },
-                { "TheHead", "The Head" },
-                { "TheNeedle", "The Needle" },
-                { "TheWall", "The Wall" },
-                { "TheGoad", "The Goad" },
-                { "TheWater", "The Water" },
-                { "TheWindow", "The Window" },
-                { "TheManacle", "The Manacle" },
-                { "ThePlant", "The Plant" },
-                { "TheVerdant", "The Verdant Leaf" },
-                { "VioletVessel", "Violet Vessel" },
-                { "CrimsonHeart", "Crimson Heart" },
-                { "AmberAcorn", "Amber Acorn" },
-                { "CeruleanBell", "Cerulean Bell" },
-                // Multi-word special formatting
-                { "ToTheMoon", "To the Moon" },
-                { "ToDoList", "To Do List" },
-                { "RiffRaff", "Riff-Raff" },
-                { "MailInRebate", "Mail-In Rebate" },
-                { "WheelofFortune", "Wheel of Fortune" },
-                { "SockandBuskin", "Sock and Buskin" },
-                { "DriversLicense", "Driver's License" },
-                { "PlanetX", "Planet X" },
-                // Tag special cases
-                { "D6Tag", "D6 Tag" },
-                // Other special formatting
-                { "MrBones", "Mr. Bones" },
-                { "ChaostheClown", "Chaos the Clown" },
-            };
-
-            if (specialCases.TryGetValue(enumName, out var special))
-            {
-                return special;
-            }
-
-            // Add spaces before capital letters (except the first one)
-            var result = string.Empty;
-            for (int i = 0; i < enumName.Length; i++)
-            {
-                if (i > 0 && char.IsUpper(enumName[i]) && !char.IsUpper(enumName[i - 1]))
-                {
-                    result += " ";
-                }
-
-                result += enumName[i];
-            }
-
-            return result;
+            return FormatUtils.FormatDisplayName(spriteName);
         }
 
         /// <summary>

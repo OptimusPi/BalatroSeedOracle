@@ -13,6 +13,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -47,7 +48,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public void BeginFilterLoad()
         {
             _isLoadingFilter = true;
-            DebugLogger.Log("VisualBuilderTab", "🔒 Filter loading started - JSON auto-generation disabled");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                "🔒 Filter loading started - JSON auto-generation disabled"
+            );
         }
 
         /// <summary>
@@ -56,7 +60,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public void EndFilterLoad()
         {
             _isLoadingFilter = false;
-            DebugLogger.Log("VisualBuilderTab", "🔓 Filter loading complete - JSON auto-generation enabled");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                "🔓 Filter loading complete - JSON auto-generation enabled"
+            );
         }
 
         [ObservableProperty]
@@ -124,6 +131,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private bool _isCantHovered = false;
 
+        // Item Config Panel visibility toggle
+        [ObservableProperty]
+        private bool _isItemConfigPanelOpen = false;
+
+        // Item Config Panel ViewModel reference
+        [ObservableProperty]
+        private ItemConfigPanelViewModel? _itemConfigPanelViewModel;
+
+        public void OpenItemConfigPanel()
+        {
+            IsItemConfigPanelOpen = true;
+        }
+
+        public void CloseItemConfigPanel()
+        {
+            IsItemConfigPanelOpen = false;
+        }
+
         // Carousel pagination - show arrows when there are multiple pages
         // TODO: Implement actual pagination logic - for now always false (arrows hidden)
         public bool MustHasMultiplePages => false;
@@ -133,8 +158,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Expose parent's FilterName for display
         public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
 
+        // Expose parent's filter name edit mode properties
+        public bool FilterNameEditMode => _parentViewModel?.FilterNameEditMode ?? false;
+        public bool FilterNameDisplayMode => _parentViewModel?.FilterNameDisplayMode ?? true;
+
+        // Expose parent's filter name commands
+        public IRelayCommand? FilterNameClickCommand => _parentViewModel?.FilterNameClickCommand;
+        public IRelayCommand? SaveFilterNameCommand => _parentViewModel?.SaveFilterNameCommand;
+        public IRelayCommand? CancelFilterNameEditCommand =>
+            _parentViewModel?.CancelFilterNameEditCommand;
+
         // Expose parent's SelectedDeck for flip animation
-        public string SelectedDeck => _parentViewModel?.SelectedDeck ?? "Red";
+        public string SelectedDeck => _parentViewModel?.SelectedDeck.ToString() ?? "Red";
 
         // Available items
         public ObservableCollection<FilterItem> AllJokers { get; }
@@ -224,15 +259,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
         // Button icon images
-        public IImage? DebuffedIconImage => Services.SpriteService.Instance.GetEditionImage("debuffed");
+        public IImage? DebuffedIconImage =>
+            Services.SpriteService.Instance.GetEditionImage("debuffed");
+        public IImage? NegativeEditionImage =>
+            SelectedMainCategory == "StandardCard"
+                ? Services.SpriteService.Instance.GetEditionImage("negative") // Edition overlay for cards
+                : Services.SpriteService.Instance.GetJokerImage("Joker", edition: "negative"); // Negative joker sprite
 
         // Base image for edition buttons - 10 of Spades for Standard Cards, joker for Jokers
-        public IImage? EditionBaseImage => SelectedCategory == "StandardCard"
-            ? TenOfSpadesImage
-            : Services.SpriteService.Instance.GetJokerImage("Joker");
+        public IImage? EditionBaseImage =>
+            SelectedMainCategory == "StandardCard"
+                ? TenOfSpadesImage
+                : Services.SpriteService.Instance.GetJokerImage("Joker");
 
         // 10 of Spades card image for seal/edition buttons
-        public IImage? TenOfSpadesImage => Services.SpriteService.Instance.GetPlayingCardImage("Spades", "10");
+        public IImage? TenOfSpadesImage =>
+            Services.SpriteService.Instance.GetPlayingCardImage("Spades", "10");
 
         // Legacy properties (kept for compatibility)
         [ObservableProperty]
@@ -252,11 +294,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private int _selectedStakeIndex = 0;
 
         // Computed properties for button visibility based on category
+        // Hide helper buttons when search is active (mixed results)
         public bool ShowEditionButtons =>
-            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
-        public bool ShowStickerButtons => SelectedMainCategory == "Joker";
-        public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
-        public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
+            string.IsNullOrWhiteSpace(SearchFilter)
+            && (SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard");
+        public bool ShowStickerButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) && SelectedMainCategory == "Joker";
+        public bool ShowSealButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) && SelectedMainCategory == "StandardCard";
+        public bool ShowEnhancementButtons =>
+            string.IsNullOrWhiteSpace(SearchFilter) && SelectedMainCategory == "StandardCard";
+
+        // Negative edition is not available for Standard Cards
+        public bool AllowNegativeEdition => SelectedMainCategory == "Joker";
 
         // Notify property changes when category changes
         partial void OnSelectedMainCategoryChanged(string value)
@@ -265,6 +315,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(ShowStickerButtons));
             OnPropertyChanged(nameof(ShowSealButtons));
             OnPropertyChanged(nameof(ShowEnhancementButtons));
+            OnPropertyChanged(nameof(AllowNegativeEdition));
+            OnPropertyChanged(nameof(EditionBaseImage));
+            OnPropertyChanged(nameof(NegativeEditionImage)); // Update negative button icon when switching categories
 
             // Reset edition/sticker/seal state when switching categories
             // Cards should start fresh with no enhancements
@@ -327,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             _parentViewModel = parentViewModel;
 
-            // Subscribe to parent's property changes to update FilterName
+            // Subscribe to parent's property changes to update FilterName and edit mode
             if (_parentViewModel != null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
@@ -335,6 +388,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (e.PropertyName == nameof(FiltersModalViewModel.FilterName))
                     {
                         OnPropertyChanged(nameof(FilterName));
+                    }
+                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameEditMode))
+                    {
+                        OnPropertyChanged(nameof(FilterNameEditMode));
+                    }
+                    else if (e.PropertyName == nameof(FiltersModalViewModel.FilterNameDisplayMode))
+                    {
+                        OnPropertyChanged(nameof(FilterNameDisplayMode));
                     }
                 };
             }
@@ -482,6 +543,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     // When search text changes, rebuild filtered collections from All*
                     ApplyFilter();
+
+                    // Notify button visibility properties to update
+                    OnPropertyChanged(nameof(ShowEditionButtons));
+                    OnPropertyChanged(nameof(ShowStickerButtons));
+                    OnPropertyChanged(nameof(ShowSealButtons));
+                    OnPropertyChanged(nameof(ShowEnhancementButtons));
                 }
             };
 
@@ -523,12 +590,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             switch (SelectedMainCategory)
             {
                 case "Favorites":
-                    // Section 1: Favorite Items (user's frequently used items)
+                    // Favorite Items (user's frequently used items)
                     var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
                     AddGroup("Favorite Items", favoriteItems);
+                    break;
 
-                    // Section 2: Wildcards (ALL wildcards in one place)
-                    AddGroup("Wildcards", FilteredWildcards);
+                case "Wildcard":
+                    // Wildcards - "Any" type items for flexible filtering
+                    AddGroup(
+                        "Joker Wildcards",
+                        FilteredWildcards.Where(w => w.Type == "Joker" || w.Type == "SoulJoker")
+                    );
+                    AddGroup(
+                        "Consumable Wildcards",
+                        FilteredWildcards.Where(w =>
+                            w.Type == "Tarot" || w.Type == "Planet" || w.Type == "Spectral"
+                        )
+                    );
                     break;
 
                 case "Joker":
@@ -556,19 +634,67 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 case "SkipTag":
                     // Split tags by ante availability
-                    var allAntesTags = new[] { "Uncommon Tag", "Rare Tag", "Foil Tag", "Holographic Tag", "Polychrome Tag",
-                                               "Investment Tag", "Speed Tag", "Economy Tag", "D6 Tag", "Coupon Tag",
-                                               "Boss Tag", "Charm Tag", "Double Tag", "Juggle Tag", "Voucher Tag" };
-                    var ante2PlusTags = new[] { "Negative Tag", "Standard Tag", "Meteor Tag", "Buffoon Tag", "Handy Tag",
-                                                "Garbage Tag", "Ethereal Tag", "Top-up Tag", "Orbital Tag" };
+                    var allAntesTags = new[]
+                    {
+                        "Uncommon Tag",
+                        "Rare Tag",
+                        "Foil Tag",
+                        "Holographic Tag",
+                        "Polychrome Tag",
+                        "Investment Tag",
+                        "Speed Tag",
+                        "Economy Tag",
+                        "D6 Tag",
+                        "Coupon Tag",
+                        "Boss Tag",
+                        "Charm Tag",
+                        "Double Tag",
+                        "Juggle Tag",
+                        "Voucher Tag",
+                    };
+                    var ante2PlusTags = new[]
+                    {
+                        "Negative Tag",
+                        "Standard Tag",
+                        "Meteor Tag",
+                        "Buffoon Tag",
+                        "Handy Tag",
+                        "Garbage Tag",
+                        "Ethereal Tag",
+                        "Top-up Tag",
+                        "Orbital Tag",
+                    };
 
-                    AddGroup("Skip Tags - All Antes", FilteredTags.Where(t => allAntesTags.Contains(t.DisplayName)));
-                    AddGroup("Skip Tags - Ante 2+", FilteredTags.Where(t => ante2PlusTags.Contains(t.DisplayName)));
+                    AddGroup(
+                        "Skip Tags - All Antes",
+                        FilteredTags.Where(t => allAntesTags.Contains(t.DisplayName))
+                    );
+                    AddGroup(
+                        "Skip Tags - Ante 2+",
+                        FilteredTags.Where(t => ante2PlusTags.Contains(t.DisplayName))
+                    );
                     break;
 
                 case "Boss":
-                    // For now, show all bosses (regular/finisher split can be added later)
-                    AddGroup("Boss Blinds", FilteredBosses);
+                    // Boss Blinds split into Regular and Finishers
+                    var finisherNames = new[]
+                    {
+                        "amber_acorn",
+                        "cerulean_bell",
+                        "crimson_heart",
+                        "verdant_leaf",
+                        "violet_vessel",
+                    };
+                    AddGroup(
+                        "Regular Boss Blinds",
+                        FilteredBosses.Where(b =>
+                            !finisherNames.Contains(b.Name.ToLowerInvariant())
+                        )
+                    );
+                    AddGroup(
+                        "Finisher Boss Blinds",
+                        FilteredBosses.Where(b => finisherNames.Contains(b.Name.ToLowerInvariant()))
+                    );
                     break;
 
                 case "Voucher":
@@ -586,20 +712,93 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         FilteredStandardCards.Where(c => c.Category == "Diamonds")
                     );
                     AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
-                    AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
+
+                    // Enhancement cards split by suit
                     AddGroup(
-                        "Bonus Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Bonus")
+                        "Mult Cards - Hearts",
+                        FilteredStandardCards.Where(c => c.Category == "Mult_Hearts")
                     );
                     AddGroup(
-                        "Glass Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Glass")
+                        "Mult Cards - Spades",
+                        FilteredStandardCards.Where(c => c.Category == "Mult_Spades")
                     );
-                    AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
                     AddGroup(
-                        "Steel Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Steel")
+                        "Mult Cards - Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Mult_Diamonds")
                     );
+                    AddGroup(
+                        "Mult Cards - Clubs",
+                        FilteredStandardCards.Where(c => c.Category == "Mult_Clubs")
+                    );
+
+                    AddGroup(
+                        "Bonus Cards - Hearts",
+                        FilteredStandardCards.Where(c => c.Category == "Bonus_Hearts")
+                    );
+                    AddGroup(
+                        "Bonus Cards - Spades",
+                        FilteredStandardCards.Where(c => c.Category == "Bonus_Spades")
+                    );
+                    AddGroup(
+                        "Bonus Cards - Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Bonus_Diamonds")
+                    );
+                    AddGroup(
+                        "Bonus Cards - Clubs",
+                        FilteredStandardCards.Where(c => c.Category == "Bonus_Clubs")
+                    );
+
+                    AddGroup(
+                        "Glass Cards - Hearts",
+                        FilteredStandardCards.Where(c => c.Category == "Glass_Hearts")
+                    );
+                    AddGroup(
+                        "Glass Cards - Spades",
+                        FilteredStandardCards.Where(c => c.Category == "Glass_Spades")
+                    );
+                    AddGroup(
+                        "Glass Cards - Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Glass_Diamonds")
+                    );
+                    AddGroup(
+                        "Glass Cards - Clubs",
+                        FilteredStandardCards.Where(c => c.Category == "Glass_Clubs")
+                    );
+
+                    AddGroup(
+                        "Gold Cards - Hearts",
+                        FilteredStandardCards.Where(c => c.Category == "Gold_Hearts")
+                    );
+                    AddGroup(
+                        "Gold Cards - Spades",
+                        FilteredStandardCards.Where(c => c.Category == "Gold_Spades")
+                    );
+                    AddGroup(
+                        "Gold Cards - Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Gold_Diamonds")
+                    );
+                    AddGroup(
+                        "Gold Cards - Clubs",
+                        FilteredStandardCards.Where(c => c.Category == "Gold_Clubs")
+                    );
+
+                    AddGroup(
+                        "Steel Cards - Hearts",
+                        FilteredStandardCards.Where(c => c.Category == "Steel_Hearts")
+                    );
+                    AddGroup(
+                        "Steel Cards - Spades",
+                        FilteredStandardCards.Where(c => c.Category == "Steel_Spades")
+                    );
+                    AddGroup(
+                        "Steel Cards - Diamonds",
+                        FilteredStandardCards.Where(c => c.Category == "Steel_Diamonds")
+                    );
+                    AddGroup(
+                        "Steel Cards - Clubs",
+                        FilteredStandardCards.Where(c => c.Category == "Steel_Clubs")
+                    );
+
                     AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
@@ -1189,7 +1388,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "OR" => "AND",
                 "AND" => "BannedItems",
                 "BannedItems" => "OR",
-                _ => "OR" // Default fallback
+                _ => "OR", // Default fallback
             };
             DebugLogger.Log(
                 "VisualBuilderTab",
@@ -1265,11 +1464,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Convert each child FilterItem to an ItemConfig
             foreach (var child in operatorItem.Children)
             {
-                var childConfig = new ItemConfig
-                {
-                    ItemType = child.Type,
-                    ItemName = child.Name,
-                };
+                var childConfig = new ItemConfig { ItemType = child.Type, ItemName = child.Name };
 
                 // CRITICAL FIX: Preserve edition, stickers, seals from the FilterItem
                 ApplyEditionStickersSeal(childConfig, child);
@@ -1304,10 +1499,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_isLoadingFilter)
                 return;
 
-            if (_parentViewModel?.JsonEditorTab is JsonEditorTabViewModel jsonEditorVm)
+            if (_parentViewModel?.JamlEditorTab is JamlEditorTabViewModel jamlVm)
             {
-                // Trigger the JSON generation automatically
-                jsonEditorVm.AutoGenerateFromVisual();
+                jamlVm.AutoGenerateFromVisual();
             }
         }
 
@@ -1483,19 +1677,44 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     var voucherDisplayOrder = new List<string>
                     {
                         // Row 1: Base vouchers
-                        "Overstock", "ClearanceSale", "Hone", "RerollSurplus", "CrystalBall",
+                        "Overstock",
+                        "ClearanceSale",
+                        "Hone",
+                        "RerollSurplus",
+                        "CrystalBall",
                         // Row 2: Upgrades (directly below base versions)
-                        "OverstockPlus", "Liquidation", "GlowUp", "RerollGlut", "OmenGlobe",
+                        "OverstockPlus",
+                        "Liquidation",
+                        "GlowUp",
+                        "RerollGlut",
+                        "OmenGlobe",
                         // Row 3: Base vouchers
-                        "Telescope", "Grabber", "Wasteful", "TarotMerchant", "PlanetMerchant",
+                        "Telescope",
+                        "Grabber",
+                        "Wasteful",
+                        "TarotMerchant",
+                        "PlanetMerchant",
                         // Row 4: Upgrades
-                        "Observatory", "NachoTong", "Recyclomancy", "TarotTycoon", "PlanetTycoon",
+                        "Observatory",
+                        "NachoTong",
+                        "Recyclomancy",
+                        "TarotTycoon",
+                        "PlanetTycoon",
                         // Row 5: Base vouchers
-                        "SeedMoney", "Blank", "MagicTrick", "Hieroglyph", "DirectorsCut",
+                        "SeedMoney",
+                        "Blank",
+                        "MagicTrick",
+                        "Hieroglyph",
+                        "DirectorsCut",
                         // Row 6: Upgrades
-                        "MoneyTree", "Antimatter", "Illusion", "Petroglyph", "Retcon",
+                        "MoneyTree",
+                        "Antimatter",
+                        "Illusion",
+                        "Petroglyph",
+                        "Retcon",
                         // Row 7-8: Final pair
-                        "PaintBrush", "Palette",
+                        "PaintBrush",
+                        "Palette",
                     };
 
                     var tempVouchers = new List<FilterItem>();
@@ -1701,33 +1920,35 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         }
                     }
 
-                    // Generate enhanced variants (Type B1 and B2)
+                    // Generate enhanced variants (Type B1 and B2) - ALL suits for each enhancement
                     var enhancements = new[] { "Mult", "Bonus", "Glass", "Gold", "Steel" };
                     foreach (var enhancement in enhancements)
                     {
-                        foreach (var rank in ranks)
+                        foreach (var suit in suits)
                         {
-                            var suit = "Hearts"; // Use Hearts as default suit for enhanced cards
-                            var displayName = $"{enhancement} {rank}";
-                            if (rank == "Ace")
-                                displayName = $"{enhancement} Ace";
-
-                            var item = new FilterItem
+                            foreach (var rank in ranks)
                             {
-                                Name = $"{enhancement}_{rank}_{suit}",
-                                Type = "StandardCard",
-                                Category = enhancement,
-                                DisplayName = displayName,
-                                Rank = rank,
-                                Suit = suit,
-                                Enhancement = enhancement,
-                                ItemImage = spriteService.GetPlayingCardImage(
-                                    suit,
-                                    rank,
-                                    enhancement
-                                ),
-                            };
-                            AllStandardCards.Add(item);
+                                var displayName = $"{enhancement} {rank}";
+                                if (rank == "Ace")
+                                    displayName = $"{enhancement} Ace";
+
+                                var item = new FilterItem
+                                {
+                                    Name = $"{enhancement}_{rank}_{suit}",
+                                    Type = "StandardCard",
+                                    Category = $"{enhancement}_{suit}", // Category includes both enhancement AND suit
+                                    DisplayName = displayName,
+                                    Rank = rank,
+                                    Suit = suit,
+                                    Enhancement = enhancement,
+                                    ItemImage = spriteService.GetPlayingCardImage(
+                                        suit,
+                                        rank,
+                                        enhancement
+                                    ),
+                                };
+                                AllStandardCards.Add(item);
+                            }
                         }
                     }
 
@@ -2111,7 +2332,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// Triggers a debounced auto-save operation.
         /// Cancels any pending save and schedules a new one after the debounce delay.
         /// </summary>
-        private void TriggerAutoSave()
+        public void TriggerAutoSave()
         {
             // Cancel any pending auto-save
             _autoSaveCts?.Cancel();
@@ -2340,32 +2561,43 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Phase 3: Edition/Sticker/Seal Commands
 
         /// <summary>
-        /// Sets the edition for ALL palette items AND future drops
-        /// Does NOT modify items already in drop zones
+        /// Sets edition for currently visible shelf items (NOT favorites) AND future drops
+        /// Visual feedback so user knows what edition they're selecting
         /// </summary>
         [RelayCommand]
         public void SetEdition(string edition)
         {
-            // Set the selection for future drops
             SelectedEdition = edition;
 
-            // Apply to ALL palette items (but NOT drop zone items)
-            foreach (var item in AllJokers.Concat(AllTags).Concat(AllVouchers)
-                .Concat(AllTarots).Concat(AllPlanets).Concat(AllSpectrals)
-                .Concat(AllBosses).Concat(AllWildcards).Concat(AllStandardCards))
+            // Apply to currently visible shelf items (for visual feedback)
+            // BUT skip the Favorites group to avoid modifying favorited items
+            foreach (var group in GroupedItems)
             {
-                item.Edition = edition == "None" ? null : edition;
+                // Skip Favorites group - don't modify user's saved favorites!
+                if (group.GroupName == "Favorites")
+                    continue;
+
+                foreach (var item in group.Items)
+                {
+                    // Set edition (None → null, otherwise the edition name)
+                    item.Edition = edition == "None" ? null : edition;
+
+                    // Reload joker sprite with the new edition (SpriteService handles everything!)
+                    if (item.Type == "Joker" || item.Type == "SoulJoker")
+                    {
+                        var editionParam = edition == "None" ? null : edition.ToLowerInvariant();
+                        item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                            item.Name,
+                            edition: editionParam
+                        );
+                    }
+                }
             }
 
-            // Also apply to filtered items (they're references to the same objects but just in case)
-            foreach (var item in FilteredJokers.Concat(FilteredTags).Concat(FilteredVouchers)
-                .Concat(FilteredTarots).Concat(FilteredPlanets).Concat(FilteredSpectrals)
-                .Concat(FilteredBosses).Concat(FilteredWildcards).Concat(FilteredStandardCards))
-            {
-                item.Edition = edition == "None" ? null : edition;
-            }
-
-            DebugLogger.Log("SetEdition", $"Edition '{edition}' applied to all palette items");
+            DebugLogger.Log(
+                "SetEdition",
+                $"Edition '{edition}' applied to visible shelf items (excluding Favorites)"
+            );
         }
 
         /// <summary>
@@ -2449,14 +2681,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            DebugLogger.Log(
-                "VisualBuilderTab",
-                $"Toggled Debuffed state on all shelf items"
-            );
+            DebugLogger.Log("VisualBuilderTab", $"Toggled Debuffed state on all shelf items");
         }
 
         /// <summary>
-        /// Sets the seal for ALL StandardCard palette items AND future drops
+        /// Sets the seal for currently visible StandardCard items in the shelf AND future drops
         /// Does NOT modify items already in drop zones
         /// </summary>
         [RelayCommand]
@@ -2465,29 +2694,60 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Don't trigger animation if seal didn't actually change
             if (SelectedSeal == seal)
             {
-                DebugLogger.Log(
-                    "VisualBuilderTab",
-                    $"Seal already set to '{seal}' - skipping"
-                );
+                DebugLogger.Log("VisualBuilderTab", $"Seal already set to '{seal}' - skipping");
                 return;
             }
 
-            // Set the selection for future drops
             SelectedSeal = seal;
 
-            // Apply to ALL StandardCard palette items (but NOT drop zone items)
-            foreach (var item in AllStandardCards)
+            // Apply to currently visible items only (GroupedItems)
+            // BUT skip Favorites group - don't modify user's saved favorites!
+            foreach (var group in GroupedItems)
             {
-                item.Seal = seal == "None" ? null : seal;
+                if (group.GroupName == "Favorites")
+                    continue;
+
+                foreach (var item in group.Items)
+                {
+                    // Only apply seal to StandardCards
+                    if (item.Type == "StandardCard")
+                    {
+                        item.Seal = seal == "None" ? null : seal;
+
+                        // CRITICAL FIX: Reload sprite with seal overlay (like SetEdition does for jokers)
+                        // StandardCard display name format: "A♠", "10♥", etc.
+                        var sealParam = seal == "None" ? null : seal;
+                        var displayParts =
+                            item.DisplayName?.Split('♠', '♥', '♦', '♣') ?? new[] { "", "" };
+                        var rank = displayParts.Length > 0 ? displayParts[0] : "";
+                        var suitChar = item.DisplayName?.LastOrDefault(c =>
+                            c == '♠' || c == '♥' || c == '♦' || c == '♣'
+                        );
+                        var suit = suitChar switch
+                        {
+                            '♠' => "Spades",
+                            '♥' => "Hearts",
+                            '♦' => "Diamonds",
+                            '♣' => "Clubs",
+                            _ => "Spades",
+                        };
+
+                        // Reload card image with seal overlay
+                        item.ItemImage = Services.SpriteService.Instance.GetPlayingCardImage(
+                            suit,
+                            rank,
+                            enhancement: item.Enhancement,
+                            seal: sealParam,
+                            edition: item.Edition
+                        );
+                    }
+                }
             }
 
-            // Also apply to filtered StandardCards
-            foreach (var item in FilteredStandardCards)
-            {
-                item.Seal = seal == "None" ? null : seal;
-            }
-
-            DebugLogger.Log("SetSeal", $"Seal '{seal}' applied to all StandardCard palette items");
+            DebugLogger.Log(
+                "SetSeal",
+                $"Seal '{seal}' applied and sprites reloaded for visible StandardCard shelf items (excluding Favorites)"
+            );
         }
 
         /// <summary>
@@ -2514,7 +2774,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void ApplyStickersToAllItems()
         {
-            // Jokers that CANNOT be Eternal (from Balatro game logic)
+            // Soul Jokers (Legendary) - CANNOT have ANY stickers (Perishable, Rental, or Eternal)
+            var soulJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
+            };
+
+            // Jokers that CANNOT be Eternal (from Balatro game logic) - but CAN have Perishable/Rental
             var eternalRestrictedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Cavendish",
@@ -2528,29 +2798,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "Ramen",
                 "Seltzer",
                 "TurtleBean",
-                // Soul Jokers also cannot be Eternal
-                "Perkeo",
-                "Triboulet",
-                "Yorick",
-                "Chicot",
-                "Canio",
             };
 
             // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
+                // Skip Favorites group - don't modify user's saved favorites!
+                if (group.GroupName == "Favorites")
+                    continue;
+
                 foreach (var item in group.Items)
                 {
                     // CRITICAL FIX: Update item.Stickers directly to trigger image binding update
                     var stickers = new List<string>();
 
+                    // Soul Jokers (Legendary) CANNOT have ANY stickers
+                    bool isSoulJoker = soulJokers.Contains(item.Name);
+
                     // Perishable and Eternal are mutually exclusive
-                    if (StickerPerishable)
+                    if (StickerPerishable && !isSoulJoker)
                     {
                         stickers.Add("perishable");
                     }
                     else if (
                         StickerEternal
+                        && !isSoulJoker
                         && CanItemBeEternal(item)
                         && !eternalRestrictedJokers.Contains(item.Name)
                     )
@@ -2558,7 +2830,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         stickers.Add("eternal");
                     }
 
-                    if (StickerRental)
+                    if (StickerRental && !isSoulJoker)
                     {
                         stickers.Add("rental");
                     }
@@ -2577,10 +2849,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Helper buttons only affect shelf items, NOT drop zones
-            DebugLogger.Log(
-                "VisualBuilderTab",
-                $"Stickers applied to shelf items only"
-            );
+            DebugLogger.Log("VisualBuilderTab", $"Stickers applied to shelf items only");
         }
 
         /// <summary>
@@ -2592,15 +2861,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             HashSet<string> eternalRestrictedJokers
         )
         {
+            // Soul Jokers (Legendary) - CANNOT have ANY stickers
+            var soulJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Perkeo",
+                "Triboulet",
+                "Yorick",
+                "Chicot",
+                "Canio",
+            };
+
             // Build sticker list based on current toggles
             var stickers = new List<string>();
 
+            // Soul Jokers CANNOT have ANY stickers
+            bool isSoulJoker = soulJokers.Contains(itemName);
+
             // Perishable and Eternal are mutually exclusive
-            if (StickerPerishable)
+            if (StickerPerishable && !isSoulJoker)
             {
                 stickers.Add("perishable");
             }
-            else if (StickerEternal)
+            else if (StickerEternal && !isSoulJoker)
             {
                 // Check if item type can be eternal
                 bool canTypeBeEternal = config.ItemType switch
@@ -2626,7 +2908,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Rental can combine with Eternal but not Perishable
-            if (StickerRental && !StickerPerishable)
+            if (StickerRental && !StickerPerishable && !isSoulJoker)
             {
                 stickers.Add("rental");
             }
@@ -2647,6 +2929,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 config.Edition = SelectedEdition.ToLower();
                 item.Edition = config.Edition; // CRITICAL: Update item to trigger EditionImage binding
+
+                // For Negative edition, reload the base ItemImage from negative sprite sheet
+                if (
+                    config.Edition == "negative"
+                    && (item.Type == "Joker" || item.Type == "SoulJoker")
+                )
+                {
+                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                        item.Name,
+                        edition: "negative"
+                    );
+                }
+            }
+            else if (item.Type == "Joker" || item.Type == "SoulJoker")
+            {
+                // If edition is None but item was previously negative, reload regular sprite
+                if (item.Edition == "negative")
+                {
+                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                        item.Name,
+                        edition: null
+                    );
+                }
             }
 
             // Apply Stickers with Eternal restrictions
@@ -2731,7 +3036,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return;
             }
 
-            DebugLogger.Log("VisualBuilderTab", $"🔄 Loading from parent collections - Must: {_parentViewModel.SelectedMust.Count}, Should: {_parentViewModel.SelectedShould.Count}");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                $"🔄 Loading from parent collections - Must: {_parentViewModel.SelectedMust.Count}, Should: {_parentViewModel.SelectedShould.Count}"
+            );
 
             // Clear current visual builder state
             SelectedMust.Clear();
@@ -2780,10 +3088,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             var ss = Services.SpriteService.Instance;
 
-            // Determine category from ItemType
-            string category = config.ItemType switch
+            // FIX: Use effective type that checks IsSoulJoker flag
+            var effectiveType = config.IsSoulJoker ? "SoulJoker" : config.ItemType;
+
+            // Determine category from effective type (not raw ItemType)
+            string category = effectiveType switch
             {
-                "Joker" or "SoulJoker" => "Joker",
+                "SoulJoker" => "SoulJokers",
+                "Joker" => "Joker",
                 "Tarot" or "TarotCard" => "Consumable",
                 "Spectral" or "SpectralCard" => "Consumable",
                 "Planet" or "PlanetCard" => "Consumable",
@@ -2791,14 +3103,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "SmallBlindTag" or "BigBlindTag" or "Tag" => "Tag",
                 "Boss" or "BossBlind" => "Boss",
                 "PlayingCard" or "StandardCard" => "StandardCard",
-                _ => config.ItemType,
+                _ => effectiveType,
             };
 
             var filterItem = new FilterItem
             {
                 Name = config.ItemName,
                 DisplayName = config.ItemName,
-                Type = config.ItemType,
+                Type = effectiveType,  // FIX: Use effective type that respects IsSoulJoker
                 Category = category,
                 ItemKey = config.ItemKey,
                 Edition = config.Edition,
@@ -2806,39 +3118,40 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Antes = config.Antes?.ToArray(),
             };
 
-            // Get sprite image
-            if (config.ItemType == "Joker" || config.ItemType == "SoulJoker")
+            // Get sprite image (use effectiveType for consistent handling)
+            if (effectiveType == "Joker" || effectiveType == "SoulJoker")
             {
                 filterItem.ItemImage = ss.GetJokerImage(config.ItemName);
             }
-            else if (config.ItemType == "Voucher")
+            else if (effectiveType == "Voucher")
             {
                 filterItem.ItemImage = ss.GetVoucherImage(config.ItemName);
             }
-            else if (config.ItemType.Contains("Tarot"))
+            else if (effectiveType.Contains("Tarot"))
             {
                 filterItem.ItemImage = ss.GetTarotImage(config.ItemName);
             }
-            else if (config.ItemType.Contains("Spectral"))
+            else if (effectiveType.Contains("Spectral"))
             {
                 filterItem.ItemImage = ss.GetSpectralImage(config.ItemName);
             }
-            else if (config.ItemType.Contains("Planet"))
+            else if (effectiveType.Contains("Planet"))
             {
                 filterItem.ItemImage = ss.GetPlanetCardImage(config.ItemName);
             }
-            else if (config.ItemType.Contains("Tag"))
+            else if (effectiveType.Contains("Tag"))
             {
                 filterItem.ItemImage = ss.GetTagImage(config.ItemName);
             }
-            else if (config.ItemType == "Boss")
+            else if (effectiveType == "Boss")
             {
                 filterItem.ItemImage = ss.GetBossImage(config.ItemName);
             }
-            else if (config.ItemType == "PlayingCard" || config.ItemType == "StandardCard")
+            else if (effectiveType == "PlayingCard" || effectiveType == "StandardCard")
             {
-                // TODO: Handle playing cards properly
-                filterItem.ItemImage = ss.GetSpecialImage("BlankCard");
+                var suit = string.IsNullOrWhiteSpace(config.Suit) ? "Spades" : config.Suit;
+                var rank = string.IsNullOrWhiteSpace(config.Rank) ? "10" : config.Rank;
+                filterItem.ItemImage = ss.GetPlayingCardImage(suit, rank, config.Enhancement);
             }
 
             return filterItem;

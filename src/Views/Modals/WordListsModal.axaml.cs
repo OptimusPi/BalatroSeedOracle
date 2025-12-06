@@ -20,10 +20,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _statusText;
         private Button? _saveButton;
 
-        private string _wordListsPath = System.IO.Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "WordLists"
-        );
+        private string _wordListsPath = AppPaths.WordListsDir;
         private string? _currentFile;
         private bool _hasUnsavedChanges = false;
 
@@ -135,7 +132,10 @@ tag"
         {
             try
             {
-                if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+                if (
+                    _fileSelector?.SelectedItem is ComboBoxItem item
+                    && item.Content is string fileName
+                )
                 {
                     if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
@@ -152,7 +152,10 @@ tag"
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                DebugLogger.LogError(
+                    "WordListsModal",
+                    $"Error in OnFileSelectionChanged: {ex.Message}"
+                );
                 UpdateStatus($"Error loading file: {ex.Message}");
             }
         }

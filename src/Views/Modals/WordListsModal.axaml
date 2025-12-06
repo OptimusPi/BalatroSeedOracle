@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
     <StackPanel Spacing="20" Margin="20">
@@ -44,10 +45,14 @@
                             Spacing="8"
                             Margin="12,0,0,0">
                     <Button Name="PasteButton"
-                            Content="📋 Paste"
                             Classes="small-button"
                             Background="{StaticResource Blue}"
-                            Click="OnPasteClick"/>
+                            Click="OnPasteClick">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <icons:PackIconMaterial Kind="ClipboardArrowDown" Width="12" Height="12" VerticalAlignment="Center"/>
+                            <TextBlock Text="Paste" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                     <Button Name="NewButton"
                             Content="New List"
                             Classes="small-button"

@@ -31,7 +31,8 @@ namespace BalatroSeedOracle.Components
         public static readonly StyledProperty<int> SelectedDeckIndexProperty =
             Avalonia.AvaloniaProperty.Register<DeckSpinner, int>(
                 nameof(SelectedDeckIndex),
-                defaultValue: 0
+                defaultValue: 0,
+                defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
             );
 
         public int SelectedDeckIndex

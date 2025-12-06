@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
@@ -11,28 +13,28 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels.Controls
 {
+    /// <summary>
+    /// Simple, debounced results grid - collects results in background, updates UI periodically
+    /// </summary>
     public partial class SortableResultsGridViewModel : ObservableObject
     {
-        // Observable collections
-        [ObservableProperty]
-        private ObservableCollection<SearchResult> _allResults = new();
+        private const int MaxDisplayResults = 1000;
+        private const int DebounceDelayMs = 300;
 
+        // Background storage (thread-safe)
+        private readonly List<SearchResult> _backingResults = new();
+        private readonly object _lock = new();
+
+        // Debounce timer
+        private CancellationTokenSource? _debounceTokenSource;
+
+        // UI-bound collection - ONLY updated via debounced refresh
         [ObservableProperty]
         private ObservableCollection<SearchResult> _displayedResults = new();
 
-        // Pagination properties
+        // Stats
         [ObservableProperty]
-        private int _currentPage = 1;
-
-        [ObservableProperty]
-        private int _totalPages = 1;
-
-        [ObservableProperty]
-        private int _itemsPerPage = 100;
-
-        // Computed properties (updated automatically)
-        [ObservableProperty]
-        private string _pageInfoText = "Page 1 of 1";
+        private int _totalResultCount;
 
         [ObservableProperty]
         private string _resultsCountText = "0 results";
@@ -40,264 +42,245 @@ namespace BalatroSeedOracle.ViewModels.Controls
         [ObservableProperty]
         private string _statsText = "Ready to search";
 
+        // Sorting
         [ObservableProperty]
-        private bool _isPreviousEnabled = false;
-
-        [ObservableProperty]
-        private bool _isNextEnabled = false;
-
-        // Sorting properties
-        [ObservableProperty]
-        private string _currentSortColumn = "TotalScore";
-
-        [ObservableProperty]
-        private bool _sortDescending = true;
-
-        [ObservableProperty]
-        private int _selectedSortIndex = 1; // Default to "Score ↓"
+        private int _selectedSortIndex = 1; // Default: Score descending
 
         // Commands
         public IAsyncRelayCommand<string> CopySeedCommand { get; }
-        public IRelayCommand<SearchResult> SearchSimilarCommand { get; }
-        public IRelayCommand<SearchResult> AddToFavoritesCommand { get; }
-        public IRelayCommand<SearchResult> ExportSeedCommand { get; }
-        public IRelayCommand<SearchResult> AnalyzeCommand { get; }
         public IRelayCommand ExportAllCommand { get; }
-        public IRelayCommand PreviousPageCommand { get; }
-        public IRelayCommand NextPageCommand { get; }
+        public IRelayCommand PopOutCommand { get; }
+        public IRelayCommand<SearchResult> AnalyzeCommand { get; }
 
-        // Events (for parent communication)
+        // Read-only view of all results (for tally column initialization)
+        public IReadOnlyList<SearchResult> AllResults
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _backingResults.ToList().AsReadOnly();
+                }
+            }
+        }
+
+        // Events (some are subscribed externally via code-behind)
+        public event EventHandler? PopOutRequested;
+        public event EventHandler<IEnumerable<SearchResult>>? ExportAllRequested;
+#pragma warning disable CS0067 // Events are subscribed externally through code-behind
         public event EventHandler<SearchResult>? SeedCopied;
         public event EventHandler<SearchResult>? SearchSimilarRequested;
         public event EventHandler<SearchResult>? AddToFavoritesRequested;
         public event EventHandler<SearchResult>? ExportSeedRequested;
-        public event EventHandler<IEnumerable<SearchResult>>? ExportAllRequested;
+#pragma warning restore CS0067
         public event EventHandler<SearchResult>? AnalyzeRequested;
 
         public SortableResultsGridViewModel()
         {
-            // Initialize commands
             CopySeedCommand = new AsyncRelayCommand<string>(CopySeedAsync);
-            SearchSimilarCommand = new RelayCommand<SearchResult>(SearchSimilar);
-            AddToFavoritesCommand = new RelayCommand<SearchResult>(AddToFavorites);
-            ExportSeedCommand = new RelayCommand<SearchResult>(ExportSeed);
-            AnalyzeCommand = new RelayCommand<SearchResult>(Analyze);
             ExportAllCommand = new RelayCommand(ExportAll);
-            PreviousPageCommand = new RelayCommand(PreviousPage, () => IsPreviousEnabled);
-            NextPageCommand = new RelayCommand(NextPage, () => IsNextEnabled);
-
-            // Listen to property changes for auto-updates
-            AllResults.CollectionChanged += (s, e) => UpdateDisplay();
+            PopOutCommand = new RelayCommand(() => PopOutRequested?.Invoke(this, EventArgs.Empty));
+            AnalyzeCommand = new RelayCommand<SearchResult>(result =>
+            {
+                if (result != null)
+                    AnalyzeRequested?.Invoke(this, result);
+            });
         }
 
-        // Sorting logic
+        /// <summary>
+        /// Add a single result - triggers debounced UI refresh
+        /// </summary>
+        public void AddResult(SearchResult result)
+        {
+            lock (_lock)
+            {
+                _backingResults.Add(result);
+                TotalResultCount = _backingResults.Count;
+            }
+
+            // Debounce the UI update
+            ScheduleDebouncedRefresh();
+        }
+
+        /// <summary>
+        /// Add multiple results at once - triggers single debounced UI refresh
+        /// </summary>
+        public void AddResults(IEnumerable<SearchResult> results)
+        {
+            var resultsArray = results.ToArray();
+            
+            lock (_lock)
+            {
+                _backingResults.AddRange(resultsArray);
+                TotalResultCount = _backingResults.Count;
+            }
+
+            DebugLogger.Log("SortableResultsGridVM", $"AddResults: Added {resultsArray.Length} items, total now {TotalResultCount}");
+            
+            // For bulk additions (like loading saved results), use immediate refresh
+            // For single additions (like real-time search), use debounced refresh
+            if (resultsArray.Length > 10)
+            {
+                DebugLogger.Log("SortableResultsGridVM", "Bulk addition detected - forcing immediate refresh");
+                ForceRefresh();
+            }
+            else
+            {
+                ScheduleDebouncedRefresh();
+            }
+        }
+
+        /// <summary>
+        /// Clear all results
+        /// </summary>
+        public void ClearResults()
+        {
+            lock (_lock)
+            {
+                _backingResults.Clear();
+                TotalResultCount = 0;
+            }
+
+            // Immediate clear on UI
+            Dispatcher.UIThread.Post(() =>
+            {
+                DisplayedResults.Clear();
+                UpdateStatsText();
+            });
+        }
+
+        /// <summary>
+        /// Force immediate refresh (bypass debounce)
+        /// </summary>
+        public void ForceRefresh()
+        {
+            _debounceTokenSource?.Cancel();
+            RefreshDisplayedResults();
+        }
+
+        private void ScheduleDebouncedRefresh()
+        {
+            // Cancel previous debounce
+            _debounceTokenSource?.Cancel();
+            _debounceTokenSource = new CancellationTokenSource();
+            var token = _debounceTokenSource.Token;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(DebounceDelayMs, token);
+                    if (!token.IsCancellationRequested)
+                    {
+                        RefreshDisplayedResults();
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // Expected when debounce is reset
+                }
+            }, token);
+        }
+
+        private void RefreshDisplayedResults()
+        {
+            List<SearchResult> top1000;
+
+            lock (_lock)
+            {
+                // Get top 1000 sorted by score (descending)
+                top1000 = SelectedSortIndex switch
+                {
+                    0 => _backingResults.OrderBy(r => r.Seed).Take(MaxDisplayResults).ToList(),
+                    2 => _backingResults.OrderBy(r => r.TotalScore).Take(MaxDisplayResults).ToList(),
+                    _ => _backingResults.OrderByDescending(r => r.TotalScore).Take(MaxDisplayResults).ToList()
+                };
+            }
+
+            // Update UI on dispatcher thread
+            Dispatcher.UIThread.Post(() =>
+            {
+                DisplayedResults.Clear();
+                foreach (var result in top1000)
+                {
+                    DisplayedResults.Add(result);
+                }
+
+                UpdateStatsText();
+
+                DebugLogger.Log(
+                    "SortableResultsGridVM",
+                    $"Refreshed: {TotalResultCount} total, showing {DisplayedResults.Count}"
+                );
+            });
+        }
+
         partial void OnSelectedSortIndexChanged(int value)
         {
-            // Map index to sort column and direction
-            switch (value)
-            {
-                case 0: // Seed
-                    CurrentSortColumn = "Seed";
-                    SortDescending = false;
-                    break;
-                case 1: // Score ↓
-                    CurrentSortColumn = "TotalScore";
-                    SortDescending = true;
-                    break;
-                case 2: // Score ↑
-                    CurrentSortColumn = "TotalScore";
-                    SortDescending = false;
-                    break;
-            }
-            ApplySorting();
-            UpdateDisplay();
+            // Re-sort when sort option changes
+            RefreshDisplayedResults();
         }
 
-        private void ApplySorting()
+        private void UpdateStatsText()
         {
-            var sorted = CurrentSortColumn switch
-            {
-                "Seed" => SortDescending
-                    ? AllResults.OrderByDescending(r => r.Seed)
-                    : AllResults.OrderBy(r => r.Seed),
-                "TotalScore" => SortDescending
-                    ? AllResults.OrderByDescending(r => r.TotalScore)
-                    : AllResults.OrderBy(r => r.TotalScore),
-                _ => AllResults.OrderByDescending(r => r.TotalScore),
-            };
-
-            // Preserve collection instance to maintain bindings
-            var sortedList = sorted.ToList();
-            AllResults.Clear();
-            foreach (var item in sortedList)
-            {
-                AllResults.Add(item);
-            }
-        }
-
-        private void UpdateDisplay()
-        {
-            // Calculate pagination
-            TotalPages = Math.Max(1, (int)Math.Ceiling((double)AllResults.Count / ItemsPerPage));
-            CurrentPage = Math.Min(CurrentPage, TotalPages);
-
-            // Get current page items
-            var startIndex = (CurrentPage - 1) * ItemsPerPage;
-            var pageItems = AllResults.Skip(startIndex).Take(ItemsPerPage).ToList();
-
-            // Update displayed results (preserve collection instance)
-            DisplayedResults.Clear();
-            foreach (var item in pageItems)
-            {
-                DisplayedResults.Add(item);
-            }
-
-            // Update computed properties
-            UpdatePageInfo();
-            UpdateResultsCount();
-            UpdateStats();
-            UpdatePaginationButtons();
-        }
-
-        private void UpdatePageInfo()
-        {
-            PageInfoText = $"Page {CurrentPage} of {TotalPages}";
-        }
-
-        private void UpdateResultsCount()
-        {
-            ResultsCountText = AllResults.Count switch
+            ResultsCountText = TotalResultCount switch
             {
                 0 => "No results",
                 1 => "1 result",
-                _ => $"{AllResults.Count:N0} results",
+                _ => $"{TotalResultCount:N0} results"
             };
-        }
 
-        private void UpdateStats()
-        {
-            if (AllResults.Count == 0)
+            if (DisplayedResults.Count == 0)
             {
                 StatsText = "Ready to search";
                 return;
             }
 
-            var highestScore = AllResults.Max(r => r.TotalScore);
-            var averageScore = AllResults.Average(r => r.TotalScore);
-            StatsText =
-                $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {AllResults.Count}";
+            var highestScore = DisplayedResults.Max(r => r.TotalScore);
+            var averageScore = DisplayedResults.Average(r => r.TotalScore);
+            var showingText = TotalResultCount > MaxDisplayResults
+                ? $" (showing top {MaxDisplayResults})"
+                : "";
+
+            StatsText = $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {TotalResultCount}{showingText}";
         }
 
-        private void UpdatePaginationButtons()
-        {
-            IsPreviousEnabled = CurrentPage > 1;
-            IsNextEnabled = CurrentPage < TotalPages;
-
-            // Notify command can-execute changed
-            PreviousPageCommand.NotifyCanExecuteChanged();
-            NextPageCommand.NotifyCanExecuteChanged();
-        }
-
-        // Command implementations
         private async Task CopySeedAsync(string? seed)
         {
+            if (string.IsNullOrWhiteSpace(seed))
+                return;
+
             try
             {
-                if (string.IsNullOrWhiteSpace(seed))
-                    return;
-
                 await ClipboardService.CopyToClipboardAsync(seed);
-
-                var result = AllResults.FirstOrDefault(r => r.Seed == seed);
-                if (result != null)
-                {
-                    SeedCopied?.Invoke(this, result);
-                }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SortableResultsGridViewModel",
-                    $"CopySeedAsync failed: {ex.Message}"
-                );
-                throw;
+                DebugLogger.LogError("SortableResultsGridVM", $"Copy failed: {ex.Message}");
             }
-        }
-
-        private void SearchSimilar(SearchResult? result)
-        {
-            if (result == null)
-                return;
-            SearchSimilarRequested?.Invoke(this, result);
-        }
-
-        private void AddToFavorites(SearchResult? result)
-        {
-            if (result == null)
-                return;
-            AddToFavoritesRequested?.Invoke(this, result);
-        }
-
-        private void ExportSeed(SearchResult? result)
-        {
-            if (result == null)
-                return;
-            ExportSeedRequested?.Invoke(this, result);
-        }
-
-        private void Analyze(SearchResult? result)
-        {
-            if (result == null)
-                return;
-            AnalyzeRequested?.Invoke(this, result);
         }
 
         private void ExportAll()
         {
-            ExportAllRequested?.Invoke(this, AllResults);
+            List<SearchResult> allResults;
+            lock (_lock)
+            {
+                allResults = _backingResults.ToList();
+            }
+            ExportAllRequested?.Invoke(this, allResults);
         }
 
-        private void PreviousPage()
+        public IEnumerable<SearchResult> GetAllResults()
         {
-            if (CurrentPage > 1)
+            lock (_lock)
             {
-                CurrentPage--;
-                UpdateDisplay();
+                return _backingResults.ToList();
             }
         }
 
-        private void NextPage()
+        public IEnumerable<SearchResult> GetDisplayedResults()
         {
-            if (CurrentPage < TotalPages)
-            {
-                CurrentPage++;
-                UpdateDisplay();
-            }
+            return DisplayedResults.ToList();
         }
-
-        // Public methods for external control
-        public void AddResults(IEnumerable<SearchResult> results)
-        {
-            foreach (var result in results)
-            {
-                AllResults.Add(result);
-            }
-        }
-
-        public void AddResult(SearchResult result)
-        {
-            AllResults.Add(result);
-        }
-
-        public void ClearResults()
-        {
-            AllResults.Clear();
-            DisplayedResults.Clear();
-            CurrentPage = 1;
-        }
-
-        public IEnumerable<SearchResult> GetAllResults() => AllResults.ToList();
-
-        public IEnumerable<SearchResult> GetDisplayedResults() => DisplayedResults.ToList();
     }
 }

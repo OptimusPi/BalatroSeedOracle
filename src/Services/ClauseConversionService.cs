@@ -15,9 +15,7 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class ClauseConversionService
     {
-        public ClauseConversionService()
-        {
-        }
+        public ClauseConversionService() { }
 
         /// <summary>
         /// Converts a MotelyJsonConfig.MotleyJsonFilterClause to a ClauseRowViewModel
@@ -26,18 +24,17 @@ namespace BalatroSeedOracle.Services
         public ClauseRowViewModel ConvertToClauseViewModel(
             MotelyJsonConfig.MotleyJsonFilterClause clause,
             string category,
-            int nestingLevel = 0)
+            int nestingLevel = 0
+        )
         {
-            var vm = new ClauseRowViewModel
-            {
-                NestingLevel = nestingLevel
-            };
+            var vm = new ClauseRowViewModel { NestingLevel = nestingLevel };
 
             // Handle nested OR/AND clauses
             if (clause.Type?.ToLower() == "or" || clause.Type?.ToLower() == "and")
             {
                 vm.ClauseType = clause.Type;
-                vm.DisplayText = $"{clause.Type.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
+                vm.DisplayText =
+                    $"{clause.Type.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
                 vm.IsExpanded = false;
 
                 // Process nested clauses
@@ -45,7 +42,11 @@ namespace BalatroSeedOracle.Services
                 {
                     foreach (var nestedClause in clause.Clauses)
                     {
-                        var childVm = ConvertToClauseViewModel(nestedClause, category, nestingLevel + 1);
+                        var childVm = ConvertToClauseViewModel(
+                            nestedClause,
+                            category,
+                            nestingLevel + 1
+                        );
                         if (childVm != null)
                         {
                             vm.Children.Add(childVm);
@@ -124,7 +125,8 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
             FilterItem filterItem,
-            ItemConfig config)
+            ItemConfig config
+        )
         {
             if (filterItem == null)
                 return null;
@@ -144,9 +146,9 @@ namespace BalatroSeedOracle.Services
                     {
                         "OR" => "Or",
                         "AND" => "And",
-                        _ => operatorItem.OperatorType // Fallback
+                        _ => operatorItem.OperatorType, // Fallback
                     },
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
                 };
 
                 // Recursively convert children
@@ -171,7 +173,7 @@ namespace BalatroSeedOracle.Services
                 Value = filterItem.Name,
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min > 0 ? config.Min : null,
-                Score = config.Score
+                Score = config.Score,
             };
 
             // Add edition if specified
@@ -196,7 +198,7 @@ namespace BalatroSeedOracle.Services
                         ShopSlots = config.ShopSlots?.ToArray(),
                         PackSlots = config.PackSlots?.ToArray(),
                         Tags = config.SkipBlindTags ? true : null,
-                        RequireMega = config.IsMegaArcana ? true : null
+                        RequireMega = config.IsMegaArcana ? true : null,
                     };
                 }
             }
@@ -268,10 +270,11 @@ namespace BalatroSeedOracle.Services
 
         private string MapCategoryToType(string category, string itemName)
         {
-            return category?.ToLower() switch
+            var lowerCategory = category?.ToLower();
+            return lowerCategory switch
             {
                 "souljokers" => "SoulJoker",
-                "jokers" => itemName.StartsWith("j_") ? "Joker" : itemName,
+                "jokers" => "Joker",
                 "tarots" => "TarotCard",
                 "planets" => "PlanetCard",
                 "spectrals" => "SpectralCard",
@@ -279,7 +282,17 @@ namespace BalatroSeedOracle.Services
                 "vouchers" => "Voucher",
                 "tags" => "Tag",
                 "bosses" => "Boss",
-                _ => throw new ArgumentException(),
+                "other" => "PlayingCard", // Fallback for miscategorized items (usually standard cards)
+                "operator" => throw new InvalidOperationException(
+                    $"FilterOperatorItem with category 'Operator' should be handled by early return in ConvertFilterItemToClause. "
+                        + $"If you see this error, a regular FilterItem was incorrectly created with Category='Operator'. "
+                        + $"ItemName: '{itemName}'"
+                ),
+                _ => throw new ArgumentException(
+                    $"Unknown category '{category}' for item '{itemName}'. "
+                        + $"Valid categories: jokers, souljokers, tarots, planets, spectrals, playingcards, vouchers, tags, bosses, other. "
+                        + $"If this is a new item type, add it to MapCategoryToType switch expression."
+                ),
             };
         }
 
