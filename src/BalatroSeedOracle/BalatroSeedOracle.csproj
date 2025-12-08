@@ -1,17 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Shared library - multi-target for desktop and browser -->
+    <TargetFrameworks>net10.0;net10.0-browser</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>BalatroSeedOracle.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
     <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
-    <Copyright>Copyright © 2025</Copyright>
+    <Copyright>Copyright 2025</Copyright>
     <Version>2.0.0</Version>
     <FileVersion>2.0.0</FileVersion>
     <AssemblyVersion>2.0.0</AssemblyVersion>
@@ -22,18 +19,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <!-- Optimizations for smaller published bundle size -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <DebuggerSupport>false</DebuggerSupport>
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-    <EventSourceSupport>false</EventSourceSupport>
-    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+  <!-- Relax warnings for browser build (many APIs unsupported) -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
@@ -70,9 +59,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <!-- Common packages for all platforms -->
   <ItemGroup>
     <PackageReference Include="Avalonia" />
-    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Svg" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
@@ -81,30 +70,46 @@
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
-    <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
     <PackageReference Include="MessageBox.Avalonia" />
-    <PackageReference Include="SoundFlow" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="SkiaSharp" />
-    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="Avalonia.Skia" />
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
+  <!-- Desktop-only packages (native dependencies that don't work in browser) -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="DuckDB.NET.Data.Full" />
+    <PackageReference Include="SoundFlow" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+  <!-- Define BROWSER constant for conditional compilation -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
+  </PropertyGroup>
+  <!-- Browser-specific packages -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+  </ItemGroup>
+  <!-- Exclude desktop-only AXAML files from browser build -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
+    <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
+    <None Include="Windows\DataGridResultsWindow.axaml" />
+  </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\external\Motely\Motely\Motely.csproj">
-      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
       <AdditionalProperties>IsReferenced=true</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
   <!-- Explicitly exclude external folder from publish -->
   <ItemGroup>
-    <Content Remove="..\external\**\*" />
-    <Compile Remove="..\external\**\*" />
-    <None Remove="..\external\**\*" />
-    <EmbeddedResource Remove="..\external\**\*" />
+    <Content Remove="..\..\external\**\*" />
+    <Compile Remove="..\..\external\**\*" />
+    <None Remove="..\..\external\**\*" />
+    <EmbeddedResource Remove="..\..\external\**\*" />
   </ItemGroup>
 </Project>

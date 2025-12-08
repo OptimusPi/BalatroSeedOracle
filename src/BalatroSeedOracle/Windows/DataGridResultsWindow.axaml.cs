@@ -1,3 +1,4 @@
+#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -880,3 +881,4 @@ LIMIT 50;",
         public List<int> TallyScores { get; set; } = new();
     }
 }
+#endif

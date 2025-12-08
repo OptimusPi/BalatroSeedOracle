@@ -92,6 +92,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
                         // Check file extension to determine export format
                         var filePath = file.Path.LocalPath;
+#if !BROWSER
                         if (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
                         {
                             // EXCEL EXPORT using ClosedXML
@@ -144,6 +145,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             );
                         }
                         else
+#endif
                         {
                             // CSV EXPORT as fallback
                             var header = "SEED,TOTALSCORE";
@@ -226,6 +228,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             return;
                         }
 
+#if !BROWSER
                         // Create and show the pop-out window
                         var popOutWindow = new Windows.DataGridResultsWindow(
                             searchInstance,
@@ -237,6 +240,9 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             "ResultsTab",
                             $"Popped out results to separate window for search: {vm.CurrentSearchId}"
                         );
+#else
+                        DebugLogger.Log("ResultsTab", "Pop-out window not available in browser");
+#endif
                     }
                     catch (Exception ex)
                     {

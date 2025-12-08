@@ -1,3 +1,4 @@
+#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -532,3 +533,48 @@ namespace BalatroSeedOracle.Services
         public float HighPeak { get; set; } // Peak magnitude in high range
     }
 }
+#else
+// Browser stub - audio not supported in WebAssembly
+using System;
+
+namespace BalatroSeedOracle.Services
+{
+    public class SoundFlowAudioManager : IDisposable
+    {
+        public static SoundFlowAudioManager Instance { get; } = new();
+        public float Bass1Intensity => 0f;
+        public float Bass2Intensity => 0f;
+        public float Drums1Intensity => 0f;
+        public float Drums2Intensity => 0f;
+        public float Chords1Intensity => 0f;
+        public float Chords2Intensity => 0f;
+        public float Melody1Intensity => 0f;
+        public float Melody2Intensity => 0f;
+        public float BassIntensity => 0f;
+        public float DrumsIntensity => 0f;
+        public float ChordsIntensity => 0f;
+        public float MelodyIntensity => 0f;
+        public float MasterVolume { get; set; }
+        public bool IsPlaying => false;
+        public event Action<float, float, float, float>? AudioAnalysisUpdated;
+        public void SetTrackVolume(string trackName, float volume) { }
+        public void SetTrackPan(string trackName, float pan) { }
+        public void SetTrackMuted(string trackName, bool muted) { }
+        public void Pause() { }
+        public void Resume() { }
+        public void PlaySfx(string name, float volume = 1.0f) { }
+        public FrequencyBands GetFrequencyBands(string trackName) => new();
+        public void Dispose() { }
+    }
+
+    public struct FrequencyBands
+    {
+        public float BassAvg { get; set; }
+        public float BassPeak { get; set; }
+        public float MidAvg { get; set; }
+        public float MidPeak { get; set; }
+        public float HighAvg { get; set; }
+        public float HighPeak { get; set; }
+    }
+}
+#endif

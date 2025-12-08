@@ -434,6 +434,11 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
         {
+#if BROWSER
+            // DuckDB not available in browser
+            await Task.CompletedTask;
+            return;
+#else
             if (dbFiles == null || dbFiles.Length == 0)
             {
                 DebugLogger.Log("FiltersModalViewModel", "No database files to dump");
@@ -510,6 +515,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
                 // Don't throw - fertilizer dump is a nice-to-have, not critical
             }
+#endif
         }
 
         [RelayCommand]

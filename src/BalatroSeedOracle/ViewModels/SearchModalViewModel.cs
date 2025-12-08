@@ -970,7 +970,7 @@ namespace BalatroSeedOracle.ViewModels
                         var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
                         if (savedState != null)
                         {
-                            int resumeBatch = savedState.LastCompletedBatch;
+                            ulong resumeBatch = (ulong)savedState.LastCompletedBatch;
 
                             // INTENTIONALLY REMOVED: Batch size conversion logic
                             // The batch size is now HARDCODED to 3 for optimal performance

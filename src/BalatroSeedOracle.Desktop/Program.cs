@@ -2,27 +2,25 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.ReactiveUI;
+using BalatroSeedOracle;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 
-namespace BalatroSeedOracle;
+namespace BalatroSeedOracle.Desktop;
 
 public class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
     [STAThread]
     public static void Main(string[] args)
     {
         try
         {
             // Set up global exception handlers BEFORE Avalonia starts
-            // These catch exceptions that would otherwise crash the app silently
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
             // Enable debug logging
-            Helpers.DebugLogger.SetDebugEnabled(true);
+            DebugLogger.SetDebugEnabled(true);
 
             // Start Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -46,7 +44,6 @@ public class Program
             }
             catch
             {
-                // If we can't even write the crash log, just print to console
                 Console.Error.WriteLine(errorMsg);
             }
 
@@ -54,13 +51,10 @@ public class Program
             Console.Error.WriteLine($"See crash log: {crashLog}");
             Console.Error.WriteLine("\nPress Enter to exit...");
             Console.ReadLine();
-            throw; // Re-throw to ensure proper exit code
+            throw;
         }
     }
 
-    /// <summary>
-    /// Handles unhandled exceptions on any thread (including async void methods)
-    /// </summary>
     private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         var ex = e.ExceptionObject as Exception;
@@ -73,10 +67,8 @@ public class Program
             + $"Message: {ex?.Message ?? "No message"}\n"
             + $"Stack Trace:\n{ex?.StackTrace ?? "No stack trace"}\n\n";
 
-        // Log to debug logger
-        Helpers.DebugLogger.LogError("UNHANDLED", $"Unhandled exception: {ex?.Message}");
+        DebugLogger.LogError("UNHANDLED", $"Unhandled exception: {ex?.Message}");
 
-        // Write to crash log
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(crashLog)!);
@@ -89,14 +81,12 @@ public class Program
 
         if (e.IsTerminating)
         {
-            // App is crashing - try to save user data
-            Console.Error.WriteLine($"\n\n❌ APP CRASHING: {ex?.Message}");
+            Console.Error.WriteLine($"\n\nAPP CRASHING: {ex?.Message}");
             Console.Error.WriteLine($"Crash log: {crashLog}\n");
 
-            // Try to flush user profile before exit
             try
             {
-                var userProfile = App.GetService<Services.UserProfileService>();
+                var userProfile = App.GetService<UserProfileService>();
                 userProfile?.FlushProfile();
             }
             catch
@@ -106,13 +96,7 @@ public class Program
         }
     }
 
-    /// <summary>
-    /// Handles unobserved Task exceptions (fire-and-forget tasks that throw)
-    /// </summary>
-    private static void OnUnobservedTaskException(
-        object? sender,
-        UnobservedTaskExceptionEventArgs e
-    )
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         var crashLog = GetCrashLogPath();
 
@@ -122,13 +106,8 @@ public class Program
             + $"Message: {e.Exception.Message}\n"
             + $"Stack Trace:\n{e.Exception.StackTrace}\n\n";
 
-        // Log to debug logger
-        Helpers.DebugLogger.LogError(
-            "UNOBSERVED_TASK",
-            $"Unobserved task exception: {e.Exception.Message}"
-        );
+        DebugLogger.LogError("UNOBSERVED_TASK", $"Unobserved task exception: {e.Exception.Message}");
 
-        // Write to crash log
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(crashLog)!);
@@ -139,20 +118,14 @@ public class Program
             Console.Error.WriteLine(errorMsg);
         }
 
-        // Mark as observed to prevent app crash
-        // This allows the app to continue running, but we've logged the error
         e.SetObserved();
     }
 
-    /// <summary>
-    /// Gets the path to the crash log file
-    /// </summary>
     private static string GetCrashLogPath()
     {
         try
         {
-            // Try to use AppPaths if available
-            return Path.Combine(Helpers.AppPaths.DataRootDir, "crash.log");
+            return Path.Combine(AppPaths.DataRootDir, "crash.log");
         }
         catch
         {
@@ -163,7 +136,8 @@ public class Program
         }
     }
 
-    // Avalonia configuration, this method is called by the platform-specific entry points
-    public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .LogToTrace();
 }

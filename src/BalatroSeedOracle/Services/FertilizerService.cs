@@ -1,3 +1,4 @@
+#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -301,3 +302,27 @@ public class FertilizerService : IDisposable
         _disposed = true;
     }
 }
+#else
+// Browser stub - DuckDB not available in WebAssembly
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace BalatroSeedOracle.Services
+{
+    public class FertilizerService : IDisposable
+    {
+        private static FertilizerService? _instance;
+        public static FertilizerService Instance => _instance ??= new FertilizerService();
+        public event EventHandler<long>? SeedCountChanged;
+        public long SeedCount => 0;
+        public void AddSeeds(IEnumerable<string> seeds) { }
+        public void ClearAllSeeds() { }
+        public Task ClearAsync() => Task.CompletedTask;
+        public Task<List<string>> GetAllSeedsAsync() => Task.FromResult(new List<string>());
+        public Task ExportToTextFileAsync(string path) => Task.CompletedTask;
+        public Task ExportToTxtAsync() => Task.CompletedTask;
+        public void Dispose() { }
+    }
+}
+#endif

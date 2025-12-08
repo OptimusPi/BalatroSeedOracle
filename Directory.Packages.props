@@ -22,6 +22,10 @@
     <PackageVersion Include="SoundFlow" Version="1.2.1" />
     <PackageVersion Include="Avalonia" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.8" />
+    <PackageVersion Include="Avalonia.Browser" Version="11.3.8" />
+    <PackageVersion Include="Avalonia.iOS" Version="11.3.8" />
+    <PackageVersion Include="Avalonia.Android" Version="11.3.8" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.8" />
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.8" />
@@ -38,5 +42,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
     <PackageVersion Include="SkiaSharp" Version="3.119.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
   </ItemGroup>
 </Project>

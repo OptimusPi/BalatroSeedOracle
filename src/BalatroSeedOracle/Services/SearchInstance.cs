@@ -1,3 +1,4 @@
+#if !BROWSER
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -2170,3 +2171,91 @@ namespace BalatroSeedOracle.Services
         }
     }
 }
+#else
+// Browser stub - search functionality not available in WebAssembly
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using BalatroSeedOracle.Models;
+using Motely.Filters;
+
+namespace BalatroSeedOracle.Services
+{
+    public class SearchInstance : IDisposable
+    {
+        // Primary constructor for filter path
+        public SearchInstance(string configPath)
+        {
+            ConfigPath = configPath;
+            FilterName = "Browser Not Supported";
+        }
+
+        // Constructor with optional filter name
+        public SearchInstance(string configPath, string? filterName)
+        {
+            ConfigPath = configPath;
+            FilterName = filterName ?? "Browser Not Supported";
+        }
+
+        public event EventHandler<SearchProgress>? ProgressUpdated;
+        public event EventHandler<SearchResultEventArgs>? ResultReceived;
+        public event EventHandler? SearchCompleted;
+        public event EventHandler<float>? NewHighScoreFound;
+        public event EventHandler? SearchStarted;
+
+        public string SearchId { get; private set; } = Guid.NewGuid().ToString()[..8];
+        public string? ConfigPath { get; set; }
+        public string? ConfigName => "Browser Not Supported";
+        public string? FilterName { get; }
+        public bool IsRunning => false;
+        public bool IsInErrorState => true;
+        public string ErrorMessage => "Search not available in browser version";
+        public bool IsPaused => false;
+        public bool IsDatabaseInitialized => false;
+        public int ResultCount => 0;
+        public TimeSpan SearchDuration => TimeSpan.Zero;
+        public bool HasNewResultsSinceLastQuery => false;
+        public List<string> ColumnNames => new();
+
+        public MotelyJsonConfig? GetFilterConfig() => null;
+
+        public void StartSearch(SearchConfiguration config, MotelyJsonConfig? jsonConfig, IProgress<SearchProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            progress?.Report(new SearchProgress { Message = "Search not available in browser", HasError = true, IsComplete = true });
+        }
+
+        public Task StartSearchAsync(SearchConfiguration config, MotelyJsonConfig? jsonConfig, IProgress<SearchProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            progress?.Report(new SearchProgress { Message = "Search not available in browser", HasError = true, IsComplete = true });
+            return Task.CompletedTask;
+        }
+
+        // Overload that takes SearchCriteria (used by SearchManager)
+        public Task StartSearchAsync(SearchCriteria criteria)
+        {
+            return Task.CompletedTask;
+        }
+
+        // Overload that takes SearchCriteria and MotelyJsonConfig (used by quick search)
+        public Task StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
+        {
+            return Task.CompletedTask;
+        }
+
+        public void StopSearch() { }
+        public void PauseSearch() { }
+        public void ResumeSearch() { }
+        public void AcknowledgeResultsQueried() { }
+
+        public Task<List<SearchResult>> GetResultsAsync() => Task.FromResult(new List<SearchResult>());
+        public Task<List<SearchResult>> GetTopResultsAsync(int count) => Task.FromResult(new List<SearchResult>());
+        public Task<List<SearchResult>> GetTopResultsAsync(int count, bool forceRefresh, CancellationToken ct = default) => Task.FromResult(new List<SearchResult>());
+        // Overload used by quick search: GetTopResultsAsync(sortColumn, ascending, maxResults)
+        public Task<List<SearchResult>> GetTopResultsAsync(string sortColumn, bool ascending, int maxResults) => Task.FromResult(new List<SearchResult>());
+        public Task<List<SearchResult>> GetResultsPageAsync(int offset, int limit) => Task.FromResult(new List<SearchResult>());
+        public Task<int> GetResultCountAsync() => Task.FromResult(0);
+        public void Dispose() { }
+    }
+}
+#endif

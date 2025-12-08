@@ -1,3 +1,4 @@
+#if !BROWSER
 using System;
 using System.IO;
 using BalatroSeedOracle.Helpers;
@@ -196,3 +197,18 @@ namespace BalatroSeedOracle.Services
         }
     }
 }
+#else
+// Browser stub - search state management not available
+using BalatroSeedOracle.Models;
+
+namespace BalatroSeedOracle.Services
+{
+    public static class SearchStateManager
+    {
+        public static void Initialize() { }
+        public static void SaveSearchState(string dbPath, SearchState state) { }
+        public static SearchState? LoadSearchState(string dbPath) => null;
+        public static void ClearSearchState(string configPath) { }
+    }
+}
+#endif

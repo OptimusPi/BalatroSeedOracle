@@ -60,6 +60,23 @@ public partial class App : Application
 
                 DebugLogger.Log("App", "Application initialization complete");
             }
+            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+            {
+                // Browser/Mobile platform - use single view instead of window
+                DebugLogger.Log("App", "Initializing for Browser/Mobile platform");
+
+                // Set up UI thread exception handler
+                Dispatcher.UIThread.UnhandledException += OnUIThreadException;
+
+                // For Browser/Mobile, we use BalatroMainMenu directly as the main view
+                var mainMenu = new Views.BalatroMainMenu();
+                singleViewPlatform.MainView = mainMenu;
+
+                // Pre-load sprites asynchronously (without the complex shader transition)
+                _ = PreloadSpritesWithoutTransition();
+
+                DebugLogger.Log("App", "Browser/Mobile initialization complete");
+            }
 
             base.OnFrameworkInitializationCompleted();
         }
