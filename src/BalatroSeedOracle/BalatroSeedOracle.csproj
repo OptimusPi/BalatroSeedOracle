@@ -22,7 +22,8 @@
   <!-- Relax warnings for browser build (many APIs unsupported) -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <!-- CA1416: platform compatibility, CS0067: unused events in browser stubs -->
+    <NoWarn>$(NoWarn);CA1416;CS0067</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
@@ -94,11 +95,24 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
-  <!-- Exclude desktop-only AXAML files from browser build -->
+  <!-- Exclude desktop-only files from browser build -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <!-- Windows that use desktop-only features -->
     <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
     <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
     <None Include="Windows\DataGridResultsWindow.axaml" />
+    <!-- HostApiWidget: use browser stub instead of full implementation -->
+    <Compile Remove="ViewModels\HostApiWidgetViewModel.cs" />
+    <Compile Remove="Components\Widgets\HostApiWidget.axaml.cs" />
+    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.axaml" />
+  </ItemGroup>
+  <!-- Browser stubs are auto-included by SDK, but exclude from desktop build -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
+    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.Browser.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">

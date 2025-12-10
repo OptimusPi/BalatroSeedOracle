@@ -1,6 +1,7 @@
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Motely.Services;
 
 namespace BalatroSeedOracle.Extensions
 {
@@ -10,6 +11,13 @@ namespace BalatroSeedOracle.Extensions
             this IServiceCollection services
         )
         {
+            // Platform-specific services (DI selects correct implementation)
+#if BROWSER
+            services.AddSingleton<IFertilizerService, InMemoryFertilizerService>();
+#else
+            services.AddSingleton<IFertilizerService, DuckDbFertilizerService>();
+#endif
+
             // Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();
             services.AddSingleton<IFilterService, FilterService>();

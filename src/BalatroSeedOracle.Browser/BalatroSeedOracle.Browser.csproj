@@ -5,6 +5,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
+    <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
+    <WasmEnableThreads>true</WasmEnableThreads>
+    <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
+    <WasmEnableSIMD>true</WasmEnableSIMD>
   </PropertyGroup>
 
   <ItemGroup>
