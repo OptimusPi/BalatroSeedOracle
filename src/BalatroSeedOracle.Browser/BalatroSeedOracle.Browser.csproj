@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net10.0-browser</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
+    <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
+    <WasmEnableThreads>true</WasmEnableThreads>
+    <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Ensure Motely is built as a library when referenced transitively -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
+      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

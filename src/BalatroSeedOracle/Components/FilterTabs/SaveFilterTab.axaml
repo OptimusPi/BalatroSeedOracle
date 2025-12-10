@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             x:Class="BalatroSeedOracle.Components.FilterTabs.SaveFilterTab"
+             x:DataType="vm:SaveFilterTabViewModel">
+
+    <Grid RowDefinitions="Auto,20,*">
+        <!-- Row 0: Compact Filter Metadata + Deck/Stake Preview -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,2*" Margin="20,20,20,0">
+            <!-- Deck/Stake Preview -->
+            <Border Grid.Column="0" Background="{StaticResource DarkBackground}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="8" Padding="8" Margin="0,0,12,0">
+                <StackPanel>
+                    <Image Source="{Binding DeckStakePreviewImage}" Width="90" Height="120" Stretch="Uniform"/>
+                    <TextBlock Text="{Binding DeckDisplayValues[SelectedDeckIndex]}" FontSize="12" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            <!-- Filter Name -->
+            <StackPanel Grid.Column="1" Spacing="5">
+                <TextBlock Text="Filter Name"
+                           FontSize="12"
+                           Foreground="{StaticResource LightGrey}"
+                           FontFamily="{StaticResource BalatroFont}"/>
+                <TextBox Text="{Binding FilterName, Mode=TwoWay}"
+                         Watermark="My Awesome Filter"
+                         FontSize="14"
+                         Height="32"/>
+            </StackPanel>
+
+            <!-- Filter ID (Read-only, auto-generated) -->
+            <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0" Width="200">
+                <TextBlock Text="Filter ID (auto)"
+                           FontSize="12"
+                           Foreground="{StaticResource LightGrey}"
+                           FontFamily="{StaticResource BalatroFont}"/>
+                <TextBox Text="{Binding NormalizedFilterName, Mode=OneWay}"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Consolas"
+                         Height="32"
+                         Background="{StaticResource ColorDarkGrey}"
+                         ToolTip.Tip="Auto-generated filename and search database ID"/>
+            </StackPanel>
+
+            <!-- Description -->
+            <StackPanel Grid.Column="3" Spacing="5">
+                <TextBlock Text="Description"
+                           FontSize="12"
+                           Foreground="{StaticResource LightGrey}"
+                           FontFamily="{StaticResource BalatroFont}"/>
+                <TextBox Text="{Binding FilterDescription, Mode=TwoWay}"
+                         Watermark="Write something helpful, or explain the filter mechanics..."
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         FontSize="12"
+                         MaxHeight="60"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 2: Compact Action Buttons (NO BLOAT!) -->
+        <StackPanel Grid.Row="2" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+
+            <!-- Primary Action Buttons (BIG AND OBVIOUS) -->
+            <Button Command="{Binding GoToSearchCommand}"
+                    Classes="btn-green"
+                    Height="60"
+                    MinWidth="400"
+                    HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <icons:PackIconMaterial Kind="Magnify" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <TextBlock Text="GO TO SEARCH"
+                               FontSize="24"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button Command="{Binding SaveAndCloseCommand}"
+                    Classes="btn-blue"
+                    Height="60"
+                    MinWidth="400"
+                    HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <icons:PackIconMaterial Kind="ContentSave" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <TextBlock Text="SAVE AND CLOSE"
+                               FontSize="24"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Secondary Actions (Smaller) -->
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                <Button Content="Save Filter"
+                        Command="{Binding SaveCurrentFilterCommand}"
+                        Classes="btn-blue"
+                        Height="40"
+                        MinWidth="120"
+                        FontSize="14"/>
+                <Button Content="Export JSON"
+                        Command="{Binding ExportFilterCommand}"
+                        Classes="btn-green"
+                        Height="40"
+                        MinWidth="120"
+                        FontSize="14"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

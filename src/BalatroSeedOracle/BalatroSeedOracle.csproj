@@ -1,0 +1,129 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Shared library - multi-target for desktop and browser -->
+    <TargetFrameworks>net10.0;net10.0-browser</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <Product>Balatro Seed Oracle</Product>
+    <Company>OptimusPi</Company>
+    <Copyright>Copyright 2025</Copyright>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <!-- Enable more warnings for code quality -->
+    <AnalysisMode>Default</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <!-- Relax warnings for browser build (many APIs unsupported) -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- CA1416: platform compatibility, CS0067: unused events in browser stubs -->
+    <NoWarn>$(NoWarn);CA1416;CS0067</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="m6x11plusplus.otf" />
+  </ItemGroup>
+  <!-- Copy Audio and Sprite files to output directory -->
+  <ItemGroup>
+    <None Update="Assets\Audio\*.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Audio\SFX\*.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!-- Copy all sprite assets -->
+    <None Update="Assets\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Copy syntax highlighting files to output directory -->
+  <ItemGroup>
+    <None Update="Resources\*.xshd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Copy sample files to output directory -->
+  <ItemGroup>
+    <None Update="Samples\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Common packages for all platforms -->
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Svg" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" />
+    <PackageReference Include="AvaloniaEdit.TextMate" />
+    <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
+    <PackageReference Include="IconPacks.Avalonia.Material" />
+    <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="System.IO.Packaging" />
+  </ItemGroup>
+  <!-- Desktop-only packages (native dependencies that don't work in browser) -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="DuckDB.NET.Data.Full" />
+    <PackageReference Include="SoundFlow" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+  <!-- Define BROWSER constant for conditional compilation -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
+  </PropertyGroup>
+  <!-- Browser-specific packages -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+  </ItemGroup>
+  <!-- Exclude desktop-only files from browser build -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <!-- Windows that use desktop-only features -->
+    <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
+    <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
+    <None Include="Windows\DataGridResultsWindow.axaml" />
+    <!-- HostApiWidget: use browser stub instead of full implementation -->
+    <Compile Remove="ViewModels\HostApiWidgetViewModel.cs" />
+    <Compile Remove="Components\Widgets\HostApiWidget.axaml.cs" />
+    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.axaml" />
+  </ItemGroup>
+  <!-- Browser stubs are auto-included by SDK, but exclude from desktop build -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
+    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.Browser.axaml" />
+    <None Include="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
+      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- Explicitly exclude external folder from publish -->
+  <ItemGroup>
+    <Content Remove="..\..\external\**\*" />
+    <Compile Remove="..\..\external\**\*" />
+    <None Remove="..\..\external\**\*" />
+    <EmbeddedResource Remove="..\..\external\**\*" />
+  </ItemGroup>
+</Project>
