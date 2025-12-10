@@ -62,6 +62,8 @@ WordLists/nsfw.txt
 userprofile.json
 /external/*
 /JsonItemFilters/*
+/JsonFilters/*
+/JamlFilters/*
 *.csv
 /.claude
 /.specify
@@ -80,3 +82,4 @@ avalonia.license
 fertilizer.db
 fertilizer.db.wal
 /.trae
+/JsonItemFilters
