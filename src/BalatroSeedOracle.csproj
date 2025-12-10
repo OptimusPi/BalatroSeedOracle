@@ -96,7 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\Motely\Motely\Motely.csproj">
-      <SetConfiguration>BSO_LIBRARY</SetConfiguration>
+      <SetConfiguration>Configuration=BSO_LIBRARY</SetConfiguration>
       <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
       <AdditionalProperties>IsReferenced=true</AdditionalProperties>

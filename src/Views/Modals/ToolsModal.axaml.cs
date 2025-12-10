@@ -50,7 +50,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 try
                 {
-                    // Create JsonItemFilters directory if it doesn't exist
+                    // Create JsonFilters directory if it doesn't exist
                     var jsonConfigsDir = AppPaths.FiltersDir;
                     if (!Directory.Exists(jsonConfigsDir))
                     {
@@ -221,7 +221,7 @@ namespace BalatroSeedOracle.Views.Modals
                 new TextBlock
                 {
                     Text =
-                        "• All filter files in JsonItemFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!",
+                        "• All filter files in JsonFilters/ and JamlFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!",
                     FontSize = 16,
                     TextAlignment = Avalonia.Media.TextAlignment.Center,
                 }
@@ -265,7 +265,7 @@ namespace BalatroSeedOracle.Views.Modals
                     int deletedFilters = 0;
                     int deletedResults = 0;
 
-                    // Delete all files in JsonItemFilters
+                    // Delete all files in JsonFilters and JamlFilters
                     var filtersDir = AppPaths.FiltersDir;
                     if (Directory.Exists(filtersDir))
                     {

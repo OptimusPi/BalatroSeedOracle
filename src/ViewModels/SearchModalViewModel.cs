@@ -295,8 +295,8 @@ namespace BalatroSeedOracle.ViewModels
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int MaxThreadCount { get; } = Environment.ProcessorCount; // Auto-detect CPU cores
 
-        // BatchSize hardcoded to 3 for optimal performance (35^3 = 42,875 seeds per batch)
-        public int BatchSize => 3;
+        // BatchSize set to 2 for better API responsiveness (35^2 = 1,225 seeds per batch)
+        public int BatchSize => 2;
 
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;

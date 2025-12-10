@@ -107,29 +107,22 @@ public class FertilizerService : IDisposable
 
             if (count > 0) return; // DB already has data
 
-            var seeds = File.ReadAllLines(_txtPath)
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Distinct()
-                .ToList();
+            DebugLogger.Log("FertilizerService", $"Migrating from {_txtPath} using DuckDB COPY");
 
-            if (seeds.Count == 0) return;
-
-            DebugLogger.Log("FertilizerService", $"Migrating {seeds.Count} seeds from txt to db");
-
-            using var appender = _connection.CreateAppender("seeds");
-            foreach (var seed in seeds)
-            {
-                var row = appender.CreateRow();
-                row.AppendValue(seed);
-                row.EndRow();
-            }
-            appender.Close();
+            // Use COPY FROM - DuckDB will treat each line as a single column value
+            using var copyCmd = _connection.CreateCommand();
+            var escapedPath = _txtPath.Replace("\\", "/").Replace("'", "''");
+            copyCmd.CommandText = $@"
+                COPY seeds FROM '{escapedPath}'
+                (HEADER false, AUTO_DETECT false, COLUMNS {{'seed': 'VARCHAR'}})";
+            copyCmd.ExecuteNonQuery();
 
             DebugLogger.Log("FertilizerService", "Migration complete");
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("FertilizerService", $"Migration failed: {ex.Message}");
+            throw; // Re-throw so we know why it failed
         }
     }
 
@@ -147,15 +140,21 @@ public class FertilizerService : IDisposable
 
             await Task.Run(() =>
             {
-                // Use INSERT OR IGNORE for deduplication
-                using var cmd = _connection.CreateCommand();
-                foreach (var seed in seedList)
-                {
-                    if (ct.IsCancellationRequested) break;
+                // Write seeds to a temp CSV file
+                var tempFile = Path.GetTempFileName();
+                File.WriteAllLines(tempFile, seedList);
 
-                    cmd.CommandText = $"INSERT OR IGNORE INTO seeds VALUES ('{seed}')";
-                    cmd.ExecuteNonQuery();
-                }
+                // Use DuckDB's native COPY for ultra-fast bulk import
+                using var copyCmd = _connection.CreateCommand();
+                var escapedPath = tempFile.Replace("\\", "/");
+                copyCmd.CommandText = $@"
+                    COPY seeds FROM '{escapedPath}'
+                    (DELIMITER E'\n', HEADER false, QUOTE '', FORMAT csv)
+                    ON CONFLICT DO NOTHING";
+                copyCmd.ExecuteNonQuery();
+
+                // Clean up temp file
+                try { File.Delete(tempFile); } catch { }
             }, ct);
 
             RefreshSeedCount();

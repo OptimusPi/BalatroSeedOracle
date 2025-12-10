@@ -560,7 +560,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // config.ExampleSeed = ExampleSeedForPreview;
                 }
 
-                // Generate proper filename in JsonItemFilters folder
+                // Generate proper filename in JsonFilters folder
                 var filePath = _filterService.GenerateFilterFileName(FilterName);
                 var success = await _configurationService.SaveFilterAsync(filePath, config);
 
@@ -688,7 +688,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Open the search modal with this filter
                 // Get the filter path from the saved filter name
-                var filterPath = $"JsonItemFilters/{FilterName}.json";
+                var filterPath = $"JsonFilters/{FilterName}.json";
 
                 // TODO: Open search modal with this filter
                 // For now, just show success message

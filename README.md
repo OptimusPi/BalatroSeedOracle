@@ -69,57 +69,17 @@ To run the optimized release build:
 dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 ```
 
-## MotelyJson with Command Line
+## Using the Command Line Interface
 
-TODO: This readme section should probably go over to my Motely fork but for now I think it's helpful to include here as well.
+For advanced users who prefer CLI usage, the bundled **MotelyJAML** search engine supports command-line operation with JSON/JAML filters, native C# filters, and seed analysis.
 
-Make a .json filter for MotelyJson CLI, place it here: `BalatroSeedOracle/external/Motely/Motely/JsonItemFilters/foo.json`
-Or, use `PerkeoObservatory.json` that is already included.
+**See the [MotelyJAML README](./external/Motely/README.md) for complete CLI documentation.**
 
-Change directory to be where Motely CLI lives.
-I added some neat CLI params to help you search in various ways!
-
-TIP: try --help to see all options.
-
+Quick CLI example:
 ```bash
-# Go to the Motely submodule that you initialized earlier.
-cd ./external/Motely/Motely
-dotnet run -c Release -- --help
+cd ./external/Motely
+dotnet run -- --help
 ```
-
-- Example 1: Search with existing filter (Motely JSON)
-
-```bash
-dotnet run -c Release -- --json PerkeoObservatory --threads 16
-```
-
-# Example 2: Search specific seeds from a text file
-
-# Helpful if you or a friend has previous results or a list from other search programs
-
-# Tip: This is also how pifreak makes those "Funny Seeds" info for the Discord requests
-
-# Tip: There are a couple fun word lists included such as `2NegativeEggs.txt` or `QuintupleNegativeSkipRewards.txt
-
-dotnet run -c Release -- --json MyFilter --wordlist 2NegativeEggs
-
-# Example 3: Analyze a specific seed
-
-# This is an attempt at 1:1 matching Immolate-based/ "SpectralPack/TheSoul" website
-
-# Also it's used in unit tests for Motely
-
-dotnet run -c Release -- --analyze XTTO2111
-
-# Example 4: Search one specific seed
-
-# this is a simple shortcut to basically use a WordList with 1 string, by the way
-
-dotnet run -c Release -- --json PerkeoObservatory --seed XTTO2111
-
-```
-
-
 
 ## Creating Filters
 
@@ -218,7 +178,7 @@ In this example, even though `PlanetCard` has higher `score`, `mode: max` ignore
 
 - `src/` - Main application code
 - `external/Motely/` - High-performance search engine
-- `JsonItemFilters/` - Pre-made filter configurations
+- `JsonFilters/` & `JamlFilters/` - Pre-made filter configurations
 - `SearchResults/` - Database files with search results
 
 ## Contributing

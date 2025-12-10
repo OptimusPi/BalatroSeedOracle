@@ -165,7 +165,7 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.Log("SearchModal", $"EditCurrentFilter called with path: {filterPath}");
 
                 // Convert filter path to filter ID (remove extension and directory)
-                // Example: "JsonItemFilters/MyFilter.json" -> "MyFilter"
+                // Example: "JsonFilters/MyFilter.json" -> "MyFilter"
                 var filterId = System.IO.Path.GetFileNameWithoutExtension(filterPath);
 
                 // Close SearchModal

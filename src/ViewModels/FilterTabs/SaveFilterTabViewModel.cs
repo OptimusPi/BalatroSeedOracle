@@ -259,7 +259,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Name = FilterName;
                 config.Description = FilterDescription;
 
-                // Generate proper filename in JsonItemFilters folder (same as Save As)
+                // Generate proper filename in JsonFilters folder (same as Save As)
                 var filePath = _filterService.GenerateFilterFileName(FilterName);
                 var success = await _configurationService.SaveFilterAsync(filePath, config);
 
@@ -690,12 +690,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
                 // Build test search criteria: Test millions of seeds
-                // Batch size 3 = 35^3 = 42,875 seeds per batch
-                // Testing 10,000 batches = ~428 MILLION seeds
-                // At millions/sec, this should complete in under a minute
+                // Batch size 2 = 35^2 = 1,225 seeds per batch (better API responsiveness)
+                // Testing 10,000 batches = ~12.25 MILLION seeds
                 var criteria = new BalatroSeedOracle.Models.SearchCriteria
                 {
-                    BatchSize = 3, // 35^3 = 42,875 seeds per batch
+                    BatchSize = 2, // 35^2 = 1,225 seeds per batch
                     StartBatch = 0,
                     EndBatch = 10000, // 10K batches = ~428M seeds tested
                     Deck = deckName,

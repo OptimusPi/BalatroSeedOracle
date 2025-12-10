@@ -262,7 +262,7 @@ namespace BalatroSeedOracle.ViewModels
                     Deck = config.Deck ?? "Red",
                     Stake = config.Stake ?? "White",
                     ThreadCount = Environment.ProcessorCount,
-                    BatchSize = 3,
+                    BatchSize = 2, // 35^2 = 1,225 seeds per batch for better API responsiveness
                 };
 
                 // Start the search
