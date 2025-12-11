@@ -29,11 +29,13 @@ public partial class App : Application
         {
             DebugLogger.Log("App", "Initializing application services");
 
-            // Ensure required directories exist
+#if !BROWSER
+            // Ensure required directories exist (desktop only)
             EnsureDirectoriesExist();
 
-            // Copy sample content to AppData on first run
+            // Copy sample content to AppData on first run (desktop only)
             CopySamplesToAppData();
+#endif
 
             // Set up services
             var services = new ServiceCollection();
@@ -69,7 +71,7 @@ public partial class App : Application
                 Dispatcher.UIThread.UnhandledException += OnUIThreadException;
 
                 // For Browser/Mobile, we use BalatroMainMenu directly as the main view
-                var mainMenu = new Views.BalatroMainMenu();
+                var mainMenu = _serviceProvider!.GetRequiredService<Views.BalatroMainMenu>();
                 singleViewPlatform.MainView = mainMenu;
 
                 // Pre-load sprites asynchronously (without the complex shader transition)
@@ -84,7 +86,9 @@ public partial class App : Application
         {
             Console.Error.WriteLine($"Error during initialization: {ex}");
             Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
-            Console.ReadLine();
+#if !BROWSER
+            Console.ReadLine();  // Desktop only - browser has no stdin
+#endif
             throw;
         }
     }

@@ -115,6 +115,12 @@ namespace BalatroSeedOracle.Services
                 return;
             }
 
+#if BROWSER
+            // Browser: Skip file system access, use empty cache
+            DebugLogger.Log("FilterCacheService", "Browser mode - skipping filter cache initialization");
+            _isInitialized = true;
+            return;
+#else
             _cacheLock.EnterWriteLock();
             try
             {
@@ -186,6 +192,7 @@ namespace BalatroSeedOracle.Services
             {
                 _cacheLock.ExitWriteLock();
             }
+#endif
         }
 
         public MotelyJsonConfig? GetFilter(string filterId)

@@ -51,10 +51,14 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public Action<UserControl>? RequestContentSwap { get; set; }
 
-        public BalatroMainMenu()
+        public BalatroMainMenu() : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>())
         {
-            // Get ViewModel from DI (proper way!)
-            ViewModel = ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>();
+        }
+
+        public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
+        {
+            // Proper DI - ViewModel injected!
+            ViewModel = viewModel;
             DataContext = ViewModel;
 
             InitializeComponent();

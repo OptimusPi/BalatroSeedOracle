@@ -21,13 +21,19 @@ namespace BalatroSeedOracle.Helpers
 
         public static string EnsureDir(string path)
         {
+#if !BROWSER
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
+#endif
             return path;
         }
 
         private static string ResolveDataRoot()
         {
+#if BROWSER
+            // Browser: Use virtual in-memory path (no actual file I/O)
+            return "/data";
+#else
             var overrideDir = Environment.GetEnvironmentVariable("BSO_DATA_DIR");
             if (!string.IsNullOrWhiteSpace(overrideDir))
             {
@@ -56,6 +62,7 @@ namespace BalatroSeedOracle.Helpers
             var root = Path.Combine(appData, "BalatroSeedOracle");
             Directory.CreateDirectory(root);
             return root;
+#endif
         }
     }
 }

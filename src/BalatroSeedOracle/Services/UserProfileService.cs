@@ -178,6 +178,11 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private UserProfile LoadProfile()
         {
+#if BROWSER
+            // Browser: Skip file loading, return default profile
+            DebugLogger.Log("UserProfileService", "Browser mode - using default profile");
+            return new UserProfile();
+#else
             try
             {
                 if (File.Exists(_profilePath))
@@ -205,6 +210,7 @@ namespace BalatroSeedOracle.Services
                 "Creating new profile with default author: pifreak"
             );
             return new UserProfile();
+#endif
         }
 
         /// <summary>

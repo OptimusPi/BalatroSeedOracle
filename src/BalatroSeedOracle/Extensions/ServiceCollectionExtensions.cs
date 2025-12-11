@@ -19,8 +19,10 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
+#if !BROWSER
             services.AddSingleton<SoundFlowAudioManager>();
             services.AddSingleton<SoundEffectsService>();
+#endif
             services.AddSingleton<TransitionService>();
             services.AddSingleton<EventFXService>();
             services.AddSingleton<SearchTransitionManager>();
@@ -33,6 +35,9 @@ namespace BalatroSeedOracle.Extensions
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<BalatroMainMenuViewModel>();
+
+            // Views (for browser DI)
+            services.AddTransient<Views.BalatroMainMenu>();
             services.AddSingleton<FiltersModalViewModel>();
             services.AddSingleton<SearchModalViewModel>();
             services.AddTransient<AnalyzeModalViewModel>();
