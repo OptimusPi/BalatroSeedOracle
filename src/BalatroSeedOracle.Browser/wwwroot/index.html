@@ -1,19 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Balatro Seed Oracle</title>
     <meta charset="UTF-8">
+    <title>Balatro Seed Oracle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="stylesheet" href="./app.css" />
 </head>
 <body style="margin: 0; overflow: hidden; background-color: #1a1a2e;">
 <div id="out">
     <div class="avalonia-splash" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; color: #f0f0f0; font-family: sans-serif;">
-        <h1 style="color: #9b59b6; margin-bottom: 20px;">Balatro Seed Oracle</h1>
-        <h2 style="color: #888;">Loading...</h2>
-        <p style="color: #666; font-size: 14px;">Powered by Avalonia UI</p>
+        <h1 style="color: #9b59b6; margin-bottom: 10px;">JAML</h1>
+        <p style="color: #e67e22; margin-bottom: 20px; font-size: 18px;">Joker Ante Markup Language</p>
+        <h2 style="color: #888;">Compiling your luck...</h2>
+        <p style="color: #666; font-size: 14px;">Powered by Avalonia UI & pifreak's chaos</p>
     </div>
 </div>
-<script type='module' src="./main.js"></script>
+<script>
+console.log("🔥 JavaScript is running BEFORE dotnet.js");
+window.addEventListener('error', (e) => {
+    console.error("❌ Global error:", e.message, e.filename, e.lineno, e.colno, e.error);
+});
+window.addEventListener('unhandledrejection', (e) => {
+    console.error("❌ Unhandled promise rejection:", e.reason);
+});
+</script>
+<script type='module' src="./_framework/dotnet.js" onerror="console.error('❌ Failed to load dotnet.js')"></script>
+<script>
+console.log("🔥 JavaScript is running AFTER dotnet.js script tag");
+</script>
 </body>
 </html>
