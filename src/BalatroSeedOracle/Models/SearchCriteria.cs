@@ -12,7 +12,7 @@ public class SearchCriteria
     public int MinScore { get; set; } = 0;
 
     // Tip: this is the seed digits (BatchCharacterCount in Motely)
-    public int BatchSize { get; set; } = 2; // Default batch size to 2 digits, 35^2 seeds.
+    public int BatchSize { get; set; } = 3; // Default batch size to 3 digits, 35^3 seeds per batch.
     public ulong StartBatch { get; set; } = 0;
 
     // Balatro has 8-character base-35 seeds: 35^8 = 2,251,875,390,625 total seeds (~2.25 trillion)

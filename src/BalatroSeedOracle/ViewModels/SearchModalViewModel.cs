@@ -1267,6 +1267,7 @@ namespace BalatroSeedOracle.ViewModels
                         try
                         {
                             var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
+#if !BROWSER
                             if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
                             {
                                 var grid =
@@ -1284,6 +1285,7 @@ namespace BalatroSeedOracle.ViewModels
                                     );
                                 }
                             }
+#endif
                         }
                         catch (Exception gridEx)
                         {
@@ -1761,13 +1763,17 @@ namespace BalatroSeedOracle.ViewModels
             // PROPER MVVM: Use XAML UserControls
             SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
+#if !BROWSER
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
+#endif
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
             // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
             // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
+#if !BROWSER
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
+#endif
         }
 
         private void LoadAvailableWordLists()

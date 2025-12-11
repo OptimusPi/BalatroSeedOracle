@@ -101,6 +101,10 @@
     <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
     <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
     <None Include="Windows\DataGridResultsWindow.axaml" />
+    <!-- ResultsTab uses ClosedXML and DataGridResultsWindow -->
+    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" />
+    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" />
+    <None Include="Views\SearchModalTabs\ResultsTab.axaml" />
     <!-- HostApiWidget: use browser stub instead of full implementation -->
     <Compile Remove="ViewModels\HostApiWidgetViewModel.cs" />
     <Compile Remove="Components\Widgets\HostApiWidget.axaml.cs" />
