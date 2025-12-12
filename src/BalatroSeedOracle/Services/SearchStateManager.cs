@@ -1,26 +1,92 @@
-#if !BROWSER
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-using DuckDB.NET.Data;
+using BalatroSeedOracle.Services.DuckDB;
 
 namespace BalatroSeedOracle.Services
 {
     /// <summary>
-    /// Manages search state persistence to DuckDB for resume functionality
+    /// Manages search state persistence to DuckDB for resume functionality.
+    /// Uses IDuckDBService abstraction for cross-platform compatibility.
     /// </summary>
-    public static class SearchStateManager
+    public class SearchStateManager
     {
+        private readonly IDuckDBService _duckDB;
+
+        public SearchStateManager(IDuckDBService duckDB)
+        {
+            _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
+        }
+
+        #region Static Compatibility Methods (for legacy code)
+
+        /// <summary>
+        /// Static method for backward compatibility. Use LoadSearchStateAsync for new code.
+        /// </summary>
+        public static SearchState? LoadSearchState(string filterDbPath)
+        {
+#if BROWSER
+            // Browser: Search functionality not available, return null
+            return null;
+#else
+            try
+            {
+                var instance = ServiceHelper.GetService<SearchStateManager>();
+                if (instance == null)
+                {
+                    DebugLogger.LogError("SearchStateManager", "Service not available");
+                    return null;
+                }
+                return instance.LoadSearchStateAsync(filterDbPath).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchStateManager", $"Static LoadSearchState failed: {ex.Message}");
+                return null;
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Static method for backward compatibility. Use SaveSearchStateAsync for new code.
+        /// </summary>
+        public static void SaveSearchState(string filterDbPath, SearchState state)
+        {
+#if BROWSER
+            // Browser: Search functionality not available, no-op
+            return;
+#else
+            try
+            {
+                var instance = ServiceHelper.GetService<SearchStateManager>();
+                if (instance == null)
+                {
+                    DebugLogger.LogError("SearchStateManager", "Service not available");
+                    return;
+                }
+                instance.SaveSearchStateAsync(filterDbPath, state).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchStateManager", $"Static SaveSearchState failed: {ex.Message}");
+            }
+#endif
+        }
+
+        #endregion
+
         /// <summary>
         /// Load search state from the filter's DuckDB database
         /// </summary>
         /// <param name="filterDbPath">Path to the filter's .db file</param>
         /// <returns>SearchState if found, null otherwise</returns>
-        public static SearchState? LoadSearchState(string filterDbPath)
+        public async Task<SearchState?> LoadSearchStateAsync(string filterDbPath)
         {
             try
             {
+#if !BROWSER
                 if (string.IsNullOrEmpty(filterDbPath) || !File.Exists(filterDbPath))
                 {
                     DebugLogger.Log(
@@ -29,26 +95,20 @@ namespace BalatroSeedOracle.Services
                     );
                     return null;
                 }
+#endif
 
-                using var connection = new DuckDBConnection($"Data Source={filterDbPath}");
-                connection.Open();
+                var connectionString = _duckDB.CreateConnectionString(filterDbPath);
+                await using var connection = await _duckDB.OpenConnectionAsync(connectionString);
 
                 // Ensure table exists
-                EnsureSearchStateTableExists(connection);
+                await EnsureSearchStateTableExistsAsync(connection);
 
-                using var command = connection.CreateCommand();
-                command.CommandText =
-                    @"
-                    SELECT id, deck_index, stake_index, batch_size, last_completed_batch,
-                           search_mode, wordlist_name, updated_at
-                    FROM search_state
-                    WHERE id = 1
-                ";
-
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
-                {
-                    return new SearchState
+                var results = await connection.ExecuteReaderAsync(
+                    @"SELECT id, deck_index, stake_index, batch_size, last_completed_batch,
+                             search_mode, wordlist_name, updated_at
+                      FROM search_state
+                      WHERE id = 1",
+                    reader => new SearchState
                     {
                         Id = reader.GetInt32(0),
                         DeckIndex = reader.GetInt32(1),
@@ -57,8 +117,12 @@ namespace BalatroSeedOracle.Services
                         LastCompletedBatch = reader.GetInt32(4),
                         SearchMode = reader.GetInt32(5),
                         WordListName = reader.IsDBNull(6) ? null : reader.GetString(6),
-                        UpdatedAt = reader.GetDateTime(7),
-                    };
+                        UpdatedAt = DateTime.Parse(reader.GetString(7)),
+                    });
+
+                foreach (var state in results)
+                {
+                    return state; // Return first result
                 }
 
                 return null;
@@ -78,7 +142,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="filterDbPath">Path to the filter's .db file</param>
         /// <param name="state">SearchState to save</param>
-        public static void SaveSearchState(string filterDbPath, SearchState state)
+        public async Task SaveSearchStateAsync(string filterDbPath, SearchState state)
         {
             try
             {
@@ -91,18 +155,19 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                using var connection = new DuckDBConnection($"Data Source={filterDbPath}");
-                connection.Open();
+                var connectionString = _duckDB.CreateConnectionString(filterDbPath);
+                await using var connection = await _duckDB.OpenConnectionAsync(connectionString);
 
                 // Ensure table exists
-                EnsureSearchStateTableExists(connection);
+                await EnsureSearchStateTableExistsAsync(connection);
 
-                using var command = connection.CreateCommand();
-                command.CommandText =
-                    @"
+                // Use INSERT OR REPLACE pattern
+                var wordlistValue = state.WordListName != null ? $"'{state.WordListName}'" : "NULL";
+                var sql = $@"
                     INSERT INTO search_state (id, deck_index, stake_index, batch_size, last_completed_batch,
                                              search_mode, wordlist_name, updated_at)
-                    VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (1, {state.DeckIndex}, {state.StakeIndex}, {state.BatchSize}, {state.LastCompletedBatch},
+                            {state.SearchMode}, {wordlistValue}, '{state.UpdatedAt:yyyy-MM-dd HH:mm:ss}')
                     ON CONFLICT (id) DO UPDATE SET
                         deck_index = excluded.deck_index,
                         stake_index = excluded.stake_index,
@@ -113,17 +178,7 @@ namespace BalatroSeedOracle.Services
                         updated_at = excluded.updated_at
                 ";
 
-                command.Parameters.Add(new DuckDBParameter(state.DeckIndex));
-                command.Parameters.Add(new DuckDBParameter(state.StakeIndex));
-                command.Parameters.Add(new DuckDBParameter(state.BatchSize));
-                command.Parameters.Add(new DuckDBParameter(state.LastCompletedBatch));
-                command.Parameters.Add(new DuckDBParameter(state.SearchMode));
-                command.Parameters.Add(
-                    new DuckDBParameter(state.WordListName ?? (object)DBNull.Value)
-                );
-                command.Parameters.Add(new DuckDBParameter(state.UpdatedAt));
-
-                command.ExecuteNonQuery();
+                await connection.ExecuteNonQueryAsync(sql);
                 DebugLogger.Log(
                     "SearchStateManager",
                     $"Saved search state: Batch {state.LastCompletedBatch}, Mode {state.SearchMode}"
@@ -177,12 +232,10 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Ensure the search_state table exists in the database
         /// </summary>
-        private static void EnsureSearchStateTableExists(DuckDBConnection connection)
+        private async Task EnsureSearchStateTableExistsAsync(IDuckDBConnection connection)
         {
-            using var command = connection.CreateCommand();
-            command.CommandText =
-                @"
-                CREATE TABLE IF NOT EXISTS search_state (
+            await connection.ExecuteNonQueryAsync(
+                @"CREATE TABLE IF NOT EXISTS search_state (
                     id INTEGER PRIMARY KEY,
                     deck_index INTEGER,
                     stake_index INTEGER,
@@ -191,24 +244,7 @@ namespace BalatroSeedOracle.Services
                     search_mode INTEGER,
                     wordlist_name TEXT,
                     updated_at TIMESTAMP
-                )
-            ";
-            command.ExecuteNonQuery();
+                )");
         }
     }
 }
-#else
-// Browser stub - search state management not available
-using BalatroSeedOracle.Models;
-
-namespace BalatroSeedOracle.Services
-{
-    public static class SearchStateManager
-    {
-        public static void Initialize() { }
-        public static void SaveSearchState(string dbPath, SearchState state) { }
-        public static SearchState? LoadSearchState(string dbPath) => null;
-        public static void ClearSearchState(string configPath) { }
-    }
-}
-#endif

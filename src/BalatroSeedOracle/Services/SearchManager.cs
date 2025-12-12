@@ -317,7 +317,7 @@ namespace BalatroSeedOracle.Services
                 // Create a temporary search instance for the quick test
                 var tempSearchId = $"QuickTest_{Guid.NewGuid():N}";
                 var tempDbPath = System.IO.Path.Combine(
-                    System.IO.Path.GetTempPath(),
+                    AppPaths.TempDir,
                     $"{tempSearchId}.db"
                 );
 
@@ -361,10 +361,12 @@ namespace BalatroSeedOracle.Services
                     // Delete the temporary database file
                     try
                     {
+#if !BROWSER
                         if (System.IO.File.Exists(tempDbPath))
                         {
                             System.IO.File.Delete(tempDbPath);
                         }
+#endif
                     }
                     catch (Exception ex)
                     {

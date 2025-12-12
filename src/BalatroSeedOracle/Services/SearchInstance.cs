@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Views.Modals;
-using DuckDB.NET.Data;
 using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
 using Motely;
 using Motely.Filters;
@@ -18,6 +17,10 @@ using Motely.Utils;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
+// Alias for DuckDB.NET types to avoid namespace conflict with BalatroSeedOracle.Services.DuckDB
+using DuckDBConnection = DuckDB.NET.Data.DuckDBConnection;
+using DuckDBParameter = DuckDB.NET.Data.DuckDBParameter;
+using DuckDBAppender = DuckDB.NET.Data.DuckDBAppender;
 
 namespace BalatroSeedOracle.Services
 {
@@ -47,7 +50,7 @@ namespace BalatroSeedOracle.Services
 
         // Persistent DuckDB connection for database operations
         private readonly DuckDBConnection _connection;
-        private DuckDB.NET.Data.DuckDBAppender? _appender;
+        private DuckDBAppender? _appender;
         private readonly object _appenderLock = new();
 
         // Search state tracking for resume
@@ -402,8 +405,8 @@ namespace BalatroSeedOracle.Services
 
             using var cmd = _connection.CreateCommand();
             cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";
-            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
-            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(offset));
+            cmd.Parameters.Add(new DuckDBParameter(limit));
+            cmd.Parameters.Add(new DuckDBParameter(offset));
             using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             while (await reader.ReadAsync().ConfigureAwait(false))
             {
@@ -504,7 +507,7 @@ namespace BalatroSeedOracle.Services
             // LIMIT is parameterized for safety
             cmd.CommandText =
                 $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT ?";
-            cmd.Parameters.Add(new DuckDB.NET.Data.DuckDBParameter(limit));
+            cmd.Parameters.Add(new DuckDBParameter(limit));
             using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
             while (await reader.ReadAsync().ConfigureAwait(false))
             {

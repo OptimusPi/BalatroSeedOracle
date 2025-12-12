@@ -25,6 +25,8 @@ window.addEventListener('unhandledrejection', (e) => {
     console.error("❌ Unhandled promise rejection:", e.reason);
 });
 </script>
+<!-- DuckDB-WASM interop module - must load before dotnet.js -->
+<script type="module" src="./js/duckdb-interop.js"></script>
 <script type='module' src="./_framework/dotnet.js" onerror="console.error('❌ Failed to load dotnet.js')"></script>
 <script>
 console.log("🔥 JavaScript is running AFTER dotnet.js script tag");

@@ -1,4 +1,5 @@
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,12 +14,20 @@ namespace BalatroSeedOracle.Extensions
 
             // Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();
+
+            // DuckDB - Platform-specific implementations
+#if BROWSER
+            services.AddSingleton<IDuckDBService, BrowserDuckDBService>();
+#else
+            services.AddSingleton<IDuckDBService, DesktopDuckDBService>();
+#endif
             services.AddSingleton<IFilterService, FilterService>();
             services.AddSingleton<IFilterConfigurationService, FilterConfigurationService>();
             services.AddSingleton<IFilterCacheService, FilterCacheService>();
             services.AddSingleton<SpriteService>();
             services.AddSingleton<UserProfileService>();
             services.AddSingleton<SearchManager>();
+            services.AddSingleton<SearchStateManager>();
 #if !BROWSER
             services.AddSingleton<SoundFlowAudioManager>();
             services.AddSingleton<SoundEffectsService>();
@@ -27,6 +36,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<EventFXService>();
             services.AddSingleton<SearchTransitionManager>();
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
+            services.AddSingleton<FertilizerService>();
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();

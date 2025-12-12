@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
@@ -14,8 +15,13 @@ public partial class FertilizerWidget : BaseWidgetControl
 
     public FertilizerWidget()
     {
-        ViewModel = new FertilizerWidgetViewModel(FertilizerService.Instance);
-        DataContext = ViewModel;
+        // Get FertilizerService from DI
+        var fertilizerService = ServiceHelper.GetService<FertilizerService>();
+        if (fertilizerService != null)
+        {
+            ViewModel = new FertilizerWidgetViewModel(fertilizerService);
+            DataContext = ViewModel;
+        }
 
         InitializeComponent();
 

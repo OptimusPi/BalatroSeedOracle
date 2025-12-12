@@ -18,6 +18,19 @@ namespace BalatroSeedOracle.Helpers
         public static string WordListsDir => EnsureDir(Path.Combine(DataRoot, "WordLists"));
         public static string TransitionsDir => EnsureDir(Path.Combine(DataRoot, "Transitions"));
         public static string EventFXDir => EnsureDir(Path.Combine(DataRoot, "EventFX"));
+        public static string TempDir => EnsureDir(GetTempDirectory());
+
+        /// <summary>
+        /// Gets a cross-platform temp directory that works in both desktop and browser
+        /// </summary>
+        private static string GetTempDirectory()
+        {
+#if BROWSER
+            return Path.Combine(DataRoot, "Temp");
+#else
+            return Path.GetTempPath();
+#endif
+        }
 
         public static string EnsureDir(string path)
         {

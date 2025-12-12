@@ -38,8 +38,6 @@ public partial class FertilizerWidgetViewModel : BaseWidgetViewModel, IDisposabl
     public ICommand CancelClearCommand { get; }
     public ICommand ExportCommand { get; }
 
-    public FertilizerWidgetViewModel() : this(FertilizerService.Instance) { }
-
     public FertilizerWidgetViewModel(FertilizerService fertilizerService)
     {
         _fertilizerService = fertilizerService;
