@@ -83,3 +83,5 @@ fertilizer.db
 fertilizer.db.wal
 /.trae
 /JsonItemFilters
+/publish-browser
+/WordLists
