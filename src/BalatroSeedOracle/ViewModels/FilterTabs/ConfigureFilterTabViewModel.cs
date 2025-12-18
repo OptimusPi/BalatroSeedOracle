@@ -675,7 +675,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                await Task.Run(() => LoadGameData());
+                // Just call sync version directly - it's fast enough
+                LoadGameData();
 
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {

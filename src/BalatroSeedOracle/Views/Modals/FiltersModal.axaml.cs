@@ -24,9 +24,9 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (configService == null || filterService == null)
                 {
-                    // Create defaults if DI fails
-                    configService = new ConfigurationService();
-                    filterService = new FilterService(configService);
+                    throw new InvalidOperationException(
+                        "Required services not available (IConfigurationService/IFilterService)"
+                    );
                 }
 
                 var viewModel = new FiltersModalViewModel(configService, filterService);

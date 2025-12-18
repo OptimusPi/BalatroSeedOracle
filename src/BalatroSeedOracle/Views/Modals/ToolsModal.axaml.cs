@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Views.Modals
 {
@@ -50,12 +51,9 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 try
                 {
-                    // Create JsonFilters directory if it doesn't exist
-                    var jsonConfigsDir = AppPaths.FiltersDir;
-                    if (!Directory.Exists(jsonConfigsDir))
-                    {
-                        Directory.CreateDirectory(jsonConfigsDir);
-                    }
+                    var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+                    var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+                    var filterCache = ServiceHelper.GetService<IFilterCacheService>();
 
                     int successCount = 0;
                     int failCount = 0;
@@ -64,27 +62,68 @@ namespace BalatroSeedOracle.Views.Modals
                     {
                         try
                         {
-                            var importedFilePath = file.Path.LocalPath;
+                            if (file is not IStorageFile storageFile)
+                                continue;
 
-                            // Copy the imported file
-                            var fileName = Path.GetFileName(importedFilePath);
-                            var destinationPath = Path.Combine(jsonConfigsDir, fileName);
+                            var extension = Path.GetExtension(storageFile.Name).ToLowerInvariant();
+                            if (extension != ".json" && extension != ".jaml")
+                                continue;
 
-                            // Handle duplicate names
-                            if (File.Exists(destinationPath))
+                            string text;
+                            await using (var stream = await storageFile.OpenReadAsync())
+                            using (var reader = new StreamReader(stream))
                             {
-                                var baseName = Path.GetFileNameWithoutExtension(fileName);
-                                var extension = Path.GetExtension(fileName);
-                                var counter = 1;
-                                do
-                                {
-                                    fileName = $"{baseName}_{counter}{extension}";
-                                    destinationPath = Path.Combine(jsonConfigsDir, fileName);
-                                    counter++;
-                                } while (File.Exists(destinationPath));
+                                text = await reader.ReadToEndAsync().ConfigureAwait(false);
                             }
 
-                            File.Copy(importedFilePath, destinationPath, overwrite: false);
+                            MotelyJsonConfig? config;
+                            if (extension == ".jaml")
+                            {
+                                if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
+                                {
+                                    DebugLogger.LogError(
+                                        "ToolsModal",
+                                        $"Failed to parse JAML {storageFile.Name}: {parseError ?? "Unknown error"}"
+                                    );
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                                    text,
+                                    new System.Text.Json.JsonSerializerOptions
+                                    {
+                                        PropertyNameCaseInsensitive = true,
+                                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                                        AllowTrailingCommas = true,
+                                    }
+                                );
+
+                                if (config == null)
+                                {
+                                    DebugLogger.LogError("ToolsModal", $"Failed to parse JSON {storageFile.Name}");
+                                    failCount++;
+                                    continue;
+                                }
+                            }
+
+                            var baseName = !string.IsNullOrWhiteSpace(config.Name)
+                                ? config.Name
+                                : Path.GetFileNameWithoutExtension(storageFile.Name);
+                            var destKey = filterService.GenerateFilterFileName(baseName);
+
+                            var saved = await configurationService.SaveFilterAsync(destKey, config).ConfigureAwait(false);
+                            if (!saved)
+                            {
+                                DebugLogger.LogError("ToolsModal", $"Failed to save imported filter: {storageFile.Name}");
+                                failCount++;
+                                continue;
+                            }
+
+                            // Ensure cache sees it immediately (SaveFilterAsync invalidates by id, but this is a safe refresh)
+                            filterCache?.Initialize();
                             successCount++;
                         }
                         catch (Exception ex)

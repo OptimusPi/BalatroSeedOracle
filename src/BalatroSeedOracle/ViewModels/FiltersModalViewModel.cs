@@ -18,7 +18,9 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels.FilterTabs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely;
 using Motely.Filters;
+using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -241,7 +243,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedDeckChanged(Motely.MotelyDeck value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
+            BsoLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
             if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
             {
                 jamlVm.AutoGenerateFromVisual();
@@ -250,7 +252,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedStakeChanged(Motely.MotelyStake value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
+            BsoLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
             if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
             {
                 jamlVm.AutoGenerateFromVisual();
@@ -282,7 +284,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (criteriaChanged)
                 {
-                    DebugLogger.LogImportant(
+                    BsoLogger.LogImportant(
                         "FiltersModalViewModel",
                         $"🔄 Filter criteria changed - invalidating databases and dumping to fertilizer.txt"
                     );
@@ -291,7 +293,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         "📝 Only metadata changed (name/description/notes) - keeping databases intact"
                     );
@@ -307,19 +309,19 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     _originalCriteriaHash = currentHash; // Update hash for next save
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"✅ Filter saved: {CurrentFilterPath}"
                     );
                 }
                 else
                 {
-                    DebugLogger.LogError("FiltersModalViewModel", "Failed to save filter");
+                    BsoLogger.LogError("FiltersModalViewModel", "Failed to save filter");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error saving filter: {ex.Message}");
+                BsoLogger.LogError("FiltersModalViewModel", $"Error saving filter: {ex.Message}");
             }
         }
 
@@ -338,7 +340,7 @@ namespace BalatroSeedOracle.ViewModels
                 var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
                 var searchResultsDir = AppPaths.SearchResultsDir;
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "FiltersModalViewModel",
                     $"🧹 Starting database cleanup for filter: {filterName}"
                 );
@@ -348,7 +350,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (searchManager != null)
                 {
                     var stoppedSearches = searchManager.StopSearchesForFilter(filterName);
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"🛑 Stopped {stoppedSearches} running searches for filter"
                     );
@@ -376,14 +378,14 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             File.Delete(dbFile);
                             deletedCount++;
-                            DebugLogger.Log(
+                            BsoLogger.Log(
                                 "FiltersModalViewModel",
                                 $"🗑️ Deleted: {Path.GetFileName(dbFile)}"
                             );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError(
+                            BsoLogger.LogError(
                                 "FiltersModalViewModel",
                                 $"Failed to delete {dbFile}: {ex.Message}"
                             );
@@ -397,21 +399,21 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             File.Delete(walFile);
                             deletedCount++;
-                            DebugLogger.Log(
+                            BsoLogger.Log(
                                 "FiltersModalViewModel",
                                 $"🗑️ Deleted: {Path.GetFileName(walFile)}"
                             );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError(
+                            BsoLogger.LogError(
                                 "FiltersModalViewModel",
                                 $"Failed to delete {walFile}: {ex.Message}"
                             );
                         }
                     }
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"🧹 Database cleanup complete - {deletedCount} files deleted"
                     );
@@ -421,7 +423,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Database cleanup failed: {ex.Message}"
                 );
@@ -441,7 +443,7 @@ namespace BalatroSeedOracle.ViewModels
 #else
             if (dbFiles == null || dbFiles.Length == 0)
             {
-                DebugLogger.Log("FiltersModalViewModel", "No database files to dump");
+                BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
                 return;
             }
 
@@ -479,14 +481,14 @@ namespace BalatroSeedOracle.ViewModels
                             }
                         }
 
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"🌱 Collected seeds from: {Path.GetFileName(dbFile)}"
                         );
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError(
+                        BsoLogger.LogError(
                             "FiltersModalViewModel",
                             $"Failed to dump seeds from {Path.GetFileName(dbFile)}: {ex.Message}"
                         );
@@ -495,21 +497,21 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (allSeeds.Count == 0)
                 {
-                    DebugLogger.Log("FiltersModalViewModel", "No seeds found in databases");
+                    BsoLogger.Log("FiltersModalViewModel", "No seeds found in databases");
                     return;
                 }
 
                 // Append all seeds to fertilizer.txt
                 await File.AppendAllLinesAsync(fertilizerPath, allSeeds).ConfigureAwait(false);
 
-                DebugLogger.LogImportant(
+                BsoLogger.LogImportant(
                     "FiltersModalViewModel",
                     $"🌱 Dumped {allSeeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
                 );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Failed to dump databases to fertilizer.txt: {ex.Message}"
                 );
@@ -526,14 +528,14 @@ namespace BalatroSeedOracle.ViewModels
                 var filters = await _filterService.GetAvailableFiltersAsync();
                 // This would typically open a file dialog or selection UI
                 // For now, we'll need UI interaction to select which filter to load
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "FiltersModalViewModel",
                     $"Found {filters.Count} available filters"
                 );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error loading filter: {ex.Message}"
                 );
@@ -574,11 +576,11 @@ namespace BalatroSeedOracle.ViewModels
                 // Don't set CurrentFilterPath since this is editing, not loading from file
                 CurrentFilterPath = null;
                 
-                DebugLogger.Log("FiltersModalViewModel", $"Loaded filter for editing: {config.Name}");
+                BsoLogger.Log("FiltersModalViewModel", $"Loaded filter for editing: {config.Name}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
+                BsoLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
             }
         }
 
@@ -593,11 +595,11 @@ namespace BalatroSeedOracle.ViewModels
                 FilterName = "";
                 FilterDescription = "";
                 _originalCriteriaHash = null; // New filter has no original criteria
-                DebugLogger.Log("FiltersModalViewModel", "Created new filter");
+                BsoLogger.Log("FiltersModalViewModel", "Created new filter");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error creating new filter: {ex.Message}"
                 );
@@ -618,7 +620,7 @@ namespace BalatroSeedOracle.ViewModels
             if (!string.IsNullOrEmpty(newName))
             {
                 FilterName = newName;
-                DebugLogger.Log("FiltersModalViewModel", $"Filter name updated to: {newName}");
+                BsoLogger.Log("FiltersModalViewModel", $"Filter name updated to: {newName}");
             }
             FilterNameEditMode = false;
         }
@@ -645,7 +647,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (success)
                     {
                         CreateNewFilter();
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"Deleted filter: {CurrentFilterPath}"
                         );
@@ -654,7 +656,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error deleting filter: {ex.Message}"
                 );
@@ -669,12 +671,12 @@ namespace BalatroSeedOracle.ViewModels
                 if (LoadedConfig != null)
                 {
                     LoadConfigIntoState(LoadedConfig);
-                    DebugLogger.Log("FiltersModalViewModel", "Refreshed from config");
+                    BsoLogger.Log("FiltersModalViewModel", "Refreshed from config");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error refreshing from config: {ex.Message}"
                 );
@@ -740,11 +742,11 @@ namespace BalatroSeedOracle.ViewModels
                     || !_configurationService.FileExists(CurrentFilterPath)
                 )
                 {
-                    DebugLogger.Log("FiltersModalViewModel", "No saved file to reload visual from");
+                    BsoLogger.Log("FiltersModalViewModel", "No saved file to reload visual from");
                     return;
                 }
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "FiltersModalViewModel",
                     $"Reloading visual from file: {CurrentFilterPath}"
                 );
@@ -771,12 +773,12 @@ namespace BalatroSeedOracle.ViewModels
                     // CRITICAL: Expand drop zones that have items so they render
                     ExpandDropZonesWithItems();
 
-                    DebugLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
+                    BsoLogger.Log("FiltersModalViewModel", "Visual reloaded from saved file");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error reloading visual: {ex.Message}"
                 );
@@ -792,7 +794,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <param name="tabIndex">0=Build Filter, 1=Deck/Stake, 2=JSON Editor, 3=JAML Editor, 4=Validate Filter</param>
         public void UpdateTabVisibility(int tabIndex)
         {
-            DebugLogger.Log(
+            BsoLogger.Log(
                 "FiltersModalViewModel",
                 $"UpdateTabVisibility called with tabIndex={tabIndex}"
             );
@@ -810,28 +812,28 @@ namespace BalatroSeedOracle.ViewModels
             {
                 case 0:
                     IsVisualTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "Build Filter tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "Build Filter tab visible");
                     break;
                 case 1:
                     IsDeckStakeTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "Deck/Stake tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "Deck/Stake tab visible");
                     break;
                 case 2:
                     IsJsonTabVisible = true;
-                    DebugLogger.Log("FiltersModalViewModel", "JSON Editor tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "JSON Editor tab visible");
                     break;
                 case 3:
-                    DebugLogger.Log("FiltersModalViewModel", "JAML Editor tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "JAML Editor tab visible");
                     break;
                 case 4:
                     IsSaveTabVisible = true;
                     _ = RefreshSaveTabData(); // Fire-and-forget when switching tabs
-                    DebugLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
+                    BsoLogger.Log("FiltersModalViewModel", "Validate Filter tab visible");
                     break;
             }
 
             // Log final state
-            DebugLogger.Log(
+            BsoLogger.Log(
                 "FiltersModalViewModel",
                 $"Final visibility state - Visual:{IsVisualTabVisible} JSON:{IsJsonTabVisible} Save:{IsSaveTabVisible}"
             );
@@ -857,12 +859,12 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     validateVm.PreFillFilterData();
                     await validateVm.RefreshClauseDisplay();
-                    DebugLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
+                    BsoLogger.Log("FiltersModalViewModel", "Refreshed Validate Filter tab data");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error refreshing Save tab: {ex.Message}"
                 );
@@ -904,7 +906,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedTabIndexChanged(int value)
         {
-            DebugLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
+            BsoLogger.Log("FiltersModalViewModel", $"Tab switch to {value}");
 
             UpdateTabVisibility(value);
             OnPropertyChanged(nameof(CurrentTabContent));
@@ -941,7 +943,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(jamlVm.JamlContent))
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         "⚠️ JAML Editor is empty - skipping save"
                     );
@@ -963,7 +965,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (config == null)
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "FiltersModalViewModel",
                         "❌ Failed to parse JAML - skipping save"
                     );
@@ -973,14 +975,14 @@ namespace BalatroSeedOracle.ViewModels
                 // Load config into parent state (updates SelectedMust/Should/MustNot, deck, stake, etc.)
                 LoadConfigIntoState(config);
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "FiltersModalViewModel",
                     $"✅ JAML Editor saved to state: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should, Deck={config.Deck}, Stake={config.Stake}"
                 );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error parsing JAML: {ex.Message}"
                 );
@@ -1050,14 +1052,14 @@ namespace BalatroSeedOracle.ViewModels
 
             // CRITICAL FIX: Read from VisualBuilderTab's collections if available
             // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
-            DebugLogger.LogImportant(
+            BsoLogger.LogImportant(
                 "FiltersModalViewModel",
                 $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}"
             );
 
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
-                DebugLogger.LogImportant(
+                BsoLogger.LogImportant(
                     "FiltersModalViewModel",
                     $"✅ USING VisualBuilder PATH: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                 );
@@ -1065,7 +1067,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
                 foreach (var filterItem in visualVm.SelectedMust)
                 {
-                    DebugLogger.LogImportant(
+                    BsoLogger.LogImportant(
                         "FiltersModalViewModel",
                         $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
                     );
@@ -1074,14 +1076,14 @@ namespace BalatroSeedOracle.ViewModels
                     if (clause != null)
                     {
                         config.Must.Add(clause);
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses != null}, ClausesCount={clause.Clauses?.Count ?? 0}"
                         );
                     }
                     else
                     {
-                        DebugLogger.LogError(
+                        BsoLogger.LogError(
                             "FiltersModalViewModel",
                             $"Failed to convert {filterItem.Name} to clause!"
                         );
@@ -1281,7 +1283,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (operatorItem.OperatorType == "BannedItems")
                     return null;
 
-                DebugLogger.LogImportant(
+                BsoLogger.LogImportant(
                     "FiltersModalViewModel",
                     $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}"
                 );
@@ -1296,7 +1298,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Recursively convert children
                 foreach (var child in operatorItem.Children)
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"  Converting child: {child.Name} (Type={child.Type})"
                     );
@@ -1304,21 +1306,21 @@ namespace BalatroSeedOracle.ViewModels
                     if (childClause != null)
                     {
                         operatorClause.Clauses.Add(childClause);
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"  ✓ Added child clause: Type={childClause.Type}, Value={childClause.Value}"
                         );
                     }
                     else
                     {
-                        DebugLogger.LogError(
+                        BsoLogger.LogError(
                             "FiltersModalViewModel",
                             $"  ✗ Failed to convert child: {child.Name}"
                         );
                     }
                 }
 
-                DebugLogger.LogImportant(
+                BsoLogger.LogImportant(
                     "FiltersModalViewModel",
                     $"✓ Created {operatorItem.OperatorType} operator with {operatorClause.Clauses.Count} clauses"
                 );
@@ -1463,7 +1465,7 @@ namespace BalatroSeedOracle.ViewModels
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {
                 visualVm.LoadFromParentCollections();
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "FiltersModalViewModel",
                     "Synced Visual Builder tab from loaded config"
                 );
@@ -1694,10 +1696,10 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("JAML EDITOR", jamlEditorTab));
 
             // Save Filter tab
-            var configService =
-                ServiceHelper.GetService<IConfigurationService>() ?? new ConfigurationService();
-            var filterService =
-                ServiceHelper.GetService<IFilterService>() ?? new FilterService(configService);
+            var configService = ServiceHelper.GetService<IConfigurationService>()
+                ?? throw new InvalidOperationException("IConfigurationService not available");
+            var filterService = ServiceHelper.GetService<IFilterService>()
+                ?? throw new InvalidOperationException("IFilterService not available");
             var userProfileService =
                 ServiceHelper.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
@@ -1741,7 +1743,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    DebugLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
+                    BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
                     var json = await System.IO.File.ReadAllTextAsync(filterPath);
                     var config =
@@ -1810,7 +1812,7 @@ namespace BalatroSeedOracle.ViewModels
 
                         // Switch to Visual Builder tab
                         SelectedTabIndex = 1;
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"Filter loaded for editing: {config.Name}"
                         );
@@ -1818,7 +1820,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "FiltersModalViewModel",
                         $"Error loading filter for editing: {ex.Message}"
                     );
@@ -1955,7 +1957,7 @@ namespace BalatroSeedOracle.ViewModels
                             }
 
                             SelectedTabIndex = 1;
-                            DebugLogger.Log(
+                            BsoLogger.Log(
                                 "FiltersModalViewModel",
                                 $"Created and loaded copy: {candidateName}"
                             );
@@ -1963,7 +1965,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError(
+                        BsoLogger.LogError(
                             "FiltersModalViewModel",
                             $"Copy created but failed to load: {ex.Message}"
                         );
@@ -1971,7 +1973,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "FiltersModalViewModel",
                         $"Error copying filter: {ex.Message}"
                     );
@@ -1987,12 +1989,12 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         System.IO.File.Delete(filterPath);
                         filterSelector.RefreshFilters();
-                        DebugLogger.Log("FiltersModalViewModel", $"Deleted filter: {filterPath}");
+                        BsoLogger.Log("FiltersModalViewModel", $"Deleted filter: {filterPath}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "FiltersModalViewModel",
                         $"Error deleting filter: {ex.Message}"
                     );
@@ -2004,20 +2006,20 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         "Create New Filter requested from Load tab"
                     );
                     CreateNewFilter();
                     SelectedTabIndex = 1;
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         "Switched to Visual Builder for new filter"
                     );
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "FiltersModalViewModel",
                         $"Error handling Create New Filter: {ex.Message}"
                     );
@@ -2098,7 +2100,7 @@ namespace BalatroSeedOracle.ViewModels
                     // Convert MustNot items → BannedItems tray
                     if (SelectedMustNot != null && SelectedMustNot.Any())
                     {
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"Creating BannedItems tray with {SelectedMustNot.Count} items"
                         );
@@ -2122,13 +2124,13 @@ namespace BalatroSeedOracle.ViewModels
                         // Add BannedItems tray to MUST zone
                         visualVm.SelectedMust.Add(bannedItemsTray);
 
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "FiltersModalViewModel",
                             $"Added BannedItems tray with {bannedItemsTray.Children.Count} children to MUST zone"
                         );
                     }
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"Updated Visual Builder: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
                     );
@@ -2139,7 +2141,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error updating Visual Builder: {ex.Message}"
                 );
@@ -2192,7 +2194,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "FiltersModalViewModel",
                     $"Error converting ItemConfig to FilterItem: {ex.Message}"
                 );

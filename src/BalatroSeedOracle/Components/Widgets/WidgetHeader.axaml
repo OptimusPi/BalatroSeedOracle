@@ -18,9 +18,11 @@
 
             <!-- Title with Icon -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="{Binding WidgetIcon}"
-                           FontSize="15"
-                           VerticalAlignment="Center"/>
+                <TextBlock Text="?"
+                           Width="15"
+                           Height="15"
+                           VerticalAlignment="Center"
+                           FontSize="12"/>
                 <TextBlock Text="{Binding WidgetTitle}"
                            FontSize="13"
                            Foreground="{StaticResource White}"

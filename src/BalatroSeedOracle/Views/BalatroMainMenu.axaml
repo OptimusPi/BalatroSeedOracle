@@ -84,17 +84,6 @@
     <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsVisible="{Binding AreWidgetsHidden, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}">
             <!-- Search Widgets will be added dynamically here -->
 
-            <!-- DayLatro Widget - starts minimized in top right -->
-            <components:DayLatroWidget x:Name="DayLatroWidget"
-                                     ClipToBounds="False"/>
-
-            <!-- ADMIN WIDGETS - Hidden by default, enable via Settings -->
-
-            <!-- 📊 FREQUENCY DEBUG WIDGET - Real-time FFT frequency bands -->
-            <components:FrequencyDebugWidget x:Name="FrequencyDebugWidget"
-                                            IsVisible="False"
-                                            ClipToBounds="False"/>
-
             <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
             <components:GenieWidget x:Name="GenieWidget"
                                    IsVisible="False"
@@ -110,25 +99,24 @@
                                         IsVisible="{Binding IsMusicMixerWidgetVisible}"
                                         ClipToBounds="False"/>
 
-            <!-- 🔀 TRANSITION DESIGNER WIDGET - Create and test transitions -->
-            <components:TransitionDesignerWidget x:Name="TransitionDesignerWidget"
-                                                 IsVisible="{Binding IsTransitionDesignerWidgetVisible}"
-                                                 ClipToBounds="False"/>
-
-            <!-- 🌱 FERTILIZER WIDGET - Global seed pile management -->
-            <components:FertilizerWidget x:Name="FertilizerWidget"
-                                         IsVisible="{Binding IsFertilizerWidgetVisible}"
-                                         ClipToBounds="False"/>
-
-            <!-- 🌐 HOST API WIDGET - MotelyApiServer controls -->
-            <components:HostApiWidget x:Name="HostApiWidget"
-                                      IsVisible="{Binding IsHostApiWidgetVisible}"
-                                      ClipToBounds="False"/>
-
             <!-- ✨ EVENT FX WIDGET - Configure event animations -->
             <components:EventFXWidget x:Name="EventFXWidget"
                                       IsVisible="{Binding IsEventFXWidgetVisible}"
                                       ClipToBounds="False"/>
+
+            <!-- FERTILIZER WIDGET - Global seed pile management -->
+            <components:FertilizerWidget x:Name="FertilizerWidget"
+                                         IsVisible="{Binding IsFertilizerWidgetVisible}"
+                                         ClipToBounds="False"/>
+
+            <!-- TRANSITION DESIGNER WIDGET - Create and test transitions -->
+            <components:TransitionDesignerWidget x:Name="TransitionDesignerWidget"
+                                                 IsVisible="{Binding IsTransitionDesignerWidgetVisible}"
+                                                 ClipToBounds="False"/>
+
+            <!-- DayLatro Widget - starts minimized in top right -->
+            <components:DayLatroWidget x:Name="DayLatroWidget"
+                                     ClipToBounds="False"/>
 
         </Grid>
         

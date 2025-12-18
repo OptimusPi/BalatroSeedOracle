@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.ViewModels
         AllSeeds = 0,
         SingleSeed = 1,
         WordList = 2,
+        DbList = 3,
     }
 
     public partial class SearchModalViewModel
@@ -124,12 +125,18 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> _availableWordLists = new();
 
+        [ObservableProperty]
+        private string _selectedDbList = "None";
+
+        [ObservableProperty]
+        private ObservableCollection<string> _availableDbLists = new();
+
         // Search Mode Properties
         [ObservableProperty]
         private SearchMode _selectedSearchMode = SearchMode.AllSeeds;
 
         public string[] SearchModeDisplayValues { get; } =
-            new[] { "All Seeds", "Single Seed", "Word List" };
+            new[] { "All Seeds", "Single Seed", "Word List", "DB List" };
 
         [ObservableProperty]
         private string _seedInput = string.Empty;
@@ -150,11 +157,20 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isWordListVisible = false;
 
+        [ObservableProperty]
+        private bool _isDbListVisible = false;
+
         // WordList index properties for SpinnerControl binding
         [ObservableProperty]
         private int _selectedWordListIndex = 0;
 
         public int WordListMaxIndex => Math.Max(0, AvailableWordLists.Count - 1);
+
+        // DBList index properties for SpinnerControl binding
+        [ObservableProperty]
+        private int _selectedDbListIndex = 0;
+
+        public int DbListMaxIndex => Math.Max(0, AvailableDbLists.Count - 1);
 
         // Search parameters
         [ObservableProperty]
@@ -249,6 +265,9 @@ namespace BalatroSeedOracle.ViewModels
 
             // Load available wordlists
             LoadAvailableWordLists();
+
+            // Load available DB lists
+            LoadAvailableDbLists();
 
             // Initialize control visibility
             UpdateControlVisibility();
@@ -362,6 +381,15 @@ namespace BalatroSeedOracle.ViewModels
                 )
                 {
                     AddConsoleMessage("Please select a wordlist for Word List mode.");
+                    return;
+                }
+
+                if (
+                    SelectedSearchMode == SearchMode.DbList
+                    && (string.IsNullOrEmpty(SelectedDbList) || SelectedDbList == "None")
+                )
+                {
+                    AddConsoleMessage("Please select a DB list for DB List mode.");
                     return;
                 }
 
@@ -598,6 +626,14 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        partial void OnSelectedDbListIndexChanged(int value)
+        {
+            if (value >= 0 && value < AvailableDbLists.Count)
+            {
+                SelectedDbList = AvailableDbLists[value];
+            }
+        }
+
         private void UpdateControlVisibility()
         {
             switch (SelectedSearchMode)
@@ -607,6 +643,7 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = true;
                     IsSeedInputVisible = false;
                     IsWordListVisible = false;
+                    IsDbListVisible = false;
                     break;
 
                 case SearchMode.SingleSeed:
@@ -614,6 +651,7 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = false;
                     IsSeedInputVisible = true;
                     IsWordListVisible = false;
+                    IsDbListVisible = false;
                     break;
 
                 case SearchMode.WordList:
@@ -621,11 +659,21 @@ namespace BalatroSeedOracle.ViewModels
                     IsContinueVisible = false; // Wordlists don't support continue
                     IsSeedInputVisible = false;
                     IsWordListVisible = true;
+                    IsDbListVisible = false;
+                    break;
+
+                case SearchMode.DbList:
+                    IsThreadsVisible = false; // DB queries don't need threads
+                    IsContinueVisible = false; // DB queries don't support continue
+                    IsSeedInputVisible = false;
+                    IsWordListVisible = false;
+                    IsDbListVisible = true;
                     break;
             }
 
-            // Notify property changed for WordListMaxIndex
+            // Notify property changed for WordListMaxIndex and DbListMaxIndex
             OnPropertyChanged(nameof(WordListMaxIndex));
+            OnPropertyChanged(nameof(DbListMaxIndex));
         }
 
         public async Task LoadFilterAsync(string configPath)
@@ -701,6 +749,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SetNewFilterRequestedCallback(Action callback)
         {
+            DebugLogger.Log("SearchModalViewModel", "SetNewFilterRequestedCallback called");
             _newFilterRequestedAction = callback;
         }
 
@@ -710,6 +759,23 @@ namespace BalatroSeedOracle.ViewModels
         public void SetEditFilterRequestedCallback(Action<string?> callback)
         {
             _editFilterRequestedAction = callback;
+        }
+
+        /// <summary>
+        /// Handle CREATE NEW FILTER request from FilterSelector
+        /// </summary>
+        public void OnNewFilterRequested()
+        {
+            DebugLogger.Log("SearchModalViewModel", "OnNewFilterRequested called");
+            if (_newFilterRequestedAction != null)
+            {
+                DebugLogger.Log("SearchModalViewModel", "Invoking new filter requested callback");
+                _newFilterRequestedAction.Invoke();
+            }
+            else
+            {
+                DebugLogger.LogError("SearchModalViewModel", "New filter requested action is null!");
+            }
         }
 
         /// <summary>
@@ -1003,11 +1069,8 @@ namespace BalatroSeedOracle.ViewModels
                     break;
 
                 case SearchMode.SingleSeed:
-                    // Single seed mode = WordList mode with 1 seed
-                    // Create temp wordlist file
-                    var tempWordListPath = Path.Combine(AppPaths.WordListsDir, "_temp_single_seed.txt");
-                    File.WriteAllText(tempWordListPath, SeedInput);
-                    criteria.WordList = "_temp_single_seed"; // Without .txt extension
+                    // Single seed mode - use direct Motely C# API
+                    criteria.DebugSeed = SeedInput;
                     criteria.ThreadCount = 1;
                     criteria.BatchSize = 1;
                     break;
@@ -1019,6 +1082,14 @@ namespace BalatroSeedOracle.ViewModels
                     criteria.WordList = listName;
                     criteria.ThreadCount = ThreadCount;
                     criteria.BatchSize = BatchSize;
+                    break;
+
+                case SearchMode.DbList:
+                    // DB List mode - query pre-computed DuckDB databases
+                    var dbFileName = SelectedDbList;
+                    criteria.DbList = dbFileName;
+                    criteria.ThreadCount = 1; // DB queries don't use threads
+                    criteria.BatchSize = 1;
                     break;
             }
 
@@ -1780,11 +1851,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var wordListDir = Path.Combine(AppContext.BaseDirectory, "WordLists");
+                var wordListDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "WordLists");
                 if (Directory.Exists(wordListDir))
                 {
                     var files = Directory
-                        .GetFiles(wordListDir, "*.txt")
+                        .GetFiles(wordListDir, "*.db")
                         .Select(Path.GetFileName)
                         .Where(f => f != null)
                         .Cast<string>()
@@ -1821,6 +1892,55 @@ namespace BalatroSeedOracle.ViewModels
                 DebugLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load wordlists: {ex.Message}"
+                );
+            }
+        }
+
+        private void LoadAvailableDbLists()
+        {
+            try
+            {
+                var searchResultsDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "SearchResults");
+                if (Directory.Exists(searchResultsDir))
+                {
+                    var files = Directory
+                        .GetFiles(searchResultsDir, "*.db")
+                        .Select(Path.GetFileName)
+                        .Where(f => f != null)
+                        .Cast<string>()
+                        .OrderBy(f => f);
+
+                    AvailableDbLists.Clear();
+                    foreach (var file in files)
+                    {
+                        AvailableDbLists.Add(file);
+                    }
+
+                    // Select first one by default
+                    if (AvailableDbLists.Count > 0)
+                    {
+                        SelectedDbList = AvailableDbLists[0];
+                        SelectedDbListIndex = 0;
+                    }
+
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"Loaded {AvailableDbLists.Count} DB lists"
+                    );
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "SearchModalViewModel",
+                        $"SearchResults directory not found: {searchResultsDir}"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load DB lists: {ex.Message}"
                 );
             }
         }

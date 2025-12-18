@@ -10,10 +10,20 @@
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
   </PropertyGroup>
+  <!-- Android-specific settings -->
+  <PropertyGroup>
+    <AndroidSdkDirectory>$(LOCALAPPDATA)\Android\android-sdk</AndroidSdkDirectory>
+    <!-- Disable AOT compilation to allow DuckDB.NET.Data to work -->
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <!-- Suppress 16KB page size warnings until libraries are updated -->
+    <NoWarn>$(NoWarn);XA0141</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Android" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" />
   </ItemGroup>
 
   <ItemGroup>

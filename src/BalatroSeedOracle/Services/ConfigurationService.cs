@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.Storage;
 
 namespace BalatroSeedOracle.Services
 {
@@ -20,12 +21,15 @@ namespace BalatroSeedOracle.Services
     {
         private readonly UserProfileService? _userProfileService;
         private readonly IFilterCacheService? _filterCacheService;
+        private readonly IAppDataStore _store;
 
         public ConfigurationService(
+            IAppDataStore store,
             UserProfileService? userProfileService = null,
             IFilterCacheService? filterCacheService = null
         )
         {
+            _store = store ?? throw new ArgumentNullException(nameof(store));
             _userProfileService = userProfileService;
             _filterCacheService = filterCacheService;
         }
@@ -34,7 +38,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                // In browser, filePath is treated as a logical key (e.g. "Filters/MyFilter.json").
+#if !BROWSER
                 EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
+#endif
 
                 if (config is Motely.Filters.MotelyJsonConfig motelyConfig)
                 {
@@ -43,7 +50,11 @@ namespace BalatroSeedOracle.Services
                     var serializationService = new FilterSerializationService(_userProfileService!);
                     var json = serializationService.SerializeConfig(motelyConfig);
 
-                    await File.WriteAllTextAsync(filePath, json);
+#if BROWSER
+                    await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
+#else
+                    await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
+#endif
 
                     // Invalidate cache for this filter
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
@@ -66,6 +77,26 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+#if BROWSER
+                var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(json))
+                    return null;
+
+                if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
+                {
+                    // Hardened options (match FilterSerializationService)
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true,
+                    };
+                    var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
+                    return config as T;
+                }
+
+                return null;
+#else
                 if (!File.Exists(filePath))
                     return null;
 
@@ -99,6 +130,7 @@ namespace BalatroSeedOracle.Services
                     }
                     return null;
                 });
+#endif
             }
             catch
             {
@@ -110,27 +142,41 @@ namespace BalatroSeedOracle.Services
         public string GetTempFilterPath()
         {
             // Use AppPaths which handles both dev and installed scenarios correctly
+#if BROWSER
+            return "Filters/_UNSAVED_CREATION.json";
+#else
             var filtersDir = Helpers.AppPaths.FiltersDir;
             return Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+#endif
         }
 
         public string GetFiltersDirectory()
         {
             // Use AppPaths which handles both dev and installed scenarios correctly
+#if BROWSER
+            return "Filters";
+#else
             return Helpers.AppPaths.FiltersDir;
+#endif
         }
 
         public bool FileExists(string filePath)
         {
+#if BROWSER
+            return _store.ExistsAsync(filePath.Replace('\\', '/')).GetAwaiter().GetResult();
+#else
             return File.Exists(filePath);
+#endif
         }
 
         public void EnsureDirectoryExists(string directoryPath)
         {
+#if !BROWSER
             if (!string.IsNullOrEmpty(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
+#endif
         }
     }
 }

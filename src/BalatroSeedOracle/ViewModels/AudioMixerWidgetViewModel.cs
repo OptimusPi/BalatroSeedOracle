@@ -48,7 +48,7 @@ namespace BalatroSeedOracle.ViewModels
         public AudioMixerWidgetViewModel()
         {
             WidgetTitle = "Audio Mixer";
-            WidgetIcon = "🎚";
+            WidgetIcon = "TuneVertical";
             IsMinimized = true;
 
             // Set fixed position for Audio Mixer widget - third position (90px spacing)

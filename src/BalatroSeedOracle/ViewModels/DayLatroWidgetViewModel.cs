@@ -200,7 +200,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize widget properties
             WidgetTitle = "Daylatro";
-            WidgetIcon = "📅";
+            WidgetIcon = "CalendarToday";
 
             // Set fixed position for DayLatro widget - third position (90px spacing)
             PositionX = 20;
@@ -233,9 +233,6 @@ namespace BalatroSeedOracle.ViewModels
             // Load daily challenge
             LoadDailyChallenge();
         }
-
-        public DayLatroWidgetViewModel()
-            : this(DaylatroHighScoreService.Instance, new UserProfileService()) { }
 
         #endregion
 

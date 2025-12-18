@@ -20,7 +20,7 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _statusText;
         private Button? _saveButton;
 
-        private string _wordListsPath = AppPaths.WordListsDir;
+        private string _wordListsPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "WordLists");
         private string? _currentFile;
         private bool _hasUnsavedChanges = false;
 
@@ -113,7 +113,7 @@ tag"
             _fileSelector.Items.Clear();
 
             var files = Directory
-                .GetFiles(_wordListsPath, "*.txt")
+                .GetFiles(_wordListsPath, "*.db")
                 .Select(f => Path.GetFileName(f))
                 .OrderBy(f => f);
 

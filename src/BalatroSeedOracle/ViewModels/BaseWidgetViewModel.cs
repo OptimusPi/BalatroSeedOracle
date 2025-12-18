@@ -52,7 +52,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _widgetTitle = "Widget";
 
         [ObservableProperty]
-        private string _widgetIcon = "📦";
+        private string _widgetIcon = "Widgets";
 
         [ObservableProperty]
         private double _positionX = 10;

@@ -138,7 +138,7 @@ namespace BalatroSeedOracle.ViewModels
         public FrequencyDebugWidgetViewModel()
         {
             WidgetTitle = "Frequency Analyzer";
-            WidgetIcon = "📊";
+            WidgetIcon = "ChartBar";
             IsMinimized = true;
 
             // Set fixed position for FrequencyDebug widget - fifth position (90px spacing)

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -8,17 +10,16 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.API;
 
 namespace BalatroSeedOracle.ViewModels;
 
 /// <summary>
 /// ViewModel for the Host API Widget.
-/// Controls the MotelyApiServer, shows status, request log, and running background searches.
+/// Controls the clean API server, shows status, request log, and running background searches.
 /// </summary>
 public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 {
-    private MotelyApiServer? _server;
+    private Process? _server;
     private CancellationTokenSource? _serverCts;
     private bool _disposed;
     private int _backgroundSearchCount;
@@ -132,17 +133,44 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 
         try
         {
-            AddLog("Starting server...");
+            AddLog("Starting clean API server...");
 
             _serverCts = new CancellationTokenSource();
-            _server = new MotelyApiServer(Host, Port, OnServerLog, ThreadCount);
+            
+            // Launch the clean API instead of the old MotelyApiServer
+            var apiProjectPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "src", "BalatroSeedOracle.API");
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"run --project \"{apiProjectPath}\" --urls \"http://{Host}:{Port}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            _server = new Process { StartInfo = startInfo };
+            _server.OutputDataReceived += (s, e) => {
+                if (!string.IsNullOrEmpty(e.Data)) {
+                    AddLog($"[API] {e.Data}");
+                }
+            };
+            _server.ErrorDataReceived += (s, e) => {
+                if (!string.IsNullOrEmpty(e.Data)) {
+                    AddLog($"[ERROR] {e.Data}");
+                }
+            };
+
+            _server.Start();
+            _server.BeginOutputReadLine();
+            _server.BeginErrorReadLine();
 
             // Start server in background
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await _server.StartAsync(_serverCts.Token);
+                    await _server.WaitForExitAsync(_serverCts.Token);
                 }
                 catch (OperationCanceledException)
                 {

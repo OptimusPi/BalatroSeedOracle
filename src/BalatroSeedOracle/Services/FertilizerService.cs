@@ -145,23 +145,33 @@ public class FertilizerService : IDisposable
             if (seedList.Count == 0) return;
 
 #if !BROWSER
-            await Task.Run(async () =>
+            // Desktop: Use COPY FROM for ultra-fast bulk import
+            var tempFile = Path.GetTempFileName();
+            try
             {
-                // Write seeds to a temp CSV file
-                var tempFile = Path.GetTempFileName();
-                File.WriteAllLines(tempFile, seedList);
+                // ASYNC file write - don't block the thread!
+                await File.WriteAllLinesAsync(tempFile, seedList, ct);
 
-                // Use DuckDB's native COPY for ultra-fast bulk import
                 var escapedPath = tempFile.Replace("\\", "/");
                 await _connection.CopyFromFileAsync(
                     escapedPath,
                     "seeds",
                     "DELIMITER E'\\n', HEADER false, QUOTE '', FORMAT csv) ON CONFLICT DO NOTHING"
                 );
-
-                // Clean up temp file
-                try { File.Delete(tempFile); } catch { }
-            }, ct);
+            }
+            finally
+            {
+                // ALWAYS cleanup temp file, log failures
+                try
+                {
+                    if (File.Exists(tempFile))
+                        File.Delete(tempFile);
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("FertilizerService", $"Temp file cleanup failed: {ex.Message}");
+                }
+            }
 #else
             // Browser: Use appender for bulk insert
             await using var appender = await _connection.CreateAppenderAsync("main", "seeds");

@@ -5,8 +5,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
+    <!-- Define BROWSER compilation symbol for conditional compilation -->
+    <DefineConstants>BROWSER</DefineConstants>
     <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
-    <WasmEnableThreads>true</WasmEnableThreads>
+    <WasmEnableThreads>false</WasmEnableThreads>
     <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
   </PropertyGroup>
@@ -19,13 +21,14 @@
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+      <AdditionalProperties>DefineConstants=BROWSER</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 
   <!-- Ensure Motely is built as a library when referenced transitively -->
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
-      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
+      <AdditionalProperties>IsReferenced=true;DefineConstants=BROWSER</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -273,6 +273,29 @@
                                       Padding="8,4"/>
                         </StackPanel>
 
+                        <!-- DB List Dropdown (DB List only) -->
+                        <StackPanel IsVisible="{Binding IsDbListVisible}"
+                                    Margin="0,0,0,8">
+                            <TextBlock Text="DB List"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource MediumGrey}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,4"/>
+                            <ComboBox Name="DbListDropdown"
+                                      ItemsSource="{Binding AvailableDbLists}"
+                                      SelectedIndex="{Binding SelectedDbListIndex}"
+                                      HorizontalAlignment="Stretch"
+                                      FontFamily="{StaticResource BalatroFont}"
+                                      FontSize="12"
+                                      Background="{StaticResource DarkTealGrey}"
+                                      Foreground="{StaticResource White}"
+                                      BorderBrush="{StaticResource DarkBorder}"
+                                      BorderThickness="2"
+                                      CornerRadius="4"
+                                      Padding="8,4"/>
+                        </StackPanel>
+
                     </StackPanel>
                 </ScrollViewer>
             </Border>

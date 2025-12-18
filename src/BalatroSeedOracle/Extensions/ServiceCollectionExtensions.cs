@@ -1,5 +1,6 @@
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,13 @@ namespace BalatroSeedOracle.Extensions
 
             // Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();
+
+            // App data storage (Desktop: files, Browser: localStorage)
+#if BROWSER
+            services.AddSingleton<IAppDataStore, BrowserLocalStorageAppDataStore>();
+#else
+            services.AddSingleton<IAppDataStore, DesktopAppDataStore>();
+#endif
 
             // DuckDB - Platform-specific implementations
 #if BROWSER

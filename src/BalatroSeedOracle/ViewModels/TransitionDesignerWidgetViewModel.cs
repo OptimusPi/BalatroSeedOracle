@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Configure widget appearance
             WidgetTitle = "Transition Designer";
-            WidgetIcon = "🎬";
+            WidgetIcon = "MovieOpen";
             IsMinimized = true;
 
             PositionX = 20;

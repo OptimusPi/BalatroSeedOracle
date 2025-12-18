@@ -31,5 +31,7 @@
         "**/*.pdb",
         "**/*.cache"
     ],
-    "dotnet.defaultSolution": "BalatroSeedOracle.sln"
+    "dotnet.defaultSolution": "BalatroSeedOracle.sln",
+    "search.useGlobalIgnoreFiles": true,
+    "search.useParentIgnoreFiles": true
 }

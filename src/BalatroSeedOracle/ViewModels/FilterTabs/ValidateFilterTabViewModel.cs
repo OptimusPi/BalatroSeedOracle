@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.Platform.Storage;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -719,19 +721,55 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Export to desktop as JSON
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
-                var exportPath = Path.Combine(desktopPath, exportFileName);
-
                 // Use custom serializer to include mode and preserve score formatting
                 var userProfileService = ServiceHelper.GetService<UserProfileService>();
                 var serializer = new FilterSerializationService(userProfileService!);
                 var json = serializer.SerializeConfig(config);
+
+                var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+
+#if BROWSER
+                var topLevel = TopLevelHelper.GetTopLevel();
+                if (topLevel?.StorageProvider == null)
+                {
+                    UpdateStatus("Export not available (no StorageProvider)", true);
+                    return;
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
+                    {
+                        Title = "Export Filter",
+                        SuggestedFileName = exportFileName,
+                        FileTypeChoices = new[]
+                        {
+                            new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
+                        },
+                    }
+                );
+
+                if (file == null)
+                {
+                    UpdateStatus("Export cancelled", true);
+                    return;
+                }
+
+                await using (var stream = await file.OpenWriteAsync())
+                {
+                    var bytes = Encoding.UTF8.GetBytes(json);
+                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                }
+
+                UpdateStatus($"✅ Exported: {exportFileName}", false);
+#else
+                // Desktop: Export to desktop folder
+                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                var exportPath = Path.Combine(desktopPath, exportFileName);
                 await File.WriteAllTextAsync(exportPath, json);
 
                 UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
                 DebugLogger.Log("ValidateFilterTab", $"Filter exported to: {exportPath}");
+#endif
             }
             catch (Exception ex)
             {

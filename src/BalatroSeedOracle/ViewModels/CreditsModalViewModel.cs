@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using Avalonia.Platform;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -14,24 +15,41 @@ namespace BalatroSeedOracle.ViewModels
         {
             // credits.json is included as an <AvaloniaResource Include="Assets\\**" /> in the csproj,
             // so load it through the Avalonia asset loader, NOT raw File IO (which breaks after publish).
+            // This works cross-platform including browser!
             try
             {
                 var uri = new Uri("avares://BalatroSeedOracle/Assets/credits.json");
+
+                DebugLogger.Log("CreditsModalViewModel", $"Loading credits from: {uri}");
+
                 if (AssetLoader.Exists(uri))
                 {
+                    DebugLogger.Log("CreditsModalViewModel", "Asset exists, loading...");
                     using var stream = AssetLoader.Open(uri);
                     using var reader = new StreamReader(stream);
                     var json = reader.ReadToEnd();
-                    var items = JsonSerializer.Deserialize<Credit[]>(json) ?? Array.Empty<Credit>();
+
+                    DebugLogger.Log("CreditsModalViewModel", $"JSON loaded, length: {json.Length}");
+
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var items = JsonSerializer.Deserialize<Credit[]>(json, options) ?? Array.Empty<Credit>();
+
+                    DebugLogger.Log("CreditsModalViewModel", $"Deserialized {items.Length} credits");
+
                     Credits = new ObservableCollection<Credit>(items);
                 }
                 else
                 {
+                    DebugLogger.LogError("CreditsModalViewModel", $"Asset does not exist: {uri}");
                     Credits = new ObservableCollection<Credit>();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                DebugLogger.LogError("CreditsModalViewModel", $"Failed to load credits: {ex.Message}\n{ex.StackTrace}");
                 Credits = new ObservableCollection<Credit>();
             }
         }

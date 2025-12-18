@@ -20,7 +20,7 @@
                     Cursor="Hand"
                     Command="{Binding ExpandCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding WidgetIcon}" FontSize="19" VerticalAlignment="Center"/>
+                    <TextBlock Text="?" Width="19" Height="19" VerticalAlignment="Center" FontSize="16"/>
                     <TextBlock Text="{Binding WidgetTitle}" FontSize="16" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -74,7 +74,7 @@
 
                         <!-- Title - NOW ON RIGHT! -->
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding WidgetIcon}" FontSize="15" VerticalAlignment="Center"/>
+                            <TextBlock Text="?" Width="15" Height="15" VerticalAlignment="Center" FontSize="12"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
                                        FontFamily="{StaticResource BalatroFont}"

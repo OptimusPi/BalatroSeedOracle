@@ -44,7 +44,7 @@ public partial class FertilizerWidgetViewModel : BaseWidgetViewModel, IDisposabl
 
         // Widget settings
         WidgetTitle = "Fertilizer";
-        WidgetIcon = "\U0001F331"; // Seedling emoji
+        WidgetIcon = "Sprout";
         Width = 320;
         Height = 280;
         PositionX = 20;

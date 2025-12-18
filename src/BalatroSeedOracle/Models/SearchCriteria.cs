@@ -25,6 +25,10 @@ public class SearchCriteria
     // e.g. `--wordlist leet` would use this file: `./WordLists/sick.txt`
     public string? WordList { get; set; }
 
+    // Similar to MotelyCLI --dblist parameter for querying pre-computed DuckDB databases
+    // e.g. `--dblist my_results.db` would query the specified DuckDB file directly
+    public string? DbList { get; set; }
+
     // similar to MotelyCLI --debug parameter
     public bool EnableDebugOutput { get; set; } = false;
 

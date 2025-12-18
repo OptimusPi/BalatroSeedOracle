@@ -1513,7 +1513,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                await Task.Run(() => LoadGameData());
+                // Just call directly - it's fast enough, no need for Task.Run
+                LoadGameData();
 
                 // Apply filter and update loading state on UI thread
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>

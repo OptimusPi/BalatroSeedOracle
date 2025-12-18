@@ -24,7 +24,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
         _eventFXService = eventFXService;
 
         WidgetTitle = "Event FX";
-        WidgetIcon = "✨";
+        WidgetIcon = "AutoFix";
         IsMinimized = true;
 
         PositionX = 20;

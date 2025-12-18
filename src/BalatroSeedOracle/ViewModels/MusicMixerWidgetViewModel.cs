@@ -45,7 +45,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Configure widget appearance and position - fourth position (90px spacing)
             WidgetTitle = "Music Mixer";
-            WidgetIcon = "🎵";
+            WidgetIcon = "MusicNote";
             IsMinimized = true; // Start minimized
 
             PositionX = 20;

@@ -119,9 +119,13 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
+                DebugLogger.Log("SearchModal", "OpenFiltersModal called");
+                
                 if (ViewModel.MainMenu != null)
                 {
+                    DebugLogger.Log("SearchModal", "Calling MainMenu.ShowFiltersModal()");
                     ViewModel.MainMenu.ShowFiltersModal();
+                    DebugLogger.Log("SearchModal", "MainMenu.ShowFiltersModal() completed");
                 }
                 else
                 {
@@ -133,7 +137,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModal",
+                    $"Error opening FiltersModal: {ex.Message}"
+                );
             }
         }
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services.Storage;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
@@ -93,17 +94,19 @@ namespace BalatroSeedOracle.Services
     {
         private readonly ConcurrentDictionary<string, CachedFilter> _cache;
         private readonly ReaderWriterLockSlim _cacheLock;
+        private readonly IAppDataStore _store;
         private bool _isInitialized;
         private bool _disposed;
 
         public int Count => _cache.Count;
 
-        public FilterCacheService()
+        public FilterCacheService(IAppDataStore store)
         {
             _cache = new ConcurrentDictionary<string, CachedFilter>(
                 StringComparer.OrdinalIgnoreCase
             );
             _cacheLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+            _store = store ?? throw new ArgumentNullException(nameof(store));
             _isInitialized = false;
         }
 
@@ -115,18 +118,23 @@ namespace BalatroSeedOracle.Services
                 return;
             }
 
-#if BROWSER
-            // Browser: Skip file system access, use empty cache
-            DebugLogger.Log("FilterCacheService", "Browser mode - skipping filter cache initialization");
-            _isInitialized = true;
-            return;
-#else
             _cacheLock.EnterWriteLock();
             try
             {
                 var startTime = DateTime.UtcNow;
                 DebugLogger.Log("FilterCacheService", "Initializing filter cache...");
 
+#if BROWSER
+                var filterFiles = _store.ListKeysAsync("Filters/").GetAwaiter().GetResult()
+                    .Where(k => k.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    .Where(k =>
+                    {
+                        var fileName = Path.GetFileName(k);
+                        return !fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                            && !fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase);
+                    })
+                    .ToList();
+#else
                 var filtersDir = Helpers.AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
@@ -149,6 +157,7 @@ namespace BalatroSeedOracle.Services
                             && !fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase);
                     })
                     .ToList();
+#endif
 
                 int successCount = 0;
                 int failCount = 0;
@@ -192,7 +201,6 @@ namespace BalatroSeedOracle.Services
             {
                 _cacheLock.ExitWriteLock();
             }
-#endif
         }
 
         public MotelyJsonConfig? GetFilter(string filterId)
@@ -218,11 +226,20 @@ namespace BalatroSeedOracle.Services
 
         public MotelyJsonConfig? GetFilterByPath(string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            if (string.IsNullOrWhiteSpace(filePath))
+                return null;
+
+#if BROWSER
+            // In browser, filePath is a logical key (e.g. "Filters/MyFilter.json")
+            var filterId = Path.GetFileNameWithoutExtension(filePath);
+            return GetFilter(filterId);
+#else
+            if (!File.Exists(filePath))
                 return null;
 
             var filterId = Path.GetFileNameWithoutExtension(filePath);
             return GetFilter(filterId);
+#endif
         }
 
         public IReadOnlyList<CachedFilter> GetAllFilters()
@@ -247,10 +264,17 @@ namespace BalatroSeedOracle.Services
             _cacheLock.EnterWriteLock();
             try
             {
+                string filePath;
+#if BROWSER
+                filePath = $"Filters/{filterId}.json";
+                var exists = _store.ExistsAsync(filePath).GetAwaiter().GetResult();
+#else
                 var filtersDir = Helpers.AppPaths.FiltersDir;
-                var filePath = Path.Combine(filtersDir, $"{filterId}.json");
+                filePath = Path.Combine(filtersDir, $"{filterId}.json");
+                var exists = File.Exists(filePath);
+#endif
 
-                if (!File.Exists(filePath))
+                if (!exists)
                 {
                     // File was deleted, remove from cache
                     _cache.TryRemove(filterId, out _);
@@ -261,7 +285,7 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                // Reload from disk
+                // Reload
                 var cachedFilter = LoadFilterFromDisk(filePath, filterId);
                 if (cachedFilter != null)
                 {
@@ -330,11 +354,26 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                MotelyJsonConfig? config = null;
+
+#if BROWSER
+                var json = _store.ReadTextAsync(filePath.Replace('\\', '/')).GetAwaiter().GetResult();
+                if (string.IsNullOrWhiteSpace(json))
+                    return null;
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true,
+                };
+                config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                var lastModifiedUtc = DateTime.UtcNow;
+                var sizeBytes = json.Length;
+#else
                 var fileInfo = new FileInfo(filePath);
                 if (!fileInfo.Exists)
                     return null;
-
-                MotelyJsonConfig? config = null;
 
                 // Try Motely's loader first (handles edge cases better)
                 if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var motelyConfig))
@@ -355,6 +394,10 @@ namespace BalatroSeedOracle.Services
                     config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
                 }
 
+                var lastModifiedUtc = fileInfo.LastWriteTimeUtc;
+                var sizeBytes = fileInfo.Length;
+#endif
+
                 if (config == null || string.IsNullOrWhiteSpace(config.Name))
                 {
                     DebugLogger.LogError(
@@ -369,8 +412,8 @@ namespace BalatroSeedOracle.Services
                     FilterId = filterId,
                     FilePath = filePath,
                     Config = config,
-                    LastModified = fileInfo.LastWriteTimeUtc,
-                    FileSizeBytes = fileInfo.Length,
+                    LastModified = lastModifiedUtc,
+                    FileSizeBytes = sizeBytes,
                 };
             }
             catch (Exception ex)

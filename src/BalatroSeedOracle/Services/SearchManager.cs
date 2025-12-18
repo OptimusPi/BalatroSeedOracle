@@ -215,8 +215,8 @@ namespace BalatroSeedOracle.Services
                 $"Starting search with config path: {criteria.ConfigPath}"
             );
 
-            // Start the search with just criteria - config is handled separately
-            await searchInstance.StartSearchAsync(criteria);
+            // Start the search with in-memory config (works on both desktop and browser)
+            await searchInstance.StartSearchAsync(criteria, config);
 
             DebugLogger.Log("SearchManager", $"Search started successfully!");
             return searchInstance;

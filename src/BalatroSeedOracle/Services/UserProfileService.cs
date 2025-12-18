@@ -1,10 +1,10 @@
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services.Storage;
 
 namespace BalatroSeedOracle.Services
 {
@@ -14,7 +14,8 @@ namespace BalatroSeedOracle.Services
     public class UserProfileService : IDisposable
     {
         private const string PROFILE_FILENAME = "userprofile.json";
-        private readonly string _profilePath;
+        private readonly IAppDataStore _store;
+        private readonly string _profileKey;
         private UserProfile _currentProfile;
         private DateTime _lastSaveLogTime = DateTime.MinValue;
         private int _suppressedSaveLogs = 0;
@@ -27,12 +28,12 @@ namespace BalatroSeedOracle.Services
         private bool _hasPendingSave = false;
         private volatile bool _disposed = false;
 
-        public UserProfileService()
+        public UserProfileService(IAppDataStore store)
         {
-            // Use AppPaths for proper cross-platform data directory
-            _profilePath = Path.Combine(AppPaths.UserDir, PROFILE_FILENAME);
+            _store = store ?? throw new ArgumentNullException(nameof(store));
+            _profileKey = $"User/{PROFILE_FILENAME}";
 
-            DebugLogger.Log("UserProfileService", $"Profile path: {_profilePath}");
+            DebugLogger.Log("UserProfileService", $"Profile key: {_profileKey}");
 
             _currentProfile = LoadProfile();
 
@@ -178,16 +179,11 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private UserProfile LoadProfile()
         {
-#if BROWSER
-            // Browser: Skip file loading, return default profile
-            DebugLogger.Log("UserProfileService", "Browser mode - using default profile");
-            return new UserProfile();
-#else
             try
             {
-                if (File.Exists(_profilePath))
+                var json = _store.ReadTextAsync(_profileKey).GetAwaiter().GetResult();
+                if (!string.IsNullOrWhiteSpace(json))
                 {
-                    var json = File.ReadAllText(_profilePath);
                     var profile = JsonSerializer.Deserialize<UserProfile>(json);
                     if (profile != null)
                     {
@@ -210,7 +206,6 @@ namespace BalatroSeedOracle.Services
                 "Creating new profile with default author: pifreak"
             );
             return new UserProfile();
-#endif
         }
 
         /// <summary>
@@ -284,13 +279,6 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Ensure directory exists
-                var directory = Path.GetDirectoryName(_profilePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
                 // Create a snapshot of the current profile to avoid race conditions
                 UserProfile profileSnapshot;
                 lock (_saveLock)
@@ -302,14 +290,14 @@ namespace BalatroSeedOracle.Services
                     profileSnapshot,
                     new JsonSerializerOptions { WriteIndented = true }
                 );
-                await File.WriteAllTextAsync(_profilePath, json).ConfigureAwait(false);
+                await _store.WriteTextAsync(_profileKey, json).ConfigureAwait(false);
                 ThrottledLogSaveSuccess();
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "UserProfileService",
-                    $"Error saving profile to {_profilePath}: {ex.Message}"
+                    $"Error saving profile: {ex.Message}"
                 );
             }
         }
@@ -322,13 +310,6 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Ensure directory exists
-                var directory = Path.GetDirectoryName(_profilePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
                 // Create a snapshot of the current profile to avoid race conditions
                 UserProfile profileSnapshot;
                 lock (_saveLock)
@@ -340,14 +321,14 @@ namespace BalatroSeedOracle.Services
                     profileSnapshot,
                     new JsonSerializerOptions { WriteIndented = true }
                 );
-                File.WriteAllText(_profilePath, json);
+                _store.WriteTextAsync(_profileKey, json).GetAwaiter().GetResult();
                 ThrottledLogSaveSuccess();
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "UserProfileService",
-                    $"Error saving profile to {_profilePath}: {ex.Message}"
+                    $"Error saving profile: {ex.Message}"
                 );
             }
         }
@@ -362,7 +343,7 @@ namespace BalatroSeedOracle.Services
                 {
                     DebugLogger.Log(
                         "UserProfileService",
-                        $"Profile saved to: {_profilePath} (suppressed {_suppressedSaveLogs} rapid logs)"
+                        $"Profile saved (suppressed {_suppressedSaveLogs} rapid logs)"
                     );
                     _suppressedSaveLogs = 0;
                 }
@@ -370,7 +351,7 @@ namespace BalatroSeedOracle.Services
                 {
                     DebugLogger.Log(
                         "UserProfileService",
-                        $"Profile saved successfully to: {_profilePath}"
+                        "Profile saved successfully"
                     );
                 }
                 _lastSaveLogTime = now;

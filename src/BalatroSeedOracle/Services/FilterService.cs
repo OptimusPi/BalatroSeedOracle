@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.Storage;
 
 namespace BalatroSeedOracle.Services
 {
@@ -19,10 +20,12 @@ namespace BalatroSeedOracle.Services
     public class FilterService : IFilterService
     {
         private readonly IConfigurationService _configurationService;
+        private readonly IAppDataStore _store;
 
-        public FilterService(IConfigurationService configurationService)
+        public FilterService(IConfigurationService configurationService, IAppDataStore store)
         {
             _configurationService = configurationService;
+            _store = store;
         }
 
         public Task<List<string>> GetAvailableFiltersAsync()
@@ -31,6 +34,21 @@ namespace BalatroSeedOracle.Services
 
             try
             {
+#if BROWSER
+                var keys = _store.ListKeysAsync("Filters/").GetAwaiter().GetResult();
+                foreach (var key in keys)
+                {
+                    if (!key.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var fileName = Path.GetFileName(key);
+                    if (fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                        || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    filters.Add(key);
+                }
+#else
                 var filtersDir = _configurationService.GetFiltersDirectory();
                 if (Directory.Exists(filtersDir))
                 {
@@ -46,6 +64,7 @@ namespace BalatroSeedOracle.Services
                         }
                     }
                 }
+#endif
             }
             catch
             {
@@ -61,7 +80,12 @@ namespace BalatroSeedOracle.Services
             {
                 if (_configurationService.FileExists(filePath))
                 {
-                    await Task.Run(() => File.Delete(filePath));
+#if BROWSER
+                    await _store.DeleteAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+#else
+                    // File.Delete is fast, no need for Task.Run
+                    File.Delete(filePath);
+#endif
 
                     // Remove from cache (use ServiceHelper to avoid circular dependency)
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
@@ -101,7 +125,11 @@ namespace BalatroSeedOracle.Services
             // NORMALIZE the filter name to create a safe filename/ID
             var safeFileName = NormalizeFilterName(baseName);
             var fileName = $"{safeFileName}.json";
+#if BROWSER
+            return $"{filtersDir}/{fileName}";
+#else
             return Path.Combine(filtersDir, fileName);
+#endif
         }
 
         /// <summary>

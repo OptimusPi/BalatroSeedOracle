@@ -50,7 +50,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Configure base widget properties
             WidgetTitle = "Visual Settings";
-            WidgetIcon = "🎨";
+            WidgetIcon = "Palette";
             IsMinimized = true; // Start minimized
 
             // Set fixed position for Audio widget - second position (90px spacing)

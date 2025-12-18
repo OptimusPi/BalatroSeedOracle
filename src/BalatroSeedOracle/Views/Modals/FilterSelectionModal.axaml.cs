@@ -16,6 +16,7 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+using Motely.Filters;
 
 #pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
 
@@ -77,11 +78,13 @@ namespace BalatroSeedOracle.Views.Modals
 
             foreach (var file in files)
             {
-                var path = file.Path.LocalPath;
-                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if (file is not IStorageFile storageFile)
+                    continue;
+
+                var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
                 if (ext == ".jaml" || ext == ".json")
                 {
-                    await ImportFilterFile(path);
+                    await ImportFilterFile(storageFile);
                     break; // Only import first valid file
                 }
             }
@@ -432,21 +435,18 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (files.Count > 0)
             {
-                await ImportFilterFile(files[0].Path.LocalPath);
+                if (files[0] is IStorageFile storageFile)
+                {
+                    await ImportFilterFile(storageFile);
+                }
             }
         }
 
-        private async System.Threading.Tasks.Task ImportFilterFile(string filePath)
+        private async System.Threading.Tasks.Task ImportFilterFile(IStorageFile file)
         {
             try
             {
-                if (!File.Exists(filePath))
-                {
-                    DebugLogger.LogError("FilterSelectionModal", $"File not found: {filePath}");
-                    return;
-                }
-
-                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                var extension = Path.GetExtension(file.Name).ToLowerInvariant();
                 if (extension != ".jaml" && extension != ".json")
                 {
                     DebugLogger.LogError(
@@ -456,25 +456,60 @@ namespace BalatroSeedOracle.Views.Modals
                     return;
                 }
 
-                // Copy file to Filters directory
-                var fileName = Path.GetFileName(filePath);
-                var destPath = Path.Combine(AppPaths.FiltersDir, fileName);
-
-                // If file already exists, generate unique name
-                if (File.Exists(destPath))
+                string text;
+                await using (var stream = await file.OpenReadAsync())
+                using (var reader = new StreamReader(stream))
                 {
-                    var baseName = Path.GetFileNameWithoutExtension(fileName);
-                    var ext = Path.GetExtension(fileName);
-                    var counter = 1;
-                    while (File.Exists(destPath))
+                    text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                MotelyJsonConfig? config;
+                if (extension == ".jaml")
+                {
+                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
                     {
-                        destPath = Path.Combine(AppPaths.FiltersDir, $"{baseName}_{counter}{ext}");
-                        counter++;
+                        DebugLogger.LogError(
+                            "FilterSelectionModal",
+                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
+                        );
+                        return;
+                    }
+                }
+                else
+                {
+                    config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                        text,
+                        new System.Text.Json.JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                            AllowTrailingCommas = true,
+                        }
+                    );
+
+                    if (config == null)
+                    {
+                        DebugLogger.LogError("FilterSelectionModal", "Failed to deserialize JSON filter");
+                        return;
                     }
                 }
 
-                File.Copy(filePath, destPath);
-                DebugLogger.Log("FilterSelectionModal", $"Imported filter to: {destPath}");
+                var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+                var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+
+                var baseName = !string.IsNullOrWhiteSpace(config.Name)
+                    ? config.Name
+                    : Path.GetFileNameWithoutExtension(file.Name);
+                var destKey = filterService.GenerateFilterFileName(baseName);
+
+                var saved = await configurationService.SaveFilterAsync(destKey, config).ConfigureAwait(false);
+                if (!saved)
+                {
+                    DebugLogger.LogError("FilterSelectionModal", "Failed to save imported filter");
+                    return;
+                }
+
+                DebugLogger.Log("FilterSelectionModal", $"Imported filter as: {destKey}");
 
                 // Refresh the filter list
                 ViewModel?.FilterList.RefreshFilters();

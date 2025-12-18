@@ -42,6 +42,11 @@ public partial class App : Application
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
+#if BROWSER
+            // Seed sample filters into browser storage so users have something to start with.
+            SeedBrowserSampleFilters();
+#endif
+
             // Initialize filter cache on startup for fast filter access
             InitializeFilterCache();
 
@@ -411,6 +416,31 @@ public partial class App : Application
         );
         // ClipboardService is static, no need to register
     }
+
+#if BROWSER
+    private void SeedBrowserSampleFilters()
+    {
+        try
+        {
+            var store = _serviceProvider?.GetService<Services.Storage.IAppDataStore>();
+            if (store == null)
+                return;
+
+            const string sampleKey = "Filters/TelescopeObservatory.json";
+            var exists = store.ExistsAsync(sampleKey).GetAwaiter().GetResult();
+            if (exists)
+                return;
+
+            var sampleJson = "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
+
+            store.WriteTextAsync(sampleKey, sampleJson).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Best-effort seeding; ignore failures.
+        }
+    }
+#endif
 
     private void InitializeFilterCache()
     {

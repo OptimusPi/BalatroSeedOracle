@@ -94,6 +94,7 @@
   <!-- Browser-specific packages -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <!-- Exclude desktop-only files from browser build -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">

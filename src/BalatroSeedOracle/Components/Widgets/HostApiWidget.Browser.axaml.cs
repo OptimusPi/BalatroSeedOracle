@@ -7,9 +7,9 @@ namespace BalatroSeedOracle.Components;
 /// The actual HostApiWidget requires MotelyApiServer which uses HttpListener
 /// and other desktop-only APIs. This stub satisfies XAML references in browser builds.
 /// </summary>
-public partial class HostApiWidget : BaseWidgetControl
+public partial class HostApiWidgetBrowser : BaseWidgetControl
 {
-    public HostApiWidget()
+    public HostApiWidgetBrowser()
     {
         InitializeComponent();
         // Hide by default since this is just a placeholder

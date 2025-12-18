@@ -21,7 +21,8 @@ namespace BalatroSeedOracle.Components
             // Initialize ViewModel with dependency injection
             ViewModel = new DayLatroWidgetViewModel(
                 DaylatroHighScoreService.Instance,
-                App.GetService<UserProfileService>() ?? new UserProfileService()
+                App.GetService<UserProfileService>()
+                    ?? throw new InvalidOperationException("UserProfileService not available")
             );
 
             // Set DataContext for bindings

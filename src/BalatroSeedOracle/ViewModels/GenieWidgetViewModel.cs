@@ -66,7 +66,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             _searchManager = searchManager;
             WidgetTitle = "Filter Genie";
-            WidgetIcon = "🧞";
+            WidgetIcon = "Creation";
             IsMinimized = true;
 
             // Set fixed position for Genie widget - first position
