@@ -167,10 +167,10 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
             _server.BeginErrorReadLine();
 
             // Set up proper async server exit handling
-            _serverExitTcs = new TaskCompletionSource<bool>();
+            _serverMonitorCts = new CancellationTokenSource();
             _server.EnableRaisingEvents = true;
-            _server.Exited += (s, e) => {
-                _serverExitTcs?.SetResult(true);
+            _server.Exited += async (s, e) => {
+                await HandleServerExit();
             };
 
             // Wait for server to start with proper timeout
@@ -199,9 +199,6 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
             {
                 UpdateServerStatus(true);
                 AddLog($"Server started on {ServerUrl}");
-                
-                // Monitor server exit as part of this async method - NO FIRE-AND-FORGET
-                await MonitorServerExitAsync();
             }
             else
             {
@@ -250,8 +247,9 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
                 }
             }
             _server = null;
-            _serverExitTcs?.SetResult(false);
-            _serverExitTcs = null;
+            _serverMonitorCts?.Cancel();
+            _serverMonitorCts?.Dispose();
+            _serverMonitorCts = null;
             _serverCts?.Dispose();
             _serverCts = null;
 
@@ -361,22 +359,14 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         }
     }
 
-    private async Task MonitorServerExitAsync()
+    private async Task HandleServerExit()
     {
-        try
-        {
-            if (_serverExitTcs != null)
-            {
-                await _serverExitTcs.Task;
-            }
-        }
-        finally
-        {
-            await Dispatcher.UIThread.InvokeAsync(() => {
-                AddLog("Server process exited");
-                UpdateServerStatus(false);
-            });
-        }
+        if (_serverMonitorCts?.IsCancellationRequested == true) return;
+        
+        await Dispatcher.UIThread.InvokeAsync(() => {
+            AddLog("Server process exited");
+            UpdateServerStatus(false);
+        });
     }
 
     protected override void OnExpanded()
