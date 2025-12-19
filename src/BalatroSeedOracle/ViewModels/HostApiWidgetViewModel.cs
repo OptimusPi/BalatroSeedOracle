@@ -21,6 +21,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 {
     private Process? _server;
     private CancellationTokenSource? _serverCts;
+    private CancellationTokenSource? _serverMonitorCts;
     private bool _disposed;
     private int _backgroundSearchCount;
     private readonly UserProfileService? _userProfileService;
@@ -66,7 +67,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
         // Widget settings
         WidgetTitle = "Host API";
-        WidgetIcon = "\U0001F310"; // Globe emoji
+        WidgetIcon = "🌐"; // Globe icon
         Width = 400;
         Height = 450;
         PositionX = 100;
@@ -165,34 +166,42 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
             _server.BeginOutputReadLine();
             _server.BeginErrorReadLine();
 
-            // Start server in background
-            _ = Task.Run(async () =>
+            // Set up proper async server exit handling
+            _serverExitTcs = new TaskCompletionSource<bool>();
+            _server.EnableRaisingEvents = true;
+            _server.Exited += (s, e) => {
+                _serverExitTcs?.SetResult(true);
+            };
+
+            // Wait for server to start with proper timeout
+            var startupTimeout = TimeSpan.FromSeconds(10);
+            var startTime = DateTime.UtcNow;
+            
+            while (DateTime.UtcNow - startTime < startupTimeout)
             {
-                try
+                if (_server.HasExited)
                 {
-                    await _server.WaitForExitAsync(_serverCts.Token);
+                    AddLog("Server exited immediately during startup");
+                    return;
                 }
-                catch (OperationCanceledException)
+                
+                // Check if server is responding (could add health check here)
+                await Task.Delay(100);
+                
+                // For now, just wait a reasonable startup time
+                if (DateTime.UtcNow - startTime > TimeSpan.FromSeconds(2))
                 {
-                    // Expected when stopping
+                    break;
                 }
-                catch (Exception ex)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        AddLog($"Server error: {ex.Message}");
-                        UpdateServerStatus(false);
-                    });
-                }
-            });
+            }
 
-            // Give it a moment to start
-            await Task.Delay(500);
-
-            if (_server.IsRunning)
+            if (_server != null && !_server.HasExited)
             {
                 UpdateServerStatus(true);
                 AddLog($"Server started on {ServerUrl}");
+                
+                // Monitor server exit as part of this async method - NO FIRE-AND-FORGET
+                await MonitorServerExitAsync();
             }
             else
             {
@@ -214,8 +223,35 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         {
             AddLog("Stopping server...");
             _serverCts?.Cancel();
-            _server?.Stop();
+
+            if (_server != null)
+            {
+                try
+                {
+                    if (!_server.HasExited)
+                    {
+                        // Try graceful close first; if the process has no window this will be a no-op.
+                        _server.CloseMainWindow();
+                        if (!_server.WaitForExit(1500))
+                        {
+                            _server.Kill(entireProcessTree: true);
+                            _server.WaitForExit(1500);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log shutdown error but continue cleanup
+                    System.Diagnostics.Debug.WriteLine($"Server shutdown error: {ex.Message}");
+                }
+                finally
+                {
+                    _server?.Dispose();
+                }
+            }
             _server = null;
+            _serverExitTcs?.SetResult(false);
+            _serverExitTcs = null;
             _serverCts?.Dispose();
             _serverCts = null;
 
@@ -322,6 +358,24 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         {
             AddLog($"Failed to open browser: {ex.Message}");
             DebugLogger.LogError("HostApiWidget", $"Failed to open browser: {ex.Message}");
+        }
+    }
+
+    private async Task MonitorServerExitAsync()
+    {
+        try
+        {
+            if (_serverExitTcs != null)
+            {
+                await _serverExitTcs.Task;
+            }
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => {
+                AddLog("Server process exited");
+                UpdateServerStatus(false);
+            });
         }
     }
 
