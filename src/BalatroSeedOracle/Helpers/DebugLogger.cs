@@ -36,7 +36,11 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
+#if !BROWSER
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+#else
+            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+#endif
         }
 #endif
     }
@@ -51,7 +55,11 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
+#if !BROWSER
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {message}");
+#else
+            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {message}");
+#endif
         }
 #endif
     }
@@ -63,7 +71,11 @@ public static class DebugLogger
     public static void LogError(string message)
     {
 #if DEBUG
+#if !BROWSER
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] ERROR: {message}");
+#else
+        System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] ERROR: {message}");
+#endif
 #endif
     }
 
@@ -75,7 +87,11 @@ public static class DebugLogger
     public static void LogError(string category, string message)
     {
 #if DEBUG
+#if !BROWSER
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] ERROR: {message}");
+#else
+        System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] ERROR: {message}");
+#endif
 #endif
     }
 
@@ -89,7 +105,11 @@ public static class DebugLogger
 #if DEBUG
         if (EnableVerboseLogging || EnableDebugLogging)
         {
+#if !BROWSER
             Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] INFO: {message}");
+#else
+            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] INFO: {message}");
+#endif
         }
 #endif
     }
@@ -102,9 +122,12 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
-            Console.WriteLine(
-                $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {string.Format(format, args)}"
-            );
+            var msg = $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {string.Format(format, args)}";
+#if !BROWSER
+            Console.WriteLine(msg);
+#else
+            System.Diagnostics.Debug.WriteLine(msg);
+#endif
         }
 #endif
     }

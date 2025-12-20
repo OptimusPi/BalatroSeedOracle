@@ -61,6 +61,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
     public ICommand StartServerCommand { get; }
     public ICommand StopServerCommand { get; }
     public ICommand OpenWebUiCommand { get; }
+    public ICommand StartTunnelCommand { get; }
     public ICommand ClearLogCommand { get; }
 
     public HostApiWidgetViewModel()
@@ -68,8 +69,8 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         // Widget settings
         WidgetTitle = "Host API";
         WidgetIcon = "🌐"; // Globe icon
-        Width = 400;
-        Height = 450;
+        Width = 500;
+        Height = 600;
         PositionX = 100;
         PositionY = 380;
 
@@ -77,8 +78,9 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         StartServerCommand = new AsyncRelayCommand(StartServerAsync, () => !IsServerRunning);
         StopServerCommand = new RelayCommand(StopServer, () => IsServerRunning);
         OpenWebUiCommand = new RelayCommand(OpenWebUi, () => IsServerRunning);
+        StartTunnelCommand = new RelayCommand(StartTunnel, () => IsServerRunning);
         ClearLogCommand = new RelayCommand(ClearLog);
-
+        
         // Load saved settings
         _userProfileService = App.GetService<UserProfileService>();
         LoadSettings();
@@ -229,10 +231,10 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
                     {
                         // Try graceful close first; if the process has no window this will be a no-op.
                         _server.CloseMainWindow();
-                        if (!_server.WaitForExit(1500))
+                        if (!_server.WaitForExit(200))
                         {
                             _server.Kill(entireProcessTree: true);
-                            _server.WaitForExit(1500);
+                            _server.WaitForExit(200);
                         }
                     }
                 }
@@ -294,7 +296,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
 
     private void OnServerLog(string message)
     {
-        Console.WriteLine(message);
+        DebugLogger.Log("HostApi", message);
         Dispatcher.UIThread.Post(() =>
         {
             AddLog(message);

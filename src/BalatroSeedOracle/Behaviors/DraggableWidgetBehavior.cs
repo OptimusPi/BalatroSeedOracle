@@ -267,7 +267,7 @@ namespace BalatroSeedOracle.Behaviors
                     _isDragging = true;
                     e.Pointer.Capture(AssociatedObject);
 
-                    Console.WriteLine($"[DragBehavior] Starting drag from ({X}, {Y})");
+                    DebugLogger.Log("DragBehavior", $"Starting drag from ({X}, {Y})");
 
                     // DON'T call BringToFront here - it causes pointer capture loss!
                     // We'll bring to front when drag completes instead

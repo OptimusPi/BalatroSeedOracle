@@ -28,7 +28,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SoundEffectsService] Error playing {soundName}: {ex.Message}");
+                DebugLogger.LogError("SoundEffectsService", $"Error playing {soundName}: {ex.Message}");
             }
         }
 

@@ -89,10 +89,12 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+#if !BROWSER
             Console.Error.WriteLine($"Error during initialization: {ex}");
             Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
-#if !BROWSER
             Console.ReadLine();  // Desktop only - browser has no stdin
+#else
+            System.Diagnostics.Debug.WriteLine($"Error during initialization: {ex}");
 #endif
             throw;
         }
@@ -108,6 +110,7 @@ public partial class App : Application
         DebugLogger.LogError("UI_THREAD", $"Stack trace: {ex.StackTrace}");
 
         // Write to crash log
+#if !BROWSER
         try
         {
             var crashLog = System.IO.Path.Combine(AppPaths.DataRootDir, "crash.log");
@@ -123,6 +126,9 @@ public partial class App : Application
         {
             // If crash log writing fails, at least we logged to debug
         }
+#else
+        // In browser, we could log to local storage if needed, but for now just rely on DebugLogger
+#endif
 
         // Mark as handled to prevent app crash
         // The error is logged, and the app will continue running
@@ -235,53 +241,12 @@ public partial class App : Application
         }
     }
 
-    /// <summary>
-    /// Applies shader parameters to BalatroMainMenu's shader background.
-    /// Uses reflection to access private _shaderBackground field.
-    /// </summary>
     private void ApplyShaderParametersToMainMenu(
         Views.BalatroMainMenu mainMenu,
         Models.ShaderParameters parameters
     )
     {
-        try
-        {
-            // Access private _shaderBackground field via reflection
-            var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
-                "_shaderBackground",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
-            );
-
-            if (
-                shaderBackgroundField?.GetValue(mainMenu)
-                is Controls.BalatroShaderBackground shaderBackground
-            )
-            {
-                // Apply all shader parameters
-                shaderBackground.SetTime(parameters.TimeSpeed);
-                shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
-                shaderBackground.SetMainColor(parameters.MainColor);
-                shaderBackground.SetAccentColor(parameters.AccentColor);
-                shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
-                shaderBackground.SetContrast(parameters.Contrast);
-                shaderBackground.SetSpinAmount(parameters.SpinAmount);
-                shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
-                shaderBackground.SetZoomScale(parameters.ZoomScale);
-                shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
-                shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
-                shaderBackground.SetPixelSize(parameters.PixelSize);
-                shaderBackground.SetSpinEase(parameters.SpinEase);
-                shaderBackground.SetLoopCount(parameters.LoopCount);
-            }
-            else
-            {
-                DebugLogger.LogError("App", "Failed to get shader background reference");
-            }
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to apply shader parameters: {ex.Message}");
-        }
+        mainMenu.ApplyShaderParameters(parameters);
     }
 
     /// <summary>

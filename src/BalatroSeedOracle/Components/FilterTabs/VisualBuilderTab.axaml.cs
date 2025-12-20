@@ -1466,6 +1466,36 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Create the View
             var configPanel = new Components.ItemConfigPanel { DataContext = popupViewModel };
 
+            // Find preview content control
+            var previewContent = this.FindControl<ContentControl>("ItemPreviewContent");
+            if (previewContent != null)
+            {
+                // Create a clone for preview so we don't move the original control
+                var previewItem = new Models.FilterItem
+                {
+                    Name = item.Name,
+                    DisplayName = item.DisplayName,
+                    ItemImage = item.ItemImage,
+                    Type = item.Type,
+                    Category = item.Category,
+                    ItemKey = item.ItemKey,
+                    Value = item.Value,
+                    Label = item.Label,
+                    Score = item.Score,
+                    MinCount = item.MinCount,
+                    Edition = item.Edition,
+                    Stickers = item.Stickers,
+                    Seal = item.Seal,
+                    Enhancement = item.Enhancement,
+                    Rank = item.Rank,
+                    Suit = item.Suit,
+                    IsFavorite = item.IsFavorite,
+                    Status = item.Status
+                };
+
+                previewContent.Content = new Components.FilterItemCard { DataContext = previewItem };
+            }
+
             // Show the overlay with the popup
             popupContent.Content = configPanel;
             overlay.IsVisible = true;
@@ -1696,84 +1726,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             try
             {
-                // Find adorner layer - walk up visual tree to find Window/TopLevel
-                _topLevel = TopLevel.GetTopLevel(this);
-
-                if (_topLevel == null)
+                // Use our local Canvas instead of the global AdornerLayer
+                var adornerCanvas = this.FindControl<Canvas>("DragAdornerLayer");
+                if (adornerCanvas == null)
                 {
-                    // Fallback: manually walk up the visual tree
-                    Visual? current = this.GetVisualParent();
-                    while (current != null && _topLevel == null)
-                    {
-                        if (current is TopLevel tl)
-                        {
-                            _topLevel = tl;
-                            break;
-                        }
-                        current = current.GetVisualParent();
-                    }
-                }
-
-                // Find the AdornerLayer - it's a child of the Panel in MainWindow
-                if (_topLevel != null)
-                {
-                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"🔍 ADORNER SEARCH [{timestamp}] TopLevel type: {_topLevel.GetType().Name}"
-                    );
-
-                    // First try standard GetAdornerLayer
-                    _adornerLayer = AdornerLayer.GetAdornerLayer(_topLevel);
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"GetAdornerLayer result: {_adornerLayer != null}"
-                    );
-
-                    if (_adornerLayer == null && _topLevel is Window window)
-                    {
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            $"Window.Content type: {window.Content?.GetType().Name ?? "null"}"
-                        );
-
-                        if (window.Content is Panel panel)
-                        {
-                            DebugLogger.Log(
-                                "VisualBuilderTab",
-                                $"Panel has {panel.Children.Count} children"
-                            );
-
-                            // Fallback: Find AdornerLayer in the Panel's children
-                            foreach (var child in panel.Children)
-                            {
-                                DebugLogger.Log(
-                                    "VisualBuilderTab",
-                                    $"Panel child: {child.GetType().Name}"
-                                );
-
-                                if (child is AdornerLayer layer)
-                                {
-                                    _adornerLayer = layer;
-                                    DebugLogger.Log(
-                                        "VisualBuilderTab",
-                                        "✅ Found AdornerLayer in MainWindow Panel"
-                                    );
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (_adornerLayer == null)
-                {
-                    DebugLogger.LogError(
-                        "VisualBuilderTab",
-                        $"Failed to find adorner layer! TopLevel: {_topLevel != null}"
-                    );
+                    DebugLogger.LogError("VisualBuilderTab", "DragAdornerLayer Canvas not found!");
                     return;
                 }
+
+                _topLevel = TopLevel.GetTopLevel(this);
 
                 // Create ghost image - different for operators vs regular items
                 Control cardContent;

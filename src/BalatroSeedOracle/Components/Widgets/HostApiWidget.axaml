@@ -85,140 +85,125 @@
                 Width="400"
                 IsVisible="{Binding !IsMinimized}">
 
-            <Grid RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <!-- Header -->
                 <local:WidgetHeader Grid.Row="0" />
 
-                <!-- Content -->
-                <StackPanel Grid.Row="1" Spacing="12" Margin="15">
+                <!-- Status Display -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource DarkBackground}"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="15,15,15,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Server Status"
+                                       FontSize="12"
+                                       Foreground="{StaticResource LightGrey}"/>
+                            <TextBlock Text="{Binding ServerStatus}"
+                                       FontSize="24"
+                                       FontFamily="{StaticResource BalatroFont}">
+                                <TextBlock.Foreground>
+                                    <SolidColorBrush Color="{Binding ServerStatusColor}"/>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                            <TextBlock Text="{Binding ServerUrl}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource LightGrey}"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                            <Button Classes="btn-green"
+                                    Command="{Binding StartServerCommand}"
+                                    IsVisible="{Binding !IsServerRunning}"
+                                    Width="80">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <icons:PackIconMaterial Kind="Play" Width="12" Height="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Start" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="btn-red"
+                                    Command="{Binding StopServerCommand}"
+                                    IsVisible="{Binding IsServerRunning}"
+                                    Width="80">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <icons:PackIconMaterial Kind="Stop" Width="12" Height="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-                    <!-- Status Display -->
-                    <Border Background="{StaticResource DarkBackground}"
-                            CornerRadius="8"
-                            Padding="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="4">
-                                <TextBlock Text="Server Status"
-                                           FontSize="12"
-                                           Foreground="{StaticResource LightGrey}"/>
-                                <TextBlock Text="{Binding ServerStatus}"
-                                           FontSize="24"
-                                           FontFamily="{StaticResource BalatroFont}">
-                                    <TextBlock.Foreground>
-                                        <SolidColorBrush Color="{Binding ServerStatusColor}"/>
-                                    </TextBlock.Foreground>
-                                </TextBlock>
-                                <TextBlock Text="{Binding ServerUrl}"
-                                           FontSize="11"
-                                           Foreground="{StaticResource LightGrey}"
-                                           Opacity="0.7"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
-                                <Button Classes="btn-green"
-                                        Command="{Binding StartServerCommand}"
-                                        IsVisible="{Binding !IsServerRunning}"
-                                        Width="80">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <icons:PackIconMaterial Kind="Play" Width="12" Height="12" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Start" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Classes="btn-red"
-                                        Command="{Binding StopServerCommand}"
-                                        IsVisible="{Binding IsServerRunning}"
-                                        Width="80">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <icons:PackIconMaterial Kind="Stop" Width="12" Height="12" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Stop" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- Server Settings -->
-                    <Border Background="{StaticResource DarkBackground}"
-                            CornerRadius="8"
-                            Padding="12"
-                            IsEnabled="{Binding !IsServerRunning}">
-                        <Grid ColumnDefinitions="*,80" RowDefinitions="Auto,Auto">
-                            <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,10,0">
-                                <TextBlock Text="Host" FontSize="11" Foreground="{StaticResource LightGrey}"/>
-                                <TextBox Text="{Binding Host}"
-                                         Background="{StaticResource ModalGrey}"
-                                         BorderThickness="1"
-                                         Padding="8,4"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4">
-                                <TextBlock Text="Port" FontSize="11" Foreground="{StaticResource LightGrey}"/>
-                                <TextBox Text="{Binding Port}"
-                                         Background="{StaticResource ModalGrey}"
-                                         BorderThickness="1"
-                                         Padding="8,4"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Spacing="4" Margin="0,8,0,0">
-                                <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <TextBlock Grid.Column="0" Text="Threads" FontSize="11" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center"/>
-                                    <Slider Grid.Column="1" 
-                                            Minimum="1" 
-                                            Maximum="{Binding MaxThreads}" 
-                                            Value="{Binding ThreadCount}"
-                                            Margin="10,0"/>
-                                    <TextBlock Grid.Column="2" 
-                                               Text="{Binding ThreadCount}" 
-                                               FontSize="11" 
-                                               Foreground="{StaticResource White}" 
-                                               VerticalAlignment="Center"
-                                               Width="20"/>
-                                </Grid>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- Open Web UI Button -->
-                    <Button Classes="btn-blue"
+                <!-- Action Buttons -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,*" Margin="15,12,15,0" Spacing="8">
+                    <Button Grid.Column="0"
+                            Classes="btn-blue"
                             Command="{Binding OpenWebUiCommand}"
                             HorizontalAlignment="Stretch"
                             IsEnabled="{Binding IsServerRunning}">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <icons:PackIconMaterial Kind="OpenInNew" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="Open Web UI" VerticalAlignment="Center"/>
+                            <TextBlock Text="Web UI" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                    <Button Grid.Column="1"
+                            Classes="btn-purple"
+                            Command="{Binding StartTunnelCommand}"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding IsServerRunning}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <icons:PackIconMaterial Kind="Earth" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Tunnel" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
-                    <!-- Request Log -->
-                    <Border Background="{StaticResource DarkBackground}"
-                            CornerRadius="6"
-                            Padding="8"
-                            Height="150">
-                        <Grid RowDefinitions="Auto,*">
-                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
-                                <TextBlock Grid.Column="0"
-                                           Text="Request Log"
-                                           FontSize="11"
-                                           Foreground="{StaticResource White}"/>
-                                <Button Grid.Column="1"
-                                        Content="Clear"
+                <!-- Request Log -->
+                <Border Grid.Row="3"
+                        Background="{StaticResource DarkBackground}"
+                        CornerRadius="6"
+                        Padding="8"
+                        Margin="15,12,15,15">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                            <TextBlock Grid.Column="0"
+                                       Text="Request Log"
+                                       FontSize="11"
+                                       Foreground="{StaticResource White}"
+                                       VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                <Button Content="COPY LOGS"
+                                        FontSize="10"
+                                        Padding="6,2"
+                                        Background="#FF9800"
+                                        Foreground="Black"
+                                        FontWeight="Bold"
+                                        BorderThickness="0"
+                                        CornerRadius="4"
+                                        Click="CopyLog_Click"/>
+                                <Button Content="Clear"
                                         FontSize="10"
                                         Padding="6,2"
                                         Background="Transparent"
                                         BorderThickness="0"
                                         Command="{Binding ClearLogCommand}"/>
-                            </Grid>
-                            <TextBox Grid.Row="1"
-                                     Text="{Binding LogText}"
-                                     IsReadOnly="True"
-                                     AcceptsReturn="True"
-                                     TextWrapping="NoWrap"
-                                     FontSize="10"
-                                     FontFamily="Consolas, monospace"
-                                     Foreground="{StaticResource White}"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Padding="0"/>
+                            </StackPanel>
                         </Grid>
-                    </Border>
-                </StackPanel>
+                        <TextBox Grid.Row="1"
+                                 Text="{Binding LogText}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="NoWrap"
+                                 FontSize="10"
+                                 FontFamily="Consolas, monospace"
+                                 Foreground="{StaticResource White}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"/>
+                    </Grid>
+                </Border>
+
             </Grid>
         </Border>
     </Grid>

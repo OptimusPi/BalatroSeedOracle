@@ -248,10 +248,65 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        partial void OnEditionChanged(string value)
+        {
+            if (_item != null)
+                _item.Edition = value == "None" ? null : value;
+        }
+
+        partial void OnSealChanged(string value)
+        {
+            if (_item != null)
+                _item.Seal = value == "None" ? null : value;
+        }
+
+        partial void OnEnhancementChanged(string value)
+        {
+            if (_item != null)
+                _item.Enhancement = value == "None" ? null : value;
+        }
+
+        partial void OnRankChanged(string? value)
+        {
+            if (_item != null)
+                _item.Rank = value;
+        }
+
+        partial void OnSuitChanged(string? value)
+        {
+            if (_item != null)
+                _item.Suit = value;
+        }
+
+        partial void OnIsEternalChanged(bool value)
+        {
+            UpdateStickers();
+        }
+
+        partial void OnIsPerishableChanged(bool value)
+        {
+            UpdateStickers();
+        }
+
+        partial void OnIsRentalChanged(bool value)
+        {
+            UpdateStickers();
+        }
+
+        private void UpdateStickers()
+        {
+            if (_item == null) return;
+            var stickers = new System.Collections.Generic.List<string>();
+            if (IsEternal) stickers.Add("eternal");
+            if (IsPerishable) stickers.Add("perishable");
+            if (IsRental) stickers.Add("rental");
+            _item.Stickers = stickers.Count > 0 ? stickers : null;
+        }
+
         [RelayCommand]
         private void Apply()
         {
-            // Save label, score, min count
+            // Update all item properties from current ViewModel state
             _item.Label = Label;
             _item.Score = Score;
             _item.MinCount = MinCount;

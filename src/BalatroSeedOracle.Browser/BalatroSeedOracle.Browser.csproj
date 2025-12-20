@@ -8,9 +8,13 @@
     <!-- Define BROWSER compilation symbol for conditional compilation -->
     <DefineConstants>BROWSER</DefineConstants>
     <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
-    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableThreads>true</WasmEnableThreads>
     <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EnableWasmThreads)'=='true'">
+    <WasmEnableThreads>true</WasmEnableThreads>
   </PropertyGroup>
 
   <ItemGroup>

@@ -155,15 +155,16 @@ namespace BalatroSeedOracle.Controls
             var actionsColumnIndex = dataGrid.Columns.Count - 1;
             for (int i = 0; i < first!.Scores!.Length; i++)
             {
+                int index = i; // CRITICAL FIX: Capture loop variable
                 // UPPERCASE header from Labels (from SearchInstance.ColumnNames)
                 var header =
                     (
                         first.Labels != null
-                        && i < first.Labels.Length
-                        && !string.IsNullOrWhiteSpace(first.Labels[i])
+                        && index < first.Labels.Length
+                        && !string.IsNullOrWhiteSpace(first.Labels[index])
                     )
-                        ? first.Labels[i].ToUpperInvariant()
-                        : $"TALLY{i + 1}";
+                        ? first.Labels[index].ToUpperInvariant()
+                        : $"TALLY{index + 1}";
 
                 var col = new DataGridTemplateColumn
                 {
@@ -175,14 +176,15 @@ namespace BalatroSeedOracle.Controls
                 var template = new FuncDataTemplate<Models.SearchResult>(
                     (item, _) =>
                     {
+                        var fontFamily = this.FindResource("BalatroFont") as FontFamily ?? new FontFamily("Consolas");
                         var tb = new TextBlock
                         {
-                            FontFamily = new FontFamily("Consolas"),
-                            FontSize = 11,
+                            FontFamily = fontFamily,
+                            FontSize = 14,
                             Foreground = Brushes.White,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                            Text = (item?.Scores != null && i < item.Scores.Length) ? item.Scores[i].ToString() : "0"
+                            Text = (item?.Scores != null && index < item.Scores.Length) ? item.Scores[index].ToString() : "0"
                         };
                         return tb;
                     },
@@ -190,7 +192,7 @@ namespace BalatroSeedOracle.Controls
                 );
 
                 col.CellTemplate = template;
-                dataGrid.Columns.Insert(actionsColumnIndex + i, col);
+                dataGrid.Columns.Insert(actionsColumnIndex + index, col);
             }
 
             _initializedColumnCount = first.Scores.Length;

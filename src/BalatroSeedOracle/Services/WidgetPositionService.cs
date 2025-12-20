@@ -74,7 +74,8 @@ namespace BalatroSeedOracle.Services
                 )
                 {
 #if DEBUG
-                    Console.WriteLine(
+                    DebugLogger.Log(
+                        "WidgetPositionService",
                         $"Widget blocked by dynamic exclusion zone at ({x}, {y}) - zone: ({zoneX}, {zoneY}, {zoneWidth}x{zoneHeight})"
                     );
 #endif

@@ -20,7 +20,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
             var userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
-            ViewModel = new SearchModalViewModel(searchManager, userProfileService);
+            var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
+            ViewModel = new SearchModalViewModel(searchManager, userProfileService, appDataStore);
             DataContext = ViewModel;
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);

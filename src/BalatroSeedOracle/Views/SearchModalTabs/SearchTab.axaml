@@ -215,6 +215,16 @@
 
                         <!-- Mode-Specific Settings -->
 
+                        <!-- SMART Auto Mode Checkbox -->
+                        <CheckBox Name="SmartAutoModeCheckBox"
+                                  Content="SMART Auto Mode"
+                                  IsChecked="{Binding IsSmartAutoMode}"
+                                  Foreground="{StaticResource White}"
+                                  FontFamily="{StaticResource BalatroFont}"
+                                  FontSize="11"
+                                  Margin="0,0,0,8"
+                                  ToolTip.Tip="Automatically manages threads and resources for optimal performance"/>
+
                         <!-- Threads (All Seeds, Word List) -->
                         <controls:SpinnerControl Name="ThreadsSpinner"
                                                 Label="CPU Threads"
@@ -413,6 +423,19 @@
                             </Border>
                             <Border Grid.Column="1" Classes="strip-value gold">
                                 <TextBlock Text="{Binding SearchSpeed}"
+                                           Classes="strip-value-text gold"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Threads Strip (Gold) -->
+                    <Border Classes="balatro-stat-strip">
+                        <Grid ColumnDefinitions="*,*">
+                            <Border Grid.Column="0" Classes="strip-label gold">
+                                <TextBlock Text="Threads" Classes="strip-label-text"/>
+                            </Border>
+                            <Border Grid.Column="1" Classes="strip-value gold">
+                                <TextBlock Text="{Binding ThreadCount}"
                                            Classes="strip-value-text gold"/>
                             </Border>
                         </Grid>

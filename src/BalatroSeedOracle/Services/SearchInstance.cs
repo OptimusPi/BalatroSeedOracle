@@ -252,6 +252,26 @@ namespace BalatroSeedOracle.Services
                     $"SearchInstance[{_searchId}]",
                     $"Schema validation failed: {ex.Message}"
                 );
+                
+                // Ensure connection is open before returning
+                if (_connection.State != System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        // Delete any corrupt database files
+                        if (File.Exists(_dbPath))
+                            File.Delete(_dbPath);
+                        if (File.Exists(_dbPath + ".wal"))
+                            File.Delete(_dbPath + ".wal");
+                        
+                        _connection.Open();
+                    }
+                    catch (Exception reopenEx)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to reopen connection: {reopenEx.Message}");
+                    }
+                }
+                
                 // If validation fails, assume we need fresh database
                 return false;
             }
@@ -275,7 +295,15 @@ namespace BalatroSeedOracle.Services
 
                 var columnDefs = new List<string> { "seed VARCHAR PRIMARY KEY", "score INT" };
                 for (int i = 2; i < _columnNames.Count; i++)
-                    columnDefs.Add($"{_columnNames[i]} INT");
+                {
+                    // Sanitize column name: replace spaces/hyphens/dots with underscores, remove quotes
+                    var sanitized = _columnNames[i]
+                        .Replace(" ", "_")
+                        .Replace("-", "_")
+                        .Replace(".", "_")
+                        .Replace("\"", "");
+                    columnDefs.Add($"\"{sanitized}\" INT");
+                }
 
                 using (var createTable = _connection.CreateCommand())
                 {
@@ -295,11 +323,16 @@ namespace BalatroSeedOracle.Services
                 // Create indexes for all tally columns to accelerate sorting
                 for (int i = 2; i < _columnNames.Count; i++)
                 {
-                    var columnName = _columnNames[i];
+                    // Sanitize column name consistently
+                    var sanitized = _columnNames[i]
+                        .Replace(" ", "_")
+                        .Replace("-", "_")
+                        .Replace(".", "_")
+                        .Replace("\"", "");
                     using (var createTallyIndex = _connection.CreateCommand())
                     {
                         createTallyIndex.CommandText =
-                            $"CREATE INDEX IF NOT EXISTS idx_{columnName} ON results({columnName} DESC);";
+                            $"CREATE INDEX IF NOT EXISTS idx_{sanitized} ON results(\"{sanitized}\" DESC);";
                         createTallyIndex.ExecuteNonQuery();
                     }
                 }
@@ -1785,7 +1818,7 @@ namespace BalatroSeedOracle.Services
                 var scoreDesc = new MotelyJsonSeedScoreDesc(
                     scoringConfig,
                     criteria.MinScore,
-                    criteria.MinScore == 0,
+                    criteria.MinScore > 0 ? ScoreCutoffMode.Manual : ScoreCutoffMode.None,
                     resultCallback
                 );
 
@@ -2258,6 +2291,8 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.DuckDB;
 using Motely;
 using Motely.Filters;
+using Motely.Utils;
+using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.Services
 {
@@ -2266,11 +2301,16 @@ namespace BalatroSeedOracle.Services
         private readonly object _resultsLock = new();
         private readonly List<SearchResult> _results = new();
         private readonly List<string> _columnNames = new();
-        private CancellationTokenSource? _cts;
+        private CancellationTokenSource? _cancellationTokenSource;
         private volatile bool _isRunning;
         private volatile bool _hasNewResultsSinceLastQuery;
-        private DateTime _searchStart;
+        private DateTime _searchStartTime;
         private MotelyJsonConfig? _currentConfig;
+        private IMotelySearch? _currentSearch;
+        private Task? _searchTask;
+        private volatile int _resultCount = 0;
+        private volatile int _bestScore = 0;
+        private DateTime _lastHighScoreTime = DateTime.MinValue;
 
         public SearchInstance(string searchId, string _)
         {
@@ -2280,7 +2320,7 @@ namespace BalatroSeedOracle.Services
         public event EventHandler<SearchProgress>? ProgressUpdated;
         public event EventHandler<SearchResultEventArgs>? ResultReceived;
         public event EventHandler? SearchCompleted;
-        public event EventHandler<float>? NewHighScoreFound;
+        public event EventHandler<int>? NewHighScoreFound; // Changed to int to match desktop
         public event EventHandler? SearchStarted;
 
         public string SearchId { get; }
@@ -2299,7 +2339,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public TimeSpan SearchDuration => _isRunning ? DateTime.UtcNow - _searchStart : TimeSpan.Zero;
+        public TimeSpan SearchDuration => _isRunning ? DateTime.UtcNow - _searchStartTime : TimeSpan.Zero;
         public bool HasNewResultsSinceLastQuery => _hasNewResultsSinceLastQuery;
         public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
 
@@ -2308,13 +2348,18 @@ namespace BalatroSeedOracle.Services
         public Task StartSearchAsync(SearchCriteria criteria)
         {
             // This overload expects ConfigPath. In browser we always run in-memory.
+            // If we have a ConfigPath, we might try to load it via storage, but 
+            // generally the UI calls the overload with MotelyJsonConfig directly.
             return Task.CompletedTask;
         }
 
         public Task StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
         {
             if (_isRunning)
+            {
+                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search already running");
                 return Task.CompletedTask;
+            }
 
             _currentConfig = config;
             FilterName = config.Name ?? "Unnamed";
@@ -2327,7 +2372,6 @@ namespace BalatroSeedOracle.Services
             }
             catch
             {
-                // If something goes wrong, still allow search to run; results will just be seed+score.
                 _columnNames.Add("seed");
                 _columnNames.Add("score");
             }
@@ -2336,118 +2380,295 @@ namespace BalatroSeedOracle.Services
             {
                 _results.Clear();
             }
+            _resultCount = 0;
+            _bestScore = 0;
 
             _hasNewResultsSinceLastQuery = false;
-            _cts = new CancellationTokenSource();
-            _searchStart = DateTime.UtcNow;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _searchStartTime = DateTime.UtcNow;
             _isRunning = true;
 
             SearchStarted?.Invoke(this, EventArgs.Empty);
 
-            // Real Motely search implementation for browser
-            _ = Task.Run(
-                () =>
-                {
-                    try
-                    {
-                        var maxResults = criteria.MaxResults > 0 ? criteria.MaxResults : 1;
-                        var targetResults = Math.Max(1, maxResults);
-                        var debugSeed = string.IsNullOrWhiteSpace(criteria.DebugSeed) ? null : criteria.DebugSeed;
-
-                        // Browser build doesn't have JsonSearchParams/JsonSearchExecutor, use simplified implementation
-                        BalatroSeedOracle.Helpers.DebugLogger.Log("SearchInstance[BROWSER]", "Starting browser search implementation");
-                        
-                        // For now, just create a simple result to show the interface works
-                        // In a full implementation, this would use the actual search engine
-                        var result = new SearchResult
-                        {
-                            Seed = "BROWSER_TEST_SEED",
-                            TotalScore = 100
-                        };
-                        
-                        lock (_resultsLock)
-                        {
-                            _results.Add(result);
-                            _hasNewResultsSinceLastQuery = true;
-                        }
-                        
-                        ResultReceived?.Invoke(this, new SearchResultEventArgs { Result = result });
-                        NewHighScoreFound?.Invoke(this, result.TotalScore);
-                        
-                        // Report progress for the browser test result
-                        ProgressUpdated?.Invoke(
-                            this,
-                            new SearchProgress
-                            {
-                                PercentComplete = 100,
-                                SeedsSearched = 1,
-                                SeedsPerMillisecond = 0,
-                                ResultsFound = ResultCount,
-                                Message = "Complete (Browser Test)",
-                                IsComplete = true,
-                                HasError = false,
-                            }
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        BalatroSeedOracle.Helpers.DebugLogger.LogError("SearchInstance[BROWSER]", ex.Message);
-                        ProgressUpdated?.Invoke(
-                            this,
-                            new SearchProgress
-                            {
-                                Message = ex.Message,
-                                HasError = true,
-                                IsComplete = true,
-                            }
-                        );
-                    }
-                    finally
-                    {
-                        _isRunning = false;
-                        SearchCompleted?.Invoke(this, EventArgs.Empty);
-                    }
-                },
-                _cts.Token
-            );
+            // Fire-and-forget search task
+            _searchTask = RunSearchWithCompletionHandling(config, criteria, null, _cancellationTokenSource.Token);
 
             return Task.CompletedTask;
         }
 
-        private void OnSeedFound(MotelySeedScoreTally tally)
+        private async Task RunSearchWithCompletionHandling(
+            MotelyJsonConfig filterConfig,
+            SearchCriteria searchCriteria,
+            IProgress<SearchProgress>? progress,
+            CancellationToken cancellationToken
+        )
         {
-            if (!_isRunning || _cts?.IsCancellationRequested == true)
-                return;
-
-            var result = new SearchResult
+            try
             {
-                Seed = tally.Seed,
-                TotalScore = tally.Score,
-                Scores = null, // tally doesn't expose individual scores in this context
-            };
-
-            lock (_resultsLock)
-            {
-                _results.Add(result);
-                _hasNewResultsSinceLastQuery = true;
+                await RunSearchInProcess(filterConfig, searchCriteria, progress, cancellationToken)
+                    .ConfigureAwait(false);
+                
+                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search completed");
             }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search was cancelled");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{SearchId}]",
+                    $"Search failed: {ex.Message}"
+                );
+                // In browser we might want to surface this error to UI
+            }
+            finally
+            {
+                _isRunning = false;
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
-            ResultReceived?.Invoke(this, new SearchResultEventArgs { Result = result });
-            NewHighScoreFound?.Invoke(this, result.TotalScore);
+        private async Task RunSearchInProcess(
+            MotelyJsonConfig config,
+            SearchCriteria criteria,
+            IProgress<SearchProgress>? progress,
+            CancellationToken cancellationToken
+        )
+        {
+            DebugLogger.LogImportant($"SearchInstance[{SearchId}]", "RunSearchInProcess (Browser) ENTERED!");
+
+            try
+            {
+                // Pre-flight validation
+                if (config == null) throw new ArgumentNullException(nameof(config));
+                MotelyJsonConfigValidator.ValidateConfig(config);
+
+                // Prepare MUST clauses
+                List<MotelyJsonConfig.MotleyJsonFilterClause> mustClauses =
+                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+
+                // Initialize parsed enums
+                foreach (var clause in mustClauses)
+                {
+                    clause.InitializeParsedEnums();
+                }
+
+                // Group by category
+                var clausesByCategory = FilterCategoryMapper.GroupClausesByCategory(mustClauses);
+
+                if (clausesByCategory.Count == 0)
+                {
+                    throw new Exception("Cannot search with an empty filter!");
+                }
+
+                // Create scoring config
+                var scoringConfig = new MotelyJsonConfig
+                {
+                    Name = config.Name,
+                    Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Should = config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                };
+                scoringConfig.Mode = config.Mode;
+                scoringConfig.PostProcess();
+
+                // Result callback
+                Action<MotelySeedScoreTally> resultCallback = (result) =>
+                {
+                    try
+                    {
+                        Interlocked.Increment(ref _resultCount);
+
+                        var searchResult = new SearchResult
+                        {
+                            Seed = result.Seed,
+                            TotalScore = result.Score,
+                            Scores = result.TallyColumns?.ToArray(),
+                        };
+
+                        lock (_resultsLock)
+                        {
+                            _results.Add(searchResult);
+                            _hasNewResultsSinceLastQuery = true;
+                        }
+
+                        // Fire events
+                        ResultReceived?.Invoke(this, new SearchResultEventArgs { Result = searchResult });
+
+                         // Check for new high score (with 10s cooldown after search start)
+                        var elapsed = DateTime.UtcNow - _searchStartTime;
+                        if (elapsed.TotalSeconds > 10 && result.Score > _bestScore)
+                        {
+                            var timeSinceLast = DateTime.UtcNow - _lastHighScoreTime;
+                            if (timeSinceLast.TotalSeconds > 2)
+                            {
+                                _bestScore = result.Score;
+                                _lastHighScoreTime = DateTime.UtcNow;
+                                NewHighScoreFound?.Invoke(this, result.Score);
+                            }
+                        }
+                        else if (result.Score > _bestScore)
+                        {
+                            _bestScore = result.Score;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError($"SearchInstance[{SearchId}]", $"Error processing result: {ex.Message}");
+                    }
+                };
+
+                var scoreDesc = new MotelyJsonSeedScoreDesc(
+                    scoringConfig,
+                    criteria.MinScore,
+                    criteria.MinScore > 0 ? ScoreCutoffMode.Manual : ScoreCutoffMode.None,
+                    resultCallback
+                );
+
+                // Setup Search
+                IMotelySearch search;
+                var categories = clausesByCategory.Keys.ToList();
+
+                if (categories.Count > 1)
+                {
+                    // Composite Filter
+                    var allRequiredClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(mustClauses);
+                    
+                    if (config.MustNot != null && config.MustNot.Count > 0)
+                    {
+                        foreach (var clause in config.MustNot)
+                        {
+                            clause.InitializeParsedEnums();
+                            clause.IsInverted = true;
+                            allRequiredClauses.Add(clause);
+                        }
+                    }
+
+                    var compositeFilter = new MotelyCompositeFilterDesc(allRequiredClauses);
+                    var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
+
+                    compositeSettings = ConfigureSettings(compositeSettings, criteria, scoreDesc, config);
+                    search = compositeSettings.WithSequentialSearch().Start();
+                }
+                else
+                {
+                    var primaryCategory = categories[0];
+                    var primaryClauses = clausesByCategory[primaryCategory];
+
+                    if (primaryCategory == FilterCategory.And || primaryCategory == FilterCategory.Or)
+                    {
+                        var compositeFilter = new MotelyCompositeFilterDesc(primaryClauses);
+                        var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
+                        compositeSettings = ConfigureSettings(compositeSettings, criteria, scoreDesc, config);
+                        search = compositeSettings.WithSequentialSearch().Start();
+                    }
+                    else
+                    {
+                        var filterDesc = SpecializedFilterFactory.CreateSpecializedFilter(primaryCategory, primaryClauses);
+                        var searchSettings = SpecializedFilterFactory.CreateSearchSettings(filterDesc);
+                        
+                        // Apply common settings manually since SpecializedFilterFactory returns ISearchSettings interface
+                        searchSettings = searchSettings
+                            .WithThreadCount(criteria.ThreadCount)
+                            .WithBatchCharacterCount(criteria.BatchSize)
+                            .WithStartBatchIndex((long)criteria.StartBatch);
+                            
+                        if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                            searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
+                            
+                        searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
+                        
+                        search = searchSettings.Start();
+                    }
+                }
+
+                _currentSearch = search;
+                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search started in browser!");
+
+                // Wait loop
+                while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
+                {
+                    var completedBatches = _currentSearch.CompletedBatchCount;
+                    double progressPercent = 0.0;
+                    var totalBatches = criteria.EndBatch - criteria.StartBatch;
+
+                    if (criteria.EndBatch != ulong.MaxValue && totalBatches > 0)
+                    {
+                        progressPercent = ((double)completedBatches / totalBatches) * 100.0;
+                    }
+                    else
+                    {
+                        progressPercent = Math.Min(99.99, completedBatches * 0.001);
+                    }
+
+                    var elapsed = DateTime.UtcNow - _searchStartTime;
+                    var seedsSearched = (ulong)(Math.Max(0, completedBatches) * Math.Pow(35, criteria.BatchSize + 1));
+                    var seedsPerMs = elapsed.TotalMilliseconds > 0 ? seedsSearched / elapsed.TotalMilliseconds : 0;
+
+                    var currentProgress = new SearchProgress
+                    {
+                        SeedsSearched = seedsSearched,
+                        PercentComplete = progressPercent,
+                        SeedsPerMillisecond = seedsPerMs,
+                        Message = $"Searched {completedBatches:N0} batches",
+                        ResultsFound = _resultCount,
+                    };
+
+                    ProgressUpdated?.Invoke(this, currentProgress);
+                    
+                    // Polling delay for UI responsiveness - reduced to 10ms as requested for "snappy" updates
+                    await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                 // Cleanup
+                 if (_currentSearch != null)
+                 {
+                     try { _currentSearch.Dispose(); } catch {}
+                     _currentSearch = null;
+                 }
+            }
+        }
+
+        private MotelySearchSettings<T> ConfigureSettings<T>(
+            MotelySearchSettings<T> settings, 
+            SearchCriteria criteria, 
+            MotelyJsonSeedScoreDesc scoreDesc,
+            MotelyJsonConfig config) where T : struct, IMotelySeedFilter
+        {
+            settings = settings
+                .WithThreadCount(criteria.ThreadCount)
+                .WithBatchCharacterCount(criteria.BatchSize)
+                .WithStartBatchIndex((long)criteria.StartBatch);
+
+            if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
+                settings = settings.WithEndBatchIndex((long)criteria.EndBatch);
+
+            if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck deck))
+                settings = settings.WithDeck(deck);
+
+            if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake stake))
+                settings = settings.WithStake(stake);
+
+            settings = settings.WithSeedScoreProvider(scoreDesc);
+            
+            if (config.Should?.Count > 0)
+                settings = settings.WithCsvOutput(true);
+
+            return settings;
         }
 
         public void StopSearch()
         {
-            if (!_isRunning)
-                return;
+            if (!_isRunning) return;
             _isRunning = false;
             try
             {
-                _cts?.Cancel();
+                _cancellationTokenSource?.Cancel();
             }
-            catch
-            {
-            }
+            catch {}
         }
 
         public void PauseSearch() { }
@@ -2477,7 +2698,7 @@ namespace BalatroSeedOracle.Services
 
         public Task<List<SearchResult>> GetTopResultsAsync(string _, bool __, int maxResults)
         {
-            // Sort column ignored; return highest score first.
+            // Sort column ignored in browser for now; return highest score first.
             lock (_resultsLock)
                 return Task.FromResult(_results.OrderByDescending(r => r.TotalScore).Take(maxResults).ToList());
         }
@@ -2497,20 +2718,8 @@ namespace BalatroSeedOracle.Services
         public void Dispose()
         {
             StopSearch();
-            _cts?.Dispose();
-            _cts = null;
-        }
-
-        private static string GenerateRandomSeed()
-        {
-            var digits = Motely.Motely.SeedDigits;
-            var rng = Random.Shared;
-            var chars = new char[Motely.Motely.MaxSeedLength];
-            for (int i = 0; i < chars.Length; i++)
-            {
-                chars[i] = digits[rng.Next(digits.Length)];
-            }
-            return new string(chars);
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 }

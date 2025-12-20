@@ -139,9 +139,7 @@ namespace BalatroSeedOracle.ViewModels
             _soundFlowAudioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
             if (_soundFlowAudioManager != null)
             {
-                Console.WriteLine(
-                    "[ViewModel] Using SoundFlowAudioManager (8 independent tracks)"
-                );
+                DebugLogger.Log("ViewModel", "Using SoundFlowAudioManager (8 independent tracks)");
             }
 
             // Get EventFX service for triggering configured animations
@@ -751,9 +749,7 @@ namespace BalatroSeedOracle.ViewModels
                     };
 
                     _soundFlowAudioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-                    Console.WriteLine(
-                        "[ViewModel] ✅ Audio analysis handler connected (awaiting effect binding system)"
-                    );
+                    DebugLogger.Log("ViewModel", "✅ Audio analysis handler connected (awaiting effect binding system)");
                 }
             }
             catch (Exception ex)

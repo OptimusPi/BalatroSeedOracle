@@ -557,6 +557,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _ = Task.Run(LoadGameDataAsync);
         }
 
+        private readonly Dictionary<string, List<ItemGroup>> _groupedItemsCache = new();
+
         public void SetCategory(string category)
         {
             // Auto-clear search when switching tabs for clean navigation
@@ -571,8 +573,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             IsVoucherCategorySelected = category == "Voucher";
             IsStandardCardCategorySelected = category == "StandardCard";
 
-            // Rebuild grouped items
-            RebuildGroupedItems();
+            // Use cached items if available for the empty search state
+            if (_groupedItemsCache.TryGetValue(category, out var cachedItems))
+            {
+                GroupedItems.Clear();
+                foreach (var item in cachedItems)
+                {
+                    GroupedItems.Add(item);
+                }
+            }
+            else
+            {
+                // Rebuild and cache
+                RebuildGroupedItems();
+                if (string.IsNullOrEmpty(SearchFilter))
+                {
+                    _groupedItemsCache[category] = GroupedItems.ToList();
+                }
+            }
 
             OnPropertyChanged(nameof(CurrentCategoryDisplay));
 

@@ -272,9 +272,23 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (string.IsNullOrEmpty(CurrentFilterPath))
+                // If we're creating a new filter (or currently pointing at an _UNSAVED_ temp file),
+                // and the user has provided a name, save to a real filter file name so it shows up
+                // in the filter picker (which excludes _UNSAVED_ files).
+                var originalPath = CurrentFilterPath;
+
+                if (string.IsNullOrWhiteSpace(CurrentFilterPath)
+                    || Path.GetFileName(CurrentFilterPath)
+                        .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase))
                 {
-                    CurrentFilterPath = _configurationService.GetTempFilterPath();
+                    if (!string.IsNullOrWhiteSpace(FilterName))
+                    {
+                        CurrentFilterPath = _filterService.GenerateFilterFileName(FilterName.Trim());
+                    }
+                    else
+                    {
+                        CurrentFilterPath = _configurationService.GetTempFilterPath();
+                    }
                 }
 
                 // Check if MUST/SHOULD/MUSTNOT criteria changed (not just metadata like name/description)
@@ -313,6 +327,23 @@ namespace BalatroSeedOracle.ViewModels
                         "FiltersModalViewModel",
                         $"✅ Filter saved: {CurrentFilterPath}"
                     );
+
+                    // If we successfully saved to a new non-_UNSAVED_ path, clean up the old temp file.
+                    // This prevents orphaned _UNSAVED_ files accumulating and removes confusion.
+                    if (!string.IsNullOrWhiteSpace(originalPath)
+                        && !string.Equals(originalPath, CurrentFilterPath, StringComparison.OrdinalIgnoreCase)
+                        && Path.GetFileName(originalPath)
+                            .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            await _filterService.DeleteFilterAsync(originalPath);
+                        }
+                        catch
+                        {
+                            // Best-effort cleanup only
+                        }
+                    }
                 }
                 else
                 {

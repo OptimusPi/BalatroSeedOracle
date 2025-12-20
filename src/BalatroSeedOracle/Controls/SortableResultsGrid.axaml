@@ -95,9 +95,7 @@
                   RowHeight="36"
                   Background="{StaticResource DarkBackground}"
                   Foreground="{StaticResource White}"
-                  RowBackground="#404040"
                   GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="#606060"
                   HeadersVisibility="Column"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -108,8 +106,8 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="{Binding Seed}"
-                                           FontFamily="Consolas"
-                                           FontSize="12"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="14"
                                            Foreground="{StaticResource White}"
                                            VerticalAlignment="Center"/>
                                 <Button Classes="copy-btn"
@@ -128,8 +126,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding TotalScore}"
-                                       FontFamily="Consolas"
-                                       FontSize="12"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
                                        Foreground="{StaticResource Gold}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"/>

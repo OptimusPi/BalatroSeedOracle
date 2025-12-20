@@ -1054,28 +1054,55 @@
                     </Grid>
                 </Border>
 
-            </Grid>
-        </Grid>
+                <!-- ItemConfig Full-Screen Mode Overlay - covers categories and item shelf, focuses user on config -->
+                <Grid Name="PopupOverlay"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      IsVisible="False"
+                      Background="{StaticResource SemiTransparentBlack}"
+                      ZIndex="1000"
+                      PointerPressed="OnOverlayBackgroundClick"
+                      Margin="-16,0,0,-16">
+                    <Grid ColumnDefinitions="*,350" Margin="40,60">
+                        <!-- Left Side: Item Preview (Raised above the dimming) -->
+                        <Border Grid.Column="0" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Center" 
+                                Margin="0,0,40,0"
+                                Width="142" 
+                                Height="190"
+                                Background="Transparent"
+                                IsHitTestVisible="False">
+                            <Grid>
+                                <!-- The actual item preview will be injected here via code-behind or binding -->
+                                <ContentControl Name="ItemPreviewContent" Scale="2.0"/>
+                            </Grid>
+                        </Border>
 
-        <!-- ItemConfig Full-Screen Mode Overlay - dim background, config panel in center -->
-        <Grid Name="PopupOverlay"
-              IsVisible="False"
-              Background="{StaticResource SemiTransparentBlack}"
-              ZIndex="1000"
-              PointerPressed="OnOverlayBackgroundClick">
-            <Border Background="{StaticResource ModalBackground}"
-                    BorderBrush="{StaticResource ModalInnerPanel}"
-                    BorderThickness="3"
-                    CornerRadius="8"
-                    Padding="0"
-                    BoxShadow="{StaticResource DeepBoxShadow}"
-                    MaxWidth="650"
-                    MaxHeight="750"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    PointerPressed="OnPopupContentClick">
-                <ContentControl Name="PopupContent"/>
-            </Border>
+                        <!-- Right Side: Config Panel -->
+                        <Border Grid.Column="1"
+                                Background="{StaticResource ModalBackground}"
+                                BorderBrush="{StaticResource ModalInnerPanel}"
+                                BorderThickness="3"
+                                CornerRadius="12"
+                                Padding="0"
+                                BoxShadow="{StaticResource DeepBoxShadow}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                PointerPressed="OnPopupContentClick">
+                            <ContentControl Name="PopupContent"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- Drag-and-drop Adornment Layer - hosted locally to avoid browser-mode AdornerLayer issues -->
+                <Canvas Name="DragAdornerLayer"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        IsHitTestVisible="False"
+                        ZIndex="2000"
+                        Background="Transparent"/>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

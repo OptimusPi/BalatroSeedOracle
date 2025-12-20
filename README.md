@@ -69,6 +69,20 @@ To run the optimized release build:
 dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 ```
 
+## Browser Build, SIMD and Threads
+
+- The browser app (`src/BalatroSeedOracle.Browser`) enables WebAssembly SIMD by default.
+- Threads are opt‑in to avoid broken hosting. To enable threads:
+  - Serve the built `out/` directory behind a host that adds:
+    - `Cross-Origin-Opener-Policy: same-origin`
+    - `Cross-Origin-Embedder-Policy: require-corp`
+  - Build with the threads flag:
+    ```
+    dotnet publish -c Release -p:EnableWasmThreads=true src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+    ```
+  - Recommended hosts: nginx, Caddy, Apache (reverse proxy adding headers), or any static server capable of injecting headers.
+  - Avoid GitHub Pages for threaded builds (no COOP/COEP support).
+
 ## Using the Command Line Interface
 
 For advanced users who prefer CLI usage, the bundled **MotelyJAML** search engine supports command-line operation with JSON/JAML filters, native C# filters, and seed analysis.

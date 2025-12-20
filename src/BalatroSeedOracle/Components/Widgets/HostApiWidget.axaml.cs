@@ -30,4 +30,16 @@ public partial class HostApiWidget : BaseWidgetControl
     {
         ViewModel?.Dispose();
     }
+
+    private async void CopyLog_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (ViewModel == null) return;
+        
+        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+        if (topLevel?.Clipboard != null)
+        {
+            await topLevel.Clipboard.SetTextAsync(ViewModel.LogText);
+            // Optional: ViewModel.AddLog("Log copied to clipboard");
+        }
+    }
 }

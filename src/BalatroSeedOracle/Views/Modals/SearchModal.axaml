@@ -3,7 +3,8 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.Modals.SearchModal"
-             x:DataType="vm:SearchModalViewModel">
+             x:DataType="vm:SearchModalViewModel"
+             x:CompileBindings="True">
 
     <!-- Layout: header tabs on top, content area below -->
     <Grid>

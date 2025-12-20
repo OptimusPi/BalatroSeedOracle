@@ -81,8 +81,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
 #if DEBUG
-                Console.WriteLine(
-                    $"[{WidgetTitle}] ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})"
+                DebugLogger.Log(
+                    WidgetTitle,
+                    $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})"
                 );
 #endif
                 return zIndex;

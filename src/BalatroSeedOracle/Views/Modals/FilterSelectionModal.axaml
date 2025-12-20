@@ -6,7 +6,9 @@
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
-             x:Class="BalatroSeedOracle.Views.Modals.FilterSelectionModal">
+             x:Class="BalatroSeedOracle.Views.Modals.FilterSelectionModal"
+             x:DataType="vm:FilterSelectionModalViewModel"
+             x:CompileBindings="True">
 
     <UserControl.Resources>
         <converters:ItemNameToSpriteConverter x:Key="ItemNameToSpriteConverter"/>

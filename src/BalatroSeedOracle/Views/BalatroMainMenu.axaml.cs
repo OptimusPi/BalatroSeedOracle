@@ -267,7 +267,7 @@ namespace BalatroSeedOracle.Views
             filterSelectionModal.DataContext = filterSelectionVM;
 
             // Wire up ModalCloseRequested to handle user actions
-            filterSelectionVM.ModalCloseRequested += (s, e) =>
+            filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
                 DebugLogger.Log(
                     "BalatroMainMenu",
@@ -324,7 +324,16 @@ namespace BalatroSeedOracle.Views
                             // Load filter config to get the display name
                             try
                             {
-                                var json = System.IO.File.ReadAllText(configPath);
+                                string json;
+#if BROWSER
+                                var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
+                                var storeKey = configPath.Replace('\\', '/');
+                                if (storeKey.StartsWith("/data/")) storeKey = storeKey.Substring(6);
+                                else if (storeKey.StartsWith("data/")) storeKey = storeKey.Substring(5);
+                                json = await appDataStore.ReadTextAsync(storeKey) ?? "{}";
+#else
+                                json = await System.IO.File.ReadAllTextAsync(configPath);
+#endif
                                 var config =
                                     System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                                         json
@@ -394,7 +403,18 @@ namespace BalatroSeedOracle.Views
                 if (!string.IsNullOrEmpty(configPath))
                 {
                     // DEFENSIVE: Check file exists before attempting load
-                    if (!System.IO.File.Exists(configPath))
+                    bool exists = false;
+#if BROWSER
+                    var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
+                    var storeKey = configPath.Replace('\\', '/');
+                    if (storeKey.StartsWith("/data/")) storeKey = storeKey.Substring(6);
+                    else if (storeKey.StartsWith("data/")) storeKey = storeKey.Substring(5);
+                    exists = await appDataStore.ExistsAsync(storeKey);
+#else
+                    exists = System.IO.File.Exists(configPath);
+#endif
+
+                    if (!exists)
                     {
                         Helpers.DebugLogger.LogError(
                             "BalatroMainMenu",
@@ -764,20 +784,15 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show Avalonia input dialog for filter name
+        /// Show Avalonia input dialog for filter name (Browser-compatible)
         /// </summary>
         private async Task<string?> ShowFilterNameInputDialog(string? defaultName = null)
         {
-            var dialog = new Window
-            {
-                Width = 450,
-                Height = 250,
-                CanResize = false,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                SystemDecorations = SystemDecorations.None,
-                Background = Avalonia.Media.Brushes.Transparent,
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
-            };
+            // Save current modal state to restore if cancelled
+            var previousContent = _activeModalContent;
+            var previousTitle = _mainTitleText?.Text;
+
+            var tcs = new TaskCompletionSource<string?>();
 
             // Use provided default name, or generate a fun random filter name
             string defaultText;
@@ -808,7 +823,6 @@ namespace BalatroSeedOracle.Views
                 defaultText = randomNames[new Random().Next(randomNames.Length)];
             }
 
-            string? result = null;
             var textBox = new TextBox
             {
                 Text = defaultText,
@@ -837,14 +851,12 @@ namespace BalatroSeedOracle.Views
 
             okButton.Click += (s, e) =>
             {
-                result = textBox.Text;
-                dialog.Close();
+                tcs.TrySetResult(textBox.Text);
             };
 
             cancelButton.Click += (s, e) =>
             {
-                result = null;
-                dialog.Close();
+                tcs.TrySetResult(null);
             };
 
             // Main container with border and rounded corners
@@ -854,6 +866,10 @@ namespace BalatroSeedOracle.Views
                 BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
                 BorderThickness = new Thickness(3),
                 CornerRadius = new CornerRadius(16),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Width = 450,
+                Height = 250
             };
 
             var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
@@ -922,9 +938,29 @@ namespace BalatroSeedOracle.Views
             mainGrid.Children.Add(buttonBorder);
 
             mainBorder.Child = mainGrid;
-            dialog.Content = mainBorder;
 
-            await dialog.ShowDialog((Window)this.VisualRoot!);
+            // Wrap in UserControl for ShowModalContent
+            var contentControl = new UserControl { Content = mainBorder };
+
+            // Show it
+            ShowModalContent(contentControl, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
+
+            // Focus textbox after a short delay
+            Dispatcher.UIThread.Post(async () => {
+                await Task.Delay(100);
+                textBox.Focus();
+                textBox.SelectAll();
+            });
+
+            // Wait for user input
+            var result = await tcs.Task;
+
+            // If cancelled, restore previous modal
+            if (result == null && previousContent != null)
+            {
+                ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
+            }
+
             return result;
         }
 
@@ -1132,6 +1168,33 @@ namespace BalatroSeedOracle.Views
             OpenAnalyzer(null);
         }
 
+        public void ApplyShaderParameters(Models.ShaderParameters parameters)
+        {
+            try
+            {
+                if (_shaderBackground != null)
+                {
+                    _shaderBackground.SetTime(parameters.TimeSpeed);
+                    _shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
+                    _shaderBackground.SetMainColor(parameters.MainColor);
+                    _shaderBackground.SetAccentColor(parameters.AccentColor);
+                    _shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
+                    _shaderBackground.SetContrast(parameters.Contrast);
+                    _shaderBackground.SetSpinAmount(parameters.SpinAmount);
+                    _shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
+                    _shaderBackground.SetZoomScale(parameters.ZoomScale);
+                    _shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
+                    _shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
+                    _shaderBackground.SetPixelSize(parameters.PixelSize);
+                    _shaderBackground.SetSpinEase(parameters.SpinEase);
+                    _shaderBackground.SetLoopCount(parameters.LoopCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to apply shader parameters: {ex.Message}");
+            }
+        }
         /// <summary>
         /// Open analyzer with the specified filter (filter selection happens inside analyzer)
         /// </summary>
