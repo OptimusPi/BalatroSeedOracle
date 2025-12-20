@@ -85,3 +85,5 @@ fertilizer.db.wal
 /JsonItemFilters
 /publish-browser
 /WordLists
+build_log.txt
+/published_browser
