@@ -8,7 +8,8 @@
     <!-- Define BROWSER compilation symbol for conditional compilation -->
     <DefineConstants>BROWSER</DefineConstants>
     <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
-    <WasmEnableThreads>true</WasmEnableThreads>
+    <!-- Disable for now to fix 'unreachable' error when running on non-localhost IP without HTTPS -->
+    <WasmEnableThreads>false</WasmEnableThreads>
     <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <PublishTrimmed>false</PublishTrimmed>
@@ -35,4 +36,17 @@
       <AdditionalProperties>IsReferenced=true;DefineConstants=BROWSER</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
+
+  <!-- Automatically copy build results to Motely.API/wwwroot/BSO -->
+  <Target Name="CopyBSOToMotely" AfterTargets="Build">
+    <PropertyGroup>
+      <MotelyBSODir>..\..\external\Motely\Motely.API\wwwroot\BSO\</MotelyBSODir>
+    </PropertyGroup>
+    <Message Importance="high" Text="Copying BSO Browser build to $(MotelyBSODir)..." />
+    <MakeDir Directories="$(MotelyBSODir)" Condition="!Exists('$(MotelyBSODir)')" />
+    <ItemGroup>
+      <BSOBuildFiles Include="$(OutputPath)wwwroot\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BSOBuildFiles)" DestinationFiles="@(BSOBuildFiles->'$(MotelyBSODir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

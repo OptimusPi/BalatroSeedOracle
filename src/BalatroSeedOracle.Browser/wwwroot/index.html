@@ -226,6 +226,12 @@ window.LoadingState.setProgress(5, 'Loading scripts...');
                 window.LoadingState.setProgress(100, 'Ready!');
                 console.log('.NET runtime started successfully');
 
+                // Hide the loading screen to reveal the Avalonia app
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+
             } catch (runtimeError) {
                 window.LoadingState.fail(runtimeError);
             }

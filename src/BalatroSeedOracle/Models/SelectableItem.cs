@@ -225,9 +225,49 @@ namespace BalatroSeedOracle.Models
 
         // Additional properties for filter configuration
         public string? Value { get; set; }
-        public string? Label { get; set; }
-        public int Score { get; set; } = 1;
-        public int MinCount { get; set; } = 1;
+        
+        private string? _label;
+        public string? Label
+        {
+            get => _label;
+            set
+            {
+                if (_label != value)
+                {
+                    _label = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private int _score = 1;
+        public int Score
+        {
+            get => _score;
+            set
+            {
+                if (_score != value)
+                {
+                    _score = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private int _minCount = 1;
+        public int MinCount
+        {
+            get => _minCount;
+            set
+            {
+                if (_minCount != value)
+                {
+                    _minCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public int[]? Antes { get; set; }
         public int[]? ShopSlots { get; set; }
         public int[]? PackPositions { get; set; }
@@ -263,10 +303,61 @@ namespace BalatroSeedOracle.Models
         public bool IncludeSkipTags { get; set; }
 
         // Playing card properties
-        public string? Rank { get; set; }
-        public string? Suit { get; set; }
-        public string? Enhancement { get; set; }
-        public string? Seal { get; set; }
+        private string? _rank;
+        public string? Rank
+        {
+            get => _rank;
+            set
+            {
+                if (_rank != value)
+                {
+                    _rank = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string? _suit;
+        public string? Suit
+        {
+            get => _suit;
+            set
+            {
+                if (_suit != value)
+                {
+                    _suit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string? _enhancement;
+        public string? Enhancement
+        {
+            get => _enhancement;
+            set
+            {
+                if (_enhancement != value)
+                {
+                    _enhancement = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string? _seal;
+        public string? Seal
+        {
+            get => _seal;
+            set
+            {
+                if (_seal != value)
+                {
+                    _seal = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         // Debuffed state (for inverted filter logic - "must NOT have this")
         private bool _isDebuffed;

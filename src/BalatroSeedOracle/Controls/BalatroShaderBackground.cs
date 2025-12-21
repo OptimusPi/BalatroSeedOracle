@@ -367,7 +367,7 @@ namespace BalatroSeedOracle.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Shader compilation failed: {error}");
+                    Helpers.DebugLogger.LogError("Shader", $"Shader compilation failed: {error}");
                 }
 
                 var psyEffect = SKRuntimeEffect.CreateShader(
@@ -380,7 +380,8 @@ namespace BalatroSeedOracle.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine(
+                    Helpers.DebugLogger.LogError(
+                        "Shader",
                         $"Psychedelic shader compilation failed: {perr}"
                     );
                 }

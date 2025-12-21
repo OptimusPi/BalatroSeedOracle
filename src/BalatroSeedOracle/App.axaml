@@ -190,6 +190,8 @@
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" />
+        <StyleInclude Source="avares://IconPacks.Avalonia.Material/Material.axaml" />
 
         <!-- ALL STYLES CONSOLIDATED HERE - ONE SOURCE OF TRUTH -->
 

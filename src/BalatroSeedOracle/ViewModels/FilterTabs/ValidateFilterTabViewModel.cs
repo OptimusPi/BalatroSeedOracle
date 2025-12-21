@@ -161,6 +161,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         $"Pre-filled from CurrentFilterPath: {FilterName}"
                     );
                 }
+                // Fall back to parent's current name/description (for new unsaved filters)
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(_parentViewModel.FilterName))
+                    {
+                        FilterName = _parentViewModel.FilterName;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_parentViewModel.FilterDescription))
+                    {
+                        FilterDescription = _parentViewModel.FilterDescription;
+                    }
+
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Pre-filled from parent state: {FilterName}"
+                    );
+                }
             }
             catch (Exception ex)
             {
@@ -1103,94 +1121,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // MUST run on UI thread to access ObservableCollections
             return Dispatcher.UIThread.Invoke(() =>
             {
-                var userProfileService = ServiceHelper.GetService<UserProfileService>();
-                var config = new MotelyJsonConfig
-                {
-                    Deck = "Red", // Default deck
-                    Stake = "White", // Default stake
-                    Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
-                    Description = FilterDescription,
-                    DateCreated = DateTime.UtcNow,
-                    Author = userProfileService?.GetAuthorName() ?? "Unknown",
-                };
+                // Use the parent's robust implementation if possible
+                var config = _parentViewModel.BuildConfigFromCurrentState();
 
-                config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-                config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-                config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-
-                // Build from VisualBuilderTab if available
-                if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
-                {
-                    // Convert FilterItem objects directly
-                    foreach (var item in visualVm.SelectedMust)
-                    {
-                        // Special handling for BannedItems - add children to MustNot
-                        if (
-                            item is Models.FilterOperatorItem operatorItem
-                            && operatorItem.OperatorType == "BannedItems"
-                        )
-                        {
-                            // BannedItems: Add each child to MustNot array
-                            foreach (var child in operatorItem.Children)
-                            {
-                                var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
-                                    $"{child.Category}:{child.Name}"
-                                )
-                                    ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
-                                    : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(
-                                    child,
-                                    itemConfig
-                                );
-                                if (clause != null)
-                                    config.MustNot.Add(clause);
-                            }
-                        }
-                        else
-                        {
-                            // Regular items and OR/AND operators (ClauseConversionService handles operators)
-                            var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
-                                $"{item.Category}:{item.Name}"
-                            )
-                                ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                                : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(
-                                item,
-                                itemConfig
-                            );
-                            if (clause != null)
-                                config.Must.Add(clause);
-                        }
-                    }
-
-                    foreach (var item in visualVm.SelectedShould)
-                    {
-                        // Convert all items (ClauseConversionService handles operators)
-                        var itemConfig = _parentViewModel.ItemConfigs.ContainsKey(
-                            $"{item.Category}:{item.Name}"
-                        )
-                            ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
-                            : new ItemConfig();
-                        var clause = _clauseConversionService.ConvertFilterItemToClause(
-                            item,
-                            itemConfig
-                        );
-                        if (clause != null)
-                            config.Should.Add(clause);
-                    }
-                }
-                else
-                {
-                    // Fallback to parent's collections
-                    return _filterConfigurationService.BuildConfigFromSelections(
-                        _parentViewModel.SelectedMust.ToList(),
-                        _parentViewModel.SelectedShould.ToList(),
-                        _parentViewModel.SelectedMustNot.ToList(),
-                        _parentViewModel.ItemConfigs,
-                        FilterName,
-                        FilterDescription
-                    );
-                }
+                // Override name and description from this tab's inputs
+                config.Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName;
+                config.Description = FilterDescription;
 
                 return config;
             });

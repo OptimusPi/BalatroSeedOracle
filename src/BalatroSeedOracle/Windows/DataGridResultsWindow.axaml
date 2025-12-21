@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="BalatroSeedOracle.Windows.DataGridResultsWindow"
         Title="Results"
@@ -27,7 +28,11 @@
                 Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
                 Padding="8">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Name="ExportButton" Content="Export ▼">
+                <Button Name="ExportButton">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="Export"/>
+                        <icons:PackIconMaterial Kind="ChevronDown" Width="14" Height="14" VerticalAlignment="Center"/>
+                    </StackPanel>
                     <Button.Flyout>
                         <MenuFlyout>
                             <MenuItem Name="ExportCsvMenuItem" Header="Export as CSV"/>
@@ -58,8 +63,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock Grid.Column="0" 
-                           Text="🔍" 
+                <icons:PackIconMaterial Grid.Column="0" 
+                           Kind="Magnify" 
+                           Width="16" Height="16"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
                 
@@ -122,7 +128,12 @@
                 <!-- SQL Toolbar -->
                 <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Name="RunQueryButton" Content="▶ Run (F5)" Classes="Success"/>
+                        <Button Name="RunQueryButton" Classes="Success">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <icons:PackIconMaterial Kind="Play" Width="14" Height="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Run (F5)"/>
+                            </StackPanel>
+                        </Button>
                         <Button Name="ClearQueryButton" Content="Clear"/>
                         <Button Name="SaveQueryButton" Content="Save Query"/>
                         <Button Name="LoadQueryButton" Content="Load Query"/>

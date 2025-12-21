@@ -29,6 +29,10 @@ public partial class App : Application
         {
             DebugLogger.Log("App", "Initializing application services");
 
+            // Set up global exception handlers
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
 #if !BROWSER
             // Ensure required directories exist (desktop only)
             EnsureDirectoriesExist();
@@ -44,11 +48,11 @@ public partial class App : Application
 
 #if BROWSER
             // Seed sample filters into browser storage so users have something to start with.
-            SeedBrowserSampleFilters();
+            _ = SeedBrowserSampleFiltersAsync();
 #endif
 
             // Initialize filter cache on startup for fast filter access
-            InitializeFilterCache();
+            _ = InitializeFilterCacheAsync();
 
             // Line below is needed to remove Avalonia data validation.
             // Without this line you will get duplicate validations from both Avalonia and CT
@@ -89,12 +93,9 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            HandleException("INITIALIZATION", ex);
 #if !BROWSER
-            Console.Error.WriteLine($"Error during initialization: {ex}");
-            Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
-            Console.ReadLine();  // Desktop only - browser has no stdin
-#else
-            System.Diagnostics.Debug.WriteLine($"Error during initialization: {ex}");
+            Console.ReadLine(); // Desktop only - browser has no stdin
 #endif
             throw;
         }
@@ -106,8 +107,48 @@ public partial class App : Application
     private void OnUIThreadException(object? sender, DispatcherUnhandledExceptionEventArgs e)
     {
         var ex = e.Exception;
-        DebugLogger.LogError("UI_THREAD", $"❌ UI thread exception: {ex.Message}");
-        DebugLogger.LogError("UI_THREAD", $"Stack trace: {ex.StackTrace}");
+        HandleException("UI_THREAD", ex);
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Handles unhandled exceptions from AppDomain
+    /// </summary>
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            HandleException("APP_DOMAIN", ex);
+        }
+        else
+        {
+            DebugLogger.LogError("APP_DOMAIN", $"❌ Non-exception error: {e.ExceptionObject}");
+        }
+    }
+
+    /// <summary>
+    /// Handles unobserved task exceptions
+    /// </summary>
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        HandleException("TASK_SCHEDULER", e.Exception);
+        e.SetObserved();
+    }
+
+    /// <summary>
+    /// Centralized exception handling logic
+    /// </summary>
+    private void HandleException(string source, Exception ex)
+    {
+        DebugLogger.LogError(source, $"❌ Exception: {ex.Message}");
+        DebugLogger.LogError(source, $"Stack trace: {ex.StackTrace}");
+
+        // Log inner exceptions if they exist
+        if (ex.InnerException != null)
+        {
+            DebugLogger.LogError(source, $"Inner Exception: {ex.InnerException.Message}");
+            DebugLogger.LogError(source, $"Inner Stack trace: {ex.InnerException.StackTrace}");
+        }
 
         // Write to crash log
 #if !BROWSER
@@ -115,10 +156,19 @@ public partial class App : Application
         {
             var crashLog = System.IO.Path.Combine(AppPaths.DataRootDir, "crash.log");
             var errorMsg =
-                $"=== UI THREAD EXCEPTION: {DateTime.Now} ===\n"
+                $"=== {source} EXCEPTION: {DateTime.Now} ===\n"
                 + $"Exception: {ex.GetType().FullName}\n"
                 + $"Message: {ex.Message}\n"
-                + $"Stack Trace:\n{ex.StackTrace}\n\n";
+                + $"Stack Trace:\n{ex.StackTrace}\n";
+            
+            if (ex.InnerException != null)
+            {
+                errorMsg += $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
+                         + $"Inner Message: {ex.InnerException.Message}\n"
+                         + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
+            }
+            errorMsg += "\n";
+
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(crashLog)!);
             System.IO.File.AppendAllText(crashLog, errorMsg);
         }
@@ -126,16 +176,7 @@ public partial class App : Application
         {
             // If crash log writing fails, at least we logged to debug
         }
-#else
-        // In browser, we could log to local storage if needed, but for now just rely on DebugLogger
 #endif
-
-        // Mark as handled to prevent app crash
-        // The error is logged, and the app will continue running
-        e.Handled = true;
-
-        // TODO: In the future, show a user-friendly error dialog here
-        // For now, just log it - user can check debug logs
     }
 
     private async void ShowLoadingWindowAndPreloadSprites(

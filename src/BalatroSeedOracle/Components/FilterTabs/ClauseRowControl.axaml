@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterTabs.ClauseRowControl"
              x:DataType="vm:ClauseRowViewModel">
 
@@ -59,8 +60,8 @@
                             <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
                         </Transitions>
                     </Button.Transitions>
-                    <TextBlock Text="⚙"
-                               FontSize="14"
+                    <icons:PackIconMaterial Kind="Cog"
+                               Width="14" Height="14"
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
@@ -83,8 +84,8 @@
                             <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
                         </Transitions>
                     </Button.Transitions>
-                    <TextBlock Text="✕"
-                               FontSize="14"
+                    <icons:PackIconMaterial Kind="Close"
+                               Width="14" Height="14"
                                Foreground="{StaticResource Red}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>

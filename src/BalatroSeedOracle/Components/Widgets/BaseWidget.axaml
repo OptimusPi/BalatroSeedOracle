@@ -1,6 +1,8 @@
-﻿<ContentControl xmlns="https://github.com/avaloniaui"
+<ContentControl xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:vm="using:BalatroSeedOracle.ViewModels"
+                xmlns:feather="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.FeatherIcons"
+                xmlns:material="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
                 x:Class="BalatroSeedOracle.Components.BaseWidget"
                 x:DataType="vm:BaseWidgetViewModel"
                 ZIndex="{Binding WidgetZIndex}">
@@ -20,7 +22,7 @@
                     Cursor="Hand"
                     Command="{Binding ExpandCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                    <TextBlock Text="?" Width="19" Height="19" VerticalAlignment="Center" FontSize="16"/>
+                    <material:PackIconMaterial Kind="Help" Width="24" Height="24" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
                     <TextBlock Text="{Binding WidgetTitle}" FontSize="16" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -54,27 +56,30 @@
                     <Grid ColumnDefinitions="Auto,Auto,Auto,*">
                         <!-- Window Control Buttons - NOW ON LEFT! -->
                         <Button Grid.Column="0"
-                                Content="↙"
                                 Classes="widget-minimize-btn"
                                 Command="{Binding MinimizeCommand}"
-                                ToolTip.Tip="Minimize"/>
+                                ToolTip.Tip="Minimize">
+                            <feather:PackIconFeather Kind="Minimize2" Width="12" Height="12"/>
+                        </Button>
 
                         <Button Grid.Column="1"
-                                Content="□"
                                 Classes="widget-minimize-btn"
                                 Command="{Binding MaximizeCommand}"
                                 ToolTip.Tip="Maximize"
-                                IsVisible="False"/>
+                                IsVisible="False">
+                            <feather:PackIconFeather Kind="Maximize2" Width="12" Height="12"/>
+                        </Button>
 
                         <Button Grid.Column="2"
-                                Content="✕"
                                 Classes="widget-minimize-btn"
                                 Command="{Binding CloseCommand}"
-                                ToolTip.Tip="Close"/>
+                                ToolTip.Tip="Close">
+                            <feather:PackIconFeather Kind="X" Width="12" Height="12"/>
+                        </Button>
 
                         <!-- Title - NOW ON RIGHT! -->
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="?" Width="15" Height="15" VerticalAlignment="Center" FontSize="12"/>
+                            <material:PackIconMaterial Kind="Help" Width="14" Height="14" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
                             <TextBlock Text="{Binding WidgetTitle}"
                                        FontSize="13"
                                        FontFamily="{StaticResource BalatroFont}"

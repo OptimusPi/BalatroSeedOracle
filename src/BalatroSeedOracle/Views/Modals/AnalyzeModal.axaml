@@ -6,6 +6,7 @@
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal"
              x:DataType="vm:AnalyzeModalViewModel">
     
@@ -240,9 +241,10 @@
                                Margin="20"
                                IsVisible="{Binding ShowPlaceholder}">
                             <StackPanel>
-                                <TextBlock Text="🎴"
-                                          FontSize="48"
+                                <icons:PackIconMaterial Kind="CardsOutline"
+                                          Width="48" Height="48"
                                           HorizontalAlignment="Center"
+                                          Foreground="{StaticResource White}"
                                           Margin="0,0,0,10"/>
                                 <TextBlock Text="Enter a seed and click ANALYZE"
                                           HorizontalAlignment="Center"

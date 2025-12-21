@@ -466,7 +466,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand(CanExecute = nameof(CanStopSearch))]
-        private void StopSearch()
+        private async Task StopSearch()
         {
             try
             {
@@ -497,6 +497,10 @@ namespace BalatroSeedOracle.ViewModels
                         // Stop without saving
                         _searchInstance.StopSearch();
                     }
+
+                    // FINAL LOAD: Load any remaining results before disposing the instance
+                    // This ensures the user sees all results even if they stop manually
+                    await LoadExistingResults();
 
                     // Unsubscribe from events
                     _searchInstance.SearchStarted -= OnSearchStarted;
@@ -849,7 +853,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (IsSearching)
             {
-                StopSearch();
+                await StopSearch();
             }
             else
             {
@@ -1355,6 +1359,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         try
                         {
+#if !BROWSER
                             var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
                             if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
                             {
@@ -1373,6 +1378,7 @@ namespace BalatroSeedOracle.ViewModels
                                     );
                                 }
                             }
+#endif
                         }
                         catch (Exception gridEx)
                         {
@@ -1880,13 +1886,17 @@ namespace BalatroSeedOracle.ViewModels
             // PROPER MVVM: Use XAML UserControls
             SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
+#if !BROWSER
             ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
+#endif
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
             // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
             // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
+#if !BROWSER
             TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
+#endif
         }
 
         private void LoadAvailableWordLists()

@@ -4,7 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.AudioMixerWidget"
              x:DataType="vm:AudioMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -30,7 +30,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <icons:PackIconMaterial Kind="TuneVertical" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                <material:PackIconMaterial Kind="TuneVertical" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
             <TextBlock Text="Mixer"
                        FontSize="16"
@@ -188,11 +188,18 @@
                         </ItemsControl>
 
                         <!-- Helper Text -->
-                        <TextBlock Text="M = Mute, S = Solo | Volume (0-100%) | Pan (L ← → R)"
-                                   Foreground="{StaticResource LightTextGrey}"
-                                   FontSize="10"
-                                   Margin="0,4,0,0"
-                                   TextWrapping="Wrap"/>
+                        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
+                            <TextBlock Text="M = Mute, S = Solo | Volume (0-100%) | Pan (L"
+                                       Foreground="{StaticResource LightTextGrey}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center"/>
+                            <icons:PackIconMaterial Kind="ArrowLeft" Width="10" Height="10" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                            <icons:PackIconMaterial Kind="ArrowRight" Width="10" Height="10" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                            <TextBlock Text="R)"
+                                       Foreground="{StaticResource LightTextGrey}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

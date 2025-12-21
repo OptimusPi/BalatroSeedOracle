@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
              x:DataType="vm:SearchModalViewModel">
 
@@ -57,6 +58,22 @@
         <Style Selector="Border.result-row:pointerover">
             <Setter Property="Background" Value="{StaticResource ModalBorder}"/>
         </Style>
+
+        <Style Selector="icons|PackIconMaterial.spinner">
+            <Style.Animations>
+                <Animation Duration="0:0:1.5" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Opacity" Value="0.3"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
     </UserControl.Styles>
 
     <Grid Margin="10">
@@ -99,29 +116,11 @@
             </Border.IsVisible>
 
             <StackPanel Spacing="16" HorizontalAlignment="Center">
-                <TextBlock Text="◆"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="48"
+                <icons:PackIconMaterial Kind="Diamond"
+                           Classes="spinner"
+                           Width="48" Height="48"
                            Foreground="{StaticResource Gold}"
-                           HorizontalAlignment="Center">
-                    <TextBlock.Styles>
-                        <Style Selector="TextBlock">
-                            <Style.Animations>
-                                <Animation Duration="0:0:1.5" IterationCount="INFINITE">
-                                    <KeyFrame Cue="0%">
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </KeyFrame>
-                                    <KeyFrame Cue="50%">
-                                        <Setter Property="Opacity" Value="0.3"/>
-                                    </KeyFrame>
-                                    <KeyFrame Cue="100%">
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </KeyFrame>
-                                </Animation>
-                            </Style.Animations>
-                        </Style>
-                    </TextBlock.Styles>
-                </TextBlock>
+                           HorizontalAlignment="Center"/>
 
                 <TextBlock Text="Searching for seeds..."
                            FontFamily="{StaticResource BalatroFont}"

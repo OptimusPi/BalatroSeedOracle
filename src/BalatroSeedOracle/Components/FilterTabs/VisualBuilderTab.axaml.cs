@@ -29,7 +29,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Border? _dragAdorner;
         private TranslateTransform? _adornerTransform; // Transform for positioning the ghost (allows sway to work)
         private RotateTransform? _adornerLeanTransform; // Transform for velocity-based lean effect
-        private AdornerLayer? _adornerLayer;
+        private Canvas? _adornerLayer;
         private TopLevel? _topLevel;
         private bool _isDragging = false;
         private bool _isAnimating = false; // Track if rubber-band animation is playing
@@ -1470,30 +1470,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var previewContent = this.FindControl<ContentControl>("ItemPreviewContent");
             if (previewContent != null)
             {
-                // Create a clone for preview so we don't move the original control
-                var previewItem = new Models.FilterItem
-                {
-                    Name = item.Name,
-                    DisplayName = item.DisplayName,
-                    ItemImage = item.ItemImage,
-                    Type = item.Type,
-                    Category = item.Category,
-                    ItemKey = item.ItemKey,
-                    Value = item.Value,
-                    Label = item.Label,
-                    Score = item.Score,
-                    MinCount = item.MinCount,
-                    Edition = item.Edition,
-                    Stickers = item.Stickers,
-                    Seal = item.Seal,
-                    Enhancement = item.Enhancement,
-                    Rank = item.Rank,
-                    Suit = item.Suit,
-                    IsFavorite = item.IsFavorite,
-                    Status = item.Status
-                };
-
-                previewContent.Content = new Components.FilterItemCard { DataContext = previewItem };
+                // Create a NEW FilterItemCard but bind it to the ORIGINAL item
+                // This allows real-time updates as the user interacts with the config panel
+                previewContent.Content = new Components.FilterItemCard { DataContext = item };
             }
 
             // Show the overlay with the popup
@@ -1727,8 +1706,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             try
             {
                 // Use our local Canvas instead of the global AdornerLayer
-                var adornerCanvas = this.FindControl<Canvas>("DragAdornerLayer");
-                if (adornerCanvas == null)
+                _adornerLayer = this.FindControl<Canvas>("DragAdornerLayer");
+                if (_adornerLayer == null)
                 {
                     DebugLogger.LogError("VisualBuilderTab", "DragAdornerLayer Canvas not found!");
                     return;

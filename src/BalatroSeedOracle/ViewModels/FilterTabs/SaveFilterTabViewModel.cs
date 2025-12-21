@@ -23,15 +23,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
 
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(SaveCurrentFilterCommand))]
-        [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
-        [NotifyCanExecuteChangedFor(nameof(ExportFilterCommand))]
-        [NotifyPropertyChangedFor(nameof(NormalizedFilterName))]
-        private string _filterName = "";
+        // Proxy properties to parent ViewModel to ensure sync
+        public string FilterName
+        {
+            get => _parentViewModel.FilterName;
+            set
+            {
+                _parentViewModel.FilterName = value;
+                OnPropertyChanged(nameof(FilterName));
+                OnPropertyChanged(nameof(NormalizedFilterName));
+                SaveCurrentFilterCommand.NotifyCanExecuteChanged();
+                SaveAsCommand.NotifyCanExecuteChanged();
+                ExportFilterCommand.NotifyCanExecuteChanged();
+            }
+        }
 
-        [ObservableProperty]
-        private string _filterDescription = "";
+        public string FilterDescription
+        {
+            get => _parentViewModel.FilterDescription;
+            set
+            {
+                _parentViewModel.FilterDescription = value;
+                OnPropertyChanged(nameof(FilterDescription));
+            }
+        }
 
         // Computed property for normalized filter name (auto-generated ID)
         public string NormalizedFilterName => NormalizeFilterName(FilterName);
@@ -202,34 +217,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         /// <summary>
-        /// Pre-fill filter name and description from current filter if available
+        /// Pre-fill filter data from parent if necessary
         /// </summary>
         public void PreFillFilterData()
         {
             try
             {
-                // Try to get filter name from parent's loaded config
-                if (
-                    _parentViewModel.LoadedConfig != null
-                    && !string.IsNullOrWhiteSpace(_parentViewModel.LoadedConfig.Name)
-                )
-                {
-                    FilterName = _parentViewModel.LoadedConfig.Name;
-                    FilterDescription = _parentViewModel.LoadedConfig.Description ?? "";
-                    DebugLogger.Log("SaveFilterTab", $"Pre-filled from LoadedConfig: {FilterName}");
-                }
-                // Fall back to loaded filter file name
-                else if (!string.IsNullOrWhiteSpace(_parentViewModel.CurrentFilterPath))
-                {
-                    FilterName = Path.GetFileNameWithoutExtension(
-                        _parentViewModel.CurrentFilterPath
-                    );
-                    DebugLogger.Log(
-                        "SaveFilterTab",
-                        $"Pre-filled from CurrentFilterPath: {FilterName}"
-                    );
-                }
-
+                // We no longer need to manually copy Name/Description as they are now proxied.
+                // But we still need to refresh the criteria display and preview image.
+                
                 // CRITICAL: Refresh criteria display when tab becomes visible
                 RefreshCriteriaDisplay();
 
@@ -271,6 +267,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
                     UpdateStatus($"✓ Filter saved: {CurrentFileName}", false);
                     DebugLogger.Log("SaveFilterTab", $"Filter saved to: {filePath}");
+
+                    // Sync back to parent ViewModel so it knows the filter is saved
+                    _parentViewModel.LoadedConfig = config;
+                    _parentViewModel.CurrentFilterPath = filePath;
                 }
                 else
                 {
@@ -310,6 +310,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     CurrentFileName = Path.GetFileName(newFileName);
                     LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
                     UpdateStatus($"Filter saved as: {CurrentFileName}", false);
+
+                    // Sync back to parent ViewModel so it knows the filter is saved
+                    _parentViewModel.LoadedConfig = config;
+                    _parentViewModel.CurrentFilterPath = newFileName;
                 }
                 else
                 {
@@ -404,96 +408,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Uses shared FilterConfigurationService instead of duplicating massive logic
         private MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            var config = new MotelyJsonConfig
-            {
-                // CRITICAL FIX: Use deck/stake from parent (synchronized with DeckStakeTab)
-                Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
-                Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
-                Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName,
-                Description = FilterDescription,
-                DateCreated = DateTime.UtcNow,
-                Author = userProfileService?.GetAuthorName() ?? "Unknown",
-            };
+            // Use the parent's robust implementation if possible
+            var config = _parentViewModel.BuildConfigFromCurrentState();
 
-            config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+            // Override name and description from this tab's inputs
+            config.Name = string.IsNullOrEmpty(FilterName) ? "Untitled Filter" : FilterName;
+            config.Description = FilterDescription;
 
-            // CRITICAL FIX: Handle FilterOperatorItem objects directly
-            if (_parentViewModel.VisualBuilderTab is VisualBuilderTabViewModel visualVm)
-            {
-                DebugLogger.Log(
-                    "SaveFilterTab",
-                    $"Building config from VisualBuilderTab: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
-                );
-
-                // Convert FilterItem objects directly (handles FilterOperatorItem with nested children)
-                foreach (var item in visualVm.SelectedMust)
-                {
-                    // SPECIAL HANDLING: BannedItems operator → MustNot[]
-                    if (
-                        item is Models.FilterOperatorItem operatorItem
-                        && operatorItem.OperatorType == "BannedItems"
-                    )
-                    {
-                        DebugLogger.Log(
-                            "SaveFilterTab",
-                            $"Converting BannedItems operator with {operatorItem.Children.Count} children to MustNot[]"
-                        );
-
-                        // Add each child to MustNot array
-                        foreach (var child in operatorItem.Children)
-                        {
-                            var clause = ConvertFilterItemToClause(
-                                child,
-                                _parentViewModel.ItemConfigs
-                            );
-                            if (clause != null)
-                                config.MustNot.Add(clause);
-                        }
-                    }
-                    else
-                    {
-                        // Normal OR/AND operators or regular items → Must[]
-                        var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
-                        if (clause != null)
-                            config.Must.Add(clause);
-                    }
-                }
-
-                foreach (var item in visualVm.SelectedShould)
-                {
-                    var clause = ConvertFilterItemToClause(item, _parentViewModel.ItemConfigs);
-                    if (clause != null)
-                        config.Should.Add(clause);
-                }
-            }
-            else
-            {
-                // Fallback to parent's collections (for JSON editor mode) - use old key-based approach
-                var mustKeys = _parentViewModel.SelectedMust;
-                var shouldKeys = _parentViewModel.SelectedShould;
-                var mustNotKeys = _parentViewModel.SelectedMustNot;
-                DebugLogger.Log(
-                    "SaveFilterTab",
-                    $"Building config from parent collections: {mustKeys.Count()} must, {shouldKeys.Count()} should, {mustNotKeys.Count()} mustNot"
-                );
-
-                return _filterConfigurationService.BuildConfigFromSelections(
-                    mustKeys.ToList(),
-                    shouldKeys.ToList(),
-                    mustNotKeys.ToList(),
-                    _parentViewModel.ItemConfigs,
-                    FilterName,
-                    FilterDescription
-                );
-            }
-
-            DebugLogger.Log(
-                "SaveFilterTab",
-                $"Built config: {config.Must.Count} must, {config.Should.Count} should, {config.MustNot.Count} mustNot"
-            );
             return config;
         }
 

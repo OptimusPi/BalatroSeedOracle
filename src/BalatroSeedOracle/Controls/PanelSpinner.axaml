@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Controls.PanelSpinner">
     
     <UserControl.Styles>
@@ -132,9 +133,10 @@
         <Button Grid.Column="0"
                 Name="PrevButton"
                 Classes="panel-arrow"
-                Content="&lt;"
                 IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Click="OnPrevClick"/>
+                Click="OnPrevClick">
+            <icons:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Button>
         
         <!-- Main panel content -->
         <Border Grid.Column="2" Classes="panel-content">
@@ -197,8 +199,9 @@
         <Button Grid.Column="4"
                 Name="NextButton"
                 Classes="panel-arrow"
-                Content="&gt;"
                 IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Click="OnNextClick"/>
+                Click="OnNextClick">
+            <icons:PackIconMaterial Kind="ChevronRight" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Button>
     </Grid>
 </UserControl>

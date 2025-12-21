@@ -1,13 +1,14 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using IconPacks.Avalonia;
 
 namespace BalatroSeedOracle.Converters
 {
     /// <summary>
     /// Converts boolean IsExpanded property to expand/collapse icon
-    /// True (expanded) -> "▲" (collapse)
-    /// False (collapsed) -> "▼" (expand)
+    /// True (expanded) -> ChevronUp
+    /// False (collapsed) -> ChevronDown
     /// </summary>
     public class BoolToExpandIconConverter : IValueConverter
     {
@@ -22,9 +23,9 @@ namespace BalatroSeedOracle.Converters
         {
             if (value is bool isExpanded)
             {
-                return isExpanded ? "▲" : "▼";
+                return isExpanded ? PackIconMaterialKind.ChevronUp : PackIconMaterialKind.ChevronDown;
             }
-            return "▼"; // Default to collapsed
+            return PackIconMaterialKind.ChevronDown; // Default to collapsed
         }
 
         public object? ConvertBack(

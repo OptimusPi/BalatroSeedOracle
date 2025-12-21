@@ -36,11 +36,7 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
-#if !BROWSER
-            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
-#else
-            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
-#endif
+            LogInternal(null, message);
         }
 #endif
     }
@@ -55,11 +51,7 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
-#if !BROWSER
-            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {message}");
-#else
-            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {message}");
-#endif
+            LogInternal(category, message);
         }
 #endif
     }
@@ -71,11 +63,7 @@ public static class DebugLogger
     public static void LogError(string message)
     {
 #if DEBUG
-#if !BROWSER
-        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] ERROR: {message}");
-#else
-        System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] ERROR: {message}");
-#endif
+        LogInternal(null, $"ERROR: {message}");
 #endif
     }
 
@@ -87,11 +75,41 @@ public static class DebugLogger
     public static void LogError(string category, string message)
     {
 #if DEBUG
-#if !BROWSER
-        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] ERROR: {message}");
-#else
-        System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] ERROR: {message}");
+        LogInternal(category, $"ERROR: {message}");
 #endif
+    }
+
+    /// <summary>
+    /// Internal logging implementation to avoid duplication and handle platform differences
+    /// </summary>
+    private static void LogInternal(string? category, string message)
+    {
+        var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
+        var formattedMessage = category != null 
+            ? $"[{timestamp}] [{category}] {message}"
+            : $"[{timestamp}] {message}";
+
+#if !BROWSER
+        Console.WriteLine(formattedMessage);
+#else
+        // In browser, we use System.Console.WriteLine which is usually shimmed to console.log
+        // But we wrap it in a try-catch to prevent _fd_write errors from crashing the app
+        try 
+        {
+            System.Console.WriteLine(formattedMessage);
+        }
+        catch 
+        {
+            // If Console.WriteLine fails (e.g. _fd_write error), we try System.Diagnostics.Debug as fallback
+            try 
+            {
+                System.Diagnostics.Debug.WriteLine(formattedMessage);
+            }
+            catch 
+            {
+                // Last resort: nothing we can do without potentially crashing
+            }
+        }
 #endif
     }
 

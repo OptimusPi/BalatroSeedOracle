@@ -4,7 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.HostApiWidget"
              x:DataType="vm:HostApiWidgetViewModel"
              x:CompileBindings="True"
@@ -38,7 +38,7 @@
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
                         <Grid>
-                            <TextBlock Text="🌐" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <material:PackIconMaterial Kind="Earth" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
                             <!-- Status dot -->
                             <Ellipse Width="12" Height="12"
                                      HorizontalAlignment="Right"

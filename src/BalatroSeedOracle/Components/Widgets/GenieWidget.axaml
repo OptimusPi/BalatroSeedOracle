@@ -4,7 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.GenieWidget"
              x:DataType="vm:GenieWidgetViewModel"
              x:CompileBindings="True"
@@ -36,7 +36,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="🧞" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <material:PackIconMaterial Kind="Lamp" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
             </Border>
             <TextBlock Text="Genie"
                        FontSize="16"
@@ -64,10 +64,13 @@
 
                             <!-- Prompt Input -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="✨ Describe your dream seed:"
-                                           FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="12"
-                                           Foreground="{StaticResource White}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:PackIconMaterial Kind="AutoFix" Width="14" Height="14" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Describe your dream seed:"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource White}"/>
+                                </StackPanel>
                                 <TextBox Classes="widget-prompt-input"
                                          Text="{Binding UserPrompt}"
                                          Watermark="e.g. 'Find me a Perkeo with Blueprint and Negative tags'"

@@ -4,6 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.TransitionDesignerWidget"
              x:DataType="vm:TransitionDesignerWidgetViewModel"
              x:CompileBindings="True"
@@ -33,7 +34,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <TextBlock Text="🎬" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <icons:PackIconMaterial Kind="Movie" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
             </Border>
             <TextBlock Text="Transitions"
                        FontSize="14"
@@ -86,11 +87,12 @@
                                     </StackPanel>
 
                                     <!-- Arrow -->
-                                    <TextBlock Grid.Column="1"
-                                               Text="→"
-                                               FontSize="18"
+                                    <icons:PackIconMaterial Grid.Column="1"
+                                               Kind="ArrowRight"
+                                               Width="18" Height="18"
                                                Foreground="{StaticResource White}"
-                                               VerticalAlignment="Center"/>
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
 
                                     <!-- Audio Mix B -->
                                     <StackPanel Grid.Column="2" Spacing="4">

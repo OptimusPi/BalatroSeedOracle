@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Controls.MaximizeButton">
     
     <UserControl.Styles>
@@ -28,7 +29,7 @@
             ToolTip.Tip="Maximize Window"
             Click="MaximizeBtn_Click">
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBlock Name="IconBlock" Text="⛶" FontSize="18" VerticalAlignment="Center"/>
+            <icons:PackIconMaterial Name="IconBlock" Kind="Fullscreen" Width="18" Height="18" VerticalAlignment="Center"/>
             <TextBlock Name="LabelBlock" Text="" FontSize="12" VerticalAlignment="Center"/>
         </StackPanel>
     </Button>

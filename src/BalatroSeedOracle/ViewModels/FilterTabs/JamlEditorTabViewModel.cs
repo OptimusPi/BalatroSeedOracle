@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -27,7 +31,129 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _validationStatus = "Ready";
 
         [ObservableProperty]
+        private string _errorMessage = "";
+
+        [ObservableProperty]
+        private bool _hasError = false;
+
+        [ObservableProperty]
         private IBrush _validationStatusColor = Brushes.Gray;
+
+        [ObservableProperty]
+        private ObservableCollection<FilterItem> _previewItems = new();
+
+        private System.Threading.CancellationTokenSource? _validationThrottleCts;
+
+        partial void OnJamlContentChanged(string value)
+        {
+            // Throttle validation to avoid lag while typing
+            _validationThrottleCts?.Cancel();
+            _validationThrottleCts = new System.Threading.CancellationTokenSource();
+            var token = _validationThrottleCts.Token;
+
+            Task.Run(async () => {
+                try 
+                {
+                    await Task.Delay(500, token);
+                    if (token.IsCancellationRequested) return;
+
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
+                        ValidateAndPreview();
+                    });
+                }
+                catch (TaskCanceledException) {}
+            }, token);
+        }
+
+        private void ValidateAndPreview()
+        {
+            if (string.IsNullOrWhiteSpace(JamlContent))
+            {
+                ValidationStatus = "Empty";
+                ValidationStatusColor = Brushes.Gray;
+                ErrorMessage = "";
+                HasError = false;
+                PreviewItems.Clear();
+                return;
+            }
+
+            try
+            {
+                var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
+                    .Build();
+
+                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
+                
+                ValidationStatus = "✓ JAML is valid";
+                ValidationStatusColor = Brushes.Green;
+                ErrorMessage = "";
+                HasError = false;
+
+                // Update preview items
+                UpdatePreview(config);
+            }
+            catch (Exception ex)
+            {
+                ValidationStatus = "✗ Invalid JAML syntax";
+                ValidationStatusColor = Brushes.Red;
+                ErrorMessage = ex.Message;
+                HasError = true;
+                // Don't clear preview on error, keep the last valid one
+            }
+        }
+
+        private void UpdatePreview(MotelyJsonConfig config)
+        {
+            PreviewItems.Clear();
+            var spriteService = SpriteService.Instance;
+
+            if (config.Must != null)
+            {
+                foreach (var clause in config.Must)
+                {
+                    var item = CreateFilterItemFromClause(clause, FilterItemStatus.MustHave, "Must", spriteService);
+                    PreviewItems.Add(item);
+                }
+            }
+            if (config.Should != null)
+            {
+                foreach (var clause in config.Should)
+                {
+                    var item = CreateFilterItemFromClause(clause, FilterItemStatus.ShouldHave, "Should", spriteService);
+                    PreviewItems.Add(item);
+                }
+            }
+        }
+
+        private FilterItem CreateFilterItemFromClause(
+            MotelyJsonConfig.MotleyJsonFilterClause clause, 
+            FilterItemStatus status, 
+            string category,
+            SpriteService spriteService)
+        {
+            var item = new FilterItem
+            {
+                Name = clause.Value ?? clause.Type ?? "Unknown",
+                DisplayName = clause.Value ?? clause.Type ?? "Unknown",
+                Status = status,
+                Category = category,
+                Type = clause.Type ?? "Joker",
+                Value = clause.Value,
+                Edition = clause.Edition,
+                Seal = clause.Seal,
+                Enhancement = clause.Enhancement,
+                Stickers = clause.Stickers?.ToList(),
+                Score = clause.Score,
+                MinCount = clause.Min ?? 0
+            };
+
+            // Fetch image based on type and name
+            item.ItemImage = spriteService.GetItemImage(item.Type, item.Name);
+
+            return item;
+        }
 
         /// <summary>
         /// Returns the current filter name from the parent ViewModel for display in the editor header
@@ -67,6 +193,101 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Command Implementations
 
+        [RelayCommand]
+        private async Task SyncToVisual()
+        {
+            if (HasError || string.IsNullOrWhiteSpace(JamlContent) || _parentViewModel == null)
+                return;
+
+            try
+            {
+                var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
+                    .Build();
+
+                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
+                if (config == null) return;
+
+                // Load the config into the parent state
+                _parentViewModel.LoadConfigIntoState(config);
+
+                // Update the Visual Builder UI components
+                await _parentViewModel.UpdateVisualBuilderFromItemConfigs();
+                
+                // Ensure zones are expanded if they have items
+                _parentViewModel.ExpandDropZonesWithItems();
+
+                ValidationStatus = "✓ Synced to Visual Builder";
+                ValidationStatusColor = Brushes.LightGreen;
+                
+                DebugLogger.LogImportant("JamlEditorTab", "Successfully synced JAML to Visual Builder");
+            }
+            catch (Exception ex)
+            {
+                ValidationStatus = "✗ Sync failed";
+                ValidationStatusColor = Brushes.Red;
+                ErrorMessage = $"Sync error: {ex.Message}";
+                HasError = true;
+                DebugLogger.LogError("JamlEditorTab", $"Sync error: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void FormatJaml()
+        {
+            if (string.IsNullOrWhiteSpace(JamlContent)) return;
+
+            try
+            {
+                var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
+                    .Build();
+
+                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
+                
+                var serializer = new SerializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .Build();
+
+                JamlContent = serializer.Serialize(config);
+                ValidationStatus = "✓ Formatted";
+                ValidationStatusColor = Brushes.LightGreen;
+            }
+            catch (Exception ex)
+            {
+                ValidationStatus = "✗ Format failed";
+                ValidationStatusColor = Brushes.Red;
+                ErrorMessage = ex.Message;
+                HasError = true;
+            }
+        }
+
+        [RelayCommand]
+        private async Task CopyJaml()
+        {
+            if (string.IsNullOrWhiteSpace(JamlContent)) return;
+            
+            try
+            {
+                var topLevel = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                    ? desktop.MainWindow
+                    : null;
+
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(JamlContent);
+                    ValidationStatus = "✓ Copied to clipboard";
+                    ValidationStatusColor = Brushes.LightGreen;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("JamlEditorTab", $"Failed to copy: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Auto-generates JAML from Visual Builder (called when visual builder changes)
         /// </summary>
@@ -84,13 +305,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 JamlContent = ConvertConfigToJaml(config);
 
                 // Silent status update
-                var totalItems = config.Must.Count + config.Should.Count;
+                var totalItems = (config.Must?.Count ?? 0) + (config.Should?.Count ?? 0);
                 ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
                 ValidationStatusColor = Brushes.Gray;
 
                 DebugLogger.Log(
                     "JamlEditorTab",
-                    $"Auto-synced JAML from visual builder: {config.Must.Count} must, {config.Should.Count} should"
+                    $"Auto-synced JAML from visual builder: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should"
                 );
             }
             catch (Exception ex)
@@ -101,97 +322,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
-        [RelayCommand]
-        private void ValidateJaml()
-        {
-            if (ValidateJamlSyntax())
-            {
-                ValidationStatus = "✓ JAML is valid";
-                ValidationStatusColor = Brushes.Green;
-            }
-            else
-            {
-                ValidationStatus = "✗ Invalid JAML syntax";
-                ValidationStatusColor = Brushes.Red;
-            }
-        }
-
-        [RelayCommand]
-        private void FormatJaml()
-        {
-            try
-            {
-                if (ValidateJamlSyntax())
-                {
-                    // Parse and re-serialize to format
-                    var deserializer = new DeserializerBuilder()
-                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                        .Build();
-
-                    var jamlObject = deserializer.Deserialize(JamlContent);
-
-                    var serializer = new SerializerBuilder()
-                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                        .Build();
-
-                    JamlContent = serializer.Serialize(jamlObject);
-
-                    ValidationStatus = "✓ JAML formatted";
-                    ValidationStatusColor = Brushes.Green;
-                }
-                else
-                {
-                    ValidationStatus = "Cannot format invalid JAML";
-                    ValidationStatusColor = Brushes.Red;
-                }
-            }
-            catch (Exception ex)
-            {
-                ValidationStatus = $"Format error: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
-            }
-        }
-
-        [RelayCommand]
-        private async Task CopyJaml()
-        {
-            try
-            {
-                await Services.ClipboardService.CopyToClipboardAsync(JamlContent);
-
-                ValidationStatus = "✓ JAML copied to clipboard";
-                ValidationStatusColor = Brushes.Green;
-            }
-            catch (Exception ex)
-            {
-                ValidationStatus = $"Copy error: {ex.Message}";
-                ValidationStatusColor = Brushes.Red;
-            }
-        }
-
         #endregion
 
         #region Helper Methods
-
-        private bool ValidateJamlSyntax()
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(JamlContent))
-                    return false;
-
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .Build();
-
-                deserializer.Deserialize(JamlContent);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         private string ConvertConfigToJaml(MotelyJsonConfig config)
         {
@@ -323,46 +456,6 @@ must: []
 should: []
 mustNot: []
 ";
-        }
-
-        private string? GetDeckName(int index)
-        {
-            var deckNames = new[]
-            {
-                "Red",
-                "Blue",
-                "Yellow",
-                "Green",
-                "Black",
-                "Magic",
-                "Nebula",
-                "Ghost",
-                "Abandoned",
-                "Checkered",
-                "Zodiac",
-                "Painted",
-                "Anaglyph",
-                "Plasma",
-                "Erratic",
-                "Challenge",
-            };
-            return index >= 0 && index < deckNames.Length ? deckNames[index] : null;
-        }
-
-        private string? GetStakeName(int index)
-        {
-            var stakeNames = new[]
-            {
-                "White",
-                "Red",
-                "Green",
-                "Black",
-                "Blue",
-                "Purple",
-                "Orange",
-                "Gold",
-            };
-            return index >= 0 && index < stakeNames.Length ? stakeNames[index] : null;
         }
 
         #endregion

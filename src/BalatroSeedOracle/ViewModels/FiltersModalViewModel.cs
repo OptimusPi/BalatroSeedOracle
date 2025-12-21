@@ -1421,7 +1421,7 @@ namespace BalatroSeedOracle.ViewModels
             return clause;
         }
 
-        private void LoadConfigIntoState(Motely.Filters.MotelyJsonConfig config)
+        public void LoadConfigIntoState(Motely.Filters.MotelyJsonConfig config)
         {
             // Clear current state
             ClearAllSelections();
@@ -2089,7 +2089,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Update Visual Builder FilterItem collections from ItemConfigs
         /// </summary>
-        private async Task UpdateVisualBuilderFromItemConfigs()
+        public async Task UpdateVisualBuilderFromItemConfigs()
         {
             try
             {
@@ -2290,7 +2290,7 @@ namespace BalatroSeedOracle.ViewModels
         /// CRITICAL: Expand drop zones that contain items after loading a filter.
         /// Without this, loaded items won't render because the ItemsControl IsVisible=false when collapsed.
         /// </summary>
-        private void ExpandDropZonesWithItems()
+        public void ExpandDropZonesWithItems()
         {
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
             {

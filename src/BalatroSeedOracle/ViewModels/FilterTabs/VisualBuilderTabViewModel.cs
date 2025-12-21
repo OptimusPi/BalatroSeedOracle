@@ -155,8 +155,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public bool ShouldHasMultiplePages => false;
         public bool BannedHasMultiplePages => false;
 
-        // Expose parent's FilterName for display
-        public string FilterName => _parentViewModel?.FilterName ?? "New Filter";
+        // Expose parent's FilterName for display and editing
+        public string FilterName
+        {
+            get => _parentViewModel?.FilterName ?? "New Filter";
+            set
+            {
+                if (_parentViewModel != null && _parentViewModel.FilterName != value)
+                {
+                    _parentViewModel.FilterName = value;
+                    OnPropertyChanged(nameof(FilterName));
+                }
+            }
+        }
 
         // Expose parent's filter name edit mode properties
         public bool FilterNameEditMode => _parentViewModel?.FilterNameEditMode ?? false;

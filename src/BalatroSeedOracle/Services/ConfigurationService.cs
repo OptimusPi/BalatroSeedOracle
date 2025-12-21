@@ -65,9 +65,10 @@ namespace BalatroSeedOracle.Services
 
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
                 // Error saving filter
+                Helpers.DebugLogger.LogError("ConfigurationService", $"Error saving filter to {filePath}: {ex.Message}");
                 return false;
             }
         }

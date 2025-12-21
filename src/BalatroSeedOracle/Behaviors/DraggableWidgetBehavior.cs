@@ -168,7 +168,7 @@ namespace BalatroSeedOracle.Behaviors
             _dragStartPoint = new Point(double.NaN, double.NaN);
             _pressOriginIsOnHandle = false;
 
-            Console.WriteLine($"[DragBehavior] PointerPressed at widget position ({X}, {Y})");
+            DebugLogger.Log("DragBehavior", $"PointerPressed at widget position ({X}, {Y})");
 
             // DON'T call BringToFront here - it changes ZIndex which causes pointer capture loss!
             // We'll bring to front when drag completes instead
@@ -193,13 +193,13 @@ namespace BalatroSeedOracle.Behaviors
                 // If not clicking the drag handle, clear state and exit (prevents ZOOP!)
                 if (!isOnDragHandle)
                 {
-                    Console.WriteLine($"[DragBehavior] Not on drag handle, ignoring");
+                    DebugLogger.Log("DragBehavior", "Not on drag handle, ignoring");
                     return;
                 }
                 else
                 {
                     _pressOriginIsOnHandle = true;
-                    Console.WriteLine($"[DragBehavior] On drag handle, ready to drag");
+                    DebugLogger.Log("DragBehavior", "On drag handle, ready to drag");
                 }
             }
 
@@ -208,8 +208,9 @@ namespace BalatroSeedOracle.Behaviors
             if (parent != null)
             {
                 _pointerPressedPoint = e.GetPosition(parent);
-                Console.WriteLine(
-                    $"[DragBehavior] Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})"
+                DebugLogger.Log(
+                    "DragBehavior",
+                    $"Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})"
                 );
             }
             else
@@ -406,7 +407,7 @@ namespace BalatroSeedOracle.Behaviors
         private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
         {
             // Safety: ensure drag stops if pointer capture is lost
-            Console.WriteLine($"[DragBehavior] POINTER CAPTURE LOST at ({X}, {Y})");
+            DebugLogger.Log("DragBehavior", $"POINTER CAPTURE LOST at ({X}, {Y})");
             _isDragging = false;
 
             // CRITICAL: Clean up all drag state to prevent stuck behavior

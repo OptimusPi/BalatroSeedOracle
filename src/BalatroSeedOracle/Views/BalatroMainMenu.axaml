@@ -8,7 +8,7 @@
              xmlns:views="using:BalatroSeedOracle.Views"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             xmlns:iconPacks="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
@@ -43,7 +43,7 @@
                     Padding="15,20">
                 <StackPanel Spacing="10">
                     <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,0,0,5">
-                        <iconPacks:PackIconMaterial Kind="VolumeHigh" Width="14" Height="14" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
+                        <material:PackIconMaterial Kind="VolumeHigh" Width="14" Height="14" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
                         <TextBlock Text="VOLUME"
                                    FontSize="14"
                                    Foreground="{StaticResource Gold}"/>
@@ -288,10 +288,10 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding AnimationToggleCommand}"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <TextBlock Text="{Binding AnimationIconText}"
-                                           FontFamily="Segoe UI Symbol, Segoe UI Emoji"
+                                <iconPacks:PackIconMaterial Kind="{Binding AnimationIcon}"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"
+                                           Width="24" Height="24"/>
                             </Button>
 
                             <!-- Music Toggle Button -->
@@ -305,12 +305,11 @@
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Command="{Binding MusicToggleCommand}"
-                                    ToolTip.Tip="Toggle background music">
-                                <TextBlock x:Name="MusicToggleIcon"
-                                           Text="{Binding MusicIconText}"
-                                           FontFamily="Segoe UI Emoji, Noto Color Emoji"
+                                    ToolTip.Tip="Adjust volume">
+                                <iconPacks:PackIconMaterial Kind="{Binding MusicIcon}"
                                            HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"
+                                           Width="24" Height="24"/>
                             </Button>
                         </StackPanel>
                     </Border>

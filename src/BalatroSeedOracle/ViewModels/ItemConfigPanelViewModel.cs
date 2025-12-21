@@ -248,34 +248,104 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        partial void OnItemNameChanged(string value)
+        {
+            if (_item != null)
+            {
+                _item.DisplayName = value;
+            }
+        }
+
+        partial void OnLabelChanged(string? value)
+        {
+            if (_item != null)
+            {
+                _item.Label = value;
+            }
+        }
+
+        partial void OnScoreChanged(int value)
+        {
+            if (_item != null)
+            {
+                _item.Score = value;
+            }
+        }
+
+        partial void OnMinCountChanged(int value)
+        {
+            if (_item != null)
+            {
+                _item.MinCount = value;
+            }
+        }
+
         partial void OnEditionChanged(string value)
         {
             if (_item != null)
+            {
                 _item.Edition = value == "None" ? null : value;
+                UpdatePreviewImage();
+            }
         }
 
         partial void OnSealChanged(string value)
         {
             if (_item != null)
+            {
                 _item.Seal = value == "None" ? null : value;
+                UpdatePreviewImage();
+            }
         }
 
         partial void OnEnhancementChanged(string value)
         {
             if (_item != null)
+            {
                 _item.Enhancement = value == "None" ? null : value;
+                UpdatePreviewImage();
+            }
         }
 
         partial void OnRankChanged(string? value)
         {
             if (_item != null)
+            {
                 _item.Rank = value;
+                UpdatePreviewImage();
+            }
         }
 
         partial void OnSuitChanged(string? value)
         {
             if (_item != null)
+            {
                 _item.Suit = value;
+                UpdatePreviewImage();
+            }
+        }
+
+        private void UpdatePreviewImage()
+        {
+            if (_item == null) return;
+
+            if (_item.Category == "Playing Cards" || _item.ItemType == "StandardCard")
+            {
+                var suit = _item.Suit ?? "Spades";
+                var rank = _item.Rank ?? "Ace";
+                _item.ItemImage = Services.SpriteService.Instance.GetPlayingCardImage(
+                    suit,
+                    rank,
+                    _item.Enhancement,
+                    _item.Seal,
+                    _item.Edition
+                );
+            }
+            else
+            {
+                // Use the robust GetItemImage helper
+                _item.ItemImage = Services.SpriteService.Instance.GetItemImage(_item.Name, _item.ItemType);
+            }
         }
 
         partial void OnIsEternalChanged(bool value)
@@ -301,6 +371,9 @@ namespace BalatroSeedOracle.ViewModels
             if (IsPerishable) stickers.Add("perishable");
             if (IsRental) stickers.Add("rental");
             _item.Stickers = stickers.Count > 0 ? stickers : null;
+            
+            // CRITICAL: Update the preview images for the stickers too!
+            UpdatePreviewImage();
         }
 
         [RelayCommand]

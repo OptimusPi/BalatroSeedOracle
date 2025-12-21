@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Xaml.Interactivity;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Extensions;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Behaviors
@@ -79,7 +80,7 @@ namespace BalatroSeedOracle.Behaviors
         {
             if (AssociatedObject?.ItemsSource is not IEnumerable items)
             {
-                System.Diagnostics.Debug.WriteLine("CategoryGroupedLayoutBehavior: No ItemsSource");
+                DebugLogger.Log("CategoryGroupedLayout", "No ItemsSource");
                 return;
             }
 
@@ -92,15 +93,11 @@ namespace BalatroSeedOracle.Behaviors
 
             if (itemList.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    "CategoryGroupedLayoutBehavior: No items to arrange"
-                );
+                DebugLogger.Log("CategoryGroupedLayout", "No items to arrange");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine(
-                $"CategoryGroupedLayoutBehavior: Arranging {itemList.Count} items"
-            );
+            DebugLogger.Log("CategoryGroupedLayout", $"Arranging {itemList.Count} items");
 
             // Group items by category
             var jokers = itemList.Where(i => i.Category == "Jokers").ToList();
@@ -116,8 +113,9 @@ namespace BalatroSeedOracle.Behaviors
                 )
                 .ToList();
 
-            System.Diagnostics.Debug.WriteLine(
-                $"CategoryGroupedLayoutBehavior: Grouped - Jokers:{jokers.Count}, Tags:{tags.Count}, Bosses:{bosses.Count}, Vouchers:{vouchers.Count}, Consumables:{consumables.Count}"
+            DebugLogger.Log(
+                "CategoryGroupedLayout",
+                $"Grouped - Jokers:{jokers.Count}, Tags:{tags.Count}, Bosses:{bosses.Count}, Vouchers:{vouchers.Count}, Consumables:{consumables.Count}"
             );
 
             // Wait for items to be realized - use a slightly longer delay to ensure rendering
@@ -126,16 +124,15 @@ namespace BalatroSeedOracle.Behaviors
                 {
                     var containers = AssociatedObject.GetRealizedContainers().ToList();
 
-                    System.Diagnostics.Debug.WriteLine(
-                        $"CategoryGroupedLayoutBehavior: Found {containers.Count} realized containers for {itemList.Count} items"
+                    DebugLogger.Log(
+                        "CategoryGroupedLayout",
+                        $"Found {containers.Count} realized containers for {itemList.Count} items"
                     );
 
                     if (containers.Count == 0)
                     {
                         // Items not yet realized, try again with a delay
-                        System.Diagnostics.Debug.WriteLine(
-                            "CategoryGroupedLayoutBehavior: No containers found, retrying..."
-                        );
+                        DebugLogger.Log("CategoryGroupedLayout", "No containers found, retrying...");
                         Avalonia.Threading.DispatcherTimer.RunOnce(
                             () => ArrangeItems(),
                             TimeSpan.FromMilliseconds(100)
@@ -166,8 +163,9 @@ namespace BalatroSeedOracle.Behaviors
                     // Layout bosses (small, bottom right after tags)
                     LayoutBosses(bosses, containers, ref containerIndex, tags.Count);
 
-                    System.Diagnostics.Debug.WriteLine(
-                        $"CategoryGroupedLayoutBehavior: Layout complete. Positioned {containerIndex} containers"
+                    DebugLogger.Log(
+                        "CategoryGroupedLayout",
+                        $"Layout complete. Positioned {containerIndex} containers"
                     );
                 },
                 Avalonia.Threading.DispatcherPriority.Loaded

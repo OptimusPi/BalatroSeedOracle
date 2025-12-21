@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Services
@@ -99,45 +100,14 @@ namespace BalatroSeedOracle.Services
 
                 if (IsInExclusionZone(currentX, currentY, widget.IsMinimized))
                 {
-#if DEBUG
-                    Console.WriteLine(
-                        $"Cleanup: Moving widget {widget.WidgetTitle} from exclusion zone ({currentX}, {currentY})"
+                    DebugLogger.Log(
+                        "WidgetPositionService",
+                        $"Widget '{widget.WidgetTitle}' in exclusion zone at ({currentX}, {currentY}) - finding new spot"
                     );
-#endif
-
-                    // Find a safe position in the left column
-                    var safeX = GridOriginX;
-                    var safeY = GridOriginY;
-
-                    // Find the first available position in the starting column
-                    for (int i = 0; i < 10; i++)
-                    {
-                        var testY = GridOriginY + (i * GridSpacingY);
-                        var exclusionZones = GetDynamicExclusionZones();
-                        var bottomExclusionStart = exclusionZones
-                            .Where(z => z.Y > _lastKnownParentHeight / 2)
-                            .FirstOrDefault()
-                            .Y;
-
-                        if (
-                            testY + MinimizedWidgetSize < bottomExclusionStart - 20
-                            && !IsPositionOccupied(safeX, testY, widget, widget.IsMinimized)
-                        )
-                        {
-                            safeY = testY;
-                            break;
-                        }
-                    }
-
-#if DEBUG
-                    Console.WriteLine(
-                        $"Cleanup: Moving widget {widget.WidgetTitle} to safe position ({safeX}, {safeY})"
-                    );
-#endif
-
-                    widget.PositionX = safeX;
-                    widget.PositionY = safeY;
-                    _widgetPositions[widget] = (safeX, safeY);
+                    var newPos = FindNextAvailablePosition(widget, widget.IsMinimized);
+                    widget.PositionX = newPos.X;
+                    widget.PositionY = newPos.Y;
+                    _widgetPositions[widget] = (newPos.X, newPos.Y);
                 }
             }
         }
@@ -325,8 +295,9 @@ namespace BalatroSeedOracle.Services
             // to allow widgets to position at their intended locations
             if (IsStartupMode)
             {
-                Console.WriteLine(
-                    $"[WidgetPosition] Startup mode - widget at ({snappedX}, {snappedY})"
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Startup mode - widget at ({snappedX}, {snappedY})"
                 );
                 return (snappedX, snappedY);
             }
@@ -334,19 +305,24 @@ namespace BalatroSeedOracle.Services
             // Check if the snapped position is occupied
             if (IsPositionOccupied(snappedX, snappedY, widget, widget.IsMinimized))
             {
-                Console.WriteLine(
-                    $"[WidgetPosition] Position ({snappedX}, {snappedY}) occupied, finding alternative"
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Position ({snappedX}, {snappedY}) occupied, finding alternative"
                 );
                 // Find the nearest available position
                 var (nearestX, nearestY) = FindNearestAvailablePosition(snappedX, snappedY, widget);
-                Console.WriteLine(
-                    $"[WidgetPosition] Alternative position: ({nearestX}, {nearestY})"
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Alternative position: ({nearestX}, {nearestY})"
                 );
 
                 return (nearestX, nearestY);
             }
 
-            Console.WriteLine($"[WidgetPosition] Position ({snappedX}, {snappedY}) available");
+            DebugLogger.Log(
+                "WidgetPositionService",
+                $"Position ({snappedX}, {snappedY}) available"
+            );
             return (snappedX, snappedY);
         }
 
@@ -500,7 +476,8 @@ namespace BalatroSeedOracle.Services
                     }
 
 #if DEBUG
-                    Console.WriteLine(
+                    DebugLogger.Log(
+                        "WidgetPosition",
                         $"Window resize: Moving widget from ({currentX}, {currentY}) to ({gridX}, {gridY}) - Safe Y range: {minSafeY}-{maxSafeY}"
                     );
 #endif
@@ -558,5 +535,11 @@ namespace BalatroSeedOracle.Services
         {
             return _widgetPositions.Select(kvp => (kvp.Key, kvp.Value.X, kvp.Value.Y));
         }
+
+        /// <summary>
+        /// Global singleton access for simplicity
+        /// </summary>
+        private static WidgetPositionService? _instance;
+        public static WidgetPositionService Instance => _instance ??= new WidgetPositionService();
     }
 }

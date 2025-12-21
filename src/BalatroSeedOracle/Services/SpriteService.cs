@@ -1463,6 +1463,11 @@ namespace BalatroSeedOracle.Services
                     "blind" or "blinds" => GetBlindImage(name),
                     "sticker" or "stickers" => GetStickerImage(name),
                     "booster" or "boosters" or "pack" or "packs" => GetBoosterImage(name),
+                    "deck" or "decks" => GetDeckImage(name),
+                    "stake" or "stakes" => GetStakeImage(name),
+                    "enhancement" or "enhancements" => GetEnhancementImage(name),
+                    "seal" or "seals" => GetSealImage(name),
+                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage("Spades", "Ace"),
                     _ => null,
                 };
             }
@@ -1504,6 +1509,24 @@ namespace BalatroSeedOracle.Services
             if (voucherPositions.ContainsKey(normalizedName))
             {
                 return GetVoucherImage(name);
+            }
+
+            // Check decks
+            if (deckPositions.ContainsKey(normalizedName))
+            {
+                return GetDeckImage(name);
+            }
+
+            // Check stakes
+            if (stakePositions.ContainsKey(normalizedName))
+            {
+                return GetStakeImage(name);
+            }
+
+            // Check enhancements
+            if (enhancementPositions.ContainsKey(normalizedName))
+            {
+                return GetEnhancementImage(name);
             }
 
             return null;

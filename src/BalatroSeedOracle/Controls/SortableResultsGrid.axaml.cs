@@ -96,11 +96,48 @@ namespace BalatroSeedOracle.Controls
 
         private void InitializeDataGrid()
         {
+            var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
+            if (dataGrid != null)
+            {
+                dataGrid.Sorting += OnDataGridSorting;
+            }
+
             // Tally columns will be initialized when results are added
             EnsureTallyColumns();
             
             // DataGrid is bound to DisplayedResults via XAML - no need to set explicitly
             DebugLogger.Log("SortableResultsGrid", "DataGrid initialized with XAML binding to DisplayedResults");
+        }
+
+        private void OnDataGridSorting(object? sender, DataGridColumnEventArgs e)
+        {
+            // Intercept sorting to handle it in the ViewModel for the entire result set
+            var column = e.Column;
+            var sortMemberPath = column.SortMemberPath;
+
+            if (string.IsNullOrEmpty(sortMemberPath))
+                return;
+
+            // Determine direction (toggle if same column)
+            bool descending = true;
+            if (ViewModel.CurrentSortProperty == sortMemberPath)
+            {
+                descending = !ViewModel.SortDescending;
+            }
+
+            // Update ViewModel
+            ViewModel.CurrentSortProperty = sortMemberPath;
+            ViewModel.SortDescending = descending;
+
+            // Update column UI (visual sort indicator)
+            foreach (var col in ((DataGrid)sender!).Columns)
+            {
+                col.SortDirection = null;
+            }
+            column.SortDirection = descending ? DataGridSortDirection.Descending : DataGridSortDirection.Ascending;
+
+            // Prevent default DataGrid sorting (we handle it manually)
+            e.Handled = true;
         }
 
         private void EnsureTallyColumns()
@@ -170,6 +207,8 @@ namespace BalatroSeedOracle.Controls
                 {
                     Header = header,
                     Width = new DataGridLength(80),
+                    CanUserSort = true,
+                    SortMemberPath = $"Scores[{index}]"
                 };
 
                 // Bind TextBlock to Scores[i] using proper AvaloniaUI binding

@@ -2,9 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:BalatroSeedOracle.Views"
         xmlns:vm="using:BalatroSeedOracle.ViewModels"
+        xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="🃏Balatro Seed BalatroSeedOracle🥠"
+        Title="Balatro Seed Oracle"
         Width="1582"
         Height="830"
         DragDrop.AllowDrop="True">
@@ -50,8 +51,11 @@
                                Classes="attribution-link"
                                Text="Buy Balatro"/>
                     <TextBlock Classes="attribution" Text=" • "/>
-                    <TextBlock Classes="attribution"
-                               Text="Created with ♥ for the Balatro community"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Classes="attribution" Text="Created with"/>
+                        <icons:PackIconMaterial Kind="Heart" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
+                        <TextBlock Classes="attribution" Text="for the Balatro community"/>
+                    </StackPanel>
 
                 </StackPanel>
             </Border>

@@ -2,6 +2,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:feather="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.FeatherIcons"
+             xmlns:material="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.WidgetHeader"
              x:DataType="vm:BaseWidgetViewModel">
 
@@ -10,19 +12,20 @@
         <Grid ColumnDefinitions="Auto,*">
             <!-- Minimize Button -->
             <Button Grid.Column="0"
-                    Content="↙"
                     Classes="widget-minimize-btn"
                     Command="{Binding MinimizeCommand}"
                     ToolTip.Tip="Minimize"
-                    Margin="0,0,8,0"/>
+                    Margin="0,0,8,0">
+                <feather:PackIconFeather Kind="Minimize2" Width="12" Height="12"/>
+            </Button>
 
             <!-- Title with Icon -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="?"
-                           Width="15"
-                           Height="15"
-                           VerticalAlignment="Center"
-                           FontSize="12"/>
+                <material:PackIconMaterial Kind="Help"
+                                       Width="14"
+                                       Height="14"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource White}"/>
                 <TextBlock Text="{Binding WidgetTitle}"
                            FontSize="13"
                            Foreground="{StaticResource White}"

@@ -1,10 +1,10 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
              x:DataType="vm:AnalyzerViewModel">
 
@@ -109,20 +109,20 @@
                                Foreground="{StaticResource White}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
-                    <Button Content="▲"
-                            Command="{Binding ScrollUpAnteCommand}"
+                    <Button Command="{Binding ScrollUpAnteCommand}"
                             ToolTip.Tip="Previous Ante (↑)"
                             Width="32"
                             Height="32"
-                            Padding="0"
-                            FontSize="14"/>
-                    <Button Content="▼"
-                            Command="{Binding ScrollDownAnteCommand}"
+                            Padding="0">
+                        <icons:PackIconMaterial Kind="ChevronUp" Width="16" Height="16"/>
+                    </Button>
+                    <Button Command="{Binding ScrollDownAnteCommand}"
                             ToolTip.Tip="Next Ante (↓)"
                             Width="32"
                             Height="32"
-                            Padding="0"
-                            FontSize="14"/>
+                            Padding="0">
+                        <icons:PackIconMaterial Kind="ChevronDown" Width="16" Height="16"/>
+                    </Button>
                 </StackPanel>
 
                 <!-- Copy URL Button -->
@@ -150,40 +150,21 @@
             </Grid>
         </Border>
 
-        <!-- Full-Width Analysis Display Area -->
-        <Grid Grid.Row="1" RowDefinitions="*">
+        <!-- Main Content Area: Split View -->
+        <Grid Grid.Row="1" ColumnDefinitions="2*,3*">
+            <!-- Left Side: Ante/Blind Tree -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource DarkBackground}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="0,0,2,0">
+                <features:AnteTreeView DataContext="{Binding AnteTree}"/>
+            </Border>
 
-            <!-- Scrollable Antes -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-
-                <StackPanel Spacing="20" Margin="20">
-
-                    <!-- Loading Indicator -->
-                    <Border IsVisible="{Binding IsAnalyzing}"
-                            Classes="info-panel"
-                            Padding="40">
-                        <StackPanel Spacing="12" HorizontalAlignment="Center">
-                            <TextBlock Text="Analyzing seed..."
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="24"
-                                       Foreground="{StaticResource White}"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock Text="Calculating ante distributions..."
-                                       FontSize="14"
-                                       Foreground="{StaticResource TextInactive}"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Shared Analysis Display (when not analyzing) -->
-                    <features:SeedAnalysisDisplay DataContext="{Binding DisplayAnalysis}"
-                                                 IsVisible="{Binding !IsAnalyzing}"/>
-
-                </StackPanel>
-            </ScrollViewer>
-
+            <!-- Right Side: Detailed View / Run Log -->
+            <Border Grid.Column="1"
+                    Background="{StaticResource DarkBackground}">
+                <features:RunDetailView DataContext="{Binding RunDetail}"/>
+            </Border>
         </Grid>
-
     </Grid>
 </UserControl>

@@ -97,20 +97,7 @@ public class SimpleBrowserConsole : IBsoConsole
     public void WriteLine(string? message)
     {
         if (!IsEnabled) return;
-        
-        try
-        {
-#if !BROWSER
-            Console.WriteLine($"[BSO] {message ?? "null"}");
-#else
-            // In browser, we could use JS interop to log to browser console
-            // For now, just silently fail
-#endif
-        }
-        catch
-        {
-            // Silently fail in browser if console isn't available
-        }
+        Helpers.DebugLogger.Log("BSO", message ?? "null");
     }
 }
 
@@ -137,19 +124,6 @@ public class SimpleConsole : IBsoConsole
     public void WriteLine(string? message)
     {
         if (!IsEnabled) return;
-        
-        try
-        {
-#if !BROWSER
-            Console.WriteLine($"[BSO] {message ?? "null"}");
-#else
-            // In browser, we could use JS interop to log to browser console
-            // For now, just silently fail
-#endif
-        }
-        catch
-        {
-            // Silently fail if console isn't available
-        }
+        Helpers.DebugLogger.Log("BSO", message ?? "null");
     }
 }

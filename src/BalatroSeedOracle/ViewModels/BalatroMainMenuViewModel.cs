@@ -10,6 +10,7 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using IconPacks.Avalonia.Material;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -43,7 +44,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isAnimating = true;
 
         [ObservableProperty]
-        private string _animationIconText = "⏸";
+        private PackIconMaterialKind _animationIcon = PackIconMaterialKind.Pause;
 
         [ObservableProperty]
         private bool _isMusicPlaying = true;
@@ -55,7 +56,7 @@ namespace BalatroSeedOracle.ViewModels
         private string _volumePercentText = "70%";
 
         [ObservableProperty]
-        private string _musicIconText = "🔊";
+        private PackIconMaterialKind _musicIcon = PackIconMaterialKind.VolumeHigh;
 
         [ObservableProperty]
         private string _muteButtonText = "MUTE";
@@ -151,14 +152,14 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnIsAnimatingChanged(bool value)
         {
-            AnimationIconText = value ? "⏸" : "▶";
+            AnimationIcon = value ? PackIconMaterialKind.Pause : PackIconMaterialKind.Play;
             OnIsAnimatingChangedEvent?.Invoke(this, value);
         }
 
         partial void OnVolumeChanged(double value)
         {
             VolumePercentText = $"{(int)value}%";
-            MusicIconText = value > 0 ? "🔊" : "🔇";
+            MusicIcon = value > 0 ? PackIconMaterialKind.VolumeHigh : PackIconMaterialKind.VolumeOff;
             MuteButtonText = value > 0 ? "MUTE" : "UNMUTE";
             IsMusicPlaying = value > 0;
             ApplyVolumeChange(value);

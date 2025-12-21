@@ -46,6 +46,12 @@ namespace BalatroSeedOracle.ViewModels.Controls
         [ObservableProperty]
         private int _selectedSortIndex = 1; // Default: Score descending
 
+        [ObservableProperty]
+        private string _currentSortProperty = "TotalScore";
+
+        [ObservableProperty]
+        private bool _sortDescending = true;
+
         // Commands
         public IAsyncRelayCommand<string> CopySeedCommand { get; }
         public IRelayCommand ExportAllCommand { get; }
@@ -188,13 +194,51 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             lock (_lock)
             {
-                // Get top 1000 sorted by score (descending)
-                top1000 = SelectedSortIndex switch
+                IOrderedEnumerable<SearchResult> query;
+
+                // Handle sorting based on CurrentSortProperty
+                if (CurrentSortProperty == "Seed")
                 {
-                    0 => _backingResults.OrderBy(r => r.Seed).Take(MaxDisplayResults).ToList(),
-                    2 => _backingResults.OrderBy(r => r.TotalScore).Take(MaxDisplayResults).ToList(),
-                    _ => _backingResults.OrderByDescending(r => r.TotalScore).Take(MaxDisplayResults).ToList()
-                };
+                    query = SortDescending 
+                        ? _backingResults.OrderByDescending(r => r.Seed) 
+                        : _backingResults.OrderBy(r => r.Seed);
+                }
+                else if (CurrentSortProperty == "TotalScore")
+                {
+                    query = SortDescending 
+                        ? _backingResults.OrderByDescending(r => r.TotalScore) 
+                        : _backingResults.OrderBy(r => r.TotalScore);
+                }
+                else if (CurrentSortProperty.StartsWith("Scores["))
+                {
+                    // Extract index from "Scores[N]"
+                    try
+                    {
+                        int startIndex = CurrentSortProperty.IndexOf('[') + 1;
+                        int endIndex = CurrentSortProperty.IndexOf(']');
+                        int scoreIndex = int.Parse(CurrentSortProperty.Substring(startIndex, endIndex - startIndex));
+
+                        query = SortDescending 
+                            ? _backingResults.OrderByDescending(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0) 
+                            : _backingResults.OrderBy(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0);
+                    }
+                    catch
+                    {
+                        // Fallback to TotalScore
+                        query = SortDescending 
+                            ? _backingResults.OrderByDescending(r => r.TotalScore) 
+                            : _backingResults.OrderBy(r => r.TotalScore);
+                    }
+                }
+                else
+                {
+                    // Default fallback
+                    query = SortDescending 
+                        ? _backingResults.OrderByDescending(r => r.TotalScore) 
+                        : _backingResults.OrderBy(r => r.TotalScore);
+                }
+
+                top1000 = query.Take(MaxDisplayResults).ToList();
             }
 
             // Update UI on dispatcher thread
@@ -217,9 +261,29 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
         partial void OnSelectedSortIndexChanged(int value)
         {
-            // Re-sort when sort option changes
+            // Update sort properties based on legacy index
+            switch (value)
+            {
+                case 0: // SEED (A-Z)
+                    CurrentSortProperty = "Seed";
+                    SortDescending = false;
+                    break;
+                case 1: // SCORE (DESC)
+                    CurrentSortProperty = "TotalScore";
+                    SortDescending = true;
+                    break;
+                case 2: // SCORE (ASC)
+                    CurrentSortProperty = "TotalScore";
+                    SortDescending = false;
+                    break;
+            }
+            
+            // Refresh results
             RefreshDisplayedResults();
         }
+
+        partial void OnCurrentSortPropertyChanged(string value) => RefreshDisplayedResults();
+        partial void OnSortDescendingChanged(bool value) => RefreshDisplayedResults();
 
         private void UpdateStatsText()
         {

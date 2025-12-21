@@ -6,9 +6,9 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
-             x:DataType="vm:FilterListViewModel">
+             x:DataType="vm:FilterSelectorViewModel">
 
     <UserControl.Resources>
         <conv:TruncateConverter x:Key="TruncateConv"/>
@@ -147,10 +147,9 @@
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
                                             IsVisible="{Binding IsSelected}">
-                                        <TextBlock Text="✓"
+                                        <icons:PackIconMaterial Kind="Check"
                                                    Foreground="{StaticResource White}"
-                                                   FontSize="12"
-                                                   FontFamily="{StaticResource BalatroFont}"
+                                                   Width="12" Height="12"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"/>
                                     </Border>
@@ -162,16 +161,15 @@
 
                 <!-- Pagination Controls (matching Balatro screenshot) -->
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
-                    <Button Content="&lt;"
-                            Classes="btn-red"
+                    <Button Classes="btn-red"
                             Width="44"
                             Height="36"
-                            FontSize="16"
-                            
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"
-                            IsEnabled="{Binding CanGoToPreviousPage}"/>
+                            IsEnabled="{Binding CanGoToPreviousPage}">
+                        <icons:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20"/>
+                    </Button>
 
                     <!-- Page indicator -->
                     <Border Background="{StaticResource Red}"
@@ -184,21 +182,19 @@
                         <TextBlock Text="{Binding PageIndicator}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="14"
-                                   
                                    Foreground="White"
                                    TextAlignment="Center"/>
                     </Border>
 
-                    <Button Content="&gt;"
-                            Classes="btn-red"
+                    <Button Classes="btn-red"
                             Width="44"
                             Height="36"
-                            FontSize="16"
-                            
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding NextPageCommand}"
-                            IsEnabled="{Binding CanGoToNextPage}"/>
+                            IsEnabled="{Binding CanGoToNextPage}">
+                        <icons:PackIconMaterial Kind="ChevronRight" Width="20" Height="20"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -223,7 +219,7 @@
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                Opacity="0.9"/>
-                    <TextBlock Text="— or —"
+                    <TextBlock Text="OR"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="14"
                                Foreground="{StaticResource White}"

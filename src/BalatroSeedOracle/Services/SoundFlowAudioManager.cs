@@ -107,8 +107,9 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                Console.WriteLine(
-                    "[SoundFlowAudioManager] Initializing cross-platform audio engine..."
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "Initializing cross-platform audio engine..."
                 );
 
                 // 1. Create audio engine (cross-platform)
@@ -121,8 +122,9 @@ namespace BalatroSeedOracle.Services
                 var defaultDevice = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
                 _device = _engine.InitializePlaybackDevice(defaultDevice, format);
 
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] Initialized playback device: {_device.Info?.Name ?? "Default"}"
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    $"Initialized playback device: {_device.Info?.Name ?? "Default"}"
                 );
 
                 // 4. Load all 8 tracks as SoundPlayers
@@ -136,24 +138,27 @@ namespace BalatroSeedOracle.Services
                 _masterVolume = 0f; // Sync internal state
                 _device.Start();
 
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] Device started MUTED (waiting for user settings to restore volume) with {_players.Count} independent tracks"
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    $"Device started MUTED (waiting for user settings to restore volume) with {_players.Count} independent tracks"
                 );
 
                 // 6. Start analysis update loop
                 _cancellationTokenSource = new CancellationTokenSource();
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
 
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ✓ Initialized with {_players.Count} tracks, {_sfxPlayers.Count} SFX, and REAL FFT analysis"
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    $"✓ Initialized with {_players.Count} tracks, {_sfxPlayers.Count} SFX, and REAL FFT analysis"
                 );
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    $"[SoundFlowAudioManager] ERROR: Failed to initialize: {ex.Message}"
+                DebugLogger.LogError(
+                    "SoundFlowAudioManager",
+                    $"Error initializing SoundFlow: {ex.Message}"
                 );
-                Console.WriteLine($"[SoundFlowAudioManager] Stack trace: {ex.StackTrace}");
+                DebugLogger.LogError("SoundFlowAudioManager", $"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -173,15 +178,13 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(audioDir, $"{trackName}.mp3");
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine($"[SoundFlowAudioManager] ERROR: Missing {trackName}.mp3");
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Missing {trackName}.mp3");
                     continue;
                 }
 
                 try
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] Loading {trackName} from {filePath}"
-                    );
+                    DebugLogger.Log("SoundFlowAudioManager", $"Loading {trackName} from {filePath}");
 
                     // Create StreamDataProvider - this will auto-detect format and decode
                     var fileStream = File.OpenRead(filePath);
@@ -210,16 +213,18 @@ namespace BalatroSeedOracle.Services
                     _analyzers[trackName] = analyzer;
 
                     var extension = Path.GetExtension(filePath);
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ✓ Loaded and playing: {trackName}{extension}"
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"✓ Loaded and playing: {trackName}{extension}"
                     );
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR loading {trackName}: {ex.Message}"
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Error loading {trackName}: {ex.Message}"
                     );
-                    Console.WriteLine($"[SoundFlowAudioManager]   Stack: {ex.StackTrace}");
+                    DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
         }
@@ -240,17 +245,16 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(sfxDir, $"{sfxName}.mp3");
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR: Missing {sfxName}.mp3 at {filePath}"
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Missing {sfxName}.mp3 at {filePath}"
                     );
                     continue;
                 }
 
                 try
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] Loading SFX {sfxName} from {filePath}"
-                    );
+                    DebugLogger.Log("SoundFlowAudioManager", $"Loading SFX {sfxName} from {filePath}");
 
                     // Create StreamDataProvider for the SFX file
                     var fileStream = File.OpenRead(filePath);
@@ -267,14 +271,15 @@ namespace BalatroSeedOracle.Services
 
                     _sfxPlayers[sfxName] = player;
 
-                    Console.WriteLine($"[SoundFlowAudioManager] ✓ Loaded SFX: {sfxName}.mp3");
+                    DebugLogger.Log("SoundFlowAudioManager", $"✓ Loaded SFX: {sfxName}.mp3");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
-                        $"[SoundFlowAudioManager] ERROR loading SFX {sfxName}: {ex.Message}"
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Error loading SFX {sfxName}: {ex.Message}"
                     );
-                    Console.WriteLine($"[SoundFlowAudioManager]   Stack: {ex.StackTrace}");
+                    DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
         }
@@ -294,7 +299,7 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[SoundFlowAudioManager] Analysis error: {ex.Message}");
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Analysis error: {ex.Message}");
                 }
             }
         }
@@ -416,7 +421,7 @@ namespace BalatroSeedOracle.Services
             if (_players.TryGetValue(trackName, out var player))
             {
                 player.Volume = Math.Clamp(volume, 0f, 1f);
-                Console.WriteLine($"[SoundFlowAudioManager] Set {trackName} volume to {volume:P0}");
+                DebugLogger.Log("SoundFlowAudioManager", $"Set {trackName} volume to {volume:P0}");
             }
         }
 
@@ -428,7 +433,7 @@ namespace BalatroSeedOracle.Services
             if (_players.TryGetValue(trackName, out var player))
             {
                 player.Pan = Math.Clamp(pan, 0f, 1f);
-                Console.WriteLine($"[SoundFlowAudioManager] Set {trackName} pan to {pan:F2}");
+                DebugLogger.Log("SoundFlowAudioManager", $"Set {trackName} pan to {pan:F2}");
             }
         }
 
@@ -440,7 +445,7 @@ namespace BalatroSeedOracle.Services
             if (_players.TryGetValue(trackName, out var player))
             {
                 player.Mute = muted;
-                Console.WriteLine($"[SoundFlowAudioManager] Set {trackName} muted={muted}");
+                DebugLogger.Log("SoundFlowAudioManager", $"Set {trackName} muted={muted}");
             }
         }
 
@@ -515,7 +520,7 @@ namespace BalatroSeedOracle.Services
             // Dispose engine
             _engine?.Dispose();
 
-            Console.WriteLine("[SoundFlowAudioManager] Disposed");
+            DebugLogger.Log("SoundFlowAudioManager", "Disposed");
         }
     }
 

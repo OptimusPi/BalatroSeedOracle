@@ -3,6 +3,8 @@
              xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:models="using:BalatroSeedOracle.Models"
              x:Class="BalatroSeedOracle.Components.FilterTabs.JamlEditorTab"
              x:DataType="vm:JamlEditorTabViewModel">
     <Border Grid.Row="0"
@@ -15,10 +17,17 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
 
             <!-- Editor Header Bar -->
             <Border Grid.Row="0"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     Background="{StaticResource EditorHeaderBg}"
                     BorderBrush="{StaticResource EditorBorderBg}"
                     BorderThickness="0,0,0,1"
@@ -49,9 +58,10 @@
                                 BorderThickness="0"
                                 CornerRadius="4"
                                 Foreground="{StaticResource BrightGold}"/>
-                        <Button Content="Validate"
-                                ToolTip.Tip="Validate JAML"
-                                Command="{Binding ValidateJamlCommand}"
+                        <Button Content="Sync to Visual"
+                                ToolTip.Tip="Apply changes to the Visual Builder"
+                                Command="{Binding SyncToVisualCommand}"
+                                IsEnabled="{Binding !HasError}"
                                 Height="24"
                                 Padding="8,4"
                                 FontSize="11"
@@ -76,8 +86,9 @@
                 </Grid>
             </Border>
 
-            <!-- Editor Content (JAML uses YAML syntax highlighting since it's YAML-based) -->
+            <!-- Editor Content -->
             <AvaloniaEdit:TextEditor Grid.Row="1"
+                                    Grid.Column="0"
                                     Name="JamlEditor"
                                     SyntaxHighlighting="YAML"
                                     ShowLineNumbers="True"
@@ -90,6 +101,93 @@
                                     Padding="12,8"
                                     HorizontalScrollBarVisibility="Auto"
                                     VerticalScrollBarVisibility="Auto"/>
+
+            <!-- Preview Panel -->
+            <Border Grid.Row="1" 
+                    Grid.Column="1"
+                    Background="{StaticResource EditorDarkBg}"
+                    BorderBrush="{StaticResource EditorBorderBg}"
+                    BorderThickness="1,0,0,0">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0" 
+                               Text="PREVIEW" 
+                               Foreground="{StaticResource EditorTextGrey}"
+                               FontSize="10"
+                               Margin="8,4"
+                               HorizontalAlignment="Center"
+                               FontFamily="{StaticResource BalatroFont}"/>
+                    
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding PreviewItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:FilterItem">
+                                    <Border Margin="8">
+                                        <Border.RenderTransform>
+                                            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                                        </Border.RenderTransform>
+                                        <StackPanel>
+                                            <Border Name="CategoryIndicator" 
+                                                    Height="4" 
+                                                    VerticalAlignment="Top" 
+                                                    Margin="0,0,0,8"
+                                                    CornerRadius="2">
+                                                <Border.Styles>
+                                                    <Style Selector="Border">
+                                                        <Setter Property="Background" Value="{StaticResource BrightGold}"/>
+                                                    </Style>
+                                                    <Style Selector="Border[Tag=Must]">
+                                                        <Setter Property="Background" Value="{StaticResource BrightGreenEditor}"/>
+                                                    </Style>
+                                                </Border.Styles>
+                                                <Border.Tag>
+                                                    <Binding Path="Category"/>
+                                                </Border.Tag>
+                                            </Border>
+                                            
+                                            <!-- Reuse the self-contained FilterItemCard -->
+                                            <components:FilterItemCard DataContext="{Binding}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Validation Status Bar -->
+            <Border Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Background="{StaticResource EditorHeaderBg}"
+                    BorderBrush="{StaticResource EditorBorderBg}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,12,12"
+                    Padding="12,4">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding ValidationStatus}"
+                                   Foreground="{Binding ValidationStatusColor}"
+                                   FontWeight="Bold"
+                                   FontSize="12"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ErrorMessage}"
+                               Foreground="{StaticResource Red}"
+                               FontSize="11"
+                               Margin="16,0"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding HasError}"/>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

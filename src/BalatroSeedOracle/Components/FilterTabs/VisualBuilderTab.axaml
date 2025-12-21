@@ -6,6 +6,7 @@
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True"
@@ -50,9 +51,48 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid VerticalAlignment="Stretch" ClipToBounds="False">
-                <!-- Search bar moved to parent modal (FiltersModal), no rows needed here -->
-                <Grid Margin="16,0,16,16" VerticalAlignment="Stretch" ClipToBounds="False">
+    <Grid VerticalAlignment="Stretch" ClipToBounds="False" RowDefinitions="Auto,*">
+        <!-- Header area for Filter Name -->
+        <Border Grid.Row="0" Margin="16,0,16,8" Padding="12,8" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <icons:PackIconMaterial Kind="FilterVariant" Width="20" Height="20" Foreground="{StaticResource BalatroGold}"/>
+                
+                <Panel VerticalAlignment="Center">
+                    <!-- Display Mode -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding FilterNameDisplayMode}" Spacing="8">
+                        <TextBlock Text="{Binding FilterName}" 
+                                   FontFamily="{StaticResource BalatroFont}" 
+                                   FontSize="24" 
+                                   Foreground="{StaticResource White}"/>
+                        <Button Classes="empty-button" 
+                                Command="{Binding FilterNameClickCommand}"
+                                ToolTip.Tip="Edit Filter Name">
+                            <icons:PackIconMaterial Kind="Pencil" Width="16" Height="16" Foreground="{StaticResource BalatroGold}"/>
+                        </Button>
+                    </StackPanel>
+                    
+                    <!-- Edit Mode -->
+                    <StackPanel Orientation="Horizontal" IsVisible="{Binding FilterNameEditMode}" Spacing="8">
+                        <TextBox Name="FilterNameEdit"
+                                 Text="{Binding FilterName, Mode=TwoWay}"
+                                 FontFamily="{StaticResource BalatroFont}"
+                                 FontSize="20"
+                                 Width="300"
+                                 VerticalAlignment="Center"/>
+                        <Button Classes="green-button" 
+                                Content="SAVE"
+                                Command="{Binding SaveFilterNameCommand}"
+                                Padding="8,4"/>
+                        <Button Classes="red-button" 
+                                Content="CANCEL"
+                                Command="{Binding CancelFilterNameEditCommand}"
+                                Padding="8,4"/>
+                    </StackPanel>
+                </Panel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="16,0,16,16" VerticalAlignment="Stretch" ClipToBounds="False">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="135"/>   <!-- Left: Category Buttons -->
                 <ColumnDefinition Width="1.1*"/>  <!-- Center: Grouped Items (balanced spacing) -->
@@ -686,13 +726,11 @@
                             BorderThickness="2"
                             CornerRadius="6"
                             Cursor="Hand"
-                            ToolTip.Tip="Cycle: OR → AND → BANNED"
+                            ToolTip.Tip="Cycle: OR -> AND -> BANNED"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
-                        <TextBlock Text="⇄"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="20"
-                                  
+                        <icons:PackIconMaterial Kind="SwapHorizontal"
+                                   Width="20" Height="20"
                                    Foreground="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"/>
                     </Button>
 
@@ -905,12 +943,10 @@
                                                         <components:FilterItemCard DataContext="{Binding}"/>
 
                                                         <!-- Hover-only Remove Button -->
-                                                        <Button Content="×"
-                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
+                                                        <Button Command="{Binding $parent[UserControl].DataContext.RemoveFromMustCommand}"
                                                                 CommandParameter="{Binding}"
                                                                 Background="{StaticResource Red}"
                                                                 Foreground="White"
-                                                                FontSize="12"
                                                                 Width="18"
                                                                 Height="18"
                                                                 CornerRadius="9"
@@ -920,6 +956,7 @@
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
                                                                 Name="RemoveButton">
+                                                            <icons:PackIconMaterial Kind="Close" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">
                                                                     <Setter Property="Background" Value="{StaticResource RedHover}"/>
@@ -1021,12 +1058,10 @@
                                                         <components:FilterItemCard DataContext="{Binding}"/>
 
                                                         <!-- Hover-only Remove Button -->
-                                                        <Button Content="×"
-                                                                Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
+                                                        <Button Command="{Binding $parent[UserControl].DataContext.RemoveFromShouldCommand}"
                                                                 CommandParameter="{Binding}"
                                                                 Background="{StaticResource Red}"
                                                                 Foreground="White"
-                                                                FontSize="12"
                                                                 Width="18"
                                                                 Height="18"
                                                                 CornerRadius="9"
@@ -1036,6 +1071,7 @@
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
                                                                 Name="RemoveButton">
+                                                            <icons:PackIconMaterial Kind="Close" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">
                                                                     <Setter Property="Background" Value="{StaticResource RedHover}"/>
@@ -1063,20 +1099,34 @@
                       ZIndex="1000"
                       PointerPressed="OnOverlayBackgroundClick"
                       Margin="-16,0,0,-16">
-                    <Grid ColumnDefinitions="*,350" Margin="40,60">
+                    <Grid ColumnDefinitions="*,400" Margin="20,40">
                         <!-- Left Side: Item Preview (Raised above the dimming) -->
                         <Border Grid.Column="0" 
-                                HorizontalAlignment="Right" 
+                                HorizontalAlignment="Center" 
                                 VerticalAlignment="Center" 
-                                Margin="0,0,40,0"
-                                Width="142" 
-                                Height="190"
+                                Margin="0,0,20,0"
                                 Background="Transparent"
                                 IsHitTestVisible="False">
-                            <Grid>
-                                <!-- The actual item preview will be injected here via code-behind or binding -->
-                                <ContentControl Name="ItemPreviewContent" Scale="2.0"/>
-                            </Grid>
+                            <StackPanel Spacing="20">
+                                <TextBlock Text="EDITING ITEM" 
+                                           FontFamily="{StaticResource BalatroFont}" 
+                                           FontSize="24" 
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="10" OffsetX="2" OffsetY="2" Opacity="1"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
+                                
+                                <ContentControl Name="ItemPreviewContent" HorizontalAlignment="Center">
+                                    <ContentControl.RenderTransform>
+                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5"/>
+                                    </ContentControl.RenderTransform>
+                                    <ContentControl.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="30" OffsetX="0" OffsetY="10" Opacity="0.8"/>
+                                    </ContentControl.Effect>
+                                </ContentControl>
+                            </StackPanel>
                         </Border>
 
                         <!-- Right Side: Config Panel -->

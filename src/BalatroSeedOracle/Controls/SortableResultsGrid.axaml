@@ -1,158 +1,113 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
-             x:DataType="vm:SortableResultsGridViewModel"
-             x:CompileBindings="True">
+             x:DataType="vm:SortableResultsGridViewModel">
 
-    <UserControl.Resources>
-    </UserControl.Resources>
-    
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Header with sorting controls -->
+    <Grid RowDefinitions="Auto,*">
+        <!-- Stats and Actions Header -->
         <Border Grid.Row="0" 
                 Background="{StaticResource DarkBackground}" 
-                BorderBrush="{StaticResource ModalBorder}" 
-                BorderThickness="0,0,0,2" 
-                Padding="12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <icons:PackIconMaterial Kind="Magnify" Width="18" Height="18" Foreground="{StaticResource White}"/>
-                        <TextBlock Text="SEARCH RESULTS"
-                                   Foreground="{StaticResource White}"
-                                   FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="18"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <TextBlock Text="{Binding ResultsCountText}"
-                               Foreground="{StaticResource Gold}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
+                Padding="12,8"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Stats Text -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ResultsCountText}" 
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource Gold}"/>
+                    <TextBlock Text="{Binding StatsText}" 
+                               FontSize="12"
+                               Foreground="{StaticResource LightGrey}"
+                               VerticalAlignment="Center"
+                               Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <!-- Sort controls -->
-                    <TextBlock Text="Sort by:"
-                               Foreground="{StaticResource White}"
-                               FontSize="12"
-                               VerticalAlignment="Center"/>
+                <!-- Actions -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <!-- Sort Dropdown (Legacy support) -->
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,10,0">
+                        <TextBlock Text="SORT:" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource MediumGrey}"/>
+                        <ComboBox SelectedIndex="{Binding SelectedSortIndex}" Height="30" FontSize="12">
+                            <ComboBoxItem Content="SEED (A-Z)"/>
+                            <ComboBoxItem Content="SCORE (DESC)"/>
+                            <ComboBoxItem Content="SCORE (ASC)"/>
+                        </ComboBox>
+                    </StackPanel>
 
-                    <ComboBox SelectedIndex="{Binding SelectedSortIndex}"
-                              Background="{StaticResource DarkBackground}"
-                              Foreground="{StaticResource Gold}"
-                              BorderBrush="{StaticResource ModalBorder}"
-                              MinWidth="160">
-                        <ComboBoxItem Content="Seed"/>
-                        <ComboBoxItem Content="Score ↓"/>
-                        <ComboBoxItem Content="Score ↑"/>
-                    </ComboBox>
-
-                    <!-- Export button -->
-                    <Button Command="{Binding ExportAllCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <icons:PackIconMaterial Kind="Export" Width="14" Height="14"/>
-                            <TextBlock Text="Export" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Button Command="{Binding PopOutCommand}" 
+                            ToolTip.Tip="Open in new window"
+                            Classes="btn-blue"
+                            Padding="8,4">
+                        <material:PackIconMaterial Kind="OpenInNew" Width="14" Height="14"/>
                     </Button>
-
-                    <!-- Pop Out button -->
-                    <Button Command="{Binding PopOutCommand}"
-                            ToolTip.Tip="Open results in separate window">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <icons:PackIconMaterial Kind="OpenInNew" Width="14" Height="14"/>
-                            <TextBlock Text="Pop Out" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Button Command="{Binding ExportAllCommand}" 
+                            ToolTip.Tip="Export all results"
+                            Classes="btn-green"
+                            Padding="8,4">
+                        <material:PackIconMaterial Kind="FileExport" Width="14" Height="14"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
-        
-        <!-- Main DataGrid -->
+
+        <!-- Results Grid -->
         <DataGrid Grid.Row="1"
                   Name="ResultsDataGrid"
                   ItemsSource="{Binding DisplayedResults}"
                   AutoGenerateColumns="False"
-                  CanUserReorderColumns="True"
-                  CanUserResizeColumns="True"
                   CanUserSortColumns="True"
-                  IsReadOnly="True"
-                  SelectionMode="Extended"
-                  MinHeight="200"
-                  RowHeight="36"
-                  Background="{StaticResource DarkBackground}"
-                  Foreground="{StaticResource White}"
-                  GridLinesVisibility="Horizontal"
+                  CanUserResizeColumns="True"
+                  CanUserReorderColumns="True"
+                  GridLinesVisibility="All"
                   HeadersVisibility="Column"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                  IsReadOnly="True"
+                  Background="{StaticResource DarkBackground}"
+                  Foreground="White">
             <DataGrid.Columns>
-                <!-- Seed column with copy button -->
-                <DataGridTemplateColumn Header="SEED" Width="150" SortMemberPath="Seed">
+                <DataGridTemplateColumn Header="SEED" Width="150" CanUserSort="True" SortMemberPath="Seed">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="5">
-                                <TextBlock Text="{Binding Seed}"
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding Seed}" 
                                            FontFamily="{StaticResource BalatroFont}"
                                            FontSize="14"
-                                           Foreground="{StaticResource White}"
-                                           VerticalAlignment="Center"/>
-                                <Button Classes="copy-btn"
-                                        ToolTip.Tip="Copy seed to clipboard"
-                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
-                                        CommandParameter="{Binding Seed}">
-                                    <icons:PackIconMaterial Kind="ContentCopy" Width="12" Height="12"/>
+                                           VerticalAlignment="Center"
+                                           Margin="8,0"/>
+                                <Button Grid.Column="1" 
+                                        Command="{Binding $parent[UserControl].ViewModel.CopySeedCommand}"
+                                        CommandParameter="{Binding Seed}"
+                                        Classes="btn-blue"
+                                        Padding="4" Margin="0,0,4,0"
+                                        ToolTip.Tip="Copy Seed">
+                                    <material:PackIconMaterial Kind="ContentCopy" Width="12" Height="12"/>
                                 </Button>
-                            </StackPanel>
+                            </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- Score column - using template for explicit foreground -->
-                <DataGridTemplateColumn Header="SCORE" Width="80" SortMemberPath="TotalScore">
+                <DataGridTextColumn Header="SCORE" 
+                                    Binding="{Binding TotalScore}" 
+                                    Width="100" 
+                                    CanUserSort="True" 
+                                    SortMemberPath="TotalScore"/>
+
+                <!-- Dynamic Tally Columns are inserted here by code-behind -->
+
+                <DataGridTemplateColumn Header="ACTIONS" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding TotalScore}"
-                                       FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
-                                       Foreground="{StaticResource Gold}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                
-                <!-- Tally columns will be added dynamically based on Labels/Scores -->
-                
-                <!-- Actions column -->
-                <DataGridTemplateColumn Header="ACTIONS" Width="90">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="5">
-                                <Button Classes="copy-btn"
-                                        ToolTip.Tip="Copy seed"
-                                        Command="{Binding $parent[UserControl].DataContext.CopySeedCommand}"
-                                        CommandParameter="{Binding Seed}">
-                                    <icons:PackIconMaterial Kind="ContentCopy" Width="12" Height="12"/>
-                                </Button>
-                                <Button Classes="copy-btn"
-                                        ToolTip.Tip="Analyze seed"
-                                        Command="{Binding $parent[UserControl].DataContext.AnalyzeCommand}"
-                                        CommandParameter="{Binding}">
-                                    <icons:PackIconMaterial Kind="ChartBar" Width="12" Height="12"/>
+                            <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                <Button Command="{Binding $parent[UserControl].ViewModel.AnalyzeCommand}"
+                                        CommandParameter="{Binding}"
+                                        Classes="btn-green"
+                                        Padding="6,3"
+                                        ToolTip.Tip="Analyze this seed">
+                                    <material:PackIconMaterial Kind="Magnify" Width="14" Height="14"/>
                                 </Button>
                             </StackPanel>
                         </DataTemplate>
@@ -160,17 +115,5 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        
-        <!-- Footer with stats -->
-        <Border Grid.Row="2"
-                Background="{StaticResource DarkBackground}"
-                BorderBrush="{StaticResource ModalBorder}"
-                BorderThickness="0,2,0,0"
-                Padding="12">
-            <TextBlock Text="{Binding StatsText}"
-                       Foreground="{StaticResource White}"
-                       FontSize="12"
-                       VerticalAlignment="Center"/>
-        </Border>
     </Grid>
 </UserControl>

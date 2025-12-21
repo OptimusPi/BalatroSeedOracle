@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.ItemConfigPanel"
              x:DataType="vm:ItemConfigPanelViewModel">
 
@@ -25,16 +26,15 @@
                                Foreground="{StaticResource Gold}"
                                VerticalAlignment="Center"/>
                     <Button Grid.Column="1"
-                            Content="×"
                             Command="{Binding CloseCommand}"
                             Background="Transparent"
                             BorderThickness="0"
                             Foreground="{StaticResource LightGrey}"
-                            FontSize="24"
                             Width="32"
                             Height="32"
                             Padding="0"
                             Cursor="Hand">
+                        <icons:PackIconMaterial Kind="Close" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <Button.Styles>
                             <Style Selector="Button:pointerover">
                                 <Setter Property="Foreground" Value="{StaticResource White}"/>

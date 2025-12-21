@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Controls.SourceSelector">
     
     <UserControl.Styles>
@@ -75,7 +76,7 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="10">
-                    <TextBlock Text="🎯" FontSize="20"/>
+                    <icons:PackIconMaterial Kind="Target" Width="20" Height="20" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding PreviewText}"
                                Foreground="{Binding PreviewColor}"
                                Classes="source-description"

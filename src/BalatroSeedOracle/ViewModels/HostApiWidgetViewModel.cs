@@ -241,7 +241,7 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
                 catch (Exception ex)
                 {
                     // Log shutdown error but continue cleanup
-                    System.Diagnostics.Debug.WriteLine($"Server shutdown error: {ex.Message}");
+                    DebugLogger.LogError("HostApiWidget", $"Server shutdown error: {ex.Message}");
                 }
                 finally
                 {

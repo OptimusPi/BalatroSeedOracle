@@ -5,6 +5,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
              x:Class="BalatroSeedOracle.Components.FilterItemConfigRow"
              x:DataType="vm:FilterItemConfigRowViewModel">
@@ -43,19 +44,17 @@
                 </Border>
 
                 <!-- SINGLE LINE: Name + Config Summary -->
-                <TextBlock Grid.Column="1"
-                           VerticalAlignment="Center"
-                           Margin="4,0"
-                           FontFamily="{StaticResource BalatroFont}"
-                           FontSize="12"
-                           Foreground="{StaticResource LightGrey}">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} • {1}">
-                            <Binding Path="Item.DisplayName"/>
-                            <Binding Path="ConfigSummary"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
+                    <TextBlock Text="{Binding Item.DisplayName}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="12"
+                               Foreground="{StaticResource LightGrey}"/>
+                    <icons:PackIconMaterial Kind="CircleSmall" Width="8" Height="8" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center" Margin="4,0"/>
+                    <TextBlock Text="{Binding ConfigSummary}"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="12"
+                               Foreground="{StaticResource LightGrey}"/>
+                </StackPanel>
 
                 <!-- Expand/Collapse Button (smaller) -->
                 <Button Grid.Column="2"
@@ -70,9 +69,9 @@
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         ToolTip.Tip="Configure">
-                    <TextBlock Text="{Binding IsExpanded, Converter={x:Static converters:BoolToExpandIconConverter.Instance}}"
-                               FontSize="12"
-                               Foreground="{StaticResource LightGrey}"/>
+                    <icons:PackIconMaterial Kind="{Binding IsExpanded, Converter={x:Static converters:BoolToExpandIconConverter.Instance}}"
+                                            Width="14" Height="14"
+                                            Foreground="{StaticResource LightGrey}"/>
                 </Button>
 
                 <!-- Remove Button (smaller) -->
@@ -92,9 +91,9 @@
                             <Setter Property="Background" Value="{StaticResource RedHover}"/>
                         </Style>
                     </Button.Styles>
-                    <TextBlock Text="×"
-                               FontSize="16"
-                               Foreground="{StaticResource White}"/>
+                    <icons:PackIconMaterial Kind="Close"
+                                            Width="14" Height="14"
+                                            Foreground="{StaticResource White}"/>
                 </Button>
             </Grid>
 
@@ -128,7 +127,9 @@
                         <!-- Inline quick buttons -->
                         <Button Content="1-3" Command="{Binding QuickAntes1to3Command}" Classes="mini-button" ToolTip.Tip="Quick set 1-3"/>
                         <Button Content="All" Command="{Binding QuickAntesAllCommand}" Classes="mini-button" ToolTip.Tip="All Antes"/>
-                        <Button Content="×" Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear"/>
+                        <Button Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear">
+                            <icons:PackIconMaterial Kind="Close" Width="10" Height="10" Foreground="{StaticResource White}"/>
+                        </Button>
                     </WrapPanel>
 
                     <!-- Line 2: Shop Slots + Pack Positions (compact horizontal) -->

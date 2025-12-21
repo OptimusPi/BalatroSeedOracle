@@ -4,7 +4,7 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FertilizerWidget"
              x:DataType="vm:FertilizerWidgetViewModel"
              x:CompileBindings="True"
@@ -37,7 +37,7 @@
                             Cursor="Hand"
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
-                        <TextBlock Text="🌱" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <material:PackIconMaterial Kind="Sprout" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
                     </Border>
 
                     <!-- Notification badge with seed count (pill shape for larger numbers) -->
