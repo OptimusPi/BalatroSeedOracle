@@ -87,3 +87,4 @@ fertilizer.db.wal
 /WordLists
 build_log.txt
 /published_browser
+/src/BalatroSeedOracle.Browser/Motely.API/wwwroot/BSO
