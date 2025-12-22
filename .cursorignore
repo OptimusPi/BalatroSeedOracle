@@ -1,0 +1,52 @@
+# Build outputs - these cause Cursor to crash due to massive file counts
+[Bb]in/
+[Oo]bj/
+[Rr]elease/
+[Dd]ebug/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# .NET build artifacts
+*.binlog
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Large framework directories
+**/wwwroot/_framework/
+**/wwwroot/_content/
+
+# Other large directories
+node_modules/
+packages/
+external/
+
+# Large binary files that cause crashes
+*.wasm
+*.dll
+*.exe
+*.so
+*.dylib
+*.db
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.pkg
+
+# Large data files
+*.db-shm
+*.db-wal
+*.db-journal
