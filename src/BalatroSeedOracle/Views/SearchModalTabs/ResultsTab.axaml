@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.ResultsTab"
              x:DataType="vm:SearchModalViewModel">
 
@@ -82,16 +82,39 @@
             <RowDefinition Height="*"/>    <!-- SortableResultsGrid -->
         </Grid.RowDefinitions>
 
-        <!-- Title with result count -->
+        <!-- Title with result count and Clear button -->
         <Border Grid.Row="0"
                 Classes="modal-content-box"
                 Margin="0,0,0,8">
-            <TextBlock Text="{Binding ResultsCount, StringFormat='Results: {0} seeds found'}"
-                       FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
-                       Foreground="{StaticResource Gold}"
-                       HorizontalAlignment="Center"
-                       Margin="0,8"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="{Binding ResultsCount, StringFormat='Results: {0} seeds found'}"
+                           FontFamily="{StaticResource BalatroFont}"
+                           FontSize="18"
+                           Foreground="{StaticResource Gold}"
+                           HorizontalAlignment="Center"
+                           Margin="0,8"/>
+                
+                <Button Grid.Column="1"
+                        Content="Clear Results"
+                        Command="{Binding ClearResultsCommand}"
+                        Background="{StaticResource Red}"
+                        Foreground="White"
+                        FontFamily="{StaticResource BalatroFont}"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Padding="16,8"
+                        Margin="8,8,0,8"
+                        VerticalAlignment="Center"
+                        CornerRadius="6"
+                        BorderThickness="2"
+                        BorderBrush="{StaticResource ModalBorder}"/>
+            </Grid>
         </Border>
 
         <!-- SortableResultsGrid with all features: sorting, pagination, export, copy -->

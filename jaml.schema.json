@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://balatrogenie.app/jaml.schema.json",
+  "title": "JAML - Jimbo's Ante Markup Language",
+  "description": "Schema for Balatro seed filter configuration files (.jaml)",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the filter"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what this filter searches for"
+    },
+    "author": {
+      "type": "string",
+      "description": "Creator of the filter"
+    },
+    "dateCreated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when filter was created"
+    },
+    "deck": {
+      "type": "string",
+      "enum": ["Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic", "Challenge"],
+      "default": "Red",
+      "description": "Balatro deck to search with"
+    },
+    "stake": {
+      "type": "string",
+      "enum": ["White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold"],
+      "default": "White",
+      "description": "Balatro stake level"
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default values applied to clauses when not specified",
+      "properties": {
+        "antes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "default": [1, 2, 3, 4, 5, 6, 7, 8],
+          "description": "Default antes to check if not specified in clause"
+        },
+        "packSlots": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "default": [0, 1, 2, 3, 4, 5],
+          "description": "Default pack slots (ante 1 limited to 0-3, ante 2+ uses 0-5)"
+        },
+        "shopSlots": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "default": [0, 1, 2, 3, 4, 5],
+          "description": "Default shop slots (ante 1 limited to 0-3, ante 2+ uses 0-5)"
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1,
+          "description": "Default score for 'should' clauses"
+        }
+      },
+      "additionalProperties": false
+    },
+    "must": {
+      "type": "array",
+      "description": "Items that MUST appear in the seed (required)",
+      "items": { "$ref": "#/definitions/clause" }
+    },
+    "should": {
+      "type": "array",
+      "description": "Items that SHOULD appear for bonus scoring (optional)",
+      "items": { "$ref": "#/definitions/clause" }
+    },
+    "mustNot": {
+      "type": "array",
+      "description": "Items that MUST NOT appear in the seed (banned)",
+      "items": { "$ref": "#/definitions/clause" }
+    }
+  },
+  "definitions": {
+    "clause": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Joker", "SoulJoker", "Voucher", "Tarot", "TarotCard", "Planet", "PlanetCard", "Spectral", "SpectralCard", "Tag", "Boss", "BossBlind", "PlayingCard", "StandardCard"],
+          "description": "Type of item to search for"
+        },
+        "value": {
+          "type": "string",
+          "description": "Name of the specific item (e.g., 'Perkeo', 'Hieroglyph')"
+        },
+        "antes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "description": "Which antes (1-8) to search in"
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 1,
+          "description": "Scoring weight for 'should' clauses"
+        },
+        "label": {
+          "type": "string",
+          "description": "Custom label for display in results"
+        },
+        "edition": {
+          "type": "string",
+          "enum": ["Foil", "Holo", "Polychrome", "Negative"],
+          "description": "Required edition for the item"
+        },
+        "seal": {
+          "type": "string",
+          "enum": ["Red", "Blue", "Gold", "Purple"],
+          "description": "Required seal for playing cards"
+        },
+        "enhancement": {
+          "type": "string",
+          "enum": ["Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold"],
+          "description": "Required enhancement for playing cards"
+        },
+        "rank": {
+          "type": "string",
+          "enum": ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"],
+          "description": "Card rank for playing cards"
+        },
+        "suit": {
+          "type": "string",
+          "enum": ["Hearts", "Diamonds", "Clubs", "Spades"],
+          "description": "Card suit for playing cards"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["shop", "pack", "tag", "voucher"]
+          },
+          "description": "Where the item can be found"
+        },
+        "and": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/clause" },
+          "description": "Nested AND conditions"
+        },
+        "or": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/clause" },
+          "description": "Nested OR conditions (any match)"
+        }
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:BalatroSeedOracle.Views"
         xmlns:vm="using:BalatroSeedOracle.ViewModels"
-        xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+        xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Balatro Seed Oracle"

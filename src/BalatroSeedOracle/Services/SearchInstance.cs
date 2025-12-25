@@ -48,6 +48,7 @@ namespace BalatroSeedOracle.Services
         private Task? _searchTask;
         private bool _preventStateSave = false; // Flag to prevent saving state when icon is removed
         private volatile bool _hasNewResultsSinceLastQuery = false;
+        private bool _disposed = false;
 
         // Persistent DuckDB connection for database operations
         private readonly DuckDBConnection _connection;
@@ -2256,23 +2257,60 @@ namespace BalatroSeedOracle.Services
 
         public void Dispose()
         {
-            // Stop search cleanly
-            if (_isRunning)
-                StopSearch();
+            if (_disposed)
+                return;
 
-            // Cancel token
-            _cancellationTokenSource?.Dispose();
+            _disposed = true;
 
-            // Close appender and connection
-            lock (_appenderLock)
+            try
             {
-                _appender?.Dispose();
-                _appender = null;
-            }
-            _connection?.Dispose();
+                // Stop search cleanly first
+                if (_isRunning)
+                    StopSearch();
 
-            // Dispose search
-            _currentSearch?.Dispose();
+                // Cancel token
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = null;
+
+                // Flush and dispose appender before closing connection (DuckDB best practice)
+                // ForceFlush() disposes the appender, so we don't need to dispose again
+                try
+                {
+                    ForceFlush();
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error flushing appender: {ex.Message}");
+                }
+
+                // Dispose search
+                try
+                {
+                    _currentSearch?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing search: {ex.Message}");
+                }
+
+                // Close and dispose connection (DuckDB best practice: close before dispose)
+                try
+                {
+                    if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
+                    {
+                        _connection.Close();
+                    }
+                    _connection?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing connection: {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error in Dispose: {ex.Message}");
+            }
 
             GC.SuppressFinalize(this);
         }

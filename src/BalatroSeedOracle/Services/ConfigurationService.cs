@@ -1,8 +1,12 @@
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Storage;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
 {
@@ -38,6 +42,17 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                Console.WriteLine($"ConfigurationService.SaveFilterAsync called with path: {filePath}");
+                Debug.WriteLine($"ConfigurationService.SaveFilterAsync called with path: {filePath}");
+                
+#if BROWSER
+                Console.WriteLine("Running in BROWSER mode - using IAppDataStore");
+                Debug.WriteLine("Running in BROWSER mode - using IAppDataStore");
+#else
+                Console.WriteLine("Running in DESKTOP mode - using file system");
+                Debug.WriteLine("Running in DESKTOP mode - using file system");
+#endif
+
                 // In browser, filePath is treated as a logical key (e.g. "Filters/MyFilter.json").
 #if !BROWSER
                 EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
@@ -50,10 +65,17 @@ namespace BalatroSeedOracle.Services
                     var serializationService = new FilterSerializationService(_userProfileService!);
                     var json = serializationService.SerializeConfig(motelyConfig);
 
+                    Console.WriteLine($"Serialized config to {json.Length} characters");
+                    Debug.WriteLine($"Serialized config to {json.Length} characters");
+
 #if BROWSER
                     await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
+                    Console.WriteLine($"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
+                    Debug.WriteLine($"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
 #else
                     await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
+                    Console.WriteLine($"Successfully wrote to file: {filePath}");
+                    Debug.WriteLine($"Successfully wrote to file: {filePath}");
 #endif
 
                     // Invalidate cache for this filter
@@ -68,6 +90,9 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Error saving filter
+                Console.WriteLine($"ERROR saving filter to {filePath}: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"ERROR saving filter to {filePath}: {ex.Message}");
                 Helpers.DebugLogger.LogError("ConfigurationService", $"Error saving filter to {filePath}: {ex.Message}");
                 return false;
             }

@@ -4,23 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Services
 {
-    /// <summary>
-    /// Export service for DBList query results
-    /// </summary>
     public class DbListExportService
     {
-        /// <summary>
-        /// Export search results to CSV format
-        /// </summary>
         public async Task<bool> ExportToCsvAsync(
             List<SearchResult> results, 
-            IStorageProvider storageProvider,
+            TopLevel topLevel,
             string defaultFileName = "dblist_results.csv")
         {
             try
@@ -31,8 +26,13 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                // Show save file dialog
-                var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                if (!topLevel.StorageProvider.CanSave)
+                {
+                    DebugLogger.LogError("DbListExportService", "File saving not supported");
+                    return false;
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Export DBList Results to CSV",
                     SuggestedFileName = defaultFileName,
@@ -74,7 +74,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public async Task<bool> ExportToJsonAsync(
             List<SearchResult> results, 
-            IStorageProvider storageProvider,
+            TopLevel topLevel,
             string defaultFileName = "dblist_results.json")
         {
             try
@@ -85,8 +85,13 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                // Show save file dialog
-                var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                if (!topLevel.StorageProvider.CanSave)
+                {
+                    DebugLogger.LogError("DbListExportService", "File saving not supported");
+                    return false;
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Export DBList Results to JSON",
                     SuggestedFileName = defaultFileName,
@@ -128,7 +133,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public async Task<bool> ExportToTextAsync(
             List<SearchResult> results, 
-            IStorageProvider storageProvider,
+            TopLevel topLevel,
             string defaultFileName = "dblist_seeds.txt")
         {
             try
@@ -139,8 +144,13 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                // Show save file dialog
-                var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                if (!topLevel.StorageProvider.CanSave)
+                {
+                    DebugLogger.LogError("DbListExportService", "File saving not supported");
+                    return false;
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                 {
                     Title = "Export DBList Seeds to Text",
                     SuggestedFileName = defaultFileName,

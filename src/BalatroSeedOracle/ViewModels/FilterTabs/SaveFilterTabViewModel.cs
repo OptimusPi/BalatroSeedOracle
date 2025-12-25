@@ -23,6 +23,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
 
+        public event EventHandler<string>? CopyToClipboardRequested;
+
         // Proxy properties to parent ViewModel to ensure sync
         public string FilterName
         {
@@ -914,7 +916,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (!string.IsNullOrWhiteSpace(FoundSeed))
                 {
-                    await ClipboardService.CopyToClipboardAsync(FoundSeed);
+                    CopyToClipboardRequested?.Invoke(this, FoundSeed);
                     UpdateStatus($"✓ Copied seed {FoundSeed} to clipboard", false);
                     DebugLogger.Log("SaveFilterTab", $"Copied seed to clipboard: {FoundSeed}");
                 }

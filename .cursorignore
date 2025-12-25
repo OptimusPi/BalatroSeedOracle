@@ -27,11 +27,11 @@ nunit-*.xml
 # Large framework directories
 **/wwwroot/_framework/
 **/wwwroot/_content/
+**/wwwroot/BSO/_framework/
+**/wwwroot/BSO/wwwroot/
 
-# Other large directories
 node_modules/
 packages/
-external/
 
 # Large binary files that cause crashes
 *.wasm
@@ -50,3 +50,21 @@ external/
 *.db-shm
 *.db-wal
 *.db-journal
+
+# Search results databases
+SearchResults/
+**/SearchResults/
+
+# Word lists (large text files)
+WordLists/
+**/WordLists/
+
+# Additional problematic patterns
+**/runtimes/
+**/fr-FR/
+**/ja-JP/
+**/pt-PT/
+**/zh-Hans/
+*.runtimeconfig.json
+*.deps.json
+*.assets.json

@@ -6,7 +6,7 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterSelectorViewModel">
 

@@ -82,20 +82,36 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnIsModalVisibleChanged(bool value)
         {
-            // Hide widgets when a modal is open, restore previous state when closed
+            // Close widget dock when modal opens
             if (value)
             {
-                AreWidgetsHidden = true;
-            }
-            else
-            {
-                AreWidgetsHidden = false;
+                IsWidgetDockVisible = false;
             }
         }
 
         [ObservableProperty]
         private int _widgetCounter = 0;
 
+        // Widget enabled state (from FeatureToggles - source of truth)
+        [ObservableProperty]
+        private bool _isMusicMixerWidgetEnabled = false;
+
+        [ObservableProperty]
+        private bool _isVisualizerWidgetEnabled = false;
+
+        [ObservableProperty]
+        private bool _isTransitionDesignerWidgetEnabled = false;
+
+        [ObservableProperty]
+        private bool _isFertilizerWidgetEnabled = false;
+
+        [ObservableProperty]
+        private bool _isHostApiWidgetEnabled = false;
+
+        [ObservableProperty]
+        private bool _isEventFXWidgetEnabled = false;
+
+        // Widget visibility state (can be toggled via dock)
         [ObservableProperty]
         private bool _isVisualizerWidgetVisible = false;
 
@@ -117,14 +133,15 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVibeOutMode = false;
 
-        // New: Hide/show all widgets
+        // Widget dock popup visibility
         [ObservableProperty]
-        private bool _areWidgetsHidden = false;
+        private bool _isWidgetDockVisible = false;
 
         [RelayCommand]
-        private void ToggleWidgetsVisibility()
+        private void ToggleWidgetDock()
         {
-            AreWidgetsHidden = !AreWidgetsHidden;
+            IsWidgetDockVisible = !IsWidgetDockVisible;
+            PlayButtonClickSound();
         }
 
         private double _previousVolume = 70;
@@ -320,8 +337,17 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void ToggleMusicMixerWidget()
+        {
+            if (!IsMusicMixerWidgetEnabled) return; // Can't toggle if not enabled
+            PlayButtonClickSound();
+            IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible;
+        }
+
+        [RelayCommand]
         private void ToggleVisualizerWidget()
         {
+            if (!IsVisualizerWidgetEnabled) return;
             PlayButtonClickSound();
             IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
         }
@@ -329,8 +355,33 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleTransitionDesignerWidget()
         {
+            if (!IsTransitionDesignerWidgetEnabled) return;
             PlayButtonClickSound();
             IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible;
+        }
+
+        [RelayCommand]
+        private void ToggleFertilizerWidget()
+        {
+            if (!IsFertilizerWidgetEnabled) return;
+            PlayButtonClickSound();
+            IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible;
+        }
+
+        [RelayCommand]
+        private void ToggleHostApiWidget()
+        {
+            if (!IsHostApiWidgetEnabled) return;
+            PlayButtonClickSound();
+            IsHostApiWidgetVisible = !IsHostApiWidgetVisible;
+        }
+
+        [RelayCommand]
+        private void ToggleEventFXWidget()
+        {
+            if (!IsEventFXWidgetEnabled) return;
+            PlayButtonClickSound();
+            IsEventFXWidgetVisible = !IsEventFXWidgetVisible;
         }
 
         [RelayCommand]
@@ -368,12 +419,15 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsVibeOutMode = !IsVibeOutMode;
 
-            // In vibe out mode: hide dock buttons and widgets, keep only modal visible
-            AreWidgetsHidden = IsVibeOutMode;
+            // In vibe out mode: close widget dock
+            if (IsVibeOutMode)
+            {
+                IsWidgetDockVisible = false;
+            }
 
             DebugLogger.Log(
                 "BalatroMainMenu",
-                $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}, Widgets hidden: {AreWidgetsHidden}"
+                $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}, Widgets hidden: {!IsWidgetDockVisible}"
             );
 
             // Request window state change (true = fullscreen, false = normal)
@@ -493,14 +547,22 @@ namespace BalatroSeedOracle.ViewModels
                     Volume = 0;
                 }
 
-                // Load feature toggles for widget visibility
+                // Load feature toggles - these control which widgets are enabled (exist)
                 var toggles = profile.FeatureToggles;
-                IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
-                IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
-                IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
-                IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
-                IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
-                IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
+                IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
+                IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
+                IsTransitionDesignerWidgetEnabled = toggles?.ShowTransitionDesigner ?? false;
+                IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
+                IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
+                IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
+                
+                // Initialize visibility to match enabled state
+                IsMusicMixerWidgetVisible = IsMusicMixerWidgetEnabled;
+                IsVisualizerWidgetVisible = IsVisualizerWidgetEnabled;
+                IsTransitionDesignerWidgetVisible = IsTransitionDesignerWidgetEnabled;
+                IsFertilizerWidgetVisible = IsFertilizerWidgetEnabled;
+                IsHostApiWidgetVisible = IsHostApiWidgetEnabled;
+                IsEventFXWidgetVisible = IsEventFXWidgetEnabled;
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
@@ -524,12 +586,22 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             var toggles = profile.FeatureToggles;
-            IsMusicMixerWidgetVisible = toggles?.ShowMusicMixer ?? false;
-            IsVisualizerWidgetVisible = toggles?.ShowVisualizer ?? false;
-            IsTransitionDesignerWidgetVisible = toggles?.ShowTransitionDesigner ?? false;
-            IsFertilizerWidgetVisible = toggles?.ShowFertilizer ?? false;
-            IsHostApiWidgetVisible = toggles?.ShowHostServer ?? false;
-            IsEventFXWidgetVisible = toggles?.ShowEventFX ?? false;
+            
+            // Update enabled state (source of truth)
+            IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
+            IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
+            IsTransitionDesignerWidgetEnabled = toggles?.ShowTransitionDesigner ?? false;
+            IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
+            IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
+            IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
+            
+            // If a widget is disabled, hide it. If enabled, keep current visibility.
+            if (!IsMusicMixerWidgetEnabled) IsMusicMixerWidgetVisible = false;
+            if (!IsVisualizerWidgetEnabled) IsVisualizerWidgetVisible = false;
+            if (!IsTransitionDesignerWidgetEnabled) IsTransitionDesignerWidgetVisible = false;
+            if (!IsFertilizerWidgetEnabled) IsFertilizerWidgetVisible = false;
+            if (!IsHostApiWidgetEnabled) IsHostApiWidgetVisible = false;
+            if (!IsEventFXWidgetEnabled) IsEventFXWidgetVisible = false;
             DebugLogger.Log(
                 "BalatroMainMenuViewModel",
                 $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"

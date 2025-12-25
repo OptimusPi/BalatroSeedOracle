@@ -58,8 +58,10 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<Views.BalatroMainMenu>();
             services.AddSingleton<FiltersModalViewModel>();
             services.AddSingleton<SearchModalViewModel>();
+            #if !BROWSER
             services.AddTransient<AnalyzeModalViewModel>();
             services.AddTransient<AnalyzerViewModel>();
+#endif
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();

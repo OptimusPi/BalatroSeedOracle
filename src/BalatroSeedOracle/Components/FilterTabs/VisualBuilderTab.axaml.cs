@@ -42,6 +42,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         // Simple LERP system for smooth drag adornment positioning
         private Avalonia.Point _adornerTargetPosition; // Target position (where mouse is)
+        private Avalonia.Point _canvasOffset; // Offset from Canvas to TopLevel (for coordinate conversion)
         private Avalonia.Threading.DispatcherTimer? _springUpdateTimer;
 
         public VisualBuilderTab()
@@ -600,10 +601,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     var mousePosition = e.GetPosition(_topLevel);
 
-                    // Update target position (where the mouse cursor is, minus grab offset)
+                    // Update target position (where the mouse cursor is, minus grab offset AND canvas offset)
                     _adornerTargetPosition = new Avalonia.Point(
-                        mousePosition.X - _dragOffset.X,
-                        mousePosition.Y - _dragOffset.Y
+                        mousePosition.X - _dragOffset.X - _canvasOffset.X,
+                        mousePosition.Y - _dragOffset.Y - _canvasOffset.Y
                     );
 
                     // Restart spring timer if it was stopped by settlement optimization
@@ -1929,8 +1930,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         );
 
                 // Position adorner so the grabbed point stays under the cursor
-                double initialX = currentMousePos.X - _dragOffset.X;
-                double initialY = currentMousePos.Y - _dragOffset.Y;
+                // CRITICAL: Convert TopLevel coordinates to Canvas coordinates!
+                // The Canvas is inside VisualBuilderTab, not at TopLevel origin
+                if (_topLevel != null)
+                {
+                    var canvasOffsetPoint = _adornerLayer.TranslatePoint(new Avalonia.Point(0, 0), _topLevel);
+                    _canvasOffset = canvasOffsetPoint ?? new Avalonia.Point(0, 0);
+                }
+                else
+                {
+                    _canvasOffset = new Avalonia.Point(0, 0);
+                }
+                
+                double initialX = currentMousePos.X - _dragOffset.X - _canvasOffset.X;
+                double initialY = currentMousePos.Y - _dragOffset.Y - _canvasOffset.Y;
 
                 _adornerTargetPosition = new Avalonia.Point(initialX, initialY);
 

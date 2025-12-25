@@ -6,6 +6,7 @@
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FrequencyDebugWidget"
              x:DataType="vm:FrequencyDebugWidgetViewModel"
              x:CompileBindings="True"

@@ -240,18 +240,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .IgnoreUnmatchedProperties()
-                    .Build();
-
-                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
-                
-                var serializer = new SerializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .Build();
-
-                JamlContent = serializer.Serialize(config);
+                // Use custom JAML formatter for idiomatic output:
+                // - type-as-key format: "joker: Blueprint" instead of "type: Joker, value: Blueprint"
+                // - inline numeric arrays: "antes: [1,2,3]" instead of multi-line
+                JamlContent = JamlFormatter.Format(JamlContent);
                 ValidationStatus = "✓ Formatted";
                 ValidationStatusColor = Brushes.LightGreen;
             }
@@ -303,22 +295,37 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Convert to JAML (uses YAML serialization since JAML is YAML-based)
                 JamlContent = ConvertConfigToJaml(config);
+                
+                // Validate the generated JAML immediately to catch errors
+                ValidateAndPreview();
 
-                // Silent status update
-                var totalItems = (config.Must?.Count ?? 0) + (config.Should?.Count ?? 0);
-                ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
-                ValidationStatusColor = Brushes.Gray;
+                // Update status based on validation
+                if (HasError)
+                {
+                    ValidationStatus = $"✗ Invalid JAML: {ErrorMessage}";
+                    ValidationStatusColor = Brushes.Red;
+                    DebugLogger.LogError("JamlEditorTab", $"Generated invalid JAML: {ErrorMessage}");
+                }
+                else
+                {
+                    // Silent status update
+                    var totalItems = (config.Must?.Count ?? 0) + (config.Should?.Count ?? 0);
+                    ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
+                    ValidationStatusColor = Brushes.Gray;
 
-                DebugLogger.Log(
-                    "JamlEditorTab",
-                    $"Auto-synced JAML from visual builder: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should"
-                );
+                    DebugLogger.Log(
+                        "JamlEditorTab",
+                        $"Auto-synced JAML from visual builder: {config.Must?.Count ?? 0} must, {config.Should?.Count ?? 0} should"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                ValidationStatus = $"Error generating JAML: {ex.Message}";
+                ValidationStatus = $"✗ Error generating JAML: {ex.Message}";
                 ValidationStatusColor = Brushes.Red;
-                DebugLogger.LogError("JamlEditorTab", $"Error generating JAML: {ex.Message}");
+                ErrorMessage = ex.Message;
+                HasError = true;
+                DebugLogger.LogError("JamlEditorTab", $"Error generating JAML: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -326,60 +333,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
+        /// <summary>
+        /// Convert config to JAML using the centralized JamlFormatter
+        /// (Single source of truth in Motely.Filters.JamlFormatter)
+        /// </summary>
         private string ConvertConfigToJaml(MotelyJsonConfig config)
         {
             try
             {
-                var sb = new System.Text.StringBuilder();
-
-                sb.AppendLine($"name: {config.Name ?? "New Filter"}");
-                if (!string.IsNullOrWhiteSpace(config.Description))
-                    sb.AppendLine($"description: {config.Description}");
-                sb.AppendLine($"author: {config.Author ?? "pifreak"}");
-                sb.AppendLine($"dateCreated: {config.DateCreated:yyyy-MM-ddTHH:mm:ss.fffffffZ}");
-
-                if (!string.IsNullOrWhiteSpace(config.Deck))
-                    sb.AppendLine($"deck: {config.Deck}");
-                if (!string.IsNullOrWhiteSpace(config.Stake))
-                    sb.AppendLine($"stake: {config.Stake}");
-
-                sb.AppendLine();
-                if (config.Must?.Count > 0)
-                {
-                    sb.AppendLine("must:");
-                    foreach (var clause in config.Must)
-                        WriteJamlClause(sb, clause, false);
-                }
-                else
-                {
-                    sb.AppendLine("must: []");
-                }
-
-                sb.AppendLine();
-                if (config.Should?.Count > 0)
-                {
-                    sb.AppendLine("should:");
-                    foreach (var clause in config.Should)
-                        WriteJamlClause(sb, clause, true);
-                }
-                else
-                {
-                    sb.AppendLine("should: []");
-                }
-
-                sb.AppendLine();
-                if (config.MustNot?.Count > 0)
-                {
-                    sb.AppendLine("mustNot:");
-                    foreach (var clause in config.MustNot)
-                        WriteJamlClause(sb, clause, false);
-                }
-                else
-                {
-                    sb.AppendLine("mustNot: []");
-                }
-
-                return sb.ToString();
+                return JamlFormatter.Format(config);
             }
             catch (Exception ex)
             {
@@ -389,55 +351,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 );
                 return GetDefaultJamlContent();
             }
-        }
-
-        private void WriteJamlClause(
-            System.Text.StringBuilder sb,
-            MotelyJsonConfig.MotleyJsonFilterClause clause,
-            bool includeScore
-        )
-        {
-            var typeKey = MapTypeToJamlKey(clause.Type);
-            sb.AppendLine($"  - {typeKey}: {clause.Value}");
-
-            if (clause.Edition != null)
-                sb.AppendLine($"    edition: {clause.Edition}");
-            if (clause.Seal != null)
-                sb.AppendLine($"    seal: {clause.Seal}");
-            if (clause.Enhancement != null)
-                sb.AppendLine($"    enhancement: {clause.Enhancement}");
-            if (clause.Stickers?.Count > 0)
-                sb.AppendLine($"    stickers: [{string.Join(", ", clause.Stickers)}]");
-            if (clause.Min.HasValue && clause.Min.Value > 0)
-                sb.AppendLine($"    min: {clause.Min.Value}");
-            if (includeScore && clause.Score != 0)
-                sb.AppendLine($"    score: {clause.Score}");
-            if (clause.Antes is { Length: > 0 })
-                sb.AppendLine($"    antes: [{string.Join(", ", clause.Antes)}]");
-            if (clause.Sources?.ShopSlots is { Length: > 0 })
-                sb.AppendLine($"    shopSlots: [{string.Join(", ", clause.Sources.ShopSlots)}]");
-            if (clause.Sources?.PackSlots is { Length: > 0 })
-                sb.AppendLine($"    packSlots: [{string.Join(", ", clause.Sources.PackSlots)}]");
-        }
-
-        private string MapTypeToJamlKey(string? type)
-        {
-            if (string.IsNullOrEmpty(type))
-                return "unknown";
-
-            return type.ToLowerInvariant() switch
-            {
-                "joker" => "joker",
-                "souljoker" => "souljoker",
-                "tarotcard" => "tarot",
-                "planetcard" => "planet",
-                "spectralcard" => "spectral",
-                "playingcard" => "card",
-                "voucher" => "voucher",
-                "tag" => "tag",
-                "boss" => "boss",
-                _ => type.ToLowerInvariant()
-            };
         }
 
         private string GetDefaultJamlContent()

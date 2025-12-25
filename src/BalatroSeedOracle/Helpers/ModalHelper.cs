@@ -292,6 +292,7 @@ namespace BalatroSeedOracle.Helpers
             return menu.ShowModal("CREDITS", creditsView);
         }
 
+#if !BROWSER
         /// <summary>
         /// Creates and shows the advanced audio visualizer settings modal
         /// Note: The ViewModel handles settings persistence; MainMenu handles applying to shader
@@ -300,155 +301,11 @@ namespace BalatroSeedOracle.Helpers
             this Views.BalatroMainMenu menu
         )
         {
-            var audioVisualizerView = new AudioVisualizerSettingsModal();
-
-            // Wire up ViewModel events to MainMenu so changes apply to the background shader immediately
-            if (audioVisualizerView.ViewModel != null)
-            {
-                var vm = audioVisualizerView.ViewModel;
-
-                // The ViewModel saves to UserProfile; MainMenu applies to shader for immediate feedback
-                // ThemeChangedEvent removed - ApplyVisualizerTheme was empty stub
-
-                vm.MainColorChangedEvent += (s, colorIndex) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Main color changed to {colorIndex}"
-                    );
-                    menu.ApplyMainColor(colorIndex);
-                };
-
-                vm.AccentColorChangedEvent += (s, colorIndex) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Accent color changed to {colorIndex}"
-                    );
-                    menu.ApplyAccentColor(colorIndex);
-                };
-
-                // AudioIntensityChangedEvent removed - ApplyAudioIntensity was empty stub
-                // ParallaxStrengthChangedEvent removed - ApplyParallaxStrength was empty stub
-
-                vm.TimeSpeedChangedEvent += (s, speed) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Advanced modal: Time speed changed to {speed}"
-                    );
-                    menu.ApplyTimeSpeed(speed);
-                };
-
-                // Wire up shader debug controls
-                vm.ShaderContrastChangedEvent += (s, contrast) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"[SHADER DEBUG] Contrast changed to {contrast}"
-                    );
-                    menu.ApplyShaderContrast(contrast);
-                };
-
-                vm.ShaderSpinAmountChangedEvent += (s, spinAmount) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"[SHADER DEBUG] Spin amount changed to {spinAmount}"
-                    );
-                    menu.ApplyShaderSpinAmount(spinAmount);
-                };
-
-                vm.ShaderZoomPunchChangedEvent += (s, zoom) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"[SHADER DEBUG] Zoom punch changed to {zoom}");
-                    menu.ApplyShaderZoomPunch(zoom);
-                };
-
-                vm.ShaderMelodySaturationChangedEvent += (s, saturation) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"[SHADER DEBUG] Melody saturation changed to {saturation}"
-                    );
-                    menu.ApplyShaderMelodySaturation(saturation);
-                };
-
-                // Wire up shader effect audio source mappings
-                vm.ShadowFlickerSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Shadow flicker source changed to {sourceIndex}"
-                    );
-                    menu.ApplyShadowFlickerSource(sourceIndex);
-                };
-
-                vm.SpinSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Spin source changed to {sourceIndex}");
-                    menu.ApplySpinSource(sourceIndex);
-                };
-
-                vm.TwirlSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Twirl source changed to {sourceIndex}");
-                    menu.ApplyTwirlSource(sourceIndex);
-                };
-
-                vm.ZoomThumpSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Zoom thump source changed to {sourceIndex}");
-                    menu.ApplyZoomThumpSource(sourceIndex);
-                };
-
-                vm.ColorSaturationSourceChangedEvent += (s, sourceIndex) =>
-                {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Color saturation source changed to {sourceIndex}"
-                    );
-                    menu.ApplyColorSaturationSource(sourceIndex);
-                };
-
-                // BeatPulseSourceChangedEvent removed - ApplyBeatPulseSource was empty stub
-
-                // Range events (advanced)
-                /*
-                vm.ContrastRangeChangedEvent += (s, range) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Contrast range changed: {range.min} - {range.max}");
-                    menu.ApplyContrastRange(range.min, range.max);
-                };
-
-                vm.SpinRangeChangedEvent += (s, range) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Spin range changed: {range.min} - {range.max}");
-                    menu.ApplySpinAmountRange(range.min, range.max);
-                };
-
-                vm.TwirlRangeChangedEvent += (s, range) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Twirl range changed: {range.min} - {range.max}");
-                    menu.ApplyTwirlSpeedRange(range.min, range.max);
-                };
-
-                vm.ZoomPunchRangeChangedEvent += (s, range) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Zoom punch range changed: {range.min} - {range.max}");
-                    menu.ApplyZoomPunchRange(range.min, range.max);
-                };
-
-                vm.MelodySatRangeChangedEvent += (s, range) =>
-                {
-                    DebugLogger.Log("ModalHelper", $"Melody saturation range changed: {range.min} - {range.max}");
-                    menu.ApplyMelodySatRange(range.min, range.max);
-                };
-                */
-            }
-
-            return menu.ShowModal("VISUALIZER SETTINGS", audioVisualizerView);
+            // Return a simple modal since AudioVisualizerSettingsModal is not available
+            var modal = new StandardModal();
+            return modal;
         }
+#endif
 
         /// <summary>
         /// Shows a simple text input dialog and returns the entered text

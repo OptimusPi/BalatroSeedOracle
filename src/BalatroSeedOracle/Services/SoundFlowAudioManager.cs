@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Helpers;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio;
@@ -172,13 +173,13 @@ namespace BalatroSeedOracle.Services
                 );
             }
 
-            // Load each track - MP3 format (cross-platform)
+            // Load each track - OGG format (cross-platform, web-optimized)
             foreach (var trackName in _trackNames)
             {
-                var filePath = Path.Combine(audioDir, $"{trackName}.mp3");
+                var filePath = Path.Combine(audioDir, $"{trackName}.ogg");
                 if (!File.Exists(filePath))
                 {
-                    DebugLogger.LogError("SoundFlowAudioManager", $"Missing {trackName}.mp3");
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Missing {trackName}.ogg");
                     continue;
                 }
 
@@ -242,12 +243,12 @@ namespace BalatroSeedOracle.Services
             // Load each sound effect
             foreach (var sfxName in _sfxNames)
             {
-                var filePath = Path.Combine(sfxDir, $"{sfxName}.mp3");
+                var filePath = Path.Combine(sfxDir, $"{sfxName}.ogg");
                 if (!File.Exists(filePath))
                 {
                     DebugLogger.LogError(
                         "SoundFlowAudioManager",
-                        $"Missing {sfxName}.mp3 at {filePath}"
+                        $"Missing {sfxName}.ogg at {filePath}"
                     );
                     continue;
                 }
@@ -271,7 +272,7 @@ namespace BalatroSeedOracle.Services
 
                     _sfxPlayers[sfxName] = player;
 
-                    DebugLogger.Log("SoundFlowAudioManager", $"✓ Loaded SFX: {sfxName}.mp3");
+                    DebugLogger.Log("SoundFlowAudioManager", $"✓ Loaded SFX: {sfxName}.ogg");
                 }
                 catch (Exception ex)
                 {

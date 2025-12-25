@@ -150,7 +150,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         // Carousel pagination - show arrows when there are multiple pages
-        // TODO: Implement actual pagination logic - for now always false (arrows hidden)
         public bool MustHasMultiplePages => false;
         public bool ShouldHasMultiplePages => false;
         public bool BannedHasMultiplePages => false;
@@ -3112,6 +3111,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 "VisualBuilderTab",
                 $"✅ Finished loading - Now have {SelectedMust.Count} MUST, {SelectedShould.Count} SHOULD items in VisualBuilderTab"
             );
+
+            // CRITICAL: Force UI refresh by notifying property changes
+            // This ensures the UI updates even if bindings are stale (especially important for browser)
+            OnPropertyChanged(nameof(SelectedMust));
+            OnPropertyChanged(nameof(SelectedShould));
+            
+            // Also refresh expanded state to ensure drop zones are visible
+            OnPropertyChanged(nameof(IsMustExpanded));
+            OnPropertyChanged(nameof(IsShouldExpanded));
         }
 
         private FilterItem? CreateFilterItemFromConfig(ItemConfig config)

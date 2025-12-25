@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -40,6 +41,28 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _jsonEditor.TextArea.TextEntering += OnTextEntering;
                 _jsonEditor.TextArea.TextEntered += OnTextEntered;
                 _jsonEditor.TextArea.KeyDown += OnKeyDown;
+            }
+            
+            if (ViewModel != null)
+            {
+                ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            }
+        }
+
+        public async Task CopyToClipboardAsync(string text)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(text);
+                    DebugLogger.Log("JsonEditorTab", $"Copied to clipboard: {text}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("JsonEditorTab", $"Failed to copy to clipboard: {ex.Message}");
             }
         }
 

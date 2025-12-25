@@ -383,6 +383,22 @@ public partial class HostApiWidgetViewModel : BaseWidgetViewModel, IDisposable
         base.OnClosed();
     }
 
+    private void StartTunnel()
+    {
+        if (!IsServerRunning) return;
+
+        try
+        {
+            AddLog("Starting tunnel...");
+            AddLog("Tunnel functionality not yet implemented");
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Failed to start tunnel: {ex.Message}");
+            DebugLogger.LogError("HostApiWidget", $"Failed to start tunnel: {ex.Message}");
+        }
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

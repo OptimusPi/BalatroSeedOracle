@@ -24,6 +24,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <!-- CA1416: platform compatibility, CS0067: unused events in browser stubs -->
     <NoWarn>$(NoWarn);CA1416;CS0067</NoWarn>
+    <!-- Disable HotReload for browser builds -->
+    <WasmEnableHotReload>false</WasmEnableHotReload>
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
@@ -31,10 +33,10 @@
   </ItemGroup>
   <!-- Copy Audio and Sprite files to output directory -->
   <ItemGroup>
-    <None Update="Assets\Audio\*.mp3">
+    <None Update="Assets\Audio\*.ogg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Audio\SFX\*.mp3">
+    <None Update="Assets\Audio\SFX\*.ogg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <!-- Copy all sprite assets -->
@@ -111,12 +113,27 @@
     <Compile Remove="Components\Widgets\HostApiWidget.axaml.cs" />
     <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.axaml" />
     <None Include="Components\Widgets\HostApiWidget.axaml" />
+    <!-- Also exclude any BrowserHostApiWidget to avoid conflicts -->
+    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
+    <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
     <!-- FertilizerService now supports browser via DuckDB-WASM -->
     <!-- Remove browser stub since real widget now works in browser -->
     <Compile Remove="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
     <AvaloniaXaml Remove="Components\Widgets\FertilizerWidget.Browser.axaml" />
     <None Include="Components\Widgets\FertilizerWidget.Browser.axaml" />
     <None Include="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
+    <!-- Desktop-only controls using PackIconMaterial or DataGrid sorting -->
+    <Compile Remove="Controls\MaximizeButton.axaml.cs" />
+    <AvaloniaXaml Remove="Controls\MaximizeButton.axaml" />
+    <None Include="Controls\MaximizeButton.axaml" />
+    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" />
+    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" />
+    <None Include="Controls\SortableResultsGrid.axaml" />
+    <Compile Remove="Converters\BoolToExpandIconConverter.cs" />
+    <!-- AudioVisualizerSettingsModal is desktop-only -->
+    <Compile Remove="Views\Modals\AudioVisualizerSettingsModal.axaml.cs" />
+    <AvaloniaXaml Remove="Views\Modals\AudioVisualizerSettingsModal.axaml" />
+    <None Include="Views\Modals\AudioVisualizerSettingsModal.axaml" />
   </ItemGroup>
   <!-- Browser stubs are auto-included by SDK, but exclude from desktop build -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">

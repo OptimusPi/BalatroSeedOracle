@@ -47,12 +47,20 @@ public partial class App : Application
             _serviceProvider = services.BuildServiceProvider();
 
 #if BROWSER
-            // Seed sample filters into browser storage so users have something to start with.
-            _ = SeedBrowserSampleFiltersAsync();
+            // Test localStorage interop early
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1000); // Wait for JS to initialize
+                var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
+                Console.WriteLine($"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
+            });
+            
+            // TODO: Implement browser sample filter seeding
+            // _ = SeedBrowserSampleFiltersAsync();
 #endif
 
-            // Initialize filter cache on startup for fast filter access
-            _ = InitializeFilterCacheAsync();
+            // TODO: Implement filter cache initialization
+            // _ = InitializeFilterCacheAsync();
 
             // Line below is needed to remove Avalonia data validation.
             // Without this line you will get duplicate validations from both Avalonia and CT
@@ -420,8 +428,7 @@ public partial class App : Application
         services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
             BalatroSeedOracle.Services.SpriteService.Instance
         );
-        // ClipboardService is static, no need to register
-    }
+            }
 
 #if BROWSER
     private void SeedBrowserSampleFilters()

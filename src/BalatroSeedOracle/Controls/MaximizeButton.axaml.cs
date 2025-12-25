@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using IconPacks.Avalonia;
+using IconPacks.Avalonia.Material;
 
 namespace BalatroSeedOracle.Controls
 {

@@ -6,6 +6,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True"
@@ -87,19 +88,7 @@
                                     Padding="16,4"/>
                         </StackPanel>
 
-                        <!-- PRESET LOAD/SAVE ROW 2 -->
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
-                            <Button Content="Save Transition..." Classes="btn-blue" Command="{Binding SaveTransitionCommand}" Height="32" Padding="16,4"/>
-                            <Button Content="Load Transition..." Classes="btn-green" Command="{Binding LoadTransitionCommand}" Height="32" Padding="16,4"/>
-                            <Button Classes="btn-green" Command="{Binding AnimateVisualAndMixToBCommand}" Height="32" Padding="16,4">
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Text="Animate Visual + Mix"/>
-                                    <material:PackIconMaterial Kind="ArrowRight" Width="14" Height="14" VerticalAlignment="Center"/>
-                                    <TextBlock Text="B"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-
+                        
                         <!-- STARTUP PRESETS -->
                         <StackPanel Spacing="8">
                             <TextBlock Text="STARTUP PRESETS" Foreground="{StaticResource White}" FontSize="16"/>

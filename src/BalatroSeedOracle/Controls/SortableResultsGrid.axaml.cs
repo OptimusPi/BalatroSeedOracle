@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -75,6 +77,26 @@ namespace BalatroSeedOracle.Controls
 
             // CRITICAL FIX: Listen to DisplayedResults changes to force DataGrid refresh
             ViewModel.DisplayedResults.CollectionChanged += OnDisplayedResultsChanged;
+            
+            // Wire up clipboard event
+            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+        }
+
+        public async Task CopyToClipboardAsync(string text)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(text);
+                    DebugLogger.Log("SortableResultsGrid", $"Copied to clipboard: {text}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SortableResultsGrid", $"Failed to copy to clipboard: {ex.Message}");
+            }
         }
 
         private void OnDisplayedResultsChanged(
@@ -129,12 +151,7 @@ namespace BalatroSeedOracle.Controls
             ViewModel.CurrentSortProperty = sortMemberPath;
             ViewModel.SortDescending = descending;
 
-            // Update column UI (visual sort indicator)
-            foreach (var col in ((DataGrid)sender!).Columns)
-            {
-                col.SortDirection = null;
-            }
-            column.SortDirection = descending ? DataGridSortDirection.Descending : DataGridSortDirection.Ascending;
+            // Note: Visual sort indicators removed - SortDirection not available in Avalonia DataGridColumn
 
             // Prevent default DataGrid sorting (we handle it manually)
             e.Handled = true;

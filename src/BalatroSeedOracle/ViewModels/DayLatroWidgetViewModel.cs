@@ -19,6 +19,7 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class DayLatroWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
+        public event EventHandler<string>? CopyToClipboardRequested;
         #region Services (Injected)
 
         private readonly DaylatroHighScoreService _scoreService;
@@ -513,7 +514,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task OnCopySeedAsync()
         {
-            await ClipboardService.CopyToClipboardAsync(TodaySeed);
+            CopyToClipboardRequested?.Invoke(this, TodaySeed);
             ShowSubmissionMessage("Seed copied to clipboard!", false);
         }
 

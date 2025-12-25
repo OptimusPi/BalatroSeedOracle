@@ -9,6 +9,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:feather="clr-namespace:IconPacks.Avalonia.FeatherIcons;assembly=IconPacks.Avalonia.FeatherIcons"
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
@@ -80,8 +81,8 @@
             </Border>
         </Popup>
         
-        <!-- Desktop widgets layer - widgets use their own ZIndex bindings (hidden in Vibe Out Mode) -->
-    <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsVisible="{Binding AreWidgetsHidden, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}">
+        <!-- Desktop widgets layer - widgets use their own ZIndex bindings -->
+    <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False">
             <!-- Search Widgets will be added dynamically here -->
 
             <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
@@ -261,8 +262,8 @@
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <!-- Visual Settings Button -->
-                            <Button x:Name="SettingsButton"
+                            <!-- Widget Dock Button -->
+                            <Button x:Name="WidgetDockButton"
                                     Classes="btn-purple"
                                     FontSize="24"
                                     Width="48"
@@ -271,10 +272,19 @@
                                     BorderBrush="{StaticResource ModalBorder}"
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
-                                    Command="{Binding ToggleWidgetsVisibilityCommand}"
-                                    ToolTip.Tip="Show or hide widgets">
-                                <iconPacks:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    Command="{Binding ToggleWidgetDockCommand}"
+                                    ToolTip.Tip="Widget dock">
+                                <feather:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Button>
+                            
+                            <!-- Widget Dock Popup -->
+                            <Popup IsOpen="{Binding IsWidgetDockVisible}"
+                                   PlacementTarget="{Binding #WidgetDockButton}"
+                                   Placement="Top"
+                                   HorizontalOffset="0"
+                                   VerticalOffset="-10">
+                                <components:WidgetDock DataContext="{Binding}"/>
+                            </Popup>
 
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
@@ -288,7 +298,7 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding AnimationToggleCommand}"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <iconPacks:PackIconMaterial Kind="{Binding AnimationIcon}"
+                                <material:PackIconMaterial Kind="{Binding AnimationIcon}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Width="24" Height="24"/>
@@ -306,7 +316,7 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding MusicToggleCommand}"
                                     ToolTip.Tip="Adjust volume">
-                                <iconPacks:PackIconMaterial Kind="{Binding MusicIcon}"
+                                <material:PackIconMaterial Kind="{Binding MusicIcon}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Width="24" Height="24"/>

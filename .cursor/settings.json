@@ -1,0 +1,51 @@
+{
+  "files.exclude": {
+    "**/external/**": true,
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/node_modules/**": true,
+    "**/packages/**": true,
+    "**/wwwroot/_framework/**": true,
+    "**/wwwroot/_content/**": true,
+    "**/wwwroot/BSO/_framework/**": true,
+    "**/wwwroot/BSO/wwwroot/**": true,
+    "**/*.wasm": true,
+    "**/*.dll": true,
+    "**/*.exe": true,
+    "**/*.db": true,
+    "**/*.db-wal": true,
+    "**/SearchResults/**": true,
+    "**/WordLists/**": true,
+    "**/runtimes/**": true,
+    "**/fr-FR/**": true,
+    "**/ja-JP/**": true,
+    "**/pt-PT/**": true,
+    "**/zh-Hans/**": true
+  },
+  "files.watcherExclude": {
+    "**/external/**": true,
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/node_modules/**": true,
+    "**/packages/**": true,
+    "**/wwwroot/_framework/**": true,
+    "**/*.wasm": true,
+    "**/*.dll": true,
+    "**/*.exe": true,
+    "**/*.db": true,
+    "**/*.db-wal": true
+  },
+  "search.exclude": {
+    "**/external/**": true,
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/node_modules/**": true,
+    "**/packages/**": true,
+    "**/wwwroot/_framework/**": true,
+    "**/*.wasm": true,
+    "**/*.dll": true,
+    "**/*.exe": true,
+    "**/*.db": true
+  }
+}
+

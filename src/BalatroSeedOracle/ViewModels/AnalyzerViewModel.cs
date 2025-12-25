@@ -15,6 +15,7 @@ namespace BalatroSeedOracle.ViewModels;
 
 public partial class AnalyzerViewModel : ObservableObject
 {
+    public event EventHandler<string>? CopyToClipboardRequested;
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
 
@@ -202,7 +203,7 @@ public partial class AnalyzerViewModel : ObservableObject
             var url =
                 $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
 
-            await ClipboardService.CopyToClipboardAsync(url);
+            CopyToClipboardRequested?.Invoke(this, url);
             Helpers.DebugLogger.Log(
                 "AnalyzerViewModel",
                 $"Copied Blueprint URL to clipboard: {url}"

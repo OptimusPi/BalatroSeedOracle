@@ -59,8 +59,8 @@ public static class UIConstants
 
     // Scale Factors
     public const double DefaultScaleFactor = 1.0;
-    public const double CardJuiceScaleFactor = 0.4; // Scale bounce on card grab (Balatro default: 0.4)
-    public const double CardJuiceRotationFactor = 0.6; // Rotation wobble multiplier (Balatro: 0.6*amount)
+    public const double CardJuiceScaleFactor = 0.05; // EXACT Balatro hover juice (card.lua:4307 uses 0.05, 0.03)
+    public const double CardJuiceRotationFactor = 0.6; // EXACT Balatro default (moveable.lua:260: 0.6*amount)
     public const double CardFlipJuiceScalePeak = 1.3; // Peak scale during flip juice animation
 
     // Balatro card animation multipliers (unitless)
@@ -70,9 +70,9 @@ public static class UIConstants
     public const double CardSwayRotationAmplitude = 0.02; // ~1.15° max wobble
 
     // Physics Constants - EXACT Balatro values from moveable.lua:272-273
-    // These are ANGULAR VELOCITIES (rad/s), not Hz! sin(50.8*t) creates ~8Hz oscillation
-    public const double JuiceBounceFrequency = 50.8; // Scale oscillation angular velocity (Balatro exact!)
-    public const double JuiceWobbleFrequency = 40.8; // Rotation wobble angular velocity (Balatro exact!)
+    // These are ANGULAR VELOCITIES (rad/s)! sin(50.8*t) creates ~8Hz oscillation
+    public const double JuiceBounceFrequency = 50.8; // EXACT Balatro (moveable.lua:272)
+    public const double JuiceWobbleFrequency = 40.8; // EXACT Balatro (moveable.lua:273)
     public const double FloatingFrequency = 0.666; // ~1.5 second cycle
     public const double FloatingVerticalAmplitude = 0.3; // 30% breathing variation
     public const double FloatingHorizontalAmplitude = 0.2; // 20% sway variation

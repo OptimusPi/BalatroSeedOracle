@@ -1,8 +1,8 @@
 <ContentControl xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:vm="using:BalatroSeedOracle.ViewModels"
-                xmlns:feather="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.FeatherIcons"
-                xmlns:material="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+                xmlns:feather="clr-namespace:IconPacks.Avalonia.FeatherIcons;assembly=IconPacks.Avalonia.FeatherIcons"
+                xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
                 x:Class="BalatroSeedOracle.Components.BaseWidget"
                 x:DataType="vm:BaseWidgetViewModel"
                 ZIndex="{Binding WidgetZIndex}">
@@ -59,7 +59,7 @@
                                 Classes="widget-minimize-btn"
                                 Command="{Binding MinimizeCommand}"
                                 ToolTip.Tip="Minimize">
-                            <feather:PackIconFeather Kind="Minimize2" Width="12" Height="12"/>
+                            <feather:PackIconFeatherIcons Kind="Minimize2" Width="12" Height="12"/>
                         </Button>
 
                         <Button Grid.Column="1"
@@ -67,14 +67,14 @@
                                 Command="{Binding MaximizeCommand}"
                                 ToolTip.Tip="Maximize"
                                 IsVisible="False">
-                            <feather:PackIconFeather Kind="Maximize2" Width="12" Height="12"/>
+                            <feather:PackIconFeatherIcons Kind="Maximize2" Width="12" Height="12"/>
                         </Button>
 
                         <Button Grid.Column="2"
                                 Classes="widget-minimize-btn"
                                 Command="{Binding CloseCommand}"
                                 ToolTip.Tip="Close">
-                            <feather:PackIconFeather Kind="X" Width="12" Height="12"/>
+                            <feather:PackIconFeatherIcons Kind="X" Width="12" Height="12"/>
                         </Button>
 
                         <!-- Title - NOW ON RIGHT! -->

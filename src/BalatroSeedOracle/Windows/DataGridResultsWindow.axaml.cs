@@ -33,7 +33,6 @@ namespace BalatroSeedOracle.Windows
     {
         private readonly SearchInstance? _searchInstance;
         private readonly string? _filterName;
-        private readonly DbListExportService? _exportService;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
         private TextBox? _quickSearchBox;
@@ -60,7 +59,6 @@ namespace BalatroSeedOracle.Windows
         {
             _searchInstance = searchInstance;
             _filterName = filterName;
-            _exportService = new DbListExportService();
             InitializeComponent();
             SetupControls();
             SetupSqlEditor();
@@ -871,120 +869,6 @@ LIMIT 50;",
             if (_queryStatusText != null)
             {
                 _queryStatusText.Text = message;
-            }
-        }
-
-        /// <summary>
-        /// Export DBList results to CSV format
-        /// </summary>
-        private async Task ExportDbListToCsvAsync()
-        {
-            try
-            {
-                var topLevel = TopLevel.GetTopLevel(this);
-                if (topLevel == null)
-                    return;
-
-                var searchResults = _filteredResults.Select(item => new SearchResult
-                {
-                    Seed = item.Seed,
-                    TotalScore = item.TotalScore,
-                    Scores = item.TallyScores.ToArray(),
-                    Labels = null // DataGridResultItem doesn't have Labels
-                }).ToList();
-
-                var success = _exportService != null ? await _exportService.ExportToCsvAsync(searchResults, topLevel.StorageProvider, 
-                    $"{_filterName ?? "dblist_results"}_{DateTime.Now:yyyyMMdd_HHmmss}.csv") : false;
-
-                if (success)
-                {
-                    UpdateStatus($"Exported {searchResults.Count} DBList results to CSV");
-                }
-                else
-                {
-                    UpdateStatus("Export cancelled or failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"DBList CSV export failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Export DBList results to JSON format
-        /// </summary>
-        private async Task ExportDbListToJsonAsync()
-        {
-            try
-            {
-                var topLevel = TopLevel.GetTopLevel(this);
-                if (topLevel == null)
-                    return;
-
-                var searchResults = _filteredResults.Select(item => new SearchResult
-                {
-                    Seed = item.Seed,
-                    TotalScore = item.TotalScore,
-                    Scores = item.TallyScores.ToArray(),
-                    Labels = null // DataGridResultItem doesn't have Labels
-                }).ToList();
-
-                var success = _exportService != null ? await _exportService.ExportToJsonAsync(searchResults, topLevel.StorageProvider,
-                    $"{_filterName ?? "dblist_results"}_{DateTime.Now:yyyyMMdd_HHmmss}.json") : false;
-
-                if (success)
-                {
-                    UpdateStatus($"Exported {searchResults.Count} DBList results to JSON");
-                }
-                else
-                {
-                    UpdateStatus("Export cancelled or failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"DBList JSON export failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Export DBList results to text format (wordlist)
-        /// </summary>
-        private async Task ExportDbListToTextAsync()
-        {
-            try
-            {
-                var topLevel = TopLevel.GetTopLevel(this);
-                if (topLevel == null)
-                    return;
-
-                var searchResults = _filteredResults.Select(item => new SearchResult
-                {
-                    Seed = item.Seed,
-                    TotalScore = item.TotalScore,
-                    Scores = item.TallyScores.ToArray(),
-                    Labels = null // DataGridResultItem doesn't have Labels
-                }).ToList();
-
-                var success = _exportService != null ? await _exportService.ExportToTextAsync(searchResults, topLevel.StorageProvider,
-                    $"{_filterName ?? "dblist_seeds"}_{DateTime.Now:yyyyMMdd_HHmmss}.txt") : false;
-
-                if (success)
-                {
-                    UpdateStatus($"Exported {searchResults.Count} DBList seeds to text file");
-                }
-                else
-                {
-                    UpdateStatus("Export cancelled or failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DataGridResultsWindow", $"DBList text export failed: {ex}");
-                UpdateStatus($"Export failed: {ex.Message}");
             }
         }
     }

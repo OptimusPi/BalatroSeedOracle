@@ -1113,19 +1113,6 @@ namespace BalatroSeedOracle.ViewModels
             set => _settingsViewModel.BeatPulseIntensity = value;
         }
 
-        // Presets - Removed, we'll implement our own below
-        // public System.Collections.ObjectModel.ObservableCollection<Models.VisualizerPreset> Presets => _settingsViewModel.Presets;
-
-        // public Models.VisualizerPreset? SelectedPreset
-        // {
-        //     get => _settingsViewModel.SelectedPreset;
-        //     set => _settingsViewModel.SelectedPreset = value;
-        // }
-
-        // public System.Windows.Input.ICommand LoadPresetCommand => _settingsViewModel.LoadPresetCommand;
-        // public System.Windows.Input.ICommand SavePresetCommand => _settingsViewModel.SavePresetCommand;
-        // public System.Windows.Input.ICommand DeletePresetCommand => _settingsViewModel.DeletePresetCommand;
-
         #endregion
 
         #region Lifecycle & Shader Application
@@ -1620,123 +1607,9 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log("AudioVisualizerSettingsWidget", "Export to JSON requested");
         }
 
-        [RelayCommand]
-        private async Task SaveTransition()
-        {
-            try
-            {
-                var name = await ShowNameDialogAsync(
-                    "Save Transition",
-                    "Enter a name:",
-                    "MyTransition"
-                );
-                if (string.IsNullOrWhiteSpace(name))
-                    return;
+        #endregion
 
-                var mixNames = MixerHelper.LoadAllMixerNames();
-                var mixA =
-                    await ShowSelectionDialogAsync(
-                        "Select Mix (A)",
-                        "Choose a saved mix for Point A:",
-                        mixNames
-                    ) ?? string.Empty;
-                var mixB =
-                    await ShowSelectionDialogAsync(
-                        "Select Mix (B)",
-                        "Choose a saved mix for Point B:",
-                        mixNames
-                    ) ?? string.Empty;
-
-                var visualNames = new System.Collections.Generic.List<string> { "Default Balatro" };
-                foreach (var p in PresetHelper.LoadAllPresets())
-                    if (!string.IsNullOrWhiteSpace(p.Name))
-                        visualNames.Add(p.Name);
-                var visA =
-                    await ShowSelectionDialogAsync(
-                        "Select Visual (A)",
-                        "Choose a visual preset for Point A:",
-                        visualNames
-                    ) ?? "Default Balatro";
-                var visB =
-                    await ShowSelectionDialogAsync(
-                        "Select Visual (B)",
-                        "Choose a visual preset for Point B:",
-                        visualNames
-                    ) ?? "Default Balatro";
-
-                var tp = new TransitionPreset
-                {
-                    Name = name,
-                    VisualPresetAName = visA,
-                    VisualPresetBName = visB,
-                    MixAName = mixA,
-                    MixBName = mixB,
-                };
-                if (TransitionPresetHelper.Save(tp))
-                {
-                    DebugLogger.Log(
-                        "AudioVisualizerWidget",
-                        $"Saved transition '{name}' → VisualA='{visA}', VisualB='{visB}', MixA='{mixA}', MixB='{mixB}'"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "AudioVisualizerWidget",
-                    $"SaveTransition failed: {ex.Message}"
-                );
-            }
-        }
-
-        [RelayCommand]
-        private async Task LoadTransition()
-        {
-            try
-            {
-                var names = TransitionPresetHelper.ListNames();
-                if (names.Count == 0)
-                    return;
-                var selected = await ShowSelectionDialogAsync(
-                    "Load Transition",
-                    "Choose a transition:",
-                    names
-                );
-                if (string.IsNullOrWhiteSpace(selected))
-                    return;
-
-                var tp = TransitionPresetHelper.Load(selected);
-                if (tp == null)
-                    return;
-
-                ManualTransitionPresetA = tp.VisualPresetAName;
-                ManualTransitionPresetB = tp.VisualPresetBName;
-                ManualTransitionMixAName = tp.MixAName;
-                ManualTransitionMixBName = tp.MixBName;
-                CurrentPresetName = tp.VisualPresetAName;
-                DebugLogger.Log(
-                    "AudioVisualizerWidget",
-                    $"Loaded transition visuals A='{tp.VisualPresetAName}' B='{tp.VisualPresetBName}'"
-                );
-
-                var mixA = MixerHelper.LoadMixer(tp.MixAName);
-                if (mixA != null)
-                {
-                    ApplyMixerToEngine(mixA);
-                    DebugLogger.Log(
-                        "AudioVisualizerWidget",
-                        $"Applied mix A '{tp.MixAName}' to audio engine"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "AudioVisualizerWidget",
-                    $"LoadTransition failed: {ex.Message}"
-                );
-            }
-        }
+        #region Startup Presets
 
         [ObservableProperty]
         private string? _startupIntroPresetName = "Default";
@@ -2164,7 +2037,6 @@ namespace BalatroSeedOracle.ViewModels
             // Could auto-save settings when minimized if needed
         }
 
-        #endregion
         private void SyncFromShader()
         {
             if (_ownerControl == null)
@@ -2177,5 +2049,7 @@ namespace BalatroSeedOracle.ViewModels
             SpinTimeValue = mainMenu.GetSpinTimeSpeed();
             _syncingFromShader = false;
         }
+
+        #endregion
     }
 }

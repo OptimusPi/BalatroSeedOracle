@@ -26,6 +26,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly FiltersModalViewModel _parentViewModel;
         private readonly ClauseConversionService _clauseConversionService;
 
+        public event EventHandler<string>? CopyToClipboardRequested;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(SaveCurrentFilterCommand))]
         [NotifyCanExecuteChangedFor(nameof(SaveAsCommand))]
@@ -682,8 +684,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var serializer = new FilterSerializationService(userProfileService!);
                 var json = serializer.SerializeConfig(config);
 
-                // Copy to clipboard
-                await Services.ClipboardService.CopyToClipboardAsync(json);
+                // Copy to clipboard via event
+                CopyToClipboardRequested?.Invoke(this, json);
 
                 UpdateStatus("✅ JSON copied to clipboard", false);
                 DebugLogger.Log("ValidateFilterTab", "Filter JSON copied to clipboard");
@@ -1100,7 +1102,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 if (!string.IsNullOrWhiteSpace(FoundSeed))
                 {
-                    await ClipboardService.CopyToClipboardAsync(FoundSeed);
+                    CopyToClipboardRequested?.Invoke(this, FoundSeed);
                     UpdateStatus($"✓ Copied seed {FoundSeed} to clipboard", false);
                     DebugLogger.Log("ValidateFilterTab", $"Copied seed to clipboard: {FoundSeed}");
                 }

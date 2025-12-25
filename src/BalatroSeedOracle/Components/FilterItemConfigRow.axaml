@@ -5,7 +5,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
              x:Class="BalatroSeedOracle.Components.FilterItemConfigRow"
              x:DataType="vm:FilterItemConfigRowViewModel">
@@ -69,7 +69,7 @@
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         ToolTip.Tip="Configure">
-                    <icons:PackIconMaterial Kind="{Binding IsExpanded, Converter={x:Static converters:BoolToExpandIconConverter.Instance}}"
+                    <icons:PackIconMaterial Kind="ChevronRight"
                                             Width="14" Height="14"
                                             Foreground="{StaticResource LightGrey}"/>
                 </Button>

@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="BalatroSeedOracle.Features.Analyzer.AnteTreeView">
+             
+  <StackPanel Spacing="10" Margin="20">
+    <TextBlock Text="Ante Tree View" 
+               FontSize="16" 
+               FontWeight="Bold"
+               HorizontalAlignment="Center"/>
+    
+    <TextBlock Text="Ante tree analysis not available in this build." 
+               FontSize="12"
+               HorizontalAlignment="Center"
+               TextWrapping="Wrap"/>
+  </StackPanel>
+</UserControl>

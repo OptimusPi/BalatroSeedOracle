@@ -5,6 +5,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -96,8 +97,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -178,9 +185,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Drums2Solo}"
                                           Width="36"
@@ -197,6 +212,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Drums2"
                                        Foreground="White"
@@ -204,6 +221,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -216,12 +235,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Drums2Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -237,6 +260,7 @@
 
                         <!-- Track: Bass1 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Bass1Muted}"
                                           Width="36"
@@ -250,9 +274,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass1Solo}"
                                           Width="36"
@@ -269,6 +301,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Bass1"
                                        Foreground="White"
@@ -276,6 +310,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -288,12 +324,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Bass1Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -309,6 +349,7 @@
 
                         <!-- Track: Bass2 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Bass2Muted}"
                                           Width="36"
@@ -322,9 +363,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Bass2Solo}"
                                           Width="36"
@@ -341,6 +390,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Bass2"
                                        Foreground="White"
@@ -348,6 +399,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -360,12 +413,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Bass2Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -381,6 +438,7 @@
 
                         <!-- Track: Chords1 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Chords1Muted}"
                                           Width="36"
@@ -394,9 +452,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords1Solo}"
                                           Width="36"
@@ -413,6 +479,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Chords1"
                                        Foreground="White"
@@ -420,6 +488,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -432,12 +502,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Chords1Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -453,6 +527,7 @@
 
                         <!-- Track: Chords2 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Chords2Muted}"
                                           Width="36"
@@ -466,9 +541,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Chords2Solo}"
                                           Width="36"
@@ -485,6 +568,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Chords2"
                                        Foreground="White"
@@ -492,6 +577,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -504,12 +591,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Chords2Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -525,6 +616,7 @@
 
                         <!-- Track: Melody1 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Melody1Muted}"
                                           Width="36"
@@ -538,9 +630,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody1Solo}"
                                           Width="36"
@@ -557,6 +657,8 @@
                                 </ToggleButton.Styles>
                                 <TextBlock Text="S" FontSize="11"/>
                             </ToggleButton>
+
+                            <!-- Track Name -->
                             <TextBlock Grid.Column="2"
                                        Text="Melody1"
                                        Foreground="White"
@@ -564,6 +666,8 @@
                                        FontFamily="{StaticResource BalatroFont}"
                                        VerticalAlignment="Center"
                                        TextAlignment="Left"/>
+
+                            <!-- Pan Control -->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="3">
                                 <TextBlock Text="Pan:"
                                            Foreground="{StaticResource LightGrey}"
@@ -576,12 +680,16 @@
                                         VerticalAlignment="Center"
                                         ToolTip.Tip="Pan: 0 (L) 50 (C) 100 (R)"/>
                             </StackPanel>
+
+                            <!-- Volume Slider -->
                             <Slider Grid.Column="4"
                                     Minimum="0"
                                     Maximum="100"
                                     Value="{Binding Melody1Volume}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center"/>
+
+                            <!-- Volume Badge -->
                             <Border Grid.Column="5"
                                     Background="{StaticResource Red}"
                                     CornerRadius="4"
@@ -597,6 +705,7 @@
 
                         <!-- Track: Melody2 -->
                         <Grid ColumnDefinitions="36,36,58,80,*,48" ColumnSpacing="6" Margin="0,2">
+                            <!-- Mute Button -->
                             <ToggleButton Grid.Column="0"
                                           IsChecked="{Binding Melody2Muted}"
                                           Width="36"
@@ -610,9 +719,17 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
+                                    <Style Selector="ToggleButton material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
+                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    </Style>
                                 </ToggleButton.Styles>
-                                <icons:PackIconMaterial Kind="VolumeOff" Width="12" Height="12"/>
+                                <material:PackIconMaterial Width="12" Height="12"/>
                             </ToggleButton>
+
+                            <!-- Solo Button -->
                             <ToggleButton Grid.Column="1"
                                           IsChecked="{Binding Melody2Solo}"
                                           Width="36"

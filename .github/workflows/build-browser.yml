@@ -1,0 +1,41 @@
+name: Build Browser Only
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'src/BalatroSeedOracle.Browser/**', 'src/BalatroSeedOracle/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'src/BalatroSeedOracle.Browser/**', 'src/BalatroSeedOracle/**' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Browser Version
+      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore
+
+    - name: Check Build Size
+      run: |
+        $size = (Get-ChildItem -Path "publish/browser" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+        Write-Host "Browser build size: $([math]::Round($size, 2)) MB"
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BalatroSeedOracle-Browser
+        path: publish/browser/
+        retention-days: 7

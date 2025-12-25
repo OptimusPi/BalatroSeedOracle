@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
@@ -30,6 +31,7 @@ namespace BalatroSeedOracle.Components
 
             // Wire up ViewModel events that require view interaction
             ViewModel.AnalyzeSeedRequested += OnAnalyzeSeedRequested;
+            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
 
             InitializeComponent();
 
@@ -42,6 +44,23 @@ namespace BalatroSeedOracle.Components
 
             // Wire up cleanup
             this.DetachedFromVisualTree += OnDetachedFromVisualTree;
+        }
+
+        public async Task CopyToClipboardAsync(string text)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(text);
+                    DebugLogger.Log("DayLatroWidget", $"Copied to clipboard: {text}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("DayLatroWidget", $"Failed to copy to clipboard: {ex.Message}");
+            }
         }
 
         private void InitializeComponent()
@@ -76,6 +95,7 @@ namespace BalatroSeedOracle.Components
                     return;
                 }
 
+                #if !BROWSER
                 var analyzeModal = new AnalyzeModal();
                 analyzeModal.SetSeedAndAnalyze(seed);
 
@@ -83,6 +103,10 @@ namespace BalatroSeedOracle.Components
                 stdModal.SetContent(analyzeModal);
                 stdModal.BackClicked += (s, _) => mainMenu.HideModalContent();
                 mainMenu.ShowModalContent(stdModal, "SEED ANALYZER");
+#else
+                // Analyzer not available in browser
+                return;
+#endif
             }
             catch (Exception ex)
             {
@@ -98,6 +122,7 @@ namespace BalatroSeedOracle.Components
             if (ViewModel != null)
             {
                 ViewModel.AnalyzeSeedRequested -= OnAnalyzeSeedRequested;
+                ViewModel.CopyToClipboardRequested -= OnAnalyzeSeedRequested;
                 ViewModel.Dispose();
             }
         }

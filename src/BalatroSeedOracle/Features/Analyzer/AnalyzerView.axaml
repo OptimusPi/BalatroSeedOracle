@@ -4,7 +4,7 @@
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia;assembly=IconPacks.Avalonia.Material"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
              x:DataType="vm:AnalyzerViewModel">
 

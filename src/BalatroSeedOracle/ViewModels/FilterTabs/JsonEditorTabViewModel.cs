@@ -16,6 +16,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     {
         private readonly FiltersModalViewModel? _parentViewModel;
 
+        public event EventHandler<string>? CopyToClipboardRequested;
+
         [ObservableProperty]
         private string _jsonContent = "";
 
@@ -389,7 +391,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                await Services.ClipboardService.CopyToClipboardAsync(JsonContent);
+                CopyToClipboardRequested?.Invoke(this, JsonContent);
 
                 ValidationStatus = "✓ JSON copied to clipboard";
                 ValidationStatusColor = Brushes.Green;

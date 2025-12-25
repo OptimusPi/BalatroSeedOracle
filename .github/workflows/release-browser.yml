@@ -1,0 +1,56 @@
+name: Browser Release Build
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        required: false
+        type: string
+
+jobs:
+  build-browser:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Browser Version
+      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore
+
+    - name: Create Browser Archive
+      run: |
+        cd publish/browser
+        7z a -tzip ../../BalatroSeedOracle-Browser.zip *
+
+    - name: Upload Browser Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BalatroSeedOracle-Browser
+        path: BalatroSeedOracle-Browser.zip
+
+    - name: Prepare for Deployment
+      run: |
+        mkdir -p deploy/wwwroot/bso
+        cp -r publish/browser/* deploy/wwwroot/bso/
+
+    - name: Create Deployment Package
+      run: |
+        cd deploy
+        7z a -tzip ../BalatroSeedOracle-Browser-Deploy.zip *
+
+    - name: Upload Deployment Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: BalatroSeedOracle-Browser-Deploy
+        path: BalatroSeedOracle-Browser-Deploy.zip

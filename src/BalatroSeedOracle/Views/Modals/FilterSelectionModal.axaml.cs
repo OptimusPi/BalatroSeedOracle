@@ -422,6 +422,15 @@ namespace BalatroSeedOracle.Views.Modals
                     return;
                 }
 
+                // Check if StorageProvider supports file operations (important for browser)
+                if (!topLevel.StorageProvider.CanOpen)
+                {
+                    await MsBox.Avalonia.MessageBoxManager
+                        .GetMessageBoxStandard("Not Supported", "File opening is not supported in this environment.")
+                        .ShowAsync();
+                    return;
+                }
+
                 DebugLogger.Log("FilterSelectionModal", "Opening file picker...");
                 var files = await topLevel.StorageProvider.OpenFilePickerAsync(
                     new FilePickerOpenOptions

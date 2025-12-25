@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
+using System.Diagnostics;
 
 namespace BalatroSeedOracle.Services.Storage;
 
@@ -12,64 +13,150 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 
     private static string MakeKey(string key) => Prefix + key;
 
+    public BrowserLocalStorageAppDataStore()
+    {
+        Debug.WriteLine("BrowserLocalStorageAppDataStore initialized");
+        Console.WriteLine("BrowserLocalStorageAppDataStore initialized");
+        
+        // Test basic localStorage interop
+        try
+        {
+            SetItem("bso:test", "test-value");
+            var testValue = GetItem("bso:test");
+            Console.WriteLine($"LocalStorage test result: {testValue}");
+            Debug.WriteLine($"LocalStorage test result: {testValue}");
+            
+            if (testValue == "test-value")
+            {
+                Console.WriteLine("LocalStorage interop is working!");
+            }
+            else
+            {
+                Console.WriteLine("LocalStorage interop failed - wrong value returned");
+            }
+            
+            // Clean up test
+            RemoveItem("bso:test");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LocalStorage test failed: {ex.Message}");
+            Console.WriteLine($"Exception type: {ex.GetType().Name}");
+            Debug.WriteLine($"LocalStorage test failed: {ex.Message}");
+        }
+    }
+
     public Task<bool> ExistsAsync(string key)
     {
-        var value = GetItem(MakeKey(key));
-        return Task.FromResult(value != null);
+        try
+        {
+            var value = GetItem(MakeKey(key));
+            return Task.FromResult(value != null);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking if key exists: {ex.Message}");
+            Debug.WriteLine($"Error checking if key exists: {ex.Message}");
+            return Task.FromResult(false);
+        }
     }
 
     public Task<string?> ReadTextAsync(string key)
     {
-        var value = GetItem(MakeKey(key));
-        return Task.FromResult<string?>(value);
+        try
+        {
+            var value = GetItem(MakeKey(key));
+            return Task.FromResult<string?>(value);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading text for key {key}: {ex.Message}");
+            Debug.WriteLine($"Error reading text for key {key}: {ex.Message}");
+            return Task.FromResult<string?>(null);
+        }
     }
 
     public Task WriteTextAsync(string key, string content)
     {
-        SetItem(MakeKey(key), content);
-        return Task.CompletedTask;
+        try
+        {
+            SetItem(MakeKey(key), content);
+            Console.WriteLine($"Successfully wrote {content.Length} chars to key {key}");
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error writing text for key {key}: {ex.Message}");
+            Debug.WriteLine($"Error writing text for key {key}: {ex.Message}");
+            throw;
+        }
     }
 
     public Task DeleteAsync(string key)
     {
-        RemoveItem(MakeKey(key));
-        return Task.CompletedTask;
+        try
+        {
+            RemoveItem(MakeKey(key));
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting key {key}: {ex.Message}");
+            Debug.WriteLine($"Error deleting key {key}: {ex.Message}");
+            throw;
+        }
     }
 
     public Task<IReadOnlyList<string>> ListKeysAsync(string prefix)
     {
-        var results = new List<string>();
-        var desired = MakeKey(prefix);
-
-        var len = GetLength();
-        for (var i = 0; i < len; i++)
+        try
         {
-            var k = Key(i);
-            if (k == null)
-                continue;
-            if (!k.StartsWith(desired, StringComparison.Ordinal))
-                continue;
+            var results = new List<string>();
+            var desired = MakeKey(prefix);
 
-            // Strip the bso: prefix back off
-            results.Add(k.Substring(Prefix.Length));
+            // Try to iterate through localStorage
+            var len = GetLocalStorageLength();
+            Console.WriteLine($"LocalStorage has {len} items total");
+            
+            for (var i = 0; i < len; i++)
+            {
+                var k = GetLocalStorageKey(i);
+                if (k == null)
+                    continue;
+                if (!k.StartsWith(desired, StringComparison.Ordinal))
+                    continue;
+
+                // Strip the bso: prefix back off
+                results.Add(k.Substring(Prefix.Length));
+            }
+
+            return Task.FromResult<IReadOnlyList<string>>(results);
         }
-
-        return Task.FromResult<IReadOnlyList<string>>(results);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error listing keys with prefix {prefix}: {ex.Message}");
+            Debug.WriteLine($"Error listing keys with prefix {prefix}: {ex.Message}");
+            return Task.FromResult<IReadOnlyList<string>>(new List<string>());
+        }
     }
 
-    [JSImport("globalThis.localStorage.getItem")]
+    // Try using wrapper functions for localStorage properties
+    [JSImport("window.BSO.testLocalStorage")]
+    private static partial string TestLocalStorage();
+
+    [JSImport("window.BSO.getLocalStorageItem")]
     private static partial string? GetItem(string key);
 
-    [JSImport("globalThis.localStorage.setItem")]
+    [JSImport("window.BSO.setLocalStorageItem")]
     private static partial void SetItem(string key, string value);
 
-    [JSImport("globalThis.localStorage.removeItem")]
+    [JSImport("window.BSO.removeLocalStorageItem")]
     private static partial void RemoveItem(string key);
 
-    [JSImport("globalThis.localStorage.length")]
-    private static partial int GetLength();
+    [JSImport("window.BSO.getLocalStorageLength")]
+    private static partial int GetLocalStorageLength();
 
-    [JSImport("globalThis.localStorage.key")]
-    private static partial string? Key(int index);
+    [JSImport("window.BSO.getLocalStorageKey")]
+    private static partial string? GetLocalStorageKey(int index);
 }
 #endif

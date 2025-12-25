@@ -18,6 +18,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
     /// </summary>
     public partial class SortableResultsGridViewModel : ObservableObject
     {
+        public event EventHandler<string>? CopyToClipboardRequested;
         private const int MaxDisplayResults = 1000;
         private const int DebounceDelayMs = 300;
 
@@ -316,7 +317,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             try
             {
-                await ClipboardService.CopyToClipboardAsync(seed);
+                CopyToClipboardRequested?.Invoke(this, seed);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -26,9 +27,27 @@ namespace BalatroSeedOracle.Views.Modals
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
             ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
+            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
 
             InitializeComponent();
             WireUpComponentEvents();
+        }
+
+        public async Task CopyToClipboardAsync(string text)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel?.Clipboard != null)
+                {
+                    await topLevel.Clipboard.SetTextAsync(text);
+                    DebugLogger.Log("SearchModal", $"Copied to clipboard: {text}");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchModal", $"Failed to copy to clipboard: {ex.Message}");
+            }
         }
 
         private void InitializeComponent()
