@@ -17,7 +17,7 @@
                     Background="{StaticResource DarkBackground}"
                     BorderThickness="0,0,0,2"
                     BorderBrush="{StaticResource ModalBorder}"
-                    Padding="16,12">
+                    Padding="12,8">
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Grid.Column="0"
                                Text="{Binding ItemName}"
@@ -47,34 +47,34 @@
             <!-- Scrollable Configuration Area - SIMPLE AND COMPLETE -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
-                          Padding="16,12">
-                <StackPanel Spacing="12">
+                          Padding="12,8">
+                <StackPanel Spacing="8">
 
                     <!-- 2-COLUMN LAYOUT FOR COMPACTNESS -->
-                    <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,12,Auto,12,Auto,12,Auto,12,Auto,12,Auto">
+                    <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,6,Auto,6,Auto,6,Auto,6,Auto,6,Auto">
 
                         <!-- LEFT COLUMN -->
 
                         <!-- Label (Should items only) -->
-                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" IsVisible="{Binding IsLabelVisible}">
+                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="2" IsVisible="{Binding IsLabelVisible}">
                             <TextBlock Text="LABEL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" Watermark="e.g., 'Bram Neg'" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <!-- Score (Should items only) -->
-                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" IsVisible="{Binding IsScoreVisible}">
+                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="2" IsVisible="{Binding IsScoreVisible}">
                             <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <NumericUpDown Value="{Binding Score}" Minimum="1" Maximum="1000" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <!-- Min Count (Must items only) -->
-                        <StackPanel Grid.Column="0" Grid.Row="4" Spacing="4" IsVisible="{Binding IsMinCountVisible}">
+                        <StackPanel Grid.Column="0" Grid.Row="4" Spacing="2" IsVisible="{Binding IsMinCountVisible}">
                             <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <!-- Edition (Jokers + StandardCards) -->
-                        <StackPanel Grid.Column="0" Grid.Row="6" Spacing="4" IsVisible="{Binding IsEditionVisible}">
+                        <StackPanel Grid.Column="0" Grid.Row="6" Spacing="2" IsVisible="{Binding IsEditionVisible}">
                             <TextBlock Text="EDITION" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Edition}" FontSize="11" Height="24">
                                 <sys:String>None</sys:String>
@@ -86,11 +86,11 @@
                         </StackPanel>
 
                         <!-- Stickers (Jokers only) -->
-                        <StackPanel Grid.Column="0" Grid.Row="8" Spacing="4" IsVisible="{Binding IsStickersVisible}">
+                        <StackPanel Grid.Column="0" Grid.Row="8" Spacing="2" IsVisible="{Binding IsStickersVisible}">
                             <TextBlock Text="STICKERS" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <StackPanel>
-                                <CheckBox Content="Eternal" IsChecked="{Binding IsEternal}" FontSize="11" Margin="0,0,0,2"/>
-                                <CheckBox Content="Perishable" IsChecked="{Binding IsPerishable}" FontSize="11" Margin="0,0,0,2"/>
+                                <CheckBox Content="Eternal" IsChecked="{Binding IsEternal}" FontSize="11" Margin="0,0,0,1"/>
+                                <CheckBox Content="Perishable" IsChecked="{Binding IsPerishable}" FontSize="11" Margin="0,0,0,1"/>
                                 <CheckBox Content="Rental" IsChecked="{Binding IsRental}" FontSize="11"/>
                             </StackPanel>
                         </StackPanel>
@@ -98,7 +98,7 @@
                         <!-- RIGHT COLUMN -->
 
                         <!-- Seal (StandardCards only) -->
-                        <StackPanel Grid.Column="2" Grid.Row="0" Spacing="4" IsVisible="{Binding IsSealVisible}">
+                        <StackPanel Grid.Column="2" Grid.Row="0" Spacing="2" IsVisible="{Binding IsSealVisible}">
                             <TextBlock Text="SEAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Seal}" FontSize="11" Height="24">
                                 <sys:String>None</sys:String>
@@ -110,7 +110,7 @@
                         </StackPanel>
 
                         <!-- Enhancement (StandardCards only) -->
-                        <StackPanel Grid.Column="2" Grid.Row="2" Spacing="4" IsVisible="{Binding IsEnhancementVisible}">
+                        <StackPanel Grid.Column="2" Grid.Row="2" Spacing="2" IsVisible="{Binding IsEnhancementVisible}">
                             <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Enhancement}" FontSize="11" Height="24">
                                 <sys:String>None</sys:String>
@@ -125,7 +125,7 @@
                         </StackPanel>
 
                         <!-- Rank (StandardCards only) -->
-                        <StackPanel Grid.Column="2" Grid.Row="4" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                        <StackPanel Grid.Column="2" Grid.Row="4" Spacing="2" IsVisible="{Binding IsRankSuitVisible}">
                             <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Rank}" FontSize="11" Height="24">
                                 <sys:String>2</sys:String><sys:String>3</sys:String><sys:String>4</sys:String><sys:String>5</sys:String>
@@ -135,7 +135,7 @@
                         </StackPanel>
 
                         <!-- Suit (StandardCards only) -->
-                        <StackPanel Grid.Column="2" Grid.Row="6" Spacing="4" IsVisible="{Binding IsRankSuitVisible}">
+                        <StackPanel Grid.Column="2" Grid.Row="6" Spacing="2" IsVisible="{Binding IsRankSuitVisible}">
                             <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Suit}" FontSize="11" Height="24">
                                 <sys:String>Spades</sys:String>
@@ -150,18 +150,18 @@
                     <!-- FULL-WIDTH SECTIONS BELOW -->
 
                     <!-- Antes -->
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="2">
                         <TextBlock Text="ANTES" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                         <WrapPanel>
-                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" FontSize="11" Margin="0,0,8,4"/>
-                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
-                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" FontSize="11" Margin="0,0,8,4" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" FontSize="11" Margin="0,0,6,2"/>
+                            <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="2" IsChecked="{Binding Ante2Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="3" IsChecked="{Binding Ante3Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="4" IsChecked="{Binding Ante4Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="5" IsChecked="{Binding Ante5Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="6" IsChecked="{Binding Ante6Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="7" IsChecked="{Binding Ante7Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
+                            <CheckBox Content="8" IsChecked="{Binding Ante8Selected}" FontSize="11" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
                         </WrapPanel>
                     </StackPanel>
 
@@ -173,8 +173,8 @@
                     Background="{StaticResource DarkBackground}"
                     BorderThickness="0,2,0,0"
                     BorderBrush="{StaticResource ModalBorder}"
-                    Padding="12">
-                <Grid ColumnDefinitions="Auto,8,Auto">
+                    Padding="12,8">
+                <Grid ColumnDefinitions="Auto,6,Auto">
                     <Button Grid.Column="0"
                             Content="Cancel"
                             Command="{Binding CancelCommand}"
