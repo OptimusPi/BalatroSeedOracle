@@ -76,6 +76,24 @@ namespace BalatroSeedOracle.ViewModels
         private string _filterDescription = "";
 
         [ObservableProperty]
+        private string _filterAuthor = "";
+
+        [ObservableProperty]
+        private DateTime? _filterDateCreated;
+
+        [ObservableProperty]
+        private int[]? _defaultAntes = new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+        [ObservableProperty]
+        private int[]? _defaultPackSlots = new[] { 0, 1, 2, 3, 4, 5 };
+
+        [ObservableProperty]
+        private int[]? _defaultShopSlots = new[] { 0, 1, 2, 3, 4, 5 };
+
+        [ObservableProperty]
+        private int _defaultScore = 1;
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
         private Motely.MotelyDeck _selectedDeck = Motely.MotelyDeck.Red;
 

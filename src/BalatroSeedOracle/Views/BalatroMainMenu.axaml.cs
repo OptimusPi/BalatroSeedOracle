@@ -26,12 +26,11 @@ namespace BalatroSeedOracle.Views
 {
     public partial class BalatroMainMenu : UserControl
     {
-        // View-only references (no business logic state)
         private Grid? _modalContainer;
         private Border? _modalOverlay;
         private ContentControl? _modalContentWrapper;
         private Control? _background;
-        private BalatroShaderBackground? _shaderBackground; // CACHED - it's ALWAYS BalatroShaderBackground!
+        private BalatroShaderBackground? _shaderBackground;
 
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
@@ -39,16 +38,12 @@ namespace BalatroSeedOracle.Views
         private Action<float, float, float, float>? _audioAnalysisHandler;
         private Popup? _volumePopup;
 
-        // Modal navigation stack (for Back button support)
+        // Modal navigation stack
         private UserControl? _previousModalContent;
         private string? _previousModalTitle;
 
-        // ViewModel (injected via DI - never null after construction)
         public BalatroMainMenuViewModel ViewModel { get; }
 
-        /// <summary>
-        /// Callback to request main content swap (set by MainWindow)
-        /// </summary>
         public Action<UserControl>? RequestContentSwap { get; set; }
 
         public BalatroMainMenu() : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>())
@@ -57,16 +52,12 @@ namespace BalatroSeedOracle.Views
 
         public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
         {
-            // Proper DI - ViewModel injected!
             ViewModel = viewModel;
             DataContext = ViewModel;
 
             InitializeComponent();
-
-            // Wire up ViewModel events
             WireViewModelEvents();
 
-            // Defer initialization to OnLoaded
             this.Loaded += OnLoaded;
         }
 
@@ -74,17 +65,14 @@ namespace BalatroSeedOracle.Views
         {
             AvaloniaXamlLoader.Load(this);
 
-            // Get view-only control references
             _modalContainer = this.FindControl<Grid>("ModalContainer");
             _modalOverlay = this.FindControl<Border>("ModalOverlay");
             _modalContentWrapper = this.FindControl<ContentControl>("ModalContentWrapper");
             _background = this.FindControl<Control>("BackgroundControl");
-            _shaderBackground = _background as BalatroShaderBackground; // CACHE IT ONCE!
+            _shaderBackground = _background as BalatroShaderBackground;
             _mainContent = this.FindControl<Grid>("MainContent");
             _volumePopup = this.FindControl<Popup>("VolumePopup");
 
-            // CRITICAL FIX: Add drag event handlers to ModalContainer to allow events to pass through
-            // Without this, drag events stop at ModalContainer and never reach modal content
             if (_modalContainer != null)
             {
                 _modalContainer.AddHandler(
@@ -99,48 +87,27 @@ namespace BalatroSeedOracle.Views
                     RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
                     true
                 );
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    "✅ ModalContainer drag event handlers installed"
-                );
             }
         }
 
-        /// <summary>
-        /// Allows drag events to pass through ModalContainer to modal content
-        /// </summary>
         private void OnModalContainerDragOver(object? sender, DragEventArgs e)
         {
-            // Allow ALL drag effects - let the actual drop zones decide
             e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
-            // DON'T set e.Handled - let event continue to modal content
-            DebugLogger.Log("BalatroMainMenu", $"ModalContainer DragOver - allowing passthrough");
         }
 
-        /// <summary>
-        /// Allows drop events to pass through ModalContainer to modal content
-        /// </summary>
         private void OnModalContainerDrop(object? sender, DragEventArgs e)
         {
-            // DON'T set e.Handled - let event continue to modal content drop zones
-            DebugLogger.Log("BalatroMainMenu", "ModalContainer Drop - allowing passthrough");
         }
 
-        /// <summary>
-        /// Wire up ViewModel events to view behaviors
-        /// </summary>
         private void WireViewModelEvents()
         {
-            // Modal requests
             ViewModel.ModalRequested += OnModalRequested;
             ViewModel.HideModalRequested += (s, e) => HideModalContent();
 
-            // Animation state changes
             ViewModel.OnIsAnimatingChangedEvent += (s, isAnimating) =>
             {
                 if (_shaderBackground != null)
                 {
-                    // Ensure UI-thread dispatch when touching visual controls
                     Avalonia.Threading.Dispatcher.UIThread.Post(
                         () =>
                         {
@@ -151,7 +118,6 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Author edit activation (focus request)
             ViewModel.OnAuthorEditActivated += (s, e) =>
             {
                 var authorEdit = this.FindControl<TextBox>("AuthorEdit");
@@ -162,13 +128,9 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Window state change requests (for fullscreen vibe mode)
             ViewModel.WindowStateChangeRequested += OnWindowStateChangeRequested;
         }
 
-        /// <summary>
-        /// Handles window state change requests from the ViewModel (for fullscreen vibe mode)
-        /// </summary>
         private void OnWindowStateChangeRequested(object? sender, bool enterFullscreen)
         {
             var window = this.VisualRoot as Window;
@@ -181,33 +143,21 @@ namespace BalatroSeedOracle.Views
                         {
                             window.WindowState = WindowState.FullScreen;
 
-                            // Fix widget offset in fullscreen mode - compensate for hidden title bar space
                             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
                             if (desktopCanvas != null)
                             {
-                                desktopCanvas.Margin = new Thickness(0, -30, 0, 0); // Negative top margin to pull widgets up
+                                desktopCanvas.Margin = new Thickness(0, -30, 0, 0);
                             }
-
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                "Entered fullscreen for Vibe Out Mode"
-                            );
                         }
                         else
                         {
                             window.WindowState = WindowState.Normal;
 
-                            // Reset widget offset when exiting fullscreen
                             var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
                             if (desktopCanvas != null)
                             {
-                                desktopCanvas.Margin = new Thickness(0); // Reset to zero margin
+                                desktopCanvas.Margin = new Thickness(0);
                             }
-
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                "Exited fullscreen from Vibe Out Mode"
-                            );
                         }
                     },
                     Avalonia.Threading.DispatcherPriority.Render
@@ -215,9 +165,6 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        /// <summary>
-        /// Handles modal requests from ViewModel
-        /// </summary>
         private void OnModalRequested(object? sender, ModalRequestedEventArgs e)
         {
             switch (e.ModalType)
@@ -246,16 +193,11 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        /// <summary>
-        /// Show search modal - now uses FilterSelectionModal as gateway
-        /// </summary>
         private void ShowSearchModal()
         {
-            // Clear modal stack when starting fresh from main menu
             _previousModalContent = null;
             _previousModalTitle = null;
 
-            // Create FilterSelectionModal and show it as main modal content (NOT as a dialog)
             var filterSelectionModal = new FilterSelectionModal();
             var filterSelectionVM = new FilterSelectionModalViewModel(
                 enableSearch: true,
@@ -266,33 +208,17 @@ namespace BalatroSeedOracle.Views
             );
             filterSelectionModal.DataContext = filterSelectionVM;
 
-            // Wire up ModalCloseRequested to handle user actions
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    "🔵 ShowSearchModal: ModalCloseRequested event FIRED!"
-                );
-
-                // Debug: Check if Result is null
                 if (filterSelectionVM.Result == null)
                 {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        "❌ Result is NULL in ModalCloseRequested handler!"
-                    );
                     return;
                 }
 
                 var result = filterSelectionVM.Result;
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"📋 Result - Action: {result.Action}, FilterId: {result.FilterId}, Cancelled: {result.Cancelled}"
-                );
 
                 if (result.Cancelled)
                 {
-                    // User hit back/cancel - close modal
                     HideModalContent();
                     if (ViewModel != null)
                     {
@@ -304,24 +230,26 @@ namespace BalatroSeedOracle.Views
                 switch (result.Action)
                 {
                     case Models.FilterAction.Search:
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"✅ Search action triggered! FilterId: {result.FilterId}"
-                        );
                         if (result.FilterId != null)
                         {
-                            // Save FilterSelectionModal for back navigation
                             _previousModalContent = filterSelectionModal;
                             _previousModalTitle = "🔍 SELECT FILTER";
 
-                            // Resolve filter id to full path
                             var filtersDir = AppPaths.FiltersDir;
+                            // Try .jaml first, then .json as fallback
                             var configPath = System.IO.Path.Combine(
                                 filtersDir,
-                                result.FilterId + ".json"
+                                result.FilterId + ".jaml"
                             );
+                            
+                            if (!System.IO.File.Exists(configPath))
+                            {
+                                configPath = System.IO.Path.Combine(
+                                    filtersDir,
+                                    result.FilterId + ".json"
+                                );
+                            }
 
-                            // Load filter config to get the display name
                             try
                             {
                                 string json;
@@ -334,35 +262,79 @@ namespace BalatroSeedOracle.Views
 #else
                                 json = await System.IO.File.ReadAllTextAsync(configPath);
 #endif
-                                var config =
-                                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                        json
+                                
+                                // Parse based on file extension
+                                Motely.Filters.MotelyJsonConfig config;
+                                if (configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(json, out config, out var parseError) || config == null)
+                                    {
+                                        throw new InvalidOperationException($"Failed to parse JAML: {parseError ?? "Unknown error"}");
+                                    }
+                                }
+                                else
+                                {
+                                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                                        json,
+                                        new System.Text.Json.JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true,
+                                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                                            AllowTrailingCommas = true,
+                                        }
                                     );
+                                    if (config == null)
+                                    {
+                                        throw new InvalidOperationException("Failed to deserialize JSON filter");
+                                    }
+                                }
+                                
                                 if (config != null && !string.IsNullOrEmpty(config.Name))
                                 {
-                                    // Update modal title to show selected filter name
                                     SetTitle($"🔍 {config.Name}");
                                 }
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                // If loading fails, keep default title
+                                // Reset modal state on error
+                                if (ViewModel != null)
+                                {
+                                    ViewModel.IsModalVisible = false;
+                                }
+                                HideModalContent();
+                                
+                                Helpers.DebugLogger.LogError(
+                                    "BalatroMainMenu",
+                                    $"Failed to show search modal with filter: {ex.Message}"
+                                );
+                                
+                                // Show error using existing modal system
+                                var errorText = $"Failed to load filter:\n\n{ex.Message}";
+                                var errorContent = new StackPanel
+                                {
+                                    Margin = new Thickness(20),
+                                    Children = 
+                                    {
+                                        new TextBlock 
+                                        { 
+                                            Text = "Error", 
+                                            FontSize = 24, 
+                                            FontWeight = FontWeight.Bold,
+                                            Margin = new Thickness(0,0,0,10)
+                                        },
+                                        new TextBlock 
+                                        { 
+                                            Text = errorText, 
+                                            TextWrapping = TextWrapping.Wrap 
+                                        }
+                                    }
+                                };
+                                var errorControl = new UserControl { Content = errorContent };
+                                ShowModalContent(errorControl, "❌ ERROR");
+                                return;
                             }
 
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                $"🗂️ Loading filter from: {configPath}"
-                            );
-
-                            // TRANSITION to SearchModal (no flicker - just content swap)
                             _ = ShowSearchModalWithFilterAsync(configPath);
-                        }
-                        else
-                        {
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                "❌ Search action but FilterId is NULL!"
-                            );
                         }
                         break;
 
@@ -370,7 +342,7 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null)
                             _ = ShowFiltersModalDirectAsync(result.FilterId);
                         else
-                            _ = ShowFiltersModalDirectAsync(); // CreateNew
+                            _ = ShowFiltersModalDirectAsync();
                         break;
 
                     case Models.FilterAction.CreateNew:
@@ -379,30 +351,18 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal - it has its own Back button!)
             ShowModalContent(filterSelectionModal, "🔍 SELECT FILTER");
         }
 
-        /// <summary>
-        /// Show search modal with a specific filter loaded (overload for FilterSelectionModal flow)
-        /// </summary>
         private async Task ShowSearchModalWithFilterAsync(string configPath)
         {
             try
             {
-                Helpers.DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"ShowSearchModal called with filter: {configPath}"
-                );
-
                 var searchContent = new SearchModal();
-                // Set the MainMenu reference so CREATE NEW FILTER button works
                 searchContent.ViewModel.MainMenu = this;
 
-                // CRITICAL: Load the selected filter immediately AND WAIT FOR IT!
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    // DEFENSIVE: Check file exists before attempting load
                     bool exists = false;
 #if BROWSER
                     var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
@@ -416,75 +376,29 @@ namespace BalatroSeedOracle.Views
 
                     if (!exists)
                     {
-                        Helpers.DebugLogger.LogError(
-                            "BalatroMainMenu",
-                            $"❌ CRITICAL: Filter file does NOT exist at path: {configPath}"
-                        );
-                        Helpers.DebugLogger.LogError(
-                            "BalatroMainMenu",
-                            $"❌ Current directory: {System.IO.Directory.GetCurrentDirectory()}"
-                        );
-                        Helpers.DebugLogger.LogError(
-                            "BalatroMainMenu",
-                            $"❌ FiltersDir: {AppPaths.FiltersDir}"
-                        );
                         throw new InvalidOperationException($"Filter file not found: {configPath}");
                     }
 
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Filter file exists, loading: {configPath}"
-                    );
-
                     await searchContent.ViewModel.LoadFilterAsync(configPath);
 
-                    // DEBUG ASSERT: Filter MUST be loaded
                     if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
                     {
-                        Helpers.DebugLogger.LogError(
-                            "BalatroMainMenu",
-                            $"❌ ASSERT FAILED: CurrentFilterPath is STILL NULL after LoadFilterAsync!"
-                        );
-                        Helpers.DebugLogger.LogError(
-                            "BalatroMainMenu",
-                            $"❌ LoadedConfig: {(searchContent.ViewModel.LoadedConfig != null ? searchContent.ViewModel.LoadedConfig.Name : "NULL")}"
-                        );
                         throw new InvalidOperationException(
                             $"ASSERT FAILED: Filter did not load! Path: {configPath}"
                         );
                     }
 
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Filter loaded successfully, CurrentFilterPath = {searchContent.ViewModel.CurrentFilterPath}"
-                    );
-
-                    // Open directly to Search tab (index 0 since Preferred Deck tab was removed)
                     searchContent.ViewModel.SelectedTabIndex = 0;
-
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Filter loaded: {System.IO.Path.GetFileName(configPath)}"
-                    );
                 }
                 else
                 {
-                    Helpers.DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        $"❌ Filter not found: {configPath}"
-                    );
                     throw new InvalidOperationException(
                         $"ASSERT FAILED: Filter file does not exist! Path: {configPath}"
                     );
                 }
 
-                // Wire up desktop icon creation
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Desktop icon requested for config: {cfgPath}"
-                    );
                     var modalSearchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
@@ -492,7 +406,6 @@ namespace BalatroSeedOracle.Views
                     }
                 };
 
-                // Show SearchModal as main modal content (replaces FilterSelectionModal)
                 var modal = new StandardModal("🎰 SEED SEARCH");
                 modal.SetContent(searchContent);
                 modal.BackClicked += (s, e) =>
@@ -736,7 +649,13 @@ namespace BalatroSeedOracle.Views
                 if (!string.IsNullOrEmpty(filterId))
                 {
                     var filtersDir = AppPaths.FiltersDir;
-                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+                    // Try .jaml first, then .json as fallback
+                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
+                    
+                    if (!System.IO.File.Exists(filterPath))
+                    {
+                        filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+                    }
 
                     filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
@@ -1317,21 +1236,27 @@ namespace BalatroSeedOracle.Views
                     viewModel.PositionY = savedWidget.PositionY;
                     viewModel.IsMinimized = savedWidget.IsMinimized;
 
+                    // Set widget content for window system
+                    viewModel.WidgetContent = searchWidget;
+                    viewModel.WidgetTitle = $"Search #{savedWidget.SearchInstanceId}";
+
+                    // Register with position service for collision avoidance
+                    var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+                    positionService?.RegisterWidget(viewModel);
+
                     // Wire up event to reopen SearchModal when widget is clicked
                     viewModel.SearchModalOpenRequested += async (s, sid) =>
                     {
                         await ShowSearchModalForInstanceAsync(sid);
                     };
 
-                    // Position widget on desktop canvas
-                    searchWidget.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
-                    searchWidget.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
-
-                    desktopCanvas.Children.Add(searchWidget);
+                    // Use the new window manager instead of desktop canvas
+                    var widgetManager = Services.WidgetWindowManager.Instance;
+                    widgetManager.CreateWidget(viewModel);
 
                     DebugLogger.Log(
                         "BalatroMainMenu",
-                        $"Restored widget: {savedWidget.SearchInstanceId} at ({savedWidget.PositionX}, {savedWidget.PositionY})"
+                        $"Restored widget window: {savedWidget.SearchInstanceId} at ({savedWidget.PositionX}, {savedWidget.PositionY})"
                     );
                 }
 
@@ -2064,64 +1989,55 @@ namespace BalatroSeedOracle.Views
                 $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
             );
 
-            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
-            if (desktopCanvas == null)
+            try
             {
-                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
-                return;
-            }
+                // Get search instance from service
+                var searchManager = Helpers.ServiceHelper.GetService<SearchManager>();
+                var searchInstance = searchManager?.GetSearch(searchId);
+                
+                if (searchInstance == null)
+                {
+                    DebugLogger.LogError("BalatroMainMenu", $"Search instance not found: {searchId}");
+                    return;
+                }
 
-            // Get SearchInstance from SearchManager
-            var searchManager = ServiceHelper.GetService<SearchManager>();
-            if (searchManager == null)
-            {
-                DebugLogger.LogError("BalatroMainMenu", "SearchManager not found!");
-                return;
-            }
+                // Create SearchWidget with proper ViewModel
+                var spriteService = Services.SpriteService.Instance;
+                var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
+                var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
 
-            var searchInstance = searchManager.GetSearch(searchId);
-            if (searchInstance == null)
+                // Wire up event to reopen SearchModal when widget is clicked
+                viewModel.SearchModalOpenRequested += async (s, sid) =>
+                {
+                    await ShowSearchModalForInstanceAsync(sid);
+                };
+
+                // Set widget content for window system
+                viewModel.WidgetContent = searchWidget;
+                viewModel.WidgetTitle = $"Search #{searchId}";
+                viewModel.IsMinimized = true;
+
+                // Use the new window manager instead of desktop canvas
+                var widgetManager = Services.WidgetWindowManager.Instance;
+                widgetManager.CreateWidget(viewModel);
+
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"Created SearchWidget window for searchId: {searchId}"
+                );
+            }
+            catch (Exception ex)
             {
                 DebugLogger.LogError(
                     "BalatroMainMenu",
-                    $"SearchInstance not found for ID: {searchId}"
+                    $"Failed to create SearchWidget window: {ex.Message}"
                 );
-                return;
             }
-
-            // Get SpriteService
-            var spriteService = Services.SpriteService.Instance;
-
-            // Create SearchWidget with proper ViewModel
-            var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
-            var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
-
-            // Wire up event to reopen SearchModal when widget is clicked
-            viewModel.SearchModalOpenRequested += async (s, sid) =>
-            {
-                await ShowSearchModalForInstanceAsync(sid);
-            };
-
-            // Position widget on desktop canvas
-            var leftMargin = 20 + (ViewModel.WidgetCounter % 8) * 80;
-            var topMargin = 20 + (ViewModel.WidgetCounter / 8) * 100;
-
-            // Set position in ViewModel so it persists correctly
-            viewModel.PositionX = leftMargin;
-            viewModel.PositionY = topMargin;
-
-            searchWidget.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
-            searchWidget.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
-
-            desktopCanvas.Children.Add(searchWidget);
-            ViewModel.WidgetCounter++;
-
-            DebugLogger.Log(
-                "BalatroMainMenu",
-                $"Created SearchWidget #{ViewModel.WidgetCounter} at position ({leftMargin}, {topMargin})"
-            );
         }
 
+        /// <summary>
+        /// Remove Search Widget using window manager
+        /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
             DebugLogger.Log(
@@ -2129,48 +2045,36 @@ namespace BalatroSeedOracle.Views
                 $"RemoveSearchDesktopIcon called for searchId: {searchId}"
             );
 
-            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
-            if (desktopCanvas == null)
+            try
             {
-                DebugLogger.Log("BalatroMainMenu", "DesktopCanvas not found!");
-                return;
-            }
-
-            Components.Widgets.SearchWidget? widgetToRemove = null;
-            foreach (var child in desktopCanvas.Children)
-            {
-                if (
-                    child is Components.Widgets.SearchWidget widget
-                    && widget.DataContext is SearchWidgetViewModel viewModel
-                )
+                // Find the widget in the window manager
+                var widgetManager = Services.WidgetWindowManager.Instance;
+                var activeWidgets = widgetManager.GetActiveWidgets();
+                
+                var widgetToRemove = activeWidgets.FirstOrDefault(w => 
+                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId);
+                
+                if (widgetToRemove != null)
                 {
-                    if (viewModel.SearchInstanceId == searchId)
-                    {
-                        widgetToRemove = widget;
-                        break;
-                    }
+                    widgetManager.CloseWidget(widgetToRemove);
+                    DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"Removed SearchWidget window for searchId: {searchId}"
+                    );
+                }
+                else
+                {
+                    DebugLogger.Log(
+                        "BalatroMainMenu",
+                        $"No SearchWidget window found for searchId: {searchId}"
+                    );
                 }
             }
-
-            if (widgetToRemove != null)
+            catch (Exception ex)
             {
-                // Dispose ViewModel to unsubscribe from events
-                if (widgetToRemove.DataContext is SearchWidgetViewModel vm)
-                {
-                    vm.Dispose();
-                }
-
-                desktopCanvas.Children.Remove(widgetToRemove);
-                DebugLogger.Log(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
-                    $"Removed SearchWidget for searchId: {searchId}"
-                );
-            }
-            else
-            {
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"No SearchDesktopIcon found for searchId: {searchId}"
+                    $"Failed to remove SearchWidget window: {ex.Message}"
                 );
             }
         }

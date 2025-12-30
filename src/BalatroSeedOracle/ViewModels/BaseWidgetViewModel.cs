@@ -1,4 +1,6 @@
 using System;
+using Avalonia;
+using Avalonia.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,13 +10,15 @@ namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
     /// Base ViewModel for all desktop widgets (DayLatro, Search icons, etc.)
-    /// Provides common functionality: minimize/expand, dragging, notifications
+    /// Provides common functionality: minimize/expand, window management, notifications
+    /// Now uses proper Avalonia Window system instead of custom desktop canvas
     /// </summary>
     public partial class BaseWidgetViewModel : ObservableObject
     {
         // Static counter to ensure unique Z-indexes for proper layering
         private static int _nextZIndexCounter = 0;
         private readonly WidgetPositionService? _widgetPositionService;
+        private Window? _widgetWindow;
 
         public BaseWidgetViewModel(WidgetPositionService? widgetPositionService = null)
         {
@@ -25,6 +29,24 @@ namespace BalatroSeedOracle.ViewModels
 
             // Initialize with base Z-index offset (will be updated when brought to front)
             _zIndexOffset = 0;
+        }
+
+        /// <summary>
+        /// The actual widget content to display in the window
+        /// </summary>
+        public Control? WidgetContent { get; set; }
+
+        /// <summary>
+        /// The window that hosts this widget
+        /// </summary>
+        public Window? WidgetWindow 
+        { 
+            get => _widgetWindow;
+            set
+            {
+                _widgetWindow = value;
+                OnPropertyChanged();
+            }
         }
 
         private void RegisterWithPositionService()
@@ -172,6 +194,101 @@ namespace BalatroSeedOracle.ViewModels
             catch
             {
                 // Ignore if service is not available
+            }
+        }
+
+        /// <summary>
+        /// Show the widget window (non-modal, stays open)
+        /// </summary>
+        [RelayCommand]
+        private void Show()
+        {
+            if (WidgetWindow == null && WidgetContent != null)
+            {
+                var window = new Windows.WidgetWindow();
+                window.DataContext = this;
+                WidgetWindow = window;
+                
+                // Set initial position using position service
+                var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+                if (positionService != null)
+                {
+                    var (x, y) = positionService.FindNextAvailablePosition(this, IsMinimized);
+                    window.Position = new PixelPoint((int)x, (int)y);
+                    positionService.RegisterWidget(this);
+                }
+                
+                window.Show();
+            }
+            else if (WidgetWindow != null)
+            {
+                WidgetWindow.WindowState = WindowState.Normal;
+                WidgetWindow.Show();
+                WidgetWindow.Activate();
+            }
+        }
+
+        /// <summary>
+        /// Hide the widget window
+        /// </summary>
+        [RelayCommand]
+        private void Hide()
+        {
+            if (WidgetWindow != null)
+            {
+                WidgetWindow.Hide();
+            }
+        }
+
+        /// <summary>
+        /// Expand the widget
+        /// </summary>
+        [RelayCommand]
+        private void ExpandWidget()
+        {
+            IsMinimized = false;
+        }
+
+        /// <summary>
+        /// Close the widget window and cleanup
+        /// </summary>
+        [RelayCommand]
+        private void CloseWidget()
+        {
+            // Unregister from position service
+            var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+            positionService?.UnregisterWidget(this);
+            
+            // Close and cleanup window
+            if (WidgetWindow != null)
+            {
+                WidgetWindow.Close();
+                WidgetWindow = null;
+            }
+        }
+
+        /// <summary>
+        /// Toggle between minimized and expanded states
+        /// </summary>
+        [RelayCommand]
+        private void ToggleMinimize()
+        {
+            IsMinimized = !IsMinimized;
+        }
+
+        /// <summary>
+        /// Bring widget to front (update Z-index)
+        /// </summary>
+        [RelayCommand]
+        private void BringWidgetToFront()
+        {
+            _nextZIndexCounter++;
+            OnPropertyChanged(nameof(WidgetZIndex));
+            
+            if (WidgetWindow != null)
+            {
+                WidgetWindow.Topmost = true;
+                WidgetWindow.Topmost = false; // Reset topmost after bringing to front
             }
         }
 

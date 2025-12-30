@@ -64,6 +64,14 @@ namespace BalatroSeedOracle.ViewModels
         public bool IsEnhancementVisible => _item?.ItemType == "StandardCard";
         public bool IsRankSuitVisible => _item?.ItemType == "StandardCard";
 
+        // Additional JAML item types
+        public bool IsTarotCardVisible => _item?.ItemType == "TarotCard";
+        public bool IsPlanetCardVisible => _item?.ItemType == "PlanetCard";
+        public bool IsSpectralCardVisible => _item?.ItemType == "SpectralCard";
+        public bool IsBossBlindVisible => _item?.ItemType == "BossBlind";
+        public bool IsVoucherVisible => _item?.ItemType == "Voucher";
+        public bool IsTagVisible => _item?.ItemType == "Tag";
+
         // Antes checkboxes
         [ObservableProperty]
         private bool _allAntesSelected = true;
@@ -127,15 +135,25 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _packPos5Selected = false;
 
-        // Sources checkboxes
+        // Sources checkboxes - according to JAML schema: "shop", "pack", "tag", "voucher"
         [ObservableProperty]
-        private bool _includeBoosterPacks = true;
+        private bool _sourceShop = true;
 
         [ObservableProperty]
-        private bool _includeShopStream = true;
+        private bool _sourcePack = true;
 
         [ObservableProperty]
-        private bool _includeSkipTags = true;
+        private bool _sourceTag = true;
+
+        [ObservableProperty]
+        private bool _sourceVoucher = true;
+
+        // Nested logic conditions for JAML and/or groups
+        [ObservableProperty]
+        private bool _enableAndGroup = false;
+
+        [ObservableProperty]
+        private bool _enableOrGroup = false;
 
         public ItemConfigPanelViewModel(
             FilterItem item,
@@ -203,10 +221,26 @@ namespace BalatroSeedOracle.ViewModels
                 PackPos5Selected = item.PackPositions.Contains(5);
             }
 
-            // Load sources configuration
-            IncludeBoosterPacks = item.IncludeBoosterPacks;
-            IncludeShopStream = item.IncludeShopStream;
-            IncludeSkipTags = item.IncludeSkipTags;
+            // Load sources configuration according to JAML schema
+            if (item.Sources != null && item.Sources.Length > 0)
+            {
+                SourceShop = item.Sources.Contains("shop");
+                SourcePack = item.Sources.Contains("pack");
+                SourceTag = item.Sources.Contains("tag");
+                SourceVoucher = item.Sources.Contains("voucher");
+            }
+            else
+            {
+                // Default to all sources if none specified
+                SourceShop = true;
+                SourcePack = true;
+                SourceTag = true;
+                SourceVoucher = true;
+            }
+
+            // Load nested logic conditions
+            EnableAndGroup = item.AndConditions != null && item.AndConditions.Length > 0;
+            EnableOrGroup = item.OrConditions != null && item.OrConditions.Length > 0;
         }
 
         partial void OnAllAntesSelectedChanged(bool value)
@@ -451,17 +485,20 @@ namespace BalatroSeedOracle.ViewModels
                 _item.PackPositions = positions.Count > 0 ? positions.ToArray() : null;
             }
 
-            // Save sources configuration
-            _item.IncludeBoosterPacks = IncludeBoosterPacks;
-            _item.IncludeShopStream = IncludeShopStream;
-            _item.IncludeSkipTags = IncludeSkipTags;
+            // Save sources configuration according to JAML schema
+            var sources = new System.Collections.Generic.List<string>();
+            if (SourceShop) sources.Add("shop");
+            if (SourcePack) sources.Add("pack");
+            if (SourceTag) sources.Add("tag");
+            if (SourceVoucher) sources.Add("voucher");
+            _item.Sources = sources.Count > 0 ? sources.ToArray() : null;
 
-            // Save edition, seal, enhancement, rank, suit
-            _item.Edition = Edition == "None" ? null : Edition;
-            _item.Seal = Seal == "None" ? null : Seal;
-            _item.Enhancement = Enhancement == "None" ? null : Enhancement;
-            _item.Rank = Rank;
-            _item.Suit = Suit;
+            // Save edition, seal, enhancement, rank, suit - validate against JAML schema
+            _item.Edition = ValidateEdition(Edition);
+            _item.Seal = ValidateSeal(Seal);
+            _item.Enhancement = ValidateEnhancement(Enhancement);
+            _item.Rank = ValidateRank(Rank);
+            _item.Suit = ValidateSuit(Suit);
 
             // Save stickers
             var stickers = new System.Collections.Generic.List<string>();
@@ -472,6 +509,10 @@ namespace BalatroSeedOracle.ViewModels
             if (IsRental)
                 stickers.Add("rental");
             _item.Stickers = stickers.Count > 0 ? stickers : null;
+
+            // Save nested logic conditions
+            _item.AndConditions = EnableAndGroup ? new FilterItem[0] : null; // Placeholder for future implementation
+            _item.OrConditions = EnableOrGroup ? new FilterItem[0] : null; // Placeholder for future implementation
 
             _onApply?.Invoke();
             _onClose?.Invoke();
@@ -494,9 +535,12 @@ namespace BalatroSeedOracle.ViewModels
             AllAntesSelected = true;
             AllShopSlotsSelected = true;
             AllPackPositionsSelected = true;
-            IncludeBoosterPacks = true;
-            IncludeShopStream = true;
-            IncludeSkipTags = true;
+            SourceShop = true;
+            SourcePack = true;
+            SourceTag = true;
+            SourceVoucher = true;
+            EnableAndGroup = false;
+            EnableOrGroup = false;
         }
 
         [RelayCommand]
@@ -509,6 +553,37 @@ namespace BalatroSeedOracle.ViewModels
         private void Cancel()
         {
             _onClose?.Invoke();
+        }
+
+        // JAML Schema Validation Methods
+        private string? ValidateEdition(string? edition)
+        {
+            var validEditions = new[] { "Foil", "Holo", "Polychrome", "Negative" };
+            return (edition != "None" && validEditions.Contains(edition)) ? edition : null;
+        }
+
+        private string? ValidateSeal(string? seal)
+        {
+            var validSeals = new[] { "Red", "Blue", "Gold", "Purple" };
+            return (seal != "None" && validSeals.Contains(seal)) ? seal : null;
+        }
+
+        private string? ValidateEnhancement(string? enhancement)
+        {
+            var validEnhancements = new[] { "Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold" };
+            return (enhancement != "None" && validEnhancements.Contains(enhancement)) ? enhancement : null;
+        }
+
+        private string? ValidateRank(string? rank)
+        {
+            var validRanks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+            return validRanks.Contains(rank) ? rank : null;
+        }
+
+        private string? ValidateSuit(string? suit)
+        {
+            var validSuits = new[] { "Hearts", "Diamonds", "Clubs", "Spades" };
+            return validSuits.Contains(suit) ? suit : null;
         }
     }
 }

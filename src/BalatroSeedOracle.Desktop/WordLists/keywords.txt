@@ -1,0 +1,10 @@
+# Keywords for filter matching
+# One word or phrase per line
+# Lines starting with # are comments
+
+joker
+tarot
+spectral
+voucher
+boss
+tag

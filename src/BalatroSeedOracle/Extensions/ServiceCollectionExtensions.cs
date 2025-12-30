@@ -48,6 +48,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();
+            services.AddSingleton<WidgetWindowManager>();
             services.AddTransient<ClauseConversionService>();
 
             // ViewModels

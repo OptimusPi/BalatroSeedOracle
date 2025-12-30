@@ -7,7 +7,7 @@
 			"type": "process",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -23,7 +23,7 @@
 			"type": "process",
 			"args": [
 				"restore",
-				"${workspaceFolder}/src/Oracle.csproj"
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj"
 			],
 			"group": "build",
 			"presentation": {
@@ -36,7 +36,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"x:\\BalatroSeedOracle\\src\\Oracle.csproj",
+				"x:\\BalatroSeedOracle\\src\\BalatroSeedOracle\\BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -52,7 +52,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"x:\\BalatroSeedOracle\\src\\Oracle.csproj",
+				"x:\\BalatroSeedOracle\\src\\BalatroSeedOracle\\BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -68,7 +68,7 @@
 			"command": "dotnet",
 			"args": [
 				"restore",
-				"${workspaceFolder}/src/Oracle.csproj"
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj"
 			],
 			"group": "build"
 		},
@@ -78,7 +78,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -90,7 +90,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -102,7 +102,7 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -114,9 +114,28 @@
 			"command": "dotnet",
 			"args": [
 				"build",
-				"${workspaceFolder}/src/Oracle.csproj",
+				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
+			],
+			"group": "build"
+		},
+		{
+			"label": "publish Avalonia UI Browser",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"publish",
+				"src/BalatroSeedOracle/BalatroSeedOracle.csproj",
+				"-c",
+				"Release",
+				"-f",
+				"net10.0-browser",
+				"-o",
+				"external/Motely/wwwroot/BSO/"
+			],
+			"problemMatcher": [
+				"$msCompile"
 			],
 			"group": "build"
 		}

@@ -74,11 +74,7 @@ namespace BalatroSeedOracle.ViewModels
             PositionY = 80;
         }
 
-        [RelayCommand]
-        private void ToggleMinimize()
-        {
-            IsMinimized = !IsMinimized;
-        }
+        // ToggleMinimize is inherited from BaseWidgetViewModel
 
         [RelayCommand(CanExecute = nameof(CanGenerate))]
         private async Task GenerateFilter()

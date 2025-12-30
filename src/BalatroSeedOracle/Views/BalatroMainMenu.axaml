@@ -277,6 +277,24 @@
                                 <feather:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Button>
                             
+                            <!-- Toggle All Widgets Button -->
+                            <Button x:Name="ToggleAllWidgetsButton"
+                                    Classes="btn-purple"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Command="{Binding ToggleAllWidgetsCommand}"
+                                    ToolTip.Tip="Toggle all widgets">
+                                <material:PackIconMaterial Kind="{Binding ToggleAllWidgetsIcon}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Width="24" Height="24"/>
+                            </Button>
+                            
                             <!-- Widget Dock Popup -->
                             <Popup IsOpen="{Binding IsWidgetDockVisible}"
                                    PlacementTarget="{Binding #WidgetDockButton}"
@@ -317,6 +335,24 @@
                                     Command="{Binding MusicToggleCommand}"
                                     ToolTip.Tip="Adjust volume">
                                 <material:PackIconMaterial Kind="{Binding MusicIcon}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Width="24" Height="24"/>
+                            </Button>
+
+                            <!-- Search Widgets Toggle Button -->
+                            <Button x:Name="SearchWidgetsToggleButton"
+                                    Classes="btn-purple"
+                                    FontSize="16"
+                                    Width="48"
+                                    Height="48"
+                                    CornerRadius="8"
+                                    BorderBrush="{StaticResource ModalBorder}"
+                                    BorderThickness="2"
+                                    Margin="0,0,0,2"
+                                    Command="{Binding ToggleSearchWidgetsCommand}"
+                                    ToolTip.Tip="Toggle search widgets">
+                                <material:PackIconMaterial Kind="{Binding SearchWidgetsIcon}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Width="24" Height="24"/>

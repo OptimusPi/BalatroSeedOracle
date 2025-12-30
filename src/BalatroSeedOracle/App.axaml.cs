@@ -201,6 +201,25 @@ public partial class App : Application
             // Create main window FIRST (so we have access to shader background)
             var mainWindow = new Views.MainWindow();
             desktop.MainWindow = mainWindow;
+            
+            // Subscribe to window state changes to close popups when minimized
+            mainWindow.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == Window.WindowStateProperty)
+                {
+                    if (mainWindow.WindowState == WindowState.Minimized)
+                    {
+                        // Close all popups when window is minimized
+                        var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
+                        if (mainMenu?.DataContext is ViewModels.BalatroMainMenuViewModel vm)
+                        {
+                            vm.IsVolumePopupOpen = false;
+                            vm.IsWidgetDockVisible = false;
+                        }
+                    }
+                }
+            };
+            
             mainWindow.Show();
 
             // Give UI a moment to render and initialize shader
@@ -428,7 +447,7 @@ public partial class App : Application
         services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
             BalatroSeedOracle.Services.SpriteService.Instance
         );
-            }
+    }
 
 #if BROWSER
     private void SeedBrowserSampleFilters()

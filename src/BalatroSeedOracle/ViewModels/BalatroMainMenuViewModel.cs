@@ -59,6 +59,12 @@ namespace BalatroSeedOracle.ViewModels
         private PackIconMaterialKind _musicIcon = PackIconMaterialKind.VolumeHigh;
 
         [ObservableProperty]
+        private PackIconMaterialKind _searchWidgetsIcon = PackIconMaterialKind.Magnify;
+
+        [ObservableProperty]
+        private PackIconMaterialKind _toggleAllWidgetsIcon = PackIconMaterialKind.Widgets;
+
+        [ObservableProperty]
         private string _muteButtonText = "MUTE";
 
         [ObservableProperty]
@@ -79,6 +85,26 @@ namespace BalatroSeedOracle.ViewModels
         [NotifyCanExecuteChangedFor(nameof(AnalyzeCommand))]
         [NotifyCanExecuteChangedFor(nameof(ToolCommand))]
         private bool _isModalVisible = false;
+
+        partial void OnIsSearchWidgetsVisibleChanged(bool value)
+        {
+            SearchWidgetsIcon = value ? PackIconMaterialKind.Magnify : PackIconMaterialKind.MagnifyPlus;
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        private void UpdateToggleAllWidgetsIcon()
+        {
+            // Check if all enabled widgets are visible
+            var allVisible = (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled) &&
+                           (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled) &&
+                           (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled) &&
+                           (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled) &&
+                           (IsHostApiWidgetVisible == IsHostApiWidgetEnabled) &&
+                           (IsEventFXWidgetVisible == IsEventFXWidgetEnabled) &&
+                           IsSearchWidgetsVisible;
+            
+            ToggleAllWidgetsIcon = allVisible ? PackIconMaterialKind.Widgets : PackIconMaterialKind.WidgetsOutline;
+        }
 
         partial void OnIsModalVisibleChanged(bool value)
         {
@@ -131,6 +157,9 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isEventFXWidgetVisible = false;
 
         [ObservableProperty]
+        private bool _isSearchWidgetsVisible = true; // Search widgets visible by default
+
+        [ObservableProperty]
         private bool _isVibeOutMode = false;
 
         // Widget dock popup visibility
@@ -165,6 +194,36 @@ namespace BalatroSeedOracle.ViewModels
 
             // Load settings
             LoadSettings();
+        }
+
+        partial void OnIsMusicMixerWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        partial void OnIsVisualizerWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        partial void OnIsTransitionDesignerWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        partial void OnIsFertilizerWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        partial void OnIsHostApiWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
+        }
+
+        partial void OnIsEventFXWidgetVisibleChanged(bool value)
+        {
+            UpdateToggleAllWidgetsIcon();
         }
 
         partial void OnIsAnimatingChanged(bool value)
@@ -385,6 +444,57 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void ToggleAllWidgets()
+        {
+            PlayButtonClickSound();
+            
+            // Check if any widgets are currently visible
+            var anyVisible = IsMusicMixerWidgetVisible || IsVisualizerWidgetVisible || 
+                           IsTransitionDesignerWidgetVisible || IsFertilizerWidgetVisible || 
+                           IsHostApiWidgetVisible || IsEventFXWidgetVisible || IsSearchWidgetsVisible;
+            
+            // Toggle all widgets to the opposite state
+            var newState = !anyVisible;
+            
+            IsMusicMixerWidgetVisible = newState && IsMusicMixerWidgetEnabled;
+            IsVisualizerWidgetVisible = newState && IsVisualizerWidgetEnabled;
+            IsTransitionDesignerWidgetVisible = newState && IsTransitionDesignerWidgetEnabled;
+            IsFertilizerWidgetVisible = newState && IsFertilizerWidgetEnabled;
+            IsHostApiWidgetVisible = newState && IsHostApiWidgetEnabled;
+            IsEventFXWidgetVisible = newState && IsEventFXWidgetEnabled;
+            IsSearchWidgetsVisible = newState;
+            
+            // Show/hide search widgets via window manager
+            var widgetManager = Services.WidgetWindowManager.Instance;
+            if (newState)
+            {
+                widgetManager.ShowAllWidgets();
+            }
+            else
+            {
+                widgetManager.HideAllWidgets();
+            }
+        }
+
+        [RelayCommand]
+        private void ToggleSearchWidgets()
+        {
+            PlayButtonClickSound();
+            IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
+            
+            // Show/hide all search widgets via window manager
+            var widgetManager = Services.WidgetWindowManager.Instance;
+            if (IsSearchWidgetsVisible)
+            {
+                widgetManager.ShowAllWidgets();
+            }
+            else
+            {
+                widgetManager.HideAllWidgets();
+            }
+        }
+
+        [RelayCommand]
         private void AnimationToggle()
         {
             PlayButtonClickSound();
@@ -419,10 +529,23 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsVibeOutMode = !IsVibeOutMode;
 
-            // In vibe out mode: close widget dock
+            // In vibe out mode: hide all widgets
             if (IsVibeOutMode)
             {
                 IsWidgetDockVisible = false;
+                IsSearchWidgetsVisible = false;
+                
+                // Hide search widgets via window manager
+                var widgetManager = Services.WidgetWindowManager.Instance;
+                widgetManager.HideAllWidgets();
+            }
+            else
+            {
+                IsSearchWidgetsVisible = true;
+                
+                // Show search widgets via window manager
+                var widgetManager = Services.WidgetWindowManager.Instance;
+                widgetManager.ShowAllWidgets();
             }
 
             DebugLogger.Log(
@@ -563,6 +686,8 @@ namespace BalatroSeedOracle.ViewModels
                 IsFertilizerWidgetVisible = IsFertilizerWidgetEnabled;
                 IsHostApiWidgetVisible = IsHostApiWidgetEnabled;
                 IsEventFXWidgetVisible = IsEventFXWidgetEnabled;
+                // Search widgets are always enabled but visibility is controlled separately
+                IsSearchWidgetsVisible = true;
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",

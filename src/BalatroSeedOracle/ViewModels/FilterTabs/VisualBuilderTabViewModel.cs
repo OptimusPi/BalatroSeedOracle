@@ -378,6 +378,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Selected items - these should sync with parent
         public ObservableCollection<FilterItem> SelectedMust { get; }
         public ObservableCollection<FilterItem> SelectedShould { get; }
+        public ObservableCollection<FilterItem> SelectedMustNot { get; }
 
         // Operator trays for Configure Score tab
         public ObservableCollection<FilterItem> OrTrayItems { get; }
@@ -509,6 +510,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             SelectedMust = new ObservableCollection<FilterItem>();
             SelectedShould = new ObservableCollection<FilterItem>();
+            SelectedMustNot = new ObservableCollection<FilterItem>();
 
             // Initialize operator trays
             OrTrayItems = new ObservableCollection<FilterItem>();
@@ -519,15 +521,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Subscribe to collection changes for auto-save
             SelectedMust.CollectionChanged += OnZoneCollectionChanged;
             SelectedShould.CollectionChanged += OnZoneCollectionChanged;
+            SelectedMustNot.CollectionChanged += OnZoneCollectionChanged;
             OrTrayItems.CollectionChanged += OnZoneCollectionChanged;
             AndTrayItems.CollectionChanged += OnZoneCollectionChanged;
 
             // Initialize commands
             AddToMustCommand = new RelayCommand<FilterItem>(AddToMust);
             AddToShouldCommand = new RelayCommand<FilterItem>(AddToShould);
+            AddToMustNotCommand = new RelayCommand<FilterItem>(AddToMustNot);
 
             RemoveFromMustCommand = new RelayCommand<FilterItem>(RemoveFromMust);
             RemoveFromShouldCommand = new RelayCommand<FilterItem>(RemoveFromShould);
+            RemoveFromMustNotCommand = new RelayCommand<FilterItem>(RemoveFromMustNot);
 
             AddToOrTrayCommand = new RelayCommand<FilterItem>(AddToOrTray);
             AddToAndTrayCommand = new RelayCommand<FilterItem>(AddToAndTray);
@@ -936,9 +941,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public ICommand AddToMustCommand { get; }
         public ICommand AddToShouldCommand { get; }
+        public ICommand AddToMustNotCommand { get; }
 
         public ICommand RemoveFromMustCommand { get; }
         public ICommand RemoveFromShouldCommand { get; }
+        public ICommand RemoveFromMustNotCommand { get; }
 
         public ICommand AddToOrTrayCommand { get; }
         public ICommand AddToAndTrayCommand { get; }
@@ -1151,6 +1158,73 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from SHOULD");
+
+            // Trigger auto-sync to JSON Editor
+            NotifyJsonEditorOfChanges();
+        }
+
+        private void AddToMustNot(FilterItem? item)
+        {
+            if (item == null)
+            {
+                Helpers.DebugLogger.Log("AddToMustNot", "Item is null, returning");
+                return;
+            }
+
+            Helpers.DebugLogger.Log(
+                "AddToMustNot",
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}"
+            );
+
+            // Set inverted filter flag for MUST NOT items
+            item.IsInvertedFilter = true;
+
+            // ALLOW DUPLICATES: Same item can be added multiple times with different configs
+            SelectedMustNot.Add(item);
+
+            Helpers.DebugLogger.Log(
+                "AddToMustNot",
+                $"SelectedMustNot count after add: {SelectedMustNot.Count}"
+            );
+
+            // Force UI refresh
+            OnPropertyChanged(nameof(SelectedMustNot));
+
+            // Sync with parent ViewModel if available
+            if (_parentViewModel != null)
+            {
+                // Create item config for MUST NOT item
+                var itemKey = _parentViewModel.GenerateNextItemKey();
+                var itemConfig = new ItemConfig
+                {
+                    ItemKey = itemKey,
+                    ItemType = item.Type,
+                    ItemName = item.Name,
+                };
+
+                ApplyEditionStickersSeal(itemConfig, item);
+
+                _parentViewModel.ItemConfigs[itemKey] = itemConfig;
+                _parentViewModel.SelectedMustNot.Add(itemKey);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Added {item.Name} to MUST NOT");
+        }
+
+        private void RemoveFromMustNot(FilterItem? item)
+        {
+            if (item == null)
+                return;
+
+            SelectedMustNot.Remove(item);
+
+            // Sync with parent ViewModel - remove from parent collections
+            if (_parentViewModel != null)
+            {
+                RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
+            }
+
+            DebugLogger.Log("VisualBuilderTab", $"Removed {item.Name} from MUST NOT");
 
             // Trigger auto-sync to JSON Editor
             NotifyJsonEditorOfChanges();

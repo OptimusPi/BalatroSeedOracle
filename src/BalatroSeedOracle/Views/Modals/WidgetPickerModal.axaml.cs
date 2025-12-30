@@ -13,7 +13,7 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class WidgetPickerModal : UserControl
     {
         private readonly UserProfileService? _userProfileService;
-        private FeatureToggles _toggles;
+        private FeatureToggles _toggles = new();
 
         // UI Elements
         private Button? _musicMixerButton;
@@ -34,7 +34,7 @@ namespace BalatroSeedOracle.Views.Modals
             InitializeComponent();
 
             _userProfileService = App.GetService<UserProfileService>();
-            _toggles = _userProfileService?.GetProfile().FeatureToggles ?? new FeatureToggles();
+            RefreshToggles();
 
             // Find UI elements
             _musicMixerButton = this.FindControl<Button>("MusicMixerButton");
@@ -53,9 +53,26 @@ namespace BalatroSeedOracle.Views.Modals
             UpdateButtonStates();
         }
 
+        private void RefreshToggles()
+        {
+            _toggles = _userProfileService?.GetProfile().FeatureToggles ?? new FeatureToggles();
+            
+            DebugLogger.Log("WidgetPickerModal", 
+                $"Refreshed toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}, EventFX={_toggles.ShowEventFX}");
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            
+            // Refresh toggles when the modal loads to ensure current state
+            this.AttachedToVisualTree += (s, e) => RefreshTogglesAndUI();
+        }
+
+        private void RefreshTogglesAndUI()
+        {
+            RefreshToggles();
+            UpdateButtonStates();
         }
 
         private void UpdateButtonStates()

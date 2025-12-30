@@ -301,6 +301,13 @@ namespace BalatroSeedOracle.Models
         public bool IncludeBoosterPacks { get; set; }
         public bool IncludeShopStream { get; set; }
         public bool IncludeSkipTags { get; set; }
+        
+        // JAML sources array - according to schema: "shop", "pack", "tag", "voucher"
+        public string[]? Sources { get; set; }
+        
+        // JAML nested conditions for complex logic
+        public FilterItem[]? AndConditions { get; set; }
+        public FilterItem[]? OrConditions { get; set; }
 
         // Playing card properties
         private string? _rank;

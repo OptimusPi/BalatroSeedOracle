@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BalatroSeedOracle.ViewModels"
+        x:Class="BalatroSeedOracle.Windows.WidgetWindow"
+        x:DataType="vm:BaseWidgetViewModel"
+        CanResize="false"
+        ShowInTaskbar="false"
+        Topmost="false"
+        WindowState="Normal"
+        SizeToContent="WidthAndHeight"
+        Background="Transparent">
+
+    <!-- Transparent window with custom chrome -->
+    <Border Background="{StaticResource ModalGrey}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Padding="0">
+        
+        <Grid>
+            <!-- Widget Content -->
+            <ContentPresenter Content="{Binding WidgetContent}" />
+            
+            <!-- Snap Indicator (shown when near screen edge) -->
+            <Border x:Name="SnapIndicator"
+                    Background="{StaticResource AccentGreen}"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="0, -20, 0, 0"
+                    IsVisible="False">
+                <TextBlock Text="📌 Snapped" 
+                           FontSize="10" 
+                           Foreground="White" 
+                           FontWeight="Bold"/>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

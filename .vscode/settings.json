@@ -1,5 +1,5 @@
 {
-    "avalonia.projectPath": "./src/Oracle.csproj",
+    "avalonia.projectPath": "./src/BalatroSeedOracle/BalatroSeedOracle.csproj",
     "avalonia.enableXamlHotReload": true,
     "dotnet.preferCSharpExtension": true,
     "dotnet.unitTests.enabled": true,
