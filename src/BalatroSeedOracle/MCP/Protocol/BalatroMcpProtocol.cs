@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using BalatroSeedOracle.MCP;
 
@@ -144,7 +145,7 @@ public class BalatroMcpProtocol
                         templateType = new 
                         { 
                             type = "string", 
-                            enum = new[] { "basic", "joker", "deck", "voucher", "complex" },
+                            @enum = new[] { "basic", "joker", "deck", "voucher", "complex" },
                             description = "Type of template to generate"
                         }
                     },
@@ -179,6 +180,20 @@ public class BalatroMcpProtocol
                     },
                     required = new[] { "itemType", "itemName" }
                 }
+            },
+            new
+            {
+                name = "analyze_seed",
+                description = "Analyze a single seed using the /analyze route",
+                inputSchema = new
+                {
+                    type = "object",
+                    properties = new
+                    {
+                        seed = new { type = "string", description = "Seed to analyze" }
+                    },
+                    required = new[] { "seed" }
+                }
             }
         };
 
@@ -211,6 +226,7 @@ public class BalatroMcpProtocol
                 "generate_template" => await HandleGenerateTemplateAsync(arguments),
                 "generate_jaml_with_context" => await HandleGenerateJamlWithContextAsync(arguments),
                 "get_balatro_knowledge" => await HandleGetBalatroKnowledgeAsync(arguments),
+                "analyze_seed" => await HandleAnalyzeSeedAsync(arguments),
                 _ => throw new ArgumentException($"Unknown tool: {toolName}")
             };
 
@@ -262,6 +278,12 @@ public class BalatroMcpProtocol
         var itemType = arguments.GetProperty("itemType").GetString() ?? throw new ArgumentException("Missing itemType");
         var itemName = arguments.GetProperty("itemName").GetString() ?? throw new ArgumentException("Missing itemName");
         return await _server.GetBalatroKnowledgeAsync(itemType, itemName);
+    }
+
+    private async Task<string> HandleAnalyzeSeedAsync(JsonElement arguments)
+    {
+        var seed = arguments.GetProperty("seed").GetString() ?? throw new ArgumentException("Missing seed");
+        return await _server.AnalyzeSeedAsync(seed);
     }
 
     private async Task<string> HandleResourcesListAsync(JsonElement id)

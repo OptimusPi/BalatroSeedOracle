@@ -151,8 +151,13 @@
       <AdditionalProperties>IsReferenced=true</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
-  <!-- Explicitly exclude external folder from publish -->
   <ItemGroup>
+    <!-- Exclude MCP files - not needed for main release -->
+    <Compile Remove="MCP\**\*.cs" />
+    <None Include="MCP\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Explicitly exclude external folder from publish -->
     <Content Remove="..\..\external\**\*" />
     <Compile Remove="..\..\external\**\*" />
     <None Remove="..\..\external\**\*" />

@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
 using System.Diagnostics;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Services.Storage
 {
@@ -12,19 +13,19 @@ namespace BalatroSeedOracle.Services.Storage
         {
             try
             {
-                Console.WriteLine("=== Testing LocalStorage Interop ===");
+                DebugLogger.LogImportant("LocalStorageTester", "=== Testing LocalStorage Interop ===");
                 
                 // Test 1: Direct localStorage access
                 try
                 {
                     SetTestItem("bso:direct", "direct-test-value");
                     var directResult = GetTestItem("bso:direct");
-                    Console.WriteLine($"Direct test: {directResult}");
+                    DebugLogger.Log("LocalStorageTester", $"Direct test: {directResult}");
                     RemoveTestItem("bso:direct");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Direct test failed: {ex.Message}");
+                    DebugLogger.LogError("LocalStorageTester", $"Direct test failed: {ex.Message}");
                 }
                 
                 // Test 2: Via window.BSO wrapper
@@ -32,12 +33,12 @@ namespace BalatroSeedOracle.Services.Storage
                 {
                     SetLocalStorageItem("bso:wrapper", "wrapper-test-value");
                     var wrapperResult = GetLocalStorageItem("bso:wrapper");
-                    Console.WriteLine($"Wrapper test: {wrapperResult}");
+                    DebugLogger.Log("LocalStorageTester", $"Wrapper test: {wrapperResult}");
                     RemoveLocalStorageItem("bso:wrapper");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Wrapper test failed: {ex.Message}");
+                    DebugLogger.LogError("LocalStorageTester", $"Wrapper test failed: {ex.Message}");
                 }
                 
                 // Test 3: Test BrowserLocalStorageAppDataStore
@@ -46,19 +47,19 @@ namespace BalatroSeedOracle.Services.Storage
                     var store = new BrowserLocalStorageAppDataStore();
                     await store.WriteTextAsync("bso:store-test", "store-test-value");
                     var storeResult = await store.ReadTextAsync("bso:store-test");
-                    Console.WriteLine($"Store test: {storeResult}");
+                    DebugLogger.Log("LocalStorageTester", $"Store test: {storeResult}");
                     await store.DeleteAsync("bso:store-test");
                     return storeResult == "store-test-value";
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Store test failed: {ex.Message}");
+                    DebugLogger.LogError("LocalStorageTester", $"Store test failed: {ex.Message}");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Test suite failed: {ex.Message}");
+                DebugLogger.LogError("LocalStorageTester", $"Test suite failed: {ex.Message}");
                 return false;
             }
         }

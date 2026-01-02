@@ -22,8 +22,8 @@ public class Program
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-            // Enable debug logging
-            Helpers.DebugLogger.SetDebugEnabled(true);
+            // Debug logging disabled by default for AI compatibility
+            // Helpers.DebugLogger.SetDebugEnabled(true);
 
             // Start Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
