@@ -88,3 +88,4 @@ fertilizer.db.wal
 build_log.txt
 /published_browser
 /src/BalatroSeedOracle.Browser/Motely.API/wwwroot/BSO
+*.md
