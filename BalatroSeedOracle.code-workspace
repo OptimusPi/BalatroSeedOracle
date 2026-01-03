@@ -125,15 +125,7 @@
       "**/SearchResults/**": true,
       "**/WordLists/**": true
     },
-    "files.maxMemoryForLargeFilesMB": 4096,
-    "search.maxResults": 10000,
-    "files.experimentalWatcherExcludes": [
-      "**/external/**/bin/**",
-      "**/external/**/obj/**",
-      "**/external/**/publish/**",
-      "**/bin/**",
-      "**/obj/**"
-    ]
+    "search.maxResults": 1000,
   }
 }
 
