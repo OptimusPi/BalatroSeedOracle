@@ -312,7 +312,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Check if MUST/SHOULD/MUSTNOT criteria changed (not just metadata like name/description)
                 var currentHash = ComputeCriteriaHash();
                 var criteriaChanged =
-                    _originalCriteriaHash == null || currentHash != _originalCriteriaHash;
+                    _originalCriteriaHash is null || currentHash != _originalCriteriaHash;
 
                 if (criteriaChanged)
                 {
@@ -396,7 +396,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // STEP 1: Stop ALL running searches for this filter across all deck/stake combinations
                 var searchManager = ServiceHelper.GetService<SearchManager>();
-                if (searchManager != null)
+                if (searchManager is not null)
                 {
                     var stoppedSearches = searchManager.StopSearchesForFilter(filterName);
                     BsoLogger.Log(
@@ -490,7 +490,7 @@ namespace BalatroSeedOracle.ViewModels
             await Task.CompletedTask;
             return;
 #else
-            if (dbFiles == null || dbFiles.Length == 0)
+            if (dbFiles is null || dbFiles.Length == 0)
             {
                 BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
                 return;
@@ -595,7 +595,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Loads a specific filter config for editing (called from other modals)
         /// </summary>
         /// <param name="config">The filter config to load</param>
-        public async Task LoadFilterForEditing(MotelyJsonConfig config)
+        public Task LoadFilterForEditing(MotelyJsonConfig config)
         {
             try
             {
@@ -616,11 +616,7 @@ namespace BalatroSeedOracle.ViewModels
                 _originalAuthor = config.Author;
                 _originalDateCreated = config.DateCreated;
                 
-                // TODO: Calculate criteria hash for change detection if method exists
-                // _originalCriteriaHash = CalculateCriteriaHash(config);
-                
-                // TODO: Load clauses into tabs when proper ViewModels are available
-                // For now, just load basic info
+                // Note: Criteria hash calculation and clause loading will be implemented when needed
                 
                 // Don't set CurrentFilterPath since this is editing, not loading from file
                 CurrentFilterPath = null;
@@ -631,6 +627,8 @@ namespace BalatroSeedOracle.ViewModels
             {
                 BsoLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
             }
+            
+            return Task.CompletedTask;
         }
 
         [RelayCommand]
@@ -678,7 +676,7 @@ namespace BalatroSeedOracle.ViewModels
         private void CancelFilterNameEdit()
         {
             // Restore original value from loaded config if available
-            if (LoadedConfig != null && !string.IsNullOrEmpty(LoadedConfig.Name))
+            if (LoadedConfig is not null && !string.IsNullOrEmpty(LoadedConfig.Name))
             {
                 FilterName = LoadedConfig.Name;
             }
@@ -717,7 +715,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (LoadedConfig != null)
+                if (LoadedConfig is not null)
                 {
                     LoadConfigIntoState(LoadedConfig);
                     BsoLogger.Log("FiltersModalViewModel", "Refreshed from config");
@@ -738,7 +736,7 @@ namespace BalatroSeedOracle.ViewModels
             ShouldHaveItems.Items.Clear();
             MustNotHaveItems.Items.Clear();
 
-            if (config.Must != null)
+            if (config.Must is not null)
             {
                 foreach (var item in config.Must)
                 {
@@ -752,7 +750,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
 
-            if (config.Should != null)
+            if (config.Should is not null)
             {
                 foreach (var item in config.Should)
                 {
@@ -766,7 +764,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
 
-            if (config.MustNot != null)
+            if (config.MustNot is not null)
             {
                 foreach (var item in config.MustNot)
                 {
@@ -804,7 +802,7 @@ namespace BalatroSeedOracle.ViewModels
                     await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
                         CurrentFilterPath
                     );
-                if (config != null)
+                if (config is not null)
                 {
                     PopulateFilterTabs(config);
                     LoadConfigIntoState(config);
@@ -1012,7 +1010,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 var config = deserializer.Deserialize<MotelyJsonConfig>(jamlVm.JamlContent);
 
-                if (config == null)
+                if (config is null)
                 {
                     BsoLogger.LogError(
                         "FiltersModalViewModel",
@@ -1088,7 +1086,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
-                // BUG FIX: Preserve original DateCreated and Author when re-saving an existing filter
+                // Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
                 // Use enum ToString() for JSON serialization
@@ -1122,7 +1120,7 @@ namespace BalatroSeedOracle.ViewModels
                     );
 
                     var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause != null)
+                    if (clause is not null)
                     {
                         config.Must.Add(clause);
                         BsoLogger.Log(
@@ -1147,7 +1145,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                     {
                         var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause != null)
+                        if (clause is not null)
                             config.Must.Add(clause);
                     }
                 }
@@ -1159,7 +1157,7 @@ namespace BalatroSeedOracle.ViewModels
                 foreach (var filterItem in visualVm2.SelectedShould)
                 {
                     var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause != null)
+                    if (clause is not null)
                         config.Should.Add(clause);
                 }
             }
@@ -1170,7 +1168,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                     {
                         var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause != null)
+                        if (clause is not null)
                             config.Should.Add(clause);
                     }
                 }
@@ -1187,7 +1185,7 @@ namespace BalatroSeedOracle.ViewModels
                         foreach (var child in op.Children)
                         {
                             var clause = ConvertFilterItemToClause(child);
-                            if (clause != null)
+                            if (clause is not null)
                                 config.MustNot.Add(clause);
                         }
                     }
@@ -1200,7 +1198,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                     {
                         var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause != null)
+                        if (clause is not null)
                             config.MustNot.Add(clause);
                     }
                 }
@@ -1242,7 +1240,7 @@ namespace BalatroSeedOracle.ViewModels
                     foreach (var child in itemConfig.Children)
                     {
                         var childClause = ConvertItemConfigToClause(child);
-                        if (childClause != null)
+                        if (childClause is not null)
                         {
                             operatorClause.Clauses.Add(childClause);
                         }
@@ -1312,7 +1310,7 @@ namespace BalatroSeedOracle.ViewModels
                     RequireMega = itemConfig.IsMegaArcana ? true : null,
                 };
             }
-            else if (itemConfig.Sources != null)
+            else if (itemConfig.Sources is not null)
             {
                 // Fallback to direct sources object if set
                 clause.Sources = itemConfig.Sources as MotelyJsonConfig.SourcesConfig;
@@ -1448,7 +1446,7 @@ namespace BalatroSeedOracle.ViewModels
             FilterName = config.Name ?? "Untitled";
             FilterDescription = config.Description ?? "";
 
-            // BUG FIX: Store original metadata to preserve on save
+            // Store original metadata to preserve on save
             _originalDateCreated = config.DateCreated;
             _originalAuthor = config.Author;
 
@@ -1469,7 +1467,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load Must clauses
-            if (config.Must != null)
+            if (config.Must is not null)
             {
                 foreach (var clause in config.Must)
                 {
@@ -1481,7 +1479,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load Should clauses
-            if (config.Should != null)
+            if (config.Should is not null)
             {
                 foreach (var clause in config.Should)
                 {
@@ -1493,7 +1491,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load MustNot clauses
-            if (config.MustNot != null)
+            if (config.MustNot is not null)
             {
                 foreach (var clause in config.MustNot)
                 {
@@ -1538,7 +1536,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
                     sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes != null)
+                    if (config.Antes is not null)
                         sb.Append(string.Join(",", config.Antes));
                     sb.Append("|");
                 }
@@ -1552,7 +1550,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
                     sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes != null)
+                    if (config.Antes is not null)
                         sb.Append(string.Join(",", config.Antes));
                     sb.Append("|");
                 }
@@ -1566,7 +1564,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
                     sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes != null)
+                    if (config.Antes is not null)
                         sb.Append(string.Join(",", config.Antes));
                     sb.Append("|");
                 }
@@ -1664,7 +1662,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Handle multi-value clauses (values array)
-            if (clause.Values != null && clause.Values.Length > 1)
+            if (clause.Values is not null && clause.Values.Length > 1)
             {
                 itemConfig.IsMultiValue = true;
                 itemConfig.Values = clause.Values.ToList();
@@ -1682,7 +1680,7 @@ namespace BalatroSeedOracle.ViewModels
             _itemKeyCounter = 0;
             _instanceCounter = 0;
 
-            // BUG FIX: Clear original metadata when starting a new filter
+            // Clear original metadata when starting a new filter
             _originalDateCreated = null;
             _originalAuthor = null;
         }
@@ -1717,7 +1715,7 @@ namespace BalatroSeedOracle.ViewModels
                 var filterNameEdit = visualBuilderTab.FindControl<Avalonia.Controls.TextBox>(
                     "FilterNameEdit"
                 );
-                if (filterNameEdit != null)
+                if (filterNameEdit is not null)
                 {
                     filterNameEdit.Focus();
                     filterNameEdit.SelectAll();
@@ -1800,7 +1798,7 @@ namespace BalatroSeedOracle.ViewModels
                             json
                         );
 
-                    if (config != null)
+                    if (config is not null)
                     {
                         CurrentFilterPath = filterPath;
 
@@ -1912,7 +1910,7 @@ namespace BalatroSeedOracle.ViewModels
                         // Failed to load/parse filter - will remain null and be skipped below
                     }
 
-                    if (config != null)
+                    if (config is not null)
                     {
                         // Update the config name to reflect copy and write new file
                         var options = new System.Text.Json.JsonSerializerOptions
@@ -1947,7 +1945,7 @@ namespace BalatroSeedOracle.ViewModels
                             System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                                 newJson
                             );
-                        if (newConfig != null)
+                        if (newConfig is not null)
                         {
                             LoadedConfig = newConfig;
                             CurrentFilterPath = newPath;
@@ -2126,7 +2124,7 @@ namespace BalatroSeedOracle.ViewModels
                         if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                         {
                             var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                            if (filterItem != null)
+                            if (filterItem is not null)
                             {
                                 visualVm.SelectedMust.Add(filterItem);
                             }
@@ -2139,7 +2137,7 @@ namespace BalatroSeedOracle.ViewModels
                         if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                         {
                             var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                            if (filterItem != null)
+                            if (filterItem is not null)
                             {
                                 visualVm.SelectedShould.Add(filterItem);
                             }
@@ -2147,7 +2145,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
 
                     // Convert MustNot items → BannedItems tray
-                    if (SelectedMustNot != null && SelectedMustNot.Any())
+                    if (SelectedMustNot is not null && SelectedMustNot.Any())
                     {
                         BsoLogger.Log(
                             "FiltersModalViewModel",
@@ -2161,7 +2159,7 @@ namespace BalatroSeedOracle.ViewModels
                             if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
                             {
                                 var filterItem = await ConvertItemConfigToFilterItem(itemConfig);
-                                if (filterItem != null)
+                                if (filterItem is not null)
                                 {
                                     // Set IsInBannedItemsTray flag for debuffed overlay
                                     filterItem.IsInBannedItemsTray = true;

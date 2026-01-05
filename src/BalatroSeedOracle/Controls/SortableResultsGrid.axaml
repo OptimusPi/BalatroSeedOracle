@@ -5,7 +5,7 @@
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
              x:DataType="vm:SortableResultsGridViewModel">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <!-- Stats and Actions Header -->
         <Border Grid.Row="0" 
                 Background="{StaticResource DarkBackground}" 
@@ -24,6 +24,12 @@
                                Foreground="{StaticResource LightGrey}"
                                VerticalAlignment="Center"
                                Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding SelectedCountText}" 
+                               FontSize="12"
+                               Foreground="{StaticResource BrightGreenEditor}"
+                               VerticalAlignment="Center"
+                               Margin="8,2,0,0"
+                               IsVisible="{Binding HasSelection}"/>
                 </StackPanel>
 
                 <!-- Actions -->
@@ -38,6 +44,20 @@
                         </ComboBox>
                     </StackPanel>
 
+                    <Button Command="{Binding CopySelectedCommand}" 
+                            ToolTip.Tip="Copy selected seeds (Ctrl+C)"
+                            Classes="btn-blue"
+                            Padding="8,4"
+                            IsEnabled="{Binding HasSelection}">
+                        <material:PackIconMaterial Kind="ContentCopy" Width="14" Height="14"/>
+                    </Button>
+                    <Button Command="{Binding ExportSelectedCommand}" 
+                            ToolTip.Tip="Export selected results"
+                            Classes="btn-green"
+                            Padding="8,4"
+                            IsEnabled="{Binding HasSelection}">
+                        <material:PackIconMaterial Kind="FileExport" Width="14" Height="14"/>
+                    </Button>
                     <Button Command="{Binding PopOutCommand}" 
                             ToolTip.Tip="Open in new window"
                             Classes="btn-blue"
@@ -54,8 +74,43 @@
             </Grid>
         </Border>
 
+        <!-- Quick Search/Filter Bar -->
+        <Border Grid.Row="1"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,1"
+                Padding="12,8">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="🔍"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBox Grid.Column="1"
+                         Text="{Binding QuickFilterText}"
+                         Watermark="Quick filter (seed, score, or any column)..."
+                         FontSize="12"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Column="2"
+                        Command="{Binding ClearFilterCommand}"
+                        Content="Clear"
+                        Margin="8,0,0,0"
+                        Padding="8,4"
+                        IsEnabled="{Binding HasFilter}"
+                        Classes="btn-blue"/>
+                <Button Grid.Column="3"
+                        Command="{Binding ToggleColumnMenuCommand}"
+                        ToolTip.Tip="Column visibility"
+                        Margin="8,0,0,0"
+                        Padding="8,4"
+                        Classes="btn-blue">
+                    <material:PackIconMaterial Kind="ViewColumn" Width="14" Height="14"/>
+                </Button>
+            </Grid>
+        </Border>
+
         <!-- Results Grid -->
-        <DataGrid Grid.Row="1"
+        <DataGrid Grid.Row="2"
                   Name="ResultsDataGrid"
                   ItemsSource="{Binding DisplayedResults}"
                   AutoGenerateColumns="False"
@@ -65,8 +120,13 @@
                   GridLinesVisibility="All"
                   HeadersVisibility="Column"
                   IsReadOnly="True"
+                  SelectionMode="Extended"
                   Background="{StaticResource DarkBackground}"
-                  Foreground="White">
+                  Foreground="White"
+                  RowBackground="{StaticResource DarkBackground}"
+                  AlternatingRowBackground="{StaticResource EditorDarkBg}"
+                  SelectedItem="{Binding SelectedItem}"
+                  SelectedItems="{Binding SelectedItems}">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="SEED" Width="150" CanUserSort="True" SortMemberPath="Seed">
                     <DataGridTemplateColumn.CellTemplate>

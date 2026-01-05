@@ -182,16 +182,17 @@ public partial class AnalyzerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task LoadMoreAntesAsync()
+    private Task LoadMoreAntesAsync()
     {
-        await Task.CompletedTask;
+        // Placeholder for future pagination
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
-    private async Task CopyBlueprintUrlAsync()
+    private Task CopyBlueprintUrlAsync()
     {
         if (string.IsNullOrWhiteSpace(CurrentSeed))
-            return;
+            return Task.CompletedTask;
 
         try
         {
@@ -211,11 +212,10 @@ public partial class AnalyzerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError(
-                "AnalyzerViewModel",
-                $"Failed to copy Blueprint URL: {ex.Message}"
-            );
+            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Error copying Blueprint URL: {ex.Message}");
         }
+        
+        return Task.CompletedTask;
     }
 
     public void SetSeeds(IEnumerable<string> seeds)

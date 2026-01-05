@@ -910,7 +910,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
-        private async Task CopySeed()
+        private Task CopySeed()
         {
             try
             {
@@ -926,6 +926,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 UpdateStatus($"Failed to copy seed: {ex.Message}", true);
                 DebugLogger.LogError("SaveFilterTab", $"Error copying seed: {ex.Message}");
             }
+            
+            return Task.CompletedTask;
         }
 
         #endregion

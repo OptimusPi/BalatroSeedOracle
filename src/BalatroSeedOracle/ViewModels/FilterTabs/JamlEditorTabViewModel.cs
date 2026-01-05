@@ -42,6 +42,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [ObservableProperty]
         private ObservableCollection<FilterItem> _previewItems = new();
 
+        [ObservableProperty]
+        private ObservableCollection<ValidationErrorItem> _validationErrors = new();
+
+        [ObservableProperty]
+        private bool _hasErrors = false;
+
+        [ObservableProperty]
+        private int _errorCount = 0;
+
+        public event System.Action<int, int>? JumpToError;
+
         private System.Threading.CancellationTokenSource? _validationThrottleCts;
 
         partial void OnJamlContentChanged(string value)
@@ -67,6 +78,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void ValidateAndPreview()
         {
+            ValidationErrors.Clear();
+            HasErrors = false;
+            ErrorCount = 0;
+
             if (string.IsNullOrWhiteSpace(JamlContent))
             {
                 ValidationStatus = "Empty";
@@ -86,22 +101,163 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
                 
-                ValidationStatus = "✓ JAML is valid";
-                ValidationStatusColor = Brushes.Green;
-                ErrorMessage = "";
-                HasError = false;
+                // Additional validation checks
+                ValidateSchema(config);
+                ValidateAnchors(JamlContent);
+
+                if (ValidationErrors.Count == 0)
+                {
+                    ValidationStatus = "✓ JAML is valid";
+                    ValidationStatusColor = Brushes.Green;
+                    ErrorMessage = "";
+                    HasError = false;
+                }
+                else
+                {
+                    ValidationStatus = $"✗ {ValidationErrors.Count} issue(s) found";
+                    ValidationStatusColor = Brushes.Orange;
+                    HasError = true;
+                    HasErrors = true;
+                    ErrorCount = ValidationErrors.Count;
+                }
 
                 // Update preview items
                 UpdatePreview(config);
             }
+            catch (YamlDotNet.Core.YamlException yamlEx)
+            {
+                // Parse YAML error
+                var lineNumber = ExtractLineNumber(yamlEx.Message);
+                ValidationErrors.Add(new ValidationErrorItem
+                {
+                    LineNumber = lineNumber,
+                    Column = 0,
+                    Message = yamlEx.Message,
+                    Severity = ValidationErrorItem.ErrorSeverity.Error
+                });
+
+                ValidationStatus = "✗ Invalid JAML syntax";
+                ValidationStatusColor = Brushes.Red;
+                ErrorMessage = yamlEx.Message;
+                HasError = true;
+                HasErrors = true;
+                ErrorCount = ValidationErrors.Count;
+            }
             catch (Exception ex)
             {
-                ValidationStatus = "✗ Invalid JAML syntax";
+                ValidationErrors.Add(new ValidationErrorItem
+                {
+                    LineNumber = 1,
+                    Column = 0,
+                    Message = ex.Message,
+                    Severity = ValidationErrorItem.ErrorSeverity.Error
+                });
+
+                ValidationStatus = "✗ Error";
                 ValidationStatusColor = Brushes.Red;
                 ErrorMessage = ex.Message;
                 HasError = true;
-                // Don't clear preview on error, keep the last valid one
+                HasErrors = true;
+                ErrorCount = ValidationErrors.Count;
             }
+        }
+
+        private int ExtractLineNumber(string message)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(message, @"line (\d+)");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out var line))
+                return line;
+            return 1;
+        }
+
+        private void ValidateSchema(MotelyJsonConfig config)
+        {
+            // Validate deck enum
+            if (!string.IsNullOrEmpty(config.Deck))
+            {
+                var validDecks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic", "Challenge" };
+                if (!validDecks.Contains(config.Deck))
+                {
+                    ValidationErrors.Add(new ValidationErrorItem
+                    {
+                        LineNumber = 1,
+                        Column = 0,
+                        Message = $"Invalid deck: {config.Deck}",
+                        Severity = ValidationErrorItem.ErrorSeverity.Warning
+                    });
+                }
+            }
+
+            // Validate stake enum
+            if (!string.IsNullOrEmpty(config.Stake))
+            {
+                var validStakes = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                if (!validStakes.Contains(config.Stake))
+                {
+                    ValidationErrors.Add(new ValidationErrorItem
+                    {
+                        LineNumber = 1,
+                        Column = 0,
+                        Message = $"Invalid stake: {config.Stake}",
+                        Severity = ValidationErrorItem.ErrorSeverity.Warning
+                    });
+                }
+            }
+        }
+
+        private void ValidateAnchors(string yamlContent)
+        {
+            // Find all anchor references
+            var referenceMatches = System.Text.RegularExpressions.Regex.Matches(yamlContent, @"\*(\w+)");
+            var definedAnchors = new System.Collections.Generic.HashSet<string>();
+
+            // Find all anchor definitions
+            var definitionMatches = System.Text.RegularExpressions.Regex.Matches(yamlContent, @"&(\w+)");
+            foreach (System.Text.RegularExpressions.Match match in definitionMatches)
+            {
+                definedAnchors.Add(match.Groups[1].Value);
+            }
+
+            // Check references
+            foreach (System.Text.RegularExpressions.Match match in referenceMatches)
+            {
+                var anchorName = match.Groups[1].Value;
+                if (!definedAnchors.Contains(anchorName))
+                {
+                    var lineNumber = GetLineNumberFromOffset(yamlContent, match.Index);
+                    ValidationErrors.Add(new ValidationErrorItem
+                    {
+                        LineNumber = lineNumber,
+                        Column = match.Index - GetLineStartOffset(yamlContent, lineNumber),
+                        Message = $"Anchor '{anchorName}' is referenced but not defined",
+                        Severity = ValidationErrorItem.ErrorSeverity.Warning
+                    });
+                }
+            }
+        }
+
+        private int GetLineNumberFromOffset(string text, int offset)
+        {
+            var lineNumber = 1;
+            for (int i = 0; i < offset && i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                    lineNumber++;
+            }
+            return lineNumber;
+        }
+
+        private int GetLineStartOffset(string text, int lineNumber)
+        {
+            var currentLine = 1;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (currentLine == lineNumber)
+                    return i;
+                if (text[i] == '\n')
+                    currentLine++;
+            }
+            return 0;
         }
 
         private void UpdatePreview(MotelyJsonConfig config)

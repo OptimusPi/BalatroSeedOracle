@@ -1,143 +1,196 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "build (dotnet)",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build",
-			"presentation": {
-				"reveal": "silent"
-			},
-			"problemMatcher": "$msCompile"
-		},
-		{
-			"label": "restore",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"restore",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj"
-			],
-			"group": "build",
-			"presentation": {
-				"reveal": "silent"
-			}
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"x:\\BalatroSeedOracle\\src\\BalatroSeedOracle\\BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"isBackground": false,
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"x:\\BalatroSeedOracle\\src\\BalatroSeedOracle\\BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"isBackground": false,
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": "build"
-		},
-		{
-			"label": "restore",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"restore",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "build (dotnet)",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"build",
-				"${workspaceFolder}/src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"group": "build"
-		},
-		{
-			"label": "publish Avalonia UI Browser",
-			"type": "shell",
-			"command": "dotnet",
-			"args": [
-				"publish",
-				"src/BalatroSeedOracle/BalatroSeedOracle.csproj",
-				"-c",
-				"Release",
-				"-f",
-				"net10.0-browser",
-				"-o",
-				"external/Motely/wwwroot/BSO/"
-			],
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": "build"
-		}
-	]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Desktop (Release)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "-c",
+                "Release",
+                "--project",
+                "./src/BalatroSeedOracle.csproj",
+                "--no-build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Desktop (Debug)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "-c",
+                "Debug",
+                "--project",
+                "./src/BalatroSeedOracle.csproj",
+                "--no-build"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Browser (Release)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "-c",
+                "Release",
+                "--project",
+                "./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj",
+                "--no-build"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Browser (Debug)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "-c",
+                "Debug",
+                "--project",
+                "./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj",
+                "--no-build"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Desktop (Release)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "-c",
+                "Release",
+                "--project",
+                "./src/BalatroSeedOracle.csproj"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Desktop (Debug)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "-c",
+                "Debug",
+                "--project",
+                "./src/BalatroSeedOracle.csproj"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Browser (Release)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "-c",
+                "Release",
+                "--project",
+                "./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Browser (Debug)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "-c",
+                "Debug",
+                "--project",
+                "./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build All (Release)",
+            "dependsOn": [
+                "Build Desktop (Release)",
+                "Build Browser (Release)"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build All (Debug)",
+            "dependsOn": [
+                "Build Desktop (Debug)",
+                "Build Browser (Debug)"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "clean"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
 }

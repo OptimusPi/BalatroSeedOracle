@@ -53,11 +53,39 @@ namespace BalatroSeedOracle.ViewModels.Controls
         [ObservableProperty]
         private bool _sortDescending = true;
 
+        // Filtering
+        [ObservableProperty]
+        private string _quickFilterText = "";
+
+        [ObservableProperty]
+        private bool _hasFilter = false;
+
+        // Selection
+        [ObservableProperty]
+        private SearchResult? _selectedItem;
+
+        [ObservableProperty]
+        private ObservableCollection<SearchResult> _selectedItems = new();
+
+        [ObservableProperty]
+        private bool _hasSelection = false;
+
+        [ObservableProperty]
+        private string _selectedCountText = "";
+
+        // Column visibility
+        [ObservableProperty]
+        private Dictionary<string, bool> _columnVisibility = new();
+
         // Commands
         public IAsyncRelayCommand<string> CopySeedCommand { get; }
         public IRelayCommand ExportAllCommand { get; }
         public IRelayCommand PopOutCommand { get; }
         public IRelayCommand<SearchResult> AnalyzeCommand { get; }
+        public IRelayCommand CopySelectedCommand { get; }
+        public IRelayCommand ExportSelectedCommand { get; }
+        public IRelayCommand ClearFilterCommand { get; }
+        public IRelayCommand ToggleColumnMenuCommand { get; }
 
         // Read-only view of all results (for tally column initialization)
         public IReadOnlyList<SearchResult> AllResults
@@ -92,6 +120,18 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 if (result != null)
                     AnalyzeRequested?.Invoke(this, result);
             });
+            CopySelectedCommand = new RelayCommand(CopySelected, () => HasSelection);
+            ExportSelectedCommand = new RelayCommand(ExportSelected, () => HasSelection);
+            ClearFilterCommand = new RelayCommand(() => QuickFilterText = "", () => HasFilter);
+            ToggleColumnMenuCommand = new RelayCommand(ToggleColumnMenu);
+
+            // Initialize column visibility (all visible by default)
+            ColumnVisibility["Seed"] = true;
+            ColumnVisibility["Score"] = true;
+            ColumnVisibility["Actions"] = true;
+
+            // Listen to selection changes
+            SelectedItems.CollectionChanged += (s, e) => UpdateSelectionStats();
         }
 
         /// <summary>
@@ -195,20 +235,34 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             lock (_lock)
             {
+                IEnumerable<SearchResult> filtered = _backingResults;
+
+                // Apply quick filter if set
+                if (!string.IsNullOrWhiteSpace(QuickFilterText))
+                {
+                    var filterLower = QuickFilterText.ToLowerInvariant();
+                    filtered = filtered.Where(r =>
+                        r.Seed.ToLowerInvariant().Contains(filterLower) ||
+                        r.TotalScore.ToString().Contains(filterLower) ||
+                        (r.Scores != null && r.Scores.Any(s => s.ToString().Contains(filterLower))) ||
+                        (r.Labels != null && r.Labels.Any(l => l.ToLowerInvariant().Contains(filterLower)))
+                    );
+                }
+
                 IOrderedEnumerable<SearchResult> query;
 
                 // Handle sorting based on CurrentSortProperty
                 if (CurrentSortProperty == "Seed")
                 {
                     query = SortDescending 
-                        ? _backingResults.OrderByDescending(r => r.Seed) 
-                        : _backingResults.OrderBy(r => r.Seed);
+                        ? filtered.OrderByDescending(r => r.Seed) 
+                        : filtered.OrderBy(r => r.Seed);
                 }
                 else if (CurrentSortProperty == "TotalScore")
                 {
                     query = SortDescending 
-                        ? _backingResults.OrderByDescending(r => r.TotalScore) 
-                        : _backingResults.OrderBy(r => r.TotalScore);
+                        ? filtered.OrderByDescending(r => r.TotalScore) 
+                        : filtered.OrderBy(r => r.TotalScore);
                 }
                 else if (CurrentSortProperty.StartsWith("Scores["))
                 {
@@ -220,23 +274,23 @@ namespace BalatroSeedOracle.ViewModels.Controls
                         int scoreIndex = int.Parse(CurrentSortProperty.Substring(startIndex, endIndex - startIndex));
 
                         query = SortDescending 
-                            ? _backingResults.OrderByDescending(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0) 
-                            : _backingResults.OrderBy(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0);
+                            ? filtered.OrderByDescending(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0) 
+                            : filtered.OrderBy(r => (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0);
                     }
                     catch
                     {
                         // Fallback to TotalScore
                         query = SortDescending 
-                            ? _backingResults.OrderByDescending(r => r.TotalScore) 
-                            : _backingResults.OrderBy(r => r.TotalScore);
+                            ? filtered.OrderByDescending(r => r.TotalScore) 
+                            : filtered.OrderBy(r => r.TotalScore);
                     }
                 }
                 else
                 {
                     // Default fallback
                     query = SortDescending 
-                        ? _backingResults.OrderByDescending(r => r.TotalScore) 
-                        : _backingResults.OrderBy(r => r.TotalScore);
+                        ? filtered.OrderByDescending(r => r.TotalScore) 
+                        : filtered.OrderBy(r => r.TotalScore);
                 }
 
                 top1000 = query.Take(MaxDisplayResults).ToList();
@@ -286,6 +340,45 @@ namespace BalatroSeedOracle.ViewModels.Controls
         partial void OnCurrentSortPropertyChanged(string value) => RefreshDisplayedResults();
         partial void OnSortDescendingChanged(bool value) => RefreshDisplayedResults();
 
+        partial void OnQuickFilterTextChanged(string value)
+        {
+            HasFilter = !string.IsNullOrWhiteSpace(value);
+            RefreshDisplayedResults();
+        }
+
+        private void UpdateSelectionStats()
+        {
+            HasSelection = SelectedItems.Count > 0;
+            SelectedCountText = HasSelection ? $"({SelectedItems.Count} selected)" : "";
+            CopySelectedCommand.NotifyCanExecuteChanged();
+            ExportSelectedCommand.NotifyCanExecuteChanged();
+        }
+
+        private void CopySelected()
+        {
+            if (SelectedItems.Count == 0)
+                return;
+
+            var seeds = string.Join("\n", SelectedItems.Select(r => r.Seed));
+            CopyToClipboardRequested?.Invoke(this, seeds);
+        }
+
+        private void ExportSelected()
+        {
+            if (SelectedItems.Count > 0)
+            {
+                ExportAllRequested?.Invoke(this, SelectedItems);
+            }
+        }
+
+        private void ToggleColumnMenu()
+        {
+            // Column visibility menu - implemented via button in UI
+            // Users can reorder/resize columns directly in DataGrid
+            // Full column visibility toggle can be added later if needed
+            DebugLogger.Log("SortableResultsGridVM", "Column menu toggle - column reordering/resizing available in DataGrid");
+        }
+
         private void UpdateStatsText()
         {
             ResultsCountText = TotalResultCount switch
@@ -310,10 +403,10 @@ namespace BalatroSeedOracle.ViewModels.Controls
             StatsText = $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {TotalResultCount}{showingText}";
         }
 
-        private async Task CopySeedAsync(string? seed)
+        private Task CopySeedAsync(string? seed)
         {
             if (string.IsNullOrWhiteSpace(seed))
-                return;
+                return Task.CompletedTask;
 
             try
             {
@@ -323,6 +416,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             {
                 DebugLogger.LogError("SortableResultsGridVM", $"Copy failed: {ex.Message}");
             }
+            return Task.CompletedTask;
         }
 
         private void ExportAll()

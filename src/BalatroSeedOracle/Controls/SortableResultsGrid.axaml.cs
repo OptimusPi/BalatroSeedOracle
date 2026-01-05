@@ -122,6 +122,15 @@ namespace BalatroSeedOracle.Controls
             if (dataGrid != null)
             {
                 dataGrid.Sorting += OnDataGridSorting;
+                
+                // Enable multi-select with keyboard shortcuts
+                dataGrid.KeyDown += OnDataGridKeyDown;
+                
+                // Context menu for rows
+                dataGrid.ContextMenu = CreateContextMenu();
+                
+                // Better selection handling
+                dataGrid.SelectionChanged += OnSelectionChanged;
             }
 
             // Tally columns will be initialized when results are added
@@ -129,6 +138,91 @@ namespace BalatroSeedOracle.Controls
             
             // DataGrid is bound to DisplayedResults via XAML - no need to set explicitly
             DebugLogger.Log("SortableResultsGrid", "DataGrid initialized with XAML binding to DisplayedResults");
+        }
+
+        private void OnDataGridKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+        {
+            if (e.KeyModifiers.HasFlag(Avalonia.Input.KeyModifiers.Control))
+            {
+                if (e.Key == Avalonia.Input.Key.A)
+                {
+                    // Ctrl+A: Select all
+                    var dataGrid = sender as DataGrid;
+                    if (dataGrid != null)
+                    {
+                        dataGrid.SelectAll();
+                        e.Handled = true;
+                    }
+                }
+                else if (e.Key == Avalonia.Input.Key.C)
+                {
+                    // Ctrl+C: Copy selected
+                    ViewModel.CopySelectedCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var dataGrid = sender as DataGrid;
+            if (dataGrid != null && ViewModel != null)
+            {
+                ViewModel.SelectedItems.Clear();
+                foreach (var item in dataGrid.SelectedItems)
+                {
+                    if (item is SearchResult result)
+                    {
+                        ViewModel.SelectedItems.Add(result);
+                    }
+                }
+            }
+        }
+
+        private ContextMenu CreateContextMenu()
+        {
+            var menu = new ContextMenu();
+            
+            var copyItem = new MenuItem 
+            { 
+                Header = "Copy Seed", 
+                Command = ViewModel.CopySeedCommand
+            };
+            var copySelectedItem = new MenuItem 
+            { 
+                Header = "Copy Selected Seeds", 
+                Command = ViewModel.CopySelectedCommand 
+            };
+            var analyzeItem = new MenuItem 
+            { 
+                Header = "Analyze Seed", 
+                Command = ViewModel.AnalyzeCommand
+            };
+            var exportSelectedItem = new MenuItem 
+            { 
+                Header = "Export Selected", 
+                Command = ViewModel.ExportSelectedCommand 
+            };
+            var separator = new Separator();
+            
+            menu.Items.Add(copyItem);
+            menu.Items.Add(copySelectedItem);
+            menu.Items.Add(separator);
+            menu.Items.Add(analyzeItem);
+            menu.Items.Add(exportSelectedItem);
+            
+            // Handle context menu opening to set command parameters
+            menu.Opening += (s, e) =>
+            {
+                var dataGrid = this.FindControl<DataGrid>("ResultsDataGrid");
+                if (dataGrid?.SelectedItem is SearchResult selectedResult)
+                {
+                    copyItem.CommandParameter = selectedResult.Seed;
+                    analyzeItem.CommandParameter = selectedResult;
+                }
+            };
+            
+            return menu;
         }
 
         private void OnDataGridSorting(object? sender, DataGridColumnEventArgs e)

@@ -4,6 +4,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              xmlns:components="using:BalatroSeedOracle.Components"
+             xmlns:filterTabs="clr-namespace:BalatroSeedOracle.Components.FilterTabs"
              xmlns:models="using:BalatroSeedOracle.Models"
              x:Class="BalatroSeedOracle.Components.FilterTabs.JamlEditorTab"
              x:DataType="vm:JamlEditorTabViewModel">
@@ -17,6 +18,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -188,6 +190,14 @@
                                IsVisible="{Binding HasError}"/>
                 </Grid>
             </Border>
+
+            <!-- Error Panel -->
+            <filterTabs:JamlErrorPanel Grid.Row="3"
+                                       Grid.Column="0"
+                                       Grid.ColumnSpan="2"
+                                       DataContext="{Binding}"
+                                       MaxHeight="200"
+                                       IsVisible="{Binding HasErrors}"/>
         </Grid>
     </Border>
 </UserControl>

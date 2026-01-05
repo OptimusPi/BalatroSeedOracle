@@ -157,13 +157,13 @@
                     Background="{StaticResource DarkBackground}"
                     BorderBrush="{StaticResource ModalBorder}"
                     BorderThickness="0,0,2,0">
-                <features:AnteTreeView DataContext="{Binding AnteTree}"/>
+                <features:AnteTreeView DataContext="{Binding}"/>
             </Border>
 
             <!-- Right Side: Detailed View / Run Log -->
             <Border Grid.Column="1"
                     Background="{StaticResource DarkBackground}">
-                <features:RunDetailView DataContext="{Binding RunDetail}"/>
+                <features:RunDetailView DataContext="{Binding}"/>
             </Border>
         </Grid>
     </Grid>

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -25,6 +27,24 @@ public class BalatroMcpProtocol
     /// </summary>
     public async Task<string> HandleRequestAsync(string jsonRequest)
     {
+        string? requestIdJson = null;
+        
+        // Try to extract the request ID first, even if parsing fails later
+        try
+        {
+            using var jsonDoc = JsonDocument.Parse(jsonRequest);
+            var root = jsonDoc.RootElement;
+            if (root.TryGetProperty("id", out var idProp))
+            {
+                // Serialize the ID to preserve it (can be string, number, or null)
+                requestIdJson = idProp.GetRawText();
+            }
+        }
+        catch
+        {
+            // If we can't parse at all, we'll use null (which becomes "unknown")
+        }
+
         try
         {
             using var jsonDoc = JsonDocument.Parse(jsonRequest);
@@ -47,10 +67,53 @@ public class BalatroMcpProtocol
 
             return response;
         }
+        catch (JsonException jsonEx)
+        {
+            _logger.LogError(jsonEx, "JSON parsing error handling MCP request");
+            JsonElement errorId;
+            if (!string.IsNullOrEmpty(requestIdJson))
+            {
+                using var doc = JsonDocument.Parse(requestIdJson);
+                errorId = doc.RootElement;
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse("\"unknown\"");
+                errorId = doc.RootElement;
+            }
+            return CreateErrorResponse(errorId, -32700, $"Parse error: {jsonEx.Message}");
+        }
+        catch (KeyNotFoundException keyEx)
+        {
+            _logger.LogError(keyEx, "Missing required property in MCP request");
+            JsonElement errorId;
+            if (!string.IsNullOrEmpty(requestIdJson))
+            {
+                using var doc = JsonDocument.Parse(requestIdJson);
+                errorId = doc.RootElement;
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse("\"unknown\"");
+                errorId = doc.RootElement;
+            }
+            return CreateErrorResponse(errorId, -32600, $"Invalid Request: {keyEx.Message}");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error handling MCP request");
-            return CreateErrorResponse("unknown", -32603, $"Internal error: {ex.Message}");
+            JsonElement errorId;
+            if (!string.IsNullOrEmpty(requestIdJson))
+            {
+                using var doc = JsonDocument.Parse(requestIdJson);
+                errorId = doc.RootElement;
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse("\"unknown\"");
+                errorId = doc.RootElement;
+            }
+            return CreateErrorResponse(errorId, -32603, $"Internal error: {ex.Message}");
         }
     }
 

@@ -1,19 +1,169 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
-             x:Class="BalatroSeedOracle.Features.Analyzer.RunDetailView">
-             
-  <StackPanel Spacing="10" Margin="20">
-    <TextBlock Text="Run Detail View" 
-               FontSize="16" 
-               FontWeight="Bold"
-               HorizontalAlignment="Center"/>
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Features.Analyzer.RunDetailView"
+             x:DataType="vm:AnalyzerViewModel">
     
-    <TextBlock Text="Run detail analysis not available in this build." 
-               FontSize="12"
-               HorizontalAlignment="Center"
-               TextWrapping="Wrap"/>
-  </StackPanel>
+    <Grid RowDefinitions="Auto,*">
+        <!-- Current Ante Header -->
+        <Border Grid.Row="0"
+                Background="{StaticResource EditorHeaderBg}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,2"
+                Padding="16,12">
+            <StackPanel>
+                <TextBlock Text="{Binding CurrentAnteDisplay}"
+                         FontFamily="{StaticResource BalatroFont}"
+                         FontSize="20"
+                         Foreground="{StaticResource Gold}"
+                         HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding AnteNavigationDisplay}"
+                         FontSize="12"
+                         Foreground="{StaticResource LightGrey}"
+                         HorizontalAlignment="Center"
+                         Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Detail Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16" Margin="16">
+                <!-- Boss Section -->
+                <Border Background="{StaticResource EditorDarkBg}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="BOSS BLIND"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Orange}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="{Binding CurrentBossDisplay}"
+                                   FontSize="18"
+                                   Foreground="{StaticResource White}"
+                                   FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Voucher Section -->
+                <Border Background="{StaticResource EditorDarkBg}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="VOUCHER"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Orange}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="{Binding CurrentVoucherDisplay}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource White}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Shop Items Section -->
+                <Border Background="{StaticResource EditorDarkBg}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="SHOP ITEMS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Orange}"
+                                   Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding ShopItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource DarkBackground}"
+                                            BorderBrush="{StaticResource ModalBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="8"
+                                            Margin="0,0,0,4">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Index, StringFormat='{0}.'}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MediumGrey}"
+                                                       Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding DisplayName}"
+                                                       FontSize="14"
+                                                       Foreground="{StaticResource White}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="No shop items"
+                                   FontSize="12"
+                                   Foreground="{StaticResource MediumGrey}"
+                                   IsVisible="{Binding !ShopItems.Count}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Booster Packs Section -->
+                <Border Background="{StaticResource EditorDarkBg}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="BOOSTER PACKS"
+                                   FontFamily="{StaticResource BalatroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource Orange}"
+                                   Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding BoosterPacks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource DarkBackground}"
+                                            BorderBrush="{Binding PackColor}"
+                                            BorderThickness="2"
+                                            CornerRadius="4"
+                                            Padding="12"
+                                            Margin="0,0,0,8">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="14"
+                                                       Foreground="{Binding PackColor}"
+                                                       FontWeight="Bold"/>
+                                            <ItemsControl ItemsSource="{Binding Items}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding DisplayName}"
+                                                                   FontSize="12"
+                                                                   Foreground="{StaticResource White}"
+                                                                   Margin="8,2,0,0"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="No booster packs"
+                                   FontSize="12"
+                                   Foreground="{StaticResource MediumGrey}"
+                                   IsVisible="{Binding !BoosterPacks.Count}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Empty State -->
+                <TextBlock Text="Select an ante to view details"
+                           FontSize="14"
+                           Foreground="{StaticResource MediumGrey}"
+                           HorizontalAlignment="Center"
+                           IsVisible="{Binding !CurrentAnalysis}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
