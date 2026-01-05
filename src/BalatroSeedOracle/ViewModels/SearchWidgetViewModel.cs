@@ -85,7 +85,7 @@ namespace BalatroSeedOracle.ViewModels
                 var config = _searchInstance.GetFilterConfig();
 
                 // Extract first Must clause that has a Value (skip And/Or groupings)
-                if (config?.Must != null && config.Must.Count > 0)
+                if (config?.Must is not null && config.Must.Count > 0)
                 {
                     foreach (var clause in config.Must)
                     {
@@ -110,7 +110,7 @@ namespace BalatroSeedOracle.ViewModels
                                     as Bitmap,
                             };
 
-                            if (FilterIcon != null)
+                            if (FilterIcon is not null)
                             {
                                 DebugLogger.Log(
                                     "SearchWidgetViewModel",
@@ -155,7 +155,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void UpdateProgress(SearchProgress? progress)
         {
-            if (progress == null)
+            if (progress is null)
             {
                 ProgressBarWidth = 0.0;
                 ProgressText = "0%";
@@ -232,7 +232,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var profileService = ServiceHelper.GetService<UserProfileService>();
-                if (profileService == null)
+                if (profileService is null)
                 {
                     DebugLogger.LogError(
                         "SearchWidgetViewModel",
@@ -247,7 +247,7 @@ namespace BalatroSeedOracle.ViewModels
                 var saved = profile.SavedSearchWidgets.FirstOrDefault(w =>
                     w.SearchInstanceId == SearchInstanceId
                 );
-                if (saved == null)
+                if (saved is null)
                 {
                     saved = new SavedSearchWidget();
                     profile.SavedSearchWidgets.Add(saved);
@@ -286,7 +286,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Remove from saved widgets
                 var profileService = ServiceHelper.GetService<UserProfileService>();
-                if (profileService != null)
+                if (profileService is not null)
                 {
                     var profile = profileService.GetProfile();
                     profile.SavedSearchWidgets.RemoveAll(w =>

@@ -242,6 +242,112 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- MUSIC-ACTIVATED SECTION -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource Green}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                Padding="10">
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Music-Activated"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="14"
+                                               Foreground="{StaticResource Green}"
+                                               Grid.Column="0"/>
+                                    <CheckBox Grid.Column="1"
+                                              IsChecked="{Binding MusicActivated, Mode=TwoWay}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <StackPanel IsVisible="{Binding MusicActivated}" Spacing="6">
+                                    <!-- Audio Trigger Selection -->
+                                    <StackPanel Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="Audio Trigger"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource LightGrey}"
+                                                       Grid.Column="0"/>
+                                            <Button Grid.Column="1"
+                                                    Content="↻"
+                                                    Command="{Binding RefreshAudioTriggersCommand}"
+                                                    Width="24"
+                                                    Height="24"
+                                                    Padding="0"
+                                                    FontSize="10"
+                                                    ToolTip.Tip="Refresh audio triggers"/>
+                                        </Grid>
+                                        <ComboBox ItemsSource="{Binding AudioTriggerOptions}"
+                                                  SelectedItem="{Binding SelectedAudioTrigger}"
+                                                  HorizontalAlignment="Stretch"
+                                                  FontSize="11"
+                                                  Height="28"/>
+                                    </StackPanel>
+
+                                    <!-- Threshold Settings -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Threshold"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="0"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="{Binding TriggerThreshold, Mode=TwoWay}"
+                                                VerticalAlignment="Center"
+                                                Classes="balatro-red-slider"/>
+                                        <TextBlock Text="{Binding TriggerThreshold, StringFormat='{}{0:F2}'}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="2"
+                                                   Width="35"/>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Max"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="0"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="{Binding TriggerMax, Mode=TwoWay}"
+                                                VerticalAlignment="Center"
+                                                Classes="balatro-red-slider"/>
+                                        <TextBlock Text="{Binding TriggerMax, StringFormat='{}{0:F2}'}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="2"
+                                                   Width="35"/>
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Smoothing"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="0"/>
+                                        <Slider Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="{Binding AudioSmoothing, Mode=TwoWay}"
+                                                VerticalAlignment="Center"
+                                                Classes="balatro-red-slider"/>
+                                        <TextBlock Text="{Binding AudioSmoothing, StringFormat='{}{0:F2}'}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource LightGrey}"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="2"
+                                                   Width="35"/>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                         <!-- SAVE SECTION -->
                         <Button Content="SAVE TRANSITION"
                                 Classes="btn-blue"

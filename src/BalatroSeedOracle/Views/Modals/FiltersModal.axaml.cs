@@ -22,7 +22,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
 
-                if (configService == null || filterService == null)
+                if (configService is null || filterService is null)
                 {
                     throw new InvalidOperationException(
                         "Required services not available (IConfigurationService/IFilterService)"

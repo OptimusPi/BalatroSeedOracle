@@ -20,13 +20,20 @@ namespace BalatroSeedOracle.ViewModels
         private const string NoneOption = "(none)";
 
         private readonly TransitionService? _transitionService;
+        private readonly TriggerService? _triggerService;
+        private System.Timers.Timer? _audioUpdateTimer;
+        private double _smoothedAudioProgress = 0.0;
 
-        public TransitionDesignerWidgetViewModel(TransitionService? transitionService = null)
+        public TransitionDesignerWidgetViewModel(
+            TransitionService? transitionService = null,
+            TriggerService? triggerService = null
+        )
         {
             _transitionService = transitionService;
+            _triggerService = triggerService;
 
             // HIGH #3 FIX: Log warning if TransitionService wasn't injected
-            if (_transitionService == null)
+            if (_transitionService is null)
             {
                 DebugLogger.Log(
                     "TransitionDesigner",
@@ -43,7 +50,7 @@ namespace BalatroSeedOracle.ViewModels
             PositionY = 500;
 
             Width = 420;
-            Height = 550;
+            Height = 650; // Increased height for music controls
 
             // Initialize easing options
             EasingOptions = new ObservableCollection<string>
@@ -56,6 +63,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Load real preset options
             LoadPresetOptions();
+            LoadAudioTriggerOptions();
 
             // Set defaults
             SelectedAudioMixA = AudioMixOptions.FirstOrDefault() ?? NoneOption;
@@ -65,6 +73,10 @@ namespace BalatroSeedOracle.ViewModels
             SelectedEasing = DefaultEasing;
             TransitionProgress = 0.0;
             TransitionDuration = DefaultDuration;
+            MusicActivated = false;
+            TriggerThreshold = 0.5;
+            TriggerMax = 1.0;
+            AudioSmoothing = 0.8;
         }
 
         private void LoadPresetOptions()
@@ -84,6 +96,30 @@ namespace BalatroSeedOracle.ViewModels
             DebugLogger.Log(
                 "TransitionDesigner",
                 $"Loaded {mixerNames.Count} mixer presets, {shaderNames.Count} visual presets"
+            );
+        }
+
+        private void LoadAudioTriggerOptions()
+        {
+            if (_triggerService == null)
+            {
+                AudioTriggerOptions = new ObservableCollection<string> { NoneOption };
+                return;
+            }
+
+            var triggers = _triggerService
+                .GetTriggersByType("Audio")
+                .Select(t => t.Name)
+                .OrderBy(n => n)
+                .ToList();
+
+            AudioTriggerOptions = new ObservableCollection<string>(
+                triggers.Count > 0 ? new[] { NoneOption }.Concat(triggers).ToList() : new[] { NoneOption }
+            );
+
+            DebugLogger.Log(
+                "TransitionDesigner",
+                $"Loaded {triggers.Count} audio triggers"
             );
         }
 
@@ -144,6 +180,37 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
+        // Music-Activated Transition Settings
+        [ObservableProperty]
+        private ObservableCollection<string> _audioTriggerOptions = new();
+
+        [ObservableProperty]
+        private string _selectedAudioTrigger = "(none)";
+
+        [ObservableProperty]
+        private bool _musicActivated;
+
+        [ObservableProperty]
+        private double _triggerThreshold = 0.5;
+
+        [ObservableProperty]
+        private double _triggerMax = 1.0;
+
+        [ObservableProperty]
+        private double _audioSmoothing = 0.8;
+
+        partial void OnMusicActivatedChanged(bool value)
+        {
+            if (value)
+            {
+                StartAudioMonitoring();
+            }
+            else
+            {
+                StopAudioMonitoring();
+            }
+        }
+
         [RelayCommand]
         private void RefreshPresets()
         {
@@ -156,17 +223,19 @@ namespace BalatroSeedOracle.ViewModels
             if (IsTestRunning)
             {
                 IsTestRunning = false;
+                StopAudioMonitoring();
                 return;
             }
 
             IsTestRunning = true;
             TransitionProgress = 0.0;
+            _smoothedAudioProgress = 0.0;
 
             // Load presets
             var presetA = ShaderPresetHelper.Load(SelectedVisualPresetA);
             var presetB = ShaderPresetHelper.Load(SelectedVisualPresetB);
 
-            if (presetA == null || presetB == null)
+            if (presetA is null || presetB is null)
             {
                 DebugLogger.LogError(
                     "TransitionDesigner",
@@ -177,40 +246,114 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Use TransitionService if available
-            if (_transitionService != null)
+            if (_transitionService is not null)
             {
                 _transitionService.StartTransition(
                     presetA,
                     presetB,
                     ApplyShaderParameters,
-                    TimeSpan.FromSeconds(TransitionDuration)
+                    MusicActivated ? null : TimeSpan.FromSeconds(TransitionDuration)
                 );
 
                 DebugLogger.Log(
                     "TransitionDesigner",
-                    $"Started transition via TransitionService: {SelectedVisualPresetA} → {SelectedVisualPresetB}"
+                    $"Started transition via TransitionService: {SelectedVisualPresetA} → {SelectedVisualPresetB} (MusicActivated={MusicActivated})"
                 );
             }
 
-            // HIGH #1 & #2 FIX: Always run animation loop to update progress and track completion
-            var steps = 60;
-            var stepDelay = (int)(TransitionDuration * 1000 / steps);
-            var startTime = DateTime.UtcNow;
-
-            for (int i = 0; i <= steps; i++)
+            if (MusicActivated)
             {
-                if (!IsTestRunning)
-                    break;
+                // Music-activated mode: progress is driven by audio trigger
+                StartAudioMonitoring();
+            }
+            else
+            {
+                // Time-based mode: progress is driven by elapsed time
+                var steps = 60;
+                var stepDelay = (int)(TransitionDuration * 1000 / steps);
 
-                var t = (double)i / steps;
-                TransitionProgress = ApplyEasing(t);
+                for (int i = 0; i <= steps; i++)
+                {
+                    if (!IsTestRunning)
+                        break;
 
-                await Task.Delay(stepDelay);
+                    var t = (double)i / steps;
+                    TransitionProgress = ApplyEasing(t);
+
+                    await Task.Delay(stepDelay);
+                }
+
+                IsTestRunning = false;
+                TransitionProgress = 1.0;
+            }
+        }
+
+        private void StartAudioMonitoring()
+        {
+            if (_audioUpdateTimer != null)
+                return;
+
+            _audioUpdateTimer = new System.Timers.Timer(16); // ~60 FPS
+            _audioUpdateTimer.Elapsed += (s, e) => UpdateAudioDrivenProgress();
+            _audioUpdateTimer.Start();
+
+            DebugLogger.Log("TransitionDesigner", "Started audio monitoring for music-activated transition");
+        }
+
+        private void StopAudioMonitoring()
+        {
+            if (_audioUpdateTimer != null)
+            {
+                _audioUpdateTimer.Stop();
+                _audioUpdateTimer.Dispose();
+                _audioUpdateTimer = null;
+            }
+        }
+
+        private void UpdateAudioDrivenProgress()
+        {
+            if (!IsTestRunning || !MusicActivated || _triggerService is null)
+                return;
+
+            if (string.IsNullOrEmpty(SelectedAudioTrigger) || SelectedAudioTrigger == NoneOption)
+                return;
+
+            var trigger = _triggerService.GetTrigger(SelectedAudioTrigger);
+            if (trigger is null)
+                return;
+
+            // Get trigger intensity (0-1)
+            double triggerIntensity = trigger.GetIntensity();
+
+            // Map trigger intensity to transition progress
+            // Below threshold = 0% (Preset A)
+            // At threshold = 0%
+            // At max = 100% (Preset B)
+            double rawProgress = 0.0;
+            if (triggerIntensity > TriggerThreshold)
+            {
+                var range = TriggerMax - TriggerThreshold;
+                if (range > 0)
+                {
+                    rawProgress = Math.Clamp(
+                        (triggerIntensity - TriggerThreshold) / range,
+                        0.0,
+                        1.0
+                    );
+                }
             }
 
-            // Only set false AFTER animation completes
-            IsTestRunning = false;
-            TransitionProgress = 1.0;
+            // Apply smoothing (exponential moving average)
+            _smoothedAudioProgress = AudioSmoothing * _smoothedAudioProgress + (1.0 - AudioSmoothing) * rawProgress;
+
+            // Apply easing
+            TransitionProgress = ApplyEasing(_smoothedAudioProgress);
+
+            // Update TransitionService progress to drive shader interpolation
+            if (_transitionService is not null)
+            {
+                _transitionService.SetProgress((float)TransitionProgress);
+            }
         }
 
         private void ApplyShaderParameters(ShaderParameters parameters)
@@ -234,6 +377,7 @@ namespace BalatroSeedOracle.ViewModels
         private void StopTransition()
         {
             IsTestRunning = false;
+            StopAudioMonitoring();
             _transitionService?.StopTransition();
         }
 
@@ -253,11 +397,16 @@ namespace BalatroSeedOracle.ViewModels
                     MixBName = SelectedAudioMixB,
                     Easing = SelectedEasing,
                     Duration = TransitionDuration > 0 ? TransitionDuration : DefaultDuration,
+                    MusicActivated = MusicActivated,
+                    AudioTriggerName = MusicActivated && SelectedAudioTrigger != NoneOption ? SelectedAudioTrigger : null,
+                    TriggerThreshold = TriggerThreshold,
+                    TriggerMax = TriggerMax,
+                    AudioSmoothing = AudioSmoothing,
                 };
 
                 if (TransitionPresetHelper.Save(preset))
                 {
-                    DebugLogger.Log("TransitionDesigner", $"Saved transition: {defaultName}");
+                    DebugLogger.Log("TransitionDesigner", $"Saved transition: {defaultName} (MusicActivated={MusicActivated})");
                 }
                 else
                 {
@@ -284,7 +433,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load the most recent one (last in list)
                 var preset = TransitionPresetHelper.Load(names.Last());
-                if (preset != null)
+                if (preset is not null)
                 {
                     SelectedVisualPresetA =
                         preset.VisualPresetAName
@@ -301,7 +450,14 @@ namespace BalatroSeedOracle.ViewModels
                     SelectedEasing = preset.Easing ?? DefaultEasing;
                     TransitionDuration = preset.Duration > 0 ? preset.Duration : DefaultDuration;
 
-                    DebugLogger.Log("TransitionDesigner", $"Loaded transition: {preset.Name}");
+                    // Load music-activated settings
+                    MusicActivated = preset.MusicActivated;
+                    SelectedAudioTrigger = preset.AudioTriggerName ?? NoneOption;
+                    TriggerThreshold = preset.TriggerThreshold;
+                    TriggerMax = preset.TriggerMax;
+                    AudioSmoothing = preset.AudioSmoothing;
+
+                    DebugLogger.Log("TransitionDesigner", $"Loaded transition: {preset.Name} (MusicActivated={MusicActivated})");
                 }
             }
             catch (Exception ex)
@@ -313,6 +469,12 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnTransitionProgressChanged(double value)
         {
             OnPropertyChanged(nameof(TransitionProgressText));
+        }
+
+        [RelayCommand]
+        private void RefreshAudioTriggers()
+        {
+            LoadAudioTriggerOptions();
         }
     }
 }

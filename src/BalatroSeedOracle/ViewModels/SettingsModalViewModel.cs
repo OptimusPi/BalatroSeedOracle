@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.ViewModels
         private void SaveFeatureToggles()
         {
             var profile = _userProfileService.GetProfile();
-            if (profile.FeatureToggles == null)
+            if (profile.FeatureToggles is null)
             {
                 profile.FeatureToggles = new Models.FeatureToggles();
             }

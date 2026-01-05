@@ -27,7 +27,7 @@ public partial class MainWindow : Window
 
         // Set up the Buy Balatro link
         var buyBalatroLink = this.FindControl<TextBlock>("BuyBalatroLink");
-        if (buyBalatroLink != null)
+        if (buyBalatroLink is not null)
         {
             buyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
@@ -36,7 +36,7 @@ public partial class MainWindow : Window
         _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
 
         // Sync IsVibeOutMode from MainMenu to MainWindow
-        if (_mainMenu?.ViewModel != null && ViewModel != null)
+        if (_mainMenu?.ViewModel is not null && ViewModel is not null)
         {
             _mainMenu.ViewModel.PropertyChanged += (s, e) =>
             {
@@ -71,7 +71,7 @@ public partial class MainWindow : Window
                 // First ensure any running search state is saved
                 var userProfileService =
                     BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
-                if (userProfileService != null)
+                if (userProfileService is not null)
                 {
                     DebugLogger.LogImportant(
                         "MainWindow",

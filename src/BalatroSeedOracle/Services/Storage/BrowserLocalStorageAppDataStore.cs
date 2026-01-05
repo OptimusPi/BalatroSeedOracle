@@ -16,7 +16,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 
     public BrowserLocalStorageAppDataStore()
     {
-        Debug.WriteLine("BrowserLocalStorageAppDataStore initialized");
         // Console.WriteLine removed for AI compatibility - use DebugLogger instead
         DebugLogger.Log("BrowserLocalStorageAppDataStore", "Initialized");
         
@@ -26,7 +25,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
             SetItem("bso:test", "test-value");
             var testValue = GetItem("bso:test");
             DebugLogger.Log("BrowserLocalStorageAppDataStore", $"LocalStorage test result: {testValue}");
-            Debug.WriteLine($"LocalStorage test result: {testValue}");
             
             if (testValue == "test-value")
             {
@@ -44,7 +42,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"LocalStorage test failed: {ex.Message}");
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Exception type: {ex.GetType().Name}");
-            Debug.WriteLine($"LocalStorage test failed: {ex.Message}");
         }
     }
 
@@ -58,7 +55,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         catch (Exception ex)
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error checking if key exists: {ex.Message}");
-            Debug.WriteLine($"Error checking if key exists: {ex.Message}");
             return Task.FromResult(false);
         }
     }
@@ -73,7 +69,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         catch (Exception ex)
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error reading text for key {key}: {ex.Message}");
-            Debug.WriteLine($"Error reading text for key {key}: {ex.Message}");
             return Task.FromResult<string?>(null);
         }
     }
@@ -89,7 +84,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         catch (Exception ex)
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error writing text for key {key}: {ex.Message}");
-            Debug.WriteLine($"Error writing text for key {key}: {ex.Message}");
             throw;
         }
     }
@@ -104,7 +98,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         catch (Exception ex)
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error deleting key {key}: {ex.Message}");
-            Debug.WriteLine($"Error deleting key {key}: {ex.Message}");
             throw;
         }
     }
@@ -137,7 +130,6 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         catch (Exception ex)
         {
             DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error listing keys with prefix {prefix}: {ex.Message}");
-            Debug.WriteLine($"Error listing keys with prefix {prefix}: {ex.Message}");
             return Task.FromResult<IReadOnlyList<string>>(new List<string>());
         }
     }

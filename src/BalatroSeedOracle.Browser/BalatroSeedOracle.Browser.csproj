@@ -5,6 +5,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <!-- Define BROWSER compilation symbol for conditional compilation -->
     <DefineConstants>BROWSER</DefineConstants>
     <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->

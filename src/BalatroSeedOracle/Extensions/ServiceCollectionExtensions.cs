@@ -41,6 +41,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<SoundEffectsService>();
 #endif
             services.AddSingleton<TransitionService>();
+            services.AddSingleton<TriggerService>();
             services.AddSingleton<EventFXService>();
             services.AddSingleton<SearchTransitionManager>();
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
@@ -66,7 +67,11 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();
-            services.AddTransient<TransitionDesignerWidgetViewModel>();
+            services.AddTransient<TransitionDesignerWidgetViewModel>(sp =>
+                new TransitionDesignerWidgetViewModel(
+                    sp.GetService<TransitionService>(),
+                    sp.GetService<TriggerService>()
+                ));
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();

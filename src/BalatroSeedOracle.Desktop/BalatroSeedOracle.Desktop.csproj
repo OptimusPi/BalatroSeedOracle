@@ -8,6 +8,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\BalatroSeedOracle\BalatroSeedOracle.ico</ApplicationIcon>
     <AssemblyName>BalatroSeedOracle.Desktop</AssemblyName>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright © 2025</Copyright>

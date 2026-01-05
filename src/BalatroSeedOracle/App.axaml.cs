@@ -52,7 +52,7 @@ public partial class App : Application
             {
                 await Task.Delay(1000); // Wait for JS to initialize
                 var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
-                Console.WriteLine($"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
+                DebugLogger.Log("App", $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
             });
             
             // TODO: Implement browser sample filter seeding

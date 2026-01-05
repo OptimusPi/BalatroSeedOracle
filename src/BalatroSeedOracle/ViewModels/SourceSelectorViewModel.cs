@@ -127,7 +127,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateDisplay()
         {
-            if (SelectedSource == null)
+            if (SelectedSource is null)
             {
                 Description = "Unknown source";
                 IsPreviewVisible = false;
@@ -186,7 +186,7 @@ namespace BalatroSeedOracle.ViewModels
         public void SetSelectedSource(string source)
         {
             var sourceOption = Sources.FirstOrDefault(s => s.Tag == source);
-            if (sourceOption != null)
+            if (sourceOption is not null)
             {
                 SelectedSource = sourceOption;
             }

@@ -44,14 +44,11 @@ namespace BalatroSeedOracle.Services
             try
             {
                 DebugLogger.Log("ConfigurationService", $"SaveFilterAsync called with path: {filePath}");
-                Debug.WriteLine($"ConfigurationService.SaveFilterAsync called with path: {filePath}");
                 
 #if BROWSER
                 DebugLogger.Log("ConfigurationService", "Running in BROWSER mode - using IAppDataStore");
-                Debug.WriteLine("Running in BROWSER mode - using IAppDataStore");
 #else
                 DebugLogger.Log("ConfigurationService", "Running in DESKTOP mode - using file system");
-                Debug.WriteLine("Running in DESKTOP mode - using file system");
 #endif
 
                 // In browser, filePath is treated as a logical key (e.g. "Filters/MyFilter.json").
@@ -67,16 +64,13 @@ namespace BalatroSeedOracle.Services
                     var json = serializationService.SerializeConfig(motelyConfig);
 
                     DebugLogger.Log("ConfigurationService", $"Serialized config to {json.Length} characters");
-                    Debug.WriteLine($"Serialized config to {json.Length} characters");
 
 #if BROWSER
                     await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
                     DebugLogger.Log("ConfigurationService", $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
-                    Debug.WriteLine($"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
 #else
                     await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
                     DebugLogger.Log("ConfigurationService", $"Successfully wrote to file: {filePath}");
-                    Debug.WriteLine($"Successfully wrote to file: {filePath}");
 #endif
 
                     // Invalidate cache for this filter
@@ -93,8 +87,6 @@ namespace BalatroSeedOracle.Services
                 // Error saving filter
                 DebugLogger.LogError("ConfigurationService", $"ERROR saving filter to {filePath}: {ex.Message}");
                 DebugLogger.LogError("ConfigurationService", $"Stack trace: {ex.StackTrace}");
-                Debug.WriteLine($"ERROR saving filter to {filePath}: {ex.Message}");
-                Helpers.DebugLogger.LogError("ConfigurationService", $"Error saving filter to {filePath}: {ex.Message}");
                 return false;
             }
         }
