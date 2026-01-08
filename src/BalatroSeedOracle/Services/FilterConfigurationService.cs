@@ -52,9 +52,9 @@ namespace BalatroSeedOracle.Services
             };
 
             // Initialize collections
-            config.Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
-            config.MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+            config.Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>();
+            config.Should = new List<MotelyJsonConfig.MotelyJsonFilterClause>();
+            config.MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>();
 
             // Convert all items using the helper method that handles unique keys
             FixUniqueKeyParsing(selectedMust, config.Must, itemConfigs, 0);
@@ -71,7 +71,7 @@ namespace BalatroSeedOracle.Services
         // COMPLETE method copied from original FiltersModal.FixUniqueKeyParsing()
         private void FixUniqueKeyParsing(
             List<string> items,
-            List<MotelyJsonConfig.MotleyJsonFilterClause> targetList,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> targetList,
             Dictionary<string, ItemConfig> itemConfigs,
             int defaultScore = 0
         )
@@ -129,7 +129,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Creates a MotleyJsonFilterClause for an operator (Or/And) with nested child clauses
         /// </summary>
-        private MotelyJsonConfig.MotleyJsonFilterClause? CreateOperatorClause(
+        private MotelyJsonConfig.MotelyJsonFilterClause? CreateOperatorClause(
             ItemConfig operatorConfig
         )
         {
@@ -139,10 +139,10 @@ namespace BalatroSeedOracle.Services
             // Convert "OR"/"AND" to "Or"/"And" for JSON format
             var operatorType = operatorConfig.OperatorType.ToUpper() == "OR" ? "Or" : "And";
 
-            var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+            var operatorClause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Type = operatorType, // "Or" or "And"
-                Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Clauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             // Set Mode for Or/And operators (default to "Max" if not specified)
@@ -177,11 +177,11 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Converts an ItemConfig to a MotleyJsonFilterClause
         /// </summary>
-        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertItemConfigToClause(
+        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(
             ItemConfig config
         )
         {
-            var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+            var clause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
@@ -254,13 +254,13 @@ namespace BalatroSeedOracle.Services
         }
 
         // SIMPLIFIED version of CreateFilterItemFromSelection for the service
-        private MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterItemFromSelection(
+        private MotelyJsonConfig.MotelyJsonFilterClause? CreateFilterItemFromSelection(
             string category,
             string itemName,
             ItemConfig config
         )
         {
-            var filterItem = new MotelyJsonConfig.MotleyJsonFilterClause
+            var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
@@ -339,7 +339,7 @@ namespace BalatroSeedOracle.Services
 
             if (canHaveSources && config.Sources != null)
             {
-                filterItem.Sources = new MotelyJsonConfig.SourcesConfig();
+                filterItem.Sources = new SourcesConfig();
 
                 if (config.Sources is Dictionary<string, List<int>> sourcesDict)
                 {

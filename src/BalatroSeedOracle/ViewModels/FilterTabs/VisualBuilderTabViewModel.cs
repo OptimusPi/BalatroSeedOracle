@@ -254,7 +254,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Phase 3: Edition/Sticker/Seal selectors (apply to ALL items in shelf)
         [ObservableProperty]
-        private string _selectedEdition = "None"; // None, Foil, Holo, Polychrome, Negative
+        private string _selectedEdition = "None"; // None, Foil, Holographic, Polychrome, Negative
 
         [ObservableProperty]
         private bool _stickerPerishable = false;

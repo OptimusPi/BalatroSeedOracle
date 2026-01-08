@@ -73,13 +73,13 @@
                             <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="11" Height="24"/>
                         </StackPanel>
 
-                        <!-- Edition (Jokers + StandardCards) - JAML schema: ["Foil", "Holo", "Polychrome", "Negative"] -->
+                        <!-- Edition (Jokers + StandardCards) - JAML schema: ["Foil", "Holographic", "Polychrome", "Negative"] -->
                         <StackPanel Grid.Column="0" Grid.Row="6" Spacing="2" IsVisible="{Binding IsEditionVisible}">
                             <TextBlock Text="EDITION" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Edition}" FontSize="11" Height="24">
                                 <sys:String>None</sys:String>
                                 <sys:String>Foil</sys:String>
-                                <sys:String>Holo</sys:String>
+                                <sys:String>Holographic</sys:String>
                                 <sys:String>Polychrome</sys:String>
                                 <sys:String>Negative</sys:String>
                             </ComboBox>

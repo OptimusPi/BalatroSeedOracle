@@ -1092,9 +1092,9 @@ namespace BalatroSeedOracle.ViewModels
                 // Use enum ToString() for JSON serialization
                 Deck = SelectedDeck.ToString(),
                 Stake = SelectedStake.ToString().ToLower(),
-                Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                Should = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Should = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             // CRITICAL FIX: Read from VisualBuilderTab's collections if available
@@ -1207,19 +1207,19 @@ namespace BalatroSeedOracle.ViewModels
             return config;
         }
 
-        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertItemConfigToClause(
+        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(
             ItemConfig itemConfig
         )
         {
             // Handle AND/OR clause types with Children
             if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
             {
-                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                var operatorClause = new MotelyJsonConfig.MotelyJsonFilterClause
                 {
                     Type = itemConfig.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Score = itemConfig.Score,
                     Label = itemConfig.Label,
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Clauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 // Add antes if configured
@@ -1251,7 +1251,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Regular item (not a clause operator)
-            var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+            var clause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Type = itemConfig.IsSoulJoker ? "SoulJoker" : itemConfig.ItemType,
                 Value = itemConfig.IsMultiValue ? null : itemConfig.ItemName,
@@ -1302,7 +1302,7 @@ namespace BalatroSeedOracle.ViewModels
                 || itemConfig.IsMegaArcana
             )
             {
-                clause.Sources = new MotelyJsonConfig.SourcesConfig
+                clause.Sources = new SourcesConfig
                 {
                     ShopSlots = itemConfig.ShopSlots?.ToArray(),
                     PackSlots = itemConfig.PackSlots?.ToArray(),
@@ -1313,13 +1313,13 @@ namespace BalatroSeedOracle.ViewModels
             else if (itemConfig.Sources is not null)
             {
                 // Fallback to direct sources object if set
-                clause.Sources = itemConfig.Sources as MotelyJsonConfig.SourcesConfig;
+                clause.Sources = itemConfig.Sources as SourcesConfig;
             }
 
             return clause;
         }
 
-        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
+        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertFilterItemToClause(
             Models.FilterItem filterItem
         )
         {
@@ -1335,11 +1335,11 @@ namespace BalatroSeedOracle.ViewModels
                     $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}"
                 );
 
-                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                var operatorClause = new MotelyJsonConfig.MotelyJsonFilterClause
                 {
                     Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Label = operatorItem.DisplayName,
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Clauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 // Recursively convert children
@@ -1394,7 +1394,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
 
-            var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+            var clause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Type = filterItem.Type,
                 Value = clauseValue,
@@ -1577,7 +1577,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private ItemConfig ConvertClauseToItemConfig(
-            MotelyJsonConfig.MotleyJsonFilterClause clause,
+            MotelyJsonConfig.MotelyJsonFilterClause clause,
             string itemKey
         )
         {

@@ -158,6 +158,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
   </ItemGroup>
+  <!-- Desktop-only: use Motely.API's MotelySearchDatabase abstraction -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <!-- Exclude MCP files - not needed for main release -->
     <Compile Remove="MCP\**\*.cs" />

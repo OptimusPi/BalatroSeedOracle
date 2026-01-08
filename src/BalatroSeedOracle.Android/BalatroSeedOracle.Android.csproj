@@ -9,6 +9,8 @@
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <!-- Android-specific settings -->
   <PropertyGroup>

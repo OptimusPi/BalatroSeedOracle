@@ -124,9 +124,7 @@
                   Background="{StaticResource DarkBackground}"
                   Foreground="White"
                   RowBackground="{StaticResource DarkBackground}"
-                  AlternatingRowBackground="{StaticResource EditorDarkBg}"
-                  SelectedItem="{Binding SelectedItem}"
-                  SelectedItems="{Binding SelectedItems}">
+                  SelectedItem="{Binding SelectedItem}">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="SEED" Width="150" CanUserSort="True" SortMemberPath="Seed">
                     <DataGridTemplateColumn.CellTemplate>

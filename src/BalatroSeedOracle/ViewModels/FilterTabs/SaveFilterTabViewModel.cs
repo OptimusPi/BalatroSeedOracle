@@ -423,7 +423,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Converts a FilterItem (including FilterOperatorItem with nested children) to a MotleyJsonFilterClause
         /// </summary>
-        private MotelyJsonConfig.MotleyJsonFilterClause? ConvertFilterItemToClause(
+        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertFilterItemToClause(
             Models.FilterItem item,
             Dictionary<string, Models.ItemConfig> itemConfigs
         )
@@ -431,10 +431,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Handle FilterOperatorItem specially - it has Children that need to be recursively converted
             if (item is Models.FilterOperatorItem operatorItem)
             {
-                var operatorClause = new MotelyJsonConfig.MotleyJsonFilterClause
+                var operatorClause = new MotelyJsonConfig.MotelyJsonFilterClause
                 {
                     Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
-                    Clauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Clauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 DebugLogger.Log(
@@ -472,7 +472,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // Use FilterConfigurationService to convert ItemConfig to clause
                 // We need to create a simple clause from the itemConfig
-                var clause = new MotelyJsonConfig.MotleyJsonFilterClause
+                var clause = new MotelyJsonConfig.MotelyJsonFilterClause
                 {
                     Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Min = itemConfig.Min,
@@ -547,7 +547,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
             );
 
-            var fallbackClause = new MotelyJsonConfig.MotleyJsonFilterClause
+            var fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
             };

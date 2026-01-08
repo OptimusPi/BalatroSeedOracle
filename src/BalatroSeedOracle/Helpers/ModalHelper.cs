@@ -439,11 +439,11 @@ namespace BalatroSeedOracle.Helpers
                     ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
                 Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             var json = System.Text.Json.JsonSerializer.Serialize(

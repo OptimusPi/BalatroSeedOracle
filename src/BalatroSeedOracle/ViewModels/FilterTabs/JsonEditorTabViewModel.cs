@@ -89,18 +89,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
                     config.Must.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        new MotelyJsonConfig.MotelyJsonFilterClause
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualTab.SelectedShould)
                 {
                     config.Should.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        new MotelyJsonConfig.MotelyJsonFilterClause
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -186,18 +186,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
                     config.Must.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        new MotelyJsonConfig.MotelyJsonFilterClause
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -209,7 +209,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualTab.SelectedShould)
                 {
                     config.Should.Add(
-                        new MotelyJsonConfig.MotleyJsonFilterClause
+                        new MotelyJsonConfig.MotelyJsonFilterClause
                         {
                             Type = item.Type,
                             Value = item.Name,

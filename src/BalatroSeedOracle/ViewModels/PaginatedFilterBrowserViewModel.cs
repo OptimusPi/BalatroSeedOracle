@@ -116,11 +116,11 @@ namespace BalatroSeedOracle.ViewModels
                     ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
                 Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             var json = System.Text.Json.JsonSerializer.Serialize(
@@ -352,7 +352,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause> clauses,
+            List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause> clauses,
             int? scoreOverride = null
         )
         {
@@ -429,7 +429,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.MotelyJsonConfig.MotleyJsonFilterClause clause,
+            Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause clause,
             string itemValue,
             int? scoreOverride = null
         )

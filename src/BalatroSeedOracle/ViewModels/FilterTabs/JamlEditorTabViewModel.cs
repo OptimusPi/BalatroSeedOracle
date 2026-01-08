@@ -53,6 +53,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         public event System.Action<int, int>? JumpToError;
 
+        /// <summary>
+        /// Invokes the JumpToError event if any handlers are subscribed.
+        /// This method allows external classes to trigger the event.
+        /// </summary>
+        public void InvokeJumpToError(int lineNumber, int column)
+        {
+            JumpToError?.Invoke(lineNumber, column);
+        }
+
         private System.Threading.CancellationTokenSource? _validationThrottleCts;
 
         partial void OnJamlContentChanged(string value)
@@ -284,7 +293,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private FilterItem CreateFilterItemFromClause(
-            MotelyJsonConfig.MotleyJsonFilterClause clause, 
+            MotelyJsonConfig.MotelyJsonFilterClause clause, 
             FilterItemStatus status, 
             string category,
             SpriteService spriteService)

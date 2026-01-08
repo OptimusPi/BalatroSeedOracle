@@ -504,7 +504,7 @@ public class AccurateBalatroKnowledgeBase
 public class AccurateBalatroItem : BalatroItem
 {
     public string[]? Mechanics { get; set; }
-    public int? Rarity { get; set; }
+    public new int? Rarity { get; set; }
     public int? Cost { get; set; }
     public bool BlueprintCompat { get; set; }
     public string? UnlockCondition { get; set; }

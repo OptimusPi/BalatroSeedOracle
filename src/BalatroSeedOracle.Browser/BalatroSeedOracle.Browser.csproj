@@ -17,9 +17,17 @@
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Disable HotReload in release builds -->
     <WasmEnableHotReload Condition="'$(Configuration)'=='Release'">false</WasmEnableHotReload>
-    <!-- Set publish directory directly to BSO folder -->
-    <PublishDir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\</PublishDir>
+    <!-- Publish to temp location, then copy wwwroot contents to final destination -->
+    <PublishDir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\_publish\</PublishDir>
   </PropertyGroup>
+  
+  <Target Name="DeployWasmOutput" AfterTargets="Publish">
+    <ItemGroup>
+      <WasmFiles Include="$(PublishDir)wwwroot\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WasmFiles)" DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\%(RecursiveDir)" />
+    <RemoveDir Directories="$(PublishDir)" />
+  </Target>
   <PropertyGroup Condition="'$(EnableWasmThreads)'=='true'">
     <WasmEnableThreads>true</WasmEnableThreads>
   </PropertyGroup>

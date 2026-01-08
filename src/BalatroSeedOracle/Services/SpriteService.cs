@@ -604,7 +604,7 @@ namespace BalatroSeedOracle.Services
             DebugLogger.Log("SpriteService", "Precomputing composite images...");
             var startTime = DateTime.Now;
 
-            var editions = new[] { "None", "Foil", "Holo", "Polychrome", "Negative" };
+            var editions = new[] { "None", "Foil", "Holographic", "Polychrome", "Negative" };
             var debuffStates = new[] { false, true };
 
             int total = editions.Length * debuffStates.Length;
@@ -2067,7 +2067,7 @@ namespace BalatroSeedOracle.Services
         /// Gets a specific joker sprite with optional edition effects applied
         /// </summary>
         /// <param name="jokerName">Name of the joker</param>
-        /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
+        /// <param name="edition">Edition effect (None, Foil, Holographic, Polychrome, Negative)</param>
         /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
         public IImage? GetJokerSpriteWithEdition(
             string jokerName,
@@ -2127,7 +2127,7 @@ namespace BalatroSeedOracle.Services
             return result;
         }
 
-        /// <param name="edition">Edition effect (None, Foil, Holo, Polychrome, Negative)</param>
+        /// <param name="edition">Edition effect (None, Foil, Holographic, Polychrome, Negative)</param>
         /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
         public IImage? GetJokerWithEditionImage(string edition, bool debuff = false)
         {

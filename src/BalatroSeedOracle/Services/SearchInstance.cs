@@ -466,6 +466,7 @@ namespace BalatroSeedOracle.Services
                 if (val == null)
                     return null;
                 return ulong.TryParse(val, out var batch) ? batch : null;
+            }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
@@ -527,22 +528,21 @@ namespace BalatroSeedOracle.Services
                                .ToList();
 
                 if (seeds.Count == 0)
-                    {
-                        DebugLogger.Log(
-                            $"SearchInstance[{_searchId}]",
-                            "No seeds to dump - database is empty"
-                        );
-                        return;
-                    }
-
-                    // Append seeds to fertilizer.txt
-                    await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
-
-                    DebugLogger.LogImportant(
+                {
+                    DebugLogger.Log(
                         $"SearchInstance[{_searchId}]",
-                        $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                        "No seeds to dump - database is empty"
                     );
+                    return;
                 }
+
+                // Append seeds to fertilizer.txt
+                await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
+
+                DebugLogger.LogImportant(
+                    $"SearchInstance[{_searchId}]",
+                    $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
+                );
             }
             catch (Exception ex)
             {

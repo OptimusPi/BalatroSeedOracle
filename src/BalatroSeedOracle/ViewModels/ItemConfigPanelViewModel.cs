@@ -558,7 +558,7 @@ namespace BalatroSeedOracle.ViewModels
         // JAML Schema Validation Methods
         private string? ValidateEdition(string? edition)
         {
-            var validEditions = new[] { "Foil", "Holo", "Polychrome", "Negative" };
+            var validEditions = new[] { "Foil", "Holographic", "Polychrome", "Negative" };
             return (edition != "None" && validEditions.Contains(edition)) ? edition : null;
         }
 

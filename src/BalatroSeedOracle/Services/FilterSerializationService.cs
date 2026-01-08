@@ -67,7 +67,7 @@ namespace BalatroSeedOracle.Services
 
             // Must array - always write (even if empty, for easy editing)
             writer.WriteStartArray("must");
-            foreach (var item in config.Must ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>())
+            foreach (var item in config.Must ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>())
             {
                 WriteFilterItem(writer, item);
             }
@@ -76,7 +76,7 @@ namespace BalatroSeedOracle.Services
             // Should array - always write (even if empty, for easy editing)
             writer.WriteStartArray("should");
             foreach (
-                var item in config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                var item in config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>()
             )
             {
                 WriteFilterItem(writer, item, includeScore: true);
@@ -86,7 +86,7 @@ namespace BalatroSeedOracle.Services
             // MustNot array - always write (even if empty, for easy editing)
             writer.WriteStartArray("mustNot");
             foreach (
-                var item in config.MustNot ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>()
+                var item in config.MustNot ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>()
             )
             {
                 WriteFilterItem(writer, item);
@@ -236,13 +236,13 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Creates a filter clause from selection data
         /// </summary>
-        public MotelyJsonConfig.MotleyJsonFilterClause? CreateFilterClause(
+        public MotelyJsonConfig.MotelyJsonFilterClause? CreateFilterClause(
             string category,
             string itemName,
             ItemConfig config
         )
         {
-            var filterItem = new MotelyJsonConfig.MotleyJsonFilterClause
+            var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
             {
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
@@ -255,7 +255,7 @@ namespace BalatroSeedOracle.Services
 
             if (canHaveSources && HasValidSources(config))
             {
-                filterItem.Sources = new MotelyJsonConfig.SourcesConfig
+                filterItem.Sources = new SourcesConfig
                 {
                     ShopSlots = config.ShopSlots?.ToArray(),
                     PackSlots = config.PackSlots?.ToArray(),
@@ -298,7 +298,7 @@ namespace BalatroSeedOracle.Services
         public void ConvertSelectionsToFilterClauses(
             ObservableCollection<string> items,
             Dictionary<string, ItemConfig> itemConfigs,
-            List<MotelyJsonConfig.MotleyJsonFilterClause> targetList,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> targetList,
             int defaultScore = 0
         )
         {
@@ -340,7 +340,7 @@ namespace BalatroSeedOracle.Services
 
         private void WriteFilterItem(
             Utf8JsonWriter writer,
-            MotelyJsonConfig.MotleyJsonFilterClause item,
+            MotelyJsonConfig.MotelyJsonFilterClause item,
             bool includeScore = false
         )
         {

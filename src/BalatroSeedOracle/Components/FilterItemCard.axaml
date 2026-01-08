@@ -33,7 +33,7 @@
                        VerticalAlignment="Center"
                        IsHitTestVisible="False"/>
 
-                <!-- Edition overlay (Foil/Holo/Polychrome/Negative) -->
+                <!-- Edition overlay (Foil/Holographic/Polychrome/Negative) -->
                 <Image Source="{Binding EditionImage}"
                        Width="{Binding Category, Converter={x:Static converters:CategoryToWidthConverter.Instance}}"
                        Height="{Binding Category, Converter={x:Static converters:CategoryToHeightConverter.Instance}}"

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.DuckDB;
+using Motely.DuckDB;
 
 namespace BalatroSeedOracle.Services
 {
@@ -234,17 +235,20 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private async Task EnsureSearchStateTableExistsAsync(IDuckDBConnection connection)
         {
-            await connection.ExecuteNonQueryAsync(
-                @"CREATE TABLE IF NOT EXISTS search_state (
-                    id INTEGER PRIMARY KEY,
-                    deck_index INTEGER,
-                    stake_index INTEGER,
-                    batch_size INTEGER,
-                    last_completed_batch INTEGER,
-                    search_mode INTEGER,
-                    wordlist_name TEXT,
-                    updated_at TIMESTAMP
-                )");
+            // Note: BalatroSeedOracle's search_state has additional columns (deck_index, stake_index, etc.)
+            // that Motely's schema doesn't include. For now, keep inline but could extend DuckDBSchema if needed.
+            // Using Motely's base schema and adding BalatroSeedOracle-specific columns
+            var baseSchema = DuckDBSchema.SearchStateTableSchema();
+            await connection.ExecuteNonQueryAsync(baseSchema);
+            
+            // Add BalatroSeedOracle-specific columns if they don't exist
+            await connection.ExecuteNonQueryAsync(@"
+                ALTER TABLE search_state ADD COLUMN IF NOT EXISTS deck_index INTEGER;
+                ALTER TABLE search_state ADD COLUMN IF NOT EXISTS stake_index INTEGER;
+                ALTER TABLE search_state ADD COLUMN IF NOT EXISTS search_mode INTEGER;
+                ALTER TABLE search_state ADD COLUMN IF NOT EXISTS wordlist_name TEXT;
+                ALTER TABLE search_state ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
+            ");
         }
     }
 }
