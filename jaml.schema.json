@@ -127,7 +127,7 @@
         },
         "edition": {
           "type": "string",
-          "enum": ["Foil", "Holo", "Polychrome", "Negative"],
+          "enum": ["Foil", "Holographic", "Polychrome", "Negative"],
           "description": "Required edition for the item"
         },
         "seal": {
