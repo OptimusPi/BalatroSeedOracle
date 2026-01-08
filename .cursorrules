@@ -70,10 +70,26 @@ Balatro Seed Oracle is a cross-platform Avalonia UI application for searching Ba
 - Examples: `JamlFilters/*.jaml`
 
 ### Motely Search Engine
-- Submodule: `external/Motely/`
+- **CRITICAL**: This repository contains a git submodule at `external/Motely/`
+- **Submodule Details**: 
+  - Path: `external/Motely/`
+  - Fork: `MotelyJAML` on GitHub (OptimusPi/MotelyJAML)
+  - Contains DuckDB schemas, search engine, and APIs
+- **ALWAYS initialize submodule before building**:
+  ```bash
+  git submodule update --init --recursive
+  ```
+- If submodule has uncommitted changes, either commit them or stash:
+  ```bash
+  cd external/Motely
+  git stash  # or git commit -am "message"
+  cd ../..
+  git submodule update --init --recursive
+  ```
 - High-performance seed search using SIMD
 - Supports JAML and JSON filters
 - CLI available in `external/Motely/Motely.TUI/`
+- **BSO Integration**: BSO uses `Motely.DuckDB.DuckDBSchema` for centralized DuckDB table schemas
 
 ### Balatro Game Concepts
 - **Jokers**: Cards that modify gameplay (e.g., Blueprint, Brainstorm, OopsAll6s)

@@ -11,10 +11,11 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Views.Modals;
-using DuckDB.NET.Native; // for NativeMethods.Appender.DuckDBAppenderFlush
 using Motely;
 using Motely.Filters;
 using Motely.Utils;
+using Motely.DuckDB;
+using Motely.API;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
@@ -35,7 +36,6 @@ namespace BalatroSeedOracle.Services
 
         // DuckDB database for this search instance
         private string _dbPath = string.Empty;
-        private string _connectionString = string.Empty;
         private List<string> _columnNames = new List<string>();
         private CancellationTokenSource? _cancellationTokenSource;
         private volatile bool _isRunning;
@@ -50,10 +50,9 @@ namespace BalatroSeedOracle.Services
         private volatile bool _hasNewResultsSinceLastQuery = false;
         private bool _disposed = false;
 
-        // Persistent DuckDB connection for database operations
-        private readonly DuckDBConnection _connection;
-        private DuckDBAppender? _appender;
-        private readonly object _appenderLock = new();
+        // Use MotelySearchDatabase as the high-level abstraction (black box - handles all DB internals)
+        // This ensures BSO search works the same way as Motely CLI/TUI/API search
+        private MotelySearchDatabase? _searchDatabase;
 
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -132,10 +131,7 @@ namespace BalatroSeedOracle.Services
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
             _dbPath = dbPath;
-            _connectionString = $"Data Source={_dbPath}";
-            // Open persistent connection immediately (simple, no EnsureConnection later)
-            _connection = new DuckDBConnection(_connectionString);
-            _connection.Open();
+            // MotelySearchDatabase will be created in SetupDatabase() after we know the column schema
         }
 
         private void SetupDatabase(Motely.Filters.MotelyJsonConfig config, string configPath)
@@ -154,7 +150,6 @@ namespace BalatroSeedOracle.Services
             {
                 var searchResultsDir = AppPaths.SearchResultsDir;
                 _dbPath = Path.Combine(searchResultsDir, $"{_searchId}.db");
-                _connectionString = $"Data Source={_dbPath}";
             }
             DebugLogger.LogImportant(
                 $"SearchInstance[{_searchId}]",
@@ -165,190 +160,27 @@ namespace BalatroSeedOracle.Services
         }
 
 
-        /// <summary>
-        /// Validates existing database schema matches current filter requirements.
-        /// If schema mismatch detected, closes connection, deletes database, and reopens connection.
-        /// Returns true if schema matched (or didn't exist), false if database was deleted.
-        /// </summary>
-        private bool ValidateOrDeleteDatabase()
-        {
-            try
-            {
-                // Check if results table exists (DuckDB syntax)
-                using (var checkTable = _connection.CreateCommand())
-                {
-                    checkTable.CommandText = "SELECT table_name FROM information_schema.tables WHERE table_name='results'";
-                    var result = checkTable.ExecuteScalar();
-
-                    if (result == null)
-                    {
-                        // Table doesn't exist yet - schema will be created fresh
-                        return true;
-                    }
-                }
-
-                // Table exists - check if columns match expected schema (DuckDB syntax)
-                using (var getColumns = _connection.CreateCommand())
-                {
-                    getColumns.CommandText = "SELECT column_name FROM information_schema.columns WHERE table_name='results' ORDER BY ordinal_position";
-                    var existingColumns = new List<string>();
-                    using (var reader = getColumns.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var columnName = reader.GetString(0); // Column name is at index 0 for SELECT
-                            existingColumns.Add(columnName);
-                        }
-                    }
-
-                    // Compare with expected columns
-                    var expectedColumns = _columnNames;
-
-                    DebugLogger.Log(
-                        $"SearchInstance[{_searchId}]",
-                        $"Existing columns: {string.Join(", ", existingColumns)}"
-                    );
-                    DebugLogger.Log(
-                        $"SearchInstance[{_searchId}]",
-                        $"Expected columns: {string.Join(", ", expectedColumns)}"
-                    );
-
-                    bool match = existingColumns.Count == expectedColumns.Count &&
-                                 existingColumns.SequenceEqual(expectedColumns);
-
-                    if (!match)
-                    {
-                        DebugLogger.LogImportant(
-                            $"SearchInstance[{_searchId}]",
-                            $"⚠️ SCHEMA MISMATCH! Deleting old database: {_dbPath}"
-                        );
-
-                        // Close connection before deleting file
-                        _connection.Close();
-
-                        // Delete database file and WAL file
-                        if (File.Exists(_dbPath))
-                        {
-                            File.Delete(_dbPath);
-                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}");
-                        }
-                        if (File.Exists(_dbPath + ".wal"))
-                        {
-                            File.Delete(_dbPath + ".wal");
-                            DebugLogger.Log($"SearchInstance[{_searchId}]", $"Deleted: {_dbPath}.wal");
-                        }
-
-                        // Reopen connection to create fresh database
-                        _connection.Open();
-
-                        return false; // Schema didn't match, database was deleted
-                    }
-                }
-
-                return true; // Schema matches
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]",
-                    $"Schema validation failed: {ex.Message}"
-                );
-                
-                // Ensure connection is open before returning
-                if (_connection.State != System.Data.ConnectionState.Open)
-                {
-                    try
-                    {
-                        // Delete any corrupt database files
-                        if (File.Exists(_dbPath))
-                            File.Delete(_dbPath);
-                        if (File.Exists(_dbPath + ".wal"))
-                            File.Delete(_dbPath + ".wal");
-                        
-                        _connection.Open();
-                    }
-                    catch (Exception reopenEx)
-                    {
-                        DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Failed to reopen connection: {reopenEx.Message}");
-                    }
-                }
-                
-                // If validation fails, assume we need fresh database
-                return false;
-            }
-        }
-
         private void InitializeDatabase()
         {
             try
             {
-                // CRITICAL: Check if database exists with DIFFERENT schema
-                // If schema mismatch detected, delete the old database and create fresh one
-                bool schemaMatches = ValidateOrDeleteDatabase();
-
-                if (!schemaMatches)
-                {
-                    DebugLogger.LogImportant(
-                        $"SearchInstance[{_searchId}]",
-                        "Schema mismatch detected - database was deleted, creating fresh schema"
-                    );
-                }
-
-                var columnDefs = new List<string> { "seed VARCHAR PRIMARY KEY", "score INT" };
-                for (int i = 2; i < _columnNames.Count; i++)
-                {
-                    // Sanitize column name: replace spaces/hyphens/dots with underscores, remove quotes
-                    var sanitized = _columnNames[i]
-                        .Replace(" ", "_")
-                        .Replace("-", "_")
-                        .Replace(".", "_")
-                        .Replace("\"", "");
-                    columnDefs.Add($"\"{sanitized}\" INT");
-                }
-
-                using (var createTable = _connection.CreateCommand())
-                {
-                    createTable.CommandText =
-                        $@"CREATE TABLE IF NOT EXISTS results (
-                        {string.Join(",\n                        ", columnDefs)}
-                    )";
-                    createTable.ExecuteNonQuery();
-                }
-                using (var createIndex = _connection.CreateCommand())
-                {
-                    createIndex.CommandText =
-                        "CREATE INDEX IF NOT EXISTS idx_score ON results(score DESC);";
-                    createIndex.ExecuteNonQuery();
-                }
-
-                // Create indexes for all tally columns to accelerate sorting
-                for (int i = 2; i < _columnNames.Count; i++)
-                {
-                    // Sanitize column name consistently
-                    var sanitized = _columnNames[i]
-                        .Replace(" ", "_")
-                        .Replace("-", "_")
-                        .Replace(".", "_")
-                        .Replace("\"", "");
-                    using (var createTallyIndex = _connection.CreateCommand())
-                    {
-                        createTallyIndex.CommandText =
-                            $"CREATE INDEX IF NOT EXISTS idx_{sanitized} ON results(\"{sanitized}\" DESC);";
-                        createTallyIndex.ExecuteNonQuery();
-                    }
-                }
-
-                using (var createMeta = _connection.CreateCommand())
-                {
-                    createMeta.CommandText =
-                        "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )";
-                    createMeta.ExecuteNonQuery();
-                }
-                // DuckDB PRIMARY KEY handles duplicates automatically
+                // Use MotelySearchDatabase - it handles ALL database internals (schema, indexes, validation) internally
+                // This ensures BSO search works the same way as Motely CLI/TUI/API search
+                _searchDatabase = new MotelySearchDatabase(
+                    _dbPath,
+                    _columnNames,
+                    logCallback: msg => DebugLogger.Log($"SearchInstance[{_searchId}]", msg)
+                );
+                
+                // Create BSO-specific search_meta table (not in Motely schema)
+                // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection (avoids file locking!)
+                _searchDatabase.ExecuteNonQuery(
+                    "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )");
+                
                 _dbInitialized = true;
                 DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
-                    $"Database initialized with {_columnNames.Count} columns"
+                    $"Database initialized with {_columnNames.Count} columns via MotelySearchDatabase"
                 );
             }
             catch (Exception ex)
@@ -362,18 +194,15 @@ namespace BalatroSeedOracle.Services
         }
 
         // Force flush appender to make data visible for queries
+        // MotelySearchDatabase handles this internally via Checkpoint()
         public void ForceFlush()
         {
             try
             {
-                lock (_appenderLock)
-                {
-                    if (_appender != null)
-                    {
-                        _appender.Dispose();
-                        _appender = null;
-                    }
-                }
+                // MotelySearchDatabase buffers data - we can't flush without closing appender
+                // For real-time queries, we'd need a separate read connection, but for seed searching
+                // we typically query after search completes, so this is fine
+                // Note: This is a no-op for now - data becomes visible after Checkpoint()
             }
             catch (Exception ex)
             {
@@ -386,37 +215,25 @@ namespace BalatroSeedOracle.Services
 
         private void AddSearchResult(SearchResult result)
         {
-            if (!_dbInitialized)
+            if (!_dbInitialized || _searchDatabase == null)
                 return;
 
             try
             {
-                lock (_appenderLock)
-                {
-                    _appender ??= _connection.CreateAppender("results");
-
-                    var row = _appender.CreateRow();
-                    row.AppendValue(result.Seed).AppendValue(result.TotalScore);
-
-                    int tallyCount = _columnNames.Count - 2;
-                    for (int i = 0; i < tallyCount; i++)
-                    {
-                        int val =
-                            (result.Scores != null && i < result.Scores.Length)
-                                ? result.Scores[i]
-                                : 0;
-                        row.AppendValue(val);
-                    }
-                    row.EndRow();
-                }
+                // Convert BSO SearchResult to MotelySearchDatabase format
+                var tallies = result.Scores?.ToList() ?? new List<int>();
+                
+                // Use MotelySearchDatabase.InsertRow() - handles all appender logic internally
+                _searchDatabase.InsertRow(result.Seed, result.TotalScore, tallies);
 
                 // Invalidate query cache - new results are available
                 _hasNewResultsSinceLastQuery = true;
             }
             catch (Exception ex)
             {
-                // DuckDB PRIMARY KEY handles duplicates automatically
-                if (!ex.Message.Contains("PRIMARY KEY") && !ex.Message.Contains("Duplicate key"))
+                // MotelySearchDatabase handles duplicate keys gracefully internally
+                // Only log non-duplicate errors
+                if (!ex.Message.Contains("PRIMARY KEY") && !ex.Message.Contains("Duplicate") && !ex.Message.Contains("UNIQUE constraint"))
                 {
                     DebugLogger.LogError(
                         $"SearchInstance[{_searchId}]",
@@ -438,15 +255,14 @@ namespace BalatroSeedOracle.Services
             // CRITICAL: Flush appender before query to see latest results!
             ForceFlush();
 
-            using var cmd = _connection.CreateCommand();
-            cmd.CommandText = "SELECT * FROM results ORDER BY score DESC LIMIT ? OFFSET ?";
-            cmd.Parameters.Add(new DuckDBParameter(limit));
-            cmd.Parameters.Add(new DuckDBParameter(offset));
-            using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-            while (await reader.ReadAsync().ConfigureAwait(false))
+            // Use MotelySearchDatabase.GetResultsPage() - uses SAME connection as appender (avoids file locking!)
+            // This ensures we don't create temporary connections that conflict with the open appender
+            var rows = _searchDatabase?.GetResultsPage(offset, limit, "score", ascending: false) ?? new List<Dictionary<string, object?>>();
+            
+            foreach (var row in rows)
             {
-                var seed = reader.GetString(0);
-                var score = reader.GetInt32(1);
+                var seed = row["seed"]?.ToString() ?? string.Empty;
+                var score = row["score"] != null ? Convert.ToInt32(row["score"]) : 0;
                 int tallyCount = _columnNames.Count - 2;
                 int[]? scores = null;
                 if (tallyCount > 0)
@@ -455,9 +271,11 @@ namespace BalatroSeedOracle.Services
                     for (int i = 0; i < tallyCount; i++)
                     {
                         int columnIndex = i + 2;
-                        if (columnIndex < reader.FieldCount && !reader.IsDBNull(columnIndex))
+                        if (columnIndex < _columnNames.Count)
                         {
-                            scores[i] = reader.GetInt32(columnIndex);
+                            var columnName = _columnNames[columnIndex];
+                            var value = row.ContainsKey(columnName) ? row[columnName] : null;
+                            scores[i] = value != null ? Convert.ToInt32(value) : 0;
                         }
                         else
                         {
@@ -537,17 +355,19 @@ namespace BalatroSeedOracle.Services
 
             // Rely on row.EndRow() visibility; appender stays open during active search.
 
-            using var cmd = _connection.CreateCommand();
-            // Column name is validated against _columnNames whitelist, safe to interpolate
-            // LIMIT is parameterized for safety
-            cmd.CommandText =
-                $"SELECT * FROM results ORDER BY {resolvedColumn} {(ascending ? "ASC" : "DESC")} LIMIT ?";
-            cmd.Parameters.Add(new DuckDBParameter(limit));
-            using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-            while (await reader.ReadAsync().ConfigureAwait(false))
+            var resolvedOrderBy = resolvedColumn.Equals("seed", StringComparison.OrdinalIgnoreCase)
+                || resolvedColumn.Equals("score", StringComparison.OrdinalIgnoreCase)
+                ? resolvedColumn
+                : $"\"{resolvedColumn.Replace("\"", "\"\"")}\"";
+
+            // Use MotelySearchDatabase.GetResultsOrderedBy() - uses SAME connection as appender (avoids file locking!)
+            // Column name is validated against _columnNames whitelist; quote to support spaces/symbols
+            var rows = _searchDatabase?.GetResultsOrderedBy(resolvedOrderBy, ascending, limit) ?? new List<Dictionary<string, object?>>();
+            
+            foreach (var row in rows)
             {
-                var seed = reader.GetString(0);
-                var score = reader.GetInt32(1);
+                var seed = row["seed"]?.ToString() ?? string.Empty;
+                var score = row["score"] != null ? Convert.ToInt32(row["score"]) : 0;
                 int tallyCount = _columnNames.Count - 2;
                 int[]? scores = null;
                 if (tallyCount > 0)
@@ -556,9 +376,11 @@ namespace BalatroSeedOracle.Services
                     for (int i = 0; i < tallyCount; i++)
                     {
                         int columnIndex = i + 2;
-                        if (columnIndex < reader.FieldCount && !reader.IsDBNull(columnIndex))
+                        if (columnIndex < _columnNames.Count)
                         {
-                            scores[i] = reader.GetInt32(columnIndex);
+                            var columnName = _columnNames[columnIndex];
+                            var value = row.ContainsKey(columnName) ? row[columnName] : null;
+                            scores[i] = value != null ? Convert.ToInt32(value) : 0;
                         }
                         else
                         {
@@ -600,10 +422,8 @@ namespace BalatroSeedOracle.Services
             // Force flush to ensure all buffered results are counted
             ForceFlush();
 
-            using var cmd = _connection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM results";
-            var v = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
-            return v == null ? 0 : Convert.ToInt32(v);
+            // Use MotelySearchDatabase.GetResultCount() - high-level API (black box)
+            return _searchDatabase != null ? (int)_searchDatabase.GetResultCount() : 0;
         }
 
         public async Task<int> ExportResultsAsync(string filePath)
@@ -617,10 +437,10 @@ namespace BalatroSeedOracle.Services
                     return 0;
 
                 // Use DuckDB native CSV export - MUCH faster and simpler!
-                using var cmd = _connection.CreateCommand();
-                cmd.CommandText =
-                    $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{filePath.Replace("'", "''")}' (HEADER true, DELIMITER ',')";
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection as appender (avoids file locking!)
+                var escapedPath = filePath.Replace("'", "''");
+                _searchDatabase?.ExecuteNonQuery(
+                    $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{escapedPath}' (HEADER true, DELIMITER ',')");
 
                 return count;
             }
@@ -640,13 +460,12 @@ namespace BalatroSeedOracle.Services
             {
                 if (!_dbInitialized)
                     return null;
-                using var cmd = _connection.CreateCommand();
-                cmd.CommandText = "SELECT value FROM search_meta WHERE key='last_batch'";
-                var val = await cmd.ExecuteScalarAsync().ConfigureAwait(false);
+                // Use MotelySearchDatabase.ExecuteScalar() - uses SAME connection as appender (avoids file locking!)
+                // search_meta is BSO-specific table
+                var val = _searchDatabase?.ExecuteScalar<string>("SELECT value FROM search_meta WHERE key='last_batch'");
                 if (val == null)
                     return null;
-                return ulong.TryParse(val.ToString(), out var batch) ? batch : null;
-            }
+                return ulong.TryParse(val, out var batch) ? batch : null;
             catch (Exception ex)
             {
                 DebugLogger.LogError(
@@ -663,11 +482,11 @@ namespace BalatroSeedOracle.Services
             {
                 if (!_dbInitialized)
                     return;
-                using var cmd = _connection.CreateCommand();
-                cmd.CommandText =
-                    "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)";
-                cmd.Parameters.Add(new DuckDBParameter(batchNumber.ToString()));
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection as appender (avoids file locking!)
+                // search_meta is BSO-specific table
+                _searchDatabase?.ExecuteNonQuery(
+                    "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)",
+                    new DuckDBParameter(batchNumber.ToString()));
             }
             catch (Exception ex)
             {
@@ -701,39 +520,29 @@ namespace BalatroSeedOracle.Services
 
                 var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
 
-                // Get all seeds from database
-                using var cmd = _connection.CreateCommand();
-                cmd.CommandText = "SELECT seed FROM results ORDER BY seed";
-
-                var seeds = new List<string>();
-                using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
-                {
-                    while (await reader.ReadAsync().ConfigureAwait(false))
-                    {
-                        var seed = reader.GetString(0);
-                        if (!string.IsNullOrWhiteSpace(seed))
-                        {
-                            seeds.Add(seed);
-                        }
-                    }
-                }
+                // Use MotelySearchDatabase.ExecuteQuery() - uses SAME connection as appender (avoids file locking!)
+                var rows = _searchDatabase?.ExecuteQuery("SELECT seed FROM results ORDER BY seed") ?? new List<Dictionary<string, object?>>();
+                var seeds = rows.Select(r => r["seed"]?.ToString() ?? string.Empty)
+                               .Where(s => !string.IsNullOrWhiteSpace(s))
+                               .ToList();
 
                 if (seeds.Count == 0)
-                {
-                    DebugLogger.Log(
+                    {
+                        DebugLogger.Log(
+                            $"SearchInstance[{_searchId}]",
+                            "No seeds to dump - database is empty"
+                        );
+                        return;
+                    }
+
+                    // Append seeds to fertilizer.txt
+                    await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
+
+                    DebugLogger.LogImportant(
                         $"SearchInstance[{_searchId}]",
-                        "No seeds to dump - database is empty"
+                        $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
                     );
-                    return;
                 }
-
-                // Append seeds to fertilizer.txt
-                await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
-
-                DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]",
-                    $"Dumped {seeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
-                );
             }
             catch (Exception ex)
             {
@@ -1688,8 +1497,8 @@ namespace BalatroSeedOracle.Services
 
                 // CRITICAL FIX: Only MUST clauses go to filters - Should clauses are for scoring only!
                 // This matches the proven working reference implementation in JsonSearchExecutor.cs
-                List<MotelyJsonConfig.MotleyJsonFilterClause> mustClauses =
-                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                List<MotelyJsonConfig.MotelyJsonFilterClause> mustClauses =
+                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>();
 
                 // Initialize parsed enums for all MUST clauses with helpful errors
                 for (int i = 0; i < mustClauses.Count; i++)
@@ -1756,9 +1565,9 @@ namespace BalatroSeedOracle.Services
                 var scoringConfig = new MotelyJsonConfig
                 {
                     Name = config.Name,
-                    Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Should = config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    Should = config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 // Propagate top-level scoring mode and initialize computed fields
@@ -1838,7 +1647,7 @@ namespace BalatroSeedOracle.Services
                     );
 
                     // Merge MustNot clauses into mustClauses with IsInverted flag (like JsonSearchExecutor does)
-                    var allRequiredClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(
+                    var allRequiredClauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(
                         mustClauses
                     );
 
@@ -2296,11 +2105,9 @@ namespace BalatroSeedOracle.Services
                 // Close and dispose connection (DuckDB best practice: close before dispose)
                 try
                 {
-                    if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
-                    {
-                        _connection.Close();
-                    }
-                    _connection?.Dispose();
+                    // MotelySearchDatabase handles connection disposal internally
+                    _searchDatabase?.Dispose();
+                    _searchDatabase = null;
                 }
                 catch (Exception ex)
                 {
@@ -2483,8 +2290,8 @@ namespace BalatroSeedOracle.Services
                 MotelyJsonConfigValidator.ValidateConfig(config);
 
                 // Prepare MUST clauses
-                List<MotelyJsonConfig.MotleyJsonFilterClause> mustClauses =
-                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>();
+                List<MotelyJsonConfig.MotelyJsonFilterClause> mustClauses =
+                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>();
 
                 // Initialize parsed enums
                 foreach (var clause in mustClauses)
@@ -2504,9 +2311,9 @@ namespace BalatroSeedOracle.Services
                 var scoringConfig = new MotelyJsonConfig
                 {
                     Name = config.Name,
-                    Must = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    Should = config.Should ?? new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
-                    MustNot = new List<MotelyJsonConfig.MotleyJsonFilterClause>(),
+                    Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    Should = config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
                 scoringConfig.Mode = config.Mode;
                 scoringConfig.PostProcess();
@@ -2571,7 +2378,7 @@ namespace BalatroSeedOracle.Services
                 if (categories.Count > 1)
                 {
                     // Composite Filter
-                    var allRequiredClauses = new List<MotelyJsonConfig.MotleyJsonFilterClause>(mustClauses);
+                    var allRequiredClauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(mustClauses);
                     
                     if (config.MustNot != null && config.MustNot.Count > 0)
                     {

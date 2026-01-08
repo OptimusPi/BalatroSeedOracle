@@ -32,18 +32,10 @@
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-      <AdditionalProperties>DefineConstants=BROWSER</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 
   <!-- Don't include browser HostApiWidget - let main project handle exclusion -->
-
-  <!-- Ensure Motely is built as a library when referenced transitively -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
-      <AdditionalProperties>IsReferenced=true;DefineConstants=BROWSER</AdditionalProperties>
-    </ProjectReference>
-  </ItemGroup>
 
   <!-- Shared property for Motely BSO destination - use source wwwroot -->
   <PropertyGroup>

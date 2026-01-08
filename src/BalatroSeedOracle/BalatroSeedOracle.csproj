@@ -6,6 +6,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced projects -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Product>Balatro Seed Oracle</Product>
     <Company>OptimusPi</Company>
     <Copyright>Copyright 2025</Copyright>
@@ -135,7 +137,7 @@
     <AvaloniaXaml Remove="Views\Modals\AudioVisualizerSettingsModal.axaml" />
     <None Include="Views\Modals\AudioVisualizerSettingsModal.axaml" />
   </ItemGroup>
-  <!-- Browser stubs are auto-included by SDK, but exclude from desktop build -->
+  <!-- Browser stubs are auto-included by SDK, but exclude from desktop/Android/iOS builds -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
     <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
@@ -145,11 +147,16 @@
     <AvaloniaXaml Remove="Components\Widgets\FertilizerWidget.Browser.axaml" />
     <None Include="Components\Widgets\FertilizerWidget.Browser.axaml" />
     <None Include="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
+    <!-- Exclude browser DuckDB implementations (use DesktopDuckDBService for Android/iOS) -->
+    <Compile Remove="Services\DuckDB\BrowserDuckDBService.cs" />
+    <Compile Remove="Services\DuckDB\BrowserDuckDBConnection.cs" />
+    <Compile Remove="Services\DuckDB\BrowserDuckDBAppender.cs" />
+    <None Include="Services\DuckDB\BrowserDuckDBService.cs" />
+    <None Include="Services\DuckDB\BrowserDuckDBConnection.cs" />
+    <None Include="Services\DuckDB\BrowserDuckDBAppender.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj">
-      <AdditionalProperties>IsReferenced=true</AdditionalProperties>
-    </ProjectReference>
+    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- Exclude MCP files - not needed for main release -->
@@ -162,5 +169,12 @@
     <Compile Remove="..\..\external\**\*" />
     <None Remove="..\..\external\**\*" />
     <EmbeddedResource Remove="..\..\external\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude platform projects' obj folders from compilation -->
+    <Compile Remove="..\BalatroSeedOracle.Browser\obj\**\*" />
+    <Compile Remove="..\BalatroSeedOracle.Desktop\obj\**\*" />
+    <Compile Remove="..\BalatroSeedOracle.iOS\obj\**\*" />
+    <Compile Remove="..\BalatroSeedOracle.Android\obj\**\*" />
   </ItemGroup>
 </Project>

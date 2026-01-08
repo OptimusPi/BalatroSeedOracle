@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services.DuckDB;
+using Motely.DuckDB;
 
 namespace BalatroSeedOracle.Services;
 
@@ -68,13 +69,12 @@ public class FertilizerService : IDisposable
             var connectionString = _duckDB.CreateConnectionString(dbPath);
             _connection = await _duckDB.OpenConnectionAsync(connectionString);
 
-            // Create seeds table if not exists
-            await _connection.ExecuteNonQueryAsync(@"
-                CREATE TABLE IF NOT EXISTS seeds (
-                    seed VARCHAR PRIMARY KEY
-                );
-                CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);
-            ");
+            // Create seeds table using centralized schema from Motely
+            var fertilizerSchema = DuckDBSchema.FertilizerTableSchema();
+            await _connection.ExecuteNonQueryAsync(fertilizerSchema);
+            
+            // Create index (schema doesn't include indexes, add separately)
+            await _connection.ExecuteNonQueryAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
 
 #if !BROWSER
             // Import from txt file if db is empty and txt exists
@@ -145,19 +145,21 @@ public class FertilizerService : IDisposable
             if (seedList.Count == 0) return;
 
 #if !BROWSER
-            // Desktop: Use COPY FROM for ultra-fast bulk import
+            // Desktop: Bulk insert via DuckDB read_csv + INSERT (handles duplicates via ON CONFLICT)
             var tempFile = Path.GetTempFileName();
             try
             {
                 // ASYNC file write - don't block the thread!
                 await File.WriteAllLinesAsync(tempFile, seedList, ct);
 
-                var escapedPath = tempFile.Replace("\\", "/");
-                await _connection.CopyFromFileAsync(
-                    escapedPath,
-                    "seeds",
-                    "DELIMITER E'\\n', HEADER false, QUOTE '', FORMAT csv) ON CONFLICT DO NOTHING"
-                );
+                var escapedPath = tempFile.Replace("\\", "/").Replace("'", "''");
+                await _connection.ExecuteNonQueryAsync($@"
+                    INSERT INTO seeds (seed)
+                    SELECT TRIM(column0) AS seed
+                    FROM read_csv('{escapedPath}', delim=E'\n', header=false)
+                    WHERE column0 IS NOT NULL AND TRIM(column0) != ''
+                    ON CONFLICT (seed) DO NOTHING;
+                ");
             }
             finally
             {
