@@ -37,6 +37,17 @@ public partial class BrowserDuckDBService : IDuckDBService
         return ":memory:";
     }
 
+    /// <summary>
+    /// DuckLake is not supported in browser builds (requires native DuckDB extension)
+    /// </summary>
+    public Task<IDuckDBConnection> OpenDuckLakeConnectionAsync(
+        string catalogPath,
+        string dataPath,
+        string schemaName = "seed_source")
+    {
+        throw new NotSupportedException("DuckLake is not supported in browser builds. Use standard DuckDB connections instead.");
+    }
+
     [JSImport("DuckDB.initialize", "globalThis")]
     private static partial Task<bool> InitializeDuckDBAsync();
 

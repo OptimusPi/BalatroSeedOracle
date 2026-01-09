@@ -30,4 +30,16 @@ public interface IDuckDBService
     /// </summary>
     /// <param name="databasePath">Path to the database file</param>
     string CreateConnectionString(string databasePath);
+
+    /// <summary>
+    /// Open a connection to a DuckLake catalog (enables multiple concurrent read/write connections)
+    /// </summary>
+    /// <param name="catalogPath">Path to DuckLake catalog file (.ducklake)</param>
+    /// <param name="dataPath">Path to DuckLake data directory (Parquet files)</param>
+    /// <param name="schemaName">Schema name to attach as (default: "seed_source")</param>
+    /// <returns>Connection instance with DuckLake attached</returns>
+    Task<IDuckDBConnection> OpenDuckLakeConnectionAsync(
+        string catalogPath,
+        string dataPath,
+        string schemaName = "seed_source");
 }

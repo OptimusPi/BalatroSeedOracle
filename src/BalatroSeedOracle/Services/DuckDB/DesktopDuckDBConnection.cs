@@ -20,6 +20,14 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         _connection = new DuckDBConnection(connectionString);
     }
 
+    /// <summary>
+    /// Constructor that wraps an existing DuckDBConnection (for DuckLake connections)
+    /// </summary>
+    public DesktopDuckDBConnection(DuckDBConnection connection)
+    {
+        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+    }
+
     public bool IsOpen => _connection.State == ConnectionState.Open;
 
     private void EnsureOpen()

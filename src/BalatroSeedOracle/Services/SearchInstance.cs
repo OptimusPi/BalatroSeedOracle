@@ -15,7 +15,6 @@ using Motely;
 using Motely.Filters;
 using Motely.Utils;
 using Motely.DuckDB;
-using Motely.API;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;

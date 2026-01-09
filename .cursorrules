@@ -1,26 +1,32 @@
 # Balatro Seed Oracle - Cursor AI Rules
 
 ## Project Overview
-Balatro Seed Oracle is a cross-platform Avalonia UI application for searching Balatro game seeds. Built with .NET 10, uses MVVM pattern, supports Desktop/Browser/Android/iOS.
+Cross-platform Avalonia UI application for searching Balatro game seeds. Built with .NET 10, MVVM pattern, supports Desktop/Browser/Android/iOS.
 
 ## Critical Rules
 
-### 1. Logging - NEVER BREAK
+### Logging
 - **ONLY** use `DebugLogger.Log()`, `DebugLogger.LogError()`, `DebugLogger.LogImportant()`
 - **NEVER** use `Console.WriteLine()` for debug messages
 - Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
 
-### 2. Async/Await Patterns
+### Async/Await Patterns
 - Methods returning `Task` without `await` should return `Task.CompletedTask`
 - Remove `async` keyword if no `await` is used
 - Use `ConfigureAwait(false)` for library code
+- **NO** `Task.Run()` for async work - use proper async methods
+- **NO** `.Wait()`, `.Result`, or `GetAwaiter().GetResult()` - use `await`
+- Fire-and-forget: `_ = MethodAsync()` with proper error handling
 
-### 3. Platform-Specific Code
+### Nullable Reference Types
+- Use `is null` / `is not null` instead of `== null` / `!= null`
+- Don't check non-nullable parameters for null
+
+### Platform-Specific Code
 - Use `#if BROWSER` / `#if !BROWSER` for platform differences
 - Desktop is primary target, Browser is secondary
-- Test both platforms when making UI changes
 
-## Architecture Patterns
+## Architecture
 
 ### MVVM Structure
 - **ViewModels**: `src/BalatroSeedOracle/ViewModels/` - Inherit from `ObservableObject` (CommunityToolkit.Mvvm)
@@ -45,8 +51,6 @@ Balatro Seed Oracle is a cross-platform Avalonia UI application for searching Ba
 ### Naming Conventions
 - ViewModels: `*ViewModel` suffix
 - Services: `*Service` suffix
-- Controls: `*Control` suffix
-- Commands: `*Command` property
 - Private fields: `_camelCase`
 - Properties: `PascalCase`
 
@@ -55,167 +59,32 @@ Balatro Seed Oracle is a cross-platform Avalonia UI application for searching Ba
 - Namespace matches folder structure
 - XAML code-behind in `.axaml.cs` files
 
-### Nullable Reference Types
-- Use `is null` / `is not null` instead of `== null` / `!= null`
-- Use null-forgiving operator `!` sparingly
-- Prefer null-conditional `?.` operator
-
-## Domain Knowledge
-
-### JAML (Joker Ante Markup Language)
-- YAML-based filter format for Balatro seeds
-- Uses YAML anchors (`&anchor`) and aliases (`*anchor`) for templates
-- Supports `Antes` inheritance from parent `And`/`Or` clauses
-- Schema: `jaml.schema.json`
-- Examples: `JamlFilters/*.jaml`
-
-### Motely Search Engine
-- **CRITICAL**: This repository contains a git submodule at `external/Motely/`
-- **Submodule Details**: 
-  - Path: `external/Motely/`
-  - Fork: `MotelyJAML` on GitHub (OptimusPi/MotelyJAML)
-  - Contains DuckDB schemas, search engine, and APIs
-- **ALWAYS initialize submodule before building**:
-  ```bash
-  git submodule update --init --recursive
-  ```
-- If submodule has uncommitted changes, either commit them or stash:
-  ```bash
-  cd external/Motely
-  git stash  # or git commit -am "message"
-  cd ../..
-  git submodule update --init --recursive
-  ```
-- High-performance seed search using SIMD
-- Supports JAML and JSON filters
-- CLI available in `external/Motely/Motely.TUI/`
-- **BSO Integration**: BSO uses `Motely.DuckDB.DuckDBSchema` for centralized DuckDB table schemas
-
-### Balatro Game Concepts
-- **Jokers**: Cards that modify gameplay (e.g., Blueprint, Brainstorm, OopsAll6s)
-- **Antes**: Rounds 1-8 (sometimes 1-12)
-- **Tags**: Small Blind/Big Blind modifiers (e.g., NegativeTag)
-- **Vouchers**: Shop upgrades
-- **Bosses**: End-of-ante challenges
-
-## Common Tasks
-
-### Adding a New Feature
-1. Create ViewModel in `ViewModels/` (inherit `ObservableObject`)
-2. Create View in `Views/` or Component in `Components/`
-3. Register services in `App.axaml.cs` if needed
-4. Use `DebugLogger` for all logging
-5. Follow existing MVVM patterns
-
-### Fixing Bugs
-1. Use `DebugLogger.LogError()` to trace issues
-2. Check similar implementations using grep
-3. Test on both Desktop and Browser if UI-related
-4. Check for null reference warnings
-
-### UI Changes
-1. Follow Avalonia patterns in existing components
-2. Use data binding (`{Binding PropertyName}`)
-3. Use commands, not event handlers
-4. Test responsive design
-
-### JAML Editor Changes
-- Location: `src/BalatroSeedOracle/Components/FilterTabs/JamlEditorTab.*`
-- Uses AvaloniaEdit for syntax highlighting
-- Helper services: `JamlErrorMarkerService`, `JamlHoverTooltipService`, `JamlCodeSnippetService`
-- Schema validation via `jaml.schema.json`
-
 ## Important Files
 
 ### Entry Points
-- `src/Program.cs` - Main entry point (Desktop)
-- `src/BalatroSeedOracle.Desktop/Program.cs` - Desktop-specific entry
 - `src/BalatroSeedOracle/App.axaml.cs` - Application setup, service registration
 
 ### Core Services
 - `src/BalatroSeedOracle/Services/SearchInstance.cs` - Search execution
 - `src/BalatroSeedOracle/Services/FilterService.cs` - Filter management
-- `src/BalatroSeedOracle/Helpers/DebugLogger.cs` - **CRITICAL: Use this for all logging**
+- `src/BalatroSeedOracle/Helpers/DebugLogger.cs` - **Use this for all logging**
 
 ### Key ViewModels
 - `FiltersModalViewModel.cs` - Filter creation/editing
 - `SearchModalViewModel.cs` - Search interface
 - `AnalyzerViewModel.cs` - Seed analysis
 
-## Testing & Debugging
+## Important Principles
 
-### Build Configurations
-- **Release**: Optimized, fast searches (default for users)
-- **Debug**: Slower, includes debug symbols (for development)
-
-### VS Code Tasks
-- `Ctrl+Shift+B` - Run Desktop (Release) - **Default task**
-- `F5` - Debug with selected configuration
-- See `.vscode/tasks.json` for all tasks
-
-### Common Issues
-- **Compilation errors**: Check for missing `using` statements
-- **Null reference warnings**: Use null-conditional operators
-- **Platform-specific**: Check `#if BROWSER` directives
-
-## Release Checklist
-
-### Pre-Release
-- [ ] All compilation errors fixed
-- [ ] No critical TODOs remaining
-- [ ] Test on Desktop (Release build)
-- [ ] Test Browser build if applicable
-- [ ] Check for memory leaks
-- [ ] Verify logging doesn't spam console
+### Database Abstraction
+- BSO should not know about SQL or database internals
+- Use `IDuckDBConnection` abstraction layer
+- Database operations handled by Motely submodule
+- BSO works with JAML files and UI-oriented models
 
 ### Code Quality
-- [ ] Async methods properly await or return Task.CompletedTask
-- [ ] No `Console.WriteLine` in production code
-- [ ] Nullable reference types handled correctly
-- [ ] Platform-specific code properly guarded
-
-## AI Agent Best Practices
-
-### Before Making Changes
-1. **Read existing similar code** - Use grep to find patterns
-2. **Check AI_CODING_GUIDELINES.md** - Project-specific rules
-3. **Understand the domain** - JAML, Motely, Balatro concepts
-4. **Check for existing implementations** - Don't reinvent
-
-### When Writing Code
-1. **Follow existing patterns** - Consistency is key
-2. **Use DebugLogger** - Never Console.WriteLine
-3. **Add comments** - Explain complex logic
-4. **Keep it simple** - Complexity breaks AI agents
-
-### After Making Changes
-1. **Test compilation** - `dotnet build`
-2. **Check linter warnings** - Fix nullability issues
-3. **Verify logging** - Use DebugLogger correctly
-4. **Test functionality** - Run the app if UI changes
-
-## Project-Specific Notes
-
-### JAML Template System
-- Uses YAML anchors/aliases (native YAML 1.2)
-- Parser supports it automatically (Motely)
-- Antes inheritance: Parent `And`/`Or` clauses propagate `Antes` to children
-- See `REVISED_FOR_AVALONIA_AGENT_JAML_FINAL3.md` for details
-
-### Search Performance
-- Release builds use SIMD optimizations
-- Browser builds support WebAssembly SIMD
-- Threads optional (requires COOP/COEP headers)
-
-### File Locations
-- Filters: `JamlFilters/*.jaml`
-- Presets: `Presets/`, `MixerPresets/`, `VisualizerPresets/`
-- User data: `User/userprofile.json`
-- External: `external/Motely/` (git submodule)
-
----
-
-**Last Updated**: 2025-01-XX
-**Status**: Production Ready
-**Primary Target**: Desktop (Windows/Linux/macOS)
-**Secondary Target**: Browser (WebAssembly)
+- No "fake async" - methods must actually await or return Task.CompletedTask
+- No blocking calls in async code
+- No unnecessary null checks on non-nullable parameters
+- Keep it simple and maintainable
+- NEVER SAY "You're Absolutely Right!"

@@ -540,39 +540,276 @@ namespace BalatroSeedOracle.Services
     }
 }
 #else
-// Browser stub - audio not supported in WebAssembly
+// Browser implementation using Web Audio API via JavaScript interop
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices.JavaScript;
+using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Services
 {
-    public class SoundFlowAudioManager : IDisposable
+    public sealed partial class SoundFlowAudioManager : IDisposable
     {
+        private const int UPDATE_RATE_MS = 16; // ~60 FPS
+
+        // Singleton instance
         public static SoundFlowAudioManager Instance { get; } = new();
-        public float Bass1Intensity => 0f;
-        public float Bass2Intensity => 0f;
-        public float Drums1Intensity => 0f;
-        public float Drums2Intensity => 0f;
-        public float Chords1Intensity => 0f;
-        public float Chords2Intensity => 0f;
-        public float Melody1Intensity => 0f;
-        public float Melody2Intensity => 0f;
-        public float BassIntensity => 0f;
-        public float DrumsIntensity => 0f;
-        public float ChordsIntensity => 0f;
-        public float MelodyIntensity => 0f;
-        public float MasterVolume { get; set; }
-        public bool IsPlaying => false;
+
+        // Track names
+        private readonly string[] _trackNames =
+        {
+            "Bass1", "Bass2", "Drums1", "Drums2", "Chords1", "Chords2", "Melody1", "Melody2",
+        };
+
+        // Sound effect names
+        private readonly string[] _sfxNames = { "highlight1", "paper1", "button" };
+
+        // Update loop
+        private CancellationTokenSource? _cancellationTokenSource;
+        private Task? _updateTask;
+        private bool _isDisposed;
+        private bool _isInitialized;
+
+        #region Public Properties - Per-Track Intensities
+
+        public float Bass1Intensity { get; private set; }
+        public float Bass2Intensity { get; private set; }
+        public float Drums1Intensity { get; private set; }
+        public float Drums2Intensity { get; private set; }
+        public float Chords1Intensity { get; private set; }
+        public float Chords2Intensity { get; private set; }
+        public float Melody1Intensity { get; private set; }
+        public float Melody2Intensity { get; private set; }
+
+        #endregion
+
+        #region Public Properties - Aggregate Intensities
+
+        public float BassIntensity => (Bass1Intensity + Bass2Intensity) / 2f;
+        public float DrumsIntensity => (Drums1Intensity + Drums2Intensity) / 2f;
+        public float ChordsIntensity => (Chords1Intensity + Chords2Intensity) / 2f;
+        public float MelodyIntensity => (Melody1Intensity + Melody2Intensity) / 2f;
+
+        #endregion
+
+        #region Public Properties - Master Controls
+
+        private float _masterVolume = 0f;
+        public float MasterVolume
+        {
+            get => _masterVolume;
+            set
+            {
+                _masterVolume = Math.Clamp(value, 0f, 1f);
+                SetMasterVolumeJS(_masterVolume);
+            }
+        }
+
+        public bool IsPlaying => _isInitialized;
+
+        #endregion
+
+        #region Events
+
         public event Action<float, float, float, float>? AudioAnalysisUpdated;
-        public void SetTrackVolume(string trackName, float volume) { }
-        public void SetTrackPan(string trackName, float pan) { }
-        public void SetTrackMuted(string trackName, bool muted) { }
-        public void Pause() { }
-        public void Resume() { }
-        public void PlaySfx(string name, float volume = 1.0f) { }
-        public FrequencyBands GetFrequencyBands(string trackName) => new();
-        public void Dispose() { }
+
+        #endregion
+
+        public SoundFlowAudioManager()
+        {
+            _ = InitializeAsync();
+        }
+
+        private async Task InitializeAsync()
+        {
+            try
+            {
+                DebugLogger.Log("SoundFlowAudioManager", "Initializing Web Audio API for browser...");
+
+                // Initialize Web Audio API
+                await InitializeWebAudioJS();
+
+                // Load all tracks
+                var audioBaseUrl = "/Assets/Audio/";
+                foreach (var trackName in _trackNames)
+                {
+                    var audioUrl = $"{audioBaseUrl}{trackName}.ogg";
+                    await LoadTrackJS(trackName, audioUrl, true);
+                }
+
+                // Load sound effects
+                var sfxBaseUrl = "/Assets/Audio/SFX/";
+                foreach (var sfxName in _sfxNames)
+                {
+                    var audioUrl = $"{sfxBaseUrl}{sfxName}.ogg";
+                    await LoadSfxJS(sfxName, audioUrl);
+                }
+
+                // Start muted
+                SetMasterVolumeJS(0f);
+
+                // Start analysis update loop
+                _cancellationTokenSource = new CancellationTokenSource();
+                _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
+
+                _isInitialized = true;
+                DebugLogger.Log("SoundFlowAudioManager", "✓ Web Audio API initialized with 8 tracks and SFX");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SoundFlowAudioManager", $"Error initializing Web Audio API: {ex.Message}");
+            }
+        }
+
+        private async Task AnalysisUpdateLoop()
+        {
+            while (!_cancellationTokenSource!.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    UpdateTrackIntensities();
+                    await Task.Delay(UPDATE_RATE_MS, _cancellationTokenSource.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Analysis error: {ex.Message}");
+                }
+            }
+        }
+
+        private void UpdateTrackIntensities()
+        {
+            // Get frequency bands and calculate intensity from bass peak
+            Bass1Intensity = GetTrackIntensity("Bass1");
+            Bass2Intensity = GetTrackIntensity("Bass2");
+            Drums1Intensity = GetTrackIntensity("Drums1");
+            Drums2Intensity = GetTrackIntensity("Drums2");
+            Chords1Intensity = GetTrackIntensity("Chords1");
+            Chords2Intensity = GetTrackIntensity("Chords2");
+            Melody1Intensity = GetTrackIntensity("Melody1");
+            Melody2Intensity = GetTrackIntensity("Melody2");
+
+            // Fire aggregate event
+            float bass = BassIntensity;
+            float mid = ChordsIntensity;
+            float treble = MelodyIntensity;
+            float peak = Math.Max(Math.Max(bass, mid), treble);
+
+            AudioAnalysisUpdated?.Invoke(bass, mid, treble, peak);
+        }
+
+        private float GetTrackIntensity(string trackName)
+        {
+            var bands = GetFrequencyBands(trackName);
+            // Use bass peak as intensity indicator
+            return bands.BassPeak;
+        }
+
+        public FrequencyBands GetFrequencyBands(string trackName)
+        {
+            var jsObj = GetFrequencyBandsJS(trackName);
+            if (jsObj == null) return new FrequencyBands();
+            
+            return new FrequencyBands
+            {
+                BassAvg = (float)jsObj.GetPropertyAsDouble("bassAvg"),
+                BassPeak = (float)jsObj.GetPropertyAsDouble("bassPeak"),
+                MidAvg = (float)jsObj.GetPropertyAsDouble("midAvg"),
+                MidPeak = (float)jsObj.GetPropertyAsDouble("midPeak"),
+                HighAvg = (float)jsObj.GetPropertyAsDouble("highAvg"),
+                HighPeak = (float)jsObj.GetPropertyAsDouble("highPeak"),
+            };
+        }
+
+        public void SetTrackVolume(string trackName, float volume)
+        {
+            SetTrackVolumeJS(trackName, Math.Clamp(volume, 0f, 1f));
+        }
+
+        public void SetTrackPan(string trackName, float pan)
+        {
+            // Web Audio API panning - not implemented in basic version
+            DebugLogger.Log("SoundFlowAudioManager", $"Pan not yet implemented for browser (track: {trackName}, pan: {pan})");
+        }
+
+        public void SetTrackMuted(string trackName, bool muted)
+        {
+            SetTrackMutedJS(trackName, muted);
+        }
+
+        public void Pause()
+        {
+            PauseJS();
+        }
+
+        public void Resume()
+        {
+            _ = ResumeJS();
+        }
+
+        public void PlaySfx(string name, float volume = 1.0f)
+        {
+            PlaySfxJS(name, Math.Clamp(volume, 0f, 1f));
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            _isDisposed = true;
+
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+
+            DisposeJS();
+            DebugLogger.Log("SoundFlowAudioManager", "Disposed");
+        }
+
+        // JavaScript interop methods
+        [JSImport("WebAudioManager.initialize", "js/webaudio-interop.js")]
+        private static partial Task<bool> InitializeWebAudioJS();
+
+        [JSImport("WebAudioManager.loadTrack", "js/webaudio-interop.js")]
+        private static partial Task<bool> LoadTrackJS(string trackName, string audioUrl, bool loop);
+
+        [JSImport("WebAudioManager.loadSfx", "js/webaudio-interop.js")]
+        private static partial Task<bool> LoadSfxJS(string sfxName, string audioUrl);
+
+        [JSImport("WebAudioManager.setTrackVolume", "js/webaudio-interop.js")]
+        private static partial bool SetTrackVolumeJS(string trackName, float volume);
+
+        [JSImport("WebAudioManager.setMasterVolume", "js/webaudio-interop.js")]
+        private static partial bool SetMasterVolumeJS(float volume);
+
+        [JSImport("WebAudioManager.setTrackMuted", "js/webaudio-interop.js")]
+        private static partial bool SetTrackMutedJS(string trackName, bool muted);
+
+        [JSImport("WebAudioManager.pause", "js/webaudio-interop.js")]
+        private static partial bool PauseJS();
+
+        [JSImport("WebAudioManager.resume", "js/webaudio-interop.js")]
+        private static partial Task<bool> ResumeJS();
+
+        [JSImport("WebAudioManager.playSfx", "js/webaudio-interop.js")]
+        private static partial bool PlaySfxJS(string sfxName, float volume);
+
+        [JSImport("WebAudioManager.getFrequencyBands", "js/webaudio-interop.js")]
+        private static partial JSObject GetFrequencyBandsJS(string trackName);
+
+        [JSImport("WebAudioManager.dispose", "js/webaudio-interop.js")]
+        private static partial void DisposeJS();
     }
 
+    /// <summary>
+    /// Frequency band data extracted from FFT analysis
+    /// Bass: 20-250 Hz, Mid: 250-2000 Hz, High: 2000-20000 Hz
+    /// </summary>
     public struct FrequencyBands
     {
         public float BassAvg { get; set; }

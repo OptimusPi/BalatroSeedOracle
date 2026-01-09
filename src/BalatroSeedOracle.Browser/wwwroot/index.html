@@ -194,6 +194,12 @@ window.LoadingState.setProgress(5, 'Loading scripts...');
     window.LoadingState.setProgress(15, 'DuckDB module loaded');
 </script>
 
+<!-- Web Audio API interop module -->
+<script type="module">
+    import './js/webaudio-interop.js';
+    window.LoadingState.setProgress(16, 'Web Audio API module loaded');
+</script>
+
 <!-- BSO Browser Helper Functions - Must load before .NET runtime -->
 <script>
     // Inline the helpers to ensure they're available before .NET starts
