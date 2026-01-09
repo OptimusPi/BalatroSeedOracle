@@ -93,8 +93,15 @@ namespace BalatroSeedOracle.Helpers
         {
             var filtersContent = new Views.Modals.FiltersModal();
             
-            // Load the filter into the modal for editing
-            _ = System.Threading.Tasks.Task.Run(async () =>
+            // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
+            _ = LoadFilterForEditingAsync(filtersContent, config);
+            
+            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+        }
+
+        private static async Task LoadFilterForEditingAsync(Views.Modals.FiltersModal filtersContent, Motely.Filters.MotelyJsonConfig config)
+        {
+            try
             {
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                 {
@@ -103,9 +110,11 @@ namespace BalatroSeedOracle.Helpers
                         await filtersContent.ViewModel.LoadFilterForEditing(config);
                     }
                 });
-            });
-            
-            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ModalHelper", $"Failed to load filter for editing: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -143,15 +152,8 @@ namespace BalatroSeedOracle.Helpers
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    // Load filter async and THEN navigate to search tab
-                    _ = Task.Run(async () =>
-                    {
-                        await searchContent.ViewModel.LoadFilterAsync(configPath);
-                        // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                        Dispatcher.UIThread.Post(() =>
-                            searchContent.ViewModel.SelectedTabIndex = 1
-                        );
-                    });
+                    // Load filter async and THEN navigate to search tab - no Task.Run needed
+                    _ = LoadFilterAndNavigateAsync(searchContent, configPath);
                 }
                 else
                 {
@@ -518,6 +520,23 @@ namespace BalatroSeedOracle.Helpers
             }
 
             return string.Empty;
+        }
+
+        private static async Task LoadFilterAndNavigateAsync(Views.Modals.SearchModal searchContent, string configPath)
+        {
+            try
+            {
+                await searchContent.ViewModel.LoadFilterAsync(configPath);
+                // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    searchContent.ViewModel.SelectedTabIndex = 1;
+                });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ModalHelper", $"Failed to load filter and navigate: {ex.Message}");
+            }
         }
     }
 }

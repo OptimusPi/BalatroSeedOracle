@@ -37,6 +37,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Debounced save state
         private CancellationTokenSource? _saveCancellation;
+        private Task? _saveTask;
         private const int SAVE_DEBOUNCE_MS = 250;
 
         private static readonly string MetadataDirectory = Path.Combine(
@@ -178,29 +179,31 @@ namespace BalatroSeedOracle.ViewModels
                 return;
 
             _updateCancellation = new CancellationTokenSource();
-            _updateTask = Task.Run(
-                async () =>
+            _updateTask = FrequencyUpdateLoopAsync(_updateCancellation.Token);
+        }
+
+        private async Task FrequencyUpdateLoopAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
                 {
-                    while (!_updateCancellation.Token.IsCancellationRequested)
+                    // Check if audio manager is still available (prevents crash during shutdown)
+                    if (_audioManager == null)
+                        break;
+
+                    var trackName = _trackNames[SelectedTrackIndex];
+                    var bands = _audioManager.GetFrequencyBands(trackName);
+
+                    // Update UI on UI thread
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        try
-                        {
-                            // Check if audio manager is still available (prevents crash during shutdown)
-                            if (_audioManager == null)
-                                break;
-
-                            var trackName = _trackNames[SelectedTrackIndex];
-                            var bands = _audioManager.GetFrequencyBands(trackName);
-
-                            // Update UI on UI thread
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                BassAvg = bands.BassAvg;
-                                BassPeak = bands.BassPeak;
-                                MidAvg = bands.MidAvg;
-                                MidPeak = bands.MidPeak;
-                                HighAvg = bands.HighAvg;
-                                HighPeak = bands.HighPeak;
+                        BassAvg = bands.BassAvg;
+                        BassPeak = bands.BassPeak;
+                        MidAvg = bands.MidAvg;
+                        MidPeak = bands.MidPeak;
+                        HighAvg = bands.HighAvg;
+                        HighPeak = bands.HighPeak;
 
                                 // Capture max values
                                 if (bands.BassAvg > BassAvgMax)
@@ -232,31 +235,28 @@ namespace BalatroSeedOracle.ViewModels
                                     HighBeatBrightness = 1.0;
                                 else
                                     HighBeatBrightness *= DECAY_RATE;
-                            });
+                    });
 
-                            // ~60 FPS update rate
-                            await Task.Delay(16, _updateCancellation.Token);
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            // Audio manager was disposed during update - exit cleanly
-                            if (_audioManager == null)
-                                break;
+                    // ~60 FPS update rate
+                    await Task.Delay(16, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Audio manager was disposed during update - exit cleanly
+                    if (_audioManager == null)
+                        break;
 
-                            Helpers.DebugLogger.LogError(
-                                "FrequencyDebugWidget",
-                                $"Update error: {ex.Message}"
-                            );
-                            await Task.Delay(100, _updateCancellation.Token);
-                        }
-                    }
-                },
-                _updateCancellation.Token
-            );
+                    Helpers.DebugLogger.LogError(
+                        "FrequencyDebugWidget",
+                        $"Update error: {ex.Message}"
+                    );
+                    await Task.Delay(100, cancellationToken);
+                }
+            }
         }
 
         private void StopFrequencyUpdates()
@@ -381,31 +381,30 @@ namespace BalatroSeedOracle.ViewModels
             // Cancel any existing pending save
             _saveCancellation?.Cancel();
             _saveCancellation?.Dispose();
-
             _saveCancellation = new CancellationTokenSource();
             var token = _saveCancellation.Token;
 
-            Task.Run(
-                async () =>
-                {
-                    try
-                    {
-                        // Wait for debounce period (250ms)
-                        await Task.Delay(SAVE_DEBOUNCE_MS, token);
+            // Track debounced save task - no fire-and-forget!
+            _ = DebouncedSaveMetadataAsync(token);
+        }
 
-                        // If not cancelled, save the metadata
-                        if (!token.IsCancellationRequested)
-                        {
-                            SaveMetadataForCurrentTrack();
-                        }
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // Expected when user changes value again before save completes
-                    }
-                },
-                token
-            );
+        private async Task DebouncedSaveMetadataAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Wait for debounce period (250ms)
+                await Task.Delay(SAVE_DEBOUNCE_MS, cancellationToken);
+
+                // If not cancelled, save the metadata
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    SaveMetadataForCurrentTrack();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when user changes value again before save completes
+            }
         }
 
         private void SaveMetadataForCurrentTrack()

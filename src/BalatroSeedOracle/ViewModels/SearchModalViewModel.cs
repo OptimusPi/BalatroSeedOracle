@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -413,7 +414,7 @@ namespace BalatroSeedOracle.ViewModels
                 PanelText = $"Searching with '{LoadedConfig.Name}'...";
 
                 AddConsoleMessage($"Building search criteria...");
-                var searchCriteria = BuildSearchCriteria();
+                var searchCriteria = await BuildSearchCriteriaAsync();
 
                 // Apply SMART Auto Mode overrides
                 if (IsSmartAutoMode && (SelectedSearchMode == SearchMode.AllSeeds || SelectedSearchMode == SearchMode.WordList))
@@ -1019,7 +1020,7 @@ namespace BalatroSeedOracle.ViewModels
             return System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
         }
 
-        private SearchCriteria BuildSearchCriteria()
+        private async Task<SearchCriteria> BuildSearchCriteriaAsync()
         {
             DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'");
             DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}");
@@ -1056,7 +1057,10 @@ namespace BalatroSeedOracle.ViewModels
                         var dbPath = GetDatabasePath();
 
                         AddConsoleMessage($"Checking for saved state at: {dbPath}");
-                        var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
+                        var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
+                        var savedState = searchStateManager != null 
+                            ? await searchStateManager.LoadSearchStateAsync(dbPath)
+                            : null;
                         if (savedState != null)
                         {
                             ulong resumeBatch = (ulong)savedState.LastCompletedBatch;
@@ -1449,37 +1453,50 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Start periodic stats refresh for live updates while search is running
         /// </summary>
+        private Task? _statsRefreshTask;
+        private CancellationTokenSource? _statsRefreshCts;
+
         private void StartStatsRefreshTimer()
         {
             if (_searchInstance == null || !IsSearching)
                 return;
 
-            // Use a simple timer to refresh stats every 500ms while search is active
-            Task.Run(async () =>
-            {
-                while (_searchInstance?.IsRunning == true && IsSearching)
-                {
-                    try
-                    {
-                        // Update result count from live search
-                        var liveResultCount = _searchInstance.ResultCount;
-                        if (liveResultCount != LastKnownResultCount)
-                        {
-                            LastKnownResultCount = liveResultCount;
-                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                            {
-                                OnPropertyChanged(nameof(ResultsCount));
-                            });
-                        }
+            // Cancel existing timer if running
+            _statsRefreshCts?.Cancel();
+            _statsRefreshCts = new CancellationTokenSource();
 
-                        await Task.Delay(500); // Refresh every 500ms
-                    }
-                    catch
+            // Track background task properly - no fire-and-forget!
+            _statsRefreshTask = RefreshStatsLoopAsync(_statsRefreshCts.Token);
+        }
+
+        private async Task RefreshStatsLoopAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested && _searchInstance?.IsRunning == true && IsSearching)
+            {
+                try
+                {
+                    // Update result count from live search
+                    var liveResultCount = _searchInstance.ResultCount;
+                    if (liveResultCount != LastKnownResultCount)
                     {
-                        break; // Exit on any error
+                        LastKnownResultCount = liveResultCount;
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            OnPropertyChanged(nameof(ResultsCount));
+                        });
                     }
+
+                    await Task.Delay(500, cancellationToken); // Refresh every 500ms
                 }
-            });
+                catch (OperationCanceledException)
+                {
+                    break; // Expected cancellation
+                }
+                catch
+                {
+                    break; // Exit on any error
+                }
+            }
         }
 
         /// <summary>
@@ -1605,156 +1622,188 @@ namespace BalatroSeedOracle.ViewModels
         private DateTime _lastConsoleLog = DateTime.MinValue;
         private DateTime _lastResultsLoad = DateTime.MinValue;
         private volatile bool _isLoadingResults = false; // Prevent concurrent queries
+        private Task? _loadResultsTask; // Track background result loading
 
         private DateTime _lastProgressLog = DateTime.MinValue;
         
-        private void OnProgressUpdated(object? sender, SearchProgress e)
+        private async void OnProgressUpdated(object? sender, SearchProgress e)
         {
-            // Store immutable data on background thread (safe)
-            LatestProgress = e;
-            LastKnownResultCount = e.ResultsFound;
-            
-            // Log progress to console every 2 seconds so user knows search is working
-            var now = DateTime.Now;
-            if ((now - _lastProgressLog).TotalSeconds >= 2.0)
+            try
             {
-                _lastProgressLog = now;
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                // Store immutable data on background thread (safe)
+                LatestProgress = e;
+                LastKnownResultCount = e.ResultsFound;
+                
+                // Log progress to console every 2 seconds so user knows search is working
+                var now = DateTime.Now;
+                if ((now - _lastProgressLog).TotalSeconds >= 2.0)
                 {
-                    AddConsoleMessage($"Progress: {e.SeedsSearched:N0} seeds | {e.SeedsPerMillisecond:F1} seeds/ms | {e.ResultsFound} found");
-                });
-            }
+                    _lastProgressLog = now;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        AddConsoleMessage($"Progress: {e.SeedsSearched:N0} seeds | {e.SeedsPerMillisecond:F1} seeds/ms | {e.ResultsFound} found");
+                    });
+                }
 
-            // OPTIONAL: Apply search transition if configured (progress-driven shader effects)
-            if (ActiveSearchTransition != null && MainMenu != null)
-            {
-                // Update transition progress (0-100% → 0.0-1.0)
-                ActiveSearchTransition.CurrentProgress = (float)(e.PercentComplete / 100.0);
-
-                // Apply interpolated shader parameters to background
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                // OPTIONAL: Apply search transition if configured (progress-driven shader effects)
+                if (ActiveSearchTransition != null && MainMenu != null)
                 {
-                    try
+                    // Update transition progress (0-100% → 0.0-1.0)
+                    ActiveSearchTransition.CurrentProgress = (float)(e.PercentComplete / 100.0);
+
+                    // Apply interpolated shader parameters to background
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        var interpolatedParams = ActiveSearchTransition.GetInterpolatedParameters();
-                        ApplyShaderParametersToMainMenu(MainMenu, interpolatedParams);
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError(
-                            "SearchModalViewModel",
-                            $"Failed to apply search transition: {ex.Message}"
-                        );
-                    }
-                });
-            }
-
-            // OPTIMIZED: Only query DuckDB when invalidation flag indicates new results exist
-            // This eliminates 95%+ of wasteful queries during search
-            now = DateTime.Now;
-            var canCheckResults = (now - _lastResultsLoad).TotalSeconds >= 0.5; // Reduced from 1.0s for snappier updates
-
-            if (
-                canCheckResults
-                && _searchInstance != null
-                && _searchInstance.HasNewResultsSinceLastQuery
-                && !_isLoadingResults
-            )
-            {
-                _lastResultsLoad = now;
-                _isLoadingResults = true;
-
-                // PERFORMANCE: Run query on background thread to avoid UI lag
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (_searchInstance == null)
-                            return;
-
-                        var existingCount = SearchResults.Count;
-
-                        // Query DuckDB for new results (runs on background thread)
-                        var newResults = await _searchInstance
-                            .GetResultsPageAsync(existingCount, 100)
-                            .ConfigureAwait(false);
-
-                        // Acknowledge that we've queried - resets invalidation flag
-                        _searchInstance.AcknowledgeResultsQueried();
-
-                        if (newResults != null && newResults.Count > 0)
+                        try
                         {
-                            // Inject tally labels from SearchInstance column names (seed, score, then tallies)
-                            var labels =
-                                _searchInstance.ColumnNames.Count > 2
-                                    ? _searchInstance.ColumnNames.Skip(2).ToArray()
-                                    : Array.Empty<string>();
-
-                            // Add results on UI thread
-                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                foreach (var result in newResults)
-                                {
-                                    // Set labels only on the first result to drive grid headers
-                                    if (SearchResults.Count == 0 && labels.Length > 0)
-                                    {
-                                        result.Labels = labels;
-                                    }
-                                    SearchResults.Add(result);
-
-                                    // Add seed found message to console with copy button
-                                    AddSeedFoundMessage(result.Seed, result.TotalScore);
-                                }
-                            });
+                            var interpolatedParams = ActiveSearchTransition.GetInterpolatedParameters();
+                            ApplyShaderParametersToMainMenu(MainMenu, interpolatedParams);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError(
-                            "SearchModalViewModel",
-                            $"Failed to load live results: {ex.Message}"
-                        );
-                    }
-                    finally
-                    {
-                        _isLoadingResults = false;
-                    }
-                });
-            }
+                        catch (Exception ex)
+                        {
+                            DebugLogger.LogError(
+                                "SearchModalViewModel",
+                                $"Failed to apply search transition: {ex.Message}"
+                            );
+                        }
+                    });
+                }
 
-            // Save state periodically (only for AllSeeds mode)
-            // Calculate current batch from seeds searched
-            if (SelectedSearchMode == SearchMode.AllSeeds && e.SeedsSearched > 0)
-            {
-                long batchSizeInSeeds = (long)Math.Pow(35, BatchSize + 1);
-                int currentBatch = (int)(e.SeedsSearched / (ulong)batchSizeInSeeds);
+                // OPTIMIZED: Only query DuckDB when invalidation flag indicates new results exist
+                // This eliminates 95%+ of wasteful queries during search
+                now = DateTime.Now;
+                var canCheckResults = (now - _lastResultsLoad).TotalSeconds >= 0.5; // Reduced from 1.0s for snappier updates
 
-                // Save state every 10 batches
                 if (
-                    currentBatch > 0
-                    && currentBatch % 10 == 0
-                    && !string.IsNullOrEmpty(CurrentFilterPath)
+                    canCheckResults
+                    && _searchInstance != null
+                    && _searchInstance.HasNewResultsSinceLastQuery
+                    && !_isLoadingResults
                 )
                 {
-                    // Use helper method that includes deck/stake in the database path
-                    var dbPath = GetDatabasePath();
+                    _lastResultsLoad = now;
+                    _isLoadingResults = true;
 
-                    var state = new SearchState
+                    // Track background task properly - no fire-and-forget!
+                    _loadResultsTask = LoadResultsInBackgroundAsync();
+                }
+
+                // Save state periodically (only for AllSeeds mode) - fire-and-forget with error handling
+                if (SelectedSearchMode == SearchMode.AllSeeds && e.SeedsSearched > 0)
+                {
+                    long batchSizeInSeeds = (long)Math.Pow(35, BatchSize + 1);
+                    int currentBatch = (int)(e.SeedsSearched / (ulong)batchSizeInSeeds);
+
+                    // Save state every 10 batches
+                    if (
+                        currentBatch > 0
+                        && currentBatch % 10 == 0
+                        && !string.IsNullOrEmpty(CurrentFilterPath)
+                    )
                     {
-                        Id = 1,
-                        DeckIndex = SelectedDeckIndex,
-                        StakeIndex = SelectedStakeIndex,
-                        BatchSize = BatchSize,
-                        LastCompletedBatch = currentBatch,
-                        SearchMode = (int)SelectedSearchMode,
-                        WordListName = null,
-                        UpdatedAt = DateTime.Now,
-                    };
-                    Services.SearchStateManager.SaveSearchState(dbPath, state);
+                    // Fire-and-forget is OK here - state saving is non-critical
+                    _ = SaveSearchStateBackgroundAsync(currentBatch);
                 }
             }
 
-            // Marshal ALL property updates to UI thread
+            // Update UI properties on UI thread
+            UpdateUIFromProgress(e);
+        }
+            catch (Exception ex)
+            {
+                // Event handlers must catch all exceptions - async void can't be awaited
+                DebugLogger.LogError("SearchModalViewModel", $"Error in OnProgressUpdated: {ex.Message}");
+            }
+        }
+
+        private async Task LoadResultsInBackgroundAsync()
+        {
+            try
+            {
+                if (_searchInstance == null)
+                    return;
+
+                var existingCount = SearchResults.Count;
+
+                // Query DuckDB for new results (runs on background thread)
+                var newResults = await _searchInstance
+                    .GetResultsPageAsync(existingCount, 100)
+                    .ConfigureAwait(false);
+
+                // Acknowledge that we've queried - resets invalidation flag
+                _searchInstance.AcknowledgeResultsQueried();
+
+                if (newResults != null && newResults.Count > 0)
+                {
+                    // Inject tally labels from SearchInstance column names (seed, score, then tallies)
+                    var labels =
+                        _searchInstance.ColumnNames.Count > 2
+                            ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                            : Array.Empty<string>();
+
+                    // Add results on UI thread
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        foreach (var result in newResults)
+                        {
+                            // Set labels only on the first result to drive grid headers
+                            if (SearchResults.Count == 0 && labels.Length > 0)
+                            {
+                                result.Labels = labels;
+                            }
+                            SearchResults.Add(result);
+
+                            // Add seed found message to console with copy button
+                            AddSeedFoundMessage(result.Seed, result.TotalScore);
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to load live results: {ex.Message}"
+                );
+            }
+            finally
+            {
+                _isLoadingResults = false;
+            }
+        }
+
+        private async Task SaveSearchStateBackgroundAsync(int currentBatch)
+        {
+            try
+            {
+                var dbPath = GetDatabasePath();
+                var state = new SearchState
+                {
+                    Id = 1,
+                    DeckIndex = SelectedDeckIndex,
+                    StakeIndex = SelectedStakeIndex,
+                    BatchSize = BatchSize,
+                    LastCompletedBatch = currentBatch,
+                    SearchMode = (int)SelectedSearchMode,
+                    WordListName = null,
+                    UpdatedAt = DateTime.Now,
+                };
+                var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
+                if (searchStateManager != null)
+                {
+                    await searchStateManager.SaveSearchStateAsync(dbPath, state).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Non-critical - log but don't crash
+                DebugLogger.LogError("SearchModalViewModel", $"Failed to save search state: {ex.Message}");
+            }
+        }
+
+        // Marshal ALL property updates to UI thread (called from OnProgressUpdated)
+        private void UpdateUIFromProgress(SearchProgress e)
+        {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 // Calculate seeds per second once for use in multiple places
@@ -2060,7 +2109,10 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var savedState = Services.SearchStateManager.LoadSearchState(dbPath);
+                var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
+                var savedState = searchStateManager != null 
+                    ? await searchStateManager.LoadSearchStateAsync(dbPath)
+                    : null;
                 if (savedState != null)
                 {
                     // Calculate progress percentage from saved batch

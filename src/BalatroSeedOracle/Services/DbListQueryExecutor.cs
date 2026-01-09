@@ -76,8 +76,8 @@ namespace BalatroSeedOracle.Services
                 // Validate database schema
                 await ValidateDatabaseSchema(connection, criteria);
                 
-                // Get table information first
-                var tables = await GetTableNamesAsync(connection);
+                // Get table information first - use high-level method, no SQL!
+                var tables = await connection.GetTableNamesAsync();
                 if (tables.Count == 0)
                 {
                     throw new InvalidOperationException("No tables found in database. The database may be corrupted or empty.");
@@ -87,15 +87,30 @@ namespace BalatroSeedOracle.Services
                 var tableName = tables[0];
                 DebugLogger.Log("DbListQueryExecutor", $"Querying table: {tableName}");
 
-                // Build query based on criteria with validation
-                var query = BuildQuery(tableName, criteria);
-                DebugLogger.Log("DbListQueryExecutor", $"Executing query: {query}");
-
-                // Execute query with progress reporting
-                var queryResults = await ExecuteQueryWithProgress(connection, query, progress, cancellationToken);
+                // Use high-level method - no SQL construction in BSO!
+                // This uses Motely's DuckDBQueryHelpers internally
+                progress?.Report(new SearchProgress
+                {
+                    PercentComplete = 50.0,
+                    Message = "Querying database..."
+                });
                 
-                // Convert results to SearchResult objects with validation
-                results = ConvertToSearchResults(queryResults, criteria.MinScore);
+                var resultsWithTallies = await connection.QueryResultsAsync(
+                    tableName,
+                    criteria.MinScore > 0 ? criteria.MinScore : null,
+                    criteria.Deck != "Red" ? criteria.Deck : null,
+                    criteria.Stake != "White" ? criteria.Stake : null,
+                    criteria.MaxResults > 0 ? criteria.MaxResults : 1000
+                );
+                
+                // Convert to BSO SearchResult format
+                results = resultsWithTallies.Select(r => new SearchResult
+                {
+                    Seed = r.Seed,
+                    TotalScore = r.Score,
+                    Scores = r.Tallies?.ToArray(),
+                    Labels = null // Would need column names from Motely
+                }).ToList();
 
                 DebugLogger.Log("DbListQueryExecutor", $"Query completed. Found {results.Count} results");
 
@@ -157,13 +172,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Check if we can query the information schema
-                var schemaCheck = await connection.ExecuteReaderAsync(
-                    "SELECT COUNT(*) as table_count FROM information_schema.tables WHERE table_schema = 'main'",
-                    reader => reader.GetInt32(0)
-                );
+                // Check if we can query the information schema - use high-level method!
+                var tableCount = (await connection.GetTableNamesAsync()).Count;
 
-                if (!schemaCheck.Any())
+                if (tableCount == 0)
                 {
                     throw new InvalidOperationException("Cannot read database schema - database may be corrupted");
                 }
@@ -176,200 +188,11 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private async Task<List<Dictionary<string, object>>> ExecuteQueryWithProgress(
-            IDuckDBConnection connection, 
-            string query,
-            IProgress<SearchProgress>? progress,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                // Report query start
-                progress?.Report(new SearchProgress
-                {
-                    PercentComplete = 50.0,
-                    SeedsSearched = 0,
-                    ResultsFound = 0,
-                    EstimatedTimeRemaining = TimeSpan.FromSeconds(5),
-                    Message = "Executing database query..."
-                });
+        // Removed ExecuteQueryWithProgress - now using QueryResultsAsync which uses Motely's helpers
 
-                var results = new List<Dictionary<string, object>>();
-                
-                var queryResult = await connection.ExecuteReaderAsync(query, reader =>
-                {
-                    var row = new Dictionary<string, object>();
-                    for (int i = 0; i < reader.FieldCount; i++)
-                    {
-                        var columnName = reader.GetName(i);
-                        var value = reader.IsDBNull(i) ? null! : reader.GetValue(i);
-                        row[columnName] = value;
-                    }
-                    return row;
-                });
-                
-                results.AddRange(queryResult);
+        // Removed GetTableNamesAsync - now using IDuckDBConnection.GetTableNamesAsync() directly
 
-                // Report query completion
-                progress?.Report(new SearchProgress
-                {
-                    PercentComplete = 90.0,
-                    SeedsSearched = (ulong)results.Count,
-                    ResultsFound = results.Count,
-                    EstimatedTimeRemaining = TimeSpan.FromSeconds(1),
-                    Message = $"Processing {results.Count} results..."
-                });
-
-                return results;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DbListQueryExecutor", $"Query execution failed: {ex.Message}");
-                throw new InvalidOperationException($"Failed to execute query: {ex.Message}", ex);
-            }
-        }
-
-        private async Task<List<string>> GetTableNamesAsync(IDuckDBConnection connection)
-        {
-            var tables = new List<string>();
-            
-            try
-            {
-                // Query to get all table names
-                var query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'";
-                var result = await connection.ExecuteReaderAsync(query, reader => 
-                {
-                    var tableName = reader.GetString(0);
-                    return tableName;
-                });
-                
-                tables.AddRange(result);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.Log("DbListQueryExecutor", $"Failed to get table names: {ex.Message}");
-            }
-
-            return tables;
-        }
-
-        private string BuildQuery(string tableName, SearchCriteria criteria)
-        {
-            var query = $"SELECT * FROM {tableName}";
-            
-            var conditions = new List<string>();
-
-            // Add minimum score filter if specified
-            if (criteria.MinScore > 0)
-            {
-                conditions.Add($"score >= {criteria.MinScore}");
-            }
-
-            // Add deck filter if specified
-            if (!string.IsNullOrEmpty(criteria.Deck) && criteria.Deck != "Red")
-            {
-                conditions.Add($"deck = '{criteria.Deck}'");
-            }
-
-            // Add stake filter if specified
-            if (!string.IsNullOrEmpty(criteria.Stake) && criteria.Stake != "White")
-            {
-                conditions.Add($"stake = '{criteria.Stake}'");
-            }
-
-            // Add WHERE clause if there are conditions
-            if (conditions.Count > 0)
-            {
-                query += " WHERE " + string.Join(" AND ", conditions);
-            }
-
-            // Add ordering and limit
-            query += " ORDER BY score DESC, seed ASC";
-            
-            // Add limit if MaxResults is specified
-            if (criteria.MaxResults > 0)
-            {
-                query += $" LIMIT {criteria.MaxResults}";
-            }
-
-            return query;
-        }
-
-        private async Task<List<Dictionary<string, object>>> ExecuteQueryAsync(
-            IDuckDBConnection connection, 
-            string query)
-        {
-            var results = new List<Dictionary<string, object>>();
-            
-            try
-            {
-                var queryResult = await connection.ExecuteReaderAsync(query, reader =>
-                {
-                    var row = new Dictionary<string, object>();
-                    for (int i = 0; i < reader.FieldCount; i++)
-                    {
-                        var columnName = reader.GetName(i);
-                        var value = reader.IsDBNull(i) ? null! : reader.GetValue(i);
-                        row[columnName] = value;
-                    }
-                    return row;
-                });
-                
-                results.AddRange(queryResult);
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("DbListQueryExecutor", $"Query execution failed: {ex.Message}");
-                throw;
-            }
-
-            return results;
-        }
-
-        private List<SearchResult> ConvertToSearchResults(
-            List<Dictionary<string, object>> queryResults, 
-            int minScore)
-        {
-            var results = new List<SearchResult>();
-
-            foreach (var row in queryResults)
-            {
-                try
-                {
-                    // Extract basic fields
-                    var seed = row.TryGetValue("seed", out var seedValue) 
-                        ? seedValue?.ToString() ?? string.Empty 
-                        : string.Empty;
-
-                    var score = row.TryGetValue("score", out var scoreValue) 
-                        ? Convert.ToInt32(scoreValue) 
-                        : 0;
-
-                    // Skip if below minimum score
-                    if (score < minScore)
-                        continue;
-
-                    // Create SearchResult with basic properties
-                    var result = new SearchResult
-                    {
-                        Seed = seed,
-                        TotalScore = score
-                    };
-
-                    // For now, we'll just store the basic result
-                    // Additional fields like deck/stake could be added to Labels or handled separately
-                    // if needed in the future
-
-                    results.Add(result);
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.Log("DbListQueryExecutor", $"Failed to convert row to SearchResult: {ex.Message}");
-                }
-            }
-
-            return results;
-        }
+        // Removed BuildQuery, ExecuteQueryAsync, ConvertToSearchResults - now using Motely's QueryResultsAsync
 
         public void Dispose()
         {

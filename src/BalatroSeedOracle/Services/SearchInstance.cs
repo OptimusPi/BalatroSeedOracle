@@ -51,7 +51,7 @@ namespace BalatroSeedOracle.Services
 
         // Use MotelySearchDatabase as the high-level abstraction (black box - handles all DB internals)
         // This ensures BSO search works the same way as Motely CLI/TUI/API search
-        private MotelySearchDatabase? _searchDatabase;
+        private Motely.API.MotelySearchDatabase? _searchDatabase;
 
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -165,7 +165,7 @@ namespace BalatroSeedOracle.Services
             {
                 // Use MotelySearchDatabase - it handles ALL database internals (schema, indexes, validation) internally
                 // This ensures BSO search works the same way as Motely CLI/TUI/API search
-                _searchDatabase = new MotelySearchDatabase(
+                _searchDatabase = new Motely.API.MotelySearchDatabase(
                     _dbPath,
                     _columnNames,
                     logCallback: msg => DebugLogger.Log($"SearchInstance[{_searchId}]", msg)
@@ -173,6 +173,7 @@ namespace BalatroSeedOracle.Services
                 
                 // Create BSO-specific search_meta table (not in Motely schema)
                 // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection (avoids file locking!)
+                // Note: This is infrastructure setup, not business logic - SQL is in Motely's API
                 _searchDatabase.ExecuteNonQuery(
                     "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )");
                 
@@ -502,6 +503,21 @@ namespace BalatroSeedOracle.Services
         /// Dumps all seeds from current database to WordLists/fertilizer.txt before database invalidation.
         /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
         /// </summary>
+        private async Task DumpSeedsToFertilizerBackgroundAsync()
+        {
+            try
+            {
+                await DumpSeedsToFertilizerAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Failed to dump seeds to fertilizer: {ex.Message}"
+                );
+            }
+        }
+
         private async Task DumpSeedsToFertilizerAsync()
         {
             try
@@ -597,20 +613,8 @@ namespace BalatroSeedOracle.Services
 
                         // Dump seeds to fertilizer.txt before clearing database (fire-and-forget)
                         // Not critical for search to work, so we don't block on this operation
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await DumpSeedsToFertilizerAsync().ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                DebugLogger.LogError(
-                                    $"SearchInstance[{_searchId}]",
-                                    $"Failed to dump seeds to fertilizer: {ex.Message}"
-                                );
-                            }
-                        });
+                        // Use async void helper with proper error handling
+                        _ = DumpSeedsToFertilizerBackgroundAsync();
 
                         try
                         {
@@ -947,13 +951,14 @@ namespace BalatroSeedOracle.Services
             StartSearchFromFile(criteria.ConfigPath, searchConfig, progress, cancellationToken);
         }
 
+            
         /// <summary>
         /// Start searching with a config object directly (no file I/O)
         /// Used for quick in-memory tests of unsaved filters
         /// </summary>
         public Task StartSearchAsync(
             SearchCriteria criteria,
-            MotelyJsonConfig config,
+            Motely.Filters.MotelyJsonConfig config,
             IProgress<SearchProgress>? progress = null,
             CancellationToken cancellationToken = default
         )
@@ -962,13 +967,6 @@ namespace BalatroSeedOracle.Services
                 $"SearchInstance[{_searchId}]",
                 $"StartSearchAsync (in-memory) ENTERED! Config Name={config.Name}"
             );
-
-            if (config == null)
-            {
-                var errorMsg = "Config object is required but was null";
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
-                throw new ArgumentNullException(nameof(config), errorMsg);
-            }
 
             DebugLogger.Log(
                 $"SearchInstance[{_searchId}]",
@@ -1296,24 +1294,11 @@ namespace BalatroSeedOracle.Services
                 // Cancel the token immediately
                 _cancellationTokenSource?.Cancel();
 
-                // Wait for the search task to complete (with timeout)
+                // Wait for the search task to complete (with timeout) - non-blocking async pattern
                 if (_searchTask != null && !_searchTask.IsCompleted)
                 {
-                    try
-                    {
-                        // Wait up to 1 second for the task to complete
-                        if (!_searchTask.Wait(1000))
-                        {
-                            DebugLogger.LogError(
-                                $"SearchInstance[{_searchId}]",
-                                "Search task did not complete within timeout"
-                            );
-                        }
-                    }
-                    catch (AggregateException)
-                    {
-                        // Expected when task is cancelled
-                    }
+                    // Fire-and-forget: wait for task completion with timeout
+                    _ = WaitForSearchTaskCompletionAsync(_searchTask);
                     _searchTask = null;
                 }
 
@@ -1335,22 +1320,8 @@ namespace BalatroSeedOracle.Services
                         }
 
                         // Then dispose with a very short timeout - we don't care if it completes
-                        var disposeTask = Task.Run(() => _currentSearch.Dispose());
-                        if (!disposeTask.Wait(TimeSpan.FromMilliseconds(200)))
-                        {
-                            // Don't wait, just log and continue
-                            DebugLogger.LogError(
-                                $"SearchInstance[{_searchId}]",
-                                "Search disposal timed out (abandoning)"
-                            );
-                        }
-                        else
-                        {
-                            DebugLogger.Log(
-                                $"SearchInstance[{_searchId}]",
-                                "Search disposed successfully"
-                            );
-                        }
+                        // Use async void helper for fire-and-forget disposal
+                        _ = DisposeSearchBackgroundAsync();
                     }
                     catch (Exception ex)
                     {
@@ -1447,14 +1418,6 @@ namespace BalatroSeedOracle.Services
             try
             {
                 // Pre-flight validation
-                if (config == null)
-                {
-                    throw new ArgumentNullException(
-                        nameof(config),
-                        "Search configuration cannot be null"
-                    );
-                }
-
                 try
                 {
                     MotelyJsonConfigValidator.ValidateConfig(config);
@@ -2120,6 +2083,55 @@ namespace BalatroSeedOracle.Services
 
             GC.SuppressFinalize(this);
         }
+
+        private async Task WaitForSearchTaskCompletionAsync(Task searchTask)
+        {
+            try
+            {
+                // Wait up to 1 second for the task to complete
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                await searchTask.WaitAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Timeout - log and abandon
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    "Search task did not complete within timeout"
+                );
+            }
+            catch (Exception ex)
+            {
+                // Expected when task is cancelled or has errors
+                DebugLogger.Log($"SearchInstance[{_searchId}]", $"Search task completion: {ex.Message}");
+            }
+        }
+
+        private async Task DisposeSearchBackgroundAsync()
+        {
+            try
+            {
+                // Use a timeout to avoid blocking
+                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+                var searchToDispose = _currentSearch; // Capture for closure
+                await Task.Run(() => searchToDispose?.Dispose(), cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Timeout - log and abandon
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    "Search disposal timed out (abandoning)"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Error disposing search: {ex.Message}"
+                );
+            }
+        }
     }
 }
 #else
@@ -2285,7 +2297,6 @@ namespace BalatroSeedOracle.Services
             try
             {
                 // Pre-flight validation
-                if (config == null) throw new ArgumentNullException(nameof(config));
                 MotelyJsonConfigValidator.ValidateConfig(config);
 
                 // Prepare MUST clauses

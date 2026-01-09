@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
@@ -21,62 +22,7 @@ namespace BalatroSeedOracle.Services
             _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
         }
 
-        #region Static Compatibility Methods (for legacy code)
-
-        /// <summary>
-        /// Static method for backward compatibility. Use LoadSearchStateAsync for new code.
-        /// </summary>
-        public static SearchState? LoadSearchState(string filterDbPath)
-        {
-#if BROWSER
-            // Browser: Search functionality not available, return null
-            return null;
-#else
-            try
-            {
-                var instance = ServiceHelper.GetService<SearchStateManager>();
-                if (instance == null)
-                {
-                    DebugLogger.LogError("SearchStateManager", "Service not available");
-                    return null;
-                }
-                return instance.LoadSearchStateAsync(filterDbPath).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchStateManager", $"Static LoadSearchState failed: {ex.Message}");
-                return null;
-            }
-#endif
-        }
-
-        /// <summary>
-        /// Static method for backward compatibility. Use SaveSearchStateAsync for new code.
-        /// </summary>
-        public static void SaveSearchState(string filterDbPath, SearchState state)
-        {
-#if BROWSER
-            // Browser: Search functionality not available, no-op
-            return;
-#else
-            try
-            {
-                var instance = ServiceHelper.GetService<SearchStateManager>();
-                if (instance == null)
-                {
-                    DebugLogger.LogError("SearchStateManager", "Service not available");
-                    return;
-                }
-                instance.SaveSearchStateAsync(filterDbPath, state).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("SearchStateManager", $"Static SaveSearchState failed: {ex.Message}");
-            }
-#endif
-        }
-
-        #endregion
+        // Static blocking methods removed - all callers now use async versions
 
         /// <summary>
         /// Load search state from the filter's DuckDB database
@@ -104,29 +50,25 @@ namespace BalatroSeedOracle.Services
                 // Ensure table exists
                 await EnsureSearchStateTableExistsAsync(connection);
 
-                var results = await connection.ExecuteReaderAsync(
-                    @"SELECT id, deck_index, stake_index, batch_size, last_completed_batch,
-                             search_mode, wordlist_name, updated_at
-                      FROM search_state
-                      WHERE id = 1",
-                    reader => new SearchState
-                    {
-                        Id = reader.GetInt32(0),
-                        DeckIndex = reader.GetInt32(1),
-                        StakeIndex = reader.GetInt32(2),
-                        BatchSize = reader.GetInt32(3),
-                        LastCompletedBatch = reader.GetInt32(4),
-                        SearchMode = reader.GetInt32(5),
-                        WordListName = reader.IsDBNull(6) ? null : reader.GetString(6),
-                        UpdatedAt = DateTime.Parse(reader.GetString(7)),
-                    });
+                // Use high-level method - no SQL construction in BSO!
+                var row = await connection.LoadRowByIdAsync("search_state", "id", 1);
+                if (row == null)
+                    return null;
 
-                foreach (var state in results)
+                // Convert dictionary to SearchState
+                return new SearchState
                 {
-                    return state; // Return first result
-                }
-
-                return null;
+                    Id = row.TryGetValue("id", out var id) ? Convert.ToInt32(id) : 1,
+                    DeckIndex = row.TryGetValue("deck_index", out var di) ? Convert.ToInt32(di) : 0,
+                    StakeIndex = row.TryGetValue("stake_index", out var si) ? Convert.ToInt32(si) : 0,
+                    BatchSize = row.TryGetValue("batch_size", out var bs) ? Convert.ToInt32(bs) : 3,
+                    LastCompletedBatch = row.TryGetValue("last_completed_batch", out var lcb) ? Convert.ToInt32(lcb) : 0,
+                    SearchMode = row.TryGetValue("search_mode", out var sm) ? Convert.ToInt32(sm) : 0,
+                    WordListName = row.TryGetValue("wordlist_name", out var wln) ? wln?.ToString() : null,
+                    UpdatedAt = row.TryGetValue("updated_at", out var ua) && ua != null 
+                        ? DateTime.Parse(ua.ToString()!) 
+                        : DateTime.UtcNow,
+                };
             }
             catch (Exception ex)
             {
@@ -162,24 +104,20 @@ namespace BalatroSeedOracle.Services
                 // Ensure table exists
                 await EnsureSearchStateTableExistsAsync(connection);
 
-                // Use INSERT OR REPLACE pattern
-                var wordlistValue = state.WordListName != null ? $"'{state.WordListName}'" : "NULL";
-                var sql = $@"
-                    INSERT INTO search_state (id, deck_index, stake_index, batch_size, last_completed_batch,
-                                             search_mode, wordlist_name, updated_at)
-                    VALUES (1, {state.DeckIndex}, {state.StakeIndex}, {state.BatchSize}, {state.LastCompletedBatch},
-                            {state.SearchMode}, {wordlistValue}, '{state.UpdatedAt:yyyy-MM-dd HH:mm:ss}')
-                    ON CONFLICT (id) DO UPDATE SET
-                        deck_index = excluded.deck_index,
-                        stake_index = excluded.stake_index,
-                        batch_size = excluded.batch_size,
-                        last_completed_batch = excluded.last_completed_batch,
-                        search_mode = excluded.search_mode,
-                        wordlist_name = excluded.wordlist_name,
-                        updated_at = excluded.updated_at
-                ";
-
-                await connection.ExecuteNonQueryAsync(sql);
+                // Use high-level method - no SQL construction in BSO!
+                var values = new Dictionary<string, object?>
+                {
+                    ["id"] = 1,
+                    ["deck_index"] = state.DeckIndex,
+                    ["stake_index"] = state.StakeIndex,
+                    ["batch_size"] = state.BatchSize,
+                    ["last_completed_batch"] = state.LastCompletedBatch,
+                    ["search_mode"] = state.SearchMode,
+                    ["wordlist_name"] = state.WordListName,
+                    ["updated_at"] = state.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+                
+                await connection.UpsertRowAsync("search_state", values, "id");
                 DebugLogger.Log(
                     "SearchStateManager",
                     $"Saved search state: Batch {state.LastCompletedBatch}, Mode {state.SearchMode}"
@@ -235,13 +173,12 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private async Task EnsureSearchStateTableExistsAsync(IDuckDBConnection connection)
         {
-            // Note: BalatroSeedOracle's search_state has additional columns (deck_index, stake_index, etc.)
-            // that Motely's schema doesn't include. For now, keep inline but could extend DuckDBSchema if needed.
-            // Using Motely's base schema and adding BalatroSeedOracle-specific columns
+            // Use Motely's schema - no SQL construction in BSO!
             var baseSchema = DuckDBSchema.SearchStateTableSchema();
-            await connection.ExecuteNonQueryAsync(baseSchema);
+            await connection.EnsureTableExistsAsync(baseSchema);
             
             // Add BalatroSeedOracle-specific columns if they don't exist
+            // Note: ALTER TABLE still needs SQL, but this is schema migration, not business logic
             await connection.ExecuteNonQueryAsync(@"
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS deck_index INTEGER;
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS stake_index INTEGER;

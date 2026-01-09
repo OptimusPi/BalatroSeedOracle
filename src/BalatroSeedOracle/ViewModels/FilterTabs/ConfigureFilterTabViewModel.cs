@@ -26,6 +26,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
+        private Task? _autoSaveTask;
         private const int AutoSaveDebounceMs = 500;
 
         [ObservableProperty]
@@ -239,8 +240,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             };
 
-            // Initialize data asynchronously
-            _ = Task.Run(LoadGameDataAsync);
+            // Initialize data asynchronously - no Task.Run needed, method is already async
+            _ = LoadGameDataAsync();
         }
 
         public void SetCategory(string category)
@@ -1105,22 +1106,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var token = _autoSaveCts.Token;
 
-            Task.Run(async () =>
+            // Track auto-save task properly - no fire-and-forget!
+            _autoSaveTask = ThrottledAutoSaveAsync(token);
+        }
+
+        private async Task ThrottledAutoSaveAsync(CancellationToken cancellationToken)
+        {
+            try
             {
-                try
+                await Task.Delay(AutoSaveDebounceMs, cancellationToken);
+                if (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(AutoSaveDebounceMs, token);
-                    if (!token.IsCancellationRequested)
-                    {
-                        await PerformAutoSave();
-                    }
+                    await PerformAutoSave();
                 }
-                catch (TaskCanceledException) { }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("ConfigureFilterTab", $"Auto-save error: {ex.Message}");
-                }
-            });
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ConfigureFilterTab", $"Auto-save error: {ex.Message}");
+            }
         }
 
         private async Task PerformAutoSave()

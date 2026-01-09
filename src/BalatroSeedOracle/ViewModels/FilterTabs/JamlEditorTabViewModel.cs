@@ -63,6 +63,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private System.Threading.CancellationTokenSource? _validationThrottleCts;
+        private Task? _validationThrottleTask;
 
         partial void OnJamlContentChanged(string value)
         {
@@ -71,18 +72,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _validationThrottleCts = new System.Threading.CancellationTokenSource();
             var token = _validationThrottleCts.Token;
 
-            Task.Run(async () => {
-                try 
-                {
-                    await Task.Delay(500, token);
-                    if (token.IsCancellationRequested) return;
+            // Track throttled validation task - no fire-and-forget!
+            _validationThrottleTask = ThrottledValidationAsync(token);
+        }
 
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
-                        ValidateAndPreview();
-                    });
-                }
-                catch (TaskCanceledException) {}
-            }, token);
+        private async Task ThrottledValidationAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            try
+            {
+                await Task.Delay(500, cancellationToken);
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ValidateAndPreview();
+                });
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when throttling - ignore
+            }
         }
 
         private void ValidateAndPreview()

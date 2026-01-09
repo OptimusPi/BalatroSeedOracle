@@ -37,6 +37,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
+        private Task? _autoSaveTask;
         private const int AutoSaveDebounceMs = 500;
 
         // Prevent JSON auto-generation during filter load
@@ -567,9 +568,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             };
 
-            // Initialize data asynchronously without blocking UI
-            // Fire and forget is OK here - data will populate when ready
-            _ = Task.Run(LoadGameDataAsync);
+            // Initialize data asynchronously - no Task.Run needed, method is already async
+            _ = LoadGameDataAsync();
         }
 
         private readonly Dictionary<string, List<ItemGroup>> _groupedItemsCache = new();
@@ -2444,28 +2444,30 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var token = _autoSaveCts.Token;
 
-            // Schedule auto-save after debounce delay
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await Task.Delay(AutoSaveDebounceMs, token);
+            // Schedule auto-save after debounce delay - track task properly
+            _autoSaveTask = ThrottledAutoSaveAsync(token);
+        }
 
-                    // If not cancelled, perform the save
-                    if (!token.IsCancellationRequested)
-                    {
-                        await PerformAutoSave();
-                    }
-                }
-                catch (TaskCanceledException)
+        private async Task ThrottledAutoSaveAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await Task.Delay(AutoSaveDebounceMs, cancellationToken);
+
+                // If not cancelled, perform the save
+                if (!cancellationToken.IsCancellationRequested)
                 {
-                    // Expected when debounce is cancelled
+                    await PerformAutoSave();
                 }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("VisualBuilderTab", $"Auto-save error: {ex.Message}");
-                }
-            });
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when debounce is cancelled
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("VisualBuilderTab", $"Auto-save error: {ex.Message}");
+            }
         }
 
         /// <summary>

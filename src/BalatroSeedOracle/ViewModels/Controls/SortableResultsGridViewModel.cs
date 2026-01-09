@@ -28,6 +28,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
         // Debounce timer
         private CancellationTokenSource? _debounceTokenSource;
+        private Task? _debounceTask;
 
         // UI-bound collection - ONLY updated via debounced refresh
         [ObservableProperty]
@@ -212,21 +213,24 @@ namespace BalatroSeedOracle.ViewModels.Controls
             _debounceTokenSource = new CancellationTokenSource();
             var token = _debounceTokenSource.Token;
 
-            Task.Run(async () =>
+            // Track debounce task properly - no fire-and-forget!
+            _debounceTask = DebouncedRefreshAsync(token);
+        }
+
+        private async Task DebouncedRefreshAsync(CancellationToken cancellationToken)
+        {
+            try
             {
-                try
+                await Task.Delay(DebounceDelayMs, cancellationToken);
+                if (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(DebounceDelayMs, token);
-                    if (!token.IsCancellationRequested)
-                    {
-                        RefreshDisplayedResults();
-                    }
+                    RefreshDisplayedResults();
                 }
-                catch (TaskCanceledException)
-                {
-                    // Expected when debounce is reset
-                }
-            }, token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when debounce is reset
+            }
         }
 
         private void RefreshDisplayedResults()

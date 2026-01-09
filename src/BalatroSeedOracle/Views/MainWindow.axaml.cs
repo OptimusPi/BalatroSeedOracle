@@ -62,80 +62,7 @@ public partial class MainWindow : Window
         e.Cancel = true;
 
         // Do cleanup asynchronously to avoid blocking UI
-        Task.Run(async () =>
-        {
-            try
-            {
-                DebugLogger.Log("MainWindow", "Starting cleanup");
-
-                // First ensure any running search state is saved
-                var userProfileService =
-                    BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
-                if (userProfileService is not null)
-                {
-                    DebugLogger.LogImportant(
-                        "MainWindow",
-                        "Flushing user profile to save search state..."
-                    );
-                    userProfileService.FlushProfile();
-                }
-
-                // Stop any running Motely searches first
-                if (_mainMenu != null)
-                {
-                    DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");
-                    await _mainMenu.StopAllSearchesAsync();
-                    DebugLogger.LogImportant("MainWindow", "All searches stopped");
-                }
-
-                DebugLogger.Log("MainWindow", "Starting main menu disposal");
-
-                // Give disposal 5 seconds max (increased because Motely needs time)
-                var disposeTask = Task.Run(() => _mainMenu?.Dispose());
-                if (await Task.WhenAny(disposeTask, Task.Delay(5000)) != disposeTask)
-                {
-                    DebugLogger.LogError(
-                        "MainWindow",
-                        "Main menu disposal timed out after 5 seconds - forcing close"
-                    );
-                }
-                else
-                {
-                    DebugLogger.Log("MainWindow", "Main menu disposed successfully");
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("MainWindow", $"Error during disposal: {ex.Message}");
-            }
-            finally
-            {
-                // Trigger the App shutdown handler FIRST
-                var searchManager =
-                    BalatroSeedOracle.App.GetService<BalatroSeedOracle.Services.SearchManager>();
-                if (searchManager != null)
-                {
-                    DebugLogger.Log("MainWindow", "Stopping all searches via SearchManager...");
-                    searchManager.StopAllSearches();
-
-                    // Give searches a moment to actually stop
-                    await Task.Delay(500);
-
-                    // Dispose the search manager which will dispose all searches
-                    searchManager.Dispose();
-                    DebugLogger.Log("MainWindow", "SearchManager disposed");
-                }
-
-                // Close the window on UI thread
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                {
-                    DebugLogger.LogImportant("MainWindow", "Closing window");
-                    // Remove event handler to prevent recursion
-                    Closing -= OnWindowClosing;
-                    Close();
-                });
-            }
-        });
+        _ = CleanupAndExitAsync();
     }
 
     private void InitializeComponent()
@@ -177,6 +104,60 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             DebugLogger.LogError($"Error handling window resize: {ex.Message}");
+        }
+    }
+
+    private async Task CleanupAndExitAsync()
+    {
+        try
+        {
+            DebugLogger.Log("MainWindow", "Starting cleanup");
+
+            // First ensure any running search state is saved
+            var userProfileService =
+                BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
+            if (userProfileService is not null)
+            {
+                DebugLogger.LogImportant(
+                    "MainWindow",
+                    "Flushing user profile to save search state..."
+                );
+                userProfileService.FlushProfile();
+            }
+
+            // Stop any running Motely searches first
+            if (_mainMenu != null)
+            {
+                DebugLogger.LogImportant("MainWindow", "Stopping all Motely searches...");
+                await _mainMenu.StopAllSearchesAsync();
+                DebugLogger.LogImportant("MainWindow", "All searches stopped");
+            }
+
+            DebugLogger.Log("MainWindow", "Starting main menu disposal");
+
+            // Give disposal 5 seconds max (increased because Motely needs time)
+            // Use Task.Run for synchronous Dispose with timeout
+            var disposeTask = Task.Run(() => _mainMenu?.Dispose());
+            if (await Task.WhenAny(disposeTask, Task.Delay(5000)) != disposeTask)
+            {
+                DebugLogger.LogError(
+                    "MainWindow",
+                    "Main menu disposal timed out after 5 seconds - forcing close"
+                );
+            }
+            else
+            {
+                DebugLogger.Log("MainWindow", "Main menu disposed successfully");
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("MainWindow", $"Error during disposal: {ex.Message}");
+        }
+        finally
+        {
+            // Force close after cleanup completes
+            Environment.Exit(0);
         }
     }
 }

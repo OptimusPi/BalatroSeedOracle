@@ -44,4 +44,55 @@ public interface IDuckDBConnection : IAsyncDisposable, IDisposable
     /// Copy data from a table to a file (DuckDB COPY TO command) - Desktop only
     /// </summary>
     Task CopyToFileAsync(string tableName, string filePath, string format = "csv");
+
+    /// <summary>
+    /// Get row count for a table (uses Motely's DuckDBOperations internally)
+    /// </summary>
+    Task<long> GetRowCountAsync(string tableName);
+
+    /// <summary>
+    /// Ensure a table exists using schema from Motely (uses DuckDBTableManager internally)
+    /// </summary>
+    Task EnsureTableExistsAsync(string createTableSql);
+
+    /// <summary>
+    /// Get all seeds from a table (uses Motely's DuckDBQueryHelpers internally)
+    /// </summary>
+    Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null);
+
+    /// <summary>
+    /// Clear all rows from a table
+    /// </summary>
+    Task ClearTableAsync(string tableName);
+
+    /// <summary>
+    /// Create an index on a table (uses Motely's DuckDBTableManager internally)
+    /// </summary>
+    Task CreateIndexAsync(string indexSql);
+
+    /// <summary>
+    /// Get all table names from the database (uses Motely's helpers internally)
+    /// </summary>
+    Task<List<string>> GetTableNamesAsync();
+
+    /// <summary>
+    /// Query results from a table with filters (uses Motely's DuckDBQueryHelpers internally)
+    /// This replaces SQL construction in BSO business logic
+    /// </summary>
+    Task<List<Models.ResultWithTallies>> QueryResultsAsync(
+        string tableName,
+        int? minScore = null,
+        string? deck = null,
+        string? stake = null,
+        int limit = 1000);
+
+    /// <summary>
+    /// Load a single row by ID from a table (uses Motely's helpers internally)
+    /// </summary>
+    Task<Dictionary<string, object?>?> LoadRowByIdAsync(string tableName, string idColumn, int id);
+
+    /// <summary>
+    /// Upsert a row (INSERT OR REPLACE) - uses Motely's helpers internally
+    /// </summary>
+    Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn);
 }

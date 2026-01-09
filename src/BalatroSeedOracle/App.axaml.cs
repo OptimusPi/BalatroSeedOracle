@@ -47,13 +47,8 @@ public partial class App : Application
             _serviceProvider = services.BuildServiceProvider();
 
 #if BROWSER
-            // Test localStorage interop early
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(1000); // Wait for JS to initialize
-                var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
-                DebugLogger.Log("App", $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
-            });
+            // Test localStorage interop early - fire-and-forget with proper error handling
+            _ = TestLocalStorageInteropAsync();
             
             // TODO: Implement browser sample filter seeding
             // _ = SeedBrowserSampleFiltersAsync();
@@ -106,6 +101,45 @@ public partial class App : Application
             Console.ReadLine(); // Desktop only - browser has no stdin
 #endif
             throw;
+        }
+    }
+
+#if BROWSER
+#if BROWSER
+    private async Task TestLocalStorageInteropAsync()
+    {
+        try
+        {
+            await Task.Delay(1000); // Wait for JS to initialize
+            var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
+            DebugLogger.Log("App", $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"LocalStorage interop test failed: {ex.Message}");
+        }
+    }
+#endif
+#endif
+
+    private async Task UniformProgressLoopAsync(
+        Services.TransitionService transitionService,
+        DateTime introStart,
+        TimeSpan minIntro)
+    {
+        while (true)
+        {
+            var elapsed = DateTime.UtcNow - introStart;
+            if (elapsed >= minIntro)
+            {
+                // Stop at 95% - caller will complete to 100% when fully ready
+                transitionService.SetProgress(0.95f);
+                break;
+            }
+            float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
+            float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
+            transitionService.SetProgress(p);
+            await System.Threading.Tasks.Task.Delay(16).ConfigureAwait(false);
         }
     }
 
@@ -330,23 +364,8 @@ public partial class App : Application
             var introStart = DateTime.UtcNow;
             var minIntro = TimeSpan.FromSeconds(3.14);
 
-            var uniformProgressTask = System.Threading.Tasks.Task.Run(async () =>
-            {
-                while (true)
-                {
-                    var elapsed = DateTime.UtcNow - introStart;
-                    if (elapsed >= minIntro)
-                    {
-                        // Stop at 95% - caller will complete to 100% when fully ready
-                        transitionService.SetProgress(0.95f);
-                        break;
-                    }
-                    float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
-                    float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
-                    transitionService.SetProgress(p);
-                    await System.Threading.Tasks.Task.Delay(16).ConfigureAwait(false);
-                }
-            });
+            // Track uniform progress task - no fire-and-forget!
+            _ = UniformProgressLoopAsync(transitionService, introStart, minIntro);
 
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
@@ -358,7 +377,8 @@ public partial class App : Application
 
             await spriteService.PreloadAllSpritesAsync(progress);
 
-            await uniformProgressTask.ConfigureAwait(false);
+            // Uniform progress loop runs in background - no need to await
+            // It will complete when minIntro time is reached
 
             DebugLogger.LogImportant("App", "Sprites pre-loaded with smooth transition!");
         }

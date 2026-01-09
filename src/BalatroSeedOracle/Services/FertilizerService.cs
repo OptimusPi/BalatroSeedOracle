@@ -71,10 +71,11 @@ public class FertilizerService : IDisposable
 
             // Create seeds table using centralized schema from Motely
             var fertilizerSchema = DuckDBSchema.FertilizerTableSchema();
-            await _connection.ExecuteNonQueryAsync(fertilizerSchema);
+            await _connection.EnsureTableExistsAsync(fertilizerSchema);
             
             // Create index (schema doesn't include indexes, add separately)
-            await _connection.ExecuteNonQueryAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
+            // Use high-level method - no SQL construction in BSO!
+            await _connection.CreateIndexAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
 
 #if !BROWSER
             // Import from txt file if db is empty and txt exists
@@ -105,7 +106,7 @@ public class FertilizerService : IDisposable
             if (!File.Exists(txtPath)) return;
             if (_connection == null) return;
 
-            var count = await _connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM seeds");
+            var count = await _connection.GetRowCountAsync("seeds");
             if (count > 0) return; // DB already has data
 
             DebugLogger.Log("FertilizerService", $"Migrating from {txtPath} using DuckDB COPY");
@@ -145,21 +146,20 @@ public class FertilizerService : IDisposable
             if (seedList.Count == 0) return;
 
 #if !BROWSER
-            // Desktop: Bulk insert via DuckDB read_csv + INSERT (handles duplicates via ON CONFLICT)
+            // Desktop: Bulk insert via temp file + COPY FROM (handles duplicates via ON CONFLICT in schema)
             var tempFile = Path.GetTempFileName();
             try
             {
                 // ASYNC file write - don't block the thread!
                 await File.WriteAllLinesAsync(tempFile, seedList, ct);
 
-                var escapedPath = tempFile.Replace("\\", "/").Replace("'", "''");
-                await _connection.ExecuteNonQueryAsync($@"
-                    INSERT INTO seeds (seed)
-                    SELECT TRIM(column0) AS seed
-                    FROM read_csv('{escapedPath}', delim=E'\n', header=false)
-                    WHERE column0 IS NOT NULL AND TRIM(column0) != ''
-                    ON CONFLICT (seed) DO NOTHING;
-                ");
+                // Use high-level CopyFromFileAsync - no SQL construction in BSO!
+                // Note: DuckDB COPY handles duplicates if table has PRIMARY KEY/UNIQUE constraint
+                await _connection.CopyFromFileAsync(
+                    tempFile,
+                    "seeds",
+                    "HEADER false, DELIMITER E'\\n', COLUMNS {'seed': 'VARCHAR'}"
+                );
             }
             finally
             {
@@ -225,9 +225,7 @@ public class FertilizerService : IDisposable
 
         try
         {
-            var results = await _connection.ExecuteReaderAsync(
-                "SELECT seed FROM seeds",
-                reader => reader.GetString(0));
+            var results = await _connection.GetAllSeedsAsync("seeds", "seed");
             seeds.AddRange(results);
         }
         catch (Exception ex)
@@ -238,13 +236,7 @@ public class FertilizerService : IDisposable
         return seeds;
     }
 
-    /// <summary>
-    /// Get all seeds synchronously (for legacy compatibility)
-    /// </summary>
-    public List<string> GetAllSeeds()
-    {
-        return GetAllSeedsAsync().GetAwaiter().GetResult();
-    }
+    // Synchronous GetAllSeeds() removed - use GetAllSeedsAsync() instead
 
     /// <summary>
     /// Clear all seeds from the fertilizer pile
@@ -259,7 +251,7 @@ public class FertilizerService : IDisposable
 
         try
         {
-            await _connection.ExecuteNonQueryAsync("DELETE FROM seeds");
+            await _connection.ClearTableAsync("seeds");
 
 #if !BROWSER
             // Also clear the txt file if it exists
@@ -323,7 +315,7 @@ public class FertilizerService : IDisposable
 
         try
         {
-            var count = await _connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM seeds");
+            var count = await _connection.GetRowCountAsync("seeds");
 
             if (count != SeedCount)
             {

@@ -592,8 +592,8 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     try
                     {
-                        // Save off UI thread to avoid freezes while dragging
-                        Task.Run(() => _userProfileService.SaveProfile());
+                        // Save off UI thread to avoid freezes while dragging - fire-and-forget
+                        _ = SaveProfileBackgroundAsync();
                     }
                     catch (Exception ex)
                     {
@@ -1002,5 +1002,20 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         #endregion
+
+        private async Task SaveProfileBackgroundAsync()
+        {
+            try
+            {
+                // Use public SaveProfile method which handles debouncing internally
+                _userProfileService.SaveProfile();
+                // Note: SaveProfile is debounced, so actual save happens asynchronously in background
+                // This is fire-and-forget, which is fine for non-critical profile saves
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AudioVisualizerSettingsModalViewModel", $"Error saving profile: {ex.Message}");
+            }
+        }
     }
 }

@@ -255,21 +255,8 @@ namespace BalatroSeedOracle.Services
                 _hasPendingSave = false;
             }
 
-            // Perform the actual save on a background thread
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await SaveProfileToDiskAsync().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError(
-                        "UserProfileService",
-                        $"Error in debounced save: {ex.Message}"
-                    );
-                }
-            });
+            // Perform the actual save on a background thread - fire-and-forget with error handling
+            _ = SaveProfileBackgroundAsync();
         }
 
         /// <summary>
@@ -404,6 +391,21 @@ namespace BalatroSeedOracle.Services
             }
 
             DebugLogger.Log("UserProfileService", "Disposed");
+        }
+
+        private async Task SaveProfileBackgroundAsync()
+        {
+            try
+            {
+                await SaveProfileToDiskAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    $"Error in debounced save: {ex.Message}"
+                );
+            }
         }
     }
 }
