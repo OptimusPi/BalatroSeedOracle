@@ -668,7 +668,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
-        private Task CopyJson()
+        private void CopyJson()
         {
             try
             {
@@ -676,7 +676,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (config == null)
                 {
                     UpdateStatus("Cannot copy JSON - invalid filter configuration", true);
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 // Serialize to JSON
@@ -695,8 +695,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 UpdateStatus($"Copy error: {ex.Message}", true);
                 DebugLogger.LogError("ValidateFilterTab", $"Error copying JSON: {ex.Message}");
             }
-            
-            return Task.CompletedTask;
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]

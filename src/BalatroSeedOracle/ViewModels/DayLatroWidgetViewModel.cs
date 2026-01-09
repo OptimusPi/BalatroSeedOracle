@@ -512,10 +512,11 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Copy seed to clipboard
         /// </summary>
-        private async Task OnCopySeedAsync()
+        private Task OnCopySeedAsync()
         {
             CopyToClipboardRequested?.Invoke(this, TodaySeed);
             ShowSubmissionMessage("Seed copied to clipboard!", false);
+            return Task.CompletedTask;
         }
 
         /// <summary>

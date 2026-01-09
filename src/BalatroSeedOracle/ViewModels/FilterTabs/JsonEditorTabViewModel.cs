@@ -14,6 +14,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
     public partial class JsonEditorTabViewModel : ObservableObject
     {
+        private static readonly JsonSerializerOptions SerializeOptions = new()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
+        private static readonly JsonSerializerOptions DeserializeOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         private readonly FiltersModalViewModel? _parentViewModel;
 
         public event EventHandler<string>? CopyToClipboardRequested;
@@ -127,19 +138,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var serializationService = ServiceHelper.GetService<FilterSerializationService>();
                 JsonContent =
                     serializationService?.SerializeConfig(config)
-                    ?? JsonSerializer.Serialize(
-                        config,
-                        new JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
-                        }
-                    );
+                    ?? JsonSerializer.Serialize(config, SerializeOptions);
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count;
@@ -220,19 +219,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
                 // No separate MustNot collection needed
 
-                JsonContent = JsonSerializer.Serialize(
-                    config,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = System
-                            .Text
-                            .Json
-                            .Serialization
-                            .JsonIgnoreCondition
-                            .WhenWritingNull,
-                    }
-                );
+                JsonContent = JsonSerializer.Serialize(config, SerializeOptions);
 
                 ValidationStatus =
                     $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -282,7 +269,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Parse the JSON
                 var config = JsonSerializer.Deserialize<MotelyJsonConfig>(
                     JsonContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    DeserializeOptions
                 );
 
                 if (config == null)
@@ -387,7 +374,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
-        private async Task CopyJson()
+        private void CopyJson()
         {
             try
             {

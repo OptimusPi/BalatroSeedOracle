@@ -32,8 +32,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private JamlErrorMarkerService? _errorMarkerService;
         private JamlHoverTooltipService? _hoverTooltipService;
         private JamlCodeSnippetService? _snippetService;
-
-        public JamlEditorTabViewModel? ViewModel => DataContext as JamlEditorTabViewModel;
+        private JamlEditorTabViewModel? _currentViewModel;
 
         public JamlEditorTab()
         {
@@ -56,29 +55,26 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Install code folding
                 InstallCodeFolding();
 
-                // When ViewModel changes, update editor
+                // Sync ViewModel <-> Editor
                 DataContextChanged += (s, e) =>
                 {
-                    if (ViewModel != null)
+                    // Unsubscribe from previous
+                    if (_currentViewModel is not null)
+                        _currentViewModel.JumpToError -= OnJumpToError;
+                    
+                    if (DataContext is JamlEditorTabViewModel vm)
                     {
-                        _jamlEditor.Text = ViewModel.JamlContent;
-
-                        // Subscribe to ViewModel property changes
-                        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-                        
-                        // Subscribe to jump to error event
-                        ViewModel.JumpToError += OnJumpToError;
+                        _jamlEditor.Text = vm.JamlContent;
+                        vm.JumpToError += OnJumpToError;
+                        _currentViewModel = vm;
                     }
                 };
 
-                // When editor text changes, update ViewModel
                 _jamlEditor.TextChanged += (s, e) =>
                 {
-                    if (ViewModel != null)
+                    if (DataContext is JamlEditorTabViewModel vm)
                     {
-                        ViewModel.JamlContent = _jamlEditor.Text ?? "";
-
-                        // Update code folding when document changes
+                        vm.JamlContent = _jamlEditor.Text ?? "";
                         UpdateCodeFolding();
                     }
                 };
@@ -190,7 +186,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnEditorTextChanged(object? sender, EventArgs e)
         {
             // Validate and mark errors
-            if (_jamlEditor?.Document != null && ViewModel != null)
+            if (_jamlEditor?.Document is not null)
             {
                 ValidateAndMarkErrors();
             }
@@ -198,7 +194,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private void ValidateAndMarkErrors()
         {
-            if (_errorMarkerService is null || _jamlEditor?.Document is null || ViewModel is null)
+            if (_errorMarkerService is null || _jamlEditor?.Document is null)
                 return;
 
             _errorMarkerService.ClearErrors();
@@ -456,24 +452,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnViewModelPropertyChanged(
-            object? sender,
-            System.ComponentModel.PropertyChangedEventArgs e
-        )
-        {
-            if (
-                e.PropertyName == nameof(JamlEditorTabViewModel.JamlContent)
-                && _jamlEditor != null
-                && ViewModel != null
-            )
-            {
-                // Only update if different to avoid infinite loop
-                if (_jamlEditor.Text != ViewModel.JamlContent)
-                {
-                    _jamlEditor.Text = ViewModel.JamlContent;
-                }
-            }
-        }
 
         private void OnJumpToError(int lineNumber, int column)
         {
