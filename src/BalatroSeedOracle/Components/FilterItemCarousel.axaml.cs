@@ -31,7 +31,8 @@ namespace BalatroSeedOracle.Components
         {
             AvaloniaXamlLoader.Load(this);
 
-            _carouselItems = this.FindControl<ItemsControl>("CarouselItems");
+            // Direct field access from x:Name
+            _carouselItems = CarouselItems;
 
             // Bind ItemsSource property to inner ItemsControl
             if (_carouselItems != null)

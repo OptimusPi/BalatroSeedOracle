@@ -34,7 +34,7 @@
 
                 <!-- Actions -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <!-- Sort Dropdown (Legacy support) -->
+                    <!-- Sort Dropdown -->
                     <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,10,0">
                         <TextBlock Text="SORT:" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource MediumGrey}"/>
                         <ComboBox SelectedIndex="{Binding SelectedSortIndex}" Height="30" FontSize="12">

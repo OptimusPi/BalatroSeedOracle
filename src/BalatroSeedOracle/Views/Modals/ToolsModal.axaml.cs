@@ -216,7 +216,10 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnAudioVisualizerSettingsClick(object? sender, RoutedEventArgs e)
         {
-#if !BROWSER
+            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            if (platformServices?.SupportsAudio != true)
+                return;
+
             // Find the main menu in the visual tree
             var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
 
@@ -232,7 +235,6 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
             }
-#endif
         }
 
         private void OnNukeEverythingClick(object? sender, RoutedEventArgs e)

@@ -18,22 +18,30 @@ public partial class MainWindow : Window
 
     public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
-    public MainWindow()
+    public BalatroMainMenu? MainMenu => _mainMenu;
+
+    public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu)
     {
         InitializeComponent();
 
-        // Set DataContext to ViewModel from DI
-        DataContext = ServiceHelper.GetRequiredService<MainWindowViewModel>();
+        DataContext = viewModel;
 
         // Set up the Buy Balatro link
-        var buyBalatroLink = this.FindControl<TextBlock>("BuyBalatroLink");
-        if (buyBalatroLink is not null)
+        if (BuyBalatroLink is not null)
         {
-            buyBalatroLink.PointerPressed += OnBuyBalatroClick;
+            BuyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
 
-        // Get reference to main menu for cleanup
-        _mainMenu = this.FindControl<BalatroMainMenu>("MainMenu");
+        // Host the DI-created main menu instance (no FindControl service-locator anti-pattern)
+        _mainMenu = mainMenu;
+        if (MainMenuHost is not null)
+        {
+            MainMenuHost.Content = mainMenu;
+        }
+        else
+        {
+            DebugLogger.LogError("MainWindow", "MainMenuHost not found - cannot attach BalatroMainMenu");
+        }
 
         // Sync IsVibeOutMode from MainMenu to MainWindow
         if (_mainMenu?.ViewModel is not null && ViewModel is not null)
@@ -135,19 +143,16 @@ public partial class MainWindow : Window
 
             DebugLogger.Log("MainWindow", "Starting main menu disposal");
 
-            // Give disposal 5 seconds max (increased because Motely needs time)
-            // Use Task.Run for synchronous Dispose with timeout
-            var disposeTask = Task.Run(() => _mainMenu?.Dispose());
-            if (await Task.WhenAny(disposeTask, Task.Delay(5000)) != disposeTask)
+            // Dispose synchronously - Dispose() is synchronous by design
+            // If disposal takes too long, we'll timeout and force close anyway
+            try
             {
-                DebugLogger.LogError(
-                    "MainWindow",
-                    "Main menu disposal timed out after 5 seconds - forcing close"
-                );
-            }
-            else
-            {
+                _mainMenu?.Dispose();
                 DebugLogger.Log("MainWindow", "Main menu disposed successfully");
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("MainWindow", $"Error disposing main menu: {ex.Message}");
             }
         }
         catch (Exception ex)

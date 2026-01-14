@@ -22,7 +22,8 @@ namespace BalatroSeedOracle.Views.Modals
             var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
             var userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
             var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
-            ViewModel = new SearchModalViewModel(searchManager, userProfileService, appDataStore);
+            var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
+            ViewModel = new SearchModalViewModel(searchManager, userProfileService, appDataStore, platformServices);
             DataContext = ViewModel;
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
@@ -73,58 +74,8 @@ namespace BalatroSeedOracle.Views.Modals
             // EDIT FILTER button callback - opens FiltersModal with current filter loaded
             ViewModel.SetEditFilterRequestedCallback(EditCurrentFilter);
 
-            // DeckAndStakeSelector → ViewModel properties
-            var deckStakeSelector = this.FindControl<Components.DeckAndStakeSelector>(
-                "DeckStakeSelector"
-            );
-            if (deckStakeSelector != null)
-            {
-                deckStakeSelector.SelectionChanged += (s, selection) =>
-                {
-                    var deckNames = new[]
-                    {
-                        "Red",
-                        "Blue",
-                        "Yellow",
-                        "Green",
-                        "Black",
-                        "Magic",
-                        "Nebula",
-                        "Ghost",
-                        "Abandoned",
-                        "Checkered",
-                        "Zodiac",
-                        "Painted",
-                        "Anaglyph",
-                        "Plasma",
-                        "Erratic",
-                    };
-                    var stakeNames = new[]
-                    {
-                        "White",
-                        "Red",
-                        "Green",
-                        "Black",
-                        "Blue",
-                        "Purple",
-                        "Orange",
-                        "Gold",
-                    };
-
-                    if (selection.deckIndex >= 0 && selection.deckIndex < deckNames.Length)
-                        ViewModel.DeckSelection = deckNames[selection.deckIndex];
-
-                    if (selection.stakeIndex >= 0 && selection.stakeIndex < stakeNames.Length)
-                        ViewModel.StakeSelection = stakeNames[selection.stakeIndex];
-                };
-
-                // When the user clicks Select, jump to the Search tab
-                deckStakeSelector.DeckSelected += (s, _) =>
-                {
-                    ViewModel.SelectedTabIndex = 0; // Search tab is now index 0 (no deck/stake tab anymore)
-                    ViewModel.UpdateTabVisibility(0);
-                };
-            }
+            // DeckAndStakeSelector is no longer in SearchModal XAML - deck/stake selection
+            // is now handled via SettingsTab with bindings. This code is obsolete.
         }
 
         /// <summary>

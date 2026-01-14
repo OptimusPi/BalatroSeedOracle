@@ -48,11 +48,13 @@ namespace BalatroSeedOracle.Services
 
         private void LoadFavorites()
         {
-#if BROWSER
-            // Browser: Skip file loading, use empty data
-            _data = new FavoritesData();
-            return;
-#else
+            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            if (platformServices == null || !platformServices.SupportsFileSystem)
+            {
+                // Browser: Skip file loading, use empty data
+                _data = new FavoritesData();
+                return;
+            }
             try
             {
                 if (File.Exists(_favoritesPath))
@@ -70,7 +72,6 @@ namespace BalatroSeedOracle.Services
                 DebugLogger.LogError("FavoritesService", $"Failed to load favorites: {ex.Message}");
                 _data = new FavoritesData();
             }
-#endif
         }
 
         private void InitializeDefaultSets()

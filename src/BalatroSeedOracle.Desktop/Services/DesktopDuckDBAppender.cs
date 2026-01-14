@@ -1,9 +1,9 @@
-#if !BROWSER
 using System;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Desktop.Services;
 
 /// <summary>
 /// Desktop implementation of IDuckDBAppender wrapping DuckDBAppender.
@@ -117,4 +117,3 @@ public class DesktopDuckDBAppender : IDuckDBAppender
         return ValueTask.CompletedTask;
     }
 }
-#endif

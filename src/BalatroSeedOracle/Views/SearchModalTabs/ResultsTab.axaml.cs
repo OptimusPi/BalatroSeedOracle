@@ -19,6 +19,19 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             this.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
+        public void ForceRefreshResults(System.Collections.Generic.IEnumerable<Models.SearchResult> results)
+        {
+            try
+            {
+                ResultsGrid.ClearResults();
+                ResultsGrid.AddResults(results);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ResultsTab", $"ForceRefreshResults failed: {ex.Message}");
+            }
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -26,8 +39,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
         private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            var grid = this.FindControl<SortableResultsGrid>("ResultsGrid");
-            if (DataContext is SearchModalViewModel vm && grid != null)
+            if (DataContext is SearchModalViewModel vm)
             {
                 // The ItemsSource binding is handled via XAML - no need to set explicitly
                 // This allows the proper binding flow: SearchResults -> grid.ItemsSource -> grid.ViewModel.DisplayedResults
@@ -38,7 +50,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 );
 
                 // CRITICAL FIX: Export to EXCEL with ClosedXML for proper data handling
-                grid.ExportAllRequested += async (s, results) =>
+                ResultsGrid.ExportAllRequested += async (s, results) =>
                 {
                     try
                     {
@@ -181,7 +193,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 };
 
                 // Wire up add-to-favorites
-                grid.AddToFavoritesRequested += (s, result) =>
+                ResultsGrid.AddToFavoritesRequested += (s, result) =>
                 {
                     if (!string.IsNullOrWhiteSpace(result?.Seed))
                     {
@@ -190,7 +202,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 };
 
                 // Wire up analyze request to open Analyze modal with seed
-                grid.AnalyzeRequested += (s, result) =>
+                ResultsGrid.AnalyzeRequested += (s, result) =>
                 {
                     if (!string.IsNullOrWhiteSpace(result?.Seed) && vm.MainMenu != null)
                     {
@@ -201,7 +213,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 };
 
                 // Wire up pop-out to separate window
-                grid.PopOutRequested += (s, e) =>
+                ResultsGrid.PopOutRequested += (s, e) =>
                 {
                     try
                     {

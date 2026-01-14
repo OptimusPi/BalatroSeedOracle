@@ -16,6 +16,10 @@
              Focusable="True"
              x:CompileBindings="True">
 
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+F" Command="{Binding SeedSearchCommand}" />
+    </UserControl.KeyBindings>
+
     <UserControl.Resources>
         <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </UserControl.Resources>
@@ -115,6 +119,12 @@
                                                  IsVisible="{Binding IsTransitionDesignerWidgetVisible}"
                                                  ClipToBounds="False"/>
 
+            <!-- API Host Widget -->
+            <components:ApiHostWidget x:Name="ApiHostWidget"
+                                      DataContext="{Binding ApiHostWidgetViewModel}"
+                                      IsVisible="{Binding #DesktopCanvas.DataContext.IsHostApiWidgetVisible}"
+                                      ClipToBounds="False"/>
+
             <!-- DayLatro Widget - starts minimized in top right -->
             <components:DayLatroWidget x:Name="DayLatroWidget"
                                      ClipToBounds="False"/>
@@ -127,7 +137,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Name="MainTitleText"
+            <TextBlock x:Name="MainTitleText"
                         Text="{Binding MainTitle}"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="32"

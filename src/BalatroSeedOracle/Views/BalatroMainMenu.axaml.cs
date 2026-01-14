@@ -65,13 +65,14 @@ namespace BalatroSeedOracle.Views
         {
             AvaloniaXamlLoader.Load(this);
 
-            _modalContainer = this.FindControl<Grid>("ModalContainer");
-            _modalOverlay = this.FindControl<Border>("ModalOverlay");
-            _modalContentWrapper = this.FindControl<ContentControl>("ModalContentWrapper");
-            _background = this.FindControl<Control>("BackgroundControl");
+            // Direct field access from x:Name - no FindControl anti-pattern!
+            _modalContainer = ModalContainer;
+            _modalOverlay = ModalOverlay;
+            _modalContentWrapper = ModalContentWrapper;
+            _background = BackgroundControl;
             _shaderBackground = _background as BalatroShaderBackground;
-            _mainContent = this.FindControl<Grid>("MainContent");
-            _volumePopup = this.FindControl<Popup>("VolumePopup");
+            _mainContent = MainContent;
+            _volumePopup = VolumePopup;
 
             if (_modalContainer != null)
             {
@@ -120,11 +121,11 @@ namespace BalatroSeedOracle.Views
 
             ViewModel.OnAuthorEditActivated += (s, e) =>
             {
-                var authorEdit = this.FindControl<TextBox>("AuthorEdit");
-                if (authorEdit != null)
+                // Direct field access from x:Name
+                if (AuthorEdit != null)
                 {
-                    authorEdit.Focus();
-                    authorEdit.SelectAll();
+                    AuthorEdit.Focus();
+                    AuthorEdit.SelectAll();
                 }
             };
 
@@ -143,20 +144,20 @@ namespace BalatroSeedOracle.Views
                         {
                             window.WindowState = WindowState.FullScreen;
 
-                            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
-                            if (desktopCanvas != null)
+                            // Direct field access from x:Name
+                            if (DesktopCanvas != null)
                             {
-                                desktopCanvas.Margin = new Thickness(0, -30, 0, 0);
+                                DesktopCanvas.Margin = new Thickness(0, -30, 0, 0);
                             }
                         }
                         else
                         {
                             window.WindowState = WindowState.Normal;
 
-                            var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
-                            if (desktopCanvas != null)
+                            // Direct field access from x:Name
+                            if (DesktopCanvas != null)
                             {
-                                desktopCanvas.Margin = new Thickness(0);
+                                DesktopCanvas.Margin = new Thickness(0);
                             }
                         }
                     },
@@ -252,16 +253,8 @@ namespace BalatroSeedOracle.Views
 
                             try
                             {
-                                string json;
-#if BROWSER
-                                var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
-                                var storeKey = configPath.Replace('\\', '/');
-                                if (storeKey.StartsWith("/data/")) storeKey = storeKey.Substring(6);
-                                else if (storeKey.StartsWith("data/")) storeKey = storeKey.Substring(5);
-                                json = await appDataStore.ReadTextAsync(storeKey) ?? "{}";
-#else
-                                json = await System.IO.File.ReadAllTextAsync(configPath);
-#endif
+                                var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
+                                var json = await platformServices.ReadTextFromPathAsync(configPath) ?? "{}";
                                 
                                 // Parse based on file extension
                                 Motely.Filters.MotelyJsonConfig config;
@@ -363,16 +356,8 @@ namespace BalatroSeedOracle.Views
 
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    bool exists = false;
-#if BROWSER
-                    var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
-                    var storeKey = configPath.Replace('\\', '/');
-                    if (storeKey.StartsWith("/data/")) storeKey = storeKey.Substring(6);
-                    else if (storeKey.StartsWith("data/")) storeKey = storeKey.Substring(5);
-                    exists = await appDataStore.ExistsAsync(storeKey);
-#else
-                    exists = System.IO.File.Exists(configPath);
-#endif
+                    var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
+                    bool exists = await platformServices.FileExistsAsync(configPath);
 
                     if (!exists)
                     {
@@ -1174,9 +1159,8 @@ namespace BalatroSeedOracle.Views
                 }
 
                 var profile = profileService.GetProfile();
-                var desktopCanvas = this.FindControl<Grid>("DesktopCanvas");
-
-                if (desktopCanvas == null)
+                // Direct field access from x:Name
+                if (DesktopCanvas == null)
                 {
                     DebugLogger.LogError(
                         "BalatroMainMenu",
@@ -1304,8 +1288,8 @@ namespace BalatroSeedOracle.Views
                 var source = e.Source as Control;
 
                 // Don't close if clicking on the music toggle button itself (let it toggle naturally)
-                var musicButton = this.FindControl<Button>("MusicToggleButton");
-                if (source == musicButton)
+                // Direct field access from x:Name
+                if (source == MusicToggleButton)
                 {
                     return; // Let the button's click handler toggle the popup
                 }
@@ -1314,7 +1298,7 @@ namespace BalatroSeedOracle.Views
                 var parent = source;
                 while (parent != null)
                 {
-                    if (parent == musicButton)
+                    if (parent == MusicToggleButton)
                     {
                         return; // Click was on music button or its child
                     }
@@ -1361,11 +1345,8 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void SetTitle(string title)
         {
-            if (_mainTitleText == null)
-            {
-                _mainTitleText = this.FindControl<TextBlock>("MainTitleText");
-            }
-
+            // Direct field access from x:Name
+            _mainTitleText = MainTitleText;
             if (_mainTitleText != null)
             {
                 _mainTitleText.Text = title;
@@ -2132,8 +2113,8 @@ namespace BalatroSeedOracle.Views
                 var modal = _modalContentWrapper.Content as StandardModal;
                 if (modal != null)
                 {
-                    var modalContent = modal.FindControl<ContentPresenter>("ModalContent");
-                    var filtersModal = modalContent?.Content as Modals.FiltersModal;
+                    // Direct field access from x:Name in StandardModal
+                    var filtersModal = modal.ModalContent?.Content as Modals.FiltersModal;
                     if (filtersModal != null)
                     {
                         DebugLogger.LogImportant(
@@ -2155,14 +2136,6 @@ namespace BalatroSeedOracle.Views
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-
-            // TODO: Ctrl+F to open search modal - need to find correct command name
-            // if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.F)
-            // {
-            //     // ViewModel?.SomeCommandHere.Execute(null);
-            //     e.Handled = true;
-            //     return;
-            // }
 
             // F11 to toggle Vibe Out Mode (fullscreen visualizer)
             if (e.Key == Key.F11)

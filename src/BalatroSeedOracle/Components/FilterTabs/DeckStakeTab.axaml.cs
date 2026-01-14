@@ -22,8 +22,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             AvaloniaXamlLoader.Load(this);
 
-            // Find the DeckAndStakeSelector in the visual tree
-            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
+            // Get reference to the DeckAndStakeSelector
+            _deckAndStakeSelector = DeckAndStakeSelector;
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

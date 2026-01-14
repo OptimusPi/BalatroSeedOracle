@@ -1,12 +1,12 @@
-#if BROWSER
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Browser.Services;
 
 /// <summary>
 /// Browser implementation of IDuckDBConnection using DuckDB-WASM via JavaScript interop
@@ -246,19 +246,19 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
     }
 
     [JSImport("DuckDB.execute", "globalThis")]
-    private static partial Task ExecuteAsync(int connId, string sql);
+    private static extern Task ExecuteAsync(int connId, string sql);
 
     [JSImport("DuckDB.query", "globalThis")]
-    private static partial Task<string> QueryAsync(int connId, string sql);
+    private static extern Task<string> QueryAsync(int connId, string sql);
 
     [JSImport("DuckDB.closeConnection", "globalThis")]
-    private static partial Task CloseConnectionAsync(int connId);
+    private static extern Task CloseConnectionAsync(int connId);
 
     [JSImport("DuckDB.createAppender", "globalThis")]
-    private static partial Task<int> CreateAppenderInternalAsync(int connId, string schema, string table);
+    private static extern Task<int> CreateAppenderInternalAsync(int connId, string schema, string table);
 
     [JSImport("DuckDB.exportToCSV", "globalThis")]
-    private static partial Task<string> ExportToCSVInternalAsync(int connId, string tableName);
+    private static extern Task<string> ExportToCSVInternalAsync(int connId, string tableName);
 }
 
 /// <summary>
@@ -316,4 +316,3 @@ public class BrowserDuckDBDataReader : IDuckDBDataReader
         };
     }
 }
-#endif

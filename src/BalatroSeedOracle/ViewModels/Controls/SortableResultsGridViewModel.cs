@@ -320,7 +320,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
         partial void OnSelectedSortIndexChanged(int value)
         {
-            // Update sort properties based on legacy index
+            // Update sort properties based on selected index
             switch (value)
             {
                 case 0: // SEED (A-Z)

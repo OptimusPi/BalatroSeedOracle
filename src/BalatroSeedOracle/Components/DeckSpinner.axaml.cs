@@ -62,7 +62,8 @@ namespace BalatroSeedOracle.Components
 
         private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            _innerSpinner = this.FindControl<PanelSpinner>("InnerPanelSpinner");
+            // Direct field access from x:Name
+            _innerSpinner = InnerPanelSpinner;
 
             if (_innerSpinner != null)
             {

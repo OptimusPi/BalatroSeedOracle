@@ -33,7 +33,7 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
 
             // Get deck/stake selector component
-            _deckAndStakeSelector = this.FindControl<DeckAndStakeSelector>("DeckAndStakeSelector");
+            _deckAndStakeSelector = DeckAndStakeSelector;
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

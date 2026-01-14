@@ -154,12 +154,10 @@ namespace BalatroSeedOracle.Components
 
         private void WireUpButtonClicks()
         {
-            // Find all filter list buttons and wire up click events
-            var itemsControl = this.FindControl<ItemsControl>("FilterItemsControl");
-            if (itemsControl != null)
-            {
-                // Will be wired up when items are created
-            }
+            // Note: Button clicks are handled via DataTemplate bindings in XAML
+            // This method is kept for potential future use but currently not needed
+            // Direct field access would be: var itemsControl = FilterItemsControl;
+            // However, the ItemsControl in XAML doesn't have x:Name, so this is dead code
         }
 
         public void RefreshFilters()

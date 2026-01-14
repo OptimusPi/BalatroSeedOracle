@@ -54,11 +54,15 @@ namespace BalatroSeedOracle.Services
         {
             if (_loaded)
                 return;
-#if BROWSER
-            // Browser: Skip file loading
-            _loaded = true;
-            return;
-#else
+            
+            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            if (platformServices == null || !platformServices.SupportsFileSystem)
+            {
+                // Browser: Skip file loading
+                _loaded = true;
+                return;
+            }
+            
             try
             {
                 if (File.Exists(_dataPath))
@@ -81,7 +85,6 @@ namespace BalatroSeedOracle.Services
                 );
             }
             _loaded = true;
-#endif
         }
 
         private void Save()
@@ -106,10 +109,12 @@ namespace BalatroSeedOracle.Services
 
         private void LoadSubmissionDates()
         {
-#if BROWSER
-            // Browser: Skip file loading
-            return;
-#else
+            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            if (platformServices == null || !platformServices.SupportsFileSystem)
+            {
+                // Browser: Skip file loading
+                return;
+            }
             try
             {
                 if (File.Exists(_submissionsPath))
@@ -133,7 +138,6 @@ namespace BalatroSeedOracle.Services
                     $"Error loading submission dates: {ex.Message}"
                 );
             }
-#endif
         }
 
         private void SaveSubmissionDates()

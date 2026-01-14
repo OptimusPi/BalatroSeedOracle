@@ -1,12 +1,12 @@
-#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Desktop.Services;
 
 /// <summary>
 /// Desktop implementation of IDuckDBConnection wrapping DuckDBConnection
@@ -247,4 +247,3 @@ internal class DesktopDuckDBDataReader : IDuckDBDataReader
     public bool GetBoolean(int ordinal) => _reader.GetBoolean(ordinal);
     public object GetValue(int ordinal) => _reader.GetValue(ordinal);
 }
-#endif

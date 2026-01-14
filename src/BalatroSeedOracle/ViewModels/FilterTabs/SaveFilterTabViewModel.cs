@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterService _filterService;
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
+        private readonly IPlatformServices _platformServices;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -206,13 +207,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
             IFilterService filterService,
-            IFilterConfigurationService filterConfigurationService
+            IFilterConfigurationService filterConfigurationService,
+            IPlatformServices platformServices
         )
         {
             _parentViewModel = parentViewModel;
             _configurationService = configurationService;
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
+            _platformServices = platformServices;
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -348,48 +351,51 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
 
-#if BROWSER
-                var topLevel = TopLevelHelper.GetTopLevel();
-                if (topLevel?.StorageProvider == null)
+                if (!_platformServices.SupportsFileSystem)
                 {
-                    UpdateStatus("Export not available (no StorageProvider)", true);
-                    return;
-                }
-
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
-                    new FilePickerSaveOptions
+                    var topLevel = TopLevelHelper.GetTopLevel();
+                    if (topLevel?.StorageProvider == null)
                     {
-                        Title = "Export Filter",
-                        SuggestedFileName = exportFileName,
-                        FileTypeChoices = new[]
-                        {
-                            new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
-                        },
+                        UpdateStatus("Export not available (no StorageProvider)", true);
+                        return;
                     }
-                );
 
-                if (file == null)
-                {
-                    UpdateStatus("Export cancelled", true);
-                    return;
+                    var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                        new FilePickerSaveOptions
+                        {
+                            Title = "Export Filter",
+                            SuggestedFileName = exportFileName,
+                            FileTypeChoices = new[]
+                            {
+                                new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
+                            },
+                        }
+                    );
+
+                    if (file == null)
+                    {
+                        UpdateStatus("Export cancelled", true);
+                        return;
+                    }
+
+                    await using (var stream = await file.OpenWriteAsync())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(json);
+                        await stream.WriteAsync(bytes, 0, bytes.Length);
+                    }
+
+                    UpdateStatus($"✅ Exported: {exportFileName}", false);
                 }
-
-                await using (var stream = await file.OpenWriteAsync())
+                else
                 {
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                    // Desktop: Export to desktop folder
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    var exportPath = Path.Combine(desktopPath, exportFileName);
+                    await File.WriteAllTextAsync(exportPath, json);
+
+                    UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
+                    DebugLogger.Log("SaveFilterTab", $"Filter exported to: {exportPath}");
                 }
-
-                UpdateStatus($"✅ Exported: {exportFileName}", false);
-#else
-                // Desktop: Export to desktop folder
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportPath = Path.Combine(desktopPath, exportFileName);
-                await File.WriteAllTextAsync(exportPath, json);
-
-                UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
-                DebugLogger.Log("SaveFilterTab", $"Filter exported to: {exportPath}");
-#endif
             }
             catch (Exception ex)
             {

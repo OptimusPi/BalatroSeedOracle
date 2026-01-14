@@ -1,0 +1,266 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             xmlns:local="using:BalatroSeedOracle.Components"
+             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             x:Class="BalatroSeedOracle.Components.ApiHostWidget"
+             x:DataType="vm:ApiHostWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <UserControl.Styles>
+        <!-- Status indicator colors based on CurrentStatus -->
+        <Style Selector="Border.status-indicator">
+            <Setter Property="Background" Value="{StaticResource LightGrey}"/>
+        </Style>
+        <Style Selector="Border.status-indicator.running">
+            <Setter Property="Background" Value="{StaticResource Green}"/>
+        </Style>
+        <Style Selector="Border.status-indicator.starting, Border.status-indicator.stopping">
+            <Setter Property="Background" Value="{StaticResource Orange}"/>
+        </Style>
+        <Style Selector="Border.status-indicator.failed">
+            <Setter Property="Background" Value="{StaticResource Red}"/>
+        </Style>
+        
+        <!-- Status dot colors -->
+        <Style Selector="Ellipse.status-dot">
+            <Setter Property="Fill" Value="{StaticResource LightGrey}"/>
+        </Style>
+        <Style Selector="Ellipse.status-dot.running">
+            <Setter Property="Fill" Value="{StaticResource Green}"/>
+        </Style>
+        <Style Selector="Ellipse.status-dot.starting, Ellipse.status-dot.stopping">
+            <Setter Property="Fill" Value="{StaticResource Orange}"/>
+        </Style>
+        <Style Selector="Ellipse.status-dot.failed">
+            <Setter Property="Fill" Value="{StaticResource Red}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Single container with the drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Server Icon -->
+        <StackPanel Name="MinimizedView"
+                    IsVisible="{Binding IsMinimized}"
+                    Spacing="4">
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <Border Background="{StaticResource ModalGrey}"
+                    BorderBrush="{StaticResource ModalBorder}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Width="64" Height="64"
+                    Classes="widget-header"
+                    Cursor="Hand"
+                    PointerPressed="OnMinimizedIconPressed"
+                    PointerReleased="OnMinimizedIconReleased">
+                <Panel>
+                    <material:PackIconMaterial Kind="ServerNetwork" Width="28" Height="28" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                               Foreground="{StaticResource White}"/>
+                    <!-- Status indicator dot -->
+                    <Ellipse Width="12" Height="12" 
+                             HorizontalAlignment="Right" VerticalAlignment="Top"
+                             Margin="0,4,4,0"
+                             Classes="status-dot"
+                             Classes.running="{Binding IsServerRunning}"
+                             Classes.starting="{Binding CurrentStatus, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:ServerStatus.Starting}}"
+                             Classes.failed="{Binding CurrentStatus, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:ServerStatus.Failed}}"/>
+                </Panel>
+            </Border>
+            <TextBlock Text="API"
+                       FontSize="16"
+                       FontFamily="{StaticResource BalatroFont}"
+                       Foreground="{StaticResource White}"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Expanded State - Full API Host Interface -->
+        <Border Name="ExpandedView"
+                Classes="widget-window"
+                IsVisible="{Binding !IsMinimized}"
+                Width="450"
+                MaxHeight="500">
+
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header -->
+                <Border Grid.Row="0" Classes="widget-header" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                            <material:PackIconMaterial Kind="ServerNetwork" Width="18" Height="18" 
+                                                       Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding WidgetTitle}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource White}"
+                                       VerticalAlignment="Center"/>
+                            <!-- Status badge -->
+                            <Border Classes="status-indicator"
+                                    Classes.running="{Binding IsServerRunning}"
+                                    Classes.starting="{Binding CurrentStatus, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:ServerStatus.Starting}}"
+                                    Classes.stopping="{Binding CurrentStatus, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:ServerStatus.Stopping}}"
+                                    Classes.failed="{Binding CurrentStatus, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:ServerStatus.Failed}}"
+                                    CornerRadius="4"
+                                    Padding="6,2">
+                                <TextBlock Text="{Binding ServerStatusText}"
+                                           FontSize="10"
+                                           Foreground="{StaticResource White}"/>
+                            </Border>
+                        </StackPanel>
+                        
+                        <Button Grid.Column="2" 
+                                Classes="widget-close-btn"
+                                Command="{Binding ToggleMinimizedCommand}">
+                            <material:PackIconMaterial Kind="WindowMinimize" Width="14" Height="14"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Content Area -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="15" Spacing="12">
+
+                        <!-- Server URL Display -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="10">
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <TextBlock Grid.Column="0" 
+                                           Text="{Binding ServerUrl}"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
+                                           Foreground="{StaticResource White}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <Button Grid.Column="1" 
+                                        Command="{Binding CopyUrlCommand}"
+                                        ToolTip.Tip="Copy URL"
+                                        Margin="8,0,0,0"
+                                        Padding="6">
+                                    <material:PackIconMaterial Kind="ContentCopy" Width="14" Height="14"/>
+                                </Button>
+                                <Button Grid.Column="2" 
+                                        Command="{Binding OpenInBrowserCommand}"
+                                        IsEnabled="{Binding IsServerRunning}"
+                                        ToolTip.Tip="Open in Browser"
+                                        Margin="4,0,0,0"
+                                        Padding="6">
+                                    <material:PackIconMaterial Kind="OpenInNew" Width="14" Height="14"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Port Configuration -->
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" IsEnabled="{Binding !IsServerRunning}">
+                            <TextBlock Grid.Column="0" 
+                                       Text="Port:"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource White}"
+                                       VerticalAlignment="Center"/>
+                            <NumericUpDown Grid.Column="1" 
+                                           Value="{Binding Port}"
+                                           Minimum="1024"
+                                           Maximum="65535"
+                                           Increment="1"
+                                           FormatString="0"/>
+                        </Grid>
+
+                        <!-- Start/Stop Buttons -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0"
+                                    Command="{Binding StartServerCommand}"
+                                    IsEnabled="{Binding !IsServerRunning}"
+                                    Classes="btn-green"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:PackIconMaterial Kind="Play" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Start Server" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="1"
+                                    Command="{Binding StopServerCommand}"
+                                    IsEnabled="{Binding IsServerRunning}"
+                                    Classes="btn-red"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:PackIconMaterial Kind="Stop" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Stop Server" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- API Endpoints Info -->
+                        <Expander IsExpanded="False">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <material:PackIconMaterial Kind="Api" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Available Endpoints" FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Expander.Header>
+                            <StackPanel Spacing="4" Margin="0,8,0,0">
+                                <TextBlock Text="GET  /health" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Green}"/>
+                                <TextBlock Text="GET  /routes" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Green}"/>
+                                <TextBlock Text="GET  /analyze?seed=SEED" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Blue}"/>
+                                <TextBlock Text="GET  /filters" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Blue}"/>
+                                <TextBlock Text="GET  /seed-sources" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Blue}"/>
+                                <TextBlock Text="POST /search" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Orange}"/>
+                                <TextBlock Text="POST /mcp/prompt" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Purple}"/>
+                                <TextBlock Text="WS   /searchHub" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource Purple}"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- Log Output -->
+                        <Border Background="{StaticResource DarkBackground}"
+                                BorderBrush="{StaticResource ModalBorder}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Height="150">
+                            <Grid RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="8,4">
+                                    <TextBlock Grid.Column="0" 
+                                               Text="Server Log"
+                                               FontFamily="{StaticResource BalatroFont}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource White}"/>
+                                    <Button Grid.Column="1" 
+                                            Command="{Binding ClearLogCommand}"
+                                            Padding="4,2"
+                                            FontSize="9">
+                                        <TextBlock Text="Clear"/>
+                                    </Button>
+                                </Grid>
+                                <ScrollViewer Grid.Row="1" 
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Auto">
+                                    <TextBlock Text="{Binding LogText}"
+                                               FontFamily="Consolas"
+                                               FontSize="9"
+                                               Foreground="{StaticResource LightGrey}"
+                                               Margin="8,0,8,8"
+                                               TextWrapping="NoWrap"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

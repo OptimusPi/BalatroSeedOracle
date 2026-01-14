@@ -25,7 +25,11 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// SearchInstance ID for identifying this widget
         /// </summary>
+#if !BROWSER
         public string SearchInstanceId => _searchInstance.SearchId;
+#else
+        public string SearchInstanceId => "";
+#endif
 
         [ObservableProperty]
         private bool _isHovered;

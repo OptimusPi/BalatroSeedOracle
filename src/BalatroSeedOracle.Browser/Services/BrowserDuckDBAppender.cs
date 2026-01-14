@@ -1,11 +1,11 @@
-#if BROWSER
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Browser.Services;
 
 /// <summary>
 /// Browser implementation of IDuckDBAppender using DuckDB-WASM via JavaScript interop
@@ -98,12 +98,11 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
     }
 
     [JSImport("DuckDB.appendRow", "globalThis")]
-    private static partial void AppendRowInternal(int appenderId, string valuesJson);
+    private static extern void AppendRowInternal(int appenderId, string valuesJson);
 
     [JSImport("DuckDB.flushAppender", "globalThis")]
-    private static partial Task FlushAppenderAsync(int appenderId);
+    private static extern Task FlushAppenderAsync(int appenderId);
 
     [JSImport("DuckDB.closeAppender", "globalThis")]
-    private static partial Task CloseAppenderAsync(int appenderId);
+    private static extern Task CloseAppenderAsync(int appenderId);
 }
-#endif

@@ -29,9 +29,6 @@ namespace BalatroSeedOracle.Views.Modals
 
         public event EventHandler? CloseRequested;
 
-        private Image? _deckImage;
-        private Image? _stakeOverlayImage;
-
         public FilterSelectionModal()
         {
             InitializeComponent();
@@ -45,19 +42,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // Find the deck and stake images in the XAML
-            _deckImage = this.FindControl<Image>("DeckImage");
-            _stakeOverlayImage = this.FindControl<Image>("StakeOverlayImage");
-
             // Load default deck (Red with White Stake) - SpriteService expects SHORT deck names!
             LoadDeckAndStake("Red", "White");
 
             // Wire up drag-drop for import zone
-            var importDropZone = this.FindControl<Border>("ImportDropZone");
-            if (importDropZone != null)
+            if (ImportDropZone != null)
             {
-                importDropZone.AddHandler(DragDrop.DropEvent, OnFilterDrop);
-                importDropZone.AddHandler(DragDrop.DragOverEvent, OnFilterDragOver);
+                ImportDropZone.AddHandler(DragDrop.DropEvent, OnFilterDrop);
+                ImportDropZone.AddHandler(DragDrop.DragOverEvent, OnFilterDragOver);
             }
         }
 
@@ -94,25 +86,11 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void LoadDeckAndStake(string deckName, string stakeName)
         {
-            // Use SpriteService to get the composite deck + stake sticker image
-            var spriteService = SpriteService.Instance;
-
-            // Get the deck with stake sticker already composited
-            var compositedImage = spriteService.GetDeckWithStakeSticker(deckName, stakeName);
-            if (compositedImage != null && _deckImage != null)
-            {
-                _deckImage.Source = compositedImage;
-            }
-
-            // Hide the overlay image since we're using the composited version
-            if (_stakeOverlayImage != null)
-            {
-                _stakeOverlayImage.IsVisible = false;
-            }
-
+            // Deck/stake images are now handled via ViewModel bindings (DeckCardImage property)
+            // This method is kept for compatibility but no longer manipulates UI directly
             DebugLogger.Log(
                 "FilterSelectionModal",
-                $"Loaded composited deck image: {deckName} with {stakeName} stake sticker"
+                $"Deck/stake selection: {deckName} with {stakeName} stake (handled via ViewModel binding)"
             );
         }
 

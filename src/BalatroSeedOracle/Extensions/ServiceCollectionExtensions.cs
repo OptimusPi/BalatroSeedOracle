@@ -14,38 +14,51 @@ namespace BalatroSeedOracle.Extensions
         {
 
             // Services
-            services.AddSingleton<IConfigurationService, ConfigurationService>();
+            services.AddSingleton<IConfigurationService>(sp => new ConfigurationService(
+                sp.GetRequiredService<IAppDataStore>(),
+                sp.GetService<UserProfileService>(),
+                sp.GetService<IFilterCacheService>(),
+                sp.GetService<IPlatformServices>()
+            ));
 
-            // App data storage (Desktop: files, Browser: localStorage)
-#if BROWSER
-            services.AddSingleton<IAppDataStore, BrowserLocalStorageAppDataStore>();
-#else
-            services.AddSingleton<IAppDataStore, DesktopAppDataStore>();
-#endif
+            // Note: IAppDataStore, IDuckDBService, and IPlatformServices are registered by platform-specific projects (Desktop/Browser)
+            // IApiHostService is also registered by platform-specific projects
 
-            // DuckDB - Platform-specific implementations
-#if BROWSER
-            services.AddSingleton<IDuckDBService, BrowserDuckDBService>();
-#else
-            services.AddSingleton<IDuckDBService, DesktopDuckDBService>();
-#endif
-            services.AddSingleton<IFilterService, FilterService>();
+            services.AddSingleton<IFilterService>(sp => new FilterService(
+                sp.GetRequiredService<IConfigurationService>(),
+                sp.GetRequiredService<IAppDataStore>(),
+                sp.GetService<IPlatformServices>()
+            ));
             services.AddSingleton<IFilterConfigurationService, FilterConfigurationService>();
-            services.AddSingleton<IFilterCacheService, FilterCacheService>();
+            services.AddSingleton<IFilterCacheService>(sp => new FilterCacheService(
+                sp.GetRequiredService<IAppDataStore>(),
+                sp.GetService<IPlatformServices>()
+            ));
             services.AddSingleton<SpriteService>();
-            services.AddSingleton<UserProfileService>();
+            services.AddSingleton<UserProfileService>(sp => new UserProfileService(
+                sp.GetRequiredService<IAppDataStore>(),
+                sp.GetRequiredService<IPlatformServices>()
+            ));
             services.AddSingleton<SearchManager>();
             services.AddSingleton<SearchStateManager>();
-#if !BROWSER
-            services.AddSingleton<SoundFlowAudioManager>();
-            services.AddSingleton<SoundEffectsService>();
-#endif
+            
+            // Note: SoundFlowAudioManager and SoundEffectsService are registered by Desktop Program.cs only
             services.AddSingleton<TransitionService>();
             services.AddSingleton<TriggerService>();
             services.AddSingleton<EventFXService>();
-            services.AddSingleton<SearchTransitionManager>();
+            services.AddSingleton<SearchTransitionManager>(sp =>
+                new SearchTransitionManager(
+                    sp.GetRequiredService<TransitionService>(),
+                    sp.GetRequiredService<UserProfileService>(),
+                    sp.GetService<Views.MainWindow>(),
+                    sp.GetService<Views.BalatroMainMenu>()
+                )
+            );
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-            services.AddSingleton<FertilizerService>();
+            services.AddSingleton<FertilizerService>(sp => new FertilizerService(
+                sp.GetRequiredService<IDuckDBService>(),
+                sp.GetRequiredService<IPlatformServices>()
+            ));
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();
@@ -54,16 +67,25 @@ namespace BalatroSeedOracle.Extensions
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
-            services.AddTransient<BalatroMainMenuViewModel>();
+            services.AddTransient<BalatroMainMenuViewModel>(sp => new BalatroMainMenuViewModel(
+                sp.GetRequiredService<UserProfileService>(),
+                sp.GetService<IApiHostService>(),
+                sp.GetService<SoundFlowAudioManager>(),
+                sp.GetService<EventFXService>(),
+                sp.GetService<WidgetPositionService>()
+            ));
 
-            // Views (for browser DI)
-            services.AddTransient<Views.BalatroMainMenu>();
+            // Views
+            // Keep these as singletons so there is exactly one MainMenu instance shared by:
+            // - MainWindow (desktop)
+            // - ISingleViewApplicationLifetime.MainView (browser/mobile)
+            // - Services that need to talk to the active menu (SearchTransitionManager)
+            services.AddSingleton<Views.BalatroMainMenu>();
+            services.AddSingleton<Views.MainWindow>();
             services.AddSingleton<FiltersModalViewModel>();
             services.AddSingleton<SearchModalViewModel>();
-            #if !BROWSER
-            services.AddTransient<AnalyzeModalViewModel>();
-            services.AddTransient<AnalyzerViewModel>();
-#endif
+            
+            // Note: AnalyzeModalViewModel and AnalyzerViewModel are registered by Desktop Program.cs only
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();

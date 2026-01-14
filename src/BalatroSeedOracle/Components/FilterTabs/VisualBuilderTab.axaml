@@ -63,7 +63,7 @@
             <Grid Grid.Column="0" Margin="0,0,8,0">
                 <!-- Category buttons with arrow indicator on the left -->
                 <Grid Grid.Row="0">
-                    <StackPanel Spacing="4" Name="CategoryNav" DragDrop.AllowDrop="True">
+                    <StackPanel Spacing="4" x:Name="CategoryNav" DragDrop.AllowDrop="True">
                         <!-- Favorites -->
                         <Grid ColumnDefinitions="15,*">
                             <Polygon Grid.Column="0"
@@ -78,8 +78,8 @@
                             <Button Grid.Column="1"
                                     Content="Favorites"
                                     Classes="nav-button special"
-                                    Click="OnCategoryClick"
-                                    Tag="Favorites"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Favorites"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -97,8 +97,8 @@
                             <Button Grid.Column="1"
                                     Content="Wild Cards"
                                     Classes="nav-button special-purple"
-                                    Click="OnCategoryClick"
-                                    Tag="Wildcard"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Wildcard"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -116,8 +116,8 @@
                             <Button Grid.Column="1"
                                     Content="Joker"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="Joker"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Joker"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -135,8 +135,8 @@
                             <Button Grid.Column="1"
                                     Content="Consumable"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="Consumable"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Consumable"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -154,8 +154,8 @@
                             <Button Grid.Column="1"
                                     Content="Skip Tags"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="SkipTag"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="SkipTag"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -173,8 +173,8 @@
                             <Button Grid.Column="1"
                                     Content="Boss Blind"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="Boss"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Boss"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -192,8 +192,8 @@
                             <Button Grid.Column="1"
                                     Content="Voucher"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="Voucher"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="Voucher"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
 
@@ -211,8 +211,8 @@
                             <Button Grid.Column="1"
                                     Content="Standard Card"
                                     Classes="nav-button"
-                                    Click="OnCategoryClick"
-                                    Tag="StandardCard"
+                                    Command="{Binding SelectCategoryCommand}"
+                                    CommandParameter="StandardCard"
                                     HorizontalAlignment="Stretch"/>
                         </Grid>
                     </StackPanel>
@@ -220,7 +220,7 @@
 
                 <!-- Favorites drop overlay - covers category nav area only -->
                 <Border Grid.Row="0"
-                        Name="FavoritesDropOverlay"
+                        x:Name="FavoritesDropOverlay"
                         Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
                         BorderThickness="3"
@@ -277,7 +277,7 @@
 
                 <!-- ITEMS SHELF - Full height scrollable item list with sticky toolbar at top -->
                 <Border Grid.Row="2"
-                        Name="ItemGridBorder"
+                        x:Name="ItemGridBorder"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
                         CornerRadius="12"
@@ -554,7 +554,7 @@
                 </Border>
 
                 <!-- Return Overlay - Shows when dragging from drop zones -->
-                <Border Name="ReturnOverlay"
+                <Border x:Name="ReturnOverlay"
                         Grid.RowSpan="3"
                         Background="{StaticResource Orange}"
                         BorderBrush="{StaticResource White}"
@@ -606,7 +606,7 @@
             </Grid>
 
             <!-- RIGHT COLUMN - Operator Trays + Drop Zones (Collapsible!) -->
-            <Grid Grid.Column="2" Margin="5,0,0,0" Name="DropZoneContainer" ClipToBounds="False">
+            <Grid Grid.Column="2" Margin="5,0,0,0" x:Name="DropZoneContainer" ClipToBounds="False">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="90"/>  <!-- OR/AND Trays - Reduced from 120 to give more room -->
                     <RowDefinition Height="6"/>  <!-- Spacing -->
@@ -619,7 +619,7 @@
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                     <!-- Unified Tray -->
                     <Border Grid.Column="0"
-                            Name="UnifiedTray"
+                            x:Name="UnifiedTray"
                             Background="{StaticResource DarkBackground}"
                             BorderBrush="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"
                             BorderThickness="2"
@@ -646,7 +646,7 @@
 
                             <!-- Card display area (single ItemsControl with programmatic fan/overlap) -->
                             <Grid Grid.Row="1" Margin="8" ClipToBounds="False">
-                                <ItemsControl Name="UnifiedTrayItemsControl" ItemsSource="{Binding UnifiedOperator.Children}">
+                                <ItemsControl x:Name="UnifiedTrayItemsControl" ItemsSource="{Binding UnifiedOperator.Children}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <Canvas/>
@@ -743,7 +743,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- MUST drop overlay - BLUE for AND operator -->
-                    <Border Name="MustDropOverlay"
+                    <Border x:Name="MustDropOverlay"
                             Grid.Row="0"
                             Classes="dropzone-overlay"
                             Background="{StaticResource Blue}">
@@ -782,7 +782,7 @@
                     </Border>
 
                     <!-- SHOULD drop overlay - GREEN for OR operator -->
-                    <Border Name="ShouldDropOverlay"
+                    <Border x:Name="ShouldDropOverlay"
                             Grid.Row="1"
                             Classes="dropzone-overlay"
                             Background="{StaticResource Green}">
@@ -821,7 +821,7 @@
                     </Border>
                 </Grid>
                 <!-- MUST HAVE Zone -->
-                <Border Name="MustDropZone"
+                <Border x:Name="MustDropZone"
                         Grid.Row="2"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
@@ -859,7 +859,7 @@
                                       VerticalScrollBarVisibility="Auto"
                                       ClipToBounds="False"
                                       Padding="5">
-                            <ItemsControl ItemsSource="{Binding SelectedMust}"
+                            <ItemsControl ItemsSource="{Binding PagedMust}"
                                           Margin="8,8,8,15"
                                           ClipToBounds="False"
                                          >
@@ -936,7 +936,7 @@
                 </Border>
 
                 <!-- SHOULD HAVE Zone -->
-                <Border Name="ShouldDropZone"
+                <Border x:Name="ShouldDropZone"
                         Grid.Row="4"
                         Background="{StaticResource DarkBackground}"
                         BorderThickness="0"
@@ -974,7 +974,7 @@
                                       VerticalScrollBarVisibility="Auto"
                                       ClipToBounds="False"
                                       Padding="5">
-                            <ItemsControl ItemsSource="{Binding SelectedShould}"
+                            <ItemsControl ItemsSource="{Binding PagedShould}"
                                           Margin="8,8,8,15"
                                           ClipToBounds="False"
                                          >
@@ -1051,7 +1051,7 @@
                 </Border>
 
                 <!-- ItemConfig Full-Screen Mode Overlay - covers categories and item shelf, focuses user on config -->
-                <Grid Name="PopupOverlay"
+                <Grid x:Name="PopupOverlay"
                       Grid.Column="0"
                       Grid.ColumnSpan="3"
                       IsVisible="False"
@@ -1078,7 +1078,7 @@
                                     </TextBlock.Effect>
                                 </TextBlock>
                                 
-                                <ContentControl Name="ItemPreviewContent" HorizontalAlignment="Center">
+                                <ContentControl x:Name="ItemPreviewContent" HorizontalAlignment="Center">
                                     <ContentControl.RenderTransform>
                                         <ScaleTransform ScaleX="2.5" ScaleY="2.5"/>
                                     </ContentControl.RenderTransform>
@@ -1100,13 +1100,13 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
                                 PointerPressed="OnPopupContentClick">
-                            <ContentControl Name="PopupContent"/>
+                            <ContentControl x:Name="PopupContent"/>
                         </Border>
                     </Grid>
                 </Grid>
 
                 <!-- Drag-and-drop Adornment Layer - hosted locally to avoid browser-mode AdornerLayer issues -->
-                <Canvas Name="DragAdornerLayer"
+                <Canvas x:Name="DragAdornerLayer"
                         Grid.Column="0"
                         Grid.ColumnSpan="3"
                         IsHitTestVisible="False"

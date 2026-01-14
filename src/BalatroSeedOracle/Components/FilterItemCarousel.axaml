@@ -8,7 +8,7 @@
     <ScrollViewer HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Disabled"
                   HorizontalAlignment="Center">
-        <ItemsControl Name="CarouselItems">
+        <ItemsControl x:Name="CarouselItems">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <!-- Horizontal layout with overlap (negative spacing) -->

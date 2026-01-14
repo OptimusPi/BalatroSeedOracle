@@ -36,19 +36,19 @@ namespace BalatroSeedOracle.Views.Modals
             _userProfileService = App.GetService<UserProfileService>();
             RefreshToggles();
 
-            // Find UI elements
-            _musicMixerButton = this.FindControl<Button>("MusicMixerButton");
-            _visualizerButton = this.FindControl<Button>("VisualizerButton");
-            _transitionDesignerButton = this.FindControl<Button>("TransitionDesignerButton");
-            _fertilizerButton = this.FindControl<Button>("FertilizerButton");
-            _hostApiButton = this.FindControl<Button>("HostApiButton");
-            _eventFXButton = this.FindControl<Button>("EventFXButton");
-            _musicMixerStatus = this.FindControl<TextBlock>("MusicMixerStatus");
-            _visualizerStatus = this.FindControl<TextBlock>("VisualizerStatus");
-            _transitionDesignerStatus = this.FindControl<TextBlock>("TransitionDesignerStatus");
-            _fertilizerStatus = this.FindControl<TextBlock>("FertilizerStatus");
-            _hostApiStatus = this.FindControl<TextBlock>("HostApiStatus");
-            _eventFXStatus = this.FindControl<TextBlock>("EventFXStatus");
+            // Direct field access from x:Name - no FindControl anti-pattern!
+            _musicMixerButton = MusicMixerButton;
+            _visualizerButton = VisualizerButton;
+            _transitionDesignerButton = TransitionDesignerButton;
+            _fertilizerButton = FertilizerButton;
+            _hostApiButton = HostApiButton;
+            _eventFXButton = EventFXButton;
+            _musicMixerStatus = MusicMixerStatus;
+            _visualizerStatus = VisualizerStatus;
+            _transitionDesignerStatus = TransitionDesignerStatus;
+            _fertilizerStatus = FertilizerStatus;
+            _hostApiStatus = HostApiStatus;
+            _eventFXStatus = EventFXStatus;
 
             UpdateButtonStates();
         }

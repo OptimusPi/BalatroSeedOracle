@@ -43,6 +43,11 @@
     </ProjectReference>
   </ItemGroup>
 
+  <!-- Include browser-only files that were excluded from shared project -->
+  <ItemGroup>
+    <Compile Include="..\BalatroSeedOracle\Services\Storage\LocalStorageTester.cs" Link="Services\Storage\LocalStorageTester.cs" />
+  </ItemGroup>
+
   <!-- Don't include browser HostApiWidget - let main project handle exclusion -->
 
   <!-- Shared property for Motely BSO destination - use source wwwroot -->

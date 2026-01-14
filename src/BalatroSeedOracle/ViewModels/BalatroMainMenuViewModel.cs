@@ -21,9 +21,15 @@ namespace BalatroSeedOracle.ViewModels
     public partial class BalatroMainMenuViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
-        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
+        private readonly IApiHostService? _apiHostService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
+        
+        /// <summary>
+        /// ViewModel for the API Host widget - owned by parent, bound via XAML DataContext
+        /// </summary>
+        public ApiHostWidgetViewModel? ApiHostWidgetViewModel { get; }
 
         // Effect source tracking
         private int _shadowFlickerSource = 0;
@@ -35,7 +41,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Expose audio manager for widgets to access frequency data
         /// </summary>
-        public SoundFlowAudioManager? AudioManager => _soundFlowAudioManager;
+        public IAudioManager? AudioManager => _audioManager;
 
         [ObservableProperty]
         private string _mainTitle = "";
@@ -175,22 +181,24 @@ namespace BalatroSeedOracle.ViewModels
 
         private double _previousVolume = 70;
 
-        public BalatroMainMenuViewModel()
+        public BalatroMainMenuViewModel(
+            UserProfileService userProfileService,
+            IApiHostService? apiHostService = null,
+            IAudioManager? audioManager = null,
+            EventFXService? eventFXService = null,
+            WidgetPositionService? widgetPositionService = null)
         {
-            // Initialize services
-            _userProfileService =
-                App.GetService<UserProfileService>()
-                ?? throw new InvalidOperationException("UserProfileService not available");
+            // Store injected services
+            _userProfileService = userProfileService;
+            _apiHostService = apiHostService;
+            _audioManager = audioManager;
+            _eventFXService = eventFXService;
 
-            // Get SoundFlow audio manager (8 independent tracks)
-            _soundFlowAudioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
-            if (_soundFlowAudioManager != null)
+            // Create child widget ViewModels (owned by parent, bound via XAML)
+            if (_apiHostService != null)
             {
-                DebugLogger.Log("ViewModel", "Using SoundFlowAudioManager (8 independent tracks)");
+                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(_apiHostService, widgetPositionService);
             }
-
-            // Get EventFX service for triggering configured animations
-            _eventFXService = ServiceHelper.GetService<EventFXService>();
 
             // Load settings
             LoadSettings();
@@ -796,6 +804,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 // Per-track volume balancing for SoundFlow audio stems
+#if !BROWSER
                 if (_soundFlowAudioManager != null)
                 {
                     SetTrackVolume("Drums1", Math.Clamp(settings.Drums1Volume, 0f, 1f));
@@ -807,6 +816,7 @@ namespace BalatroSeedOracle.ViewModels
                     SetTrackVolume("Melody1", Math.Clamp(settings.Melody1Volume, 0f, 1f));
                     SetTrackVolume("Melody2", Math.Clamp(settings.Melody2Volume, 0f, 1f));
                 }
+#endif
 
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
@@ -900,10 +910,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 float volumeFloat = (float)(volume / 100.0);
-
-                if (_soundFlowAudioManager != null)
+                if (_audioManager != null)
                 {
-                    _soundFlowAudioManager.MasterVolume = volumeFloat;
+                    _audioManager.MasterVolume = volumeFloat;
                 }
             }
             catch (Exception ex)
@@ -922,7 +931,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                _soundFlowAudioManager?.SetTrackVolume(trackName, volume);
+                _audioManager?.SetTrackVolume(trackName, volume);
             }
             catch (Exception ex)
             {
@@ -940,13 +949,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_soundFlowAudioManager != null)
+                if (_audioManager != null)
                 {
                     _audioAnalysisHandler = (bass, mid, treble, peak) => {
                         // Audio reactivity handled by effect binding system
                     };
 
-                    _soundFlowAudioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
+                    _audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
                     DebugLogger.Log("ViewModel", "✅ Audio analysis handler connected (awaiting effect binding system)");
                 }
             }

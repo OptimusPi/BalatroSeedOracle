@@ -18,6 +18,7 @@ using SoundFlow.Visualization;
 namespace BalatroSeedOracle.Services
 {
     /// <summary>
+    /// Desktop implementation of IAudioManager using SoundFlow library
     /// Multi-track audio manager using SoundFlow cross-platform engine
     /// Plays 8 independent audio stems with per-track volume control and FFT analysis
     /// CROSS-PLATFORM: Works on Windows, Mac, Linux, iOS, Android

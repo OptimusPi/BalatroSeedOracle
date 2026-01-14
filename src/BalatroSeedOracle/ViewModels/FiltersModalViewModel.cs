@@ -34,6 +34,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
+        private readonly IPlatformServices _platformServices;
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -146,11 +147,13 @@ namespace BalatroSeedOracle.ViewModels
 
         public FiltersModalViewModel(
             IConfigurationService configurationService,
-            IFilterService filterService
+            IFilterService filterService,
+            IPlatformServices platformServices
         )
         {
             _configurationService = configurationService;
             _filterService = filterService;
+            _platformServices = platformServices;
 
             _itemCategories = InitializeItemCategories();
 
@@ -485,11 +488,12 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
         {
-#if BROWSER
-            // DuckDB not available in browser
-            await Task.CompletedTask;
-            return;
-#else
+            if (!_platformServices.SupportsFileSystem)
+            {
+                // Browser: DuckDB not available in browser
+                await Task.CompletedTask;
+                return;
+            }
             if (dbFiles is null || dbFiles.Length == 0)
             {
                 BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
@@ -566,7 +570,6 @@ namespace BalatroSeedOracle.ViewModels
                 );
                 // Don't throw - fertilizer dump is a nice-to-have, not critical
             }
-#endif
         }
 
         [RelayCommand]
@@ -1710,17 +1713,7 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             // Wire up filter name edit activation event
-            OnFilterNameEditActivated += (s, e) =>
-            {
-                var filterNameEdit = visualBuilderTab.FindControl<Avalonia.Controls.TextBox>(
-                    "FilterNameEdit"
-                );
-                if (filterNameEdit is not null)
-                {
-                    filterNameEdit.Focus();
-                    filterNameEdit.SelectAll();
-                }
-            };
+            // Filter name focus is handled by the view; no view lookups from the ViewModel.
 
             TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 

@@ -11,5 +11,5 @@
     "dotnet.defaultSolution": "BalatroSeedOracle.sln",
     "omnisharp.enableRoslynAnalyzers": true,
     "omnisharp.enableEditorConfigSupport": true,
-    "omnisharp.organizeImportsOnFormat": true
+    "dotnet.formatting.organizeImportsOnFormat": true
 }

@@ -1,8 +1,6 @@
-#if !BROWSER
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -10,6 +8,7 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.Views.Modals;
 using Motely;
 using Motely.Filters;
@@ -18,17 +17,14 @@ using Motely.DuckDB;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
-// Alias for DuckDB.NET types to avoid namespace conflict with BalatroSeedOracle.Services.DuckDB
-using DuckDBConnection = DuckDB.NET.Data.DuckDBConnection;
-using DuckDBParameter = DuckDB.NET.Data.DuckDBParameter;
-using DuckDBAppender = DuckDB.NET.Data.DuckDBAppender;
 
 namespace BalatroSeedOracle.Services
 {
     /// <summary>
     /// Represents a single search instance that can run independently
+    /// Desktop implementation of ISearchInstance
     /// </summary>
-    public class SearchInstance : IDisposable
+    public class SearchInstance : ISearchInstance
     {
         private readonly string _searchId;
         private readonly UserProfileService? _userProfileService;
@@ -51,7 +47,7 @@ namespace BalatroSeedOracle.Services
 
         // Use MotelySearchDatabase as the high-level abstraction (black box - handles all DB internals)
         // This ensures BSO search works the same way as Motely CLI/TUI/API search
-        private Motely.API.MotelySearchDatabase? _searchDatabase;
+        private Motely.DuckDB.MotelySearchDatabase? _searchDatabase;
 
         // Search state tracking for resume
         private SearchConfiguration? _currentSearchConfig;
@@ -121,14 +117,20 @@ namespace BalatroSeedOracle.Services
         {
             _searchId = searchId;
             _userProfileService = ServiceHelper.GetService<UserProfileService>();
+            _appDataStore = ServiceHelper.GetService<IAppDataStore>();
+            _platformServices = ServiceHelper.GetService<IPlatformServices>();
+            _duckDBService = ServiceHelper.GetService<IDuckDBService>();
 
             // Require a non-empty path immediately so query helpers are safe to call early
             if (string.IsNullOrWhiteSpace(dbPath))
                 throw new ArgumentException("dbPath is required", nameof(dbPath));
 
-            var dir = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
+            // Use platform abstraction for directory creation
+            var dir = System.IO.Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(dir) && _platformServices != null)
+            {
+                _platformServices.EnsureDirectoryExists(dir);
+            }
             _dbPath = dbPath;
             // MotelySearchDatabase will be created in SetupDatabase() after we know the column schema
         }
@@ -148,7 +150,7 @@ namespace BalatroSeedOracle.Services
             if (string.IsNullOrEmpty(_dbPath))
             {
                 var searchResultsDir = AppPaths.SearchResultsDir;
-                _dbPath = Path.Combine(searchResultsDir, $"{_searchId}.db");
+                _dbPath = System.IO.Path.Combine(searchResultsDir, $"{_searchId}.db");
             }
             DebugLogger.LogImportant(
                 $"SearchInstance[{_searchId}]",
@@ -165,7 +167,7 @@ namespace BalatroSeedOracle.Services
             {
                 // Use MotelySearchDatabase - it handles ALL database internals (schema, indexes, validation) internally
                 // This ensures BSO search works the same way as Motely CLI/TUI/API search
-                _searchDatabase = new Motely.API.MotelySearchDatabase(
+                _searchDatabase = new Motely.DuckDB.MotelySearchDatabase(
                     _dbPath,
                     _columnNames,
                     logCallback: msg => DebugLogger.Log($"SearchInstance[{_searchId}]", msg)
@@ -522,7 +524,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized || !File.Exists(_dbPath))
+                if (!_dbInitialized || (_appDataStore != null && !await _appDataStore.FileExistsAsync(_dbPath)))
                 {
                     DebugLogger.Log(
                         $"SearchInstance[{_searchId}]",
@@ -534,7 +536,7 @@ namespace BalatroSeedOracle.Services
                 // Ensure WordLists directory exists
                 var wordListsDir = AppPaths.WordListsDir;
 
-                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
+                var fertilizerPath = System.IO.Path.Combine(wordListsDir, "fertilizer.txt");
 
                 // Use MotelySearchDatabase.ExecuteQuery() - uses SAME connection as appender (avoids file locking!)
                 var rows = _searchDatabase?.ExecuteQuery("SELECT seed FROM results ORDER BY seed") ?? new List<Dictionary<string, object?>>();
@@ -551,8 +553,13 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                // Append seeds to fertilizer.txt
-                await File.AppendAllLinesAsync(fertilizerPath, seeds).ConfigureAwait(false);
+                // Append seeds to fertilizer.txt using platform abstraction
+                if (_appDataStore != null)
+                {
+                    var existingContent = await _appDataStore.ReadTextAsync(fertilizerPath) ?? "";
+                    var newContent = existingContent + (string.IsNullOrEmpty(existingContent) ? "" : "\n") + string.Join("\n", seeds);
+                    await _appDataStore.WriteTextAsync(fertilizerPath, newContent);
+                }
 
                 DebugLogger.LogImportant(
                     $"SearchInstance[{_searchId}]",
@@ -597,42 +604,9 @@ namespace BalatroSeedOracle.Services
                     $"Starting search from file: {configPath}"
                 );
 
-                // TODO: Move to FiltersModalViewModel.SaveFilter - only invalidate when MUST/SHOULD/MUSTNOT changes during SAVE
-                // Check if filter file was modified since last search
-                if (File.Exists(_dbPath) && File.Exists(configPath))
-                {
-                    var filterModified = File.GetLastWriteTimeUtc(configPath);
-                    var dbModified = File.GetLastWriteTimeUtc(_dbPath);
-
-                    if (filterModified > dbModified)
-                    {
-                        DebugLogger.LogImportant(
-                            $"SearchInstance[{_searchId}]",
-                            $"Filter modified since last search - invalidating database"
-                        );
-
-                        // Dump seeds to fertilizer.txt before clearing database (fire-and-forget)
-                        // Not critical for search to work, so we don't block on this operation
-                        // Use async void helper with proper error handling
-                        _ = DumpSeedsToFertilizerBackgroundAsync();
-
-                        try
-                        {
-                            File.Delete(_dbPath);
-                            DebugLogger.LogImportant(
-                                $"SearchInstance[{_searchId}]",
-                                $"Deleted outdated database: {_dbPath}"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                $"SearchInstance[{_searchId}]",
-                                $"Failed to delete outdated database: {ex.Message}"
-                            );
-                        }
-                    }
-                }
+                // Filter invalidation is now handled by FiltersModalViewModel.SaveFilter:
+                // - Filter cache invalidation: ConfigurationService.SaveFilterAsync() invalidates cache
+                // - Database cleanup: FiltersModalViewModel.CleanupFilterDatabases() when criteria changed
 
                 // Load the config from file - use TryLoadFromJsonFile to get PostProcess!
                 if (
@@ -776,7 +750,18 @@ namespace BalatroSeedOracle.Services
                 throw new ArgumentException(errorMsg);
             }
 
-            if (!System.IO.File.Exists(criteria.ConfigPath))
+            // Check file existence using platform abstraction
+            bool configExists = false;
+            if (_appDataStore != null)
+            {
+                configExists = await _appDataStore.FileExistsAsync(criteria.ConfigPath);
+            }
+            else if (_platformServices != null && _platformServices.SupportsFileSystem)
+            {
+                configExists = System.IO.File.Exists(criteria.ConfigPath);
+            }
+            
+            if (!configExists)
             {
                 var errorMsg = $"Config file not found: {criteria.ConfigPath}";
                 DebugLogger.LogError($"SearchInstance[{_searchId}]", errorMsg);
@@ -845,7 +830,14 @@ namespace BalatroSeedOracle.Services
                 );
                 try
                 {
-                    rawJsonForDebug = System.IO.File.ReadAllText(criteria.ConfigPath);
+                    if (_appDataStore != null)
+                    {
+                        rawJsonForDebug = await _appDataStore.ReadTextAsync(criteria.ConfigPath) ?? "";
+                    }
+                    else if (_platformServices != null && _platformServices.SupportsFileSystem)
+                    {
+                        rawJsonForDebug = System.IO.File.ReadAllText(criteria.ConfigPath);
+                    }
                     DebugLogger.LogError(
                         $"SearchInstance[{_searchId}]",
                         $"  Raw JSON length: {rawJsonForDebug.Length} characters"
@@ -1365,7 +1357,7 @@ namespace BalatroSeedOracle.Services
                 using var queryExecutor = new DbListQueryExecutor(duckDBService);
 
                 // Build the full path to the database file
-                var dbFilePath = Path.Combine(
+                var dbFilePath = System.IO.Path.Combine(
                     AppContext.BaseDirectory ?? "", 
                     "..", "..", "..", 
                     "SearchResults", 
@@ -2134,448 +2126,3 @@ namespace BalatroSeedOracle.Services
         }
     }
 }
-#else
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Controls;
-using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Services.DuckDB;
-using Motely;
-using Motely.Filters;
-using Motely.Utils;
-using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
-
-namespace BalatroSeedOracle.Services
-{
-    public class SearchInstance : IDisposable
-    {
-        private readonly object _resultsLock = new();
-        private readonly List<SearchResult> _results = new();
-        private readonly List<string> _columnNames = new();
-        private CancellationTokenSource? _cancellationTokenSource;
-        private volatile bool _isRunning;
-        private volatile bool _hasNewResultsSinceLastQuery;
-        private DateTime _searchStartTime;
-        private MotelyJsonConfig? _currentConfig;
-        private IMotelySearch? _currentSearch;
-        private Task? _searchTask;
-        private volatile int _resultCount = 0;
-        private volatile int _bestScore = 0;
-        private DateTime _lastHighScoreTime = DateTime.MinValue;
-
-        public SearchInstance(string searchId, string _)
-        {
-            SearchId = searchId;
-        }
-
-        public event EventHandler<SearchProgress>? ProgressUpdated;
-        public event EventHandler<SearchResultEventArgs>? ResultReceived;
-        public event EventHandler? SearchCompleted;
-        public event EventHandler<int>? NewHighScoreFound; // Changed to int to match desktop
-        public event EventHandler? SearchStarted;
-
-        public string SearchId { get; }
-        public string ConfigPath { get; private set; } = string.Empty;
-        public string FilterName { get; private set; } = "";
-
-        public bool IsRunning => _isRunning;
-        public bool IsPaused => false;
-        public bool IsDatabaseInitialized => true;
-        public int ResultCount
-        {
-            get
-            {
-                lock (_resultsLock)
-                    return _results.Count;
-            }
-        }
-
-        public TimeSpan SearchDuration => _isRunning ? DateTime.UtcNow - _searchStartTime : TimeSpan.Zero;
-        public bool HasNewResultsSinceLastQuery => _hasNewResultsSinceLastQuery;
-        public IReadOnlyList<string> ColumnNames => _columnNames.AsReadOnly();
-
-        public MotelyJsonConfig? GetFilterConfig() => _currentConfig;
-
-        public Task StartSearchAsync(SearchCriteria criteria)
-        {
-            // This overload expects ConfigPath. In browser we always run in-memory.
-            // If we have a ConfigPath, we might try to load it via storage, but 
-            // generally the UI calls the overload with MotelyJsonConfig directly.
-            return Task.CompletedTask;
-        }
-
-        public Task StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
-        {
-            if (_isRunning)
-            {
-                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search already running");
-                return Task.CompletedTask;
-            }
-
-            _currentConfig = config;
-            FilterName = config.Name ?? "Unnamed";
-            ConfigPath = criteria.ConfigPath ?? string.Empty;
-
-            _columnNames.Clear();
-            try
-            {
-                _columnNames.AddRange(config.GetColumnNames());
-            }
-            catch
-            {
-                _columnNames.Add("seed");
-                _columnNames.Add("score");
-            }
-
-            lock (_resultsLock)
-            {
-                _results.Clear();
-            }
-            _resultCount = 0;
-            _bestScore = 0;
-
-            _hasNewResultsSinceLastQuery = false;
-            _cancellationTokenSource = new CancellationTokenSource();
-            _searchStartTime = DateTime.UtcNow;
-            _isRunning = true;
-
-            SearchStarted?.Invoke(this, EventArgs.Empty);
-
-            // Fire-and-forget search task
-            _searchTask = RunSearchWithCompletionHandling(config, criteria, null, _cancellationTokenSource.Token);
-
-            return Task.CompletedTask;
-        }
-
-        private async Task RunSearchWithCompletionHandling(
-            MotelyJsonConfig filterConfig,
-            SearchCriteria searchCriteria,
-            IProgress<SearchProgress>? progress,
-            CancellationToken cancellationToken
-        )
-        {
-            try
-            {
-                await RunSearchInProcess(filterConfig, searchCriteria, progress, cancellationToken)
-                    .ConfigureAwait(false);
-                
-                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search completed");
-            }
-            catch (OperationCanceledException)
-            {
-                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search was cancelled");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    $"SearchInstance[{SearchId}]",
-                    $"Search failed: {ex.Message}"
-                );
-                // In browser we might want to surface this error to UI
-            }
-            finally
-            {
-                _isRunning = false;
-                SearchCompleted?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private async Task RunSearchInProcess(
-            MotelyJsonConfig config,
-            SearchCriteria criteria,
-            IProgress<SearchProgress>? progress,
-            CancellationToken cancellationToken
-        )
-        {
-            DebugLogger.LogImportant($"SearchInstance[{SearchId}]", "RunSearchInProcess (Browser) ENTERED!");
-
-            try
-            {
-                // Pre-flight validation
-                MotelyJsonConfigValidator.ValidateConfig(config);
-
-                // Prepare MUST clauses
-                List<MotelyJsonConfig.MotelyJsonFilterClause> mustClauses =
-                    config.Must?.ToList() ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>();
-
-                // Initialize parsed enums
-                foreach (var clause in mustClauses)
-                {
-                    clause.InitializeParsedEnums();
-                }
-
-                // Group by category
-                var clausesByCategory = FilterCategoryMapper.GroupClausesByCategory(mustClauses);
-
-                if (clausesByCategory.Count == 0)
-                {
-                    throw new Exception("Cannot search with an empty filter!");
-                }
-
-                // Create scoring config
-                var scoringConfig = new MotelyJsonConfig
-                {
-                    Name = config.Name,
-                    Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                    Should = config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                    MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                };
-                scoringConfig.Mode = config.Mode;
-                scoringConfig.PostProcess();
-
-                // Result callback
-                Action<MotelySeedScoreTally> resultCallback = (result) =>
-                {
-                    try
-                    {
-                        Interlocked.Increment(ref _resultCount);
-
-                        var searchResult = new SearchResult
-                        {
-                            Seed = result.Seed,
-                            TotalScore = result.Score,
-                            Scores = result.TallyColumns?.ToArray(),
-                        };
-
-                        lock (_resultsLock)
-                        {
-                            _results.Add(searchResult);
-                            _hasNewResultsSinceLastQuery = true;
-                        }
-
-                        // Fire events
-                        ResultReceived?.Invoke(this, new SearchResultEventArgs { Result = searchResult });
-
-                         // Check for new high score (with 10s cooldown after search start)
-                        var elapsed = DateTime.UtcNow - _searchStartTime;
-                        if (elapsed.TotalSeconds > 10 && result.Score > _bestScore)
-                        {
-                            var timeSinceLast = DateTime.UtcNow - _lastHighScoreTime;
-                            if (timeSinceLast.TotalSeconds > 2)
-                            {
-                                _bestScore = result.Score;
-                                _lastHighScoreTime = DateTime.UtcNow;
-                                NewHighScoreFound?.Invoke(this, result.Score);
-                            }
-                        }
-                        else if (result.Score > _bestScore)
-                        {
-                            _bestScore = result.Score;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        DebugLogger.LogError($"SearchInstance[{SearchId}]", $"Error processing result: {ex.Message}");
-                    }
-                };
-
-                var scoreDesc = new MotelyJsonSeedScoreDesc(
-                    scoringConfig,
-                    criteria.MinScore,
-                    criteria.MinScore > 0 ? ScoreCutoffMode.Manual : ScoreCutoffMode.None,
-                    resultCallback
-                );
-
-                // Setup Search
-                IMotelySearch search;
-                var categories = clausesByCategory.Keys.ToList();
-
-                if (categories.Count > 1)
-                {
-                    // Composite Filter
-                    var allRequiredClauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(mustClauses);
-                    
-                    if (config.MustNot != null && config.MustNot.Count > 0)
-                    {
-                        foreach (var clause in config.MustNot)
-                        {
-                            clause.InitializeParsedEnums();
-                            clause.IsInverted = true;
-                            allRequiredClauses.Add(clause);
-                        }
-                    }
-
-                    var compositeFilter = new MotelyCompositeFilterDesc(allRequiredClauses);
-                    var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
-
-                    compositeSettings = ConfigureSettings(compositeSettings, criteria, scoreDesc, config);
-                    search = compositeSettings.WithSequentialSearch().Start();
-                }
-                else
-                {
-                    var primaryCategory = categories[0];
-                    var primaryClauses = clausesByCategory[primaryCategory];
-
-                    if (primaryCategory == FilterCategory.And || primaryCategory == FilterCategory.Or)
-                    {
-                        var compositeFilter = new MotelyCompositeFilterDesc(primaryClauses);
-                        var compositeSettings = new MotelySearchSettings<MotelyCompositeFilterDesc.MotelyCompositeFilter>(compositeFilter);
-                        compositeSettings = ConfigureSettings(compositeSettings, criteria, scoreDesc, config);
-                        search = compositeSettings.WithSequentialSearch().Start();
-                    }
-                    else
-                    {
-                        var filterDesc = SpecializedFilterFactory.CreateSpecializedFilter(primaryCategory, primaryClauses);
-                        var searchSettings = SpecializedFilterFactory.CreateSearchSettings(filterDesc);
-                        
-                        // Apply common settings manually since SpecializedFilterFactory returns ISearchSettings interface
-                        searchSettings = searchSettings
-                            .WithThreadCount(criteria.ThreadCount)
-                            .WithBatchCharacterCount(criteria.BatchSize)
-                            .WithStartBatchIndex((long)criteria.StartBatch);
-                            
-                        if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                            searchSettings = searchSettings.WithEndBatchIndex((long)criteria.EndBatch);
-                            
-                        searchSettings = searchSettings.WithSeedScoreProvider(scoreDesc);
-                        
-                        search = searchSettings.Start();
-                    }
-                }
-
-                _currentSearch = search;
-                DebugLogger.Log($"SearchInstance[{SearchId}]", "Search started in browser!");
-
-                // Wait loop
-                while (_currentSearch.Status == MotelySearchStatus.Running && !cancellationToken.IsCancellationRequested && _isRunning)
-                {
-                    var completedBatches = _currentSearch.CompletedBatchCount;
-                    double progressPercent = 0.0;
-                    var totalBatches = criteria.EndBatch - criteria.StartBatch;
-
-                    if (criteria.EndBatch != ulong.MaxValue && totalBatches > 0)
-                    {
-                        progressPercent = ((double)completedBatches / totalBatches) * 100.0;
-                    }
-                    else
-                    {
-                        progressPercent = Math.Min(99.99, completedBatches * 0.001);
-                    }
-
-                    var elapsed = DateTime.UtcNow - _searchStartTime;
-                    var seedsSearched = (ulong)(Math.Max(0, completedBatches) * Math.Pow(35, criteria.BatchSize + 1));
-                    var seedsPerMs = elapsed.TotalMilliseconds > 0 ? seedsSearched / elapsed.TotalMilliseconds : 0;
-
-                    var currentProgress = new SearchProgress
-                    {
-                        SeedsSearched = seedsSearched,
-                        PercentComplete = progressPercent,
-                        SeedsPerMillisecond = seedsPerMs,
-                        Message = $"Searched {completedBatches:N0} batches",
-                        ResultsFound = _resultCount,
-                    };
-
-                    ProgressUpdated?.Invoke(this, currentProgress);
-                    
-                    // Polling delay for UI responsiveness - reduced to 10ms as requested for "snappy" updates
-                    await Task.Delay(10, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                 // Cleanup
-                 if (_currentSearch != null)
-                 {
-                     try { _currentSearch.Dispose(); } catch {}
-                     _currentSearch = null;
-                 }
-            }
-        }
-
-        private MotelySearchSettings<T> ConfigureSettings<T>(
-            MotelySearchSettings<T> settings, 
-            SearchCriteria criteria, 
-            MotelyJsonSeedScoreDesc scoreDesc,
-            MotelyJsonConfig config) where T : struct, IMotelySeedFilter
-        {
-            settings = settings
-                .WithThreadCount(criteria.ThreadCount)
-                .WithBatchCharacterCount(criteria.BatchSize)
-                .WithStartBatchIndex((long)criteria.StartBatch);
-
-            if (criteria.EndBatch > 0 && criteria.EndBatch < ulong.MaxValue)
-                settings = settings.WithEndBatchIndex((long)criteria.EndBatch);
-
-            if (!string.IsNullOrEmpty(criteria.Deck) && Enum.TryParse(criteria.Deck, true, out MotelyDeck deck))
-                settings = settings.WithDeck(deck);
-
-            if (!string.IsNullOrEmpty(criteria.Stake) && Enum.TryParse(criteria.Stake, true, out MotelyStake stake))
-                settings = settings.WithStake(stake);
-
-            settings = settings.WithSeedScoreProvider(scoreDesc);
-            
-            if (config.Should?.Count > 0)
-                settings = settings.WithCsvOutput(true);
-
-            return settings;
-        }
-
-        public void StopSearch()
-        {
-            if (!_isRunning) return;
-            _isRunning = false;
-            try
-            {
-                _cancellationTokenSource?.Cancel();
-            }
-            catch {}
-        }
-
-        public void PauseSearch() { }
-        public void ResumeSearch() { }
-
-        public void AcknowledgeResultsQueried()
-        {
-            _hasNewResultsSinceLastQuery = false;
-        }
-
-        public Task<List<SearchResult>> GetResultsAsync()
-        {
-            lock (_resultsLock)
-                return Task.FromResult(_results.ToList());
-        }
-
-        public Task<List<SearchResult>> GetTopResultsAsync(int count)
-        {
-            lock (_resultsLock)
-                return Task.FromResult(_results.OrderByDescending(r => r.TotalScore).Take(count).ToList());
-        }
-
-        public Task<List<SearchResult>> GetTopResultsAsync(int count, bool _, CancellationToken __ = default)
-        {
-            return GetTopResultsAsync(count);
-        }
-
-        public Task<List<SearchResult>> GetTopResultsAsync(string _, bool __, int maxResults)
-        {
-            // Sort column ignored in browser for now; return highest score first.
-            lock (_resultsLock)
-                return Task.FromResult(_results.OrderByDescending(r => r.TotalScore).Take(maxResults).ToList());
-        }
-
-        public Task<List<SearchResult>> GetResultsPageAsync(int offset, int limit)
-        {
-            lock (_resultsLock)
-                return Task.FromResult(_results.Skip(offset).Take(limit).ToList());
-        }
-
-        public Task<int> GetResultCountAsync()
-        {
-            lock (_resultsLock)
-                return Task.FromResult(_results.Count);
-        }
-
-        public void Dispose()
-        {
-            StopSearch();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
-        }
-    }
-}
-#endif

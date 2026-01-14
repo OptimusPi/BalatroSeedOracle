@@ -44,7 +44,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             AvaloniaXamlLoader.Load(this);
 
             // Get reference to the TextEditor
-            _jamlEditor = this.FindControl<TextEditor>("JamlEditor");
+            _jamlEditor = JamlEditor;
 
             // Set up two-way binding for TextEditor
             if (_jamlEditor != null)
@@ -371,15 +371,24 @@ namespace BalatroSeedOracle.Components.FilterTabs
             try
             {
                 // Load custom JAML dark mode syntax highlighting (uses YAML highlighting since JAML is YAML-based)
-                var xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "JamlDark.xshd");
-
-                // Fallback to YamlDark.xshd for backwards compatibility
-                if (!File.Exists(xshdPath))
+                // Try JamlDark.xshd first, fallback to YamlDark.xshd
+                var candidates = new[]
                 {
-                    xshdPath = Path.Combine(AppContext.BaseDirectory, "Resources", "YamlDark.xshd");
+                    Path.Combine(AppContext.BaseDirectory, "Resources", "JamlDark.xshd"),
+                    Path.Combine(AppContext.BaseDirectory, "Resources", "YamlDark.xshd")
+                };
+
+                string? xshdPath = null;
+                foreach (var candidate in candidates)
+                {
+                    if (File.Exists(candidate))
+                    {
+                        xshdPath = candidate;
+                        break;
+                    }
                 }
 
-                if (File.Exists(xshdPath))
+                if (xshdPath != null)
                 {
                     using (var reader = new XmlTextReader(xshdPath))
                     {
@@ -391,14 +400,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                     DebugLogger.Log(
                         "JamlEditorTab",
-                        "Custom JAML dark mode syntax highlighting loaded"
+                        $"Custom JAML dark mode syntax highlighting loaded from {Path.GetFileName(xshdPath)}"
                     );
                 }
                 else
                 {
                     DebugLogger.LogError(
                         "JamlEditorTab",
-                        $"JamlDark.xshd not found at {xshdPath}, using default"
+                        $"Syntax highlighting files not found. Tried: {string.Join(", ", candidates.Select(Path.GetFileName))}. Using default highlighting."
                     );
                 }
             }

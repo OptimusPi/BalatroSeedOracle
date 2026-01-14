@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace BalatroSeedOracle.Services
     {
         private const string PROFILE_FILENAME = "userprofile.json";
         private readonly IAppDataStore _store;
+        private readonly IPlatformServices _platformServices;
         private readonly string _profileKey;
         private UserProfile _currentProfile;
         private DateTime _lastSaveLogTime = DateTime.MinValue;
@@ -28,14 +30,17 @@ namespace BalatroSeedOracle.Services
         private bool _hasPendingSave = false;
         private volatile bool _disposed = false;
 
-        public UserProfileService(IAppDataStore store)
+        public UserProfileService(IAppDataStore store, IPlatformServices platformServices)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
+            _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
             _profileKey = $"User/{PROFILE_FILENAME}";
 
             DebugLogger.Log("UserProfileService", $"Profile key: {_profileKey}");
 
-            _currentProfile = LoadProfile();
+            // Load profile synchronously in constructor (best-effort, will use defaults if fails)
+            // This is acceptable because constructor cannot be async, and we have async LoadUserProfileAsync for proper async loading
+            _currentProfile = LoadProfileSync();
 
             // Initialize debounce timer (not started yet)
             _debounceSaveTimer = new System.Timers.Timer(SaveDebounceMs)
@@ -53,9 +58,32 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Load the user profile asynchronously
         /// </summary>
-        public Task<UserProfile> LoadUserProfileAsync()
+        public async Task<UserProfile> LoadUserProfileAsync()
         {
-            return Task.FromResult(_currentProfile);
+            try
+            {
+                var json = await _store.ReadTextAsync(_profileKey).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    var profile = JsonSerializer.Deserialize<UserProfile>(json);
+                    if (profile != null)
+                    {
+                        _currentProfile = profile;
+                        DebugLogger.Log(
+                            "UserProfileService",
+                            $"Loaded profile for author: {profile.AuthorName}"
+                        );
+                        return profile;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("UserProfileService", $"Error loading profile: {ex.Message}");
+            }
+
+            // Return current profile (may be default from constructor)
+            return _currentProfile;
         }
 
         /// <summary>
@@ -175,23 +203,37 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Load profile from disk
+        /// Load profile from disk synchronously (for constructor use only)
         /// </summary>
-        private UserProfile LoadProfile()
+        private UserProfile LoadProfileSync()
         {
             try
             {
-                var json = _store.ReadTextAsync(_profileKey).GetAwaiter().GetResult();
-                if (!string.IsNullOrWhiteSpace(json))
+                // Use synchronous fallback for constructor - best effort only
+                // Proper async loading should use LoadUserProfileAsync()
+                if (!_platformServices.SupportsFileSystem)
                 {
-                    var profile = JsonSerializer.Deserialize<UserProfile>(json);
-                    if (profile != null)
+                    // Browser: async is required, but constructor can't be async
+                    // Use default profile and let async load happen later
+                    return new UserProfile();
+                }
+
+                // Desktop: can use synchronous file I/O as fallback
+                var profilePath = Path.Combine(Helpers.AppPaths.UserDir, PROFILE_FILENAME);
+                if (File.Exists(profilePath))
+                {
+                    var json = File.ReadAllText(profilePath);
+                    if (!string.IsNullOrWhiteSpace(json))
                     {
-                        DebugLogger.Log(
-                            "UserProfileService",
-                            $"Loaded profile for author: {profile.AuthorName}"
-                        );
-                        return profile;
+                        var profile = JsonSerializer.Deserialize<UserProfile>(json);
+                        if (profile != null)
+                        {
+                            DebugLogger.Log(
+                                "UserProfileService",
+                                $"Loaded profile for author: {profile.AuthorName}"
+                            );
+                            return profile;
+                        }
                     }
                 }
             }
@@ -308,8 +350,27 @@ namespace BalatroSeedOracle.Services
                     profileSnapshot,
                     new JsonSerializerOptions { WriteIndented = true }
                 );
-                _store.WriteTextAsync(_profileKey, json).GetAwaiter().GetResult();
-                ThrottledLogSaveSuccess();
+                // CRITICAL: FlushProfile is called from synchronous contexts (disposal, shutdown)
+                // Use synchronous file I/O on desktop, async on browser
+                if (!_platformServices.SupportsFileSystem)
+                {
+                    // Browser: must use async, but this is called from sync context
+                    // Fire-and-forget with best effort
+                    _ = _store.WriteTextAsync(_profileKey, json).ContinueWith(t =>
+                    {
+                        if (t.IsCompletedSuccessfully)
+                            ThrottledLogSaveSuccess();
+                        else
+                            DebugLogger.LogError("UserProfileService", $"Error in flush save: {t.Exception?.Message}");
+                    }, TaskContinuationOptions.ExecuteSynchronously);
+                }
+                else
+                {
+                    // Desktop: use synchronous file I/O for flush
+                    var profilePath = Path.Combine(Helpers.AppPaths.UserDir, PROFILE_FILENAME);
+                    File.WriteAllText(profilePath, json);
+                    ThrottledLogSaveSuccess();
+                }
             }
             catch (Exception ex)
             {

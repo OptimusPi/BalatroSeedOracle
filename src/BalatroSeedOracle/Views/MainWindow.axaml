@@ -35,7 +35,7 @@
                 BorderThickness="0,0,0,2">
             <Grid RowDefinitions="*,Auto">
                 <!-- Main content -->
-                <local:BalatroMainMenu Grid.Row="0" x:Name="MainMenu" />
+                <ContentControl Grid.Row="0" x:Name="MainMenuHost" />
 
                 <!-- Attribution line (hidden in Vibe Out Mode) -->
                 <Border Grid.Row="1"
@@ -47,7 +47,7 @@
                             Spacing="5">
                     <TextBlock Classes="attribution"
                                Text="Not affiliated with LocalThunk or Playstack • "/>
-                    <TextBlock Name="BuyBalatroLink"
+                    <TextBlock x:Name="BuyBalatroLink"
                                Classes="attribution-link"
                                Text="Buy Balatro"/>
                     <TextBlock Classes="attribution" Text=" • "/>

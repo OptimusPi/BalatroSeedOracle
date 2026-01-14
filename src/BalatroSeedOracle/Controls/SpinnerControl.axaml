@@ -110,7 +110,7 @@
         
         <!-- Label -->
         <TextBlock Grid.Row="0"
-                   Name="LabelText"
+                   x:Name="LabelText"
                    Classes="spinner-label"
                    Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
         
@@ -126,7 +126,7 @@
             
             <!-- Left arrow -->
             <Button Grid.Column="0"
-                    Name="DecrementButton"
+                    x:Name="DecrementButton"
                     Classes="arrow-button"
                     Content="&lt;"
                     Click="OnDecrementClick"/>
@@ -140,17 +140,17 @@
                         Height="27"
                         Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
-                <Button Name="ValueButton"
+                <Button x:Name="ValueButton"
                         Classes="value-badge"
                         HorizontalAlignment="Stretch"
                         Click="OnValueButtonClick">
                     <Grid>
                         <!-- Display mode -->
-                        <TextBlock Name="ValueText"
+                        <TextBlock x:Name="ValueText"
                                    Classes="value-text"
                                    IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <!-- Edit mode -->
-                        <TextBox Name="ValueEdit"
+                        <TextBox x:Name="ValueEdit"
                                  Classes="value-text"
                                  Background="Transparent"
                                  BorderThickness="0"
@@ -165,7 +165,7 @@
             
             <!-- Right arrow -->
             <Button Grid.Column="4"
-                    Name="IncrementButton"
+                    x:Name="IncrementButton"
                     Classes="arrow-button"
                     Content="&gt;"
                     Click="OnIncrementClick"/>

@@ -95,18 +95,22 @@ namespace BalatroSeedOracle.Components
                     return;
                 }
 
-                #if !BROWSER
-                var analyzeModal = new AnalyzeModal();
-                analyzeModal.SetSeedAndAnalyze(seed);
+                var platformServices = ServiceHelper.GetService<IPlatformServices>();
+                if (platformServices?.SupportsAnalyzer == true)
+                {
+                    var analyzeModal = new AnalyzeModal();
+                    analyzeModal.SetSeedAndAnalyze(seed);
 
-                var stdModal = new StandardModal("ANALYZE");
-                stdModal.SetContent(analyzeModal);
-                stdModal.BackClicked += (s, _) => mainMenu.HideModalContent();
-                mainMenu.ShowModalContent(stdModal, "SEED ANALYZER");
-#else
-                // Analyzer not available in browser
-                return;
-#endif
+                    var stdModal = new StandardModal("ANALYZE");
+                    stdModal.SetContent(analyzeModal);
+                    stdModal.BackClicked += (s, _) => mainMenu.HideModalContent();
+                    mainMenu.ShowModalContent(stdModal, "SEED ANALYZER");
+                }
+                else
+                {
+                    // Analyzer not available in browser
+                    return;
+                }
             }
             catch (Exception ex)
             {

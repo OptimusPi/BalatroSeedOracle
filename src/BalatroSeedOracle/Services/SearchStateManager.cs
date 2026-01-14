@@ -16,10 +16,12 @@ namespace BalatroSeedOracle.Services
     public class SearchStateManager
     {
         private readonly IDuckDBService _duckDB;
+        private readonly IPlatformServices _platformServices;
 
-        public SearchStateManager(IDuckDBService duckDB)
+        public SearchStateManager(IDuckDBService duckDB, IPlatformServices platformServices)
         {
             _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
+            _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
         }
 
         // Static blocking methods removed - all callers now use async versions
@@ -33,16 +35,17 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-#if !BROWSER
-                if (string.IsNullOrEmpty(filterDbPath) || !File.Exists(filterDbPath))
+                if (_platformServices.SupportsFileSystem)
                 {
-                    DebugLogger.Log(
-                        "SearchStateManager",
-                        $"Database file not found: {filterDbPath}"
-                    );
-                    return null;
+                    if (string.IsNullOrEmpty(filterDbPath) || !File.Exists(filterDbPath))
+                    {
+                        DebugLogger.Log(
+                            "SearchStateManager",
+                            $"Database file not found: {filterDbPath}"
+                        );
+                        return null;
+                    }
                 }
-#endif
 
                 var connectionString = _duckDB.CreateConnectionString(filterDbPath);
                 await using var connection = await _duckDB.OpenConnectionAsync(connectionString);

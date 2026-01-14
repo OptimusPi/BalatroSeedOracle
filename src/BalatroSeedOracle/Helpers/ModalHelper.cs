@@ -294,7 +294,6 @@ namespace BalatroSeedOracle.Helpers
             return menu.ShowModal("CREDITS", creditsView);
         }
 
-#if !BROWSER
         /// <summary>
         /// Creates and shows the advanced audio visualizer settings modal
         /// Note: The ViewModel handles settings persistence; MainMenu handles applying to shader
@@ -307,7 +306,6 @@ namespace BalatroSeedOracle.Helpers
             var modal = new StandardModal();
             return modal;
         }
-#endif
 
         /// <summary>
         /// Shows a simple text input dialog and returns the entered text

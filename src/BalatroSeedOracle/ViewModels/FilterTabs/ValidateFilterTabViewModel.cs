@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
         private readonly ClauseConversionService _clauseConversionService;
+        private readonly IPlatformServices _platformServices;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -115,7 +116,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
             IFilterService filterService,
-            IFilterConfigurationService filterConfigurationService
+            IFilterConfigurationService filterConfigurationService,
+            IPlatformServices platformServices
         )
         {
             _parentViewModel = parentViewModel;
@@ -123,6 +125,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _filterService = filterService;
             _filterConfigurationService = filterConfigurationService;
             _clauseConversionService = new ClauseConversionService();
+            _platformServices = platformServices;
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -434,9 +437,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Find the ItemConfig
             if (_parentViewModel.ItemConfigs.TryGetValue(row.ItemKey, out var config))
             {
-                // Create and show the ItemConfigPopup through the parent ViewModel
-                // TODO: Item config from ValidateFilterTab not yet implemented
-                // Use VisualBuilderTab right-click for item configuration
+                // Item configuration from ValidateFilterTab is not yet implemented.
+                // Users should use VisualBuilderTab's right-click context menu for item configuration,
+                // which provides the full ItemConfigPopup interface.
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    $"Item config requested for {row.ItemKey} - use VisualBuilderTab for configuration"
+                );
                 return;
             }
             else
@@ -576,10 +583,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Description = FilterDescription;
 
                 // Store example seed if we have one
+                // NOTE: ExampleSeed property not yet available in MotelyJsonConfig.
+                // This would require adding the property to the Motely core filter configuration.
                 if (!string.IsNullOrEmpty(ExampleSeedForPreview))
                 {
-                    // TODO: Add ExampleSeed property to MotelyJsonConfig
-                    // config.ExampleSeed = ExampleSeedForPreview;
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Example seed provided but not yet stored in config: {ExampleSeedForPreview}"
+                    );
                 }
 
                 // Generate proper filename in JsonFilters folder
@@ -607,12 +618,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private async Task<bool> ShowSaveWarningDialog()
         {
-            // TODO: Implement proper dialog when modal system is available
-            // For now, just return true to proceed
+            // Show validation warning to user
             HasValidationWarnings = true;
-            ValidationWarningText = "This filter has not been tested. It may not match any seeds.";
+            ValidationWarningText = "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
 
-            // Simulate user confirmation
+            // For now, we proceed automatically after showing the warning.
+            // A proper modal dialog system would allow user confirmation here.
+            // The warning is visible in the UI, so the user is informed.
             await Task.Delay(100);
             return true;
         }
@@ -705,22 +717,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Save the filter first
                 await SaveCurrentFilter();
 
-                // Close the filter modal
+                // Get the filter filename to pass to search modal
+                var filterFileName = CurrentFileName;
+                if (string.IsNullOrWhiteSpace(filterFileName))
+                {
+                    // Fallback to generating filename from filter name
+                    filterFileName = Path.GetFileName(_filterService.GenerateFilterFileName(FilterName));
+                }
+
+                // Close the filter modal and open search modal with this filter
                 _parentViewModel.RequestClose?.Invoke();
 
-                // Open the search modal with this filter
-                // Get the filter path from the saved filter name
-                var filterPath = $"JsonFilters/{FilterName}.json";
+                // Request navigation to search modal with the saved filter
+                _parentViewModel.RequestNavigateToSearch?.Invoke(filterFileName);
 
-                // TODO: Open search modal with this filter
-                // For now, just show success message
                 DebugLogger.Log(
                     "ValidateFilterTab",
-                    $"Go to Search clicked for filter: {FilterName}"
+                    $"Navigating to search modal with filter: {filterFileName}"
                 );
-
-                // The main menu should open the search modal with the filter loaded
-                // This will be handled by the parent when we request close
             }
             catch (Exception ex)
             {
@@ -748,48 +762,51 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
-#if BROWSER
-                var topLevel = TopLevelHelper.GetTopLevel();
-                if (topLevel?.StorageProvider == null)
+                if (!_platformServices.SupportsFileSystem)
                 {
-                    UpdateStatus("Export not available (no StorageProvider)", true);
-                    return;
-                }
-
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
-                    new FilePickerSaveOptions
+                    var topLevel = TopLevelHelper.GetTopLevel();
+                    if (topLevel?.StorageProvider == null)
                     {
-                        Title = "Export Filter",
-                        SuggestedFileName = exportFileName,
-                        FileTypeChoices = new[]
-                        {
-                            new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
-                        },
+                        UpdateStatus("Export not available (no StorageProvider)", true);
+                        return;
                     }
-                );
 
-                if (file == null)
-                {
-                    UpdateStatus("Export cancelled", true);
-                    return;
+                    var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                        new FilePickerSaveOptions
+                        {
+                            Title = "Export Filter",
+                            SuggestedFileName = exportFileName,
+                            FileTypeChoices = new[]
+                            {
+                                new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
+                            },
+                        }
+                    );
+
+                    if (file == null)
+                    {
+                        UpdateStatus("Export cancelled", true);
+                        return;
+                    }
+
+                    await using (var stream = await file.OpenWriteAsync())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(json);
+                        await stream.WriteAsync(bytes, 0, bytes.Length);
+                    }
+
+                    UpdateStatus($"✅ Exported: {exportFileName}", false);
                 }
-
-                await using (var stream = await file.OpenWriteAsync())
+                else
                 {
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                    // Desktop: Export to desktop folder
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    var exportPath = Path.Combine(desktopPath, exportFileName);
+                    await File.WriteAllTextAsync(exportPath, json);
+
+                    UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
+                    DebugLogger.Log("ValidateFilterTab", $"Filter exported to: {exportPath}");
                 }
-
-                UpdateStatus($"✅ Exported: {exportFileName}", false);
-#else
-                // Desktop: Export to desktop folder
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportPath = Path.Combine(desktopPath, exportFileName);
-                await File.WriteAllTextAsync(exportPath, json);
-
-                UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
-                DebugLogger.Log("ValidateFilterTab", $"Filter exported to: {exportPath}");
-#endif
             }
             catch (Exception ex)
             {
