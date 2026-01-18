@@ -1,34 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Shared library - multi-target for desktop and browser -->
-    <TargetFrameworks>net10.0;net10.0-browser</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Shared library - single target (platform-specific code moved to head projects) -->
+    <TargetFramework>net10.0</TargetFramework>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
-    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced projects -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Product>Balatro Seed Oracle</Product>
-    <Company>OptimusPi</Company>
-    <Copyright>Copyright 2025</Copyright>
-    <Version>2.0.0</Version>
-    <FileVersion>2.0.0</FileVersion>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <!-- Enable more warnings for code quality -->
-    <AnalysisMode>Default</AnalysisMode>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <!-- Relax warnings for browser build (many APIs unsupported) -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- CA1416: platform compatibility, CS0067: unused events in browser stubs -->
-    <NoWarn>$(NoWarn);CA1416;CS0067</NoWarn>
-    <!-- Disable HotReload for browser builds -->
-    <WasmEnableHotReload>false</WasmEnableHotReload>
-  </PropertyGroup>
+
+  <!-- Apply license key from Directory.Build.props for Avalonia Accelerate components -->
+  <ItemGroup>
+    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" Condition="'$(AvaloniaUILicenseKey)' != ''" />
+  </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
@@ -69,11 +50,13 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Svg" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Avalonia.Fonts.Inter" />
-    <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
+    <!-- Avalonia Accelerate Components -->
+    <PackageReference Include="Avalonia.Controls.TreeDataGrid" />
+    <PackageReference Include="Avalonia.Controls.Markdown" />
+    <PackageReference Include="Avalonia.Controls.WebView" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
@@ -86,79 +69,52 @@
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
   <!-- Desktop-only packages (native dependencies that don't work in browser) -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+  <ItemGroup>
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="ClosedXML" />
   </ItemGroup>
-  <!-- Define BROWSER constant for conditional compilation -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
-    <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
-  </PropertyGroup>
-  <!-- Browser-specific packages -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
-    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
-    <PackageReference Include="YamlDotNet" />
-    <PackageReference Include="SoundFlow" />
-  </ItemGroup>
-  <!-- Exclude desktop-only files from browser build -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
-    <!-- Windows that use desktop-only features -->
+  <!-- Note: Browser-specific packages are now in BalatroSeedOracle.Browser project -->
+  <!-- Note: Platform-specific file exclusions are now handled in head projects -->
+  <!-- Exclude platform-specific files that are entirely wrapped in #if directives -->
+  <ItemGroup>
+    <!-- Desktop-only files (entire file wrapped in #if !BROWSER) -->
     <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
     <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
-    <None Include="Windows\DataGridResultsWindow.axaml" />
-    <!-- ResultsTab uses ClosedXML and DataGridResultsWindow -->
-    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" />
-    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" />
-    <None Include="Views\SearchModalTabs\ResultsTab.axaml" />
-    <!-- HostApiWidget: use browser stub instead of full implementation -->
-    <Compile Remove="ViewModels\HostApiWidgetViewModel.cs" />
-    <Compile Remove="Components\Widgets\HostApiWidget.axaml.cs" />
-    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.axaml" />
-    <None Include="Components\Widgets\HostApiWidget.axaml" />
-    <!-- Also exclude any BrowserHostApiWidget to avoid conflicts -->
-    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
-    <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
-    <!-- FertilizerService now supports browser via DuckDB-WASM -->
-    <!-- Remove browser stub since real widget now works in browser -->
-    <Compile Remove="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
-    <AvaloniaXaml Remove="Components\Widgets\FertilizerWidget.Browser.axaml" />
-    <None Include="Components\Widgets\FertilizerWidget.Browser.axaml" />
-    <None Include="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
-    <!-- Desktop-only controls using PackIconMaterial or DataGrid sorting -->
-    <Compile Remove="Controls\MaximizeButton.axaml.cs" />
-    <AvaloniaXaml Remove="Controls\MaximizeButton.axaml" />
-    <None Include="Controls\MaximizeButton.axaml" />
-    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" />
-    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" />
-    <None Include="Controls\SortableResultsGrid.axaml" />
-    <Compile Remove="Converters\BoolToExpandIconConverter.cs" />
-    <!-- AudioVisualizerSettingsModal is desktop-only -->
-    <Compile Remove="Views\Modals\AudioVisualizerSettingsModal.axaml.cs" />
-    <AvaloniaXaml Remove="Views\Modals\AudioVisualizerSettingsModal.axaml" />
-    <None Include="Views\Modals\AudioVisualizerSettingsModal.axaml" />
-  </ItemGroup>
-  <!-- Browser stubs are auto-included by SDK, but exclude from desktop/Android/iOS builds -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <Compile Remove="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
-    <AvaloniaXaml Remove="Components\Widgets\HostApiWidget.Browser.axaml" />
-    <None Include="Components\Widgets\HostApiWidget.Browser.axaml" />
-    <None Include="Components\Widgets\HostApiWidget.Browser.axaml.cs" />
-    <Compile Remove="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
-    <AvaloniaXaml Remove="Components\Widgets\FertilizerWidget.Browser.axaml" />
-    <None Include="Components\Widgets\FertilizerWidget.Browser.axaml" />
-    <None Include="Components\Widgets\FertilizerWidget.Browser.axaml.cs" />
-    <!-- Exclude browser DuckDB implementations (use DesktopDuckDBService for Android/iOS) -->
-    <Compile Remove="Services\DuckDB\BrowserDuckDBService.cs" />
-    <Compile Remove="Services\DuckDB\BrowserDuckDBConnection.cs" />
-    <Compile Remove="Services\DuckDB\BrowserDuckDBAppender.cs" />
-    <None Include="Services\DuckDB\BrowserDuckDBService.cs" />
-    <None Include="Services\DuckDB\BrowserDuckDBConnection.cs" />
-    <None Include="Services\DuckDB\BrowserDuckDBAppender.cs" />
+    <Compile Remove="Services\SoundFlowAudioManager.cs" />
+    <!-- Desktop-only ViewModels that reference desktop-only types -->
+    <Compile Remove="ViewModels\AudioMixerWidgetViewModel.cs" />
+    <Compile Remove="ViewModels\MusicMixerWidgetViewModel.cs" />
+    <Compile Remove="ViewModels\AudioVisualizerSettingsWidgetViewModel.cs" />
+    <Compile Remove="ViewModels\FrequencyDebugWidgetViewModel.cs" />
+    <Compile Remove="ViewModels\SearchWidgetViewModel.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <!-- Desktop-only widget code-behind files that reference desktop-only ViewModels -->
+    <Compile Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml.cs" />
+    <Compile Remove="Components\Widgets\FrequencyDebugWidget.axaml.cs" />
+    <Compile Remove="Components\Widgets\MusicMixerWidget.axaml.cs" />
+    <Compile Remove="Components\Widgets\AudioMixerWidget.axaml.cs" />
+    <Compile Remove="Components\Widgets\SearchWidget.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <!-- Desktop-only widget XAML files -->
+    <AvaloniaXaml Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml" />
+    <AvaloniaXaml Remove="Components\Widgets\FrequencyDebugWidget.axaml" />
+    <AvaloniaXaml Remove="Components\Widgets\MusicMixerWidget.axaml" />
+    <AvaloniaXaml Remove="Components\Widgets\AudioMixerWidget.axaml" />
+    <AvaloniaXaml Remove="Components\Widgets\SearchWidget.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <!-- Desktop-only components (not available in Browser/WASM) -->
+    <Compile Remove="Components\WebView\ExternalContentModal.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <AvaloniaXaml Remove="Components\WebView\ExternalContentModal.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile Remove="Services\Platforms\FileSystemDuckDBService.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <!-- Browser-only files (entire file wrapped in #if BROWSER) -->
+    <Compile Remove="Services\Storage\LocalStorageTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
-    <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" />
+    <!-- Motely.API referenced from platform-specific projects (Desktop) that need it -->
   </ItemGroup>
   <ItemGroup>
     <!-- Explicitly exclude external folder from publish -->
