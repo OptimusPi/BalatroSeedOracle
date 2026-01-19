@@ -25,15 +25,26 @@ git clone --recurse-submodules https://github.com/OptimusPi/BalatroSeedOracle.gi
 
 ## Common Operations
 
-### Update Submodule to Latest
+### Update Submodule to Tracked Commit
 
 ```bash
-# Fetch and update to tracked commit
+# Safe: Update to the commit tracked by parent repo
 git submodule update --init --recursive
+```
 
-# Update to latest from remote branch
+### ⚠️ DANGEROUS: Update to Latest Remote
+
+```bash
+# DANGEROUS - Changes the tracked commit pointer!
+# Only use with explicit user approval
 git submodule update --init --recursive --remote
 ```
+
+**Why `--remote` is dangerous:**
+- Changes the submodule to the latest commit on its remote branch
+- This changes the commit pointer tracked by the parent repo
+- May introduce breaking API changes unexpectedly
+- Requires explicit user approval before using
 
 ### After Pulling Changes
 

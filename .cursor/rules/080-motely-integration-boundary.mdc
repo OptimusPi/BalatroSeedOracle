@@ -71,6 +71,35 @@ ISearchEngine engine = new MotelyAdapter(...);
 - Vendor Motely binaries
 - Modify files inside `external/Motely/` (contribute upstream instead)
 
+## ⚠️ CRITICAL: Submodule Commit Pointer Safety
+
+**NEVER change the submodule commit pointer without explicit user approval.**
+
+The parent repo tracks a specific Motely commit. Changing this pointer can introduce breaking API changes.
+
+**Safe operations:**
+```bash
+# Reset to tracked commit (safe - restores to what parent expects)
+git submodule update --init --recursive
+
+# Check status (safe - read-only)
+git submodule status
+```
+
+**Dangerous operations requiring user approval:**
+```bash
+# DANGEROUS: --remote changes the tracked commit!
+git submodule update --remote  # ❌ Never use without approval
+
+# DANGEROUS: Pulling inside submodule changes pointer
+cd external/Motely && git pull  # ❌ Never use without approval
+```
+
+**Before ANY submodule operation:**
+1. Run `git submodule status` to record current state
+2. After operation, verify the commit hasn't changed unexpectedly
+3. If commit changed unintentionally, reset with `git submodule update --init --recursive`
+
 ```csharp
 // ✅ Good - Nullable Motely types with checks
 private MotelyJsonConfig? _currentConfig;
