@@ -1,21 +1,68 @@
 # Balatro Seed Oracle
 
+[![Build Browser](https://github.com/OptimusPi/BalatroSeedOracle/actions/workflows/build-browser.yml/badge.svg)](https://github.com/OptimusPi/BalatroSeedOracle/actions/workflows/build-browser.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
+
 Search millions of Balatro seeds to find the perfect runs for your strategies.
 
-## Docs
+## Project Status
 
-- See `docs/INDEX.md` for the current documentation index and cleanup plan.
+**Active Development** - This project is actively maintained and welcomes contributions.
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and [GitHub Releases](https://github.com/OptimusPi/BalatroSeedOracle/releases) for downloads.
 
 ## What is this?
 
 Balatro Seed Oracle helps you find specific Balatro seeds based on detailed criteria:
 
 - **Find exact joker combinations** - Blueprint + Brainstorm in specific antes
-- **Locate rare voucher chains** - Telescope → Observatory progressions  
+- **Locate rare voucher chains** - Telescope → Observatory progressions
 - **Hunt for soul jokers** - Negative Perkeo with specific pack requirements
 - **Search for perfect setups** - Specific bosses, tags, spectral cards, etc.
 
 Built for the Balatro community to discover optimal seeds for challenge runs, high scores, and specific strategies.
+
+## Architecture
+
+```mermaid
+graph TB
+    subgraph ui [UI Layer]
+        Desktop[Desktop App<br/>Windows/macOS/Linux]
+        Browser[Browser App<br/>WASM]
+    end
+    
+    subgraph core [Core Application]
+        ViewModels[ViewModels<br/>MVVM Pattern]
+        Services[Services<br/>Business Logic]
+    end
+    
+    subgraph data [Data Layer]
+        DuckDB[(DuckDB<br/>Results Storage)]
+    end
+    
+    subgraph engine [Search Engine]
+        Motely[Motely Submodule<br/>Vectorized Search]
+    end
+    
+    Desktop --> ViewModels
+    Browser --> ViewModels
+    ViewModels --> Services
+    Services --> DuckDB
+    Services --> Motely
+    Motely --> DuckDB
+    
+    style ui fill:#e1f5ff
+    style core fill:#fff4e1
+    style data fill:#f0e1ff
+    style engine fill:#e1ffe1
+```
+
+**Key Components:**
+- **Avalonia UI**: Cross-platform desktop and browser framework
+- **MVVM Pattern**: Clean separation of UI and business logic
+- **DuckDB**: Fast analytical database for search results
+- **Motely**: High-performance vectorized seed search engine
 
 ## Installation
 
@@ -41,7 +88,7 @@ Either click the green button in the upper-right of this page and download in yo
 ```sh
 git clone https://github.com/OptimusPi/BalatroSeedOracle.git
 cd BalatroSeedOracle
-dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
+dotnet run -c Release --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 ## Initialize the git Submodule
@@ -56,17 +103,62 @@ git submodule update --init --recursive
 
 ## Run the Balatro Seed Oracle GUI Application
 
-If you are making code changes on your own fork for example, you can specify Debug build configuration.
-NOTE: This searches a *lot* slower than release version!
+### Using Taskfile (Recommended)
+
+Install [go-task](https://taskfile.dev/):
 
 ```sh
-dotnet run -c Debug --project ./src/BalatroSeedOracle.csproj
+# macOS
+brew install go-task
+
+# Windows/Linux - see https://taskfile.dev/installation/
+```
+
+Common commands:
+
+```sh
+# One-time setup (submodules, tools, packages)
+task setup
+
+# Run desktop app (Release - fast)
+task run:desktop
+
+# Run desktop app (Debug - for debugging)
+task run:desktop:debug
+
+# Run browser/WASM app
+task run:browser
+
+# Publish browser app
+task publish:browser
+task publish:browser:threaded
+
+# Format code
+task format
+
+# Run tests
+task test
+
+# Clean build artifacts
+task clean
+
+# List all available tasks
+task --list
+```
+
+### Using dotnet directly
+
+If you are making code changes on your own fork for example, you can specify Debug build configuration.
+NOTE: This searches a _lot_ slower than release version!
+
+```sh
+dotnet run -c Debug --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 To run the optimized release build:
 
 ```sh
-dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
+dotnet run -c Release --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
 ```
 
 ## Browser Build, SIMD and Threads
@@ -83,110 +175,38 @@ dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
   - Recommended hosts: nginx, Caddy, Apache (reverse proxy adding headers), or any static server capable of injecting headers.
   - Avoid GitHub Pages for threaded builds (no COOP/COEP support).
 
+## Creating Filters
+
+Use the in-app visual filter designer to create complex filters, or write them manually in JSON/JAML format.
+
+**See [docs/FILTERS.md](docs/FILTERS.md) for detailed filter configuration guide.**
+
+Quick example:
+- Visual editor with drag-and-drop criteria
+- JSON/JAML configuration files
+- Advanced features: pack slots, shop positions, editions, complex logic
+
 ## Using the Command Line Interface
 
-For advanced users who prefer CLI usage, the bundled **MotelyJAML** search engine supports command-line operation with JSON/JAML filters, native C# filters, and seed analysis.
+For advanced users, the bundled **MotelyJAML** search engine supports command-line operation.
 
 **See the [MotelyJAML README](./external/Motely/README.md) for complete CLI documentation.**
 
 Quick CLI example:
+
 ```bash
 cd ./external/Motely
 dotnet run -- --help
 ```
 
-## Creating Filters
-
-### Visual Editor
-Use the in-app visual filter designer to create complex filters by dragging and dropping criteria.
-
-### JSON Configuration
-Create custom filters manually:
-
-```json
-{
-  "name": "Negative Perkeo Hunt",
-  "description": "Find seeds with Negative Perkeo and Telescope",
-  "mode": "sum", // optional: "sum" (default) or "max"
-  "deck": "Red", 
-  "stake": "White",
-  "must": [
-    {
-      "type": "Voucher",
-      "value": "Telescope", 
-      "antes": [1, 2]
-    },
-    {
-      "type": "SoulJoker",
-      "value": "Perkeo",
-      "edition": "Negative",
-      "antes": [1, 2, 3]
-    }
-  ],
-  "should": [
-    {
-      "type": "Joker", 
-      "value": "Blueprint",
-      "antes": [2, 3, 4],
-      "score": 10
-    }
-  ]
-}
-```
-
-### Filter Types
-
-- **Vouchers**: `Telescope`, `Observatory`, `Hieroglyph`, etc.
-- **Soul Jokers**: `Perkeo`, `Triboulet`, `Canio`, `Chicot`, etc.
-- **Regular Jokers**: `Blueprint`, `Brainstorm`, `Showman`, etc.
-- **Tarot Cards**: `TheFool`, `TheWorld`, `Death`, etc.
-- **Spectral Cards**: `Ankh`, `Soul`, `Wraith`, etc.
-- **Planet Cards**: `Jupiter`, `Mars`, `Venus`, etc.  
-- **Playing Cards**: Specific ranks/suits with seals/editions
-- **Boss Blinds**: `TheGoad`, `CeruleanBell`, `TheOx`, etc.
-- **Tags**: `NegativeTag`, `SpeedTag`, `RareTag`, etc.
-
-### Advanced Features
-
-- **Pack slot targeting**: Find items in specific booster pack positions
-- **Shop slot filtering**: Target specific shop positions
-- **Edition requirements**: Negative, Polychrome, Foil editions
-- **Multiple clause logic**: Complex AND/OR requirements
-
 ## Performance
 
 - **Multi-threaded search** - Utilizes all CPU cores
-- **SIMD vectorization** - Hardware-accelerated filtering
+- **SIMD vectorization** - Hardware-accelerated filtering (AVX2/AVX512)
 - **Smart caching** - Optimized for repeated searches
 - **Batch processing** - Configurable search chunk sizes
 
 Typical speeds: 10-50 million seeds per second depending on filter complexity.
-
-## Scoring Modes
-
-- `mode`: Controls how scores from `should` clauses are aggregated.
-- Supported values: `sum` (default), `max`, `max_count`, `maxcount`.
-- Behavior:
-  - `sum`: Adds `count * score` for each `should` clause.
-  - `max`: Uses the maximum raw occurrence `count` across all `should` clauses (per-clause `score` is ignored).
-- Notes:
-  - `minScore` in the Search modal is compared against the aggregated value from the selected mode.
-  - Negative `score` values are allowed; they only affect `sum` mode.
-
-Example using max aggregation:
-
-```json
-{
-  "name": "Tarot or Planet Rush",
-  "mode": "max",
-  "should": [
-    { "type": "TarotCard", "value": "TheFool", "antes": [1,2,3], "score": 5 },
-    { "type": "PlanetCard", "value": "Jupiter", "antes": [1,2,3], "score": 50 }
-  ]
-}
-```
-
-In this example, even though `PlanetCard` has higher `score`, `mode: max` ignores `score` and takes the higher raw occurrence count between the two clauses.
 
 ## File Structure
 
@@ -195,31 +215,42 @@ In this example, even though `PlanetCard` has higher `score`, `mode: max` ignore
 - `JsonFilters/` & `JamlFilters/` - Pre-made filter configurations
 - `SearchResults/` - Database files with search results
 
+## Maintainers
+
+- **[@OptimusPi](https://github.com/OptimusPi)** (pifreak) - Project Lead
+
 ## Contributing
 
-This is a community project. Contributions welcome:
+This is a community project and we welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
-- **New filter configurations** - Share effective seed hunt strategies
-- **Performance improvements** - Optimization suggestions
-- **Bug reports** - Issues with specific filters or seeds
-- **Feature requests** - Additional filtering capabilities
+Quick links:
+- [How to contribute](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Code of conduct](https://github.com/OptimusPi/BalatroSeedOracle/blob/main/CODE_OF_CONDUCT.md) (if available)
 
 ## Technical Details
 
 Built on:
 
 - **.NET 10 / C# 14** - Modern C# with high performance features
-- **Avalonia UI** - Cross-platform desktop framework  
+- **Avalonia UI** - Cross-platform desktop framework
 - **DuckDB** - Fast analytical database for results
 - **Motely** - Custom vectorized Balatro seed analysis engine
 
 The search engine uses advanced vectorized operations to achieve high throughput when analyzing millions of seed combinations.
 
+## Documentation
+
+- [Filter Configuration Guide](docs/FILTERS.md) - Detailed filter creation and configuration
+- [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to the project
+- [Security Policy](SECURITY.md) - Reporting vulnerabilities
+- [Changelog](CHANGELOG.md) - Version history and release notes
+
 ## Support
 
 - **Discord**: Balatro community server (#tools channel)
-- **Issues**: Open GitHub issues for bugs/requests
-- **Wiki**: Check project wiki for advanced usage
+- **Issues**: [GitHub Issues](https://github.com/OptimusPi/BalatroSeedOracle/issues) for bugs/requests
+- **Discussions**: [GitHub Discussions](https://github.com/OptimusPi/BalatroSeedOracle/discussions) for questions
 
 ## License
 
@@ -227,4 +258,4 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ---
 
-*Built by pifreak for the Balatro community*
+_Built by pifreak for the Balatro community_

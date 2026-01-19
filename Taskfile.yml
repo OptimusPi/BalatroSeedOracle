@@ -1,0 +1,114 @@
+version: '3'
+
+vars:
+  BSO_PROJECT: ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
+  BROWSER_PROJECT: ./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+  SOLUTION: ./BalatroSeedOracle.sln
+
+tasks:
+  submodule:init:
+    desc: Initialize git submodules (Motely)
+    cmds:
+      - git submodule update --init --recursive
+
+  tool:restore:
+    desc: Restore .NET local tools (CSharpier, etc.)
+    cmds:
+      - dotnet tool restore
+
+  restore:
+    desc: Restore NuGet packages for solution
+    cmds:
+      - dotnet restore {{.SOLUTION}}
+
+  setup:
+    desc: One-time setup - submodules, tools, packages, and formatting hooks
+    deps:
+      - submodule:init
+      - tool:restore
+      - restore
+    cmds:
+      - echo "✅ Submodules, tools, and packages restored!"
+      - echo ""
+      - echo "📋 One-time setup for formatting hooks:"
+      - echo "  macOS:"
+      - echo "    brew install lefthook dprint"
+      - echo "  Windows/Linux:"
+      - echo "    See https://github.com/evilmartians/lefthook#installation"
+      - echo "    See https://dprint.dev/install/"
+      - echo ""
+      - echo "  Then install git hooks:"
+      - echo "    lefthook install"
+      - echo ""
+      - echo "🚀 Ready to run! Try 'task run:desktop' or 'task run:browser'"
+
+  run:desktop:
+    desc: Run desktop app (Release - fast)
+    cmds:
+      - dotnet run -c Release --project {{.BSO_PROJECT}}
+
+  run:desktop:debug:
+    desc: Run desktop app (Debug - with breakpoints)
+    cmds:
+      - dotnet run -c Debug --project {{.BSO_PROJECT}}
+
+  run:browser:
+    desc: Run browser/WASM app (Debug dev server)
+    cmds:
+      - dotnet run -c Debug --project {{.BROWSER_PROJECT}}
+
+  publish:browser:
+    desc: Publish browser/WASM app (Release, non-threaded)
+    cmds:
+      - dotnet publish -c Release {{.BROWSER_PROJECT}}
+      - echo ""
+      - echo "✅ Published to ./src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/browser-wasm/AppBundle/"
+
+  publish:browser:threaded:
+    desc: Publish browser/WASM app (Release, with threads)
+    cmds:
+      - dotnet publish -c Release -p:EnableWasmThreads=true {{.BROWSER_PROJECT}}
+      - echo ""
+      - echo "✅ Published to ./src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/browser-wasm/AppBundle/"
+      - echo ""
+      - echo "⚠️  Threaded build requires COOP/COEP headers:"
+      - echo "    Cross-Origin-Opener-Policy - same-origin"
+      - echo "    Cross-Origin-Embedder-Policy - require-corp"
+
+  format:csharp:
+    desc: Format C# files (scoped to ./src)
+    cmds:
+      - dotnet csharpier format ./src --config-path .config/csharpierrc
+
+  format:other:
+    desc: Format Markdown/YAML/JSON files
+    preconditions:
+      - sh: command -v dprint
+        msg: "dprint not found - install via 'brew install dprint' or see https://dprint.dev/install/"
+    cmds:
+      - dprint fmt --config .config/dprint.json
+
+  format:
+    desc: Format all files (C#, Markdown, YAML, JSON)
+    deps:
+      - format:csharp
+      - format:other
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - dotnet clean {{.SOLUTION}}
+      - cmd: pwsh ./clean.ps1
+        ignore_error: true
+      - echo ""
+      - echo "💡 For deeper clean, run 'pwsh ./clean.ps1' manually"
+
+  test:
+    desc: Run tests (Release configuration)
+    cmds:
+      - dotnet test {{.SOLUTION}} -c Release
+
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
