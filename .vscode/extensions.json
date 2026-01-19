@@ -1,0 +1,21 @@
+{
+    // Workspace recommended extensions for BalatroSeedOracle
+    // Based on: .local/plans/cursor-extensions-plan-2026-01-19.md
+    "recommendations": [
+        // .NET / C# (Core)
+        "ms-dotnettools.csharp",           // C# language services, navigation, diagnostics
+        "ms-dotnettools.csdevkit",         // Project/solution handling, testing, tooling UX
+
+        // Avalonia / XAML
+        "avaloniateam.vscode-avalonia",    // XAML authoring for Avalonia
+
+        // YAML / JSON / Markdown
+        "redhat.vscode-yaml",              // GitHub Actions workflows, YAML configs
+        "yzhang.markdown-all-in-one",      // Markdown editing for .md docs
+        "editorconfig.editorconfig",       // Consistent formatting across editors
+
+        // Optional but helpful
+        "eamodio.gitlens"                  // Git history/blame for tracking changes
+    ],
+    "unwantedRecommendations": []
+}
