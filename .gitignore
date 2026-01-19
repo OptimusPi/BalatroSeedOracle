@@ -65,7 +65,6 @@ userprofile.json
 *.csv
 /.claude
 /.specify
-/.cursor/commands/*.md
 nul
 *.log
 
@@ -86,4 +85,10 @@ fertilizer.db.wal
 build_log.txt
 /published_browser
 /src/BalatroSeedOracle.Browser/Motely.API/wwwroot/BSO
+
+# Local files
 .local
+
+# Includes
+!.cursor/
+!.cursor/**/*
