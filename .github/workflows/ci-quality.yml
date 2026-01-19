@@ -1,0 +1,73 @@
+name: CI Quality Gates
+
+on:
+  pull_request:
+    branches: [ main, develop, 'v*' ]
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new commit is pushed to the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore .NET Local Tools
+      run: dotnet tool restore
+
+    - name: Check CSharpier Formatting
+      run: dotnet csharpier ./src --config-path .config/csharpierrc --check
+
+    - name: Setup dprint
+      uses: dprint/check@v2.2
+      with:
+        config-path: .config/dprint.json
+
+  build:
+    name: Build Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            build-browser: true
+          - os: ubuntu-latest
+            build-browser: false
+
+    steps:
+    - name: Checkout Repository (with submodules)
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Core Library
+      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore
+
+    - name: Build Desktop
+      run: dotnet build src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj -c Release --no-restore
+
+    - name: Publish Browser (Windows only)
+      if: matrix.build-browser
+      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore
