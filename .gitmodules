@@ -1,6 +1,3 @@
 [submodule "Motely"]
 	path = external/Motely
 	url = https://github.com/OptimusPi/Motely.git
-[submodule "external/Motely"]
-	path = external/Motely
-	url = https://github.com/optimusPi/Motely
