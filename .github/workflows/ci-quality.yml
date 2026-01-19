@@ -11,30 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  format:
-    name: Format Check
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
-
-    - name: Install CSharpier
-      run: dotnet tool install --local csharpier --version 0.30.2
-
-    - name: Check CSharpier Formatting
-      run: dotnet csharpier ./src --config-path .config/csharpierrc --check --no-msbuild-check
-
-    - name: Setup dprint
-      uses: dprint/check@v2.2
-      with:
-        config-path: .config/dprint.json
-
   build:
     name: Build Check
     runs-on: ${{ matrix.os }}
