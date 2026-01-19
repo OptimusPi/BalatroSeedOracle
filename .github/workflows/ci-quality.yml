@@ -72,8 +72,13 @@ jobs:
       env:
         MSBuildEnableWorkloadResolver: ${{ runner.os == 'Linux' && 'false' || 'true' }}
 
-    - name: Restore Desktop
+    - name: Restore Desktop (Windows)
+      if: runner.os == 'Windows'
       run: dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+
+    - name: Restore Desktop (Linux)
+      if: runner.os == 'Linux'
+      run: dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj /p:TargetFramework=net10.0
 
     - name: Restore Browser
       run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
@@ -107,7 +112,7 @@ jobs:
       run: dotnet workload install android wasm-tools
 
     - name: Restore Dependencies
-      run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
+      run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj /p:TargetFramework=net10.0
 
     - name: Run Tests with Coverage
       run: dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./coverage
