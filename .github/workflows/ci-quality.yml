@@ -65,8 +65,8 @@ jobs:
         dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
         dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
 
-    - name: Build Core Library
-      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore /p:TargetFramework=net10.0
+    - name: Build Core Library (with warnings as errors)
+      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore /p:TargetFramework=net10.0 -p:TreatWarningsAsErrors=true
 
     - name: Build Desktop
       run: dotnet build src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj -c Release --no-restore
@@ -93,5 +93,13 @@ jobs:
     - name: Restore Dependencies
       run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
 
-    - name: Run Tests
-      run: dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release --no-restore
+    - name: Run Tests with Coverage
+      run: dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage/**/coverage.cobertura.xml
+        retention-days: 30

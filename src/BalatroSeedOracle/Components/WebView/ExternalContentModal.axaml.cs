@@ -9,7 +9,7 @@ namespace BalatroSeedOracle.Components.WebView
 {
     public partial class ExternalContentModal : UserControl
     {
-        private Avalonia.Controls.WebView.NativeWebView? _webView;
+        private Control? _webView;
         private TextBox? _urlTextBox;
         private Button? _backButton;
         private Button? _goButton;
@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.Components.WebView
         {
             AvaloniaXamlLoader.Load(this);
             
-            _webView = this.FindControl<Avalonia.Controls.WebView2.WebView2>("WebViewControl");
+            _webView = this.FindControl<Control>("WebViewControl");
             _urlTextBox = this.FindControl<TextBox>("UrlTextBox");
             _backButton = this.FindControl<Button>("BackButton");
             _goButton = this.FindControl<Button>("GoButton");
@@ -67,7 +67,9 @@ namespace BalatroSeedOracle.Components.WebView
 
         private void OnBackButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            _webView?.GoBack();
+            // WebView GoBack functionality would need to be implemented via reflection
+            // or proper WebView package integration
+            DebugLogger.Log("ExternalContentModal", "Go back requested");
         }
 
         private void NavigateToCurrentUrl()
@@ -92,12 +94,15 @@ namespace BalatroSeedOracle.Components.WebView
                     url = "https://" + url;
                 }
 
+                // WebView navigation would need to be implemented via reflection
+                // or proper WebView package integration
                 if (_webView != null)
                 {
-                    _webView.Source = new Uri(url);
+                    var sourceProperty = _webView.GetType().GetProperty("Source");
+                    sourceProperty?.SetValue(_webView, new Uri(url));
                 }
 
-                if (_urlTextBox.Text != url)
+                if (_urlTextBox != null && _urlTextBox.Text != url)
                 {
                     _urlTextBox.Text = url;
                 }

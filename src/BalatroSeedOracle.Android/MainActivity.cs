@@ -8,6 +8,7 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Services.Platforms;
 using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Android.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Android;
@@ -33,7 +34,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         {
             // Use shared file system implementations (Android has file system access like Desktop)
             services.AddSingleton<IAppDataStore, FileSystemAppDataStore>();
-            services.AddSingleton<IDuckDBService, FileSystemDuckDBService>();
+            services.AddSingleton<IDuckDBService, AndroidDuckDBService>();
             services.AddSingleton<IPlatformServices, FileSystemPlatformServices>();
             
             // Audio (Android supports audio via SoundFlow)

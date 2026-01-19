@@ -206,7 +206,7 @@ public class FertilizerService : IDisposable
                         // Ignore duplicates (PRIMARY KEY violation)
                     }
                 }
-                appender.Flush();
+                await appender.FlushAsync();
             }
 
             await RefreshSeedCountAsync();

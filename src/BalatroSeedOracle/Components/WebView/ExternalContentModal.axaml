@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:webview="using:Avalonia.Controls.WebView"
              x:Class="BalatroSeedOracle.Components.WebView.ExternalContentModal">
     
     <Grid RowDefinitions="Auto,*">
@@ -33,9 +32,14 @@
             </Grid>
         </Border>
         
-        <!-- WebView -->
-        <webview:NativeWebView Grid.Row="1"
-                                x:Name="WebViewControl"
-                                Background="White"/>
+        <!-- Placeholder for WebView (requires Avalonia.Controls.WebView package) -->
+        <Border Grid.Row="1"
+                x:Name="WebViewControl"
+                Background="White">
+            <TextBlock Text="WebView not available"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="Gray"/>
+        </Border>
     </Grid>
 </UserControl>
