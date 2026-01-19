@@ -26,10 +26,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVibeOutMode = false;
 
-        public MainWindowViewModel(
-            UserProfileService userProfileService,
-            SearchManager searchManager
-        )
+        public MainWindowViewModel(UserProfileService userProfileService, SearchManager searchManager)
         {
             _userProfileService = userProfileService;
             _searchManager = searchManager;
@@ -100,10 +97,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "MainWindowViewModel",
-                    $"Error initializing MainWindow: {ex.Message}"
-                );
+                DebugLogger.LogError("MainWindowViewModel", $"Error initializing MainWindow: {ex.Message}");
                 throw;
             }
         }
@@ -124,10 +118,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "MainWindowViewModel",
-                    $"Error loading user profile: {ex.Message}"
-                );
+                DebugLogger.LogError("MainWindowViewModel", $"Error loading user profile: {ex.Message}");
             }
         }
 

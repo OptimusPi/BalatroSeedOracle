@@ -31,10 +31,7 @@ namespace BalatroSeedOracle.ViewModels
 
                     DebugLogger.Log("CreditsModalViewModel", $"JSON loaded, length: {json.Length}");
 
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var items = JsonSerializer.Deserialize<Credit[]>(json, options) ?? Array.Empty<Credit>();
 
                     DebugLogger.Log("CreditsModalViewModel", $"Deserialized {items.Length} credits");

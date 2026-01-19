@@ -5,6 +5,7 @@ Publish the BalatroSeedOracle Browser/WASM application for deployment.
 ## Input
 
 Optional:
+
 - `threaded` - Enable WASM threading support
 
 ## Steps

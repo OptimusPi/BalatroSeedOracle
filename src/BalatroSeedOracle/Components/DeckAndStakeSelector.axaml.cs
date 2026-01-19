@@ -24,9 +24,7 @@ public partial class DeckAndStakeSelector : UserControl
     {
         InitializeComponent();
         // Create internal ViewModel and set DataContext to the ViewModel for pure MVVM binding
-        _viewModel = new DeckAndStakeSelectorViewModel(
-            ServiceHelper.GetRequiredService<SpriteService>()
-        );
+        _viewModel = new DeckAndStakeSelectorViewModel(ServiceHelper.GetRequiredService<SpriteService>());
         DataContext = _viewModel;
         // Initialize styled properties from ViewModel
         DeckIndex = _viewModel.DeckIndex;
@@ -78,10 +76,10 @@ public partial class DeckAndStakeSelector : UserControl
     }
 
     // DeckIndex property for MVVM two-way binding
-    public static readonly StyledProperty<int> DeckIndexProperty = AvaloniaProperty.Register<
-        DeckAndStakeSelector,
-        int
-    >(nameof(DeckIndex), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+    public static readonly StyledProperty<int> DeckIndexProperty = AvaloniaProperty.Register<DeckAndStakeSelector, int>(
+        nameof(DeckIndex),
+        defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
+    );
     public int DeckIndex
     {
         get => GetValue(DeckIndexProperty);

@@ -39,8 +39,8 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// The window that hosts this widget
         /// </summary>
-        public Window? WidgetWindow 
-        { 
+        public Window? WidgetWindow
+        {
             get => _widgetWindow;
             set
             {
@@ -103,10 +103,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
 #if DEBUG
-                DebugLogger.Log(
-                    WidgetTitle,
-                    $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})"
-                );
+                DebugLogger.Log(WidgetTitle, $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})");
 #endif
                 return zIndex;
             }
@@ -208,7 +205,7 @@ namespace BalatroSeedOracle.ViewModels
                 var window = new Windows.WidgetWindow();
                 window.DataContext = this;
                 WidgetWindow = window;
-                
+
                 // Set initial position using position service
                 var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
                 if (positionService != null)
@@ -217,7 +214,7 @@ namespace BalatroSeedOracle.ViewModels
                     window.Position = new PixelPoint((int)x, (int)y);
                     positionService.RegisterWidget(this);
                 }
-                
+
                 window.Show();
             }
             else if (WidgetWindow != null)
@@ -258,7 +255,7 @@ namespace BalatroSeedOracle.ViewModels
             // Unregister from position service
             var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
             positionService?.UnregisterWidget(this);
-            
+
             // Close and cleanup window
             if (WidgetWindow != null)
             {
@@ -284,7 +281,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             _nextZIndexCounter++;
             OnPropertyChanged(nameof(WidgetZIndex));
-            
+
             if (WidgetWindow != null)
             {
                 WidgetWindow.Topmost = true;

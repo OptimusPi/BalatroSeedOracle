@@ -10,57 +10,61 @@ namespace BalatroSeedOracle.Controls
 {
     public partial class SpinnerControl : UserControl
     {
-        public static readonly StyledProperty<string> LabelProperty = AvaloniaProperty.Register<
+        public static readonly StyledProperty<string> LabelProperty = AvaloniaProperty.Register<SpinnerControl, string>(
+            nameof(Label),
+            ""
+        );
+
+        public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<SpinnerControl, int>(
+            nameof(Value),
+            0,
+            defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
+        );
+
+        public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<SpinnerControl, int>(
+            nameof(Minimum),
+            0
+        );
+
+        public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<SpinnerControl, int>(
+            nameof(Maximum),
+            999
+        );
+
+        public static readonly StyledProperty<int> IncrementProperty = AvaloniaProperty.Register<SpinnerControl, int>(
+            nameof(Increment),
+            1
+        );
+
+        public static readonly StyledProperty<string> SpinnerTypeProperty = AvaloniaProperty.Register<
             SpinnerControl,
             string
-        >(nameof(Label), "");
+        >(nameof(SpinnerType), "default");
 
-        public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<
+        public static readonly StyledProperty<string> ShadowDirectionProperty = AvaloniaProperty.Register<
             SpinnerControl,
-            int
-        >(nameof(Value), 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+            string
+        >(nameof(ShadowDirection), "south-west");
 
-        public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<
+        public static readonly StyledProperty<string[]?> DisplayValuesProperty = AvaloniaProperty.Register<
             SpinnerControl,
-            int
-        >(nameof(Minimum), 0);
+            string[]?
+        >(nameof(DisplayValues), null);
 
-        public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<
-            SpinnerControl,
-            int
-        >(nameof(Maximum), 999);
+        public static readonly StyledProperty<bool> AllowAutoProperty = AvaloniaProperty.Register<SpinnerControl, bool>(
+            nameof(AllowAuto),
+            false
+        );
 
-        public static readonly StyledProperty<int> IncrementProperty = AvaloniaProperty.Register<
-            SpinnerControl,
-            int
-        >(nameof(Increment), 1);
+        public static readonly StyledProperty<bool> IsEditingProperty = AvaloniaProperty.Register<SpinnerControl, bool>(
+            nameof(IsEditing),
+            false
+        );
 
-        public static readonly StyledProperty<string> SpinnerTypeProperty =
-            AvaloniaProperty.Register<SpinnerControl, string>(nameof(SpinnerType), "default");
-
-        public static readonly StyledProperty<string> ShadowDirectionProperty =
-            AvaloniaProperty.Register<SpinnerControl, string>(
-                nameof(ShadowDirection),
-                "south-west"
-            );
-
-        public static readonly StyledProperty<string[]?> DisplayValuesProperty =
-            AvaloniaProperty.Register<SpinnerControl, string[]?>(nameof(DisplayValues), null);
-
-        public static readonly StyledProperty<bool> AllowAutoProperty = AvaloniaProperty.Register<
-            SpinnerControl,
-            bool
-        >(nameof(AllowAuto), false);
-
-        public static readonly StyledProperty<bool> IsEditingProperty = AvaloniaProperty.Register<
-            SpinnerControl,
-            bool
-        >(nameof(IsEditing), false);
-
-        public static readonly StyledProperty<bool> ReadOnlyProperty = AvaloniaProperty.Register<
-            SpinnerControl,
-            bool
-        >(nameof(ReadOnly), false);
+        public static readonly StyledProperty<bool> ReadOnlyProperty = AvaloniaProperty.Register<SpinnerControl, bool>(
+            nameof(ReadOnly),
+            false
+        );
 
         public string Label
         {
@@ -157,14 +161,10 @@ namespace BalatroSeedOracle.Controls
             bool circularStake = IsCircularStakeSpinner();
 
             if (DecrementButton != null)
-                DecrementButton.IsEnabled = circularStake
-                    ? HasMultipleValuesForCircular()
-                    : Value > Minimum;
+                DecrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value > Minimum;
 
             if (IncrementButton != null)
-                IncrementButton.IsEnabled = circularStake
-                    ? HasMultipleValuesForCircular()
-                    : Value < Maximum;
+                IncrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : Value < Maximum;
         }
 
         private void InitializeComponent()
@@ -233,14 +233,10 @@ namespace BalatroSeedOracle.Controls
                     bool circularStake = IsCircularStakeSpinner();
 
                     if (DecrementButton != null)
-                        DecrementButton.IsEnabled = circularStake
-                            ? HasMultipleValuesForCircular()
-                            : newValue > Minimum;
+                        DecrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue > Minimum;
 
                     if (IncrementButton != null)
-                        IncrementButton.IsEnabled = circularStake
-                            ? HasMultipleValuesForCircular()
-                            : newValue < Maximum;
+                        IncrementButton.IsEnabled = circularStake ? HasMultipleValuesForCircular() : newValue < Maximum;
                 }
             }
         }
@@ -348,9 +344,7 @@ namespace BalatroSeedOracle.Controls
                         Value = Math.Max(Minimum, Math.Min(Maximum, newValue));
                     }
                     // Check for "Auto" if allowed
-                    else if (
-                        AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase)
-                    )
+                    else if (AllowAuto && inputText.Equals("Auto", StringComparison.OrdinalIgnoreCase))
                     {
                         Value = -1; // Auto value (-1 so that 0 can be a valid explicit value)
                     }

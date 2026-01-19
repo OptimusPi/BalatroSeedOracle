@@ -76,10 +76,20 @@ namespace BalatroSeedOracle.Helpers
             int start = column;
             int end = column;
 
-            while (start > 0 && (char.IsLetterOrDigit(lineText[start - 1]) || lineText[start - 1] == '_' || lineText[start - 1] == '*'))
+            while (
+                start > 0
+                && (
+                    char.IsLetterOrDigit(lineText[start - 1])
+                    || lineText[start - 1] == '_'
+                    || lineText[start - 1] == '*'
+                )
+            )
                 start--;
 
-            while (end < lineText.Length && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_' || lineText[end] == '*'))
+            while (
+                end < lineText.Length
+                && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_' || lineText[end] == '*')
+            )
                 end++;
 
             if (start < end)
@@ -154,7 +164,13 @@ namespace BalatroSeedOracle.Helpers
         private string GetJokerRarity(string jokerKey)
         {
             // Simple rarity detection based on joker key patterns
-            if (jokerKey.Contains("Legendary") || jokerKey == "Perkeo" || jokerKey == "Triboulet" || jokerKey == "Canio" || jokerKey == "Chicot")
+            if (
+                jokerKey.Contains("Legendary")
+                || jokerKey == "Perkeo"
+                || jokerKey == "Triboulet"
+                || jokerKey == "Canio"
+                || jokerKey == "Chicot"
+            )
                 return "Legendary";
             if (jokerKey.Contains("Rare"))
                 return "Rare";
@@ -179,7 +195,7 @@ namespace BalatroSeedOracle.Helpers
                 "or" => "**Or**\n\nOR clause - any child clause can pass",
                 "smallblindtag" => "**smallblindtag**\n\nSmall blind tag requirement (e.g., NegativeTag)",
                 "bigblindtag" => "**bigblindtag**\n\nBig blind tag requirement",
-                _ => ""
+                _ => "",
             };
         }
 
@@ -213,23 +229,22 @@ namespace BalatroSeedOracle.Helpers
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(4),
                         Padding = new Thickness(8),
-                        Child = _tooltipContent = new TextBlock
-                        {
-                            Foreground = Brushes.White,
-                            FontSize = 12,
-                            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                            MaxWidth = 300
-                        }
-                    }
+                        Child = _tooltipContent =
+                            new TextBlock
+                            {
+                                Foreground = Brushes.White,
+                                FontSize = 12,
+                                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                                MaxWidth = 300,
+                            },
+                    },
                 };
             }
 
             if (_tooltipContent != null)
             {
                 // Simple markdown-like formatting
-                var formattedText = text
-                    .Replace("**", "")
-                    .Replace("\n\n", "\n");
+                var formattedText = text.Replace("**", "").Replace("\n\n", "\n");
                 _tooltipContent.Text = formattedText;
             }
 

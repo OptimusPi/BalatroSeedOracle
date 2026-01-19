@@ -142,7 +142,13 @@ namespace BalatroSeedOracle.Helpers
             );
 
             // Check if we're after "value:" or "joker:" or "soulJoker:" etc
-            if (Regex.IsMatch(textBefore, @"(?:value|joker|soulJoker|SoulJoker)\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"(?:value|joker|soulJoker|SoulJoker)\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
             {
                 if (typeMatch.Success)
                 {
@@ -184,7 +190,13 @@ namespace BalatroSeedOracle.Helpers
                 return YamlCompletionContext.AntesArray;
 
             // Check if we're in "shopSlots:" or "packSlots:" array
-            if (Regex.IsMatch(textBefore, @"(?:shop|pack)Slots\s*:\s*\[", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"(?:shop|pack)Slots\s*:\s*\[",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.SlotsArray;
 
             // Check if we're at top level (not indented much) or in a clause
@@ -228,9 +240,7 @@ namespace BalatroSeedOracle.Helpers
             );
 
             // Top-level metadata
-            completions.Add(
-                new SmartCompletionData("name", "name: MyFilter", "Filter name", priority: 15)
-            );
+            completions.Add(new SmartCompletionData("name", "name: MyFilter", "Filter name", priority: 15));
             completions.Add(
                 new SmartCompletionData(
                     "description",
@@ -239,15 +249,9 @@ namespace BalatroSeedOracle.Helpers
                     priority: 15
                 )
             );
-            completions.Add(
-                new SmartCompletionData("author", "author: YourName", "Author name", priority: 15)
-            );
-            completions.Add(
-                new SmartCompletionData("deck", "deck: Red", "Starting deck", priority: 14)
-            );
-            completions.Add(
-                new SmartCompletionData("stake", "stake: White", "Stake level", priority: 14)
-            );
+            completions.Add(new SmartCompletionData("author", "author: YourName", "Author name", priority: 15));
+            completions.Add(new SmartCompletionData("deck", "deck: Red", "Starting deck", priority: 14));
+            completions.Add(new SmartCompletionData("stake", "stake: White", "Stake level", priority: 14));
 
             // Main filter arrays
             completions.Add(
@@ -291,42 +295,23 @@ namespace BalatroSeedOracle.Helpers
                         priority: 15
                     )
                 );
+                completions.Add(new SmartCompletionData("Mode", "Mode: Max", "Mode: Max or Sum", priority: 14));
+                completions.Add(new SmartCompletionData("Score", "Score: 100", "Score weight", priority: 14));
                 completions.Add(
-                    new SmartCompletionData("Mode", "Mode: Max", "Mode: Max or Sum", priority: 14)
-                );
-                completions.Add(
-                    new SmartCompletionData("Score", "Score: 100", "Score weight", priority: 14)
-                );
-                completions.Add(
-                    new SmartCompletionData(
-                        "clauses",
-                        "clauses:\n  - joker: Blueprint",
-                        "Child clauses",
-                        priority: 15
-                    )
+                    new SmartCompletionData("clauses", "clauses:\n  - joker: Blueprint", "Child clauses", priority: 15)
                 );
             }
             else
             {
                 // Regular clause properties
-                completions.Add(
-                    new SmartCompletionData("joker", "joker: Blueprint", "Joker name", priority: 15)
-                );
-                completions.Add(
-                    new SmartCompletionData("soulJoker", "soulJoker: Perkeo", "Soul joker", priority: 15)
-                );
-                completions.Add(
-                    new SmartCompletionData("voucher", "voucher: Telescope", "Voucher", priority: 14)
-                );
-                completions.Add(
-                    new SmartCompletionData("tarot", "tarot: Fool", "Tarot card", priority: 14)
-                );
+                completions.Add(new SmartCompletionData("joker", "joker: Blueprint", "Joker name", priority: 15));
+                completions.Add(new SmartCompletionData("soulJoker", "soulJoker: Perkeo", "Soul joker", priority: 15));
+                completions.Add(new SmartCompletionData("voucher", "voucher: Telescope", "Voucher", priority: 14));
+                completions.Add(new SmartCompletionData("tarot", "tarot: Fool", "Tarot card", priority: 14));
                 completions.Add(
                     new SmartCompletionData("spectral", "spectral: Spectral", "Spectral card", priority: 14)
                 );
-                completions.Add(
-                    new SmartCompletionData("planet", "planet: Mercury", "Planet card", priority: 14)
-                );
+                completions.Add(new SmartCompletionData("planet", "planet: Mercury", "Planet card", priority: 14));
                 completions.Add(
                     new SmartCompletionData(
                         "smallblindtag",
@@ -336,22 +321,11 @@ namespace BalatroSeedOracle.Helpers
                     )
                 );
                 completions.Add(
-                    new SmartCompletionData(
-                        "bigblindtag",
-                        "bigblindtag: NegativeTag",
-                        "Big blind tag",
-                        priority: 13
-                    )
+                    new SmartCompletionData("bigblindtag", "bigblindtag: NegativeTag", "Big blind tag", priority: 13)
                 );
-                completions.Add(
-                    new SmartCompletionData("antes", "antes: [1, 2]", "Antes array", priority: 12)
-                );
-                completions.Add(
-                    new SmartCompletionData("score", "score: 10", "Score weight", priority: 12)
-                );
-                completions.Add(
-                    new SmartCompletionData("edition", "edition: Negative", "Edition", priority: 11)
-                );
+                completions.Add(new SmartCompletionData("antes", "antes: [1, 2]", "Antes array", priority: 12));
+                completions.Add(new SmartCompletionData("score", "score: 10", "Score weight", priority: 12));
+                completions.Add(new SmartCompletionData("edition", "edition: Negative", "Edition", priority: 11));
                 completions.Add(
                     new SmartCompletionData(
                         "ShopSlots",
@@ -361,19 +335,10 @@ namespace BalatroSeedOracle.Helpers
                     )
                 );
                 completions.Add(
-                    new SmartCompletionData(
-                        "PackSlots",
-                        "PackSlots: [0, 1, 2, 3]",
-                        "Pack slot positions",
-                        priority: 11
-                    )
+                    new SmartCompletionData("PackSlots", "PackSlots: [0, 1, 2, 3]", "Pack slot positions", priority: 11)
                 );
-                completions.Add(
-                    new SmartCompletionData("And", "And:\n  Mode: Max", "AND clause", priority: 10)
-                );
-                completions.Add(
-                    new SmartCompletionData("Or", "Or:\n  - joker: Blueprint", "OR clause", priority: 10)
-                );
+                completions.Add(new SmartCompletionData("And", "And:\n  Mode: Max", "AND clause", priority: 10));
+                completions.Add(new SmartCompletionData("Or", "Or:\n  - joker: Blueprint", "OR clause", priority: 10));
             }
         }
 
@@ -383,41 +348,20 @@ namespace BalatroSeedOracle.Helpers
             completions.Add(new SmartCompletionData("SoulJoker", "SoulJoker", "Soul jokers", priority: 9));
             completions.Add(new SmartCompletionData("Voucher", "Voucher", "Vouchers", priority: 9));
             completions.Add(new SmartCompletionData("TarotCard", "TarotCard", "Tarot cards", priority: 9));
-            completions.Add(
-                new SmartCompletionData("SpectralCard", "SpectralCard", "Spectral cards", priority: 9)
-            );
-            completions.Add(
-                new SmartCompletionData("PlanetCard", "PlanetCard", "Planet cards", priority: 8)
-            );
-            completions.Add(
-                new SmartCompletionData("StandardCard", "StandardCard", "Playing cards", priority: 7)
-            );
+            completions.Add(new SmartCompletionData("SpectralCard", "SpectralCard", "Spectral cards", priority: 9));
+            completions.Add(new SmartCompletionData("PlanetCard", "PlanetCard", "Planet cards", priority: 8));
+            completions.Add(new SmartCompletionData("StandardCard", "StandardCard", "Playing cards", priority: 7));
             completions.Add(new SmartCompletionData("Boss", "Boss", "Boss blinds", priority: 7));
         }
 
         private static void AddJokerCompletions(List<ICompletionData> completions, string textBefore)
         {
             // Wildcards
-            completions.Add(
-                new SmartCompletionData(
-                    "anylegendary",
-                    "anylegendary",
-                    "Any legendary",
-                    priority: 15
-                )
-            );
-            completions.Add(
-                new SmartCompletionData("anyrare", "anyrare", "Any rare", priority: 14)
-            );
-            completions.Add(
-                new SmartCompletionData("anyuncommon", "anyuncommon", "Any uncommon", priority: 13)
-            );
-            completions.Add(
-                new SmartCompletionData("anycommon", "anycommon", "Any common", priority: 12)
-            );
-            completions.Add(
-                new SmartCompletionData("anyjoker", "anyjoker", "Any joker", priority: 11)
-            );
+            completions.Add(new SmartCompletionData("anylegendary", "anylegendary", "Any legendary", priority: 15));
+            completions.Add(new SmartCompletionData("anyrare", "anyrare", "Any rare", priority: 14));
+            completions.Add(new SmartCompletionData("anyuncommon", "anyuncommon", "Any uncommon", priority: 13));
+            completions.Add(new SmartCompletionData("anycommon", "anycommon", "Any common", priority: 12));
+            completions.Add(new SmartCompletionData("anyjoker", "anyjoker", "Any joker", priority: 11));
 
             // Popular jokers
             var popularJokers = new Dictionary<string, string>
@@ -444,9 +388,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (BalatroData.Jokers.ContainsKey(joker.Key))
                 {
-                    completions.Add(
-                        new SmartCompletionData(joker.Key, joker.Key, joker.Value, priority: 10)
-                    );
+                    completions.Add(new SmartCompletionData(joker.Key, joker.Key, joker.Value, priority: 10));
                 }
             }
 
@@ -455,24 +397,16 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (!joker.Key.StartsWith("any") && !popularJokers.ContainsKey(joker.Key))
                 {
-                    completions.Add(
-                        new SmartCompletionData(joker.Key, joker.Key, joker.Value, priority: 5)
-                    );
+                    completions.Add(new SmartCompletionData(joker.Key, joker.Key, joker.Value, priority: 5));
                 }
             }
         }
 
         private static void AddEditionCompletions(List<ICompletionData> completions)
         {
-            completions.Add(
-                new SmartCompletionData("Negative", "Negative", "Negative", priority: 10)
-            );
-            completions.Add(
-                new SmartCompletionData("Polychrome", "Polychrome", "Polychrome", priority: 9)
-            );
-            completions.Add(
-                new SmartCompletionData("Holographic", "Holographic", "Holographic", priority: 8)
-            );
+            completions.Add(new SmartCompletionData("Negative", "Negative", "Negative", priority: 10));
+            completions.Add(new SmartCompletionData("Polychrome", "Polychrome", "Polychrome", priority: 9));
+            completions.Add(new SmartCompletionData("Holographic", "Holographic", "Holographic", priority: 8));
             completions.Add(new SmartCompletionData("Foil", "Foil", "Foil", priority: 7));
         }
 
@@ -501,20 +435,14 @@ namespace BalatroSeedOracle.Helpers
             var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
             foreach (var rank in ranks)
             {
-                completions.Add(
-                    new SmartCompletionData(rank, rank, $"Rank {rank}", priority: 5)
-                );
+                completions.Add(new SmartCompletionData(rank, rank, $"Rank {rank}", priority: 5));
             }
         }
 
         private static void AddSuitCompletions(List<ICompletionData> completions)
         {
-            completions.Add(
-                new SmartCompletionData("Hearts", "Hearts", "Hearts", priority: 10)
-            );
-            completions.Add(
-                new SmartCompletionData("Diamonds", "Diamonds", "Diamonds", priority: 9)
-            );
+            completions.Add(new SmartCompletionData("Hearts", "Hearts", "Hearts", priority: 10));
+            completions.Add(new SmartCompletionData("Diamonds", "Diamonds", "Diamonds", priority: 9));
             completions.Add(new SmartCompletionData("Clubs", "Clubs", "Clubs", priority: 8));
             completions.Add(new SmartCompletionData("Spades", "Spades", "Spades", priority: 7));
         }
@@ -523,9 +451,7 @@ namespace BalatroSeedOracle.Helpers
         {
             foreach (var deck in BalatroData.Decks.OrderBy(d => d.Value))
             {
-                completions.Add(
-                    new SmartCompletionData(deck.Key, deck.Key, deck.Value, priority: 5)
-                );
+                completions.Add(new SmartCompletionData(deck.Key, deck.Key, deck.Value, priority: 5));
             }
         }
 
@@ -533,47 +459,31 @@ namespace BalatroSeedOracle.Helpers
         {
             foreach (var stake in BalatroData.Stakes)
             {
-                completions.Add(
-                    new SmartCompletionData(stake.Key, stake.Key, stake.Value, priority: 5)
-                );
+                completions.Add(new SmartCompletionData(stake.Key, stake.Key, stake.Value, priority: 5));
             }
         }
 
         private static void AddAnteSnippets(List<ICompletionData> completions)
         {
+            completions.Add(new SmartCompletionData("1-8", "[1, 2, 3, 4, 5, 6, 7, 8]", "All antes", priority: 10));
+            completions.Add(new SmartCompletionData("1-4", "[1, 2, 3, 4]", "Early game", priority: 9));
+            completions.Add(new SmartCompletionData("5-8", "[5, 6, 7, 8]", "Late game", priority: 9));
             completions.Add(
-                new SmartCompletionData("1-8", "[1, 2, 3, 4, 5, 6, 7, 8]", "All antes", priority: 10)
-            );
-            completions.Add(
-                new SmartCompletionData("1-4", "[1, 2, 3, 4]", "Early game", priority: 9)
-            );
-            completions.Add(
-                new SmartCompletionData("5-8", "[5, 6, 7, 8]", "Late game", priority: 9)
-            );
-            completions.Add(
-                new SmartCompletionData("2-12", "[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]", "Antes 2-12 (extended)", priority: 8)
+                new SmartCompletionData(
+                    "2-12",
+                    "[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",
+                    "Antes 2-12 (extended)",
+                    priority: 8
+                )
             );
         }
 
         private static void AddSlotSnippets(List<ICompletionData> completions)
         {
-            completions.Add(
-                new SmartCompletionData(
-                    "all-shop",
-                    "[0, 1, 2, 3, 4, 5]",
-                    "All shop slots",
-                    priority: 10
-                )
-            );
-            completions.Add(
-                new SmartCompletionData("all-pack", "[0, 1, 2, 3]", "All pack slots", priority: 10)
-            );
-            completions.Add(
-                new SmartCompletionData("first-3", "[0, 1, 2]", "First 3 slots", priority: 9)
-            );
-            completions.Add(
-                new SmartCompletionData("top-3", "[2, 3, 4]", "Top 3 shop slots", priority: 9)
-            );
+            completions.Add(new SmartCompletionData("all-shop", "[0, 1, 2, 3, 4, 5]", "All shop slots", priority: 10));
+            completions.Add(new SmartCompletionData("all-pack", "[0, 1, 2, 3]", "All pack slots", priority: 10));
+            completions.Add(new SmartCompletionData("first-3", "[0, 1, 2]", "First 3 slots", priority: 9));
+            completions.Add(new SmartCompletionData("top-3", "[2, 3, 4]", "Top 3 shop slots", priority: 9));
         }
 
         private static void AddAnchorDefinitionCompletions(List<ICompletionData> completions)
@@ -607,11 +517,7 @@ namespace BalatroSeedOracle.Helpers
         private static void AddAnchorReferenceCompletions(List<ICompletionData> completions, string textBefore)
         {
             // Extract all anchor definitions from the text
-            var anchorMatches = Regex.Matches(
-                textBefore,
-                @"(\w+)\s*:\s*&(\w+)",
-                RegexOptions.Multiline
-            );
+            var anchorMatches = Regex.Matches(textBefore, @"(\w+)\s*:\s*&(\w+)", RegexOptions.Multiline);
 
             foreach (Match match in anchorMatches)
             {
@@ -647,9 +553,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (tarot.Key != "any")
                 {
-                    completions.Add(
-                        new SmartCompletionData(tarot.Key, tarot.Key, tarot.Value, priority: 5)
-                    );
+                    completions.Add(new SmartCompletionData(tarot.Key, tarot.Key, tarot.Value, priority: 5));
                 }
             }
         }
@@ -661,14 +565,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (spectral.Key != "any")
                 {
-                    completions.Add(
-                        new SmartCompletionData(
-                            spectral.Key,
-                            spectral.Key,
-                            spectral.Value,
-                            priority: 5
-                        )
-                    );
+                    completions.Add(new SmartCompletionData(spectral.Key, spectral.Key, spectral.Value, priority: 5));
                 }
             }
         }
@@ -680,9 +577,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 if (planet.Key != "any")
                 {
-                    completions.Add(
-                        new SmartCompletionData(planet.Key, planet.Key, planet.Value, priority: 5)
-                    );
+                    completions.Add(new SmartCompletionData(planet.Key, planet.Key, planet.Value, priority: 5));
                 }
             }
         }
@@ -691,9 +586,7 @@ namespace BalatroSeedOracle.Helpers
         {
             foreach (var voucher in BalatroData.Vouchers.OrderBy(v => v.Value))
             {
-                completions.Add(
-                    new SmartCompletionData(voucher.Key, voucher.Key, voucher.Value, priority: 5)
-                );
+                completions.Add(new SmartCompletionData(voucher.Key, voucher.Key, voucher.Value, priority: 5));
             }
         }
 

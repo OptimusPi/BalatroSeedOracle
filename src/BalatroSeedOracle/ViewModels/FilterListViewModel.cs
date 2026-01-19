@@ -147,10 +147,7 @@ namespace BalatroSeedOracle.ViewModels
                 CurrentPage = 0;
                 UpdatePage();
 
-                DebugLogger.Log(
-                    "FilterListViewModel",
-                    $"Loaded {_allFilters.Count} filters from cache"
-                );
+                DebugLogger.Log("FilterListViewModel", $"Loaded {_allFilters.Count} filters from cache");
             }
             catch (Exception ex)
             {
@@ -190,8 +187,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (ShowSelectButton)
             {
-                SelectButtonText =
-                    SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+                SelectButtonText = SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
             }
             else
             {
@@ -211,10 +207,7 @@ namespace BalatroSeedOracle.ViewModels
                 var config = _filterCacheService.GetFilterByPath(filterPath);
                 if (config == null)
                 {
-                    DebugLogger.Log(
-                        "FilterListViewModel",
-                        "Cannot auto-select tab - filter not found in cache"
-                    );
+                    DebugLogger.Log("FilterListViewModel", "Cannot auto-select tab - filter not found in cache");
                     return;
                 }
 
@@ -247,10 +240,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterListViewModel",
-                    $"Error auto-selecting tab: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterListViewModel", $"Error auto-selecting tab: {ex.Message}");
             }
         }
 
@@ -417,9 +407,7 @@ namespace BalatroSeedOracle.ViewModels
                 var sprite = GetItemSprite(itemName, spriteService);
                 if (sprite != null)
                 {
-                    collection.Add(
-                        new FilterItemViewModel { ItemName = itemName, ItemImage = sprite }
-                    );
+                    collection.Add(new FilterItemViewModel { ItemName = itemName, ItemImage = sprite });
                 }
             }
         }

@@ -20,6 +20,7 @@ namespace BalatroSeedOracle.ViewModels
     public class DayLatroWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
         public event EventHandler<string>? CopyToClipboardRequested;
+
         #region Services (Injected)
 
         private readonly DaylatroHighScoreService _scoreService;
@@ -190,14 +191,10 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Constructor
 
-        public DayLatroWidgetViewModel(
-            DaylatroHighScoreService scoreService,
-            UserProfileService profileService
-        )
+        public DayLatroWidgetViewModel(DaylatroHighScoreService scoreService, UserProfileService profileService)
         {
             _scoreService = scoreService ?? throw new ArgumentNullException(nameof(scoreService));
-            _profileService =
-                profileService ?? throw new ArgumentNullException(nameof(profileService));
+            _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
 
             // Initialize widget properties
             WidgetTitle = "Daylatro";
@@ -338,18 +335,12 @@ namespace BalatroSeedOracle.ViewModels
                         HighScores.Add(score);
                     }
 
-                    DebugLogger.Log(
-                        "DayLatroWidgetViewModel",
-                        $"Displayed {HighScores.Count} high scores"
-                    );
+                    DebugLogger.Log("DayLatroWidgetViewModel", $"Displayed {HighScores.Count} high scores");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DayLatroWidgetViewModel",
-                    $"Failed to fetch high scores: {ex.Message}"
-                );
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Failed to fetch high scores: {ex.Message}");
 
                 // Show error state
                 HighScores.Clear();
@@ -408,10 +399,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DayLatroWidgetViewModel",
-                    $"Error in OnExpanded: {ex.Message}"
-                );
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnExpanded: {ex.Message}");
             }
         }
 
@@ -445,10 +433,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (!long.TryParse(ScoreInput.Replace(",", "").Trim(), out var score) || score < 0)
                 {
                     ShowSubmissionMessage($"Invalid score input: {ScoreInput}", true);
-                    DebugLogger.Log(
-                        "DayLatroWidgetViewModel",
-                        $"Invalid score input: {ScoreInput}"
-                    );
+                    DebugLogger.Log("DayLatroWidgetViewModel", $"Invalid score input: {ScoreInput}");
                     return;
                 }
 
@@ -466,11 +451,7 @@ namespace BalatroSeedOracle.ViewModels
                     initials = initials.Substring(0, 3);
 
                 // Submit to Daylatro
-                var (success, message) = await _scoreService.SubmitToDaylatroAsync(
-                    initials,
-                    ante,
-                    score
-                );
+                var (success, message) = await _scoreService.SubmitToDaylatroAsync(initials, ante, score);
 
                 if (success)
                 {
@@ -493,19 +474,13 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     // Show error/info message
                     ShowSubmissionMessage(message, true);
-                    DebugLogger.Log(
-                        "DayLatroWidgetViewModel",
-                        $"Submission blocked or failed: {message}"
-                    );
+                    DebugLogger.Log("DayLatroWidgetViewModel", $"Submission blocked or failed: {message}");
                 }
             }
             catch (Exception ex)
             {
                 ShowSubmissionMessage($"Error submitting score: {ex.Message}", true);
-                DebugLogger.LogError(
-                    "DayLatroWidgetViewModel",
-                    $"Error in OnSubmitScore: {ex.Message}"
-                );
+                DebugLogger.LogError("DayLatroWidgetViewModel", $"Error in OnSubmitScore: {ex.Message}");
             }
         }
 
@@ -546,7 +521,7 @@ namespace BalatroSeedOracle.ViewModels
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "https://daylatro.com",
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 };
                 System.Diagnostics.Process.Start(psi);
             }

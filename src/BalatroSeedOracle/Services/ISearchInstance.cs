@@ -26,12 +26,12 @@ public interface ISearchInstance : IDisposable
     string DatabasePath { get; }
     bool IsDatabaseInitialized { get; }
     bool HasNewResultsSinceLastQuery { get; }
-    
+
     event EventHandler? SearchStarted;
     event EventHandler? SearchCompleted;
     event EventHandler<SearchProgress>? ProgressUpdated;
     event EventHandler<int>? NewHighScoreFound;
-    
+
     Task StartSearchAsync(
         SearchCriteria criteria,
         MotelyJsonConfig config,

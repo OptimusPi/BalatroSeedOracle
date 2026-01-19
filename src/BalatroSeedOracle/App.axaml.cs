@@ -64,7 +64,7 @@ public partial class App : Application
             {
                 // Test localStorage interop early - fire-and-forget with proper error handling
                 _ = TestLocalStorageInteropAsync();
-                
+
                 // Seed browser sample filters (fire-and-forget, best-effort)
                 _ = SeedBrowserSampleFiltersAsync();
             }
@@ -139,7 +139,8 @@ public partial class App : Application
     private async Task UniformProgressLoopAsync(
         Services.TransitionService transitionService,
         DateTime introStart,
-        TimeSpan minIntro)
+        TimeSpan minIntro
+    )
     {
         while (true)
         {
@@ -215,12 +216,13 @@ public partial class App : Application
                 + $"Exception: {ex.GetType().FullName}\n"
                 + $"Message: {ex.Message}\n"
                 + $"Stack Trace:\n{ex.StackTrace}\n";
-            
+
             if (ex.InnerException != null)
             {
-                errorMsg += $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
-                         + $"Inner Message: {ex.InnerException.Message}\n"
-                         + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
+                errorMsg +=
+                    $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
+                    + $"Inner Message: {ex.InnerException.Message}\n"
+                    + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
             }
             errorMsg += "\n";
 
@@ -228,21 +230,16 @@ public partial class App : Application
         }
     }
 
-    private async void ShowLoadingWindowAndPreloadSprites(
-        IClassicDesktopStyleApplicationLifetime desktop
-    )
+    private async void ShowLoadingWindowAndPreloadSprites(IClassicDesktopStyleApplicationLifetime desktop)
     {
         try
         {
-            DebugLogger.LogImportant(
-                "App",
-                "Starting shader-driven intro with sprite pre-loading..."
-            );
+            DebugLogger.LogImportant("App", "Starting shader-driven intro with sprite pre-loading...");
 
             // Create main window FIRST (so we have access to shader background)
             var mainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
             desktop.MainWindow = mainWindow;
-            
+
             // Subscribe to window state changes to close popups when minimized
             mainWindow.PropertyChanged += (s, e) =>
             {
@@ -260,7 +257,7 @@ public partial class App : Application
                     }
                 }
             };
-            
+
             mainWindow.Show();
 
             // Give UI a moment to render and initialize shader
@@ -270,10 +267,7 @@ public partial class App : Application
             var mainMenu = mainWindow.MainMenu;
             if (mainMenu is null)
             {
-                DebugLogger.LogError(
-                    "App",
-                    "Failed to find BalatroMainMenu - falling back to normal startup"
-                );
+                DebugLogger.LogError("App", "Failed to find BalatroMainMenu - falling back to normal startup");
                 await PreloadSpritesWithoutTransition();
                 return;
             }
@@ -303,10 +297,7 @@ public partial class App : Application
             }
             else
             {
-                DebugLogger.LogError(
-                    "App",
-                    "TransitionService not found - falling back to instant transition"
-                );
+                DebugLogger.LogError("App", "TransitionService not found - falling back to instant transition");
                 ApplyShaderParametersToMainMenu(mainMenu, normalParams);
                 await PreloadSpritesWithoutTransition();
             }
@@ -314,8 +305,7 @@ public partial class App : Application
             // Initialize background music with SoundFlow (8-track)
             try
             {
-                var audioManager =
-                    _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
+                var audioManager = _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
                 DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
                 DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
             }
@@ -330,10 +320,7 @@ public partial class App : Application
                 transitionService.SetProgress(1.0f);
             }
 
-            DebugLogger.LogImportant(
-                "App",
-                "Application ready! All sprites pre-loaded with shader intro."
-            );
+            DebugLogger.LogImportant("App", "Application ready! All sprites pre-loaded with shader intro.");
         }
         catch (Exception ex)
         {
@@ -350,10 +337,7 @@ public partial class App : Application
         }
     }
 
-    private void ApplyShaderParametersToMainMenu(
-        Views.BalatroMainMenu mainMenu,
-        Models.ShaderParameters parameters
-    )
+    private void ApplyShaderParametersToMainMenu(Views.BalatroMainMenu mainMenu, Models.ShaderParameters parameters)
     {
         mainMenu.ApplyShaderParameters(parameters);
     }
@@ -361,9 +345,7 @@ public partial class App : Application
     /// <summary>
     /// Pre-load sprites WITH smooth shader transition driven by progress
     /// </summary>
-    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(
-        Services.TransitionService transitionService
-    )
+    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(Services.TransitionService transitionService)
     {
         try
         {
@@ -376,10 +358,7 @@ public partial class App : Application
 
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
-                DebugLogger.Log(
-                    "App",
-                    $"Loading {update.category}: {update.current}/{update.total}"
-                );
+                DebugLogger.Log("App", $"Loading {update.category}: {update.current}/{update.total}");
             });
 
             await spriteService.PreloadAllSpritesAsync(progress);
@@ -391,10 +370,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError(
-                "App",
-                $"Failed to pre-load sprites with transition: {ex.Message}"
-            );
+            DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
             // Don't complete transition here - let caller handle it
             transitionService.SetProgress(0.95f);
         }
@@ -492,7 +468,8 @@ public partial class App : Application
             if (exists)
                 return;
 
-            var sampleJson = "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
+            var sampleJson =
+                "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
 
             await store.WriteTextAsync(sampleKey, sampleJson).ConfigureAwait(false);
         }
@@ -511,10 +488,7 @@ public partial class App : Application
             if (filterCache != null)
             {
                 filterCache.Initialize();
-                DebugLogger.Log(
-                    "App",
-                    $"Filter cache initialized with {filterCache.Count} filters"
-                );
+                DebugLogger.Log("App", $"Filter cache initialized with {filterCache.Count} filters");
             }
             else
             {
@@ -544,7 +518,6 @@ public partial class App : Application
             DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
         }
     }
-
 
     /// <summary>
     /// Get a service from the DI container (temporary until full DI migration)

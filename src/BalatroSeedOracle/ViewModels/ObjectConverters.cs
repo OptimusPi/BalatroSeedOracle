@@ -6,8 +6,6 @@ namespace BalatroSeedOracle.ViewModels
 {
     public static class ObjectConverters
     {
-        public static readonly IValueConverter IsNotNull = new FuncValueConverter<object?, bool>(
-            static x => x != null
-        );
+        public static readonly IValueConverter IsNotNull = new FuncValueConverter<object?, bool>(static x => x != null);
     }
 }

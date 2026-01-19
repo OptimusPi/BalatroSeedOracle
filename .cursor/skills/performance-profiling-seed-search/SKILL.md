@@ -20,12 +20,12 @@ description: Profiles seed search performance to identify bottlenecks in filter 
 
 ## Key Performance Areas
 
-| Phase | What to Profile | Typical Bottleneck |
-|-------|-----------------|-------------------|
-| Filter parsing | JAML/JSON deserialization | Complex nested filters |
-| Search loop | Seed iteration + filter evaluation | Filter complexity |
-| DB write | DuckDB inserts | Large result sets |
-| UI update | Result binding | Many results displayed |
+| Phase          | What to Profile                    | Typical Bottleneck     |
+| -------------- | ---------------------------------- | ---------------------- |
+| Filter parsing | JAML/JSON deserialization          | Complex nested filters |
+| Search loop    | Seed iteration + filter evaluation | Filter complexity      |
+| DB write       | DuckDB inserts                     | Large result sets      |
+| UI update      | Result binding                     | Many results displayed |
 
 ## Methodology
 
@@ -77,12 +77,12 @@ DebugLogger.Log("Perf", $"WriteEnd: {sw.ElapsedMilliseconds}ms");
 
 **Browser vs Desktop perf is NOT comparable:**
 
-| Factor | Desktop | Browser |
-|--------|---------|---------|
-| DuckDB | Native | WASM (slower) |
-| Threads | Native | SharedArrayBuffer |
-| I/O | File system | localStorage |
-| JIT | Full | Limited |
+| Factor  | Desktop     | Browser           |
+| ------- | ----------- | ----------------- |
+| DuckDB  | Native      | WASM (slower)     |
+| Threads | Native      | SharedArrayBuffer |
+| I/O     | File system | localStorage      |
+| JIT     | Full        | Limited           |
 
 Profile on the target platform. Don't draw conclusions from cross-platform comparisons.
 
@@ -162,13 +162,13 @@ For detailed profiling with symbols:
 
 ## External Profilers
 
-| Tool | Platform | Use For |
-|------|----------|---------|
-| dotnet-trace | All | CPU sampling |
-| dotnet-counters | All | Runtime metrics |
-| JetBrains dotTrace | Desktop | Deep CPU analysis |
-| Visual Studio Profiler | Windows | Memory + CPU |
-| Chrome DevTools | Browser | WASM profiling |
+| Tool                   | Platform | Use For           |
+| ---------------------- | -------- | ----------------- |
+| dotnet-trace           | All      | CPU sampling      |
+| dotnet-counters        | All      | Runtime metrics   |
+| JetBrains dotTrace     | Desktop  | Deep CPU analysis |
+| Visual Studio Profiler | Windows  | Memory + CPU      |
+| Chrome DevTools        | Browser  | WASM profiling    |
 
 ### Quick dotnet-trace
 

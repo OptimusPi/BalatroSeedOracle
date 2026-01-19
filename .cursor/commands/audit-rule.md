@@ -85,6 +85,7 @@ Analyze a specific rule file for relevance, quality, and alignment with best pra
 ## Default Quality Checklist
 
 Use when no research available:
+
 - Under 500 lines
 - Has category, priority, lastReviewed in frontmatter
 - Glob patterns match actual project files
@@ -97,12 +98,14 @@ Use when no research available:
 ## Template Reference
 
 When creating new rules or restructuring existing ones:
+
 - Template: `.local/templates/cursor-rule.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
 
 Display inline:
+
 - Current state summary (lines, metadata, glob coverage)
 - Relevance score (High/Medium/Low/None)
 - Numbered list of recommended changes

@@ -5,6 +5,7 @@ Run the main BalatroSeedOracle desktop application.
 ## Input
 
 Optional:
+
 - `debug` - Run in Debug configuration instead of Release
 
 ## Steps

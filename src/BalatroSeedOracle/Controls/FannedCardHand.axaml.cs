@@ -25,8 +25,10 @@ namespace BalatroSeedOracle.Controls
         private const double OverlapFactor = 0.55; // How much cards overlap when fanned (0.5 = 50% overlap)
         private const double VerticalArcHeight = 20; // How much the outer cards dip down
 
-        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
-            AvaloniaProperty.Register<FannedCardHand, IEnumerable?>(nameof(Items));
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty = AvaloniaProperty.Register<
+            FannedCardHand,
+            IEnumerable?
+        >(nameof(Items));
 
         public IEnumerable? Items
         {
@@ -113,8 +115,7 @@ namespace BalatroSeedOracle.Controls
 
                 // Get sprite image using converter
                 var sprite = spriteConverter.Convert(item, typeof(IImage), null!, null!) as IImage;
-                var soulFace =
-                    soulFaceConverter.Convert(item, typeof(IImage), null!, null!) as IImage;
+                var soulFace = soulFaceConverter.Convert(item, typeof(IImage), null!, null!) as IImage;
 
                 // Create card container using Grid for layering
                 var cardGrid = new Grid
@@ -169,11 +170,7 @@ namespace BalatroSeedOracle.Controls
                 transformGroup.Children.Add(new TranslateTransform(x, y + 10)); // +10 for top margin
 
                 cardGrid.RenderTransform = transformGroup;
-                cardGrid.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.85,
-                    RelativeUnit.Relative
-                );
+                cardGrid.RenderTransformOrigin = new RelativePoint(0.5, 0.85, RelativeUnit.Relative);
 
                 // Z-Index: cards on the right should be on top
                 cardGrid.ZIndex = i;

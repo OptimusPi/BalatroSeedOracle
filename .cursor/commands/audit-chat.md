@@ -5,6 +5,7 @@ Analyze a chat session to discover agent problems, optimizations, and improvemen
 ## Input
 
 One of:
+
 - Current chat session (default)
 - Path to existing chat summary file in `.local/chats/`
 

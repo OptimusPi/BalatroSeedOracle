@@ -127,7 +127,7 @@ Coverage Period: {start_date} - {end_date}
 
 1. {Most important finding}
 2. {Second most important}
-...
+   ...
 ```
 
 ### 5. Ensure Directory Exists

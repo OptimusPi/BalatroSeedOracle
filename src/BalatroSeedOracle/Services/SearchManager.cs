@@ -77,11 +77,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="searchId">The ID of the search to retrieve</param>
         /// <returns>The search instance if found, null otherwise</returns>
-        public ISearchInstance? GetSearch(
-            string filterNameNormalized,
-            string deckName,
-            string stakeName
-        )
+        public ISearchInstance? GetSearch(string filterNameNormalized, string deckName, string stakeName)
         {
             var searchId = $"{filterNameNormalized}_{deckName}_{stakeName}";
             return GetSearch(searchId);
@@ -156,10 +152,7 @@ namespace BalatroSeedOracle.Services
 
                 if (_activeSearches.TryAdd(searchInstanceId, searchInstance))
                 {
-                    DebugLogger.Log(
-                        "SearchManager",
-                        $"Restored search instance from database: {searchInstanceId}"
-                    );
+                    DebugLogger.Log("SearchManager", $"Restored search instance from database: {searchInstanceId}");
                     return searchInstance;
                 }
 
@@ -167,10 +160,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SearchManager",
-                    $"Failed to restore search '{searchInstanceId}': {ex.Message}"
-                );
+                DebugLogger.LogError("SearchManager", $"Failed to restore search '{searchInstanceId}': {ex.Message}");
                 return null;
             }
         }
@@ -195,11 +185,7 @@ namespace BalatroSeedOracle.Services
                 "SearchManager",
                 $"Creating search instance with ID: {filterId}_{criteria.Deck}_{criteria.Stake}"
             );
-            var createdSearchId = CreateSearch(
-                filterId,
-                criteria.Deck ?? "Red",
-                criteria.Stake ?? "White"
-            );
+            var createdSearchId = CreateSearch(filterId, criteria.Deck ?? "Red", criteria.Stake ?? "White");
             var searchInstance = GetSearch(createdSearchId);
 
             if (searchInstance == null)
@@ -210,10 +196,7 @@ namespace BalatroSeedOracle.Services
             }
 
             DebugLogger.Log("SearchManager", $"Search instance created: {createdSearchId}");
-            DebugLogger.Log(
-                "SearchManager",
-                $"Starting search with config path: {criteria.ConfigPath}"
-            );
+            DebugLogger.Log("SearchManager", $"Starting search with config path: {criteria.ConfigPath}");
 
             // Start the search with in-memory config (works on both desktop and browser)
             await searchInstance.StartSearchAsync(criteria, config);
@@ -268,10 +251,7 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError(
-                            "SearchManager",
-                            $"Error stopping search {searchId}: {ex.Message}"
-                        );
+                        DebugLogger.LogError("SearchManager", $"Error stopping search {searchId}: {ex.Message}");
                     }
                 }
             }
@@ -282,10 +262,7 @@ namespace BalatroSeedOracle.Services
                 _activeSearches.TryRemove(searchId, out _);
             }
 
-            DebugLogger.Log(
-                "SearchManager",
-                $"🧹 Filter cleanup complete - stopped {stoppedCount} searches"
-            );
+            DebugLogger.Log("SearchManager", $"🧹 Filter cleanup complete - stopped {stoppedCount} searches");
             return stoppedCount;
         }
 
@@ -294,10 +271,7 @@ namespace BalatroSeedOracle.Services
         /// Returns results directly instead of fire-and-forget
         /// Uses the in-memory config overload - no file I/O required!
         /// </summary>
-        public async Task<QuickSearchResults> RunQuickSearchAsync(
-            SearchCriteria criteria,
-            MotelyJsonConfig config
-        )
+        public async Task<QuickSearchResults> RunQuickSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             var seeds = new List<string>();
@@ -316,10 +290,7 @@ namespace BalatroSeedOracle.Services
 
                 // Create a temporary search instance for the quick test
                 var tempSearchId = $"QuickTest_{Guid.NewGuid():N}";
-                var tempDbPath = System.IO.Path.Combine(
-                    AppPaths.TempDir,
-                    $"{tempSearchId}.db"
-                );
+                var tempDbPath = System.IO.Path.Combine(AppPaths.TempDir, $"{tempSearchId}.db");
 
                 ISearchInstance? searchInstance = null;
 
@@ -343,11 +314,7 @@ namespace BalatroSeedOracle.Services
                     // Get results from the database
                     if (searchInstance.IsDatabaseInitialized)
                     {
-                        var results = await searchInstance.GetTopResultsAsync(
-                            "score",
-                            false,
-                            maxResults
-                        );
+                        var results = await searchInstance.GetTopResultsAsync("score", false, maxResults);
                         fullResults = results; // Store full results with TotalScore
                         seeds = results.Select(r => r.Seed).ToList();
                         DebugLogger.Log("SearchManager", $"Quick search found {seeds.Count} seeds");
@@ -369,10 +336,7 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError(
-                            "SearchManager",
-                            $"Failed to delete temp DB: {ex.Message}"
-                        );
+                        DebugLogger.LogError("SearchManager", $"Failed to delete temp DB: {ex.Message}");
                     }
                 }
 

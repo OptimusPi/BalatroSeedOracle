@@ -24,12 +24,12 @@ if (_platformServices.SupportsFileSystem)
 
 ## Available Platform Capabilities
 
-| Property | Desktop | Browser | Use For |
-|----------|---------|---------|---------|
-| `SupportsFileSystem` | ✅ | ❌ | File I/O operations |
-| `SupportsAudio` | ✅ | ❌ | Audio playback |
-| `SupportsAnalyzer` | ✅ | ❌ | Seed analysis tools |
-| `SupportsResultsGrid` | ✅ | ❌ | Results grid/tab UI |
+| Property              | Desktop | Browser | Use For             |
+| --------------------- | ------- | ------- | ------------------- |
+| `SupportsFileSystem`  | ✅      | ❌      | File I/O operations |
+| `SupportsAudio`       | ✅      | ❌      | Audio playback      |
+| `SupportsAnalyzer`    | ✅      | ❌      | Seed analysis tools |
+| `SupportsResultsGrid` | ✅      | ❌      | Results grid/tab UI |
 
 ## Common Patterns
 

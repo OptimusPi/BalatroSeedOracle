@@ -17,12 +17,7 @@ namespace BalatroSeedOracle.ViewModels
 
     public class IndexConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is ContentPresenter contentPresenter)
             {
@@ -35,12 +30,7 @@ namespace BalatroSeedOracle.ViewModels
             return string.Empty;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -48,12 +38,7 @@ namespace BalatroSeedOracle.ViewModels
 
     public class EqualsValueConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null || parameter == null)
                 return false;
@@ -61,12 +46,7 @@ namespace BalatroSeedOracle.ViewModels
             return value.ToString() == parameter.ToString();
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             // When RadioButton is checked (true), return the parameter as the string value
             if (value is bool isChecked && isChecked && parameter != null)
@@ -81,12 +61,7 @@ namespace BalatroSeedOracle.ViewModels
 
     public class NotEqualsValueConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null || parameter == null)
                 return true;
@@ -94,12 +69,7 @@ namespace BalatroSeedOracle.ViewModels
             return value.ToString() != parameter.ToString();
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }

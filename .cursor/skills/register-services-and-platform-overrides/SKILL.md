@@ -7,11 +7,11 @@ description: Registers services in DI container across core and platform project
 
 ## Service Registration Locations
 
-| Location | Purpose |
-|----------|---------|
-| `src/BalatroSeedOracle/Extensions/ServiceCollectionExtensions.cs` | Core shared services |
-| `src/BalatroSeedOracle.Desktop/Program.cs` | Desktop-only services |
-| `src/BalatroSeedOracle.Browser/Program.cs` | Browser-only services |
+| Location                                                          | Purpose               |
+| ----------------------------------------------------------------- | --------------------- |
+| `src/BalatroSeedOracle/Extensions/ServiceCollectionExtensions.cs` | Core shared services  |
+| `src/BalatroSeedOracle.Desktop/Program.cs`                        | Desktop-only services |
+| `src/BalatroSeedOracle.Browser/Program.cs`                        | Browser-only services |
 
 ## Core Service Registration
 
@@ -66,10 +66,10 @@ services.AddSingleton<IApiHostService, BrowserApiHostService>();
 
 ## Lifetime Guidelines
 
-| Lifetime | Use For | Examples |
-|----------|---------|----------|
+| Lifetime      | Use For                                                | Examples                                                 |
+| ------------- | ------------------------------------------------------ | -------------------------------------------------------- |
 | **Singleton** | Stateless services, expensive resources, configuration | `SearchManager`, `SpriteService`, `ConfigurationService` |
-| **Transient** | Stateful per-use, lightweight, ViewModels | `MainWindowViewModel`, `CreditsModalViewModel` |
+| **Transient** | Stateful per-use, lightweight, ViewModels              | `MainWindowViewModel`, `CreditsModalViewModel`           |
 
 ## Creating a New Service
 

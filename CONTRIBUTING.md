@@ -37,7 +37,7 @@ Thank you for your interest in contributing to Balatro Seed Oracle! This is a co
    ```bash
    # macOS
    brew install lefthook dprint
-   
+
    # Then install git hooks
    lefthook install
    ```
@@ -63,7 +63,7 @@ Thank you for your interest in contributing to Balatro Seed Oracle! This is a co
    ```bash
    task format
    ```
-   
+
    Or let the pre-commit hooks handle it automatically when you commit.
 
 5. Commit your changes:
@@ -107,11 +107,13 @@ Formatting is automatically applied via pre-commit hooks when you commit.
 ### Testing
 
 Run tests with:
+
 ```bash
 task test
 ```
 
 Or manually:
+
 ```bash
 dotnet test -c Release
 ```
@@ -119,12 +121,14 @@ dotnet test -c Release
 ### Building
 
 Desktop:
+
 ```bash
 task run:desktop        # Release build
 task run:desktop:debug  # Debug build
 ```
 
 Browser:
+
 ```bash
 task run:browser          # Dev server
 task publish:browser      # Production build
@@ -135,6 +139,7 @@ task publish:browser      # Production build
 The `external/Motely/` directory is a git submodule and is **read-only** in this repository.
 
 If you need to modify Motely:
+
 1. Open `external/Motely` as a separate workspace
 2. Create a branch and commit in the submodule repo
 3. Push to your fork and open a PR to [OptimusPi/MotelyJAML](https://github.com/OptimusPi/MotelyJAML)
@@ -157,6 +162,7 @@ If you need to modify Motely:
 ## Reporting Issues
 
 When reporting bugs, please include:
+
 - **Description**: Clear description of the issue
 - **Steps to reproduce**: Exact steps to trigger the bug
 - **Expected behavior**: What you expected to happen

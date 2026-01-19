@@ -1,8 +1,8 @@
-using Foundation;
-using UIKit;
 using Avalonia;
 using Avalonia.iOS;
 using BalatroSeedOracle;
+using Foundation;
+using UIKit;
 
 namespace BalatroSeedOracle.iOS;
 

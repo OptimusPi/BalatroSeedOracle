@@ -76,7 +76,7 @@ Coverage Period: {YYYY-MM-DD of 6 months prior} - {YYYY-MM-DD today}
 
 - {url_1} ({year})
 - {url_2} ({year})
-...
+  ...
 
 ---
 
@@ -99,7 +99,7 @@ Coverage Period: {YYYY-MM-DD of 6 months prior} - {YYYY-MM-DD today}
 
 1. **{Takeaway 1}**: One-sentence summary
 2. **{Takeaway 2}**: One-sentence summary
-...
+   ...
 ```
 
 ## Test plan

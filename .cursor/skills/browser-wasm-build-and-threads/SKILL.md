@@ -54,22 +54,22 @@ Cross-Origin-Embedder-Policy: require-corp
 
 Location: `src/BalatroSeedOracle.Browser/Services/`
 
-| Service | Purpose |
-|---------|---------|
-| `BrowserPlatformServices.cs` | Platform capabilities (limited) |
-| `BrowserDuckDBService.cs` | DuckDB via WASM (limited) |
-| `BrowserLocalStorageAppDataStore.cs` | localStorage for persistence |
-| `BrowserApiHostService.cs` | API hosting |
+| Service                              | Purpose                         |
+| ------------------------------------ | ------------------------------- |
+| `BrowserPlatformServices.cs`         | Platform capabilities (limited) |
+| `BrowserDuckDBService.cs`            | DuckDB via WASM (limited)       |
+| `BrowserLocalStorageAppDataStore.cs` | localStorage for persistence    |
+| `BrowserApiHostService.cs`           | API hosting                     |
 
 ## JavaScript Interop
 
 Location: `src/BalatroSeedOracle.Browser/wwwroot/js/`
 
-| File | Purpose |
-|------|---------|
-| `bso-helpers.js` | BSO utility functions |
-| `duckdb-interop.js` | DuckDB WASM bridge |
-| `webaudio-interop.js` | Web Audio API bridge |
+| File                  | Purpose               |
+| --------------------- | --------------------- |
+| `bso-helpers.js`      | BSO utility functions |
+| `duckdb-interop.js`   | DuckDB WASM bridge    |
+| `webaudio-interop.js` | Web Audio API bridge  |
 
 ## Performance Optimization
 
@@ -98,13 +98,13 @@ Location: `src/BalatroSeedOracle.Browser/wwwroot/js/`
 
 ## Browser Constraints
 
-| Feature | Desktop | Browser |
-|---------|---------|---------|
-| File system | ✅ | ❌ Use localStorage |
-| Native dialogs | ✅ | Limited |
-| Audio | Full | Limited |
-| stdin | ✅ | ❌ |
-| DuckDB | Full | WASM version |
+| Feature        | Desktop | Browser             |
+| -------------- | ------- | ------------------- |
+| File system    | ✅      | ❌ Use localStorage |
+| Native dialogs | ✅      | Limited             |
+| Audio          | Full    | Limited             |
+| stdin          | ✅      | ❌                  |
+| DuckDB         | Full    | WASM version        |
 
 ## Testing Browser Build
 

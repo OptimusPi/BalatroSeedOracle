@@ -126,10 +126,7 @@ public partial class MainWindow : Window
                 BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
             if (userProfileService is not null)
             {
-                DebugLogger.LogImportant(
-                    "MainWindow",
-                    "Flushing user profile to save search state..."
-                );
+                DebugLogger.LogImportant("MainWindow", "Flushing user profile to save search state...");
                 userProfileService.FlushProfile();
             }
 

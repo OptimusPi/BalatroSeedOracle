@@ -51,6 +51,7 @@ git submodule status
 ```
 
 Output example:
+
 ```
  abc1234 external/Motely (v1.0.0)  # Clean
 +def5678 external/Motely (v1.0.0)  # Local changes (+ prefix)
@@ -95,6 +96,7 @@ Output example:
 **Symptom**: Build errors referencing `Motely` namespace
 
 **Fix**:
+
 ```bash
 git submodule update --init --recursive
 dotnet restore
@@ -105,6 +107,7 @@ dotnet restore
 **Symptom**: `git status` shows `external/Motely` modified but no changes intended
 
 **Check**:
+
 ```bash
 cd external/Motely
 git status
@@ -112,6 +115,7 @@ git diff
 ```
 
 **Fix** (discard local changes):
+
 ```bash
 git submodule update --init --recursive --force
 ```
@@ -121,6 +125,7 @@ git submodule update --init --recursive --force
 **Symptom**: Working in submodule shows "HEAD detached"
 
 **Fix**: Create a branch before making changes:
+
 ```bash
 cd external/Motely
 git checkout -b my-feature
@@ -166,6 +171,7 @@ cat .gitmodules
 ## Submodule Configuration
 
 `.gitmodules` content:
+
 ```ini
 [submodule "external/Motely"]
     path = external/Motely

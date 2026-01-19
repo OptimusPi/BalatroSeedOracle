@@ -15,12 +15,12 @@ Checklist for debugging platform-specific behavior differences between Browser/W
    Use capability checks, not platform detection:
    ```csharp
    var platform = App.GetService<IPlatformServices>();
-   
+
    if (platform.SupportsFileSystem)
    {
        // File operations
    }
-   
+
    if (platform.SupportsAudio)
    {
        // Audio playback
@@ -70,7 +70,7 @@ Checklist for debugging platform-specific behavior differences between Browser/W
    ```bash
    # Desktop
    dotnet run -c Release --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
-   
+
    # Browser
    dotnet run -c Debug --project ./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
    ```

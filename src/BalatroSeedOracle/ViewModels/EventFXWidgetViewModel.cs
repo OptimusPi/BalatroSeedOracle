@@ -15,10 +15,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
     private readonly TransitionService? _transitionService;
     private readonly EventFXService? _eventFXService;
 
-    public EventFXWidgetViewModel(
-        TransitionService? transitionService = null,
-        EventFXService? eventFXService = null
-    )
+    public EventFXWidgetViewModel(TransitionService? transitionService = null, EventFXService? eventFXService = null)
     {
         _transitionService = transitionService;
         _eventFXService = eventFXService;
@@ -36,17 +33,18 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
         LoadEventConfig();
     }
 
-    public ObservableCollection<string> EventOptions { get; } = new()
-    {
-        "Intro Animation",
-        "Search Instance Start",
-        "Search Instance Find",
-        "Author Launch Edit",
-        "Search Launch Modal",
-        "Designer Launch Modal",
-        "Analyzer Launch Modal",
-        "Settings Launch Modal",
-    };
+    public ObservableCollection<string> EventOptions { get; } =
+        new()
+        {
+            "Intro Animation",
+            "Search Instance Start",
+            "Search Instance Find",
+            "Author Launch Edit",
+            "Search Launch Modal",
+            "Designer Launch Modal",
+            "Analyzer Launch Modal",
+            "Settings Launch Modal",
+        };
 
     [ObservableProperty]
     private string _selectedEvent = "Intro Animation";
@@ -61,18 +59,12 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
     [ObservableProperty]
     private string _selectedTransitionPreset = "(none)";
 
-    public ObservableCollection<string> DurationOptions { get; } = new()
-    {
-        "0.5s", "1s", "2s", "3s", "5s", "10s"
-    };
+    public ObservableCollection<string> DurationOptions { get; } = new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
 
     [ObservableProperty]
     private string _selectedDuration = "2s";
 
-    public ObservableCollection<string> EasingOptions { get; } = new()
-    {
-        "Linear", "EaseIn", "EaseOut", "EaseInOut"
-    };
+    public ObservableCollection<string> EasingOptions { get; } = new() { "Linear", "EaseIn", "EaseOut", "EaseInOut" };
 
     [ObservableProperty]
     private string _selectedEasing = "EaseOut";
@@ -146,7 +138,10 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
         if (!double.TryParse(SelectedDuration.TrimEnd('s'), out var duration))
             duration = 2.0;
 
-        DebugLogger.Log("EventFXWidget", $"Previewing {SelectedEvent} with preset {SelectedTransitionPreset}, duration {duration}s, easing {SelectedEasing}");
+        DebugLogger.Log(
+            "EventFXWidget",
+            $"Previewing {SelectedEvent} with preset {SelectedTransitionPreset}, duration {duration}s, easing {SelectedEasing}"
+        );
     }
 
     [RelayCommand]
@@ -159,7 +154,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
                 EventName = SelectedEvent,
                 TransitionPreset = SelectedTransitionPreset,
                 Duration = SelectedDuration,
-                Easing = SelectedEasing
+                Easing = SelectedEasing,
             };
 
             var configPath = Path.Combine(AppPaths.EventFXDir, GetConfigFileName(SelectedEvent));

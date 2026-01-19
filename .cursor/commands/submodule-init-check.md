@@ -15,7 +15,7 @@ None required.
 
    Expected output shows commit hash without `-` prefix:
    ```
-    abc1234 external/Motely (v1.0.0)
+   abc1234 external/Motely (v1.0.0)
    ```
 
    If you see `-` prefix, submodule is NOT initialized:

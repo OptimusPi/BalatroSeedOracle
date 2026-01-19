@@ -24,11 +24,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Ambient tilt strength (0.2 = Balatro default)
         /// </summary>
-        public static readonly StyledProperty<double> AmbientTiltProperty =
-            AvaloniaProperty.Register<BalatroCardSwayBehavior, double>(
-                nameof(AmbientTilt),
-                UIConstants.CardAmbientTiltMultiplier
-            );
+        public static readonly StyledProperty<double> AmbientTiltProperty = AvaloniaProperty.Register<
+            BalatroCardSwayBehavior,
+            double
+        >(nameof(AmbientTilt), UIConstants.CardAmbientTiltMultiplier);
 
         public double AmbientTilt
         {
@@ -52,11 +51,7 @@ namespace BalatroSeedOracle.Behaviors
             // Otherwise create a new TranslateTransform (NOT RotateTransform!)
             if (AssociatedObject.RenderTransform == null)
             {
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.5,
-                    RelativeUnit.Relative
-                );
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
                 AssociatedObject.RenderTransform = new TranslateTransform();
             }
 

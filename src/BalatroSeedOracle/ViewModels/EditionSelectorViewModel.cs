@@ -79,31 +79,13 @@ namespace BalatroSeedOracle.ViewModels
         private void InitializeEditions()
         {
             Editions.Add(
-                new EditionOptionViewModel(
-                    "",
-                    "Any Edition",
-                    "⚪",
-                    "Card can have any edition type",
-                    "#CCCCCC"
-                )
+                new EditionOptionViewModel("", "Any Edition", "⚪", "Card can have any edition type", "#CCCCCC")
             );
             Editions.Add(
-                new EditionOptionViewModel(
-                    "Normal",
-                    "⚪ Normal",
-                    "⚪",
-                    "No special effect - base card",
-                    "#FFFFFF"
-                )
+                new EditionOptionViewModel("Normal", "⚪ Normal", "⚪", "No special effect - base card", "#FFFFFF")
             );
             Editions.Add(
-                new EditionOptionViewModel(
-                    "Foil",
-                    "✨ Foil (+50 chips)",
-                    "✨",
-                    "+50 chips when scored",
-                    "#C0C0C0"
-                )
+                new EditionOptionViewModel("Foil", "✨ Foil (+50 chips)", "✨", "+50 chips when scored", "#C0C0C0")
             );
             Editions.Add(
                 new EditionOptionViewModel(
@@ -270,13 +252,7 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class EditionOptionViewModel
     {
-        public EditionOptionViewModel(
-            string tag,
-            string displayName,
-            string emoji,
-            string description,
-            string color
-        )
+        public EditionOptionViewModel(string tag, string displayName, string emoji, string description, string color)
         {
             Tag = tag;
             DisplayName = displayName;

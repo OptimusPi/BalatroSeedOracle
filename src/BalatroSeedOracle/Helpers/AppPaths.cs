@@ -21,8 +21,7 @@ namespace BalatroSeedOracle.Helpers
         private static string DataRoot => _dataRoot ?? ResolveDataRoot();
 
         public static string DataRootDir => DataRoot;
-        public static string VisualizerPresetsDir =>
-            EnsureDir(Path.Combine(DataRoot, "VisualizerPresets"));
+        public static string VisualizerPresetsDir => EnsureDir(Path.Combine(DataRoot, "VisualizerPresets"));
         public static string MixerSettingsDir => EnsureDir(Path.Combine(DataRoot, "MixerSettings"));
         public static string MixerPresetsDir => EnsureDir(Path.Combine(DataRoot, "MixerPresets"));
         public static string SearchResultsDir => EnsureDir(Path.Combine(DataRoot, "SearchResults"));
@@ -42,7 +41,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 return _platformServices.GetTempDirectory();
             }
-            
+
             // Fallback for early initialization before platform services are available
             // This should only happen during static initialization
             return Path.Combine(DataRoot, "Temp");
@@ -87,9 +86,7 @@ namespace BalatroSeedOracle.Helpers
                     }
                     return overrideDir;
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
             var exeDir = AppContext.BaseDirectory;
@@ -106,9 +103,7 @@ namespace BalatroSeedOracle.Helpers
                 }
                 return localData;
             }
-            catch
-            {
-            }
+            catch { }
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var root = Path.Combine(appData, "BalatroSeedOracle");

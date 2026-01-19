@@ -15,7 +15,7 @@ namespace BalatroSeedOracle.Services
         SearchLaunchModal,
         DesignerLaunchModal,
         AnalyzerLaunchModal,
-        SettingsLaunchModal
+        SettingsLaunchModal,
     }
 
     public class EventFXConfig
@@ -104,10 +104,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "EventFXService",
-                    $"Failed to load config for {eventType}: {ex.Message}"
-                );
+                DebugLogger.LogError("EventFXService", $"Failed to load config for {eventType}: {ex.Message}");
                 return null;
             }
         }
@@ -124,7 +121,7 @@ namespace BalatroSeedOracle.Services
                 EventFXType.DesignerLaunchModal => "designer_launch_modal.json",
                 EventFXType.AnalyzerLaunchModal => "analyzer_launch_modal.json",
                 EventFXType.SettingsLaunchModal => "settings_launch_modal.json",
-                _ => "unknown.json"
+                _ => "unknown.json",
             };
         }
     }

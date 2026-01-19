@@ -132,8 +132,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 var sprites = Services.SpriteService.Instance;
                 var deckName = _parentViewModel.SelectedDeck.ToString();
-                var stakeName =
-                    StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
+                var stakeName = StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";
                 return sprites.GetDeckWithStakeSticker(deckName, stakeName);
             }
         }
@@ -150,10 +149,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 // FAIL LOUD: User clicked button, they need to know if navigation failed
-                DebugLogger.LogError(
-                    "SaveFilterTab",
-                    $"❌ Failed to navigate to Joker config: {ex.Message}"
-                );
+                DebugLogger.LogError("SaveFilterTab", $"❌ Failed to navigate to Joker config: {ex.Message}");
                 StatusMessage = "Failed to open Joker configuration";
             }
         }
@@ -230,7 +226,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // We no longer need to manually copy Name/Description as they are now proxied.
                 // But we still need to refresh the criteria display and preview image.
-                
+
                 // CRITICAL: Refresh criteria display when tab becomes visible
                 RefreshCriteriaDisplay();
 
@@ -238,10 +234,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SaveFilterTab",
-                    $"Error pre-filling filter data: {ex.Message}"
-                );
+                DebugLogger.LogError("SaveFilterTab", $"Error pre-filling filter data: {ex.Message}");
             }
         }
 
@@ -491,10 +484,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     case "joker":
                         clause.Type = "Joker";
                         clause.Value = itemConfig.ItemName;
-                        if (
-                            !string.IsNullOrEmpty(itemConfig.Edition)
-                            && itemConfig.Edition != "none"
-                        )
+                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
                         {
                             clause.Edition = itemConfig.Edition;
                         }
@@ -526,10 +516,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         break;
 
                     default:
-                        DebugLogger.Log(
-                            "SaveFilterTab",
-                            $"Unknown item type: {itemConfig.ItemType}"
-                        );
+                        DebugLogger.Log("SaveFilterTab", $"Unknown item type: {itemConfig.ItemType}");
                         return null;
                 }
 
@@ -597,10 +584,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     break;
 
                 default:
-                    DebugLogger.LogError(
-                        "SaveFilterTab",
-                        $"Cannot convert FilterItem with unknown type: {item.Type}"
-                    );
+                    DebugLogger.LogError("SaveFilterTab", $"Cannot convert FilterItem with unknown type: {item.Type}");
                     return null;
             }
 
@@ -671,8 +655,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 };
 
                 // Start search via SearchManager and wait for results
-                var searchManager =
-                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
                     IsTestRunning = false;
@@ -683,10 +666,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Run quick search with in-memory config (no file I/O!)
-                UpdateStatus(
-                    $"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...",
-                    false
-                );
+                UpdateStatus($"Testing '{config.Name}' on {deckName} deck, {stakeName} stake...", false);
                 var results = await searchManager.RunQuickSearchAsync(criteria, config);
 
                 // Update UI with results
@@ -704,9 +684,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     string? verifiedSeed = null;
                     if (results.Results != null && results.Results.Count > 0)
                     {
-                        var bestResult = results
-                            .Results.OrderByDescending(r => r.TotalScore)
-                            .First();
+                        var bestResult = results.Results.OrderByDescending(r => r.TotalScore).First();
                         verifiedSeed = bestResult.Seed;
                         FoundSeed = verifiedSeed ?? "Unknown";
                         DebugLogger.Log(
@@ -725,18 +703,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (!string.IsNullOrEmpty(verifiedSeed))
                     {
                         config.VerifiedSeed = verifiedSeed;
-                        var filePath = _filterService.GenerateFilterFileName(
-                            config.Name ?? "filter"
-                        );
+                        var filePath = _filterService.GenerateFilterFileName(config.Name ?? "filter");
                         await _configurationService.SaveFilterAsync(filePath, config);
-                        DebugLogger.Log(
-                            "SaveFilterTab",
-                            $"Saved verified seed {verifiedSeed} to filter config"
-                        );
+                        DebugLogger.Log("SaveFilterTab", $"Saved verified seed {verifiedSeed} to filter config");
                     }
 
-                    TestResultMessage =
-                        $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
+                    TestResultMessage = $"✓ VERIFIED - Found matching seed in {results.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: Found seed {FoundSeed}", false);
                 }
                 else if (results.Success && results.Count == 0)
@@ -745,10 +717,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ShowTestError = true;
                     TestResultMessage =
                         $"⚠ NO MATCHES FOUND in {results.ElapsedTime:F1}s\nTry different deck/stake or wider search";
-                    UpdateStatus(
-                        $"⚠ No matching seeds found (searched {criteria.EndBatch} batches)",
-                        true
-                    );
+                    UpdateStatus($"⚠ No matching seeds found (searched {criteria.EndBatch} batches)", true);
                 }
                 else
                 {
@@ -781,9 +750,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 6 => 1_225UL,
                 7 => 35UL,
                 8 => 1UL,
-                _ => throw new ArgumentException(
-                    $"Invalid batch size: {batchSize}. Valid range is 1-8."
-                ),
+                _ => throw new ArgumentException($"Invalid batch size: {batchSize}. Valid range is 1-8."),
             };
         }
 
@@ -865,9 +832,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         else
                         {
                             // OR/AND operators
-                            MustItems.Add(
-                                $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
-                            );
+                            MustItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
                             foreach (var child in operatorItem.Children)
                             {
                                 MustItems.Add($"  {child.Type}: {child.DisplayName}");
@@ -886,9 +851,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     if (item is Models.FilterOperatorItem operatorItem)
                     {
-                        ShouldItems.Add(
-                            $"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)"
-                        );
+                        ShouldItems.Add($"{operatorItem.OperatorType} ({operatorItem.Children.Count} items)");
                         foreach (var child in operatorItem.Children)
                         {
                             ShouldItems.Add($"  {child.Type}: {child.DisplayName}");

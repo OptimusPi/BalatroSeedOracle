@@ -90,6 +90,7 @@ Analyze workspace cursor rules, commands, and skills to identify improvements.
 ## Output Format
 
 Create improvement plan as `.local/plans/cursor-config-audit-YYYY-MM-DD.md` with:
+
 - Executive summary (3-5 sentences)
 - Research reference (file used, if any)
 - Prioritized action items

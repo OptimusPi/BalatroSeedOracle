@@ -20,6 +20,7 @@ Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
 ## Forbidden
 
 **NEVER** use `Console.WriteLine()` for debug messages except:
+
 - Inside `BrowserPlatformServices` or `DesktopPlatformServices`
 - As fallback in `DebugLogger.LogInternal()` itself
 
@@ -85,6 +86,7 @@ public class SearchModalViewModel
 ## How It Works
 
 DebugLogger routes output through `IPlatformServices.WriteLog()`:
+
 - **Desktop**: `Console.WriteLine()`
 - **Browser**: `System.Console.WriteLine()` with `Debug.WriteLine()` fallback
 

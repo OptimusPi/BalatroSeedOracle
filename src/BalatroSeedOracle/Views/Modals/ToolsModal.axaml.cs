@@ -79,7 +79,10 @@ namespace BalatroSeedOracle.Views.Modals
                             MotelyJsonConfig? config;
                             if (extension == ".jaml")
                             {
-                                if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
+                                if (
+                                    !Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError)
+                                    || config == null
+                                )
                                 {
                                     DebugLogger.LogError(
                                         "ToolsModal",
@@ -114,10 +117,15 @@ namespace BalatroSeedOracle.Views.Modals
                                 : Path.GetFileNameWithoutExtension(storageFile.Name);
                             var destKey = filterService.GenerateFilterFileName(baseName);
 
-                            var saved = await configurationService.SaveFilterAsync(destKey, config).ConfigureAwait(false);
+                            var saved = await configurationService
+                                .SaveFilterAsync(destKey, config)
+                                .ConfigureAwait(false);
                             if (!saved)
                             {
-                                DebugLogger.LogError("ToolsModal", $"Failed to save imported filter: {storageFile.Name}");
+                                DebugLogger.LogError(
+                                    "ToolsModal",
+                                    $"Failed to save imported filter: {storageFile.Name}"
+                                );
                                 failCount++;
                                 continue;
                             }
@@ -128,10 +136,7 @@ namespace BalatroSeedOracle.Views.Modals
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError(
-                                "ToolsModal",
-                                $"Failed to import file {file.Name}: {ex.Message}"
-                            );
+                            DebugLogger.LogError("ToolsModal", $"Failed to import file {file.Name}: {ex.Message}");
                             failCount++;
                         }
                     }
@@ -143,11 +148,7 @@ namespace BalatroSeedOracle.Views.Modals
                         var message =
                             successCount > 0
                                 ? $"Successfully imported {successCount} file(s)"
-                                    + (
-                                        failCount > 0
-                                            ? $"\n{failCount} file(s) failed to import"
-                                            : ""
-                                    )
+                                    + (failCount > 0 ? $"\n{failCount} file(s) failed to import" : "")
                                 : "Failed to import files";
 
                         // Create a simple message modal
@@ -322,10 +323,7 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError(
-                                    "NukeEverything",
-                                    $"Failed to delete {file}: {ex.Message}"
-                                );
+                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
                             }
                         }
                     }
@@ -334,11 +332,7 @@ namespace BalatroSeedOracle.Views.Modals
                     var resultsDir = AppPaths.SearchResultsDir;
                     if (Directory.Exists(resultsDir))
                     {
-                        var resultFiles = Directory.GetFiles(
-                            resultsDir,
-                            "*.*",
-                            SearchOption.AllDirectories
-                        );
+                        var resultFiles = Directory.GetFiles(resultsDir, "*.*", SearchOption.AllDirectories);
                         foreach (var file in resultFiles)
                         {
                             try
@@ -348,10 +342,7 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError(
-                                    "NukeEverything",
-                                    $"Failed to delete {file}: {ex.Message}"
-                                );
+                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
                             }
                         }
 
@@ -393,10 +384,7 @@ namespace BalatroSeedOracle.Views.Modals
                     };
                     mainMenu.ShowModalContent(resultModal, "NUKE COMPLETE");
 
-                    DebugLogger.Log(
-                        "NukeEverything",
-                        $"Nuked {deletedFilters} filters and {deletedResults} results"
-                    );
+                    DebugLogger.Log("NukeEverything", $"Nuked {deletedFilters} filters and {deletedResults} results");
                 }
                 catch (Exception ex)
                 {

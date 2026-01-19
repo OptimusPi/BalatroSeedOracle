@@ -59,6 +59,7 @@ graph TB
 ```
 
 **Key Components:**
+
 - **Avalonia UI**: Cross-platform desktop and browser framework
 - **MVVM Pattern**: Clean separation of UI and business logic
 - **DuckDB**: Fast analytical database for search results
@@ -182,6 +183,7 @@ Use the in-app visual filter designer to create complex filters, or write them m
 **See [docs/FILTERS.md](docs/FILTERS.md) for detailed filter configuration guide.**
 
 Quick example:
+
 - Visual editor with drag-and-drop criteria
 - JSON/JAML configuration files
 - Advanced features: pack slots, shop positions, editions, complex logic
@@ -224,6 +226,7 @@ Typical speeds: 10-50 million seeds per second depending on filter complexity.
 This is a community project and we welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 Quick links:
+
 - [How to contribute](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [Code of conduct](https://github.com/OptimusPi/BalatroSeedOracle/blob/main/CODE_OF_CONDUCT.md) (if available)

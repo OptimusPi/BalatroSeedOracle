@@ -38,10 +38,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private SeedAnalysisModel? _currentAnalysis;
 
-        public AnalyzeModalViewModel(
-            SpriteService spriteService,
-            UserProfileService userProfileService
-        )
+        public AnalyzeModalViewModel(SpriteService spriteService, UserProfileService userProfileService)
         {
             _spriteService = spriteService;
             _userProfileService = userProfileService;
@@ -124,10 +121,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsAnalyzing = true;
                 ShowPlaceholder = false;
 
-                DebugLogger.Log(
-                    "AnalyzeModalViewModel",
-                    $"Starting analysis for seed: {SeedInput}"
-                );
+                DebugLogger.Log("AnalyzeModalViewModel", $"Starting analysis for seed: {SeedInput}");
 
                 // Clear previous results
                 Antes.Clear();
@@ -155,10 +149,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!string.IsNullOrEmpty(analysisData.Error))
                 {
-                    DebugLogger.LogError(
-                        "AnalyzeModalViewModel",
-                        $"Analysis error: {analysisData.Error}"
-                    );
+                    DebugLogger.LogError("AnalyzeModalViewModel", $"Analysis error: {analysisData.Error}");
                 }
                 else
                 {
@@ -170,16 +161,8 @@ namespace BalatroSeedOracle.ViewModels
                             AnteNumber = motelyAnte.Ante,
                             Boss = motelyAnte.Boss,
                             Voucher = motelyAnte.Voucher,
-                            SmallBlindTag = new TagModel
-                            {
-                                BlindType = "Small Blind",
-                                Tag = motelyAnte.SmallBlindTag,
-                            },
-                            BigBlindTag = new TagModel
-                            {
-                                BlindType = "Big Blind",
-                                Tag = motelyAnte.BigBlindTag,
-                            },
+                            SmallBlindTag = new TagModel { BlindType = "Small Blind", Tag = motelyAnte.SmallBlindTag },
+                            BigBlindTag = new TagModel { BlindType = "Big Blind", Tag = motelyAnte.BigBlindTag },
                         };
 
                         // Convert shop items
@@ -198,10 +181,7 @@ namespace BalatroSeedOracle.ViewModels
                         // Convert booster packs
                         foreach (var pack in motelyAnte.Packs)
                         {
-                            var packModel = new BoosterPackModel
-                            {
-                                PackType = (MotelyBoosterPackType)pack.Type,
-                            };
+                            var packModel = new BoosterPackModel { PackType = (MotelyBoosterPackType)pack.Type };
 
                             foreach (var item in pack.Items)
                             {
@@ -220,20 +200,14 @@ namespace BalatroSeedOracle.ViewModels
                         CurrentAnalysis.Antes = Antes;
                     }
 
-                    DebugLogger.Log(
-                        "AnalyzeModalViewModel",
-                        $"Analysis completed successfully: {Antes.Count} antes"
-                    );
+                    DebugLogger.Log("AnalyzeModalViewModel", $"Analysis completed successfully: {Antes.Count} antes");
                 }
 
                 UpdatePlaceholderVisibility();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "AnalyzeModalViewModel",
-                    $"Error analyzing seed: {ex.Message}"
-                );
+                DebugLogger.LogError("AnalyzeModalViewModel", $"Error analyzing seed: {ex.Message}");
 
                 CurrentAnalysis = new SeedAnalysisModel
                 {
@@ -287,17 +261,11 @@ namespace BalatroSeedOracle.ViewModels
                 var analyzerWindow = new Windows.AnalyzerWindow(analyzerViewModel);
                 analyzerWindow.Show();
 
-                DebugLogger.Log(
-                    "AnalyzeModalViewModel",
-                    $"Opened pop-out analyzer window for seed: {seed}"
-                );
+                DebugLogger.Log("AnalyzeModalViewModel", $"Opened pop-out analyzer window for seed: {seed}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "AnalyzeModalViewModel",
-                    $"Error opening pop-out analyzer: {ex.Message}"
-                );
+                DebugLogger.LogError("AnalyzeModalViewModel", $"Error opening pop-out analyzer: {ex.Message}");
             }
         }
 

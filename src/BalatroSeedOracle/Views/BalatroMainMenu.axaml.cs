@@ -46,9 +46,8 @@ namespace BalatroSeedOracle.Views
 
         public Action<UserControl>? RequestContentSwap { get; set; }
 
-        public BalatroMainMenu() : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>())
-        {
-        }
+        public BalatroMainMenu()
+            : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>()) { }
 
         public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
         {
@@ -96,9 +95,7 @@ namespace BalatroSeedOracle.Views
             e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
         }
 
-        private void OnModalContainerDrop(object? sender, DragEventArgs e)
-        {
-        }
+        private void OnModalContainerDrop(object? sender, DragEventArgs e) { }
 
         private void WireViewModelEvents()
         {
@@ -238,50 +235,54 @@ namespace BalatroSeedOracle.Views
 
                             var filtersDir = AppPaths.FiltersDir;
                             // Try .jaml first, then .json as fallback
-                            var configPath = System.IO.Path.Combine(
-                                filtersDir,
-                                result.FilterId + ".jaml"
-                            );
-                            
+                            var configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".jaml");
+
                             if (!System.IO.File.Exists(configPath))
                             {
-                                configPath = System.IO.Path.Combine(
-                                    filtersDir,
-                                    result.FilterId + ".json"
-                                );
+                                configPath = System.IO.Path.Combine(filtersDir, result.FilterId + ".json");
                             }
 
                             try
                             {
                                 var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
                                 var json = await platformServices.ReadTextFromPathAsync(configPath) ?? "{}";
-                                
+
                                 // Parse based on file extension
                                 Motely.Filters.MotelyJsonConfig config;
                                 if (configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(json, out config, out var parseError) || config == null)
+                                    if (
+                                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                            json,
+                                            out config,
+                                            out var parseError
+                                        )
+                                        || config == null
+                                    )
                                     {
-                                        throw new InvalidOperationException($"Failed to parse JAML: {parseError ?? "Unknown error"}");
+                                        throw new InvalidOperationException(
+                                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
+                                        );
                                     }
                                 }
                                 else
                                 {
-                                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                        json,
-                                        new System.Text.Json.JsonSerializerOptions
-                                        {
-                                            PropertyNameCaseInsensitive = true,
-                                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                            AllowTrailingCommas = true,
-                                        }
-                                    );
+                                    config =
+                                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                                            json,
+                                            new System.Text.Json.JsonSerializerOptions
+                                            {
+                                                PropertyNameCaseInsensitive = true,
+                                                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                                                AllowTrailingCommas = true,
+                                            }
+                                        );
                                     if (config == null)
                                     {
                                         throw new InvalidOperationException("Failed to deserialize JSON filter");
                                     }
                                 }
-                                
+
                                 if (config != null && !string.IsNullOrEmpty(config.Name))
                                 {
                                     SetTitle($"🔍 {config.Name}");
@@ -295,32 +296,28 @@ namespace BalatroSeedOracle.Views
                                     ViewModel.IsModalVisible = false;
                                 }
                                 HideModalContent();
-                                
+
                                 Helpers.DebugLogger.LogError(
                                     "BalatroMainMenu",
                                     $"Failed to show search modal with filter: {ex.Message}"
                                 );
-                                
+
                                 // Show error using existing modal system
                                 var errorText = $"Failed to load filter:\n\n{ex.Message}";
                                 var errorContent = new StackPanel
                                 {
                                     Margin = new Thickness(20),
-                                    Children = 
+                                    Children =
                                     {
-                                        new TextBlock 
-                                        { 
-                                            Text = "Error", 
-                                            FontSize = 24, 
+                                        new TextBlock
+                                        {
+                                            Text = "Error",
+                                            FontSize = 24,
                                             FontWeight = FontWeight.Bold,
-                                            Margin = new Thickness(0,0,0,10)
+                                            Margin = new Thickness(0, 0, 0, 10),
                                         },
-                                        new TextBlock 
-                                        { 
-                                            Text = errorText, 
-                                            TextWrapping = TextWrapping.Wrap 
-                                        }
-                                    }
+                                        new TextBlock { Text = errorText, TextWrapping = TextWrapping.Wrap },
+                                    },
                                 };
                                 var errorControl = new UserControl { Content = errorContent };
                                 ShowModalContent(errorControl, "❌ ERROR");
@@ -368,9 +365,7 @@ namespace BalatroSeedOracle.Views
 
                     if (string.IsNullOrEmpty(searchContent.ViewModel.CurrentFilterPath))
                     {
-                        throw new InvalidOperationException(
-                            $"ASSERT FAILED: Filter did not load! Path: {configPath}"
-                        );
+                        throw new InvalidOperationException($"ASSERT FAILED: Filter did not load! Path: {configPath}");
                     }
 
                     searchContent.ViewModel.SelectedTabIndex = 0;
@@ -471,9 +466,7 @@ namespace BalatroSeedOracle.Views
                             var newFilterId = await CreateNewFilterWithName(filterName);
                             if (!string.IsNullOrEmpty(newFilterId))
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                    ShowFiltersModalDirectAsync(newFilterId)
-                                );
+                                await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirectAsync(newFilterId));
                             }
                         }
                         else
@@ -490,9 +483,7 @@ namespace BalatroSeedOracle.Views
                         // Open designer with selected filter loaded (replaces current modal)
                         if (result.FilterId != null)
                         {
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                                ShowFiltersModalDirectAsync(result.FilterId)
-                            );
+                            await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirectAsync(result.FilterId));
                         }
                         break;
                     case Models.FilterAction.Copy:
@@ -500,11 +491,8 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null)
                         {
                             // Get original filter name for default (using FilterService)
-                            var filterService =
-                                Helpers.ServiceHelper.GetRequiredService<IFilterService>();
-                            var originalName = await filterService.GetFilterNameAsync(
-                                result.FilterId
-                            );
+                            var filterService = Helpers.ServiceHelper.GetRequiredService<IFilterService>();
+                            var originalName = await filterService.GetFilterNameAsync(result.FilterId);
                             var defaultCopyName = string.IsNullOrEmpty(originalName)
                                 ? "Filter Copy"
                                 : $"{originalName} Copy";
@@ -512,15 +500,10 @@ namespace BalatroSeedOracle.Views
                             var copyName = await ShowFilterNameInputDialog(defaultCopyName);
                             if (!string.IsNullOrWhiteSpace(copyName))
                             {
-                                var clonedId = await filterService.CloneFilterAsync(
-                                    result.FilterId,
-                                    copyName
-                                );
+                                var clonedId = await filterService.CloneFilterAsync(result.FilterId, copyName);
                                 if (!string.IsNullOrEmpty(clonedId))
                                 {
-                                    await Dispatcher.UIThread.InvokeAsync(() =>
-                                        ShowFiltersModalDirectAsync(clonedId)
-                                    );
+                                    await Dispatcher.UIThread.InvokeAsync(() => ShowFiltersModalDirectAsync(clonedId));
                                 }
                             }
                             else
@@ -563,10 +546,7 @@ namespace BalatroSeedOracle.Views
                     var filterName = await ShowFilterNameInputDialog();
                     if (string.IsNullOrEmpty(filterName))
                     {
-                        Helpers.DebugLogger.Log(
-                            "BalatroMainMenu",
-                            "Filter creation cancelled by user"
-                        );
+                        Helpers.DebugLogger.Log("BalatroMainMenu", "Filter creation cancelled by user");
                         return; // User cancelled
                     }
 
@@ -574,10 +554,7 @@ namespace BalatroSeedOracle.Views
                     var filtersDir = AppPaths.FiltersDir;
 
                     // Sanitize filename
-                    var sanitizedName = string.Join(
-                        "_",
-                        filterName.Split(System.IO.Path.GetInvalidFileNameChars())
-                    );
+                    var sanitizedName = string.Join("_", filterName.Split(System.IO.Path.GetInvalidFileNameChars()));
                     filterId = sanitizedName;
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
@@ -598,15 +575,9 @@ namespace BalatroSeedOracle.Views
                         defaultFilter,
                         new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
                     );
-                    System.IO.File.WriteAllText(
-                        filterPath,
-                        Helpers.CompactJsonFormatter.Format(jsonContent)
-                    );
+                    System.IO.File.WriteAllText(filterPath, Helpers.CompactJsonFormatter.Format(jsonContent));
 
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Created new filter: {filterName} ({filterId}.json)"
-                    );
+                    Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterName} ({filterId}.json)");
                 }
 
                 // Back to the REAL FiltersModal with visual item shelf and card display!
@@ -636,7 +607,7 @@ namespace BalatroSeedOracle.Views
                     var filtersDir = AppPaths.FiltersDir;
                     // Try .jaml first, then .json as fallback
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
-                    
+
                     if (!System.IO.File.Exists(filterPath))
                     {
                         filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
@@ -644,19 +615,11 @@ namespace BalatroSeedOracle.Views
 
                     filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"🔄 Loading filter for editing: {filterPath}"
-                    );
+                    Helpers.DebugLogger.Log("BalatroMainMenu", $"🔄 Loading filter for editing: {filterPath}");
 
-                    await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(
-                        null
-                    );
+                    await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(null);
 
-                    Helpers.DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Filter loaded for editing: {filterId}"
-                    );
+                    Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Filter loaded for editing: {filterId}");
                 }
 
                 // Verify filter was loaded properly
@@ -679,10 +642,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"ShowFiltersModalDirectAsync failed: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowFiltersModalDirectAsync failed: {ex.Message}");
                 throw;
             }
         }
@@ -773,7 +733,7 @@ namespace BalatroSeedOracle.Views
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Width = 450,
-                Height = 250
+                Height = 250,
             };
 
             var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
@@ -850,7 +810,8 @@ namespace BalatroSeedOracle.Views
             ShowModalContent(contentControl, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
 
             // Focus textbox after a short delay
-            Dispatcher.UIThread.Post(async () => {
+            Dispatcher.UIThread.Post(async () =>
+            {
                 await Task.Delay(100);
                 textBox.Focus();
                 textBox.SelectAll();
@@ -909,10 +870,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to create filter: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"Failed to create filter: {ex.Message}");
                 return null;
             }
         }
@@ -1099,6 +1057,7 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.LogError("BalatroMainMenu", $"Failed to apply shader parameters: {ex.Message}");
             }
         }
+
         /// <summary>
         /// Open analyzer with the specified filter (filter selection happens inside analyzer)
         /// </summary>
@@ -1151,10 +1110,7 @@ namespace BalatroSeedOracle.Views
 
                 if (profileService == null || searchManager == null)
                 {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "Services not available for widget restoration"
-                    );
+                    DebugLogger.LogError("BalatroMainMenu", "Services not available for widget restoration");
                     return;
                 }
 
@@ -1162,41 +1118,29 @@ namespace BalatroSeedOracle.Views
                 // Direct field access from x:Name
                 if (DesktopCanvas == null)
                 {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "DesktopCanvas not found for widget restoration"
-                    );
+                    DebugLogger.LogError("BalatroMainMenu", "DesktopCanvas not found for widget restoration");
                     return;
                 }
 
                 // Track widgets to remove (orphaned searches)
-                var widgetsToRemove =
-                    new System.Collections.Generic.List<Models.SavedSearchWidget>();
+                var widgetsToRemove = new System.Collections.Generic.List<Models.SavedSearchWidget>();
 
                 // Restore each saved widget
                 foreach (var savedWidget in profile.SavedSearchWidgets.ToList())
                 {
                     // Try to get or restore the search instance
-                    var searchInstance = searchManager.GetOrRestoreSearch(
-                        savedWidget.SearchInstanceId
-                    );
+                    var searchInstance = searchManager.GetOrRestoreSearch(savedWidget.SearchInstanceId);
 
                     if (searchInstance == null)
                     {
                         // Search doesn't exist, mark for cleanup
                         widgetsToRemove.Add(savedWidget);
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Orphaned widget removed: {savedWidget.SearchInstanceId}"
-                        );
+                        DebugLogger.Log("BalatroMainMenu", $"Orphaned widget removed: {savedWidget.SearchInstanceId}");
                         continue;
                     }
 
                     // Check if search instance has valid filter data (not just "Unknown")
-                    if (
-                        searchInstance.FilterName == "Unknown"
-                        || searchInstance.GetFilterConfig() == null
-                    )
+                    if (searchInstance.FilterName == "Unknown" || searchInstance.GetFilterConfig() == null)
                     {
                         // Search exists but has no valid config - stale data, remove it
                         widgetsToRemove.Add(savedWidget);
@@ -1210,10 +1154,7 @@ namespace BalatroSeedOracle.Views
                     // Create SearchWidget at saved position
                     var spriteService = Services.SpriteService.Instance;
                     var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
-                    var searchWidget = new Components.Widgets.SearchWidget
-                    {
-                        DataContext = viewModel,
-                    };
+                    var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
 
                     // Restore position and state
                     viewModel.PositionX = savedWidget.PositionX;
@@ -1252,26 +1193,17 @@ namespace BalatroSeedOracle.Views
                         profile.SavedSearchWidgets.Remove(widget);
                     }
                     profileService.SaveProfile(profile);
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Cleaned up {widgetsToRemove.Count} orphaned widgets"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"Cleaned up {widgetsToRemove.Count} orphaned widgets");
                 }
 
                 if (profile.SavedSearchWidgets.Count > 0)
                 {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Restored {profile.SavedSearchWidgets.Count} search widgets"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"Restored {profile.SavedSearchWidgets.Count} search widgets");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to restore saved widgets: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to restore saved widgets: {ex.Message}");
             }
         }
 
@@ -1328,10 +1260,7 @@ namespace BalatroSeedOracle.Views
                         if (!absolutePopupBounds.Contains(clickPosition))
                         {
                             ViewModel.IsVolumePopupOpen = false;
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                "Volume popup closed via click-away"
-                            );
+                            DebugLogger.Log("BalatroMainMenu", "Volume popup closed via click-away");
                         }
                     }
                 }
@@ -1356,11 +1285,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
         /// </summary>
-        public void ShowModalContent(
-            UserControl content,
-            string? title = null,
-            bool keepBackdrop = false
-        )
+        public void ShowModalContent(UserControl content, string? title = null, bool keepBackdrop = false)
         {
             if (_modalContainer == null || _modalOverlay == null || _modalContentWrapper == null)
                 return;
@@ -1442,11 +1367,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                if (
-                    _modalContainer == null
-                    || _modalContentWrapper == null
-                    || _modalContentWrapper.Content == null
-                )
+                if (_modalContainer == null || _modalContentWrapper == null || _modalContentWrapper.Content == null)
                     return;
 
                 var oldContent = _modalContentWrapper.Content as Control;
@@ -1515,11 +1436,7 @@ namespace BalatroSeedOracle.Views
                 transformGroup.Children.Add(new RotateTransform(0));
                 transformGroup.Children.Add(new TranslateTransform(0, 0));
                 oldContent.RenderTransform = transformGroup;
-                oldContent.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.5,
-                    RelativeUnit.Relative
-                );
+                oldContent.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
                 await fallAnimation.RunAsync(oldContent);
 
@@ -1528,10 +1445,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"TransitionToNewModalAsync failed: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"TransitionToNewModalAsync failed: {ex.Message}");
                 throw;
             }
         }
@@ -1543,11 +1457,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                if (
-                    _modalContainer == null
-                    || _modalContentWrapper == null
-                    || _modalOverlay == null
-                )
+                if (_modalContainer == null || _modalContentWrapper == null || _modalOverlay == null)
                     return;
 
                 _modalContentWrapper.Content = content;
@@ -1613,10 +1523,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"ShowModalWithAnimationAsync failed: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("BalatroMainMenu", $"ShowModalWithAnimationAsync failed: {ex.Message}");
                 throw;
             }
         }
@@ -1916,10 +1823,7 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Shows the search modal for an existing search instance
         /// </summary>
-        public async Task ShowSearchModalForInstanceAsync(
-            string searchId,
-            string? configPath = null
-        )
+        public async Task ShowSearchModalForInstanceAsync(string searchId, string? configPath = null)
         {
             try
             {
@@ -1940,10 +1844,7 @@ namespace BalatroSeedOracle.Views
 
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Desktop icon requested for config: {cfgPath}"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"Desktop icon requested for config: {cfgPath}");
                     var modalSearchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
@@ -1955,10 +1856,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"ShowSearchModalForInstanceAsync failed: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"ShowSearchModalForInstanceAsync failed: {ex.Message}");
                 throw;
             }
         }
@@ -1975,7 +1873,7 @@ namespace BalatroSeedOracle.Views
                 // Get search instance from service
                 var searchManager = Helpers.ServiceHelper.GetService<SearchManager>();
                 var searchInstance = searchManager?.GetSearch(searchId);
-                
+
                 if (searchInstance == null)
                 {
                     DebugLogger.LogError("BalatroMainMenu", $"Search instance not found: {searchId}");
@@ -2002,17 +1900,11 @@ namespace BalatroSeedOracle.Views
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 widgetManager.CreateWidget(viewModel);
 
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Created SearchWidget window for searchId: {searchId}"
-                );
+                DebugLogger.Log("BalatroMainMenu", $"Created SearchWidget window for searchId: {searchId}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to create SearchWidget window: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to create SearchWidget window: {ex.Message}");
             }
         }
 
@@ -2021,42 +1913,31 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
-            DebugLogger.Log(
-                "BalatroMainMenu",
-                $"RemoveSearchDesktopIcon called for searchId: {searchId}"
-            );
+            DebugLogger.Log("BalatroMainMenu", $"RemoveSearchDesktopIcon called for searchId: {searchId}");
 
             try
             {
                 // Find the widget in the window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 var activeWidgets = widgetManager.GetActiveWidgets();
-                
-                var widgetToRemove = activeWidgets.FirstOrDefault(w => 
-                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId);
-                
+
+                var widgetToRemove = activeWidgets.FirstOrDefault(w =>
+                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId
+                );
+
                 if (widgetToRemove != null)
                 {
                     widgetManager.CloseWidget(widgetToRemove);
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Removed SearchWidget window for searchId: {searchId}"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"Removed SearchWidget window for searchId: {searchId}");
                 }
                 else
                 {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"No SearchWidget window found for searchId: {searchId}"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"No SearchWidget window found for searchId: {searchId}");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to remove SearchWidget window: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to remove SearchWidget window: {ex.Message}");
             }
         }
 
@@ -2097,10 +1978,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Error cleaning up event handlers: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"Error cleaning up event handlers: {ex.Message}");
             }
         }
 
@@ -2117,10 +1995,7 @@ namespace BalatroSeedOracle.Views
                     var filtersModal = modal.ModalContent?.Content as Modals.FiltersModal;
                     if (filtersModal != null)
                     {
-                        DebugLogger.LogImportant(
-                            "BalatroMainMenu",
-                            "Checking FiltersModal for active searches..."
-                        );
+                        DebugLogger.LogImportant("BalatroMainMenu", "Checking FiltersModal for active searches...");
                     }
                 }
             }

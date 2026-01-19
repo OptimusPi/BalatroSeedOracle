@@ -65,10 +65,7 @@ namespace BalatroSeedOracle.Components
             while (clickedElement != null)
             {
                 // Don't drag if clicking on window control buttons
-                if (
-                    clickedElement is Button
-                    && clickedElement.Classes.Contains("widget-minimize-btn")
-                )
+                if (clickedElement is Button && clickedElement.Classes.Contains("widget-minimize-btn"))
                 {
                     return;
                 }
@@ -101,12 +98,7 @@ namespace BalatroSeedOracle.Components
             var delta = currentScreenPoint - _dragStartScreenPoint;
 
             // Apply delta to original margin
-            var newMargin = new Thickness(
-                _originalMargin.Left + delta.X,
-                _originalMargin.Top + delta.Y,
-                0,
-                0
-            );
+            var newMargin = new Thickness(_originalMargin.Left + delta.X, _originalMargin.Top + delta.Y, 0, 0);
 
             // Update actual margin for visual feedback with simple clamping to parent bounds
             var expandedView = this.FindControl<Border>("ExpandedView");

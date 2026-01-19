@@ -80,7 +80,8 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
 
     public void Close()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _ = CloseAppenderAsync(_appenderId);
         _disposed = true;
     }
@@ -92,7 +93,8 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await CloseAppenderAsync(_appenderId);
         _disposed = true;
     }

@@ -91,7 +91,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 DebugLogger.Log("SearchModal", "OpenFiltersModal called");
-                
+
                 if (ViewModel.MainMenu != null)
                 {
                     DebugLogger.Log("SearchModal", "Calling MainMenu.ShowFiltersModal()");
@@ -100,18 +100,12 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    DebugLogger.LogError(
-                        "SearchModal",
-                        "ViewModel.MainMenu is NULL! Can't open FiltersModal"
-                    );
+                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't open FiltersModal");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SearchModal",
-                    $"Error opening FiltersModal: {ex.Message}"
-                );
+                DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
             }
         }
 
@@ -124,19 +118,13 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 if (string.IsNullOrEmpty(filterPath))
                 {
-                    DebugLogger.LogError(
-                        "SearchModal",
-                        "Cannot edit filter: filterPath is null or empty"
-                    );
+                    DebugLogger.LogError("SearchModal", "Cannot edit filter: filterPath is null or empty");
                     return;
                 }
 
                 if (ViewModel.MainMenu == null)
                 {
-                    DebugLogger.LogError(
-                        "SearchModal",
-                        "ViewModel.MainMenu is NULL! Can't open FiltersModal"
-                    );
+                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't open FiltersModal");
                     return;
                 }
 
@@ -177,10 +165,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 if (ViewModel.MainMenu == null)
                 {
-                    DebugLogger.LogError(
-                        "SearchModal",
-                        "ViewModel.MainMenu is NULL! Can't create desktop icon"
-                    );
+                    DebugLogger.LogError("SearchModal", "ViewModel.MainMenu is NULL! Can't create desktop icon");
                     return;
                 }
 
@@ -194,10 +179,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SearchModal",
-                    $"Error minimizing search to desktop: {ex.Message}"
-                );
+                DebugLogger.LogError("SearchModal", $"Error minimizing search to desktop: {ex.Message}");
             }
         }
     }

@@ -53,12 +53,9 @@ namespace BalatroSeedOracle.ViewModels
         public bool IsMinCountVisible => _item?.Status == FilterItemStatus.MustHave;
 
         public bool IsEditionVisible =>
-            _item?.ItemType == "Joker"
-            || _item?.ItemType == "SoulJoker"
-            || _item?.ItemType == "StandardCard";
+            _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker" || _item?.ItemType == "StandardCard";
 
-        public bool IsStickersVisible =>
-            _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker";
+        public bool IsStickersVisible => _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker";
 
         public bool IsSealVisible => _item?.ItemType == "StandardCard";
         public bool IsEnhancementVisible => _item?.ItemType == "StandardCard";
@@ -155,11 +152,7 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _enableOrGroup = false;
 
-        public ItemConfigPanelViewModel(
-            FilterItem item,
-            Action? onApply = null,
-            Action? onClose = null
-        )
+        public ItemConfigPanelViewModel(FilterItem item, Action? onApply = null, Action? onClose = null)
         {
             _item = item;
             _onApply = onApply;
@@ -361,7 +354,8 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdatePreviewImage()
         {
-            if (_item == null) return;
+            if (_item == null)
+                return;
 
             if (_item.Category == "Playing Cards" || _item.ItemType == "StandardCard")
             {
@@ -399,13 +393,17 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateStickers()
         {
-            if (_item == null) return;
+            if (_item == null)
+                return;
             var stickers = new System.Collections.Generic.List<string>();
-            if (IsEternal) stickers.Add("eternal");
-            if (IsPerishable) stickers.Add("perishable");
-            if (IsRental) stickers.Add("rental");
+            if (IsEternal)
+                stickers.Add("eternal");
+            if (IsPerishable)
+                stickers.Add("perishable");
+            if (IsRental)
+                stickers.Add("rental");
             _item.Stickers = stickers.Count > 0 ? stickers : null;
-            
+
             // CRITICAL: Update the preview images for the stickers too!
             UpdatePreviewImage();
         }
@@ -487,10 +485,14 @@ namespace BalatroSeedOracle.ViewModels
 
             // Save sources configuration according to JAML schema
             var sources = new System.Collections.Generic.List<string>();
-            if (SourceShop) sources.Add("shop");
-            if (SourcePack) sources.Add("pack");
-            if (SourceTag) sources.Add("tag");
-            if (SourceVoucher) sources.Add("voucher");
+            if (SourceShop)
+                sources.Add("shop");
+            if (SourcePack)
+                sources.Add("pack");
+            if (SourceTag)
+                sources.Add("tag");
+            if (SourceVoucher)
+                sources.Add("voucher");
             _item.Sources = sources.Count > 0 ? sources.ToArray() : null;
 
             // Save edition, seal, enhancement, rank, suit - validate against JAML schema

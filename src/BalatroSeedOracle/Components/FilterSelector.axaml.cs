@@ -85,10 +85,10 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<
-            FilterSelector,
-            string
-        >(nameof(Title), "Select Filter");
+        public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<FilterSelector, string>(
+            nameof(Title),
+            "Select Filter"
+        );
 
         public string Title
         {
@@ -115,11 +115,7 @@ namespace BalatroSeedOracle.Components
             var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
             var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
             var filterCacheService = ServiceHelper.GetRequiredService<IFilterCacheService>();
-            var viewModel = new FilterSelectorViewModel(
-                spriteService,
-                configurationService,
-                filterCacheService
-            );
+            var viewModel = new FilterSelectorViewModel(spriteService, configurationService, filterCacheService);
 
             // Wire up ViewModel events to control events
             viewModel.FilterSelected += (s, e) => FilterSelected?.Invoke(this, e);

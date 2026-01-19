@@ -31,8 +31,8 @@ namespace BalatroSeedOracle.Helpers
 
             foreach (var marker in _markers)
             {
-                var visualLine = textView.VisualLines.FirstOrDefault(
-                    vl => vl.FirstDocumentLine.LineNumber == marker.Line
+                var visualLine = textView.VisualLines.FirstOrDefault(vl =>
+                    vl.FirstDocumentLine.LineNumber == marker.Line
                 );
 
                 if (visualLine == null)
@@ -61,12 +61,7 @@ namespace BalatroSeedOracle.Helpers
             }
         }
 
-        private void DrawSquigglyLine(
-            DrawingContext drawingContext,
-            Point start,
-            Point end,
-            Color color
-        )
+        private void DrawSquigglyLine(DrawingContext drawingContext, Point start, Point end, Color color)
         {
             var pen = new Pen(new SolidColorBrush(color), 1.0);
             var width = end.X - start.X;
@@ -86,7 +81,13 @@ namespace BalatroSeedOracle.Helpers
             }
         }
 
-        public void AddError(int line, int startColumn, int endColumn, string message, ErrorSeverity severity = ErrorSeverity.Error)
+        public void AddError(
+            int line,
+            int startColumn,
+            int endColumn,
+            string message,
+            ErrorSeverity severity = ErrorSeverity.Error
+        )
         {
             if (_editor.Document == null)
                 return;
@@ -100,7 +101,7 @@ namespace BalatroSeedOracle.Helpers
                 ErrorSeverity.Error => Colors.Red,
                 ErrorSeverity.Warning => Colors.Orange,
                 ErrorSeverity.Info => Colors.Blue,
-                _ => Colors.Red
+                _ => Colors.Red,
             };
 
             var marker = new ErrorMarker
@@ -110,7 +111,7 @@ namespace BalatroSeedOracle.Helpers
                 EndOffset = endOffset,
                 Message = message,
                 Severity = severity,
-                Color = color
+                Color = color,
             };
 
             _markers.Add(marker);
@@ -143,7 +144,7 @@ namespace BalatroSeedOracle.Helpers
         {
             Error,
             Warning,
-            Info
+            Info,
         }
     }
 }

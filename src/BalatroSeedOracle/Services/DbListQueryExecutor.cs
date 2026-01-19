@@ -30,7 +30,8 @@ namespace BalatroSeedOracle.Services
             string dbFilePath,
             SearchCriteria criteria,
             IProgress<SearchProgress>? progress = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             if (string.IsNullOrEmpty(dbFilePath))
                 throw new ArgumentException("Database file path cannot be null or empty", nameof(dbFilePath));
@@ -39,7 +40,7 @@ namespace BalatroSeedOracle.Services
                 throw new ArgumentNullException(nameof(criteria));
 
             var results = new List<SearchResult>();
-            
+
             try
             {
                 DebugLogger.Log("DbListQueryExecutor", $"Starting query on database: {dbFilePath}");
@@ -69,18 +70,20 @@ namespace BalatroSeedOracle.Services
 
                 // Create connection string for the database file
                 var connectionString = _duckDBService.CreateConnectionString(dbFilePath);
-                
+
                 // Open connection with timeout
                 using var connection = await OpenConnectionWithTimeout(connectionString, cancellationToken);
-                
+
                 // Validate database schema
                 await ValidateDatabaseSchema(connection, criteria);
-                
+
                 // Get table information first - use high-level method, no SQL!
                 var tables = await connection.GetTableNamesAsync();
                 if (tables.Count == 0)
                 {
-                    throw new InvalidOperationException("No tables found in database. The database may be corrupted or empty.");
+                    throw new InvalidOperationException(
+                        "No tables found in database. The database may be corrupted or empty."
+                    );
                 }
 
                 // Use the first table (assuming it's the results table)
@@ -89,12 +92,8 @@ namespace BalatroSeedOracle.Services
 
                 // Use high-level method - no SQL construction in BSO!
                 // This uses Motely's DuckDBQueryHelpers internally
-                progress?.Report(new SearchProgress
-                {
-                    PercentComplete = 50.0,
-                    Message = "Querying database..."
-                });
-                
+                progress?.Report(new SearchProgress { PercentComplete = 50.0, Message = "Querying database..." });
+
                 var resultsWithTallies = await connection.QueryResultsAsync(
                     tableName,
                     criteria.MinScore > 0 ? criteria.MinScore : null,
@@ -102,27 +101,31 @@ namespace BalatroSeedOracle.Services
                     criteria.Stake != "White" ? criteria.Stake : null,
                     criteria.MaxResults > 0 ? criteria.MaxResults : 1000
                 );
-                
+
                 // Convert to BSO SearchResult format
-                results = resultsWithTallies.Select(r => new SearchResult
-                {
-                    Seed = r.Seed,
-                    TotalScore = r.Score,
-                    Scores = r.Tallies?.ToArray(),
-                    Labels = null // Would need column names from Motely
-                }).ToList();
+                results = resultsWithTallies
+                    .Select(r => new SearchResult
+                    {
+                        Seed = r.Seed,
+                        TotalScore = r.Score,
+                        Scores = r.Tallies?.ToArray(),
+                        Labels = null, // Would need column names from Motely
+                    })
+                    .ToList();
 
                 DebugLogger.Log("DbListQueryExecutor", $"Query completed. Found {results.Count} results");
 
                 // Report final progress
-                progress?.Report(new SearchProgress
-                {
-                    PercentComplete = 100.0,
-                    SeedsSearched = (ulong)results.Count,
-                    ResultsFound = results.Count,
-                    EstimatedTimeRemaining = TimeSpan.Zero,
-                    Message = $"Query complete. Found {results.Count} results."
-                });
+                progress?.Report(
+                    new SearchProgress
+                    {
+                        PercentComplete = 100.0,
+                        SeedsSearched = (ulong)results.Count,
+                        ResultsFound = results.Count,
+                        EstimatedTimeRemaining = TimeSpan.Zero,
+                        Message = $"Query complete. Found {results.Count} results.",
+                    }
+                );
 
                 return results;
             }
@@ -139,7 +142,10 @@ namespace BalatroSeedOracle.Services
             catch (InvalidDataException ex)
             {
                 DebugLogger.LogError("DbListQueryExecutor", $"Invalid database file: {ex.Message}");
-                throw new InvalidOperationException($"Database file is invalid or corrupted: {Path.GetFileName(dbFilePath)}", ex);
+                throw new InvalidOperationException(
+                    $"Database file is invalid or corrupted: {Path.GetFileName(dbFilePath)}",
+                    ex
+                );
             }
             catch (InvalidOperationException ex)
             {
@@ -153,18 +159,21 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private async Task<IDuckDBConnection> OpenConnectionWithTimeout(string connectionString, CancellationToken cancellationToken)
+        private async Task<IDuckDBConnection> OpenConnectionWithTimeout(
+            string connectionString,
+            CancellationToken cancellationToken
+        )
         {
             var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
             var connectionTask = _duckDBService.OpenConnectionAsync(connectionString);
-            
+
             var completedTask = await Task.WhenAny(connectionTask, timeoutTask);
-            
+
             if (completedTask == timeoutTask)
             {
                 throw new TimeoutException("Database connection timed out after 30 seconds");
             }
-            
+
             return await connectionTask;
         }
 

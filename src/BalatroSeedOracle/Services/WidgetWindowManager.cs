@@ -16,21 +16,22 @@ namespace BalatroSeedOracle.Services
     {
         private readonly List<BaseWidgetViewModel> _activeWidgets = new();
         private readonly WidgetPositionService _positionService;
-        
+
         public static WidgetWindowManager Instance { get; } = new();
 
         private WidgetWindowManager()
         {
-            _positionService = Helpers.ServiceHelper.GetService<WidgetPositionService>()
-                ?? new WidgetPositionService();
+            _positionService = Helpers.ServiceHelper.GetService<WidgetPositionService>() ?? new WidgetPositionService();
         }
 
         /// <summary>
         /// Create and show a new widget window
         /// </summary>
-        public void CreateWidget<T>(T viewModel) where T : BaseWidgetViewModel
+        public void CreateWidget<T>(T viewModel)
+            where T : BaseWidgetViewModel
         {
-            if (viewModel == null) return;
+            if (viewModel == null)
+                return;
 
             // Set widget content if it's a control
             if (viewModel is Control control)
@@ -50,9 +51,9 @@ namespace BalatroSeedOracle.Services
             // Register and show
             _positionService.RegisterWidget(viewModel);
             _activeWidgets.Add(viewModel);
-            
+
             window.Show();
-            
+
             DebugLogger.Log("WidgetWindowManager", $"Created widget: {viewModel.WidgetTitle}");
         }
 
@@ -61,7 +62,8 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public void CloseWidget(BaseWidgetViewModel viewModel)
         {
-            if (viewModel == null) return;
+            if (viewModel == null)
+                return;
 
             // Unregister and cleanup
             _positionService.UnregisterWidget(viewModel);
@@ -72,7 +74,7 @@ namespace BalatroSeedOracle.Services
                 viewModel.WidgetWindow.Close();
                 viewModel.WidgetWindow = null;
             }
-            
+
             DebugLogger.Log("WidgetWindowManager", $"Closed widget: {viewModel.WidgetTitle}");
         }
 
@@ -86,7 +88,7 @@ namespace BalatroSeedOracle.Services
             {
                 CloseWidget(widget);
             }
-            
+
             DebugLogger.Log("WidgetWindowManager", "Closed all widgets");
         }
 
@@ -156,10 +158,10 @@ namespace BalatroSeedOracle.Services
                 {
                     var row = i / columns;
                     var col = i % columns;
-                    
+
                     var x = startX + (col * spacing);
                     var y = startY + (row * spacing);
-                    
+
                     widget.WidgetWindow.Position = new PixelPoint((int)x, (int)y);
                 }
             }
@@ -172,18 +174,19 @@ namespace BalatroSeedOracle.Services
         {
             var screenBounds = GetScreenBounds();
             var widgets = _activeWidgets.ToList();
-            
+
             // Distribute widgets along edges
             var perEdge = Math.Max(1, widgets.Count / 4);
 
             for (int i = 0; i < widgets.Count; i++)
             {
                 var widget = widgets[i];
-                if (widget.WidgetWindow == null) continue;
+                if (widget.WidgetWindow == null)
+                    continue;
 
                 var edge = (SnapEdge)((i / perEdge) % 4);
                 var position = GetEdgePosition(edge, screenBounds, i % perEdge, perEdge);
-                
+
                 widget.WidgetWindow.Position = position;
             }
         }
@@ -200,7 +203,7 @@ namespace BalatroSeedOracle.Services
                     widget.WidgetWindow.Show();
                 }
             }
-            
+
             DebugLogger.Log("WidgetWindowManager", $"Showed all {_activeWidgets.Count} widgets");
         }
 
@@ -216,7 +219,7 @@ namespace BalatroSeedOracle.Services
                     widget.WidgetWindow.Hide();
                 }
             }
-            
+
             DebugLogger.Log("WidgetWindowManager", $"Hidden all {_activeWidgets.Count} widgets");
         }
 
@@ -230,20 +233,29 @@ namespace BalatroSeedOracle.Services
         private PixelPoint GetEdgePosition(SnapEdge edge, Rect screenBounds, int index, int perEdge)
         {
             var spacing = screenBounds.Height / (perEdge + 1);
-            
+
             return edge switch
             {
                 SnapEdge.Left => new PixelPoint(20, (int)(screenBounds.Top + spacing * (index + 1))),
-                SnapEdge.Right => new PixelPoint((int)(screenBounds.Right - 120), (int)(screenBounds.Top + spacing * (index + 1))),
+                SnapEdge.Right => new PixelPoint(
+                    (int)(screenBounds.Right - 120),
+                    (int)(screenBounds.Top + spacing * (index + 1))
+                ),
                 SnapEdge.Top => new PixelPoint((int)(screenBounds.Left + spacing * (index + 1)), 20),
-                SnapEdge.Bottom => new PixelPoint((int)(screenBounds.Left + spacing * (index + 1)), (int)(screenBounds.Bottom - 120)),
-                _ => new PixelPoint(50, 50)
+                SnapEdge.Bottom => new PixelPoint(
+                    (int)(screenBounds.Left + spacing * (index + 1)),
+                    (int)(screenBounds.Bottom - 120)
+                ),
+                _ => new PixelPoint(50, 50),
             };
         }
 
         private enum SnapEdge
         {
-            Left, Right, Top, Bottom
+            Left,
+            Right,
+            Top,
+            Bottom,
         }
     }
 }

@@ -61,7 +61,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Unsubscribe from previous
                     if (_currentViewModel is not null)
                         _currentViewModel.JumpToError -= OnJumpToError;
-                    
+
                     if (DataContext is JamlEditorTabViewModel vm)
                     {
                         _jamlEditor.Text = vm.JamlContent;
@@ -134,8 +134,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
 
             var point = e.GetCurrentPoint(_jamlEditor);
-            if (point.Properties.IsLeftButtonPressed &&
-                e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            if (point.Properties.IsLeftButtonPressed && e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
                 // Use caret position instead of mouse position for simplicity
                 var offset = _jamlEditor.CaretOffset;
@@ -234,13 +233,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             catch (Exception ex)
             {
                 // General error - mark first line
-                _errorMarkerService.AddError(
-                    1,
-                    0,
-                    50,
-                    ex.Message,
-                    JamlErrorMarkerService.ErrorSeverity.Error
-                );
+                _errorMarkerService.AddError(1, 0, 50, ex.Message, JamlErrorMarkerService.ErrorSeverity.Error);
             }
 
             _errorMarkerService.UpdateErrors();
@@ -322,15 +315,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             // Get text before cursor for context-aware completions
             var offset = _jamlEditor.CaretOffset;
-            var textBeforeCursor = _jamlEditor.Text.Substring(
-                0,
-                Math.Min(offset, _jamlEditor.Text.Length)
-            );
+            var textBeforeCursor = _jamlEditor.Text.Substring(0, Math.Min(offset, _jamlEditor.Text.Length));
 
             // Get SMART context-aware completions
-            var smartCompletions = JamlAutocompletionHelper.GetCompletionsForContext(
-                textBeforeCursor
-            );
+            var smartCompletions = JamlAutocompletionHelper.GetCompletionsForContext(textBeforeCursor);
 
             if (smartCompletions.Count == 0)
                 return; // No completions available
@@ -375,7 +363,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var candidates = new[]
                 {
                     Path.Combine(AppContext.BaseDirectory, "Resources", "JamlDark.xshd"),
-                    Path.Combine(AppContext.BaseDirectory, "Resources", "YamlDark.xshd")
+                    Path.Combine(AppContext.BaseDirectory, "Resources", "YamlDark.xshd"),
                 };
 
                 string? xshdPath = null;
@@ -392,10 +380,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     using (var reader = new XmlTextReader(xshdPath))
                     {
-                        var definition = HighlightingLoader.Load(
-                            reader,
-                            HighlightingManager.Instance
-                        );
+                        var definition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                         _jamlEditor.SyntaxHighlighting = definition;
                     }
                     DebugLogger.Log(
@@ -413,10 +398,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "JamlEditorTab",
-                    $"Failed to load custom syntax highlighting: {ex.Message}"
-                );
+                DebugLogger.LogError("JamlEditorTab", $"Failed to load custom syntax highlighting: {ex.Message}");
             }
         }
 
@@ -437,10 +419,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "JamlEditorTab",
-                    $"Failed to install code folding: {ex.Message}"
-                );
+                DebugLogger.LogError("JamlEditorTab", $"Failed to install code folding: {ex.Message}");
             }
         }
 
@@ -460,7 +439,6 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 DebugLogger.LogError("JamlEditorTab", $"Error updating foldings: {ex.Message}");
             }
         }
-
 
         private void OnJumpToError(int lineNumber, int column)
         {

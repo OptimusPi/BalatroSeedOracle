@@ -4,10 +4,10 @@
 
 We release patches for security vulnerabilities in the latest release version.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| Latest  | :white_check_mark: |
-| < Latest| :x:                |
+| Version  | Supported          |
+| -------- | ------------------ |
+| Latest   | :white_check_mark: |
+| < Latest | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -24,6 +24,7 @@ If you discover a security vulnerability in Balatro Seed Oracle, please report i
 ### What to Include
 
 Please include the following information in your report:
+
 - **Description**: Clear description of the vulnerability
 - **Impact**: Potential impact and attack scenario
 - **Steps to reproduce**: Detailed steps to reproduce the issue
@@ -82,6 +83,7 @@ Please include the following information in your report:
 ## Contact
 
 For security-related questions or concerns, contact the maintainer via:
+
 - GitHub: [@OptimusPi](https://github.com/OptimusPi)
 - Discord: Balatro community server
 

@@ -54,17 +54,11 @@ namespace BalatroSeedOracle.Components
                     // Initial layout update
                     UpdateFannedLayout();
 
-                    Helpers.DebugLogger.Log(
-                        "FilterOperatorControl",
-                        "UpdateFannedLayout() called from DataContext"
-                    );
+                    Helpers.DebugLogger.Log("FilterOperatorControl", "UpdateFannedLayout() called from DataContext");
                 }
                 else
                 {
-                    Helpers.DebugLogger.Log(
-                        "FilterOperatorControl",
-                        "DataContext changed but not FilterOperatorItem"
-                    );
+                    Helpers.DebugLogger.Log("FilterOperatorControl", "DataContext changed but not FilterOperatorItem");
                 }
             };
 
@@ -78,11 +72,7 @@ namespace BalatroSeedOracle.Components
                 return;
 
             // Add pointer handlers to enable dragging individual cards
-            ChildrenItemsControl.AddHandler(
-                PointerPressedEvent,
-                OnCardPointerPressed,
-                handledEventsToo: true
-            );
+            ChildrenItemsControl.AddHandler(PointerPressedEvent, OnCardPointerPressed, handledEventsToo: true);
         }
 
         private void OnHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -261,10 +251,7 @@ namespace BalatroSeedOracle.Components
                         dropZone.Classes.Add("drag-active");
                     }
 
-                    if (
-                        OperatorContainer != null
-                        && !OperatorContainer.Classes.Contains("drag-over")
-                    )
+                    if (OperatorContainer != null && !OperatorContainer.Classes.Contains("drag-over"))
                     {
                         OperatorContainer.Classes.Add("drag-over");
                     }

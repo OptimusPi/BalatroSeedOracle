@@ -28,7 +28,6 @@ public static class ServiceHelper
     public static T GetRequiredService<T>()
         where T : class
     {
-        return GetService<T>()
-            ?? throw new InvalidOperationException($"Service of type {typeof(T).Name} not found");
+        return GetService<T>() ?? throw new InvalidOperationException($"Service of type {typeof(T).Name} not found");
     }
 }

@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly EventFXService? _eventFXService;
         private readonly IApiHostService? _apiHostService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
-        
+
         /// <summary>
         /// ViewModel for the API Host widget - owned by parent, bound via XAML DataContext
         /// </summary>
@@ -101,14 +101,15 @@ namespace BalatroSeedOracle.ViewModels
         private void UpdateToggleAllWidgetsIcon()
         {
             // Check if all enabled widgets are visible
-            var allVisible = (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled) &&
-                           (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled) &&
-                           (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled) &&
-                           (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled) &&
-                           (IsHostApiWidgetVisible == IsHostApiWidgetEnabled) &&
-                           (IsEventFXWidgetVisible == IsEventFXWidgetEnabled) &&
-                           IsSearchWidgetsVisible;
-            
+            var allVisible =
+                (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled)
+                && (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled)
+                && (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled)
+                && (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled)
+                && (IsHostApiWidgetVisible == IsHostApiWidgetEnabled)
+                && (IsEventFXWidgetVisible == IsEventFXWidgetEnabled)
+                && IsSearchWidgetsVisible;
+
             ToggleAllWidgetsIcon = allVisible ? PackIconMaterialKind.Widgets : PackIconMaterialKind.WidgetsOutline;
         }
 
@@ -186,7 +187,8 @@ namespace BalatroSeedOracle.ViewModels
             IApiHostService? apiHostService = null,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
-            WidgetPositionService? widgetPositionService = null)
+            WidgetPositionService? widgetPositionService = null
+        )
         {
             // Store injected services
             _userProfileService = userProfileService;
@@ -315,13 +317,8 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open search modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open search modal: {ex}");
+                ShowErrorModal($"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
             }
         }
 
@@ -340,13 +337,8 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open filters modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open filters modal: {ex}");
+                ShowErrorModal($"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
             }
         }
 
@@ -363,13 +355,8 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open analyze modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open analyze modal: {ex}");
+                ShowErrorModal($"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
             }
         }
 
@@ -386,13 +373,8 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open settings modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open settings modal: {ex}");
+                ShowErrorModal($"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
             }
         }
 
@@ -406,7 +388,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleMusicMixerWidget()
         {
-            if (!IsMusicMixerWidgetEnabled) return; // Can't toggle if not enabled
+            if (!IsMusicMixerWidgetEnabled)
+                return; // Can't toggle if not enabled
             PlayButtonClickSound();
             IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible;
         }
@@ -414,7 +397,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleVisualizerWidget()
         {
-            if (!IsVisualizerWidgetEnabled) return;
+            if (!IsVisualizerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
         }
@@ -422,7 +406,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleTransitionDesignerWidget()
         {
-            if (!IsTransitionDesignerWidgetEnabled) return;
+            if (!IsTransitionDesignerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible;
         }
@@ -430,7 +415,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleFertilizerWidget()
         {
-            if (!IsFertilizerWidgetEnabled) return;
+            if (!IsFertilizerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible;
         }
@@ -438,7 +424,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleHostApiWidget()
         {
-            if (!IsHostApiWidgetEnabled) return;
+            if (!IsHostApiWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsHostApiWidgetVisible = !IsHostApiWidgetVisible;
         }
@@ -446,7 +433,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleEventFXWidget()
         {
-            if (!IsEventFXWidgetEnabled) return;
+            if (!IsEventFXWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsEventFXWidgetVisible = !IsEventFXWidgetVisible;
         }
@@ -455,15 +443,20 @@ namespace BalatroSeedOracle.ViewModels
         private void ToggleAllWidgets()
         {
             PlayButtonClickSound();
-            
+
             // Check if any widgets are currently visible
-            var anyVisible = IsMusicMixerWidgetVisible || IsVisualizerWidgetVisible || 
-                           IsTransitionDesignerWidgetVisible || IsFertilizerWidgetVisible || 
-                           IsHostApiWidgetVisible || IsEventFXWidgetVisible || IsSearchWidgetsVisible;
-            
+            var anyVisible =
+                IsMusicMixerWidgetVisible
+                || IsVisualizerWidgetVisible
+                || IsTransitionDesignerWidgetVisible
+                || IsFertilizerWidgetVisible
+                || IsHostApiWidgetVisible
+                || IsEventFXWidgetVisible
+                || IsSearchWidgetsVisible;
+
             // Toggle all widgets to the opposite state
             var newState = !anyVisible;
-            
+
             IsMusicMixerWidgetVisible = newState && IsMusicMixerWidgetEnabled;
             IsVisualizerWidgetVisible = newState && IsVisualizerWidgetEnabled;
             IsTransitionDesignerWidgetVisible = newState && IsTransitionDesignerWidgetEnabled;
@@ -471,7 +464,7 @@ namespace BalatroSeedOracle.ViewModels
             IsHostApiWidgetVisible = newState && IsHostApiWidgetEnabled;
             IsEventFXWidgetVisible = newState && IsEventFXWidgetEnabled;
             IsSearchWidgetsVisible = newState;
-            
+
             // Show/hide search widgets via window manager
             var widgetManager = Services.WidgetWindowManager.Instance;
             if (newState)
@@ -489,7 +482,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             PlayButtonClickSound();
             IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
-            
+
             // Show/hide all search widgets via window manager
             var widgetManager = Services.WidgetWindowManager.Instance;
             if (IsSearchWidgetsVisible)
@@ -542,7 +535,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsWidgetDockVisible = false;
                 IsSearchWidgetsVisible = false;
-                
+
                 // Hide search widgets via window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 widgetManager.HideAllWidgets();
@@ -550,7 +543,7 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 IsSearchWidgetsVisible = true;
-                
+
                 // Show search widgets via window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 widgetManager.ShowAllWidgets();
@@ -605,10 +598,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Error opening Balatro website: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error opening Balatro website: {ex.Message}");
             }
         }
 
@@ -686,7 +676,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
                 IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
                 IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-                
+
                 // Initialize visibility to match enabled state
                 IsMusicMixerWidgetVisible = IsMusicMixerWidgetEnabled;
                 IsVisualizerWidgetVisible = IsVisualizerWidgetEnabled;
@@ -705,10 +695,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Error loading settings: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading settings: {ex.Message}");
             }
         }
 
@@ -719,7 +706,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             var toggles = profile.FeatureToggles;
-            
+
             // Update enabled state (source of truth)
             IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
             IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
@@ -727,14 +714,20 @@ namespace BalatroSeedOracle.ViewModels
             IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
             IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
             IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-            
+
             // If a widget is disabled, hide it. If enabled, keep current visibility.
-            if (!IsMusicMixerWidgetEnabled) IsMusicMixerWidgetVisible = false;
-            if (!IsVisualizerWidgetEnabled) IsVisualizerWidgetVisible = false;
-            if (!IsTransitionDesignerWidgetEnabled) IsTransitionDesignerWidgetVisible = false;
-            if (!IsFertilizerWidgetEnabled) IsFertilizerWidgetVisible = false;
-            if (!IsHostApiWidgetEnabled) IsHostApiWidgetVisible = false;
-            if (!IsEventFXWidgetEnabled) IsEventFXWidgetVisible = false;
+            if (!IsMusicMixerWidgetEnabled)
+                IsMusicMixerWidgetVisible = false;
+            if (!IsVisualizerWidgetEnabled)
+                IsVisualizerWidgetVisible = false;
+            if (!IsTransitionDesignerWidgetEnabled)
+                IsTransitionDesignerWidgetVisible = false;
+            if (!IsFertilizerWidgetEnabled)
+                IsFertilizerWidgetVisible = false;
+            if (!IsHostApiWidgetEnabled)
+                IsHostApiWidgetVisible = false;
+            if (!IsEventFXWidgetEnabled)
+                IsEventFXWidgetVisible = false;
             DebugLogger.Log(
                 "BalatroMainMenuViewModel",
                 $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
@@ -756,10 +749,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Error saving volume: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error saving volume: {ex.Message}");
             }
         }
 
@@ -798,10 +788,7 @@ namespace BalatroSeedOracle.ViewModels
                 ApplySpinSource(shader, Math.Clamp(settings.SpinSource, 0, 4));
                 ApplyTwirlSource(shader, Math.Clamp(settings.TwirlSource, 0, 4));
                 ApplyZoomThumpSource(shader, Math.Clamp(settings.ZoomThumpSource, 0, 4));
-                ApplyColorSaturationSource(
-                    shader,
-                    Math.Clamp(settings.ColorSaturationSource, 0, 4)
-                );
+                ApplyColorSaturationSource(shader, Math.Clamp(settings.ColorSaturationSource, 0, 4));
 
                 // Per-track volume balancing for SoundFlow audio stems
 #if !BROWSER
@@ -825,10 +812,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Error loading visualizer settings: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading visualizer settings: {ex.Message}");
             }
         }
 
@@ -848,10 +832,7 @@ namespace BalatroSeedOracle.ViewModels
                         $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
                     );
 
-                    if (
-                        !string.IsNullOrEmpty(resumeState.ConfigPath)
-                        && File.Exists(resumeState.ConfigPath)
-                    )
+                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
                     {
                         var placeholderSearchId = Guid.NewGuid().ToString();
                         showIconCallback?.Invoke(placeholderSearchId, resumeState.ConfigPath);
@@ -873,10 +854,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Error checking for resumable search: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error checking for resumable search: {ex.Message}");
             }
         }
 
@@ -895,10 +873,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to play button click sound: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to play button click sound: {ex.Message}");
             }
         }
 
@@ -917,10 +892,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to apply volume: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to apply volume: {ex.Message}");
             }
         }
 
@@ -935,10 +907,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to set track volume: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to set track volume: {ex.Message}");
             }
         }
 
@@ -961,10 +930,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to wire audio analysis: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to wire audio analysis: {ex.Message}");
             }
         }
 

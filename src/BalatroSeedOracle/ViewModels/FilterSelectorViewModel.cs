@@ -82,13 +82,10 @@ namespace BalatroSeedOracle.ViewModels
             IFilterCacheService filterCacheService
         )
         {
-            _spriteService =
-                spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+            _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
             _configurationService =
-                configurationService
-                ?? throw new ArgumentNullException(nameof(configurationService));
-            _filterCacheService =
-                filterCacheService ?? throw new ArgumentNullException(nameof(filterCacheService));
+                configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+            _filterCacheService = filterCacheService ?? throw new ArgumentNullException(nameof(filterCacheService));
         }
 
         #region Property Changed Handlers
@@ -110,8 +107,7 @@ namespace BalatroSeedOracle.ViewModels
             await LoadAvailableFiltersAsync();
             UpdateSelectButtonText();
             // Disable select until a specific filter is chosen
-            SelectButtonEnabled =
-                SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
+            SelectButtonEnabled = SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
             UpdateCommandStates();
         }
 
@@ -136,10 +132,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Found {filterItems.Count} filters from cache"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Found {filterItems.Count} filters from cache");
 
                 FilterItems = filterItems;
                 HasFilters = filterItems.Count > 0;
@@ -151,18 +144,14 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Enable when a selection is present
-                SelectButtonEnabled =
-                    SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
+                SelectButtonEnabled = SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter?.Value);
 
                 // Update command can execute states
                 UpdateCommandStates();
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterSelectorViewModel",
-                    $"Error loading filters: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterSelectorViewModel", $"Error loading filters: {ex.Message}");
             }
         }
 
@@ -176,10 +165,7 @@ namespace BalatroSeedOracle.ViewModels
                 var config = cached.Config;
                 if (config == null || string.IsNullOrEmpty(config.Name))
                 {
-                    DebugLogger.Log(
-                        "FilterSelectorViewModel",
-                        $"Skipping filter with no name: {cached.FilterId}"
-                    );
+                    DebugLogger.Log("FilterSelectorViewModel", $"Skipping filter with no name: {cached.FilterId}");
                     return Task.FromResult<PanelItem?>(null);
                 }
 
@@ -244,17 +230,11 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (previewItems.Count == 0)
                 {
-                    DebugLogger.Log(
-                        "FilterSelectorViewModel",
-                        "No preview items found - returning null"
-                    );
+                    DebugLogger.Log("FilterSelectorViewModel", "No preview items found - returning null");
                     return null;
                 }
 
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Found {previewItems.Count} preview items"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Found {previewItems.Count} preview items");
 
                 // Create a render target bitmap for the composite image
                 var pixelSize = new PixelSize(400, 200);
@@ -281,10 +261,7 @@ namespace BalatroSeedOracle.ViewModels
                     var image = GetItemImage(value, type);
                     if (image != null)
                     {
-                        DebugLogger.Log(
-                            "FilterSelectorViewModel",
-                            $"Got image for {value} (type: {type})"
-                        );
+                        DebugLogger.Log("FilterSelectorViewModel", $"Got image for {value} (type: {type})");
                         var imgControl = new Image
                         {
                             Source = image,
@@ -329,10 +306,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterSelectorViewModel",
-                    $"Error creating fanned preview: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterSelectorViewModel", $"Error creating fanned preview: {ex.Message}");
                 // Fallback to single image
                 return GetFilterPreviewImageFromConfig(config);
             }
@@ -377,10 +351,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (cardBase != null && jokerFace != null)
                 {
                     // Create a composite image with card base and face overlay
-                    var pixelSize = new PixelSize(
-                        UIConstants.JokerSpriteWidth,
-                        UIConstants.JokerSpriteHeight
-                    );
+                    var pixelSize = new PixelSize(UIConstants.JokerSpriteWidth, UIConstants.JokerSpriteHeight);
                     var dpi = new Vector(96, 96);
 
                     try
@@ -427,10 +398,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (cardBase != null && soulGem != null)
                 {
-                    var pixelSize = new PixelSize(
-                        UIConstants.SpectralSpriteWidth,
-                        UIConstants.SpectralSpriteHeight
-                    );
+                    var pixelSize = new PixelSize(UIConstants.SpectralSpriteWidth, UIConstants.SpectralSpriteHeight);
                     var dpi = new Vector(96, 96);
 
                     try
@@ -475,10 +443,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (cardBase != null && mysteryFace != null)
                 {
-                    var pixelSize = new PixelSize(
-                        UIConstants.JokerSpriteWidth,
-                        UIConstants.JokerSpriteHeight
-                    );
+                    var pixelSize = new PixelSize(UIConstants.JokerSpriteWidth, UIConstants.JokerSpriteHeight);
                     var dpi = new Vector(96, 96);
 
                     try
@@ -531,8 +496,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (IsInSearchModal)
             {
-                SelectButtonText =
-                    SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+                SelectButtonText = SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
             }
             else
             {
@@ -595,21 +559,16 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Command Implementations
 
-        private bool CanSelectFilter() =>
-            SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
+        private bool CanSelectFilter() => SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
 
-        private bool CanExecuteFilterAction() =>
-            SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
+        private bool CanExecuteFilterAction() => SelectedFilter != null && !string.IsNullOrEmpty(SelectedFilter.Value);
 
         [RelayCommand(CanExecute = nameof(CanSelectFilter))]
         private void SelectFilter()
         {
             if (SelectedFilter?.Value != null && !string.IsNullOrEmpty(SelectedFilter.Value))
             {
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Loading filter: {SelectedFilter.Value}"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Loading filter: {SelectedFilter.Value}");
                 FilterLoaded?.Invoke(this, SelectedFilter.Value);
             }
         }
@@ -619,10 +578,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (SelectedFilter?.Value != null)
             {
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Copy requested for filter: {SelectedFilter.Value}"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Copy requested for filter: {SelectedFilter.Value}");
                 FilterCopyRequested?.Invoke(this, SelectedFilter.Value);
             }
         }
@@ -632,10 +588,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (SelectedFilter?.Value != null)
             {
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Edit requested for filter: {SelectedFilter.Value}"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Edit requested for filter: {SelectedFilter.Value}");
                 FilterEditRequested?.Invoke(this, SelectedFilter.Value);
             }
         }
@@ -645,10 +598,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (SelectedFilter?.Value != null)
             {
-                DebugLogger.Log(
-                    "FilterSelectorViewModel",
-                    $"Delete requested for filter: {SelectedFilter.Value}"
-                );
+                DebugLogger.Log("FilterSelectorViewModel", $"Delete requested for filter: {SelectedFilter.Value}");
                 FilterDeleteRequested?.Invoke(this, SelectedFilter.Value);
             }
         }

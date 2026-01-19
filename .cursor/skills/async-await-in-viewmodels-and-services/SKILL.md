@@ -48,10 +48,10 @@ await DoWorkAsync();
 
 ## ConfigureAwait Usage
 
-| Context | ConfigureAwait | Reason |
-|---------|----------------|--------|
-| Service/Library code | `ConfigureAwait(false)` | Avoid unnecessary context switches |
-| ViewModel/UI code | Omit | Need UI thread for property updates |
+| Context              | ConfigureAwait          | Reason                              |
+| -------------------- | ----------------------- | ----------------------------------- |
+| Service/Library code | `ConfigureAwait(false)` | Avoid unnecessary context switches  |
+| ViewModel/UI code    | Omit                    | Need UI thread for property updates |
 
 ```csharp
 // Service code

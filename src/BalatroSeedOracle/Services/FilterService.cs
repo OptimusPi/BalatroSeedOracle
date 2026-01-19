@@ -23,7 +23,11 @@ namespace BalatroSeedOracle.Services
         private readonly IAppDataStore _store;
         private readonly IPlatformServices? _platformServices;
 
-        public FilterService(IConfigurationService configurationService, IAppDataStore store, IPlatformServices? platformServices = null)
+        public FilterService(
+            IConfigurationService configurationService,
+            IAppDataStore store,
+            IPlatformServices? platformServices = null
+        )
         {
             _configurationService = configurationService;
             _store = store;
@@ -46,8 +50,10 @@ namespace BalatroSeedOracle.Services
                             continue;
 
                         var fileName = Path.GetFileName(key);
-                        if (fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
-                            || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase))
+                        if (
+                            fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                            || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase)
+                        )
                             continue;
 
                         filters.Add(key);
@@ -118,10 +124,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
-                        filePath
-                    );
+                var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(filePath);
                 return config != null;
             }
             catch
@@ -183,9 +186,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // Keep only alphanumeric, underscore, hyphen
-            normalized = new string(
-                normalized.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray()
-            );
+            normalized = new string(normalized.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray());
 
             // Collapse multiple underscores into single underscore
             while (normalized.Contains("__"))
@@ -221,20 +222,16 @@ namespace BalatroSeedOracle.Services
                         AllowTrailingCommas = true,
                     };
 
-                    var config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                            json,
-                            deserializeOptions
-                        );
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        json,
+                        deserializeOptions
+                    );
                     return config?.Name ?? "";
                 }
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "FilterService",
-                    $"Error reading filter name: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("FilterService", $"Error reading filter name: {ex.Message}");
             }
 
             return string.Empty;
@@ -249,10 +246,7 @@ namespace BalatroSeedOracle.Services
 
                 if (!File.Exists(filterPath))
                 {
-                    Helpers.DebugLogger.LogError(
-                        "FilterService",
-                        $"Filter not found: {filterPath}"
-                    );
+                    Helpers.DebugLogger.LogError("FilterService", $"Filter not found: {filterPath}");
                     return string.Empty;
                 }
 
@@ -266,11 +260,10 @@ namespace BalatroSeedOracle.Services
                     AllowTrailingCommas = true,
                 };
 
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        json,
-                        deserializeOptions
-                    );
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    json,
+                    deserializeOptions
+                );
 
                 if (config != null)
                 {
@@ -289,34 +282,20 @@ namespace BalatroSeedOracle.Services
                     {
                         WriteIndented = true,
                         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = System
-                            .Text
-                            .Json
-                            .Serialization
-                            .JsonIgnoreCondition
-                            .WhenWritingNull,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                     };
 
-                    var newJson = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        serializeOptions
-                    );
+                    var newJson = System.Text.Json.JsonSerializer.Serialize(config, serializeOptions);
                     await File.WriteAllTextAsync(newPath, newJson);
 
                     // Cache will auto-refresh on next access (file watcher)
-                    Helpers.DebugLogger.Log(
-                        "FilterService",
-                        $"Filter cloned: {filterId} -> {newId} (name: {newName})"
-                    );
+                    Helpers.DebugLogger.Log("FilterService", $"Filter cloned: {filterId} -> {newId} (name: {newName})");
                     return newId;
                 }
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
-                    "FilterService",
-                    $"Error cloning filter: {ex.Message}"
-                );
+                Helpers.DebugLogger.LogError("FilterService", $"Error cloning filter: {ex.Message}");
             }
 
             return string.Empty;

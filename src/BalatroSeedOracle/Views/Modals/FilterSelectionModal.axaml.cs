@@ -14,9 +14,9 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using Motely.Filters;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
-using Motely.Filters;
 
 #pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
 
@@ -24,8 +24,7 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterSelectionModal : UserControl
     {
-        public FilterSelectionModalViewModel? ViewModel =>
-            DataContext as FilterSelectionModalViewModel;
+        public FilterSelectionModalViewModel? ViewModel => DataContext as FilterSelectionModalViewModel;
 
         public event EventHandler? CloseRequested;
 
@@ -56,9 +55,7 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnFilterDragOver(object? sender, DragEventArgs e)
         {
             // Check if files are being dragged
-            e.DragEffects = e.Data.GetFiles()?.Any() == true
-                ? DragDropEffects.Copy
-                : DragDropEffects.None;
+            e.DragEffects = e.Data.GetFiles()?.Any() == true ? DragDropEffects.Copy : DragDropEffects.None;
             e.Handled = true;
         }
 
@@ -150,9 +147,7 @@ namespace BalatroSeedOracle.Views.Modals
 
             if (parentWindow == null)
             {
-                throw new InvalidOperationException(
-                    "FilterSelectionModal must be shown from a Window context!"
-                );
+                throw new InvalidOperationException("FilterSelectionModal must be shown from a Window context!");
             }
 
             // Create styled confirmation dialog
@@ -249,9 +244,7 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 Text = "⚠",
                 FontSize = 32,
-                Foreground = new Avalonia.Media.SolidColorBrush(
-                    Avalonia.Media.Color.Parse("#FF6B6B")
-                ),
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B")),
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, 0, 0, 0),
             };
@@ -314,10 +307,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
-        private void OnViewModelPropertyChanged(
-            object? sender,
-            System.ComponentModel.PropertyChangedEventArgs e
-        )
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(FilterSelectionModalViewModel.SelectedFilter))
             {
@@ -333,18 +323,13 @@ namespace BalatroSeedOracle.Views.Modals
         {
             // Extract deck and stake names with fallbacks (handle both null and empty strings)
             var deckName = string.IsNullOrWhiteSpace(filter.DeckName) ? "Red" : filter.DeckName;
-            var stakeName = string.IsNullOrWhiteSpace(filter.StakeName)
-                ? "White"
-                : filter.StakeName;
+            var stakeName = string.IsNullOrWhiteSpace(filter.StakeName) ? "White" : filter.StakeName;
 
             // SpriteService expects SHORT deck names (just "Red", not "Red Deck")
             // Filter JSON stores short names like "Red", "Anaglyph", etc.
             // NO need to add " Deck" suffix!
 
-            DebugLogger.Log(
-                "FilterSelectionModal",
-                $"Loading deck: {deckName}, stake: {stakeName}"
-            );
+            DebugLogger.Log("FilterSelectionModal", $"Loading deck: {deckName}, stake: {stakeName}");
             LoadDeckAndStake(deckName, stakeName);
         }
 
@@ -379,10 +364,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError(
-                    "FilterSelectionModal",
-                    "Parent window content is not a Panel"
-                );
+                DebugLogger.LogError("FilterSelectionModal", "Parent window content is not a Panel");
                 tcs.SetResult(false);
             }
 
@@ -403,8 +385,11 @@ namespace BalatroSeedOracle.Views.Modals
                 // Check if StorageProvider supports file operations (important for browser)
                 if (!topLevel.StorageProvider.CanOpen)
                 {
-                    await MsBox.Avalonia.MessageBoxManager
-                        .GetMessageBoxStandard("Not Supported", "File opening is not supported in this environment.")
+                    await MsBox
+                        .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                            "Not Supported",
+                            "File opening is not supported in this environment."
+                        )
                         .ShowAsync();
                     return;
                 }
@@ -417,10 +402,7 @@ namespace BalatroSeedOracle.Views.Modals
                         AllowMultiple = false,
                         FileTypeFilter = new[]
                         {
-                            new FilePickerFileType("Filter Files")
-                            {
-                                Patterns = new[] { "*.jaml", "*.json" }
-                            },
+                            new FilePickerFileType("Filter Files") { Patterns = new[] { "*.jaml", "*.json" } },
                             new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } },
                         },
                     }
@@ -441,10 +423,13 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 DebugLogger.LogError("FilterSelectionModal", $"Error in OnBrowseFilterClick: {ex.Message}");
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
-                
+
                 // Show error message to user
-                await MsBox.Avalonia.MessageBoxManager
-                    .GetMessageBoxStandard("Error", $"Failed to open file picker: {ex.Message}")
+                await MsBox
+                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                        "Error",
+                        $"Failed to open file picker: {ex.Message}"
+                    )
                     .ShowAsync();
             }
         }
@@ -477,7 +462,10 @@ namespace BalatroSeedOracle.Views.Modals
                 MotelyJsonConfig? config;
                 if (extension == ".jaml")
                 {
-                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
+                    if (
+                        !Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError)
+                        || config == null
+                    )
                     {
                         DebugLogger.LogError(
                             "FilterSelectionModal",
@@ -514,7 +502,7 @@ namespace BalatroSeedOracle.Views.Modals
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);
                 var destKey = filterService.GenerateFilterFileName(baseName);
-                
+
                 // Remove ConfigureAwait(false) here too
                 var saved = await configurationService.SaveFilterAsync(destKey, config);
                 if (!saved)
@@ -530,7 +518,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     DebugLogger.Log("FilterSelectionModal", "Refreshing filter list...");
                     ViewModel.FilterList.RefreshFilters();
-                    
+
                     // Auto-select the imported filter if possible
                     // We need to reload the filters first, then find the one we just saved
                     // This logic might be better in the ViewModel, but let's just refresh for now.
@@ -544,9 +532,12 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 DebugLogger.LogError("FilterSelectionModal", $"Failed to import filter: {ex.Message}");
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
-                
-                await MsBox.Avalonia.MessageBoxManager
-                    .GetMessageBoxStandard("Import Error", $"Failed to import filter: {ex.Message}")
+
+                await MsBox
+                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                        "Import Error",
+                        $"Failed to import filter: {ex.Message}"
+                    )
                     .ShowAsync();
             }
         }

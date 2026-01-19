@@ -46,12 +46,14 @@ public class FertilizerService : IDisposable
     /// </summary>
     public async Task InitializeAsync()
     {
-        if (_initialized) return;
+        if (_initialized)
+            return;
 
         await _initLock.WaitAsync();
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+                return;
 
             await _duckDB.InitializeAsync();
 
@@ -79,7 +81,7 @@ public class FertilizerService : IDisposable
             // Create seeds table using centralized schema from Motely
             var fertilizerSchema = DuckDBSchema.FertilizerTableSchema();
             await _connection.EnsureTableExistsAsync(fertilizerSchema);
-            
+
             // Create index (schema doesn't include indexes, add separately)
             // Use high-level method - no SQL construction in BSO!
             await _connection.CreateIndexAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
@@ -110,11 +112,14 @@ public class FertilizerService : IDisposable
     {
         try
         {
-            if (!File.Exists(txtPath)) return;
-            if (_connection == null) return;
+            if (!File.Exists(txtPath))
+                return;
+            if (_connection == null)
+                return;
 
             var count = await _connection.GetRowCountAsync("seeds");
-            if (count > 0) return; // DB already has data
+            if (count > 0)
+                return; // DB already has data
 
             DebugLogger.Log("FertilizerService", $"Migrating from {txtPath} using DuckDB COPY");
 
@@ -143,13 +148,15 @@ public class FertilizerService : IDisposable
         if (_connection == null)
         {
             await InitializeAsync();
-            if (_connection == null) return;
+            if (_connection == null)
+                return;
         }
 
         try
         {
             var seedList = seeds.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-            if (seedList.Count == 0) return;
+            if (seedList.Count == 0)
+                return;
 
             if (_platformServices.SupportsFileSystem)
             {
@@ -188,12 +195,11 @@ public class FertilizerService : IDisposable
                 await using var appender = await _connection.CreateAppenderAsync("main", "seeds");
                 foreach (var seed in seedList)
                 {
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                        break;
                     try
                     {
-                        appender.CreateRow()
-                            .AppendValue(seed)
-                            .EndRow();
+                        appender.CreateRow().AppendValue(seed).EndRow();
                     }
                     catch
                     {
@@ -229,7 +235,8 @@ public class FertilizerService : IDisposable
         if (_connection == null)
         {
             await InitializeAsync();
-            if (_connection == null) return seeds;
+            if (_connection == null)
+                return seeds;
         }
 
         try
@@ -255,7 +262,8 @@ public class FertilizerService : IDisposable
         if (_connection == null)
         {
             await InitializeAsync();
-            if (_connection == null) return;
+            if (_connection == null)
+                return;
         }
 
         try
@@ -296,7 +304,8 @@ public class FertilizerService : IDisposable
         if (_connection == null)
         {
             await InitializeAsync();
-            if (_connection == null) return;
+            if (_connection == null)
+                return;
         }
 
         try
@@ -319,7 +328,8 @@ public class FertilizerService : IDisposable
 
     private async Task RefreshSeedCountAsync()
     {
-        if (_connection == null) return;
+        if (_connection == null)
+            return;
 
         try
         {
@@ -339,7 +349,8 @@ public class FertilizerService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         try
         {

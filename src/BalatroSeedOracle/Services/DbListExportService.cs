@@ -6,17 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Services
 {
     public class DbListExportService
     {
         public async Task<bool> ExportToCsvAsync(
-            List<SearchResult> results, 
+            List<SearchResult> results,
             TopLevel topLevel,
-            string defaultFileName = "dblist_results.csv")
+            string defaultFileName = "dblist_results.csv"
+        )
         {
             try
             {
@@ -32,30 +33,32 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-                {
-                    Title = "Export DBList Results to CSV",
-                    SuggestedFileName = defaultFileName,
-                    FileTypeChoices = new[]
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
                     {
-                        new FilePickerFileType("CSV Files")
+                        Title = "Export DBList Results to CSV",
+                        SuggestedFileName = defaultFileName,
+                        FileTypeChoices = new[]
                         {
-                            Patterns = new[] { "*.csv" },
-                            MimeTypes = new[] { "text/csv" }
-                        }
+                            new FilePickerFileType("CSV Files")
+                            {
+                                Patterns = new[] { "*.csv" },
+                                MimeTypes = new[] { "text/csv" },
+                            },
+                        },
                     }
-                });
+                );
 
                 if (file == null)
                     return false;
 
                 // Generate CSV content
                 var csvContent = GenerateCsvContent(results);
-                
+
                 // Write to file
                 await using var stream = await file.OpenWriteAsync();
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
-                
+
                 await writer.WriteAsync(csvContent);
                 await writer.FlushAsync();
 
@@ -73,9 +76,10 @@ namespace BalatroSeedOracle.Services
         /// Export search results to JSON format
         /// </summary>
         public async Task<bool> ExportToJsonAsync(
-            List<SearchResult> results, 
+            List<SearchResult> results,
             TopLevel topLevel,
-            string defaultFileName = "dblist_results.json")
+            string defaultFileName = "dblist_results.json"
+        )
         {
             try
             {
@@ -91,30 +95,32 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-                {
-                    Title = "Export DBList Results to JSON",
-                    SuggestedFileName = defaultFileName,
-                    FileTypeChoices = new[]
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
                     {
-                        new FilePickerFileType("JSON Files")
+                        Title = "Export DBList Results to JSON",
+                        SuggestedFileName = defaultFileName,
+                        FileTypeChoices = new[]
                         {
-                            Patterns = new[] { "*.json" },
-                            MimeTypes = new[] { "application/json" }
-                        }
+                            new FilePickerFileType("JSON Files")
+                            {
+                                Patterns = new[] { "*.json" },
+                                MimeTypes = new[] { "application/json" },
+                            },
+                        },
                     }
-                });
+                );
 
                 if (file == null)
                     return false;
 
                 // Generate JSON content
                 var jsonContent = GenerateJsonContent(results);
-                
+
                 // Write to file
                 await using var stream = await file.OpenWriteAsync();
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
-                
+
                 await writer.WriteAsync(jsonContent);
                 await writer.FlushAsync();
 
@@ -132,9 +138,10 @@ namespace BalatroSeedOracle.Services
         /// Export search results to text format (wordlist)
         /// </summary>
         public async Task<bool> ExportToTextAsync(
-            List<SearchResult> results, 
+            List<SearchResult> results,
             TopLevel topLevel,
-            string defaultFileName = "dblist_seeds.txt")
+            string defaultFileName = "dblist_seeds.txt"
+        )
         {
             try
             {
@@ -150,30 +157,32 @@ namespace BalatroSeedOracle.Services
                     return false;
                 }
 
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-                {
-                    Title = "Export DBList Seeds to Text",
-                    SuggestedFileName = defaultFileName,
-                    FileTypeChoices = new[]
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
                     {
-                        new FilePickerFileType("Text Files")
+                        Title = "Export DBList Seeds to Text",
+                        SuggestedFileName = defaultFileName,
+                        FileTypeChoices = new[]
                         {
-                            Patterns = new[] { "*.txt" },
-                            MimeTypes = new[] { "text/plain" }
-                        }
+                            new FilePickerFileType("Text Files")
+                            {
+                                Patterns = new[] { "*.txt" },
+                                MimeTypes = new[] { "text/plain" },
+                            },
+                        },
                     }
-                });
+                );
 
                 if (file == null)
                     return false;
 
                 // Generate text content (just seeds, one per line)
                 var textContent = string.Join(Environment.NewLine, results.Select(r => r.Seed));
-                
+
                 // Write to file
                 await using var stream = await file.OpenWriteAsync();
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
-                
+
                 await writer.WriteAsync(textContent);
                 await writer.FlushAsync();
 
@@ -190,10 +199,10 @@ namespace BalatroSeedOracle.Services
         private string GenerateCsvContent(List<SearchResult> results)
         {
             var csv = new StringBuilder();
-            
+
             // Header
             csv.AppendLine("Seed,TotalScore,Scores,Labels");
-            
+
             // Data rows
             foreach (var result in results)
             {
@@ -201,10 +210,10 @@ namespace BalatroSeedOracle.Services
                 var score = result.TotalScore;
                 var scores = result.Scores != null ? string.Join(";", result.Scores) : "";
                 var labels = result.Labels != null ? string.Join(";", result.Labels) : "";
-                
+
                 csv.AppendLine($"{seed},{score},{EscapeCsvField(scores)},{EscapeCsvField(labels)}");
             }
-            
+
             return csv.ToString();
         }
 
@@ -214,34 +223,39 @@ namespace BalatroSeedOracle.Services
             {
                 ExportDate = DateTime.UtcNow,
                 TotalResults = results.Count,
-                Results = results.Select(r => new
-                {
-                    Seed = r.Seed,
-                    TotalScore = r.TotalScore,
-                    Scores = r.Scores,
-                    Labels = r.Labels,
-                    ScoresDisplay = r.ScoresDisplay
-                }).ToArray()
+                Results = results
+                    .Select(r => new
+                    {
+                        Seed = r.Seed,
+                        TotalScore = r.TotalScore,
+                        Scores = r.Scores,
+                        Labels = r.Labels,
+                        ScoresDisplay = r.ScoresDisplay,
+                    })
+                    .ToArray(),
             };
 
-            return System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-            });
+            return System.Text.Json.JsonSerializer.Serialize(
+                exportData,
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                }
+            );
         }
 
         private string EscapeCsvField(string field)
         {
             if (string.IsNullOrEmpty(field))
                 return "";
-            
+
             // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
             if (field.Contains(',') || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
             {
                 return $"\"{field.Replace("\"", "\"\"")}\"";
             }
-            
+
             return field;
         }
     }

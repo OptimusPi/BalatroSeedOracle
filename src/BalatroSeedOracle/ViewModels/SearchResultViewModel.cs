@@ -52,10 +52,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (clipboard != null)
                     {
                         await clipboard.SetTextAsync(seed);
-                        DebugLogger.Log(
-                            "SearchResultViewModel",
-                            $"Copied seed to clipboard: {seed}"
-                        );
+                        DebugLogger.Log("SearchResultViewModel", $"Copied seed to clipboard: {seed}");
                     }
                 }
             }

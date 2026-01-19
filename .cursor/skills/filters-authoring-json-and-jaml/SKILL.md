@@ -7,12 +7,12 @@ description: Adds or modifies filter serialization and editor behavior (JSON/JAM
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `ViewModels/FiltersModalViewModel.cs` | Main filter editing ViewModel |
-| `Services/FilterSerializationService.cs` | JSON serialization/deserialization |
+| File                                     | Purpose                             |
+| ---------------------------------------- | ----------------------------------- |
+| `ViewModels/FiltersModalViewModel.cs`    | Main filter editing ViewModel       |
+| `Services/FilterSerializationService.cs` | JSON serialization/deserialization  |
 | `Services/FilterConfigurationService.cs` | Build config from visual selections |
-| `Motely.Filters.MotelyJsonConfig` | Filter data model |
+| `Motely.Filters.MotelyJsonConfig`        | Filter data model                   |
 
 ## Filter JSON Structure
 
@@ -26,10 +26,10 @@ description: Adds or modifies filter serialization and editor behavior (JSON/JAM
   "deck": "Red",
   "stake": "white",
   "must": [
-    { "type": "Joker", "value": "Blueprint", "antes": [1,2,3] }
+    { "type": "Joker", "value": "Blueprint", "antes": [1, 2, 3] }
   ],
   "should": [
-    { "type": "Voucher", "value": "Telescope", "antes": [1,2], "score": 10 }
+    { "type": "Voucher", "value": "Telescope", "antes": [1, 2], "score": 10 }
   ],
   "mustNot": [
     { "type": "Boss", "value": "TheNeedle" }
@@ -39,17 +39,17 @@ description: Adds or modifies filter serialization and editor behavior (JSON/JAM
 
 ## Clause Types
 
-| Type | Value Examples |
-|------|----------------|
-| `Joker` | `Blueprint`, `Brainstorm` |
-| `SoulJoker` | `Perkeo`, `Triboulet`, `Any` |
-| `Voucher` | `Telescope`, `Observatory` |
-| `TarotCard` | `TheFool`, `TheWorld` |
-| `SpectralCard` | `Ankh`, `Soul` |
-| `PlanetCard` | `Jupiter`, `Mars` |
-| `Boss` | `TheNeedle`, `ThePlant` |
-| `SmallBlindTag` / `BigBlindTag` | `NegativeTag`, `RareTag` |
-| `Or` / `And` | Nested clauses |
+| Type                            | Value Examples               |
+| ------------------------------- | ---------------------------- |
+| `Joker`                         | `Blueprint`, `Brainstorm`    |
+| `SoulJoker`                     | `Perkeo`, `Triboulet`, `Any` |
+| `Voucher`                       | `Telescope`, `Observatory`   |
+| `TarotCard`                     | `TheFool`, `TheWorld`        |
+| `SpectralCard`                  | `Ankh`, `Soul`               |
+| `PlanetCard`                    | `Jupiter`, `Mars`            |
+| `Boss`                          | `TheNeedle`, `ThePlant`      |
+| `SmallBlindTag` / `BigBlindTag` | `NegativeTag`, `RareTag`     |
+| `Or` / `And`                    | Nested clauses               |
 
 ## Clause Properties
 
@@ -85,10 +85,10 @@ description: Adds or modifies filter serialization and editor behavior (JSON/JAM
 
 ## Scoring Modes
 
-| Mode | Behavior |
-|------|----------|
-| `sum` (default) | Adds `count * score` for each should clause |
-| `max` | Uses maximum raw occurrence count (ignores score) |
+| Mode            | Behavior                                          |
+| --------------- | ------------------------------------------------- |
+| `sum` (default) | Adds `count * score` for each should clause       |
+| `max`           | Uses maximum raw occurrence count (ignores score) |
 
 ## Round-Trip Considerations
 

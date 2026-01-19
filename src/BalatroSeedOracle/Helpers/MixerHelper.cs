@@ -75,10 +75,7 @@ namespace BalatroSeedOracle.Helpers
                 if (!Directory.Exists(MixerDirectory))
                     return names;
                 var files = Directory.GetFiles(MixerDirectory, "*.json");
-                names = files
-                    .Select(f => Path.GetFileNameWithoutExtension(f))
-                    .OrderBy(n => n)
-                    .ToList();
+                names = files.Select(f => Path.GetFileNameWithoutExtension(f)).OrderBy(n => n).ToList();
             }
             catch (Exception ex)
             {
@@ -104,10 +101,7 @@ namespace BalatroSeedOracle.Helpers
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError(
-                            "MixerHelper",
-                            $"Failed to delete '{file}': {ex.Message}"
-                        );
+                        DebugLogger.LogError("MixerHelper", $"Failed to delete '{file}': {ex.Message}");
                     }
                 }
                 return deleted;

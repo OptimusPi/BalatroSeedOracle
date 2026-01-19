@@ -205,36 +205,36 @@ namespace BalatroSeedOracle.ViewModels
                         HighAvg = bands.HighAvg;
                         HighPeak = bands.HighPeak;
 
-                                // Capture max values
-                                if (bands.BassAvg > BassAvgMax)
-                                    BassAvgMax = bands.BassAvg;
-                                if (bands.BassPeak > BassPeakMax)
-                                    BassPeakMax = bands.BassPeak;
-                                if (bands.MidAvg > MidAvgMax)
-                                    MidAvgMax = bands.MidAvg;
-                                if (bands.MidPeak > MidPeakMax)
-                                    MidPeakMax = bands.MidPeak;
-                                if (bands.HighAvg > HighAvgMax)
-                                    HighAvgMax = bands.HighAvg;
-                                if (bands.HighPeak > HighPeakMax)
-                                    HighPeakMax = bands.HighPeak;
+                        // Capture max values
+                        if (bands.BassAvg > BassAvgMax)
+                            BassAvgMax = bands.BassAvg;
+                        if (bands.BassPeak > BassPeakMax)
+                            BassPeakMax = bands.BassPeak;
+                        if (bands.MidAvg > MidAvgMax)
+                            MidAvgMax = bands.MidAvg;
+                        if (bands.MidPeak > MidPeakMax)
+                            MidPeakMax = bands.MidPeak;
+                        if (bands.HighAvg > HighAvgMax)
+                            HighAvgMax = bands.HighAvg;
+                        if (bands.HighPeak > HighPeakMax)
+                            HighPeakMax = bands.HighPeak;
 
-                                // Beat detection with decay
-                                // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
-                                if (bands.BassPeak > BassThreshold)
-                                    BassBeatBrightness = 1.0;
-                                else
-                                    BassBeatBrightness *= DECAY_RATE;
+                        // Beat detection with decay
+                        // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
+                        if (bands.BassPeak > BassThreshold)
+                            BassBeatBrightness = 1.0;
+                        else
+                            BassBeatBrightness *= DECAY_RATE;
 
-                                if (bands.MidPeak > MidThreshold)
-                                    MidBeatBrightness = 1.0;
-                                else
-                                    MidBeatBrightness *= DECAY_RATE;
+                        if (bands.MidPeak > MidThreshold)
+                            MidBeatBrightness = 1.0;
+                        else
+                            MidBeatBrightness *= DECAY_RATE;
 
-                                if (bands.HighPeak > HighThreshold)
-                                    HighBeatBrightness = 1.0;
-                                else
-                                    HighBeatBrightness *= DECAY_RATE;
+                        if (bands.HighPeak > HighThreshold)
+                            HighBeatBrightness = 1.0;
+                        else
+                            HighBeatBrightness *= DECAY_RATE;
                     });
 
                     // ~60 FPS update rate
@@ -250,10 +250,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (_audioManager == null)
                         break;
 
-                    Helpers.DebugLogger.LogError(
-                        "FrequencyDebugWidget",
-                        $"Update error: {ex.Message}"
-                    );
+                    Helpers.DebugLogger.LogError("FrequencyDebugWidget", $"Update error: {ex.Message}");
                     await Task.Delay(100, cancellationToken);
                 }
             }
@@ -303,18 +300,12 @@ namespace BalatroSeedOracle.ViewModels
                 if (!Directory.Exists(MetadataDirectory))
                 {
                     Directory.CreateDirectory(MetadataDirectory);
-                    DebugLogger.Log(
-                        "FrequencyDebugWidget",
-                        $"Created metadata directory: {MetadataDirectory}"
-                    );
+                    DebugLogger.Log("FrequencyDebugWidget", $"Created metadata directory: {MetadataDirectory}");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FrequencyDebugWidget",
-                    $"Failed to create metadata directory: {ex.Message}"
-                );
+                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to create metadata directory: {ex.Message}");
             }
         }
 
@@ -361,18 +352,12 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log(
-                        "FrequencyDebugWidget",
-                        $"No metadata file found for {trackName}, using defaults"
-                    );
+                    DebugLogger.Log("FrequencyDebugWidget", $"No metadata file found for {trackName}, using defaults");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FrequencyDebugWidget",
-                    $"Failed to load metadata for {trackName}: {ex.Message}"
-                );
+                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to load metadata for {trackName}: {ex.Message}");
             }
         }
 
@@ -438,10 +423,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FrequencyDebugWidget",
-                    $"Failed to save metadata for {trackName}: {ex.Message}"
-                );
+                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save metadata for {trackName}: {ex.Message}");
             }
         }
 
@@ -482,10 +464,7 @@ namespace BalatroSeedOracle.ViewModels
                 var mainWindow = _ownerControl?.FindAncestorOfType<Window>();
                 if (mainWindow == null)
                 {
-                    DebugLogger.LogError(
-                        "FrequencyDebugWidget",
-                        "Cannot show dialog: main window not found"
-                    );
+                    DebugLogger.LogError("FrequencyDebugWidget", "Cannot show dialog: main window not found");
                     return;
                 }
 
@@ -650,11 +629,7 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Create trigger point directory if it doesn't exist
-                var triggerPointsDir = Path.Combine(
-                    AppContext.BaseDirectory,
-                    "visualizer",
-                    "audio_triggers"
-                );
+                var triggerPointsDir = Path.Combine(AppContext.BaseDirectory, "visualizer", "audio_triggers");
                 Directory.CreateDirectory(triggerPointsDir);
 
                 // Save as individual JSON file
@@ -671,10 +646,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FrequencyDebugWidget",
-                    $"Failed to save audio trigger: {ex.Message}"
-                );
+                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save audio trigger: {ex.Message}");
             }
         }
 

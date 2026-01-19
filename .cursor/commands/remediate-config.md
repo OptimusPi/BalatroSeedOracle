@@ -5,6 +5,7 @@ Analyze and address issues discovered in audit outputs produced by `cursor-audit
 ## Input
 
 One of:
+
 - No input (default): process all audit files in `.local/audits/`
 - A single audit file path (e.g., `.local/audits/2026-01-15-foo-audit.md`)
 - A date filter (e.g., `2026-01-15`) to process matching files
@@ -48,11 +49,13 @@ One of:
 ### 4. Create an Executable Remediation Plan
 
 Produce a plan that is directly executable (no vague tasks). For each item include:
+
 - The exact target file(s) to edit/create
 - The expected outcome / acceptance criteria
 - The verification step (lint/test/manual check), if applicable
 
 If the plan includes creating a new Cursor rule or skill:
+
 - Use the `cursor-authoring` skill for detailed instructions
 - Use templates from `.local/templates/cursor-*.md`
 - Follow standards in `.cursor/rules/tool-cursor-config.mdc`
@@ -69,6 +72,7 @@ git checkout -b chore/audit-remediation-$(date +%Y-%m-%d)
 ```
 
 Then execute the remediation items:
+
 - Prefer editing existing rules/commands/skills over creating new ones
 - Keep changes tightly scoped to what the audits justify
 - After substantive edits, run targeted verification (build/lint/tests) for the files you changed

@@ -5,19 +5,16 @@
   "dateCreated": "2025-01-01T05:46:12.6691000Z",
   "must": [
     {
-        "type": "Voucher",
-        "value": "Telescope",
-        "antes": [1]
+      "type": "Voucher",
+      "value": "Telescope",
+      "antes": [1]
     },
     {
-        "type": "Voucher",
-        "value": "Observatory",
-        "antes": [2]
+      "type": "Voucher",
+      "value": "Observatory",
+      "antes": [2]
     }
   ],
-  "should": [
-    
-
-  ],
+  "should": [],
   "mustNot": []
 }

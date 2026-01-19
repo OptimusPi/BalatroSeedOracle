@@ -11,12 +11,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class CardBackgroundConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool isSelected)
             {
@@ -26,12 +21,7 @@ namespace BalatroSeedOracle.Converters
             return Brushes.White;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -42,23 +32,14 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class CardBorderBrushConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool isSelected)
             {
                 if (isSelected)
                 {
                     if (
-                        Application.Current?.Resources.TryGetResource(
-                            "AccentBlue",
-                            null,
-                            out var resource
-                        ) == true
+                        Application.Current?.Resources.TryGetResource("AccentBlue", null, out var resource) == true
                         && resource is IBrush brush
                     )
                         return brush;
@@ -67,11 +48,7 @@ namespace BalatroSeedOracle.Converters
                 else
                 {
                     if (
-                        Application.Current?.Resources.TryGetResource(
-                            "DarkBackground",
-                            null,
-                            out var resource
-                        ) == true
+                        Application.Current?.Resources.TryGetResource("DarkBackground", null, out var resource) == true
                         && resource is IBrush brush
                     )
                         return brush;
@@ -80,23 +57,14 @@ namespace BalatroSeedOracle.Converters
             }
 
             if (
-                Application.Current?.Resources.TryGetResource(
-                    "DarkBackground",
-                    null,
-                    out var defaultResource
-                ) == true
+                Application.Current?.Resources.TryGetResource("DarkBackground", null, out var defaultResource) == true
                 && defaultResource is IBrush defaultBrush
             )
                 return defaultBrush;
             return Brushes.Gray;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -107,12 +75,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class CardBorderThicknessConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool isSelected)
             {
@@ -122,12 +85,7 @@ namespace BalatroSeedOracle.Converters
             return new Thickness(2);
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -138,12 +96,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class HexToBrushConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is string hex && !string.IsNullOrEmpty(hex))
             {
@@ -160,12 +113,7 @@ namespace BalatroSeedOracle.Converters
             return Brushes.Black;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -177,12 +125,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class BoolToClassConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool boolValue && parameter is string className)
             {
@@ -192,12 +135,7 @@ namespace BalatroSeedOracle.Converters
             return string.Empty;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }

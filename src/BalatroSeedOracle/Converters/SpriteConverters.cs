@@ -14,12 +14,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ShopItemSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not ShopItemModel item)
                 return null;
@@ -29,18 +24,10 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return item.TypeCategory switch
                 {
-                    Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(
-                        item.SpriteKey
-                    ),
-                    Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
-                        item.SpriteKey
-                    ),
-                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetPlanetCardImage(
-                        item.SpriteKey
-                    ),
-                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(
-                        item.SpriteKey
-                    ),
+                    Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(item.SpriteKey),
+                    Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(item.SpriteKey),
+                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetPlanetCardImage(item.SpriteKey),
+                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(item.SpriteKey),
                     _ => null,
                 };
             }
@@ -54,12 +41,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -70,12 +52,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class BoosterPackSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not BoosterPackModel pack)
                 return null;
@@ -95,12 +72,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -111,12 +83,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class TagSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not TagModel tag)
                 return null;
@@ -136,12 +103,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -152,12 +114,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemTypeToSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not string itemType || string.IsNullOrEmpty(itemType))
                 return null;
@@ -177,12 +134,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -194,12 +146,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemNameToSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string? itemName = value switch
             {
@@ -230,12 +177,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -244,21 +186,9 @@ namespace BalatroSeedOracle.Converters
     public class ItemNameToSoulFaceConverter : IValueConverter
     {
         // Legendary jokers that have soul faces (same list as SpriteService)
-        private static readonly string[] LegendaryJokers =
-        {
-            "perkeo",
-            "canio",
-            "chicot",
-            "triboulet",
-            "yorick",
-        };
+        private static readonly string[] LegendaryJokers = { "perkeo", "canio", "chicot", "triboulet", "yorick" };
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string? itemName = null;
             bool isSoulJoker = false;
@@ -301,12 +231,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -317,12 +242,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class SoulGemOverlayConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string? itemName = value switch
             {
@@ -350,12 +270,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -366,12 +281,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class MysteryJokerFaceOverlayConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string? itemName = value switch
             {
@@ -399,12 +309,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -412,12 +317,7 @@ namespace BalatroSeedOracle.Converters
 
     public class StandardCardToSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is not string cardString || string.IsNullOrEmpty(cardString))
                 return null;
@@ -459,20 +359,12 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "StandardCardToSpriteConverter",
-                    $"Failed to parse card '{value}': {ex.Message}"
-                );
+                DebugLogger.LogError("StandardCardToSpriteConverter", $"Failed to parse card '{value}': {ex.Message}");
                 return null;
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -483,12 +375,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class BossSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null)
                 return null;
@@ -504,20 +391,12 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BossSpriteConverter",
-                    $"Failed to get boss sprite for '{value}': {ex.Message}"
-                );
+                DebugLogger.LogError("BossSpriteConverter", $"Failed to get boss sprite for '{value}': {ex.Message}");
                 return null;
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -528,12 +407,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class VoucherSpriteConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null)
                 return null;
@@ -557,12 +431,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -575,12 +444,7 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly EditionSpriteConverter Instance = new();
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var edition = parameter as string ?? value as string;
             if (string.IsNullOrEmpty(edition))
@@ -602,12 +466,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -620,12 +479,7 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly StickerSpriteConverter Instance = new();
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var sticker = parameter as string ?? value as string;
             if (string.IsNullOrEmpty(sticker))
@@ -647,12 +501,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -665,18 +514,10 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly SealSpriteConverter Instance = new();
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var seal = parameter as string ?? value as string;
-            if (
-                string.IsNullOrEmpty(seal)
-                || seal.Equals("None", StringComparison.OrdinalIgnoreCase)
-            )
+            if (string.IsNullOrEmpty(seal) || seal.Equals("None", StringComparison.OrdinalIgnoreCase))
                 return null;
 
             try
@@ -686,20 +527,12 @@ namespace BalatroSeedOracle.Converters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SealSpriteConverter",
-                    $"Failed to get seal sprite for '{seal}': {ex.Message}"
-                );
+                DebugLogger.LogError("SealSpriteConverter", $"Failed to get seal sprite for '{seal}': {ex.Message}");
                 return null;
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -709,18 +542,10 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly EnhancementSpriteConverter Instance = new();
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var enhancement = parameter as string ?? value as string;
-            if (
-                string.IsNullOrEmpty(enhancement)
-                || enhancement.Equals("None", StringComparison.OrdinalIgnoreCase)
-            )
+            if (string.IsNullOrEmpty(enhancement) || enhancement.Equals("None", StringComparison.OrdinalIgnoreCase))
                 return null;
 
             try
@@ -738,12 +563,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }

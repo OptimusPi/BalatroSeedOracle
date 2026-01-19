@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ReadTextAsync(storeKey);
         }
 
@@ -69,7 +69,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ExistsAsync(storeKey);
         }
 

@@ -36,8 +36,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Enable/disable all animations
         /// </summary>
-        public static readonly StyledProperty<bool> IsAnimationEnabledProperty =
-            AvaloniaProperty.Register<CardDragBehavior, bool>(nameof(IsAnimationEnabled), true);
+        public static readonly StyledProperty<bool> IsAnimationEnabledProperty = AvaloniaProperty.Register<
+            CardDragBehavior,
+            bool
+        >(nameof(IsAnimationEnabled), true);
 
         public bool IsAnimationEnabled
         {
@@ -48,11 +50,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// Juice intensity on grab (0.4 = Balatro default)
         /// </summary>
-        public static readonly StyledProperty<double> JuiceAmountProperty =
-            AvaloniaProperty.Register<CardDragBehavior, double>(
-                nameof(JuiceAmount),
-                UIConstants.CardJuiceScaleFactor
-            );
+        public static readonly StyledProperty<double> JuiceAmountProperty = AvaloniaProperty.Register<
+            CardDragBehavior,
+            double
+        >(nameof(JuiceAmount), UIConstants.CardJuiceScaleFactor);
 
         public double JuiceAmount
         {
@@ -63,8 +64,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// 3D perspective tilt strength (8 = default)
         /// </summary>
-        public static readonly StyledProperty<double> TiltStrengthProperty =
-            AvaloniaProperty.Register<CardDragBehavior, double>(nameof(TiltStrength), 8.0);
+        public static readonly StyledProperty<double> TiltStrengthProperty = AvaloniaProperty.Register<
+            CardDragBehavior,
+            double
+        >(nameof(TiltStrength), 8.0);
 
         public double TiltStrength
         {
@@ -86,10 +89,7 @@ namespace BalatroSeedOracle.Behaviors
             // PROPER SOLUTION: Find the first child control to apply transforms to
             // The parent (AssociatedObject) keeps its static hitbox for pointer events
             // Only the visual child gets transformed, preventing hitbox rotation issues
-            if (
-                AssociatedObject is Avalonia.Controls.Decorator decorator
-                && decorator.Child is Control child
-            )
+            if (AssociatedObject is Avalonia.Controls.Decorator decorator && decorator.Child is Control child)
             {
                 _visualChild = child;
             }
@@ -120,10 +120,7 @@ namespace BalatroSeedOracle.Behaviors
             _skewTransform = new SkewTransform(0, 0);
             _rotateTransform = new RotateTransform(0);
             _translateTransform = new TranslateTransform();
-            _scaleTransform = new ScaleTransform(
-                UIConstants.DefaultScaleFactor,
-                UIConstants.DefaultScaleFactor
-            );
+            _scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
             _transformGroup = new TransformGroup();
             _transformGroup.Children.Add(_skewTransform);
             _transformGroup.Children.Add(_rotateTransform);
@@ -290,17 +287,12 @@ namespace BalatroSeedOracle.Behaviors
                 var offsetY = (_lastPointerPosition.Value.Y - centerY) / bounds.Height;
 
                 // Drag delta from initial press
-                var dx =
-                    (_lastPointerPosition.Value.X - _pointerPressedPosition.Value.X) / bounds.Width;
-                var dy =
-                    (_lastPointerPosition.Value.Y - _pointerPressedPosition.Value.Y)
-                    / bounds.Height;
+                var dx = (_lastPointerPosition.Value.X - _pointerPressedPosition.Value.X) / bounds.Width;
+                var dy = (_lastPointerPosition.Value.Y - _pointerPressedPosition.Value.Y) / bounds.Height;
 
                 // Balatro formula: abs(hover_offset.y + hover_offset.x - 1 + dx + dy - 1) * 0.3
                 leanDistance =
-                    Math.Abs(offsetY + offsetX - 1 + dx + dy - 1)
-                    * UIConstants.CardDragLeanMultiplier
-                    * 15.0; // Convert to pixel distance
+                    Math.Abs(offsetY + offsetX - 1 + dx + dy - 1) * UIConstants.CardDragLeanMultiplier * 15.0; // Convert to pixel distance
 
                 // Lean towards drag direction
                 leanX = offsetX * leanDistance;
@@ -341,8 +333,7 @@ namespace BalatroSeedOracle.Behaviors
             {
                 // AMBIENT MODE: Subtle breathing sway (like real Balatro!)
                 // tilt_angle = G.TIMERS.REAL*(1.56 + (self.ID/1.14212)%1) + self.ID/1.35122
-                var tiltAngle =
-                    elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
+                var tiltAngle = elapsedSeconds * (1.56 + (_cardId / 1.14212) % 1) + _cardId / 1.35122;
 
                 // Balatro's ambient tilt: self.ambient_tilt*(0.5+math.cos(tilt_angle))*tilt_factor
                 var ambientTilt = UIConstants.CardAmbientTiltMultiplier; // 0.2
@@ -387,9 +378,7 @@ namespace BalatroSeedOracle.Behaviors
 
                     // Scale oscillation: scale_amt * sin(FREQUENCY*t) * decay^3
                     var scaleJuice =
-                        JuiceAmount
-                        * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed)
-                        * decayScale;
+                        JuiceAmount * Math.Sin(UIConstants.JuiceBounceFrequency * juiceElapsed) * decayScale;
                     _scaleTransform.ScaleX = UIConstants.DefaultScaleFactor + scaleJuice;
                     _scaleTransform.ScaleY = UIConstants.DefaultScaleFactor + scaleJuice;
 

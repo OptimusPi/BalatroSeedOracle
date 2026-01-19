@@ -83,6 +83,7 @@ Analyze a specific command file for relevance, quality, and alignment with best 
 ## Default Quality Checklist
 
 Use when no research available:
+
 - Clear title and description
 - Input section present with all parameters
 - Steps numbered and actionable
@@ -96,12 +97,14 @@ Use when no research available:
 ## Template Reference
 
 When creating new commands or restructuring existing ones:
+
 - Template: `.local/templates/cursor-command.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
 
 Display inline:
+
 - Current state summary (lines, sections, file references)
 - Relevance score (High/Medium/Low/None)
 - Numbered list of recommended changes

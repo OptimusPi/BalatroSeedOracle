@@ -104,9 +104,7 @@ namespace BalatroSeedOracle.Services
 
         public FilterCacheService(IAppDataStore store, IPlatformServices? platformServices = null)
         {
-            _cache = new ConcurrentDictionary<string, CachedFilter>(
-                StringComparer.OrdinalIgnoreCase
-            );
+            _cache = new ConcurrentDictionary<string, CachedFilter>(StringComparer.OrdinalIgnoreCase);
             _cacheLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _platformServices = platformServices;
@@ -140,10 +138,7 @@ namespace BalatroSeedOracle.Services
                 var filtersDir = Helpers.AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
-                    DebugLogger.Log(
-                        "FilterCacheService",
-                        $"Filters directory does not exist: {filtersDir}"
-                    );
+                    DebugLogger.Log("FilterCacheService", $"Filters directory does not exist: {filtersDir}");
                     _platformServices?.EnsureDirectoryExists(filtersDir);
                     _isInitialized = true;
                     return;
@@ -342,7 +337,7 @@ namespace BalatroSeedOracle.Services
 
             var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
             var filterId = Path.GetFileNameWithoutExtension(filePath);
-            
+
             if (isBrowser)
             {
                 // In browser, filePath is a logical key (e.g. "Filters/MyFilter.json")
@@ -382,7 +377,7 @@ namespace BalatroSeedOracle.Services
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
                 string filePath;
                 bool exists;
-                
+
                 if (isBrowser)
                 {
                     filePath = $"Filters/{filterId}.json";
@@ -402,10 +397,7 @@ namespace BalatroSeedOracle.Services
                 {
                     // File was deleted, remove from cache
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.Log(
-                        "FilterCacheService",
-                        $"Removed deleted filter from cache: {filterId}"
-                    );
+                    DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
                     return;
                 }
 
@@ -414,18 +406,12 @@ namespace BalatroSeedOracle.Services
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log(
-                        "FilterCacheService",
-                        $"Invalidated and reloaded filter: {filterId}"
-                    );
+                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError(
-                        "FilterCacheService",
-                        $"Failed to reload filter: {filterId}"
-                    );
+                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
                 }
             }
             finally
@@ -498,7 +484,7 @@ namespace BalatroSeedOracle.Services
                         // Not completed - return null and let async version handle it
                         return null;
                     }
-                    
+
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
@@ -561,10 +547,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterCacheService",
-                    $"Error loading filter {filterId}: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterCacheService", $"Error loading filter {filterId}: {ex.Message}");
                 return null;
             }
         }

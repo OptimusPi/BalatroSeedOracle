@@ -13,8 +13,10 @@ namespace BalatroSeedOracle.Components
     {
         private ItemsControl? _carouselItems;
 
-        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
-            AvaloniaProperty.Register<FilterItemCarousel, IEnumerable?>(nameof(ItemsSource));
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty = AvaloniaProperty.Register<
+            FilterItemCarousel,
+            IEnumerable?
+        >(nameof(ItemsSource));
 
         public IEnumerable? ItemsSource
         {
@@ -37,10 +39,7 @@ namespace BalatroSeedOracle.Components
             // Bind ItemsSource property to inner ItemsControl
             if (_carouselItems != null)
             {
-                _carouselItems.Bind(
-                    ItemsControl.ItemsSourceProperty,
-                    this.GetObservable(ItemsSourceProperty)
-                );
+                _carouselItems.Bind(ItemsControl.ItemsSourceProperty, this.GetObservable(ItemsSourceProperty));
             }
         }
     }

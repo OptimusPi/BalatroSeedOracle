@@ -138,8 +138,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
         // Computed properties for button visibility based on category
-        public bool ShowEditionButtons =>
-            SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
+        public bool ShowEditionButtons => SelectedMainCategory == "Joker" || SelectedMainCategory == "StandardCard";
         public bool ShowStickerButtons => SelectedMainCategory == "Joker";
         public bool ShowSealButtons => SelectedMainCategory == "StandardCard";
         public bool ShowEnhancementButtons => SelectedMainCategory == "StandardCard";
@@ -291,18 +290,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 case "Joker":
                     AddGroup("Legendary Jokers", FilteredJokers.Where(j => j.Type == "SoulJoker"));
-                    AddGroup(
-                        "Rare Jokers",
-                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare")
-                    );
+                    AddGroup("Rare Jokers", FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Rare"));
                     AddGroup(
                         "Uncommon Jokers",
                         FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Uncommon")
                     );
-                    AddGroup(
-                        "Common Jokers",
-                        FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common")
-                    );
+                    AddGroup("Common Jokers", FilteredJokers.Where(j => j.Type == "Joker" && j.Category == "Common"));
                     break;
 
                 case "Consumable":
@@ -367,25 +360,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 case "StandardCard":
                     AddGroup("Hearts", FilteredStandardCards.Where(c => c.Category == "Hearts"));
                     AddGroup("Spades", FilteredStandardCards.Where(c => c.Category == "Spades"));
-                    AddGroup(
-                        "Diamonds",
-                        FilteredStandardCards.Where(c => c.Category == "Diamonds")
-                    );
+                    AddGroup("Diamonds", FilteredStandardCards.Where(c => c.Category == "Diamonds"));
                     AddGroup("Clubs", FilteredStandardCards.Where(c => c.Category == "Clubs"));
                     AddGroup("Mult Cards", FilteredStandardCards.Where(c => c.Category == "Mult"));
-                    AddGroup(
-                        "Bonus Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Bonus")
-                    );
-                    AddGroup(
-                        "Glass Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Glass")
-                    );
+                    AddGroup("Bonus Cards", FilteredStandardCards.Where(c => c.Category == "Bonus"));
+                    AddGroup("Glass Cards", FilteredStandardCards.Where(c => c.Category == "Glass"));
                     AddGroup("Gold Cards", FilteredStandardCards.Where(c => c.Category == "Gold"));
-                    AddGroup(
-                        "Steel Cards",
-                        FilteredStandardCards.Where(c => c.Category == "Steel")
-                    );
+                    AddGroup("Steel Cards", FilteredStandardCards.Where(c => c.Category == "Steel"));
                     AddGroup("Stone Card", FilteredStandardCards.Where(c => c.Category == "Stone"));
                     break;
             }
@@ -393,11 +374,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddGroup(string groupName, IEnumerable<FilterItem> items)
         {
-            var group = new ItemGroup
-            {
-                GroupName = groupName,
-                Items = new ObservableCollection<FilterItem>(items),
-            };
+            var group = new ItemGroup { GroupName = groupName, Items = new ObservableCollection<FilterItem>(items) };
             GroupedItems.Add(group);
         }
 
@@ -528,28 +505,20 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             NotifyJsonEditorOfChanges();
         }
 
-        private void RemoveItemFromParent(
-            FilterItem item,
-            ObservableCollection<string> parentCollection
-        )
+        private void RemoveItemFromParent(FilterItem item, ObservableCollection<string> parentCollection)
         {
             if (_parentViewModel == null)
                 return;
 
             var itemKey = _parentViewModel
-                .ItemConfigs.FirstOrDefault(kvp =>
-                    kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
-                )
+                .ItemConfigs.FirstOrDefault(kvp => kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type)
                 .Key;
 
             if (!string.IsNullOrEmpty(itemKey))
             {
                 parentCollection.Remove(itemKey);
                 _parentViewModel.ItemConfigs.Remove(itemKey);
-                DebugLogger.Log(
-                    "ConfigureFilterTab",
-                    $"Removed {item.Name} from parent collection"
-                );
+                DebugLogger.Log("ConfigureFilterTab", $"Removed {item.Name} from parent collection");
             }
         }
 
@@ -558,10 +527,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (_parentViewModel == null)
                 return;
 
-            DebugLogger.Log(
-                "ConfigureFilterTab",
-                $"Syncing {operatorItem.OperatorType} operator to {targetZone}"
-            );
+            DebugLogger.Log("ConfigureFilterTab", $"Syncing {operatorItem.OperatorType} operator to {targetZone}");
 
             var itemKey = _parentViewModel.GenerateNextItemKey();
             var operatorConfig = new ItemConfig
@@ -627,10 +593,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             StickerPerishable = !StickerPerishable;
 
-            DebugLogger.Log(
-                "ConfigureFilterTab",
-                $"Perishable sticker toggled: {StickerPerishable}"
-            );
+            DebugLogger.Log("ConfigureFilterTab", $"Perishable sticker toggled: {StickerPerishable}");
         }
 
         private void ToggleStickerEternal()
@@ -688,10 +651,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 // Log error before rethrowing (since this is called from fire-and-forget Task.Run)
-                DebugLogger.LogError(
-                    "ConfigureFilterTab",
-                    $"❌ Error loading game data: {ex.Message}"
-                );
+                DebugLogger.LogError("ConfigureFilterTab", $"❌ Error loading game data: {ex.Message}");
 
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
@@ -1057,10 +1017,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (itemIndex >= 0)
                 {
                     sourceZone = "MUSTNOT";
-                    if (
-                        _parentViewModel != null
-                        && itemIndex < _parentViewModel.SelectedMustNot.Count
-                    )
+                    if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMustNot.Count)
                     {
                         itemKeyToRemove = _parentViewModel.SelectedMustNot[itemIndex];
                     }
@@ -1083,10 +1040,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            DebugLogger.Log(
-                "ConfigureFilterTab",
-                $"Removed item: {item.Name} from {sourceZone ?? "UNKNOWN"} zone"
-            );
+            DebugLogger.Log("ConfigureFilterTab", $"Removed item: {item.Name} from {sourceZone ?? "UNKNOWN"} zone");
         }
 
         #endregion

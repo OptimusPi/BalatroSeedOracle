@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using DuckDB.NET.Data;
 using BalatroSeedOracle.Services.DuckDB;
+using DuckDB.NET.Data;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -148,27 +148,30 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         int? minScore = null,
         string? deck = null,
         string? stake = null,
-        int limit = 1000)
+        int limit = 1000
+    )
     {
         EnsureOpen();
         // Use Motely's helper - no SQL construction in BSO!
         // Note: Filters (minScore, deck, stake) would need to be added to Motely's helper
         // For now, get all results and filter in memory (not ideal, but no SQL in BSO)
         var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(_connection, tableName, limit, 2);
-        
+
         // Convert from Motely.DuckDB.ResultWithTallies to BSO Models.ResultWithTallies
-        var results = motelyResults.Select(r => new Models.ResultWithTallies
-        {
-            Seed = r.Seed,
-            Score = r.Score,
-            Tallies = r.Tallies
-        }).ToList();
-        
+        var results = motelyResults
+            .Select(r => new Models.ResultWithTallies
+            {
+                Seed = r.Seed,
+                Score = r.Score,
+                Tallies = r.Tallies,
+            })
+            .ToList();
+
         // Apply filters in memory (should be moved to Motely's helper)
         if (minScore.HasValue && minScore.Value > 0)
             results = results.Where(r => r.Score >= minScore.Value).ToList();
         // Note: deck/stake filtering would need table schema knowledge - should be in Motely
-        
+
         return Task.FromResult(results);
     }
 
@@ -177,15 +180,18 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         EnsureOpen();
         // Use SQL here (infrastructure layer) - but this should be moved to Motely
         var query = $"SELECT * FROM {tableName} WHERE {idColumn} = {id} LIMIT 1";
-        var results = await ExecuteReaderAsync<Dictionary<string, object?>>(query, reader =>
-        {
-            var row = new Dictionary<string, object?>();
-            for (int i = 0; i < reader.FieldCount; i++)
+        var results = await ExecuteReaderAsync<Dictionary<string, object?>>(
+            query,
+            reader =>
             {
-                row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                var row = new Dictionary<string, object?>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                }
+                return row;
             }
-            return row;
-        });
+        );
         return results.FirstOrDefault();
     }
 
@@ -195,21 +201,27 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         // Build INSERT OR REPLACE - this is infrastructure layer, not business logic
         // But ideally this should be in Motely
         var columns = string.Join(", ", values.Keys);
-        var valuePlaceholders = string.Join(", ", values.Select((kvp, i) => 
-            kvp.Value == null ? "NULL" : 
-            kvp.Value is string ? $"'{kvp.Value.ToString()!.Replace("'", "''")}'" :
-            kvp.Value.ToString()));
-        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => 
-            $"{k} = excluded.{k}"));
-        
-        var sql = $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) " +
-                  $"ON CONFLICT ({keyColumn}) DO UPDATE SET {updates}";
+        var valuePlaceholders = string.Join(
+            ", ",
+            values.Select(
+                (kvp, i) =>
+                    kvp.Value == null ? "NULL"
+                    : kvp.Value is string ? $"'{kvp.Value.ToString()!.Replace("'", "''")}'"
+                    : kvp.Value.ToString()
+            )
+        );
+        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}"));
+
+        var sql =
+            $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) "
+            + $"ON CONFLICT ({keyColumn}) DO UPDATE SET {updates}";
         await ExecuteNonQueryAsync(sql);
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _connection?.Close();
         _connection?.Dispose();
         _disposed = true;
@@ -217,7 +229,8 @@ public class DesktopDuckDBConnection : IDuckDBConnection
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await _connection.CloseAsync();
         await _connection.DisposeAsync();
         _disposed = true;
@@ -237,13 +250,22 @@ internal class DesktopDuckDBDataReader : IDuckDBDataReader
     }
 
     public int FieldCount => _reader.FieldCount;
+
     public string GetName(int ordinal) => _reader.GetName(ordinal);
+
     public int GetOrdinal(string name) => _reader.GetOrdinal(name);
+
     public bool IsDBNull(int ordinal) => _reader.IsDBNull(ordinal);
+
     public string GetString(int ordinal) => _reader.GetString(ordinal);
+
     public int GetInt32(int ordinal) => _reader.GetInt32(ordinal);
+
     public long GetInt64(int ordinal) => _reader.GetInt64(ordinal);
+
     public double GetDouble(int ordinal) => _reader.GetDouble(ordinal);
+
     public bool GetBoolean(int ordinal) => _reader.GetBoolean(ordinal);
+
     public object GetValue(int ordinal) => _reader.GetValue(ordinal);
 }

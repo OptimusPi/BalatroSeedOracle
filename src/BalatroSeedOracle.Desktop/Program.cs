@@ -31,12 +31,12 @@ public class Program
                 services.AddSingleton<IAppDataStore, Desktop.Services.DesktopAppDataStore>();
                 services.AddSingleton<IDuckDBService, Desktop.Services.DesktopDuckDBService>();
                 services.AddSingleton<IPlatformServices, Desktop.Services.DesktopPlatformServices>();
-                
+
                 // Desktop-only services
                 services.AddSingleton<SoundFlowAudioManager>();
                 services.AddSingleton<IAudioManager>(sp => sp.GetRequiredService<SoundFlowAudioManager>());
                 services.AddSingleton<SoundEffectsService>();
-                
+
                 // API host
                 services.AddSingleton<IApiHostService, DesktopApiHostService>();
             };
@@ -150,13 +150,11 @@ public class Program
         {
             var localAppData = Environment.GetFolderPath(
                 Environment.SpecialFolder.LocalApplicationData,
-                Environment.SpecialFolderOption.Create);
+                Environment.SpecialFolderOption.Create
+            );
             return Path.Combine(localAppData, "BalatroSeedOracle", "crash.log");
         }
     }
 
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .LogToTrace();
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }

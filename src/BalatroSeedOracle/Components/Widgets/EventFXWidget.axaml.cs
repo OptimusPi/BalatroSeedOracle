@@ -11,9 +11,7 @@ public partial class EventFXWidget : UserControl
         InitializeComponent();
     }
 
-    private void OnMinimizedIconPressed(object? sender, PointerPressedEventArgs e)
-    {
-    }
+    private void OnMinimizedIconPressed(object? sender, PointerPressedEventArgs e) { }
 
     private void OnMinimizedIconReleased(object? sender, PointerReleasedEventArgs e)
     {

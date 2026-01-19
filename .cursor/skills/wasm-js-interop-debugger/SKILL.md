@@ -14,13 +14,13 @@ description: Debugs Browser/WASM interop issues including DuckDB WASM, audio int
 
 ## Key Locations
 
-| Location | Description |
-|----------|-------------|
-| `src/BalatroSeedOracle.Browser/wwwroot/js/` | JS interop files |
-| `duckdb-interop.js` | DuckDB WASM bridge |
-| `webaudio-interop.js` | Web Audio API bridge |
-| `bso-helpers.js` | BSO utility functions |
-| `src/BalatroSeedOracle.Browser/Services/` | Browser-specific services |
+| Location                                    | Description               |
+| ------------------------------------------- | ------------------------- |
+| `src/BalatroSeedOracle.Browser/wwwroot/js/` | JS interop files          |
+| `duckdb-interop.js`                         | DuckDB WASM bridge        |
+| `webaudio-interop.js`                       | Web Audio API bridge      |
+| `bso-helpers.js`                            | BSO utility functions     |
+| `src/BalatroSeedOracle.Browser/Services/`   | Browser-specific services |
 
 ## Threading Requirements
 
@@ -47,21 +47,21 @@ If `crossOriginIsolated` is `false`, threading is disabled.
 
 ### 1. Verify Cross-Origin Isolation
 
-| Check | Expected | Problem If |
-|-------|----------|------------|
-| `window.crossOriginIsolated` | `true` | `false` = no threads |
-| COOP header | `same-origin` | Missing/wrong |
-| COEP header | `require-corp` | Missing/wrong |
+| Check                        | Expected       | Problem If           |
+| ---------------------------- | -------------- | -------------------- |
+| `window.crossOriginIsolated` | `true`         | `false` = no threads |
+| COOP header                  | `same-origin`  | Missing/wrong        |
+| COEP header                  | `require-corp` | Missing/wrong        |
 
 ### 2. Check Browser Console
 
 Common error patterns:
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `SharedArrayBuffer is not defined` | Missing COOP/COEP headers | Configure server headers |
-| `Blocked by COEP` | Resource missing CORP header | Use `credentialless` mode or add headers |
-| `wasm-function[...]` in stack | No debug symbols | Build with debug info |
+| Error                              | Cause                        | Fix                                      |
+| ---------------------------------- | ---------------------------- | ---------------------------------------- |
+| `SharedArrayBuffer is not defined` | Missing COOP/COEP headers    | Configure server headers                 |
+| `Blocked by COEP`                  | Resource missing CORP header | Use `credentialless` mode or add headers |
+| `wasm-function[...]` in stack      | No debug symbols             | Build with debug info                    |
 
 ### 3. Feature Detection
 
@@ -80,19 +80,19 @@ console.log('Threads:', typeof SharedArrayBuffer !== 'undefined' && crossOriginI
 
 ### DuckDB WASM Failures
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| Queries hang | Missing threads support | Check COOP/COEP |
-| Silent failures | Exception in WASM | Check browser console |
-| Slow performance | No SIMD | Verify SIMD-enabled build |
+| Symptom          | Likely Cause            | Fix                       |
+| ---------------- | ----------------------- | ------------------------- |
+| Queries hang     | Missing threads support | Check COOP/COEP           |
+| Silent failures  | Exception in WASM       | Check browser console     |
+| Slow performance | No SIMD                 | Verify SIMD-enabled build |
 
 ### Audio Interop Issues
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| No sound | AudioContext suspended | User interaction required |
-| Errors on init | Missing JS file | Check `webaudio-interop.js` loaded |
-| Crackling | Buffer underruns | Increase buffer size |
+| Symptom        | Likely Cause           | Fix                                |
+| -------------- | ---------------------- | ---------------------------------- |
+| No sound       | AudioContext suspended | User interaction required          |
+| Errors on init | Missing JS file        | Check `webaudio-interop.js` loaded |
+| Crackling      | Buffer underruns       | Increase buffer size               |
 
 ### Asset Loading Failures
 

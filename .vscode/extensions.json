@@ -17,7 +17,8 @@
     // Optional but helpful
     "eamodio.gitlens",
     "dprint.dprint",
-    "csharpier.csharpier-vscode" // Git history/blame for tracking changes
+    "csharpier.csharpier-vscode",
+    "task.vscode-task" // Git history/blame for tracking changes
   ],
   "unwantedRecommendations": []
 }

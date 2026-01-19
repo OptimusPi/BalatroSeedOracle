@@ -8,16 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Taskfile.yml for unified development workflow
 - Documentation structure (docs/FILTERS.md)
 - CONTRIBUTING.md with development guidelines
 - SECURITY.md with vulnerability reporting process
 
 ### Changed
+
 - README.md restructured with improved onboarding flow
 - Taskfile is now the recommended development entry point
 
 ### Fixed
+
 - Removed broken reference to non-existent docs/INDEX.md
 
 ## Previous Releases

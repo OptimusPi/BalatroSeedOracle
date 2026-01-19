@@ -88,10 +88,7 @@ namespace BalatroSeedOracle.Components
 
                 if (mainMenu == null)
                 {
-                    DebugLogger.LogError(
-                        "DayLatroWidget",
-                        "Could not find BalatroMainMenu in visual tree"
-                    );
+                    DebugLogger.LogError("DayLatroWidget", "Could not find BalatroMainMenu in visual tree");
                     return;
                 }
 

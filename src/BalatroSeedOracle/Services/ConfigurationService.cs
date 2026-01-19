@@ -1,12 +1,12 @@
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
-using Microsoft.Extensions.Logging;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Storage;
+using Microsoft.Extensions.Logging;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
@@ -47,11 +47,14 @@ namespace BalatroSeedOracle.Services
             try
             {
                 DebugLogger.Log("ConfigurationService", $"SaveFilterAsync called with path: {filePath}");
-                
+
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
-                DebugLogger.Log("ConfigurationService", isBrowser 
-                    ? "Running in BROWSER mode - using IAppDataStore" 
-                    : "Running in DESKTOP mode - using file system");
+                DebugLogger.Log(
+                    "ConfigurationService",
+                    isBrowser
+                        ? "Running in BROWSER mode - using IAppDataStore"
+                        : "Running in DESKTOP mode - using file system"
+                );
 
                 // In browser, filePath is treated as a logical key (e.g. "Filters/MyFilter.json").
                 if (_platformServices?.SupportsFileSystem == true)
@@ -71,7 +74,10 @@ namespace BalatroSeedOracle.Services
                     if (isBrowser)
                     {
                         await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
-                        DebugLogger.Log("ConfigurationService", $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
+                        DebugLogger.Log(
+                            "ConfigurationService",
+                            $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}"
+                        );
                     }
                     else
                     {
@@ -103,7 +109,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
-                
+
                 if (isBrowser)
                 {
                     var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
@@ -148,12 +154,7 @@ namespace BalatroSeedOracle.Services
                     {
                         if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                         {
-                            if (
-                                Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
-                                    filePath,
-                                    out var config
-                                )
-                            )
+                            if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
                             {
                                 return config as T;
                             }

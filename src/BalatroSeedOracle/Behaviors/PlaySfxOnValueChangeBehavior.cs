@@ -20,11 +20,10 @@ namespace BalatroSeedOracle.Behaviors
             double
         >(nameof(Threshold), 1.0);
 
-        public static readonly StyledProperty<int> MinIntervalMsProperty =
-            AvaloniaProperty.Register<PlaySfxOnValueChangeBehavior, int>(
-                nameof(MinIntervalMs),
-                150
-            );
+        public static readonly StyledProperty<int> MinIntervalMsProperty = AvaloniaProperty.Register<
+            PlaySfxOnValueChangeBehavior,
+            int
+        >(nameof(MinIntervalMs), 150);
 
         private DateTime _lastPlayTime = DateTime.MinValue;
         private double _lastValue;
@@ -106,9 +105,7 @@ namespace BalatroSeedOracle.Behaviors
             try
             {
                 // Use DI container instance, fallback to singleton
-                var audioManager =
-                    ServiceHelper.GetService<SoundFlowAudioManager>()
-                    ?? SoundFlowAudioManager.Instance;
+                var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>() ?? SoundFlowAudioManager.Instance;
                 audioManager?.PlaySfx(Sound, 1.0f);
             }
             catch (Exception ex)

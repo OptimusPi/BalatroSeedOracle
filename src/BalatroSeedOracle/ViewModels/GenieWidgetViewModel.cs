@@ -58,10 +58,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string ButtonContent => GenerateButtonText + " " + GeneratingSpinner;
 
-        public GenieWidgetViewModel(
-            SearchManager searchManager,
-            WidgetPositionService? widgetPositionService = null
-        )
+        public GenieWidgetViewModel(SearchManager searchManager, WidgetPositionService? widgetPositionService = null)
             : base(widgetPositionService)
         {
             _searchManager = searchManager;
@@ -149,7 +146,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Parse the JAML to get a JSON config for display
-                if (Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError) && config != null)
+                if (
+                    Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError)
+                    && config != null
+                )
                 {
                     GeneratedFilterName = config.Name ?? "Generated Filter";
                     GeneratedJson = JsonSerializer.Serialize(
@@ -161,8 +161,7 @@ namespace BalatroSeedOracle.ViewModels
                     int shouldCount = config.Should?.Count ?? 0;
                     int mustNotCount = config.MustNot?.Count ?? 0;
 
-                    GeneratedFilterSummary =
-                        $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
+                    GeneratedFilterSummary = $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
                     GeneratedFilterSummary +=
                         $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
 
@@ -241,10 +240,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Parse the generated JSON into a MotelyJsonConfig
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        GeneratedJson
-                    );
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    GeneratedJson
+                );
 
                 if (config == null)
                 {

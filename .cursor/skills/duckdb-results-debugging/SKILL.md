@@ -14,12 +14,12 @@ description: Debugs DuckDB results issues including empty results, missing data,
 
 ## Key Locations
 
-| Location | Description |
-|----------|-------------|
-| `AppPaths.SearchResultsDir` | Results DB storage (`Data/SearchResults/`) |
-| `src/BalatroSeedOracle/Services/DuckDB/IDuckDBService.cs` | DuckDB interface |
-| `src/BalatroSeedOracle.Desktop/Services/DesktopDuckDBService.cs` | Desktop implementation |
-| `src/BalatroSeedOracle.Browser/Services/BrowserDuckDBService.cs` | Browser implementation (limited) |
+| Location                                                         | Description                                |
+| ---------------------------------------------------------------- | ------------------------------------------ |
+| `AppPaths.SearchResultsDir`                                      | Results DB storage (`Data/SearchResults/`) |
+| `src/BalatroSeedOracle/Services/DuckDB/IDuckDBService.cs`        | DuckDB interface                           |
+| `src/BalatroSeedOracle.Desktop/Services/DesktopDuckDBService.cs` | Desktop implementation                     |
+| `src/BalatroSeedOracle.Browser/Services/BrowserDuckDBService.cs` | Browser implementation (limited)           |
 
 ## Diagnostic Checklist
 
@@ -74,21 +74,21 @@ SELECT * FROM results LIMIT 10;
 
 ### Empty Results Despite DB Exists
 
-| Check | Fix |
-|-------|-----|
-| WAL not checkpointed | App crash before commit - restart app |
-| Schema mismatch | Clear cache, re-run search |
-| Wrong filter hash | Criteria changed - results invalidated |
-| Transaction uncommitted | Wait for search completion |
+| Check                   | Fix                                    |
+| ----------------------- | -------------------------------------- |
+| WAL not checkpointed    | App crash before commit - restart app  |
+| Schema mismatch         | Clear cache, re-run search             |
+| Wrong filter hash       | Criteria changed - results invalidated |
+| Transaction uncommitted | Wait for search completion             |
 
 ### Desktop vs Browser Differences
 
-| Feature | Desktop | Browser |
-|---------|---------|---------|
-| File system | ✅ Full | ❌ Virtual paths |
-| DuckDB | Native | WASM (limited) |
+| Feature      | Desktop                  | Browser          |
+| ------------ | ------------------------ | ---------------- |
+| File system  | ✅ Full                  | ❌ Virtual paths |
+| DuckDB       | Native                   | WASM (limited)   |
 | Results grid | ✅ `SupportsResultsGrid` | ❌ Not supported |
-| Persistence | File-based | localStorage |
+| Persistence  | File-based               | localStorage     |
 
 ### WAL File Issues
 

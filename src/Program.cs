@@ -110,10 +110,7 @@ public class Program
     /// <summary>
     /// Handles unobserved Task exceptions (fire-and-forget tasks that throw)
     /// </summary>
-    private static void OnUnobservedTaskException(
-        object? sender,
-        UnobservedTaskExceptionEventArgs e
-    )
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         var crashLog = GetCrashLogPath();
 
@@ -124,10 +121,7 @@ public class Program
             + $"Stack Trace:\n{e.Exception.StackTrace}\n\n";
 
         // Log to debug logger
-        Helpers.DebugLogger.LogError(
-            "UNOBSERVED_TASK",
-            $"Unobserved task exception: {e.Exception.Message}"
-        );
+        Helpers.DebugLogger.LogError("UNOBSERVED_TASK", $"Unobserved task exception: {e.Exception.Message}");
 
         // Write to crash log
         try
@@ -164,6 +158,5 @@ public class Program
     }
 
     // Avalonia configuration, this method is called by the platform-specific entry points
-    public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }

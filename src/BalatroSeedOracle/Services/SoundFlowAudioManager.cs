@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.Services
         private Task? _updateTask;
         private bool _isDisposed;
 
-        #region Public Properties - Per-Track Intensities
+#region Public Properties - Per-Track Intensities
 
         public float Bass1Intensity { get; private set; }
         public float Bass2Intensity { get; private set; }
@@ -69,18 +69,18 @@ namespace BalatroSeedOracle.Services
         public float Melody1Intensity { get; private set; }
         public float Melody2Intensity { get; private set; }
 
-        #endregion
+#endregion
 
-        #region Public Properties - Aggregate Intensities (for compatibility)
+#region Public Properties - Aggregate Intensities (for compatibility)
 
         public float BassIntensity => (Bass1Intensity + Bass2Intensity) / 2f;
         public float DrumsIntensity => (Drums1Intensity + Drums2Intensity) / 2f;
         public float ChordsIntensity => (Chords1Intensity + Chords2Intensity) / 2f;
         public float MelodyIntensity => (Melody1Intensity + Melody2Intensity) / 2f;
 
-        #endregion
+#endregion
 
-        #region Public Properties - Master Controls
+#region Public Properties - Master Controls
 
         private float _masterVolume = 1.0f;
         public float MasterVolume
@@ -97,22 +97,19 @@ namespace BalatroSeedOracle.Services
 
         public bool IsPlaying => _device?.IsRunning == true;
 
-        #endregion
+#endregion
 
-        #region Events
+#region Events
 
         public event Action<float, float, float, float>? AudioAnalysisUpdated;
 
-        #endregion
+#endregion
 
         public SoundFlowAudioManager()
         {
             try
             {
-                DebugLogger.Log(
-                    "SoundFlowAudioManager",
-                    "Initializing cross-platform audio engine..."
-                );
+                DebugLogger.Log("SoundFlowAudioManager", "Initializing cross-platform audio engine...");
 
                 // 1. Create audio engine (cross-platform)
                 _engine = new MiniAudioEngine();
@@ -156,10 +153,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SoundFlowAudioManager",
-                    $"Error initializing SoundFlow: {ex.Message}"
-                );
+                DebugLogger.LogError("SoundFlowAudioManager", $"Error initializing SoundFlow: {ex.Message}");
                 DebugLogger.LogError("SoundFlowAudioManager", $"Stack trace: {ex.StackTrace}");
             }
         }
@@ -215,17 +209,11 @@ namespace BalatroSeedOracle.Services
                     _analyzers[trackName] = analyzer;
 
                     var extension = Path.GetExtension(filePath);
-                    DebugLogger.Log(
-                        "SoundFlowAudioManager",
-                        $"✓ Loaded and playing: {trackName}{extension}"
-                    );
+                    DebugLogger.Log("SoundFlowAudioManager", $"✓ Loaded and playing: {trackName}{extension}");
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
-                        "SoundFlowAudioManager",
-                        $"Error loading {trackName}: {ex.Message}"
-                    );
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Error loading {trackName}: {ex.Message}");
                     DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
@@ -247,10 +235,7 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(sfxDir, $"{sfxName}.ogg");
                 if (!File.Exists(filePath))
                 {
-                    DebugLogger.LogError(
-                        "SoundFlowAudioManager",
-                        $"Missing {sfxName}.ogg at {filePath}"
-                    );
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Missing {sfxName}.ogg at {filePath}");
                     continue;
                 }
 
@@ -277,10 +262,7 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
-                        "SoundFlowAudioManager",
-                        $"Error loading SFX {sfxName}: {ex.Message}"
-                    );
+                    DebugLogger.LogError("SoundFlowAudioManager", $"Error loading SFX {sfxName}: {ex.Message}");
                     DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
@@ -482,9 +464,7 @@ namespace BalatroSeedOracle.Services
                 player.Seek(TimeSpan.Zero);
                 player.Play();
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         public void Dispose()
@@ -562,7 +542,14 @@ namespace BalatroSeedOracle.Services
         // Track names
         private readonly string[] _trackNames =
         {
-            "Bass1", "Bass2", "Drums1", "Drums2", "Chords1", "Chords2", "Melody1", "Melody2",
+            "Bass1",
+            "Bass2",
+            "Drums1",
+            "Drums2",
+            "Chords1",
+            "Chords2",
+            "Melody1",
+            "Melody2",
         };
 
         // Sound effect names
@@ -716,8 +703,9 @@ namespace BalatroSeedOracle.Services
         public FrequencyBands GetFrequencyBands(string trackName)
         {
             var jsObj = GetFrequencyBandsJS(trackName);
-            if (jsObj == null) return new FrequencyBands();
-            
+            if (jsObj == null)
+                return new FrequencyBands();
+
             return new FrequencyBands
             {
                 BassAvg = (float)jsObj.GetPropertyAsDouble("bassAvg"),
@@ -737,7 +725,10 @@ namespace BalatroSeedOracle.Services
         public void SetTrackPan(string trackName, float pan)
         {
             // Web Audio API panning - not implemented in basic version
-            DebugLogger.Log("SoundFlowAudioManager", $"Pan not yet implemented for browser (track: {trackName}, pan: {pan})");
+            DebugLogger.Log(
+                "SoundFlowAudioManager",
+                $"Pan not yet implemented for browser (track: {trackName}, pan: {pan})"
+            );
         }
 
         public void SetTrackMuted(string trackName, bool muted)
@@ -762,7 +753,8 @@ namespace BalatroSeedOracle.Services
 
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
             _isDisposed = true;
 
             _cancellationTokenSource?.Cancel();

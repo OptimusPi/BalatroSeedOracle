@@ -27,10 +27,7 @@ namespace BalatroSeedOracle.Helpers
             manager.UpdateFoldings(newFoldings, firstErrorOffset);
         }
 
-        public IEnumerable<NewFolding> CreateNewFoldings(
-            TextDocument document,
-            out int firstErrorOffset
-        )
+        public IEnumerable<NewFolding> CreateNewFoldings(TextDocument document, out int firstErrorOffset)
         {
             firstErrorOffset = -1;
             return CreateNewFoldings(document);

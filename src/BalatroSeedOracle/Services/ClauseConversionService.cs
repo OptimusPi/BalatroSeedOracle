@@ -33,8 +33,7 @@ namespace BalatroSeedOracle.Services
             if (clause.Type?.ToLower() == "or" || clause.Type?.ToLower() == "and")
             {
                 vm.ClauseType = clause.Type;
-                vm.DisplayText =
-                    $"{clause.Type.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
+                vm.DisplayText = $"{clause.Type.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
                 vm.IsExpanded = false;
 
                 // Process nested clauses
@@ -42,11 +41,7 @@ namespace BalatroSeedOracle.Services
                 {
                     foreach (var nestedClause in clause.Clauses)
                     {
-                        var childVm = ConvertToClauseViewModel(
-                            nestedClause,
-                            category,
-                            nestingLevel + 1
-                        );
+                        var childVm = ConvertToClauseViewModel(nestedClause, category, nestingLevel + 1);
                         if (childVm != null)
                         {
                             vm.Children.Add(childVm);

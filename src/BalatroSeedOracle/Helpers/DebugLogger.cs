@@ -95,9 +95,7 @@ public static class DebugLogger
     private static void LogInternal(string? category, string message)
     {
         var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
-        var formattedMessage = category != null 
-            ? $"[{timestamp}] [{category}] {message}"
-            : $"[{timestamp}] {message}";
+        var formattedMessage = category != null ? $"[{timestamp}] [{category}] {message}" : $"[{timestamp}] {message}";
 
         if (_platformServices != null)
         {

@@ -88,9 +88,7 @@ namespace BalatroSeedOracle.ViewModels
 
         // Placeholder text when nothing selected
         public string PlaceholderText =>
-            EnableEdit || EnableCopy
-                ? "Please select a filter or CREATE NEW"
-                : "Please select a filter";
+            EnableEdit || EnableCopy ? "Please select a filter or CREATE NEW" : "Please select a filter";
 
         // Result to return when modal closes
         public FilterSelectionResult Result { get; private set; } = new() { Cancelled = true };
@@ -180,17 +178,7 @@ namespace BalatroSeedOracle.ViewModels
                     SelectedDeckIndex = 0;
 
                 // Map stake name to index
-                var stakes = new[]
-                {
-                    "white",
-                    "red",
-                    "green",
-                    "black",
-                    "blue",
-                    "purple",
-                    "orange",
-                    "gold",
-                };
+                var stakes = new[] { "white", "red", "green", "black", "blue", "purple", "orange", "gold" };
                 SelectedStakeIndex = Array.FindIndex(
                     stakes,
                     s => s.Equals(value.StakeName, StringComparison.OrdinalIgnoreCase)
@@ -263,8 +251,11 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void CreateNew()
         {
-            DebugLogger.Log("FilterSelectionModalViewModel", "CreateNew command called - CREATE NEW FILTER button clicked!");
-            
+            DebugLogger.Log(
+                "FilterSelectionModalViewModel",
+                "CreateNew command called - CREATE NEW FILTER button clicked!"
+            );
+
             // Create new filter directly (called from placeholder button)
             Result = new FilterSelectionResult
             {
@@ -323,8 +314,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 // Get FilterService to perform the deletion
-                var filterService =
-                    Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
+                var filterService = Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
                 var filtersDir = AppPaths.FiltersDir;
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
 
@@ -333,17 +323,11 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!deleted)
                 {
-                    DebugLogger.LogError(
-                        "FilterSelectionModalVM",
-                        $"Failed to delete filter: {filterIdToDelete}"
-                    );
+                    DebugLogger.LogError("FilterSelectionModalVM", $"Failed to delete filter: {filterIdToDelete}");
                     return;
                 }
 
-                DebugLogger.Log(
-                    "FilterSelectionModalVM",
-                    $"Filter deleted successfully: {filterIdToDelete}"
-                );
+                DebugLogger.Log("FilterSelectionModalVM", $"Filter deleted successfully: {filterIdToDelete}");
 
                 // CRITICAL: Clear the selected filter FIRST to avoid showing stale data
                 SelectedFilter = null;
@@ -371,20 +355,14 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log(
-                        "FilterSelectionModalVM",
-                        "No filters remaining - showing placeholder"
-                    );
+                    DebugLogger.Log("FilterSelectionModalVM", "No filters remaining - showing placeholder");
                 }
 
                 // Modal stays open so user can continue managing filters
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterSelectionModalViewModel",
-                    $"ConfirmDeleteAsync failed: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterSelectionModalViewModel", $"ConfirmDeleteAsync failed: {ex.Message}");
                 throw;
             }
         }
@@ -422,11 +400,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Only close if we're already on the placeholder page
-            Result = new FilterSelectionResult
-            {
-                Cancelled = true,
-                Action = FilterAction.Cancelled,
-            };
+            Result = new FilterSelectionResult { Cancelled = true, Action = FilterAction.Cancelled };
 
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
         }

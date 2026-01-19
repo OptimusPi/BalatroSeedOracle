@@ -47,9 +47,10 @@ public static class ConsoleFactory
         if (_instance == null)
         {
             // Use reflection to check if we're running in browser
-            var isBrowser = System.Runtime.InteropServices.RuntimeInformation.OSDescription.Contains("Browser") ||
-                           System.Runtime.InteropServices.RuntimeInformation.OSDescription.Contains("WASM");
-            
+            var isBrowser =
+                System.Runtime.InteropServices.RuntimeInformation.OSDescription.Contains("Browser")
+                || System.Runtime.InteropServices.RuntimeInformation.OSDescription.Contains("WASM");
+
             if (isBrowser)
             {
                 // Create a simple browser console implementation
@@ -96,7 +97,8 @@ public class SimpleBrowserConsole : IBsoConsole
 
     public void WriteLine(string? message)
     {
-        if (!IsEnabled) return;
+        if (!IsEnabled)
+            return;
         Helpers.DebugLogger.Log("BSO", message ?? "null");
     }
 }
@@ -123,7 +125,8 @@ public class SimpleConsole : IBsoConsole
 
     public void WriteLine(string? message)
     {
-        if (!IsEnabled) return;
+        if (!IsEnabled)
+            return;
         Helpers.DebugLogger.Log("BSO", message ?? "null");
     }
 }

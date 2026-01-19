@@ -111,16 +111,11 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author =
-                    ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
-                    ?? "Unknown",
+                Author = ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
-                Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             var json = System.Text.Json.JsonSerializer.Serialize(
@@ -186,10 +181,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Fallback to disk loading if cache not available
-                DebugLogger.Log(
-                    "PaginatedFilterBrowserViewModel",
-                    "Cache service not available, loading from disk"
-                );
+                DebugLogger.Log("PaginatedFilterBrowserViewModel", "Cache service not available, loading from disk");
 
                 var filtersDir = AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
@@ -217,10 +209,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "PaginatedFilterBrowserViewModel",
-                    $"Error loading filters: {ex.Message}"
-                );
+                DebugLogger.LogError("PaginatedFilterBrowserViewModel", $"Error loading filters: {ex.Message}");
             }
         }
 
@@ -228,9 +217,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Converts a cached filter to a FilterBrowserItem for display.
         /// This is much faster than parsing from disk since the config is already in memory.
         /// </summary>
-        private FilterBrowserItem? ConvertCachedFilterToBrowserItem(
-            Services.CachedFilter cachedFilter
-        )
+        private FilterBrowserItem? ConvertCachedFilterToBrowserItem(Services.CachedFilter cachedFilter)
         {
             try
             {
@@ -297,10 +284,7 @@ namespace BalatroSeedOracle.ViewModels
                     AllowTrailingCommas = true,
                 };
 
-                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                    content,
-                    options
-                );
+                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(content, options);
                 if (config == null || string.IsNullOrEmpty(config.Name))
                     return null;
 
@@ -381,10 +365,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Recursively handle nested And/Or clauses
                 if (clause.Clauses != null && clause.Clauses.Count > 0)
                 {
-                    var nestedCollections = ParseItemCollections(
-                        clause.Clauses,
-                        scoreOverride ?? clause.Score
-                    );
+                    var nestedCollections = ParseItemCollections(clause.Clauses, scoreOverride ?? clause.Score);
                     collections.Jokers.AddRange(nestedCollections.Jokers);
                     collections.Consumables.AddRange(nestedCollections.Consumables);
                     collections.Vouchers.AddRange(nestedCollections.Vouchers);
@@ -395,26 +376,11 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Remove duplicates by ItemName while preserving first occurrence's data
-            collections.Jokers = collections
-                .Jokers.GroupBy(x => x.ItemName)
-                .Select(g => g.First())
-                .ToList();
-            collections.Consumables = collections
-                .Consumables.GroupBy(x => x.ItemName)
-                .Select(g => g.First())
-                .ToList();
-            collections.Vouchers = collections
-                .Vouchers.GroupBy(x => x.ItemName)
-                .Select(g => g.First())
-                .ToList();
-            collections.Tags = collections
-                .Tags.GroupBy(x => x.ItemName)
-                .Select(g => g.First())
-                .ToList();
-            collections.Bosses = collections
-                .Bosses.GroupBy(x => x.ItemName)
-                .Select(g => g.First())
-                .ToList();
+            collections.Jokers = collections.Jokers.GroupBy(x => x.ItemName).Select(g => g.First()).ToList();
+            collections.Consumables = collections.Consumables.GroupBy(x => x.ItemName).Select(g => g.First()).ToList();
+            collections.Vouchers = collections.Vouchers.GroupBy(x => x.ItemName).Select(g => g.First()).ToList();
+            collections.Tags = collections.Tags.GroupBy(x => x.ItemName).Select(g => g.First()).ToList();
+            collections.Bosses = collections.Bosses.GroupBy(x => x.ItemName).Select(g => g.First()).ToList();
             collections.StandardCards = collections
                 .StandardCards.GroupBy(x => x.ItemName)
                 .Select(g => g.First())
@@ -587,13 +553,7 @@ namespace BalatroSeedOracle.ViewModels
         /// All items combined for fanned card hand display
         /// </summary>
         public List<ItemConfig> AllItems =>
-            Jokers
-                .Concat(Vouchers)
-                .Concat(Consumables)
-                .Concat(Tags)
-                .Concat(Bosses)
-                .Concat(StandardCards)
-                .ToList();
+            Jokers.Concat(Vouchers).Concat(Consumables).Concat(Tags).Concat(Bosses).Concat(StandardCards).ToList();
     }
 
     public partial class FilterBrowserItemViewModel : ObservableObject

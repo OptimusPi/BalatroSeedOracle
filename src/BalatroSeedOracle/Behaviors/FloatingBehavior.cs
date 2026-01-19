@@ -21,33 +21,30 @@ namespace BalatroSeedOracle.Behaviors
     public class FloatingBehavior : Behavior<Control>
     {
         // Balatro's exact parameters from animatedsprite.lua
-        public static readonly StyledProperty<double> RotationAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(
-                nameof(RotationAmplitude),
-                UIConstants.CardSwayRotationAmplitude
-            );
+        public static readonly StyledProperty<double> RotationAmplitudeProperty = AvaloniaProperty.Register<
+            FloatingBehavior,
+            double
+        >(nameof(RotationAmplitude), UIConstants.CardSwayRotationAmplitude);
 
-        public static readonly StyledProperty<double> VerticalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(
-                nameof(VerticalAmplitude),
-                UIConstants.FloatingVerticalAmplitude
-            );
+        public static readonly StyledProperty<double> VerticalAmplitudeProperty = AvaloniaProperty.Register<
+            FloatingBehavior,
+            double
+        >(nameof(VerticalAmplitude), UIConstants.FloatingVerticalAmplitude);
 
-        public static readonly StyledProperty<double> HorizontalAmplitudeProperty =
-            AvaloniaProperty.Register<FloatingBehavior, double>(
-                nameof(HorizontalAmplitude),
-                UIConstants.FloatingHorizontalAmplitude
-            );
+        public static readonly StyledProperty<double> HorizontalAmplitudeProperty = AvaloniaProperty.Register<
+            FloatingBehavior,
+            double
+        >(nameof(HorizontalAmplitude), UIConstants.FloatingHorizontalAmplitude);
 
         public static readonly StyledProperty<double> FrequencyProperty = AvaloniaProperty.Register<
             FloatingBehavior,
             double
         >(nameof(Frequency), UIConstants.FloatingFrequency);
 
-        public static readonly StyledProperty<bool> EnabledProperty = AvaloniaProperty.Register<
-            FloatingBehavior,
-            bool
-        >(nameof(Enabled), true);
+        public static readonly StyledProperty<bool> EnabledProperty = AvaloniaProperty.Register<FloatingBehavior, bool>(
+            nameof(Enabled),
+            true
+        );
 
         /// <summary>
         /// Rotation amplitude in radians (default: 0.02 = ~1.15 degrees)
@@ -114,10 +111,7 @@ namespace BalatroSeedOracle.Behaviors
 
             // Use control's position as phase offset (like Balatro does with T.x, T.y)
             // This prevents synchronized "marching" - each widget breathes independently!
-            _phaseOffset = new Point(
-                AssociatedObject.Bounds.X * 0.01,
-                AssociatedObject.Bounds.Y * 0.01
-            );
+            _phaseOffset = new Point(AssociatedObject.Bounds.X * 0.01, AssociatedObject.Bounds.Y * 0.01);
 
             _startTime = DateTime.Now;
 
@@ -130,11 +124,7 @@ namespace BalatroSeedOracle.Behaviors
             _transformGroup.Children.Add(_translateTransform);
 
             AssociatedObject.RenderTransform = _transformGroup;
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                0.5,
-                0.5,
-                RelativeUnit.Relative
-            );
+            AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
             // Start animation at 60 FPS (matches Balatro's animation rate)
             _animationTimer = new DispatcherTimer
@@ -147,12 +137,7 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnAnimationTick(object? sender, EventArgs e)
         {
-            if (
-                AssociatedObject == null
-                || _rotateTransform == null
-                || _translateTransform == null
-                || !Enabled
-            )
+            if (AssociatedObject == null || _rotateTransform == null || _translateTransform == null || !Enabled)
                 return;
 
             // Balatro's exact formula from animatedsprite.lua
@@ -169,9 +154,7 @@ namespace BalatroSeedOracle.Behaviors
 
             // Horizontal sway (0.666 Hz - same as vertical for smooth motion)
             // self.offset.x = -(0.7+0.2*math.sin(0.666*G.TIMERS.REAL+self.T.x))*self.shadow_parrallax.x
-            double offsetX = -(
-                0.7 + HorizontalAmplitude * Math.Sin(Frequency * t + _phaseOffset.X)
-            );
+            double offsetX = -(0.7 + HorizontalAmplitude * Math.Sin(Frequency * t + _phaseOffset.X));
 
             _translateTransform.X = offsetX;
             _translateTransform.Y = offsetY;

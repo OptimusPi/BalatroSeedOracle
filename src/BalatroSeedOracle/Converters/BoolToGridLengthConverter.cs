@@ -14,12 +14,7 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly BoolToGridLengthConverter Instance = new();
 
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool isExpanded)
             {
@@ -30,12 +25,7 @@ namespace BalatroSeedOracle.Converters
             return new GridLength(30); // Default to collapsed
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }

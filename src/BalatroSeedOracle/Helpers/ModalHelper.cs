@@ -25,11 +25,7 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="title">The modal title</param>
         /// <param name="content">The content to display in the modal</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowModal(
-            this Views.BalatroMainMenu menu,
-            string title,
-            UserControl content
-        )
+        public static StandardModal ShowModal(this Views.BalatroMainMenu menu, string title, UserControl content)
         {
             var modal = new StandardModal(title);
             modal.SetContent(content);
@@ -89,17 +85,23 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="config">The filter config to load for editing</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
+        public static StandardModal ShowFiltersModal(
+            this Views.BalatroMainMenu menu,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
             var filtersContent = new Views.Modals.FiltersModal();
-            
+
             // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
             _ = LoadFilterForEditingAsync(filtersContent, config);
-            
+
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
 
-        private static async Task LoadFilterForEditingAsync(Views.Modals.FiltersModal filtersContent, Motely.Filters.MotelyJsonConfig config)
+        private static async Task LoadFilterForEditingAsync(
+            Views.Modals.FiltersModal filtersContent,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
             try
             {
@@ -123,10 +125,7 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="configPath">Optional config path to load</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowSearchModal(
-            this Views.BalatroMainMenu menu,
-            string? configPath = null
-        )
+        public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu, string? configPath = null)
         {
             try
             {
@@ -164,10 +163,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "ModalHelper",
-                    $"Failed to create SearchModal: {ex}"
-                );
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
                 throw;
             }
         }
@@ -298,9 +294,7 @@ namespace BalatroSeedOracle.Helpers
         /// Creates and shows the advanced audio visualizer settings modal
         /// Note: The ViewModel handles settings persistence; MainMenu handles applying to shader
         /// </summary>
-        public static StandardModal ShowAudioVisualizerSettingsModal(
-            this Views.BalatroMainMenu menu
-        )
+        public static StandardModal ShowAudioVisualizerSettingsModal(this Views.BalatroMainMenu menu)
         {
             // Return a simple modal since AudioVisualizerSettingsModal is not available
             var modal = new StandardModal();
@@ -382,20 +376,24 @@ namespace BalatroSeedOracle.Helpers
 
             var stack = new StackPanel { Spacing = 12 };
 
-            stack.Children.Add(new TextBlock
-            {
-                Text = title,
-                FontSize = 20,
-                Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            });
+            stack.Children.Add(
+                new TextBlock
+                {
+                    Text = title,
+                    FontSize = 20,
+                    Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                }
+            );
 
-            stack.Children.Add(new TextBlock
-            {
-                Text = prompt,
-                FontSize = 14,
-                Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
-            });
+            stack.Children.Add(
+                new TextBlock
+                {
+                    Text = prompt,
+                    FontSize = 14,
+                    Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                }
+            );
 
             stack.Children.Add(textBox);
 
@@ -435,15 +433,11 @@ namespace BalatroSeedOracle.Helpers
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author =
-                    ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = System.DateTime.UtcNow,
-                Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Must = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
             var json = System.Text.Json.JsonSerializer.Serialize(
@@ -451,12 +445,7 @@ namespace BalatroSeedOracle.Helpers
                 new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true,
-                    DefaultIgnoreCondition = System
-                        .Text
-                        .Json
-                        .Serialization
-                        .JsonIgnoreCondition
-                        .WhenWritingNull,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                 }
             );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
@@ -467,25 +456,18 @@ namespace BalatroSeedOracle.Helpers
         /// <summary>
         /// Creates a cloned copy of an existing filter
         /// </summary>
-        private static async System.Threading.Tasks.Task<string> CreateClonedFilter(
-            string originalPath
-        )
+        private static async System.Threading.Tasks.Task<string> CreateClonedFilter(string originalPath)
         {
             try
             {
                 var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        originalJson
-                    );
+                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(originalJson);
 
                 if (config != null)
                 {
                     // Update clone metadata
                     config.Name = $"{config.Name} (Copy)";
-                    config.Author =
-                        ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
-                        ?? "Unknown";
+                    config.Author = ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
                     config.DateCreated = System.DateTime.UtcNow;
 
                     var filtersDir = AppPaths.FiltersDir;
@@ -496,12 +478,7 @@ namespace BalatroSeedOracle.Helpers
                         new System.Text.Json.JsonSerializerOptions
                         {
                             WriteIndented = true,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                         }
                     );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);
@@ -511,10 +488,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (System.Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
-                    "ModalHelper",
-                    $"Failed to clone filter: {ex.Message}"
-                );
+                BalatroSeedOracle.Helpers.DebugLogger.LogError("ModalHelper", $"Failed to clone filter: {ex.Message}");
             }
 
             return string.Empty;

@@ -11,10 +11,10 @@ When filter criteria change, stale DuckDB results must be cleaned up to prevent 
 
 ## Database Files
 
-| File Pattern | Purpose |
-|--------------|---------|
-| `SearchResults/{filter}_{deck}_{stake}.duckdb` | Search results database |
-| `SearchResults/{filter}_{deck}_{stake}.duckdb.wal` | Write-Ahead Log |
+| File Pattern                                       | Purpose                 |
+| -------------------------------------------------- | ----------------------- |
+| `SearchResults/{filter}_{deck}_{stake}.duckdb`     | Search results database |
+| `SearchResults/{filter}_{deck}_{stake}.duckdb.wal` | Write-Ahead Log         |
 
 ## Cleanup Flow
 

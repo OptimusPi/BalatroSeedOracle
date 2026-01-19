@@ -49,8 +49,10 @@ namespace BalatroSeedOracle.Behaviors
         /// <summary>
         /// The final sprite to reveal after flip (set this to the actual joker/item sprite)
         /// </summary>
-        public static readonly StyledProperty<IImage?> RevealSpriteProperty =
-            AvaloniaProperty.Register<CardFlipRevealBehavior, IImage?>(nameof(RevealSprite));
+        public static readonly StyledProperty<IImage?> RevealSpriteProperty = AvaloniaProperty.Register<
+            CardFlipRevealBehavior,
+            IImage?
+        >(nameof(RevealSprite));
 
         public IImage? RevealSprite
         {
@@ -180,16 +182,9 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.Source = deckBackSprite;
 
                 // Create ScaleTransform for animation (this is what Avalonia can actually animate!)
-                var scaleTransform = new ScaleTransform(
-                    UIConstants.DefaultScaleFactor,
-                    UIConstants.DefaultScaleFactor
-                );
+                var scaleTransform = new ScaleTransform(UIConstants.DefaultScaleFactor, UIConstants.DefaultScaleFactor);
                 AssociatedObject.RenderTransform = scaleTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.5,
-                    RelativeUnit.Relative
-                );
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
 
                 var flipDuration = TimeSpan.FromMilliseconds(150);
 
@@ -248,14 +243,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(0),
                             Setters =
                             {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor),
                             },
                         },
                         new Avalonia.Animation.KeyFrame
@@ -263,14 +252,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(0.5),
                             Setters =
                             {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.CardFlipJuiceScalePeak
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    UIConstants.CardFlipJuiceScalePeak
-                                ),
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.CardFlipJuiceScalePeak),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.CardFlipJuiceScalePeak),
                             },
                         },
                         new Avalonia.Animation.KeyFrame
@@ -278,14 +261,8 @@ namespace BalatroSeedOracle.Behaviors
                             Cue = new Cue(1),
                             Setters =
                             {
-                                new Setter(
-                                    ScaleTransform.ScaleXProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
-                                new Setter(
-                                    ScaleTransform.ScaleYProperty,
-                                    UIConstants.DefaultScaleFactor
-                                ),
+                                new Setter(ScaleTransform.ScaleXProperty, UIConstants.DefaultScaleFactor),
+                                new Setter(ScaleTransform.ScaleYProperty, UIConstants.DefaultScaleFactor),
                             },
                         },
                     },
@@ -296,10 +273,7 @@ namespace BalatroSeedOracle.Behaviors
             finally
             {
                 // Ensure transform is reset even if animation is interrupted
-                if (
-                    AssociatedObject != null
-                    && AssociatedObject.RenderTransform is ScaleTransform st
-                )
+                if (AssociatedObject != null && AssociatedObject.RenderTransform is ScaleTransform st)
                 {
                     st.ScaleX = UIConstants.DefaultScaleFactor;
                     st.ScaleY = UIConstants.DefaultScaleFactor;

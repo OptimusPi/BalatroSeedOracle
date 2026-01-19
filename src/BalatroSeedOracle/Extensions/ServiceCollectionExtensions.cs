@@ -8,11 +8,8 @@ namespace BalatroSeedOracle.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddBalatroSeedOracleServices(
-            this IServiceCollection services
-        )
+        public static IServiceCollection AddBalatroSeedOracleServices(this IServiceCollection services)
         {
-
             // Services
             services.AddSingleton<IConfigurationService>(sp => new ConfigurationService(
                 sp.GetRequiredService<IAppDataStore>(),
@@ -41,19 +38,17 @@ namespace BalatroSeedOracle.Extensions
             ));
             services.AddSingleton<SearchManager>();
             services.AddSingleton<SearchStateManager>();
-            
+
             // Note: SoundFlowAudioManager and SoundEffectsService are registered by Desktop Program.cs only
             services.AddSingleton<TransitionService>();
             services.AddSingleton<TriggerService>();
             services.AddSingleton<EventFXService>();
-            services.AddSingleton<SearchTransitionManager>(sp =>
-                new SearchTransitionManager(
-                    sp.GetRequiredService<TransitionService>(),
-                    sp.GetRequiredService<UserProfileService>(),
-                    sp.GetService<Views.MainWindow>(),
-                    sp.GetService<Views.BalatroMainMenu>()
-                )
-            );
+            services.AddSingleton<SearchTransitionManager>(sp => new SearchTransitionManager(
+                sp.GetRequiredService<TransitionService>(),
+                sp.GetRequiredService<UserProfileService>(),
+                sp.GetService<Views.MainWindow>(),
+                sp.GetService<Views.BalatroMainMenu>()
+            ));
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
             services.AddSingleton<FertilizerService>(sp => new FertilizerService(
                 sp.GetRequiredService<IDuckDBService>(),
@@ -84,16 +79,15 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<Views.MainWindow>();
             services.AddSingleton<FiltersModalViewModel>();
             services.AddSingleton<SearchModalViewModel>();
-            
+
             // Note: AnalyzeModalViewModel and AnalyzerViewModel are registered by Desktop Program.cs only
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();
-            services.AddTransient<TransitionDesignerWidgetViewModel>(sp =>
-                new TransitionDesignerWidgetViewModel(
-                    sp.GetService<TransitionService>(),
-                    sp.GetService<TriggerService>()
-                ));
+            services.AddTransient<TransitionDesignerWidgetViewModel>(sp => new TransitionDesignerWidgetViewModel(
+                sp.GetService<TransitionService>(),
+                sp.GetService<TriggerService>()
+            ));
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();

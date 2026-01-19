@@ -7,12 +7,12 @@ description: Debugs Avalonia MVVM binding and command issues systematically. Use
 
 ## Common Binding Issues
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| UI not updating | Missing `[ObservableProperty]` | Add attribute to private field |
-| Command not firing | Wrong command name in XAML | Use generated name (e.g., `DoSomethingCommand`) |
-| Binding error in output | Missing `x:DataType` | Add `x:DataType="vm:MyViewModel"` |
-| Designer shows nothing | `DataContext` not set | Set in constructor or XAML |
+| Symptom                 | Likely Cause                   | Fix                                             |
+| ----------------------- | ------------------------------ | ----------------------------------------------- |
+| UI not updating         | Missing `[ObservableProperty]` | Add attribute to private field                  |
+| Command not firing      | Wrong command name in XAML     | Use generated name (e.g., `DoSomethingCommand`) |
+| Binding error in output | Missing `x:DataType`           | Add `x:DataType="vm:MyViewModel"`               |
+| Designer shows nothing  | `DataContext` not set          | Set in constructor or XAML                      |
 
 ## Diagnostic Checklist
 

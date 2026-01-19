@@ -25,10 +25,7 @@ namespace BalatroSeedOracle.Helpers
 
                 // Format with custom writer
                 using var stream = new System.IO.MemoryStream();
-                using var writer = new Utf8JsonWriter(
-                    stream,
-                    new JsonWriterOptions { Indented = true }
-                );
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
 
                 WriteElement(jsonDoc.RootElement, writer);
                 writer.Flush();

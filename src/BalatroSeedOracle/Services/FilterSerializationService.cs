@@ -32,18 +32,12 @@ namespace BalatroSeedOracle.Services
         public string SerializeConfig(MotelyJsonConfig config)
         {
             using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(
-                stream,
-                new JsonWriterOptions { Indented = true }
-            );
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
 
             writer.WriteStartObject();
 
             // Metadata
-            writer.WriteString(
-                "name",
-                !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter"
-            );
+            writer.WriteString("name", !string.IsNullOrWhiteSpace(config.Name) ? config.Name : "Untitled Filter");
 
             // Only write description if it has content
             if (!string.IsNullOrWhiteSpace(config.Description))
@@ -75,9 +69,7 @@ namespace BalatroSeedOracle.Services
 
             // Should array - always write (even if empty, for easy editing)
             writer.WriteStartArray("should");
-            foreach (
-                var item in config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>()
-            )
+            foreach (var item in config.Should ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>())
             {
                 WriteFilterItem(writer, item, includeScore: true);
             }
@@ -85,9 +77,7 @@ namespace BalatroSeedOracle.Services
 
             // MustNot array - always write (even if empty, for easy editing)
             writer.WriteStartArray("mustNot");
-            foreach (
-                var item in config.MustNot ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>()
-            )
+            foreach (var item in config.MustNot ?? new List<MotelyJsonConfig.MotelyJsonFilterClause>())
             {
                 WriteFilterItem(writer, item);
             }
@@ -120,8 +110,7 @@ namespace BalatroSeedOracle.Services
         private string CompactNumberArrays(string json)
         {
             // Regex pattern: "arrayName": [\n  numbers\n]  →  "arrayName": [1,2,3,...]
-            var pattern =
-                @"""(antes|shopSlots|packSlots)"":\s*\[\s*\n\s*((?:\d+,?\s*\n?\s*)*)\s*\]";
+            var pattern = @"""(antes|shopSlots|packSlots)"":\s*\[\s*\n\s*((?:\d+,?\s*\n?\s*)*)\s*\]";
 
             return System.Text.RegularExpressions.Regex.Replace(
                 json,
@@ -161,10 +150,7 @@ namespace BalatroSeedOracle.Services
                 var config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
                 if (config == null)
                 {
-                    DebugLogger.LogError(
-                        "FilterSerializationService",
-                        "DeserializeConfig returned null"
-                    );
+                    DebugLogger.LogError("FilterSerializationService", "DeserializeConfig returned null");
                     return null;
                 }
 
@@ -177,10 +163,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "FilterSerializationService",
-                    $"Failed to deserialize config: {ex.Message}"
-                );
+                DebugLogger.LogError("FilterSerializationService", $"Failed to deserialize config: {ex.Message}");
                 return null;
             }
         }
@@ -195,10 +178,7 @@ namespace BalatroSeedOracle.Services
             {
                 if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 {
-                    DebugLogger.LogError(
-                        "FilterSerializationService",
-                        $"File not found: {filePath}"
-                    );
+                    DebugLogger.LogError("FilterSerializationService", $"File not found: {filePath}");
                     return null;
                 }
 
@@ -313,14 +293,9 @@ namespace BalatroSeedOracle.Services
 
                     // Remove the unique key suffix if present
                     var hashIndex = itemNameWithSuffix.IndexOf('#');
-                    var itemName =
-                        hashIndex > 0
-                            ? itemNameWithSuffix.Substring(0, hashIndex)
-                            : itemNameWithSuffix;
+                    var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
 
-                    var itemConfig = itemConfigs.ContainsKey(item)
-                        ? itemConfigs[item]
-                        : new ItemConfig();
+                    var itemConfig = itemConfigs.ContainsKey(item) ? itemConfigs[item] : new ItemConfig();
 
                     var filterItem = CreateFilterClause(category, itemName, itemConfig);
                     if (filterItem != null)

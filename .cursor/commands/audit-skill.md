@@ -77,6 +77,7 @@ Analyze a specific skill for relevance, quality, and alignment with best practic
 ## Default Quality Checklist
 
 Use when no research available:
+
 - Has name and description in frontmatter
 - "When to Use" section present
 - Instructions are step-by-step and actionable
@@ -89,12 +90,14 @@ Use when no research available:
 ## Template Reference
 
 When creating new skills or restructuring existing ones:
+
 - Template: `.local/templates/cursor-skill.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
 
 Display inline:
+
 - Current state summary (sections, file count, path references)
 - Relevance score (High/Medium/Low/None)
 - Numbered list of recommended changes

@@ -19,21 +19,20 @@ internal sealed partial class Program
             // Platform-specific implementations
             services.AddSingleton<IAppDataStore, BrowserLocalStorageAppDataStore>();
             services.AddSingleton<IDuckDBService, BrowserDuckDBService>();
-            services.AddSingleton<IPlatformServices>(sp => 
+            services.AddSingleton<IPlatformServices>(sp =>
             {
                 var store = sp.GetRequiredService<IAppDataStore>();
                 return new BrowserPlatformServices(store);
             });
-            
+
             // API host
             services.AddSingleton<IApiHostService, BrowserApiHostService>();
-            
+
             // Note: Audio services (SoundFlowAudioManager, SoundEffectsService) are not available in browser
         };
 
         return BuildAvaloniaApp().StartBrowserAppAsync("out");
     }
 
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>();
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>();
 }

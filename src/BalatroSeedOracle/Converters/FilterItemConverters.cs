@@ -14,12 +14,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class ItemNameToFormattedStringConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return value switch
             {
@@ -75,10 +70,7 @@ namespace BalatroSeedOracle.Converters
                 || normalized.Equals("Any", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string FormatItemNameWithWildcards(
-            string? itemName,
-            bool isSoulJoker = false
-        )
+        private static string FormatItemNameWithWildcards(string? itemName, bool isSoulJoker = false)
         {
             if (string.IsNullOrWhiteSpace(itemName))
             {
@@ -127,12 +119,7 @@ namespace BalatroSeedOracle.Converters
             return FormatUtils.FormatDisplayName(itemName);
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -145,12 +132,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class AntesFormatterConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             List<int>? antes = value switch
             {
@@ -174,12 +156,7 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -232,36 +209,23 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class IsErraticDeckConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is string deckName)
             {
-                bool isErratic =
-                    deckName?.Equals("Erratic Deck", StringComparison.OrdinalIgnoreCase) == true;
+                bool isErratic = deckName?.Equals("Erratic Deck", StringComparison.OrdinalIgnoreCase) == true;
                 bool shouldInvert =
-                    parameter is string param
-                    && param.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+                    parameter is string param && param.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
                 return shouldInvert ? !isErratic : isErratic;
             }
 
             // Default: if no deck name, it's not erratic
             bool defaultResult = false;
-            bool shouldInvertDefault =
-                parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+            bool shouldInvertDefault = parameter is string p && p.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
             return shouldInvertDefault ? !defaultResult : defaultResult;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -272,12 +236,7 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class InverseBoolConverter : IValueConverter
     {
-        public object? Convert(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
             {
@@ -286,12 +245,7 @@ namespace BalatroSeedOracle.Converters
             return true;
         }
 
-        public object? ConvertBack(
-            object? value,
-            Type targetType,
-            object? parameter,
-            CultureInfo culture
-        )
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
             {

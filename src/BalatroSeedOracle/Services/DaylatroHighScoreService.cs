@@ -16,16 +16,11 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class DaylatroHighScoreService
     {
-        private static readonly Lazy<DaylatroHighScoreService> _lazy = new(() =>
-            new DaylatroHighScoreService()
-        );
+        private static readonly Lazy<DaylatroHighScoreService> _lazy = new(() => new DaylatroHighScoreService());
         public static DaylatroHighScoreService Instance => _lazy.Value;
 
         private const string DAYLATRO_URL = "https://daylatro.fly.dev";
-        private static readonly HttpClient _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(10),
-        };
+        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
         private readonly string _dataPath;
         private readonly string _submissionsPath;
@@ -33,10 +28,7 @@ namespace BalatroSeedOracle.Services
         private bool _loaded;
 
         // Web cache for fetched scores (5 minute expiration)
-        private readonly Dictionary<
-            string,
-            (List<DaylatroHighScore> scores, DateTime fetchTime)
-        > _webCache = new();
+        private readonly Dictionary<string, (List<DaylatroHighScore> scores, DateTime fetchTime)> _webCache = new();
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
 
         // Track submissions per day (UTC)
@@ -54,7 +46,7 @@ namespace BalatroSeedOracle.Services
         {
             if (_loaded)
                 return;
-            
+
             var platformServices = ServiceHelper.GetService<IPlatformServices>();
             if (platformServices == null || !platformServices.SupportsFileSystem)
             {
@@ -62,7 +54,7 @@ namespace BalatroSeedOracle.Services
                 _loaded = true;
                 return;
             }
-            
+
             try
             {
                 if (File.Exists(_dataPath))
@@ -79,10 +71,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error loading scores: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error loading scores: {ex.Message}");
             }
             _loaded = true;
         }
@@ -92,18 +81,12 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var list = _cache.Values.OrderByDescending(d => d.DateUtc).ToList();
-                var json = JsonSerializer.Serialize(
-                    list,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
+                var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(_dataPath, json);
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error saving scores: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error saving scores: {ex.Message}");
             }
         }
 
@@ -133,10 +116,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error loading submission dates: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error loading submission dates: {ex.Message}");
             }
         }
 
@@ -152,10 +132,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error saving submission dates: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error saving submission dates: {ex.Message}");
             }
         }
 
@@ -209,12 +186,7 @@ namespace BalatroSeedOracle.Services
             return _cache.TryGetValue(seed, out var daily) ? daily.GetTopScore() : null;
         }
 
-        public DaylatroHighScore SubmitScore(
-            string seed,
-            DateTime dateUtc,
-            string player,
-            long score
-        )
+        public DaylatroHighScore SubmitScore(string seed, DateTime dateUtc, string player, long score)
         {
             EnsureLoaded();
             var daily = GetOrCreate(seed, dateUtc);
@@ -269,10 +241,7 @@ namespace BalatroSeedOracle.Services
                 var url = $"{DAYLATRO_URL}?day={day}";
                 var response = await _httpClient.GetStringAsync(url);
 
-                DebugLogger.Log(
-                    "DaylatroHighScoreService",
-                    $"Fetched page from {url} (length: {response.Length})"
-                );
+                DebugLogger.Log("DaylatroHighScoreService", $"Fetched page from {url} (length: {response.Length})");
 
                 // Parse the HTML to extract scores from the table
                 var scores = ParseDaylatroHtml(response);
@@ -280,31 +249,17 @@ namespace BalatroSeedOracle.Services
                 // Update cache
                 _webCache[day] = (scores, DateTime.UtcNow);
 
-                DebugLogger.Log(
-                    "DaylatroHighScoreService",
-                    $"Parsed {scores.Count} scores from Daylatro and cached"
-                );
+                DebugLogger.Log("DaylatroHighScoreService", $"Parsed {scores.Count} scores from Daylatro and cached");
                 return scores;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error fetching from Daylatro: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error fetching from Daylatro: {ex.Message}");
 
                 // Try to return cached data even if expired
-                if (
-                    _webCache.TryGetValue(
-                        day ?? DateTime.UtcNow.ToString("yyyy-MM-dd"),
-                        out var cached
-                    )
-                )
+                if (_webCache.TryGetValue(day ?? DateTime.UtcNow.ToString("yyyy-MM-dd"), out var cached))
                 {
-                    DebugLogger.Log(
-                        "DaylatroHighScoreService",
-                        "Returning expired cache due to fetch error"
-                    );
+                    DebugLogger.Log("DaylatroHighScoreService", "Returning expired cache due to fetch error");
                     return cached.scores;
                 }
 
@@ -379,10 +334,7 @@ namespace BalatroSeedOracle.Services
                         if (cellEnd == -1)
                             break;
 
-                        var cellContent = row.Substring(
-                            cellContentStart,
-                            cellEnd - cellContentStart
-                        );
+                        var cellContent = row.Substring(cellContentStart, cellEnd - cellContentStart);
                         cells.Add(cellContent.Trim());
                         cellStart = cellEnd;
                     }
@@ -419,10 +371,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error parsing HTML: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error parsing HTML: {ex.Message}");
             }
 
             return scores;
@@ -431,11 +380,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Submits a score to daylatro.fly.dev with specific initials and ante
         /// </summary>
-        public async Task<(bool success, string message)> SubmitToDaylatroAsync(
-            string initials,
-            int ante,
-            long score
-        )
+        public async Task<(bool success, string message)> SubmitToDaylatroAsync(string initials, int ante, long score)
         {
             try
             {
@@ -457,9 +402,7 @@ namespace BalatroSeedOracle.Services
                 // Form data format from actual site: day=2025-08-14&name=BSO&ante=2&bestHand=12287
                 // Name must be 3 characters
                 var playerName =
-                    initials.Length > 3
-                        ? initials.Substring(0, 3).ToUpper()
-                        : initials.ToUpper().PadRight(3);
+                    initials.Length > 3 ? initials.Substring(0, 3).ToUpper() : initials.ToUpper().PadRight(3);
                 var day = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
                 DebugLogger.Log(
@@ -494,10 +437,7 @@ namespace BalatroSeedOracle.Services
                     if (_webCache.ContainsKey(today))
                     {
                         _webCache.Remove(today);
-                        DebugLogger.Log(
-                            "DaylatroHighScoreService",
-                            "Cleared today's cache after submission"
-                        );
+                        DebugLogger.Log("DaylatroHighScoreService", "Cleared today's cache after submission");
                     }
 
                     return (true, $"Score submitted successfully! {playerName}: {score:N0}");
@@ -508,18 +448,12 @@ namespace BalatroSeedOracle.Services
                         "DaylatroHighScoreService",
                         $"Failed to submit to Daylatro: {response.StatusCode}"
                     );
-                    return (
-                        false,
-                        $"Failed to submit score (server returned {response.StatusCode})"
-                    );
+                    return (false, $"Failed to submit score (server returned {response.StatusCode})");
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error submitting to Daylatro: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error submitting to Daylatro: {ex.Message}");
                 return (false, $"Error submitting score: {ex.Message}");
             }
         }
@@ -575,10 +509,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "DaylatroHighScoreService",
-                    $"Error submitting to Daylatro: {ex.Message}"
-                );
+                DebugLogger.LogError("DaylatroHighScoreService", $"Error submitting to Daylatro: {ex.Message}");
                 return false;
             }
         }

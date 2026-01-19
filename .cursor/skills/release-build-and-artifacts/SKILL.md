@@ -80,12 +80,12 @@ jobs:
 
 ## Artifacts Produced
 
-| Platform | Artifact Name | Contents |
-|----------|---------------|----------|
-| Windows | `BalatroSeedOracle-Windows` | Windows executable |
-| Linux | `BalatroSeedOracle-Linux` | Linux executable |
-| Browser | `BalatroSeedOracle-Browser` | WASM build zip |
-| Browser | `BalatroSeedOracle-Browser-Deploy` | Deployment package |
+| Platform | Artifact Name                      | Contents           |
+| -------- | ---------------------------------- | ------------------ |
+| Windows  | `BalatroSeedOracle-Windows`        | Windows executable |
+| Linux    | `BalatroSeedOracle-Linux`          | Linux executable   |
+| Browser  | `BalatroSeedOracle-Browser`        | WASM build zip     |
+| Browser  | `BalatroSeedOracle-Browser-Deploy` | Deployment package |
 
 ## Local Build Commands
 
@@ -136,11 +136,11 @@ git tag v2.0.1      # Full release
 
 ### Common Issues
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Build fails | Missing dependencies | Run `dotnet restore` locally |
-| Submodule missing | Not initialized | Add `git submodule update --init --recursive` |
-| Artifact upload fails | Path mismatch | Verify output directory in publish command |
+| Issue                 | Cause                | Fix                                           |
+| --------------------- | -------------------- | --------------------------------------------- |
+| Build fails           | Missing dependencies | Run `dotnet restore` locally                  |
+| Submodule missing     | Not initialized      | Add `git submodule update --init --recursive` |
+| Artifact upload fails | Path mismatch        | Verify output directory in publish command    |
 
 ### Manual Workflow Trigger
 
