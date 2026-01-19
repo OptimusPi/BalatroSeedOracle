@@ -10,3 +10,20 @@ pre-commit:
       glob: "*.{md,mdx,yml,yaml,json,jsonc}"
       run: dprint fmt --config .config/dprint.json --allow-no-files {staged_files}
       stage_fixed: true
+
+    changelog-reminder:
+      run: |
+        # Check if user-facing files are staged but CHANGELOG.md is not
+        STAGED_FILES=$(git diff --cached --name-only)
+        
+        # Paths that typically need changelog entries
+        if echo "$STAGED_FILES" | grep -qE '^(src/|docs/|Presets/|VisualizerPresets/|MixerPresets/)'; then
+          # Check if CHANGELOG.md is staged
+          if ! echo "$STAGED_FILES" | grep -q '^CHANGELOG.md$'; then
+            echo "⚠️  WARNING: You're committing user-facing changes without updating CHANGELOG.md"
+            echo "   Consider adding an entry under '## [Unreleased]' in CHANGELOG.md"
+            echo "   See .cursor/rules/005-changelog-policy.mdc for guidelines"
+            echo ""
+            echo "   This is just a reminder - commit will proceed."
+          fi
+        fi

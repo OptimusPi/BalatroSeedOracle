@@ -13,11 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation structure (docs/FILTERS.md)
 - CONTRIBUTING.md with development guidelines
 - SECURITY.md with vulnerability reporting process
+- Changelog policy rule for agents (.cursor/rules/005-changelog-policy.mdc)
+- GitHub Actions workflow to enforce changelog updates on PRs
+- Pull request template with changelog checklist
+- Pre-commit hook reminder for changelog updates
 
 ### Changed
 
 - README.md restructured with improved onboarding flow
 - Taskfile is now the recommended development entry point
+- CONTRIBUTING.md now includes changelog update step in workflow
 
 ### Fixed
 

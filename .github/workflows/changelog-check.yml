@@ -1,0 +1,152 @@
+name: Changelog Check
+
+on:
+  pull_request:
+    branches: [ main, develop, 'v*' ]
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Fetch base branch
+      run: |
+        git fetch origin ${{ github.event.pull_request.base.ref }}
+
+    - name: Check if changelog update is needed
+      id: check
+      run: |
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # Check if PR has skip-changelog label
+        if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}" == "true" ]]; then
+          echo "✅ PR has 'skip-changelog' label - skipping check"
+          echo "skip=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Paths that require changelog updates
+        REQUIRE_CHANGELOG_PATHS=(
+          "src/"
+          "docs/"
+          "Presets/"
+          "VisualizerPresets/"
+          "MixerPresets/"
+        )
+
+        # Paths that don't require changelog (config/tooling)
+        SKIP_PATHS=(
+          ".cursor/"
+          ".github/workflows/"
+          ".config/"
+          ".editorconfig"
+          ".gitignore"
+          ".gitattributes"
+          "lefthook.yml"
+          "Taskfile.yml"
+        )
+
+        # Check if any files in require-changelog paths were modified
+        NEEDS_CHANGELOG=false
+        for file in $CHANGED_FILES; do
+          # Skip if file matches skip paths
+          SHOULD_SKIP=false
+          for skip_path in "${SKIP_PATHS[@]}"; do
+            if [[ "$file" == "$skip_path"* ]]; then
+              SHOULD_SKIP=true
+              break
+            fi
+          done
+
+          if [[ "$SHOULD_SKIP" == "true" ]]; then
+            continue
+          fi
+
+          # Check if file matches require-changelog paths
+          for req_path in "${REQUIRE_CHANGELOG_PATHS[@]}"; do
+            if [[ "$file" == "$req_path"* ]]; then
+              NEEDS_CHANGELOG=true
+              echo "📝 File requires changelog: $file"
+              break 2
+            fi
+          done
+        done
+
+        if [[ "$NEEDS_CHANGELOG" == "false" ]]; then
+          echo "✅ No user-facing changes detected - changelog not required"
+          echo "skip=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Check if CHANGELOG.md was modified
+        if echo "$CHANGED_FILES" | grep -q "^CHANGELOG.md$"; then
+          echo "✅ CHANGELOG.md was updated"
+
+          # Verify that Unreleased section was actually modified
+          CHANGELOG_DIFF=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD -- CHANGELOG.md)
+          if echo "$CHANGELOG_DIFF" | grep -q "+.*## \[Unreleased\]" || echo "$CHANGELOG_DIFF" | grep -q "+.*###"; then
+            echo "✅ Unreleased section appears to have new entries"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "⚠️  CHANGELOG.md was modified but Unreleased section may not have new entries"
+            echo "Please verify you added your changes under ## [Unreleased]"
+          fi
+
+          echo "skip=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        echo "❌ CHANGELOG.md was not updated"
+        echo "skip=false" >> $GITHUB_OUTPUT
+
+    - name: Fail if changelog missing
+      if: steps.check.outputs.skip != 'true'
+      run: |
+        echo "::error::CHANGELOG.md must be updated for user-facing changes"
+        echo ""
+        echo "This PR modifies user-facing code but doesn't update CHANGELOG.md."
+        echo ""
+        echo "Please add an entry under '## [Unreleased]' in CHANGELOG.md describing your changes."
+        echo ""
+        echo "If this PR doesn't require a changelog entry (e.g., only CI/config changes),"
+        echo "add the 'skip-changelog' label to this PR."
+        echo ""
+        echo "See .cursor/rules/005-changelog-policy.mdc for guidelines."
+        exit 1
+
+    - name: Comment on PR (if check failed)
+      if: failure() && steps.check.outputs.skip != 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const message = `## ⚠️ Changelog Update Required
+
+          This PR modifies user-facing code but doesn't update \`CHANGELOG.md\`.
+
+          **Action needed:**
+          - Add an entry under \`## [Unreleased]\` in \`CHANGELOG.md\` describing your changes
+          - Follow the format in [Keep a Changelog](https://keepachangelog.com/)
+
+          **Or, if this PR doesn't need a changelog entry:**
+          - Add the \`skip-changelog\` label to this PR
+
+          See \`.cursor/rules/005-changelog-policy.mdc\` for detailed guidelines.`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message
+          });

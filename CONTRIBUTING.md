@@ -53,31 +53,36 @@ Thank you for your interest in contributing to Balatro Seed Oracle! This is a co
 
 2. Make your changes following the project conventions (see below)
 
-3. Test your changes:
+3. **Update CHANGELOG.md** if your changes are user-facing:
+   - Add an entry under `## [Unreleased]` in the appropriate category (`Added`, `Changed`, `Fixed`)
+   - See `.cursor/rules/005-changelog-policy.mdc` for detailed guidelines
+   - Skip this step only for internal changes (CI config, refactoring, etc.)
+
+4. Test your changes:
    ```bash
    task test
    task run:desktop
    ```
 
-4. Format your code:
+5. Format your code:
    ```bash
    task format
    ```
 
    Or let the pre-commit hooks handle it automatically when you commit.
 
-5. Commit your changes:
+6. Commit your changes:
    ```bash
    git add .
    git commit -m "Brief description of your changes"
    ```
 
-6. Push to your fork:
+7. Push to your fork:
    ```bash
    git push origin feature/your-feature-name
    ```
 
-7. Open a Pull Request on GitHub
+8. Open a Pull Request on GitHub
 
 ### Code Style
 
@@ -155,9 +160,11 @@ If you need to modify Motely:
 - **One feature per PR**: Keep changes focused and reviewable
 - **Descriptive titles**: Clearly describe what the PR does
 - **Link issues**: Reference related issues with `Fixes #123` or `Relates to #456`
+- **Update CHANGELOG.md**: Add entries under `## [Unreleased]` for user-facing changes (see `.cursor/rules/005-changelog-policy.mdc`)
 - **Update documentation**: Include doc updates for user-facing changes
 - **Test your changes**: Ensure the app builds and runs on your platform
 - **Follow conventions**: Adhere to project code style and patterns
+- **Use PR template**: Fill out the pull request template checklist
 
 ## Reporting Issues
 

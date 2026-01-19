@@ -1,0 +1,92 @@
+# Changelog Policy
+
+## When to Update CHANGELOG.md
+
+**MUST update** `CHANGELOG.md` for:
+
+- **Bug fixes** - Any correction of incorrect behavior
+- **New features** - New capabilities, UI elements, filters, or commands
+- **Behavior changes** - Modified functionality, changed defaults, or UX adjustments
+- **Performance changes** - Significant speed improvements or optimizations
+- **Breaking changes** - API changes, removed features, or incompatible updates
+- **Filter/format changes** - Changes to JAML/JSON filter syntax or serialization
+- **Dependency updates** - When they affect users (new features, security fixes)
+- **Documentation** - User-facing docs (README, FILTERS.md, etc.)
+
+**SKIP changelog** for:
+
+- Pure refactoring (no behavior change)
+- Code comments or internal documentation
+- Formatting/whitespace changes
+- `.cursor/` rules, commands, or skills (internal tooling)
+- CI/build configuration (unless it affects contributors)
+- Test-only changes
+
+## How to Update
+
+1. **Location**: Add entries under `## [Unreleased]` in `CHANGELOG.md`
+2. **Category**: Choose the appropriate section:
+   - `### Added` - New features, capabilities, or files
+   - `### Changed` - Modifications to existing functionality
+   - `### Fixed` - Bug fixes
+   - `### Deprecated` - Features marked for removal (rare)
+   - `### Removed` - Deleted features (rare)
+   - `### Security` - Security-related fixes (rare)
+
+3. **Format**: One bullet per logical change
+   - Use imperative mood ("Add X", "Fix Y", "Change Z")
+   - Be concise but clear (1-2 lines max)
+   - Focus on **what** changed for users, not **how** it was implemented
+   - Link to issues/PRs when relevant: `(#123)`
+
+## Examples
+
+### Good Entries
+
+```markdown
+### Added
+- Filter clause for Joker rarity (Common/Uncommon/Rare/Legendary)
+- Keyboard shortcut (Ctrl+R) to restart search
+
+### Changed
+- Search results now sorted by seed number by default
+- Improved DuckDB query performance for large result sets
+
+### Fixed
+- Browser version no longer crashes when exporting empty results
+- Filter editor now preserves comments in JAML round-trips
+```
+
+### Bad Entries (too technical or vague)
+
+```markdown
+### Changed
+- Refactored SearchInstance.cs to use async/await pattern  ❌ (implementation detail)
+- Updated dependencies  ❌ (too vague - which ones? why?)
+- Fixed bug  ❌ (which bug? what was broken?)
+```
+
+## Agent Workflow
+
+**Before completing any task that changes user-visible behavior:**
+
+1. Determine if the change requires a changelog entry (see "When to Update" above)
+2. If yes, read `CHANGELOG.md` to find the `## [Unreleased]` section
+3. Add your entry under the appropriate `### Category` heading
+4. If the category doesn't exist yet, create it (maintain order: Added, Changed, Fixed, etc.)
+5. Verify the entry follows the format guidelines above
+
+**Before final response:**
+
+- Explicitly confirm whether `CHANGELOG.md` was updated or explain why it wasn't needed
+- If multiple related changes were made, consider grouping them into a single changelog bullet
+
+## Release Process
+
+When cutting a release:
+
+1. Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`
+2. Add a new empty `## [Unreleased]` section at the top
+3. Update version references in the codebase
+
+This is typically done by maintainers, not automated agents.
