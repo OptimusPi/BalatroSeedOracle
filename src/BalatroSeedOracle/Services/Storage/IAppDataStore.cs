@@ -5,9 +5,11 @@ namespace BalatroSeedOracle.Services.Storage;
 
 public interface IAppDataStore
 {
-    Task<bool> ExistsAsync(string key);
+    // Synchronous operations use ValueTask for zero-allocation when completed synchronously
+    ValueTask<bool> ExistsAsync(string key);
     Task<string?> ReadTextAsync(string key);
     Task WriteTextAsync(string key, string content);
-    Task DeleteAsync(string key);
-    Task<IReadOnlyList<string>> ListKeysAsync(string prefix);
+    ValueTask DeleteAsync(string key);
+    ValueTask<IReadOnlyList<string>> ListKeysAsync(string prefix);
+    ValueTask<bool> FileExistsAsync(string path);
 }

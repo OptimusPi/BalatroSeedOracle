@@ -100,15 +100,15 @@
     <AvaloniaXaml Remove="Components\Widgets\MusicMixerWidget.axaml" />
     <AvaloniaXaml Remove="Components\Widgets\AudioMixerWidget.axaml" />
     <AvaloniaXaml Remove="Components\Widgets\SearchWidget.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <!-- Desktop-only components (not available in Browser/WASM) -->
-    <Compile Remove="Components\WebView\ExternalContentModal.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <AvaloniaXaml Remove="Components\WebView\ExternalContentModal.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <Compile Remove="Services\Platforms\FileSystemDuckDBService.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <!-- Desktop-only components (entire file uses platform-specific APIs) -->
+    <Compile Remove="Components\WebView\ExternalContentModal.axaml.cs" />
+    <AvaloniaXaml Remove="Components\WebView\ExternalContentModal.axaml" />
+    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" />
+    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" />
+    <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" />
+    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" />
+    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" />
+    <Compile Remove="Services\Platforms\FileSystemDuckDBService.cs" />
     <!-- Browser-only files (entire file wrapped in #if BROWSER) -->
     <Compile Remove="Services\Storage\LocalStorageTester.cs" />
   </ItemGroup>
