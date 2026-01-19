@@ -108,4 +108,4 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other skills before applying changes
 - Verify all code examples compile/run before finalizing
-- Use the `cursor-authoring` skill for creating new skills
+- For creating new skills, use the `create-skill` skill (global) or template at `.local/templates/cursor-skill.md`

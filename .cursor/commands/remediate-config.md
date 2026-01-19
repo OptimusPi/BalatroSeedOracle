@@ -20,7 +20,7 @@ One of:
 
 ### 1. Load the Audit Rubric
 
-- Read `.cursor/commands/cursor-audit-chat.md`
+- Read `.cursor/commands/audit-chat.md`
 - Use its categories as the schema for interpreting findings:
   - Tool Usage, Response Quality, Task Execution, Prompting Effectiveness
   - Agent Issues, Rule Opportunities, Skill Candidates, Prompting Tips, Quick Wins
@@ -56,7 +56,7 @@ Produce a plan that is directly executable (no vague tasks). For each item inclu
 
 If the plan includes creating a new Cursor rule or skill:
 
-- Use the `cursor-authoring` skill for detailed instructions
+- Use the `create-rule` or `create-skill` skills (global) for detailed instructions
 - Use templates from `.local/templates/cursor-*.md`
 - Follow standards in `.cursor/rules/tool-cursor-config.mdc`
 - Prefer doing it only when the audit evidence shows a repeated, durable pattern
@@ -87,7 +87,7 @@ After the remediation plan is executed and verified:
 mkdir -p .local/archive/audits
 ```
 
-2. Move the reviewed audit files:
+1. Move the reviewed audit files:
 
 ```bash
 mv .local/audits/{selected-files...} .local/archive/audits/

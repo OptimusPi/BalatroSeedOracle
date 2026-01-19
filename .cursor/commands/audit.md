@@ -102,4 +102,4 @@ Create improvement plan as `.local/plans/cursor-config-audit-YYYY-MM-DD.md` with
 - Run `/cursor-research` periodically to keep best practices current
 - Research older than 3 months should be refreshed before major audits
 - Latest research file: `.local/research/cursor/` (most recent by date prefix)
-- For creating new configuration, use the `cursor-authoring` skill
+- For creating new configuration, use the `create-rule` or `create-skill` skills (global)

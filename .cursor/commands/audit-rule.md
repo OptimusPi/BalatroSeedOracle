@@ -116,7 +116,7 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other rules before applying changes
 - Backup original if making significant structural changes
-- Use the `cursor-authoring` skill for creating new rules
+- For creating new rules, use the `create-rule` skill (global) or template at `.local/templates/cursor-rule.md`
 - Rule vs Skill distinction:
   - Rules: constraints, standards, auto-injected context (passive)
   - Skills: workflows, procedures, on-demand guidance (active)

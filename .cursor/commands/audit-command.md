@@ -115,7 +115,7 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other commands before applying changes
 - Verify all shell commands work before finalizing
-- Use the `cursor-authoring` skill for creating new commands
+- For creating new commands, follow the template at `.local/templates/cursor-command.md`
 - Command vs Skill distinction:
   - Commands: user-invoked workflows via `/command-name` (explicit trigger)
   - Skills: agent-loaded context for task types (implicit loading)

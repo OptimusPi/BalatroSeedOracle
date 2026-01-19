@@ -22,16 +22,21 @@ Optional:
    dotnet run -c Debug --project ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
    ```
 
-2. **Monitor Output**
+2. **Verify Launch**
    - Watch for startup errors in terminal
-   - Application window should appear within a few seconds
+   - **The process should keep running** (a GUI app stays open until the user closes the window)
+   - If the process exits quickly (exit code 0 or otherwise), the app did **not** launch successfully—check logs
+   - Only claim "launched" after observing:
+     - The application window is visible, OR
+     - The process is still running (`ps` or terminal shows no exit)
 
 ## Output
 
-Desktop application launches with main window visible.
+Desktop application launches with main window visible and process remains running.
 
 ## Notes
 
-- **Which config to use**: Use **Debug** when you’re debugging (breakpoints/stepping/diagnostics). Use **Release** when validating “normal user experience” or performance-sensitive behavior. Debug is significantly slower due to disabled optimizations and additional runtime checks.
+- **Which config to use**: Use **Debug** when you're debugging (breakpoints/stepping/diagnostics). Use **Release** when validating "normal user experience" or performance-sensitive behavior. Debug is significantly slower due to disabled optimizations and additional runtime checks.
 - **First run**: May take longer due to JIT compilation and asset loading.
 - **Platform**: This targets the native desktop runtime (Windows/macOS/Linux).
+- **Launch verification**: Exit code 0 alone does **not** prove the app launched—for GUI apps, the process should remain running. A fast exit typically indicates a startup failure.
