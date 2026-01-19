@@ -792,7 +792,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 // Check if dropped on unified operator tray (only for FilterItem, NOT operators)
-                if (_draggedItem is FilterItem && IsPointOverControl(cursorPos, unifiedTray, _topLevel))
+                if (_draggedItem is FilterItem && IsPointOverControl(cursorPos, UnifiedTray, _topLevel))
                 {
                     // Drop into unified tray
                     DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into unified tray");
@@ -829,16 +829,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     vm.UnifiedOperator.Children.Add(itemCopy);
 
                     // Reset tray border
-                    if (unifiedTray != null)
-                        unifiedTray.BorderThickness = new Avalonia.Thickness(2);
+                    if (UnifiedTray != null)
+                        UnifiedTray.BorderThickness = new Avalonia.Thickness(2);
 
                     return; // Early exit - handled
                 }
 
                 // Check if over the item grid first (return to shelf)
-                if (IsPointOverControl(cursorPos, itemGridBorder, _topLevel))
+                if (IsPointOverControl(cursorPos, ItemGridBorder, _topLevel))
                 {
-                    targetZone = itemGridBorder;
+                    targetZone = ItemGridBorder;
                     zoneName = "ItemGridBorder";
                 }
                 // Check if over drop zones - use proper hit testing instead of Y-position math

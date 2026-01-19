@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -10,6 +11,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.Views.Modals;
+using DuckDB.NET.Data;
 using Motely;
 using Motely.DuckDB;
 using Motely.Filters;
@@ -28,6 +30,9 @@ namespace BalatroSeedOracle.Services
     {
         private readonly string _searchId;
         private readonly UserProfileService? _userProfileService;
+        private readonly IAppDataStore? _appDataStore;
+        private readonly IPlatformServices? _platformServices;
+        private readonly IDuckDBService? _duckDBService;
 
         // DuckDB database for this search instance
         private string _dbPath = string.Empty;
@@ -477,7 +482,7 @@ namespace BalatroSeedOracle.Services
                 // search_meta is BSO-specific table
                 _searchDatabase?.ExecuteNonQuery(
                     "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)",
-                    new DuckDBParameter(batchNumber.ToString())
+                    new DuckDBParameter { Value = batchNumber.ToString() }
                 );
             }
             catch (Exception ex)
@@ -510,7 +515,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized || (_appDataStore != null && !await _appDataStore.FileExistsAsync(_dbPath)))
+                if (!_dbInitialized || (_appDataStore != null && !await _appDataStore.ExistsAsync(_dbPath)))
                 {
                     DebugLogger.Log($"SearchInstance[{_searchId}]", "No database to dump - skipping fertilizer.txt");
                     return;
@@ -721,7 +726,7 @@ namespace BalatroSeedOracle.Services
             bool configExists = false;
             if (_appDataStore != null)
             {
-                configExists = await _appDataStore.FileExistsAsync(criteria.ConfigPath);
+                configExists = await _appDataStore.ExistsAsync(criteria.ConfigPath);
             }
             else if (_platformServices != null && _platformServices.SupportsFileSystem)
             {

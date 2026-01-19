@@ -41,7 +41,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IPlatformServices _platformServices;
 
 #if !BROWSER
-        private SearchInstance? _searchInstance;
+        private ISearchInstance? _searchInstance;
 #endif
         private string _currentSearchId = string.Empty;
 

@@ -1603,11 +1603,15 @@ namespace BalatroSeedOracle.ViewModels
             var filterConfigService =
                 ServiceHelper.GetService<IFilterConfigurationService>()
                 ?? new FilterConfigurationService(userProfileService);
+            var platformServices =
+                ServiceHelper.GetService<IPlatformServices>()
+                ?? throw new InvalidOperationException("IPlatformServices not available");
             var validateFilterViewModel = new FilterTabs.ValidateFilterTabViewModel(
                 this,
                 configService,
                 filterService,
-                filterConfigService
+                filterConfigService,
+                platformServices
             );
             var validateFilterTab = new Components.FilterTabs.ValidateFilterTab
             {

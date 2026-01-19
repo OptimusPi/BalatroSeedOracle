@@ -6,6 +6,8 @@ using BalatroSeedOracle;
 using BalatroSeedOracle.Desktop.Services;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Desktop;

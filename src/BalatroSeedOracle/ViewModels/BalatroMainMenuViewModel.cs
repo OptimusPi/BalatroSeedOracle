@@ -792,7 +792,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Per-track volume balancing for SoundFlow audio stems
 #if !BROWSER
-                if (_soundFlowAudioManager != null)
+                if (_audioManager != null)
                 {
                     SetTrackVolume("Drums1", Math.Clamp(settings.Drums1Volume, 0f, 1f));
                     SetTrackVolume("Drums2", Math.Clamp(settings.Drums2Volume, 0f, 1f));

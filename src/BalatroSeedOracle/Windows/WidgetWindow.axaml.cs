@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -137,7 +138,9 @@ namespace BalatroSeedOracle.Windows
             // Use actual screen bounds; fallback to window bounds if unavailable
             var primary = Screens?.Primary;
             var screenBounds =
-                primary?.WorkingArea ?? new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
+                primary?.WorkingArea is { } wa
+                    ? new Rect(wa.X, wa.Y, wa.Width, wa.Height)
+                    : new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
             var windowBounds = new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
 
             // Check each edge

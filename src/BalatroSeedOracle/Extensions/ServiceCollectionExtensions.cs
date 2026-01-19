@@ -65,7 +65,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<BalatroMainMenuViewModel>(sp => new BalatroMainMenuViewModel(
                 sp.GetRequiredService<UserProfileService>(),
                 sp.GetService<IApiHostService>(),
-                sp.GetService<SoundFlowAudioManager>(),
+                sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
                 sp.GetService<WidgetPositionService>()
             ));

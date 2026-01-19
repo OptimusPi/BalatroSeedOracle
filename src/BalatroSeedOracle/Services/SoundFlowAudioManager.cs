@@ -23,7 +23,7 @@ namespace BalatroSeedOracle.Services
     /// Plays 8 independent audio stems with per-track volume control and FFT analysis
     /// CROSS-PLATFORM: Works on Windows, Mac, Linux, iOS, Android
     /// </summary>
-    public class SoundFlowAudioManager : IDisposable
+    public class SoundFlowAudioManager : IAudioManager, IDisposable
     {
         private const int UPDATE_RATE_MS = 16; // ~60 FPS
 

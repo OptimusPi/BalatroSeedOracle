@@ -21,15 +21,16 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
+                var platformServices = ServiceHelper.GetService<IPlatformServices>();
 
-                if (configService is null || filterService is null)
+                if (configService is null || filterService is null || platformServices is null)
                 {
                     throw new InvalidOperationException(
-                        "Required services not available (IConfigurationService/IFilterService)"
+                        "Required services not available (IConfigurationService/IFilterService/IPlatformServices)"
                     );
                 }
 
-                var viewModel = new FiltersModalViewModel(configService, filterService);
+                var viewModel = new FiltersModalViewModel(configService, filterService, platformServices);
                 DataContext = viewModel;
 
                 // Initialize tabs synchronously so they're ready when UI renders

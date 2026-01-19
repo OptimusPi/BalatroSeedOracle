@@ -31,7 +31,7 @@ namespace BalatroSeedOracle.Windows
 {
     public partial class DataGridResultsWindow : Window
     {
-        private readonly SearchInstance? _searchInstance;
+        private readonly ISearchInstance? _searchInstance;
         private readonly string? _filterName;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
@@ -55,7 +55,7 @@ namespace BalatroSeedOracle.Windows
             InitializeComponent();
         }
 
-        public DataGridResultsWindow(SearchInstance searchInstance, string? filterName = null)
+        public DataGridResultsWindow(ISearchInstance searchInstance, string? filterName = null)
         {
             _searchInstance = searchInstance;
             _filterName = filterName;
@@ -225,7 +225,7 @@ LIMIT 100;";
                     return;
 
                 // Update title
-                _totalCount = await _searchInstance.GetResultCountAsync();
+                _totalCount = _searchInstance.ResultCount;
                 var filterDisplay = !string.IsNullOrEmpty(_filterName) ? _filterName : "Unknown Filter";
                 Title = $"Results for {filterDisplay} ({_totalCount:N0} seeds)";
 

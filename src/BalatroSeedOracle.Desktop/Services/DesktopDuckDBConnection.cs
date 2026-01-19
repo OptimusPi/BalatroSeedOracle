@@ -114,8 +114,8 @@ public class DesktopDuckDBConnection : IDuckDBConnection
     {
         EnsureOpen();
         // Use Motely's helper - no SQL in BSO!
-        var limit = orderBy != null ? $" {orderBy}" : "";
-        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName, limit);
+        // Note: Motely's GetAllSeeds only takes 3 args (connection, tableName, seedColumnName) and always orders by seed
+        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName);
         return Task.FromResult(seeds);
     }
 
@@ -153,17 +153,27 @@ public class DesktopDuckDBConnection : IDuckDBConnection
     {
         EnsureOpen();
         // Use Motely's helper - no SQL construction in BSO!
+        // Motely signature: GetResultsWithTallies(connection, offset, limit, orderBy, ascending)
         // Note: Filters (minScore, deck, stake) would need to be added to Motely's helper
         // For now, get all results and filter in memory (not ideal, but no SQL in BSO)
-        var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(_connection, tableName, limit, 2);
+        var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(
+            _connection, 
+            offset: 0, 
+            limit: limit, 
+            orderBy: "score", 
+            ascending: false
+        );
 
-        // Convert from Motely.DuckDB.ResultWithTallies to BSO Models.ResultWithTallies
+        // Convert from Dictionary<string, object?> to BSO Models.ResultWithTallies
         var results = motelyResults
-            .Select(r => new Models.ResultWithTallies
+            .Select(row => new Models.ResultWithTallies
             {
-                Seed = r.Seed,
-                Score = r.Score,
-                Tallies = r.Tallies,
+                Seed = row["seed"]?.ToString() ?? "",
+                Score = Convert.ToInt32(row["score"] ?? 0),
+                Tallies = row.Where(kvp => kvp.Key != "seed" && kvp.Key != "score")
+                    .OrderBy(kvp => kvp.Key)
+                    .Select(kvp => Convert.ToInt32(kvp.Value ?? 0))
+                    .ToList(),
             })
             .ToList();
 

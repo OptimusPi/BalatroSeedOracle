@@ -471,48 +471,74 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // Use FilterConfigurationService to convert ItemConfig to clause
                 // We need to create a simple clause from the itemConfig
-                var clause = new MotelyJsonConfig.MotelyJsonFilterClause
-                {
-                    Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                    Min = itemConfig.Min,
-                };
-
-                // Map ItemType to Motely type
+                var antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
                 var normalizedType = itemConfig.ItemType.ToLower();
+                MotelyJsonConfig.MotelyJsonFilterClause clause;
+
                 switch (normalizedType)
                 {
                     case "joker":
-                        clause.Type = "Joker";
-                        clause.Value = itemConfig.ItemName;
-                        if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
                         {
-                            clause.Edition = itemConfig.Edition;
-                        }
+                            Type = "Joker",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                            Edition =
+                                (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
+                                    ? itemConfig.Edition
+                                    : null,
+                        };
                         break;
 
                     case "souljoker":
-                        clause.Type = "SoulJoker";
-                        clause.Value = itemConfig.ItemName;
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                        {
+                            Type = "SoulJoker",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                        };
                         break;
 
                     case "tarot":
-                        clause.Type = "TarotCard";
-                        clause.Value = itemConfig.ItemName;
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                        {
+                            Type = "TarotCard",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                        };
                         break;
 
                     case "voucher":
-                        clause.Type = "Voucher";
-                        clause.Value = itemConfig.ItemName;
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                        {
+                            Type = "Voucher",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                        };
                         break;
 
                     case "planet":
-                        clause.Type = "PlanetCard";
-                        clause.Value = itemConfig.ItemName;
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                        {
+                            Type = "PlanetCard",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                        };
                         break;
 
                     case "spectral":
-                        clause.Type = "SpectralCard";
-                        clause.Value = itemConfig.ItemName;
+                        clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                        {
+                            Type = "SpectralCard",
+                            Value = itemConfig.ItemName,
+                            Antes = antes,
+                            Min = itemConfig.Min,
+                        };
                         break;
 
                     default:
@@ -540,47 +566,66 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
             );
 
-            var fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
-            {
-                Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-            };
-
             // Map Type from FilterItem directly
+            var fallbackAntes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
             var normalizedItemType = item.Type.ToLower();
+            MotelyJsonConfig.MotelyJsonFilterClause fallbackClause;
             switch (normalizedItemType)
             {
                 case "joker":
-                    fallbackClause.Type = "Joker";
-                    fallbackClause.Value = item.Name;
-                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
                     {
-                        fallbackClause.Edition = item.Edition;
-                    }
+                        Type = "Joker",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                        Edition =
+                            (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none") ? item.Edition : null,
+                    };
                     break;
 
                 case "souljoker":
-                    fallbackClause.Type = "SoulJoker";
-                    fallbackClause.Value = item.Name;
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "SoulJoker",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                    };
                     break;
 
                 case "tarot":
-                    fallbackClause.Type = "TarotCard";
-                    fallbackClause.Value = item.Name;
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "TarotCard",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                    };
                     break;
 
                 case "voucher":
-                    fallbackClause.Type = "Voucher";
-                    fallbackClause.Value = item.Name;
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "Voucher",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                    };
                     break;
 
                 case "planet":
-                    fallbackClause.Type = "PlanetCard";
-                    fallbackClause.Value = item.Name;
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "PlanetCard",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                    };
                     break;
 
                 case "spectral":
-                    fallbackClause.Type = "SpectralCard";
-                    fallbackClause.Value = item.Name;
+                    fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "SpectralCard",
+                        Value = item.Name,
+                        Antes = fallbackAntes,
+                    };
                     break;
 
                 default:

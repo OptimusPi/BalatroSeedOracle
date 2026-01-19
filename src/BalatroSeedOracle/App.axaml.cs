@@ -63,7 +63,9 @@ public partial class App : Application
             if (platformServices != null && !platformServices.SupportsFileSystem)
             {
                 // Test localStorage interop early - fire-and-forget with proper error handling
+#if BROWSER
                 _ = TestLocalStorageInteropAsync();
+#endif
 
                 // Seed browser sample filters (fire-and-forget, best-effort)
                 _ = SeedBrowserSampleFiltersAsync();
@@ -122,6 +124,7 @@ public partial class App : Application
         }
     }
 
+#if BROWSER
     private async Task TestLocalStorageInteropAsync()
     {
         try
@@ -135,6 +138,7 @@ public partial class App : Application
             DebugLogger.LogError("App", $"LocalStorage interop test failed: {ex.Message}");
         }
     }
+#endif
 
     private async Task UniformProgressLoopAsync(
         Services.TransitionService transitionService,

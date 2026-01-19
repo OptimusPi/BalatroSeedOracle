@@ -169,65 +169,104 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(ItemConfig config)
         {
-            var clause = new MotelyJsonConfig.MotelyJsonFilterClause
-            {
-                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min,
-            };
-
-            // Map ItemType to Motely type (preserve capitalization for JSON format)
+            var antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
             var normalizedType = config.ItemType.ToLower();
+
+            MotelyJsonConfig.MotelyJsonFilterClause clause;
             switch (normalizedType)
             {
                 case "joker":
-                    clause.Type = "Joker";
-                    clause.Value = config.ItemName;
-                    if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
                     {
-                        clause.Edition = config.Edition;
-                    }
+                        Type = "Joker",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                        Edition =
+                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none") ? config.Edition : null,
+                    };
                     break;
 
                 case "souljoker":
-                    clause.Type = "SoulJoker";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "SoulJoker",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "tarot":
-                    clause.Type = "TarotCard";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "TarotCard",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "spectral":
-                    clause.Type = "SpectralCard";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "SpectralCard",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "planet":
-                    clause.Type = "PlanetCard";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "PlanetCard",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "voucher":
-                    clause.Type = "Voucher";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "Voucher",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "smallblindtag":
                 case "bigblindtag":
                 case "tag":
-                    clause.Type = config.TagType ?? "SmallBlindTag";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = config.TagType ?? "SmallBlindTag",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "boss":
-                    clause.Type = "Boss";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "Boss",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "playingcard":
-                    clause.Type = "PlayingCard";
-                    clause.Value = config.ItemName;
+                    clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "PlayingCard",
+                        Value = config.ItemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 default:
@@ -245,64 +284,103 @@ namespace BalatroSeedOracle.Services
             ItemConfig config
         )
         {
-            var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
-            {
-                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min,
-            };
-
             var normalizedCategory = category.ToLower();
+            var antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+            MotelyJsonConfig.MotelyJsonFilterClause filterItem;
 
             // Set type and value based on category
             switch (normalizedCategory)
             {
                 case "jokers":
-                    filterItem.Type = "joker";
-                    filterItem.Value = itemName;
-                    if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
                     {
-                        filterItem.Edition = config.Edition;
-                    }
+                        Type = "joker",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                        Edition =
+                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none") ? config.Edition : null,
+                    };
                     break;
 
                 case "souljokers":
-                    filterItem.Type = "souljoker";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "souljoker",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "tarots":
-                    filterItem.Type = "tarotcard";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "tarotcard",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "spectrals":
-                    filterItem.Type = "spectralcard";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "spectralcard",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "planets":
-                    filterItem.Type = "planetcard";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "planetcard",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "vouchers":
-                    filterItem.Type = "voucher";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "voucher",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "tags":
-                    filterItem.Type = config.TagType ?? "smallblindtag";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = config.TagType ?? "smallblindtag",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "bosses":
-                    filterItem.Type = "boss";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "boss",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 case "playingcards":
-                    filterItem.Type = "playingcard";
-                    filterItem.Value = itemName;
+                    filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
+                    {
+                        Type = "playingcard",
+                        Value = itemName,
+                        Antes = antes,
+                        Min = config.Min,
+                    };
                     break;
 
                 default:
