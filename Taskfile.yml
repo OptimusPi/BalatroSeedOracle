@@ -2,6 +2,7 @@ version: '3'
 
 vars:
   BSO_PROJECT: ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
+  DESKTOP_PROJECT: ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
   BROWSER_PROJECT: ./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
   SOLUTION: ./BalatroSeedOracle.sln
 
@@ -127,13 +128,13 @@ tasks:
     desc: Run desktop app (Release - fast)
     silent: true
     cmds:
-      - dotnet run -c Release --project {{.BSO_PROJECT}}
+      - dotnet run -c Release --project {{.DESKTOP_PROJECT}}
 
   run:desktop:debug:
     desc: Run desktop app (Debug - with breakpoints)
     silent: true
     cmds:
-      - dotnet run -c Debug --project {{.BSO_PROJECT}}
+      - dotnet run -c Debug --project {{.DESKTOP_PROJECT}}
 
   run:browser:
     desc: Run browser/WASM app (Debug dev server)
