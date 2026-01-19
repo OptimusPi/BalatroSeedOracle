@@ -1,0 +1,103 @@
+---
+description: "Browser/WASM build constraints and platform limitations"
+globs: *.cs,*.csproj,*.js
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Browser/WASM Constraints Rules
+
+## Build Configuration
+
+From `@src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj`:
+
+```xml
+<WasmEnableSIMD>true</WasmEnableSIMD>        <!-- Always enabled -->
+<WasmEnableThreads>false</WasmEnableThreads> <!-- Opt-in only -->
+<DefineConstants>BROWSER</DefineConstants>
+```
+
+**Threading is opt-in** - requires COOP/COEP headers:
+
+```bash
+# Enable threads for local development
+dotnet publish -c Release -p:EnableWasmThreads=true
+```
+
+Required HTTP headers for threaded WASM:
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Embedder-Policy: require-corp`
+
+**GitHub Pages does NOT support these headers** - threads won't work there.
+
+## JS Interop Locations
+
+| File | Global Object | Purpose |
+|------|--------------|---------|
+| `wwwroot/js/bso-helpers.js` | `window.BSO.*` | localStorage wrapper |
+| `wwwroot/js/duckdb-interop.js` | `window.DuckDB.*` | DuckDB-WASM operations |
+| `wwwroot/js/webaudio-interop.js` | `window.WebAudioManager.*` | Web Audio API |
+
+All in `@src/BalatroSeedOracle.Browser/wwwroot/js/`.
+
+## Browser Platform Capabilities
+
+All return `false` on Browser:
+
+```csharp
+public bool SupportsFileSystem => false;   // Use IAppDataStore instead
+public bool SupportsAudio => false;        // Web Audio via JS, not SoundFlow
+public bool SupportsAnalyzer => false;     // Desktop-only feature
+public bool SupportsResultsGrid => false;  // DataGrid excluded on Browser
+```
+
+## Compile-Time Guards
+
+Use `#if BROWSER` / `#if !BROWSER` for platform-specific code:
+
+```csharp
+// ✅ Good - Entire file excluded on Browser
+#if !BROWSER
+public class SoundFlowAudioManager { ... }
+#endif
+
+// ✅ Good - Conditional field
+#if !BROWSER
+private SearchInstance? _searchInstance;
+#endif
+
+// ✅ Good - Alternative return values
+public bool CanMinimizeToDesktop =>
+#if !BROWSER
+    _searchInstance != null;
+#else
+    false;
+#endif
+```
+
+## Browser Limitations Summary
+
+| Feature | Desktop | Browser |
+|---------|---------|---------|
+| File system | `System.IO.File` | localStorage via JS |
+| Audio | SoundFlow | Web Audio API (limited) |
+| File dialogs | Native | Not available |
+| DuckDB | DuckDB.NET | DuckDB-WASM (in-memory) |
+| stdin | Available | Not available |
+| Results DataGrid | Full support | Hidden |
+
+## localStorage Key Convention
+
+Browser storage uses `bso:` prefix:
+
+```javascript
+// JS interop
+localStorage.setItem('bso:filters/MyFilter.json', jsonContent);
+localStorage.getItem('bso:settings');
+```
+
+## Key Files
+
+- `@src/BalatroSeedOracle.Browser/Services/BrowserPlatformServices.cs`
+- `@src/BalatroSeedOracle.Browser/Services/BrowserLocalStorageAppDataStore.cs`
+- `@src/BalatroSeedOracle.Browser/Services/BrowserDuckDBService.cs`

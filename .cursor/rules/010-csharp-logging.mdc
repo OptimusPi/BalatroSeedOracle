@@ -1,0 +1,43 @@
+---
+description: "Logging conventions using DebugLogger"
+globs: *.cs
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+# C# Logging Rules
+
+## MANDATORY: Use DebugLogger
+
+**ONLY** use these methods for logging:
+
+- `DebugLogger.Log()` - Debug messages
+- `DebugLogger.LogError()` - Error messages  
+- `DebugLogger.LogImportant()` - Important information
+
+Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
+
+## ❌ Forbidden
+
+**NEVER** use `Console.WriteLine()` for debug messages except:
+
+- Inside platform logging implementations (`BrowserPlatformServices`, `DesktopPlatformServices`)
+- As fallback in `DebugLogger.LogInternal()` itself
+
+## ✅ Correct Usage
+
+```csharp
+// Good - Use DebugLogger
+DebugLogger.Log("SearchModal", "Search started");
+DebugLogger.LogError("FilterService", $"Failed to load: {ex.Message}");
+DebugLogger.LogImportant("App", "Configuration loaded successfully");
+
+// Bad - Don't use Console directly
+Console.WriteLine("Search started"); // ❌
+```
+
+## Platform Integration
+
+DebugLogger routes to platform-specific logging via `IPlatformServices.WriteLog()`:
+
+- **Desktop**: `Console.WriteLine()`
+- **Browser**: `System.Console.WriteLine()` with `Debug.WriteLine()` fallback

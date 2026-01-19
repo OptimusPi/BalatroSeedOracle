@@ -1,0 +1,74 @@
+---
+description: "Avalonia MVVM and XAML patterns"
+globs: *.axaml,*.axaml.cs,*ViewModel.cs
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Avalonia MVVM & XAML Rules
+
+## Compiled Bindings (Required)
+
+Always use compiled bindings for performance:
+
+```xml
+<!-- ✅ Good - Compiled bindings -->
+<UserControl x:DataType="vm:MyViewModel"
+             x:CompileBindings="True">
+    <TextBlock Text="{Binding MyProperty}" />
+</UserControl>
+
+<!-- ❌ Bad - Reflection bindings -->
+<TextBlock Text="{Binding MyProperty}" />
+```
+
+## ViewModels
+
+ViewModels must inherit from `ObservableObject` (CommunityToolkit.Mvvm):
+
+```csharp
+// ✅ Good
+public partial class MyViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string _myProperty = string.Empty;
+
+    [RelayCommand]
+    private void DoSomething() { }
+}
+```
+
+## Code-Behind
+
+Keep code-behind minimal - only for:
+
+- Event handlers that can't be commands
+- Direct UI manipulation
+- Platform-specific UI code
+
+Most logic should be in ViewModels.
+
+## UI Thread Marshaling
+
+Marshal UI updates properly:
+
+```csharp
+// ✅ Good - Marshal to UI thread
+Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+{
+    // UI updates here
+    MyProperty = newValue;
+});
+
+// ❌ Bad - Direct update from background thread
+MyProperty = newValue; // Can cause exceptions
+```
+
+## Naming Conventions
+
+- ViewModels: `*ViewModel` suffix
+- Properties: `PascalCase`
+- Private fields: `_camelCase`
+- XAML files: Match View class name with `.axaml` extension
+
+- XAML files: Match View class name with `.axaml` extension

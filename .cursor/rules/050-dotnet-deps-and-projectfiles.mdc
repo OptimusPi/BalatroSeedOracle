@@ -1,0 +1,56 @@
+---
+description: ".NET project files and dependency management"
+globs: *.csproj,*.sln,*.props,*.targets
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# .NET Project Files & Dependencies
+
+## Central Package Management
+
+This project uses **Central Package Management** via `Directory.Packages.props`.
+
+### ❌ Don't Add Inline Versions
+
+```xml
+<!-- ❌ Bad - Don't add Version inline -->
+<PackageReference Include="Avalonia" Version="11.3.10" />
+
+<!-- ✅ Good - Version managed centrally -->
+<PackageReference Include="Avalonia" />
+```
+
+### ✅ Add New Packages to Directory.Packages.props
+
+```xml
+<!-- In Directory.Packages.props -->
+<PackageVersion Include="NewPackage" Version="1.0.0" />
+```
+
+Then reference in csproj:
+
+```xml
+<!-- In *.csproj -->
+<PackageReference Include="NewPackage" />
+```
+
+## Project Structure
+
+- **Solution**: `BalatroSeedOracle.sln` - Main solution file
+- **Core**: `src/BalatroSeedOracle/` - Main application
+- **Platforms**: `src/BalatroSeedOracle.Desktop/`, `src/BalatroSeedOracle.Browser/`, etc.
+
+## dotnet-tools.json
+
+Global tools are defined in `.config/dotnet-tools.json`:
+
+- `avaloniaui.parcel` - Avalonia packaging tool
+
+Use `dotnet tool restore` to install tools.
+
+## Target Framework
+
+All projects target **.NET 10** for latest features and performance.
+
+All projects target **.NET 10** for latest features and performance.
