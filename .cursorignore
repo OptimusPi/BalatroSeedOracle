@@ -16,8 +16,6 @@ x86/
 project.lock.json
 project.fragment.lock.json
 artifacts/
-# External/vendor
-/external/
 
 # Git internals
 .git/
@@ -116,5 +114,9 @@ desktop.ini
 # Package manager lock files
 yarn.lock
 pnpm-lock.yaml
+
+
+# Submodules
+external/
 
 !.local

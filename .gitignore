@@ -58,7 +58,6 @@ nunit-*.xml
 /ouija_configs
 *.local.json
 userprofile.json
-/external/
 /JsonItemFilters/
 /JsonFilters/
 /JamlFilters/
