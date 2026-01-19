@@ -42,10 +42,10 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore Dependencies
-      run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+      run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
 
     - name: Build Browser Version
-      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true
+      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore -p:TargetFramework=net10.0-browser -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true
 
     - name: Optimize for Production
       run: |

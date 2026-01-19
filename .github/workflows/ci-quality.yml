@@ -61,19 +61,19 @@ jobs:
 
     - name: Restore Dependencies
       run: |
-        dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj
+        dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj /p:TargetFramework=net10.0
         dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
-        dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+        dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
 
     - name: Build Core Library
-      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore
+      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore /p:TargetFramework=net10.0
 
     - name: Build Desktop
       run: dotnet build src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj -c Release --no-restore
 
     - name: Publish Browser (Windows only)
       if: matrix.build-browser
-      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore
+      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore /p:TargetFramework=net10.0-browser
 
   test:
     name: Test
