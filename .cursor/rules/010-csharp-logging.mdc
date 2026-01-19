@@ -10,9 +10,10 @@ lastReviewed: 2026-01-19
 
 **ONLY** use these methods for logging:
 
-- `DebugLogger.Log()` - Debug messages
-- `DebugLogger.LogError()` - Error messages  
-- `DebugLogger.LogImportant()` - Important information
+- `DebugLogger.Log()` - Debug-level messages (filtered by log level)
+- `DebugLogger.LogError()` - Error messages (always logged in production)
+- `DebugLogger.LogWarning()` - Warning messages (logged by default in production)
+- `DebugLogger.LogImportant()` - Important operational information
 
 Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
 
@@ -26,18 +27,48 @@ Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
 ## ✅ Correct Usage
 
 ```csharp
-// Good - Use DebugLogger
-DebugLogger.Log("SearchModal", "Search started");
-DebugLogger.LogError("FilterService", $"Failed to load: {ex.Message}");
-DebugLogger.LogImportant("App", "Configuration loaded successfully");
+// Good - Use DebugLogger with appropriate levels
+DebugLogger.Log("SearchModal", "Search started");                    // Debug level
+DebugLogger.LogWarning("FilterService", "Filter not found");          // Warning level
+DebugLogger.LogError("FilterService", $"Failed to load: {ex.Message}"); // Error level
+DebugLogger.LogImportant("App", "Configuration loaded successfully"); // Important level
 
 // Bad - Don't use Console directly
 Console.WriteLine("Search started"); // ❌
 ```
 
+## Log Levels (Production-Capable)
+
+BSO uses runtime-configurable log levels that work in both Debug and Release builds:
+
+- **Error** (0) - Critical errors, always logged
+- **Warning** (1) - Warnings about potential issues (default in Release)
+- **Important** (2) - Important operational information
+- **Debug** (3) - Debug-level diagnostics (default in Debug builds)
+- **Verbose** (4) - Verbose/trace-level information
+
+### Configuration
+
+Set log level via environment variable or CLI:
+
+```bash
+# Environment variable
+export BSO_LOG_LEVEL=debug
+./BalatroSeedOracle
+
+# CLI argument
+./BalatroSeedOracle --log-level=warning
+```
+
+Valid values: `error`, `warning`, `important`, `debug`, `verbose`
+
+**Default behavior:**
+- Debug builds: `Debug` level (shows all logs)
+- Release builds: `Warning` level (errors + warnings only)
+
 ## Platform Integration
 
-DebugLogger routes to platform-specific logging via `IPlatformServices.WriteLog()`:
+DebugLogger routes to platform-specific logging via `IPlatformServices`:
 
-- **Desktop**: `Console.WriteLine()`
+- **Desktop**: `Console.WriteLine()` for Error/Warning/Important, `Debug.WriteLine()` for Debug/Verbose
 - **Browser**: `System.Console.WriteLine()` with `Debug.WriteLine()` fallback

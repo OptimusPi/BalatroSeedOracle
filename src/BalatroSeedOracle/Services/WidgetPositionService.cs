@@ -73,12 +73,10 @@ namespace BalatroSeedOracle.Services
                     && y + widgetHeight > zoneY
                 )
                 {
-#if DEBUG
                     DebugLogger.Log(
                         "WidgetPositionService",
                         $"Widget blocked by dynamic exclusion zone at ({x}, {y}) - zone: ({zoneX}, {zoneY}, {zoneWidth}x{zoneHeight})"
                     );
-#endif
                     return true; // Widget overlaps with exclusion zone
                 }
             }
@@ -449,12 +447,10 @@ namespace BalatroSeedOracle.Services
                         gridY = nearestPosition.Y;
                     }
 
-#if DEBUG
                     DebugLogger.Log(
                         "WidgetPosition",
                         $"Window resize: Moving widget from ({currentX}, {currentY}) to ({gridX}, {gridY}) - Safe Y range: {minSafeY}-{maxSafeY}"
                     );
-#endif
                     // Immediately update the widget's position and our tracking
                     widget.PositionX = gridX;
                     widget.PositionY = gridY;

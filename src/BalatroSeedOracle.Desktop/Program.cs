@@ -23,8 +23,8 @@ public class Program
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-            // Enable debug logging
-            DebugLogger.SetDebugEnabled(true);
+            // Configure logging level from environment variable or CLI args
+            ConfigureLogging(args);
 
             // Register Desktop-specific services
             PlatformServices.RegisterServices = services =>
@@ -32,11 +32,16 @@ public class Program
                 // Platform-specific implementations
                 services.AddSingleton<IAppDataStore, Desktop.Services.DesktopAppDataStore>();
                 services.AddSingleton<IDuckDBService, Desktop.Services.DesktopDuckDBService>();
-                services.AddSingleton<IPlatformServices, Desktop.Services.DesktopPlatformServices>();
+                services.AddSingleton<
+                    IPlatformServices,
+                    Desktop.Services.DesktopPlatformServices
+                >();
 
                 // Desktop-only services
                 services.AddSingleton<SoundFlowAudioManager>();
-                services.AddSingleton<IAudioManager>(sp => sp.GetRequiredService<SoundFlowAudioManager>());
+                services.AddSingleton<IAudioManager>(sp =>
+                    sp.GetRequiredService<SoundFlowAudioManager>()
+                );
                 services.AddSingleton<SoundEffectsService>();
 
                 // API host
@@ -117,7 +122,10 @@ public class Program
         }
     }
 
-    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    private static void OnUnobservedTaskException(
+        object? sender,
+        UnobservedTaskExceptionEventArgs e
+    )
     {
         var crashLog = GetCrashLogPath();
 
@@ -127,7 +135,10 @@ public class Program
             + $"Message: {e.Exception.Message}\n"
             + $"Stack Trace:\n{e.Exception.StackTrace}\n\n";
 
-        DebugLogger.LogError("UNOBSERVED_TASK", $"Unobserved task exception: {e.Exception.Message}");
+        DebugLogger.LogError(
+            "UNOBSERVED_TASK",
+            $"Unobserved task exception: {e.Exception.Message}"
+        );
 
         try
         {
@@ -140,6 +151,85 @@ public class Program
         }
 
         e.SetObserved();
+    }
+
+    private static void ConfigureLogging(string[] args)
+    {
+        // Default log level based on build configuration
+#if DEBUG
+        var defaultLevel = BsoLogLevel.Debug; // Debug builds: show debug logs
+#else
+        var defaultLevel = BsoLogLevel.Warning; // Release builds: errors + warnings only
+#endif
+
+        var logLevel = defaultLevel;
+
+        // Check environment variable first
+        var envLogLevel = Environment.GetEnvironmentVariable("BSO_LOG_LEVEL");
+        if (!string.IsNullOrEmpty(envLogLevel))
+        {
+            if (TryParseLogLevel(envLogLevel, out var parsedLevel))
+            {
+                logLevel = parsedLevel;
+            }
+            else
+            {
+                Console.Error.WriteLine(
+                    $"Warning: Invalid BSO_LOG_LEVEL value '{envLogLevel}'. Using default: {defaultLevel}"
+                );
+            }
+        }
+
+        // Check CLI args (overrides environment variable)
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("--log-level=", StringComparison.OrdinalIgnoreCase))
+            {
+                var value = args[i].Substring("--log-level=".Length);
+                if (TryParseLogLevel(value, out var parsedLevel))
+                {
+                    logLevel = parsedLevel;
+                }
+                else
+                {
+                    Console.Error.WriteLine(
+                        $"Warning: Invalid --log-level value '{value}'. Using default: {defaultLevel}"
+                    );
+                }
+                break;
+            }
+        }
+
+        DebugLogger.SetMinimumLevel(logLevel);
+        Console.WriteLine($"BSO Logging configured: {logLevel}");
+    }
+
+    private static bool TryParseLogLevel(string value, out BsoLogLevel level)
+    {
+        switch (value.ToLowerInvariant())
+        {
+            case "error":
+                level = BsoLogLevel.Error;
+                return true;
+            case "warning":
+            case "warn":
+                level = BsoLogLevel.Warning;
+                return true;
+            case "important":
+            case "info":
+                level = BsoLogLevel.Important;
+                return true;
+            case "debug":
+                level = BsoLogLevel.Debug;
+                return true;
+            case "verbose":
+            case "trace":
+                level = BsoLogLevel.Verbose;
+                return true;
+            default:
+                level = BsoLogLevel.Warning;
+                return false;
+        }
     }
 
     private static string GetCrashLogPath()
@@ -158,5 +248,6 @@ public class Program
         }
     }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }

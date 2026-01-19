@@ -102,9 +102,7 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
-#if DEBUG
                 DebugLogger.Log(WidgetTitle, $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})");
-#endif
                 return zIndex;
             }
         }

@@ -10,9 +10,10 @@ description: Implements logging using DebugLogger following project conventions.
 **ONLY** use these methods for logging:
 
 ```csharp
-DebugLogger.Log("Category", "Message");           // Debug messages
-DebugLogger.LogError("Category", "Error message"); // Error messages
-DebugLogger.LogImportant("Category", "Important"); // Important info (verbose)
+DebugLogger.Log("Category", "Message");              // Debug-level messages
+DebugLogger.LogWarning("Category", "Warning");       // Warning messages
+DebugLogger.LogError("Category", "Error message");   // Error messages
+DebugLogger.LogImportant("Category", "Important");   // Important info
 ```
 
 Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
@@ -29,20 +30,30 @@ Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
 Console.WriteLine("Search started");
 System.Diagnostics.Debug.WriteLine("Debug info");
 
-// ✅ Good - Use DebugLogger
+// ✅ Good - Use DebugLogger with appropriate level
 DebugLogger.Log("SearchModal", "Search started");
+DebugLogger.LogWarning("SearchModal", "No results found");
+DebugLogger.LogError("SearchModal", "Search failed");
 ```
 
 ## Usage Patterns
 
-### Standard Logging
+### Standard Debug Logging
 
 ```csharp
 DebugLogger.Log("MyViewModel", "Operation started");
 DebugLogger.Log("MyService", $"Processing {count} items");
 ```
 
-### Error Logging
+### Warning Logging (NEW - Production-Visible)
+
+```csharp
+// Warnings are logged by default in Release builds
+DebugLogger.LogWarning("MyService", "Configuration missing, using defaults");
+DebugLogger.LogWarning("MyViewModel", $"Unexpected state: {state}");
+```
+
+### Error Logging (Production-Visible)
 
 ```csharp
 try
@@ -56,11 +67,12 @@ catch (Exception ex)
 }
 ```
 
-### Important/Verbose Logging
+### Important/Operational Logging
 
 ```csharp
-// Only shown when verbose logging is enabled
+// Important operational information
 DebugLogger.LogImportant("FilterService", $"Loaded {filters.Count} filters");
+DebugLogger.LogImportant("App", "Initialization complete");
 ```
 
 ### Format Logging
@@ -83,24 +95,59 @@ public class SearchModalViewModel
 }
 ```
 
-## How It Works
+## Log Levels (Production-Capable)
 
-DebugLogger routes output through `IPlatformServices.WriteLog()`:
+BSO uses runtime-configurable log levels that work in **both Debug and Release builds**:
 
-- **Desktop**: `Console.WriteLine()`
-- **Browser**: `System.Console.WriteLine()` with `Debug.WriteLine()` fallback
+- **Error** (0) - Critical errors, always logged
+- **Warning** (1) - Warnings about potential issues (default in Release)
+- **Important** (2) - Important operational information
+- **Debug** (3) - Debug-level diagnostics (default in Debug builds)
+- **Verbose** (4) - Verbose/trace-level information
 
-Logging is only active in DEBUG builds when enabled:
+### Configuration
+
+Set log level via environment variable or CLI:
+
+```bash
+# Environment variable
+export BSO_LOG_LEVEL=debug
+./BalatroSeedOracle
+
+# CLI argument
+./BalatroSeedOracle --log-level=warning
+```
+
+Valid values: `error`, `warning`, `important`, `debug`, `verbose`
+
+**Default behavior:**
+- Debug builds: `Debug` level (shows all logs)
+- Release builds: `Warning` level (errors + warnings only)
+
+### Programmatic Configuration
 
 ```csharp
-// In App.axaml.cs or startup
-DebugLogger.SetDebugEnabled(true);    // Enable debug logging
-DebugLogger.SetVerboseEnabled(true);  // Enable verbose/important logging
+// In Program.cs or startup code
+DebugLogger.SetMinimumLevel(BsoLogLevel.Warning);  // Set minimum level
+
+// Legacy methods (deprecated but still work)
+DebugLogger.SetDebugEnabled(true);    // Maps to Debug level
+DebugLogger.SetVerboseEnabled(true);  // Maps to Verbose level
 ```
+
+## How It Works
+
+DebugLogger routes output through `IPlatformServices`:
+
+- **Desktop**: `Console.WriteLine()` for Error/Warning/Important, `Debug.WriteLine()` for Debug/Verbose
+- **Browser**: `System.Console.WriteLine()` with `Debug.WriteLine()` fallback
+
+**Production-capable:** Logging works in Release builds with runtime filtering (not compiled out).
 
 ## Checklist
 
-- [ ] Used `DebugLogger.Log/LogError/LogImportant` (not Console)
+- [ ] Used `DebugLogger.Log/LogWarning/LogError/LogImportant` (not Console)
 - [ ] Category matches class name
 - [ ] Error messages include exception details (`ex.Message`)
 - [ ] No sensitive data in log messages
+- [ ] Used appropriate log level (Error for errors, Warning for warnings, etc.)

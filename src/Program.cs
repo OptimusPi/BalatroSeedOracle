@@ -22,8 +22,8 @@ public class Program
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-            // Debug logging disabled by default for AI compatibility
-            // Helpers.DebugLogger.SetDebugEnabled(true);
+            // Configure logging level from environment variable or CLI args
+            ConfigureLogging(args);
 
             // Start Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -110,7 +110,10 @@ public class Program
     /// <summary>
     /// Handles unobserved Task exceptions (fire-and-forget tasks that throw)
     /// </summary>
-    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    private static void OnUnobservedTaskException(
+        object? sender,
+        UnobservedTaskExceptionEventArgs e
+    )
     {
         var crashLog = GetCrashLogPath();
 
@@ -121,7 +124,10 @@ public class Program
             + $"Stack Trace:\n{e.Exception.StackTrace}\n\n";
 
         // Log to debug logger
-        Helpers.DebugLogger.LogError("UNOBSERVED_TASK", $"Unobserved task exception: {e.Exception.Message}");
+        Helpers.DebugLogger.LogError(
+            "UNOBSERVED_TASK",
+            $"Unobserved task exception: {e.Exception.Message}"
+        );
 
         // Write to crash log
         try
@@ -137,6 +143,85 @@ public class Program
         // Mark as observed to prevent app crash
         // This allows the app to continue running, but we've logged the error
         e.SetObserved();
+    }
+
+    private static void ConfigureLogging(string[] args)
+    {
+        // Default log level based on build configuration
+#if DEBUG
+        var defaultLevel = Helpers.BsoLogLevel.Debug; // Debug builds: show debug logs
+#else
+        var defaultLevel = Helpers.BsoLogLevel.Warning; // Release builds: errors + warnings only
+#endif
+
+        var logLevel = defaultLevel;
+
+        // Check environment variable first
+        var envLogLevel = Environment.GetEnvironmentVariable("BSO_LOG_LEVEL");
+        if (!string.IsNullOrEmpty(envLogLevel))
+        {
+            if (TryParseLogLevel(envLogLevel, out var parsedLevel))
+            {
+                logLevel = parsedLevel;
+            }
+            else
+            {
+                Console.Error.WriteLine(
+                    $"Warning: Invalid BSO_LOG_LEVEL value '{envLogLevel}'. Using default: {defaultLevel}"
+                );
+            }
+        }
+
+        // Check CLI args (overrides environment variable)
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("--log-level=", StringComparison.OrdinalIgnoreCase))
+            {
+                var value = args[i].Substring("--log-level=".Length);
+                if (TryParseLogLevel(value, out var parsedLevel))
+                {
+                    logLevel = parsedLevel;
+                }
+                else
+                {
+                    Console.Error.WriteLine(
+                        $"Warning: Invalid --log-level value '{value}'. Using default: {defaultLevel}"
+                    );
+                }
+                break;
+            }
+        }
+
+        Helpers.DebugLogger.SetMinimumLevel(logLevel);
+        Console.WriteLine($"BSO Logging configured: {logLevel}");
+    }
+
+    private static bool TryParseLogLevel(string value, out Helpers.BsoLogLevel level)
+    {
+        switch (value.ToLowerInvariant())
+        {
+            case "error":
+                level = Helpers.BsoLogLevel.Error;
+                return true;
+            case "warning":
+            case "warn":
+                level = Helpers.BsoLogLevel.Warning;
+                return true;
+            case "important":
+            case "info":
+                level = Helpers.BsoLogLevel.Important;
+                return true;
+            case "debug":
+                level = Helpers.BsoLogLevel.Debug;
+                return true;
+            case "verbose":
+            case "trace":
+                level = Helpers.BsoLogLevel.Verbose;
+                return true;
+            default:
+                level = Helpers.BsoLogLevel.Warning;
+                return false;
+        }
     }
 
     /// <summary>
@@ -158,5 +243,6 @@ public class Program
     }
 
     // Avalonia configuration, this method is called by the platform-specific entry points
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }
