@@ -57,16 +57,15 @@ nunit-*.xml
 /SearchResults
 /ouija_configs
 *.local.json
-WordLists/sick.txt
-WordLists/nsfw.txt
 userprofile.json
-/external/*
-/JsonItemFilters/*
-/JsonFilters/*
-/JamlFilters/*
+/external/
+/JsonItemFilters/
+/JsonFilters/
+/JamlFilters/
 *.csv
 /.claude
 /.specify
+/.cursor/commands/*.md
 nul
 *.log
 
@@ -82,10 +81,9 @@ avalonia.license
 fertilizer.db
 fertilizer.db.wal
 /.trae
-/JsonItemFilters
 /publish-browser
 /WordLists
 build_log.txt
 /published_browser
 /src/BalatroSeedOracle.Browser/Motely.API/wwwroot/BSO
-*.md
+.local

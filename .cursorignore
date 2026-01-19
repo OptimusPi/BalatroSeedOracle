@@ -16,6 +16,8 @@ x86/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+# External/vendor
+/external/
 
 # Test results
 [Tt]est[Rr]esult*/
@@ -40,8 +42,6 @@ packages/
 *.so
 *.dylib
 *.db
-!external/Motely/Motely.DB/
-!external/Motely/Motely.DB/**
 *.apk
 *.aab
 *.ipa
@@ -70,3 +70,5 @@ WordLists/
 *.runtimeconfig.json
 *.deps.json
 *.assets.json
+
+!.local
