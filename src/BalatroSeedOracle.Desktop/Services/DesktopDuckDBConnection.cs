@@ -56,7 +56,10 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         return (T)Convert.ChangeType(result, typeof(T));
     }
 
-    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(string sql, Func<IDuckDBDataReader, T> mapper)
+    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(
+        string sql,
+        Func<IDuckDBDataReader, T> mapper
+    )
     {
         EnsureOpen();
         var results = new List<T>();
@@ -110,12 +113,20 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         return Task.CompletedTask;
     }
 
-    public Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null)
+    public Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    )
     {
         EnsureOpen();
         // Use Motely's helper - no SQL in BSO!
         // Note: Motely's GetAllSeeds only takes 3 args (connection, tableName, seedColumnName) and always orders by seed
-        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName);
+        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(
+            _connection,
+            tableName,
+            seedColumnName
+        );
         return Task.FromResult(seeds);
     }
 
@@ -157,10 +168,10 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         // Note: Filters (minScore, deck, stake) would need to be added to Motely's helper
         // For now, get all results and filter in memory (not ideal, but no SQL in BSO)
         var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(
-            _connection, 
-            offset: 0, 
-            limit: limit, 
-            orderBy: "score", 
+            _connection,
+            offset: 0,
+            limit: limit,
+            orderBy: "score",
             ascending: false
         );
 
@@ -185,7 +196,11 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         return Task.FromResult(results);
     }
 
-    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(string tableName, string idColumn, int id)
+    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(
+        string tableName,
+        string idColumn,
+        int id
+    )
     {
         EnsureOpen();
         // Use SQL here (infrastructure layer) - but this should be moved to Motely
@@ -205,7 +220,11 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         return results.FirstOrDefault();
     }
 
-    public async Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn)
+    public async Task UpsertRowAsync(
+        string tableName,
+        Dictionary<string, object?> values,
+        string keyColumn
+    )
     {
         EnsureOpen();
         // Build INSERT OR REPLACE - this is infrastructure layer, not business logic
@@ -220,7 +239,10 @@ public class DesktopDuckDBConnection : IDuckDBConnection
                     : kvp.Value.ToString()
             )
         );
-        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}"));
+        var updates = string.Join(
+            ", ",
+            values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}")
+        );
 
         var sql =
             $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) "

@@ -75,7 +75,9 @@ namespace BalatroSeedOracle.Services
             LoadAssets();
         }
 
-        public async Task PreloadAllSpritesAsync(IProgress<(string category, int current, int total)>? progress = null)
+        public async Task PreloadAllSpritesAsync(
+            IProgress<(string category, int current, int total)>? progress = null
+        )
         {
             if (_spritesPreloaded)
             {
@@ -118,7 +120,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error during sprite pre-load: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error during sprite pre-load: {ex.Message}"
+                );
             }
         }
 
@@ -145,7 +150,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload joker {jokers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload joker {jokers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -173,7 +181,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload tag {tags[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload tag {tags[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -201,12 +212,17 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload tarot {tarots[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload tarot {tarots[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
-        private void PreloadSpectrals(IProgress<(string category, int current, int total)>? progress)
+        private void PreloadSpectrals(
+            IProgress<(string category, int current, int total)>? progress
+        )
         {
             if (spectralPositions == null || spectralSheet == null)
                 return;
@@ -229,7 +245,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload spectral {spectrals[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload spectral {spectrals[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -257,7 +276,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload planet {planets[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload planet {planets[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -285,7 +307,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload voucher {vouchers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload voucher {vouchers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -313,7 +338,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload deck {decks[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload deck {decks[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -341,7 +369,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload stake {stakes[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload stake {stakes[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -369,7 +400,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload boss {bosses[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload boss {bosses[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -397,7 +431,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload blind {blinds[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload blind {blinds[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -425,7 +462,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload sticker {stickers[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload sticker {stickers[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -453,7 +493,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload booster {boosters[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload booster {boosters[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -478,12 +521,17 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload edition {editions[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload edition {editions[i]}: {ex.Message}"
+                    );
                 }
             }
         }
 
-        private void PreloadEnhancements(IProgress<(string category, int current, int total)>? progress)
+        private void PreloadEnhancements(
+            IProgress<(string category, int current, int total)>? progress
+        )
         {
             if (enhancementPositions == null || enhancersSheet == null)
                 return;
@@ -537,7 +585,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SpriteService", $"Failed to preload seal {seals[i]}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SpriteService",
+                        $"Failed to preload seal {seals[i]}: {ex.Message}"
+                    );
                 }
             }
         }
@@ -546,7 +597,9 @@ namespace BalatroSeedOracle.Services
         /// Precomputes all common composite images (Joker + Edition/Debuff combinations)
         /// to eliminate lag when opening the filters modal
         /// </summary>
-        private void PreloadComposites(IProgress<(string category, int current, int total)>? progress)
+        private void PreloadComposites(
+            IProgress<(string category, int current, int total)>? progress
+        )
         {
             DebugLogger.Log("SpriteService", "Precomputing composite images...");
             var startTime = DateTime.Now;
@@ -563,7 +616,8 @@ namespace BalatroSeedOracle.Services
                 {
                     try
                     {
-                        var key = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+                        var key =
+                            $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
                         if (!_precomputedComposites.ContainsKey(key))
                         {
                             var composite = GetJokerWithEditionImage(edition, debuff);
@@ -598,7 +652,9 @@ namespace BalatroSeedOracle.Services
             try
             {
                 // Load joker positions from json
-                jokerPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Jokers/jokers.json");
+                jokerPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
+                );
 
                 // Load negative joker positions from json
                 jokerNegativePositions = LoadSpritePositions(
@@ -606,29 +662,43 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Load tag positions from json
-                tagPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tags/tags.json");
+                tagPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Tags/tags.json"
+                );
 
                 // Load tarot positions from json
-                tarotPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/tarots.json");
+                tarotPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Tarots/tarots.json"
+                );
 
                 // Load spectral positions from json
                 // Load spectral positions from json (they're in the tarots sprite sheet)
-                spectralPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/spectrals.json");
+                spectralPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Tarots/spectrals.json"
+                );
 
                 // Load planet positions from json (they're also in the tarots sprite sheet)
                 // NOTE: Planet X, Ceres, and Eris positions are defined at (0,6), (1,6), (2,6)
                 // but the Tarots.png sprite sheet needs to be expanded from 710x570 to 710x665 pixels
                 // and have sprites added for these three planets at row 6.
-                planetPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Tarots/planets.json");
+                planetPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Tarots/planets.json"
+                );
 
                 // Load voucher positions from json
-                voucherPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json");
+                voucherPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json"
+                );
 
                 // Load stake positions from json
-                stakePositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Decks/stakes.json");
+                stakePositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Decks/stakes.json"
+                );
 
                 // Load booster pack positions from json
-                boosterPositions = LoadSpritePositions("avares://BalatroSeedOracle/Assets/Other/Boosters.json");
+                boosterPositions = LoadSpritePositions(
+                    "avares://BalatroSeedOracle/Assets/Other/Boosters.json"
+                );
 
                 // Load deck, enhancement, and seal positions from enhancers metadata
                 var enhancersMetadata = LoadEnhancersMetadata(
@@ -648,7 +718,9 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Load boss blind positions
-                var bossMetadata = LoadBossMetadata("avares://BalatroSeedOracle/Assets/Bosses/blinds_metadata.json");
+                var bossMetadata = LoadBossMetadata(
+                    "avares://BalatroSeedOracle/Assets/Bosses/blinds_metadata.json"
+                );
                 if (bossMetadata != null)
                 {
                     blindPositions = bossMetadata.Blinds;
@@ -693,16 +765,26 @@ namespace BalatroSeedOracle.Services
 
                 // Load spritesheets
                 jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
-                jokerNegativeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png");
+                jokerNegativeSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png"
+                );
                 tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
                 tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
-                voucherSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png");
+                voucherSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png"
+                );
                 spectralSheet = tarotSheet;
 
-                stakeSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png");
-                enhancersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/Enhancers.png");
+                stakeSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png"
+                );
+                enhancersSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Decks/Enhancers.png"
+                );
                 deckSheet = enhancersSheet;
-                playingCardsSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png");
+                playingCardsSheet = LoadBitmap(
+                    "avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png"
+                );
                 bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
                 stickersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/stickers.png");
                 boosterSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/boosters.png");
@@ -722,7 +804,8 @@ namespace BalatroSeedOracle.Services
                 enhancementPositions ??= new Dictionary<string, SpritePosition>();
                 sealPositions ??= new Dictionary<string, SpritePosition>();
                 specialPositions ??= new Dictionary<string, SpritePosition>();
-                playingCardPositions ??= new Dictionary<string, Dictionary<string, SpritePosition>>();
+                playingCardPositions ??=
+                    new Dictionary<string, Dictionary<string, SpritePosition>>();
                 bossPositions ??= new Dictionary<string, SpritePosition>();
                 blindPositions ??= new Dictionary<string, SpritePosition>();
                 stickerPositions ??= new Dictionary<string, SpritePosition>();
@@ -784,7 +867,10 @@ namespace BalatroSeedOracle.Services
 
                 foreach (var cat in categories)
                 {
-                    if (!spritesObj.TryGetProperty(cat, out var dictObj) || dictObj.ValueKind != JsonValueKind.Object)
+                    if (
+                        !spritesObj.TryGetProperty(cat, out var dictObj)
+                        || dictObj.ValueKind != JsonValueKind.Object
+                    )
                         continue;
 
                     foreach (var kv in dictObj.EnumerateObject())
@@ -810,7 +896,11 @@ namespace BalatroSeedOracle.Services
                             // For stakes, add a simplified alias without "stake" (e.g., "white" -> "whitestake")
                             if (cat.Equals("stakes", StringComparison.OrdinalIgnoreCase))
                             {
-                                var simple = normalizedKey.Replace("stake", string.Empty, StringComparison.Ordinal);
+                                var simple = normalizedKey.Replace(
+                                    "stake",
+                                    string.Empty,
+                                    StringComparison.Ordinal
+                                );
                                 if (!string.IsNullOrEmpty(simple) && !positions.ContainsKey(simple))
                                 {
                                     positions[simple] = pos;
@@ -824,7 +914,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error loading sprite positions from {jsonUri}: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading sprite positions from {jsonUri}: {ex.Message}"
+                );
                 return new Dictionary<string, SpritePosition>();
             }
         }
@@ -838,7 +931,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error loading bitmap from {bitmapUri}: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading bitmap from {bitmapUri}: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -865,14 +961,19 @@ namespace BalatroSeedOracle.Services
             // Expected format: avares://Assembly/Assets/Path/to/file
             try
             {
-                var parts = avaresUri.Split(new[] { "avares://" }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = avaresUri.Split(
+                    new[] { "avares://" },
+                    StringSplitOptions.RemoveEmptyEntries
+                );
                 string relativePath = parts.Length > 0 ? parts[0] : avaresUri;
 
                 // If the relativePath contains a leading assembly name (e.g. BalatroSeedOracle/Assets/...), remove it
                 var idx = relativePath.IndexOf('/');
                 if (idx >= 0)
                 {
-                    relativePath = relativePath.Substring(idx + 1).Replace('/', Path.DirectorySeparatorChar);
+                    relativePath = relativePath
+                        .Substring(idx + 1)
+                        .Replace('/', Path.DirectorySeparatorChar);
                 }
 
                 // Try current directory and up to 5 parent directories to find Assets
@@ -916,7 +1017,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Filesystem fallback failed for '{avaresUri}': {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Filesystem fallback failed for '{avaresUri}': {ex.Message}"
+                );
             }
 
             throw new FileNotFoundException($"Asset not found: {avaresUri}");
@@ -969,7 +1073,10 @@ namespace BalatroSeedOracle.Services
             {
                 int x = pos.Pos.X * spriteWidth;
                 int y = pos.Pos.Y * spriteHeight;
-                var cropped = new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                var cropped = new CroppedBitmap(
+                    spriteSheet,
+                    new PixelRect(x, y, spriteWidth, spriteHeight)
+                );
                 return cropped;
             }
             else
@@ -982,7 +1089,10 @@ namespace BalatroSeedOracle.Services
                     {
                         int x = stakePos.Pos.X * spriteWidth;
                         int y = stakePos.Pos.Y * spriteHeight;
-                        return new CroppedBitmap(spriteSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                        return new CroppedBitmap(
+                            spriteSheet,
+                            new PixelRect(x, y, spriteWidth, spriteHeight)
+                        );
                     }
                 }
 
@@ -991,7 +1101,10 @@ namespace BalatroSeedOracle.Services
                     ", ",
                     positions
                         .Keys.Where(k =>
-                            k.Contains(name.Substring(0, Math.Min(3, name.Length)), StringComparison.OrdinalIgnoreCase)
+                            k.Contains(
+                                name.Substring(0, Math.Min(3, name.Length)),
+                                StringComparison.OrdinalIgnoreCase
+                            )
                         )
                         .Take(5)
                 );
@@ -1017,11 +1130,19 @@ namespace BalatroSeedOracle.Services
             }
 
             // Use negative sprite sheet for Negative edition
-            var isNegative = edition?.Equals("negative", StringComparison.OrdinalIgnoreCase) == true;
+            var isNegative =
+                edition?.Equals("negative", StringComparison.OrdinalIgnoreCase) == true;
             var positions = isNegative ? jokerNegativePositions : jokerPositions;
             var sheet = isNegative ? jokerNegativeSheet : jokerSheet;
 
-            var baseImage = GetSpriteImage(name, positions, sheet, spriteWidth, spriteHeight, "joker");
+            var baseImage = GetSpriteImage(
+                name,
+                positions,
+                sheet,
+                spriteWidth,
+                spriteHeight,
+                "joker"
+            );
 
             if (baseImage == null)
                 return null;
@@ -1075,7 +1196,10 @@ namespace BalatroSeedOracle.Services
                 return jokerImage;
 
             // Create a composite with stickers
-            var renderTarget = new RenderTargetBitmap(new PixelSize(spriteWidth, spriteHeight), new Vector(96, 96));
+            var renderTarget = new RenderTargetBitmap(
+                new PixelSize(spriteWidth, spriteHeight),
+                new Vector(96, 96)
+            );
             using (var context = renderTarget.CreateDrawingContext())
             {
                 // Draw the base joker
@@ -1110,7 +1234,11 @@ namespace BalatroSeedOracle.Services
             var name = NormalizeSpriteName(name_in);
 
             // For legendary jokers, the soul is one row below (y+1)
-            if (jokerPositions == null || jokerSheet == null || !jokerPositions.TryGetValue(name, out var basePos))
+            if (
+                jokerPositions == null
+                || jokerSheet == null
+                || !jokerPositions.TryGetValue(name, out var basePos)
+            )
             {
                 return null;
             }
@@ -1136,7 +1264,10 @@ namespace BalatroSeedOracle.Services
                     "GetJokerSoulImage",
                     $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}"
                 );
-                return new CroppedBitmap(jokerSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                return new CroppedBitmap(
+                    jokerSheet,
+                    new PixelRect(x, y, spriteWidth, spriteHeight)
+                );
             }
 
             BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
@@ -1154,7 +1285,14 @@ namespace BalatroSeedOracle.Services
             int spriteHeight = UIConstants.SpectralSpriteHeight
         )
         {
-            return GetSpriteImage("TheSoulGem", specialPositions, enhancersSheet, spriteWidth, spriteHeight, "special");
+            return GetSpriteImage(
+                "TheSoulGem",
+                specialPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "special"
+            );
         }
 
         /// <summary>
@@ -1199,7 +1337,14 @@ namespace BalatroSeedOracle.Services
                 name = "anytarot";
             }
 
-            return GetSpriteImage(name, tarotPositions, tarotSheet, spriteWidth, spriteHeight, "tarot");
+            return GetSpriteImage(
+                name,
+                tarotPositions,
+                tarotSheet,
+                spriteWidth,
+                spriteHeight,
+                "tarot"
+            );
         }
 
         public IImage? GetSpectralImage(
@@ -1216,7 +1361,14 @@ namespace BalatroSeedOracle.Services
                 name = "anyspectral";
             }
 
-            return GetSpriteImage(name, spectralPositions, spectralSheet, spriteWidth, spriteHeight, "spectral");
+            return GetSpriteImage(
+                name,
+                spectralPositions,
+                spectralSheet,
+                spriteWidth,
+                spriteHeight,
+                "spectral"
+            );
         }
 
         public IImage? GetPlanetCardImage(
@@ -1234,7 +1386,14 @@ namespace BalatroSeedOracle.Services
             }
 
             // Planet cards are in the tarots sprite sheet
-            return GetSpriteImage(name, planetPositions, tarotSheet, spriteWidth, spriteHeight, "planet");
+            return GetSpriteImage(
+                name,
+                planetPositions,
+                tarotSheet,
+                spriteWidth,
+                spriteHeight,
+                "planet"
+            );
         }
 
         public IImage? GetVoucherImage(
@@ -1244,7 +1403,14 @@ namespace BalatroSeedOracle.Services
         )
         {
             ArgumentNullException.ThrowIfNull(name);
-            return GetSpriteImage(name, voucherPositions, voucherSheet, spriteWidth, spriteHeight, "voucher");
+            return GetSpriteImage(
+                name,
+                voucherPositions,
+                voucherSheet,
+                spriteWidth,
+                spriteHeight,
+                "voucher"
+            );
         }
 
         /// <summary>
@@ -1301,7 +1467,10 @@ namespace BalatroSeedOracle.Services
                     "stake" or "stakes" => GetStakeImage(name),
                     "enhancement" or "enhancements" => GetEnhancementImage(name),
                     "seal" or "seals" => GetSealImage(name),
-                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage("Spades", "Ace"),
+                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage(
+                        "Spades",
+                        "Ace"
+                    ),
                     _ => null,
                 };
             }
@@ -1383,7 +1552,10 @@ namespace BalatroSeedOracle.Services
                     }
                     else
                     {
-                        DebugLogger.LogError("SpriteService", $"Failed to load editions sprite sheet");
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            $"Failed to load editions sprite sheet"
+                        );
                         return null;
                     }
                 }
@@ -1417,7 +1589,10 @@ namespace BalatroSeedOracle.Services
                     && y + spriteHeight <= editionsSheet.PixelSize.Height
                 )
                 {
-                    return new CroppedBitmap(editionsSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+                    return new CroppedBitmap(
+                        editionsSheet,
+                        new PixelRect(x, y, spriteWidth, spriteHeight)
+                    );
                 }
             }
             catch (Exception ex)
@@ -1444,7 +1619,14 @@ namespace BalatroSeedOracle.Services
                 );
             }
 
-            var result = GetSpriteImage(name, deckPositions, deckSheet, spriteWidth, spriteHeight, "deck");
+            var result = GetSpriteImage(
+                name,
+                deckPositions,
+                deckSheet,
+                spriteWidth,
+                spriteHeight,
+                "deck"
+            );
             if (result == null)
             {
                 DebugLogger.LogError(
@@ -1457,7 +1639,14 @@ namespace BalatroSeedOracle.Services
 
         public IImage? GetStakeImage(string name, int spriteWidth = 48, int spriteHeight = 48)
         {
-            return GetSpriteImage(name, stakePositions, stakeSheet, spriteWidth, spriteHeight, "stake");
+            return GetSpriteImage(
+                name,
+                stakePositions,
+                stakeSheet,
+                spriteWidth,
+                spriteHeight,
+                "stake"
+            );
         }
 
         // Create a composite image with deck and stake sticker
@@ -1506,26 +1695,56 @@ namespace BalatroSeedOracle.Services
             return renderTarget;
         }
 
-        public IImage? GetEnhancementImage(string name, int spriteWidth = 142, int spriteHeight = 190)
+        public IImage? GetEnhancementImage(
+            string name,
+            int spriteWidth = 142,
+            int spriteHeight = 190
+        )
         {
-            return GetSpriteImage(name, enhancementPositions, enhancersSheet, spriteWidth, spriteHeight, "enhancement");
+            return GetSpriteImage(
+                name,
+                enhancementPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "enhancement"
+            );
         }
 
         public IImage? GetSealImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
-            return GetSpriteImage(name, sealPositions, enhancersSheet, spriteWidth, spriteHeight, "seal");
+            return GetSpriteImage(
+                name,
+                sealPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "seal"
+            );
         }
 
         public IImage? GetSpecialImage(string name, int spriteWidth = 142, int spriteHeight = 190)
         {
             // Special images like Soul gem, mystery icons, etc.
-            return GetSpriteImage(name, specialPositions, enhancersSheet, spriteWidth, spriteHeight, "special");
+            return GetSpriteImage(
+                name,
+                specialPositions,
+                enhancersSheet,
+                spriteWidth,
+                spriteHeight,
+                "special"
+            );
         }
 
         /// <summary>
         /// Composites two images together (overlay on top of base)
         /// </summary>
-        private IImage? CompositeImages(IImage baseImage, IImage overlayImage, int width, int height)
+        private IImage? CompositeImages(
+            IImage baseImage,
+            IImage overlayImage,
+            int width,
+            int height
+        )
         {
             try
             {
@@ -1571,7 +1790,10 @@ namespace BalatroSeedOracle.Services
 
                 if (sourceBitmap == null)
                 {
-                    DebugLogger.Log("SpriteService", $"Cannot invert image type: {sourceImage.GetType().Name}");
+                    DebugLogger.Log(
+                        "SpriteService",
+                        $"Cannot invert image type: {sourceImage.GetType().Name}"
+                    );
                     return sourceImage;
                 }
 
@@ -1645,7 +1867,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Failed to invert image colors: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to invert image colors: {ex.Message}"
+                );
                 return sourceImage;
             }
         }
@@ -1674,7 +1899,9 @@ namespace BalatroSeedOracle.Services
             {
                 var enhancementImage = GetEnhancementImage(enhancement);
                 if (enhancementImage == null)
-                    throw new InvalidOperationException($"Enhancement '{enhancement}' image not found!");
+                    throw new InvalidOperationException(
+                        $"Enhancement '{enhancement}' image not found!"
+                    );
                 baseCard = enhancementImage;
             }
             else
@@ -1682,7 +1909,9 @@ namespace BalatroSeedOracle.Services
                 // Use blank card as base (StandardCard_Base in metadata)
                 var blankCard = GetSpecialImage("StandardCard_Base");
                 if (blankCard == null)
-                    throw new InvalidOperationException("StandardCard_Base image not found in special sprites!");
+                    throw new InvalidOperationException(
+                        "StandardCard_Base image not found in special sprites!"
+                    );
                 baseCard = blankCard;
             }
 
@@ -1693,7 +1922,9 @@ namespace BalatroSeedOracle.Services
             // Playing cards are 142x190 pixels
             var result = CompositeImages(baseCard, cardPattern, 142, 190);
             if (result == null)
-                throw new InvalidOperationException($"Failed to composite playing card {rank} of {suit}!");
+                throw new InvalidOperationException(
+                    $"Failed to composite playing card {rank} of {suit}!"
+                );
 
             // Apply edition effect if specified
             if (!string.IsNullOrEmpty(edition) && edition != "None")
@@ -1754,7 +1985,10 @@ namespace BalatroSeedOracle.Services
 
             if (bossPositions == null || bossSheet == null)
             {
-                DebugLogger.LogError("SpriteService", $"Boss positions or sheet not loaded for: {name}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Boss positions or sheet not loaded for: {name}"
+                );
                 return null;
             }
             if (!bossPositions.TryGetValue(normalizedName, out var position))
@@ -1786,7 +2020,14 @@ namespace BalatroSeedOracle.Services
             {
                 DebugLogger.LogError("SpriteService", "stickerPositions is null!");
             }
-            return GetSpriteImage(stickerType, stickerPositions!, stickersSheet, 142, 190, "sticker");
+            return GetSpriteImage(
+                stickerType,
+                stickerPositions!,
+                stickersSheet,
+                142,
+                190,
+                "sticker"
+            );
         }
 
         /// <summary>
@@ -1800,7 +2041,10 @@ namespace BalatroSeedOracle.Services
             var baseJoker = GetItemImage("Joker", "Joker");
             if (baseJoker == null)
             {
-                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for sticker composite");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    "Failed to get base Joker image for sticker composite"
+                );
                 return null;
             }
 
@@ -1808,7 +2052,10 @@ namespace BalatroSeedOracle.Services
             var stickerOverlay = GetStickerImage(stickerType);
             if (stickerOverlay == null)
             {
-                DebugLogger.LogError("SpriteService", $"Failed to get sticker image for '{stickerType}'");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Failed to get sticker image for '{stickerType}'"
+                );
                 return baseJoker; // Return just the joker if sticker not found
             }
 
@@ -1825,7 +2072,11 @@ namespace BalatroSeedOracle.Services
         /// <param name="jokerName">Name of the joker</param>
         /// <param name="edition">Edition effect (None, Foil, Holographic, Polychrome, Negative)</param>
         /// <param name="debuff">Whether to apply debuff (red X) overlay</param>
-        public IImage? GetJokerSpriteWithEdition(string jokerName, string? edition = null, bool debuff = false)
+        public IImage? GetJokerSpriteWithEdition(
+            string jokerName,
+            string? edition = null,
+            bool debuff = false
+        )
         {
             // Get base joker sprite
             var baseJoker = GetJokerImage(jokerName);
@@ -1836,7 +2087,10 @@ namespace BalatroSeedOracle.Services
             }
 
             // No edition = return base
-            if (string.IsNullOrEmpty(edition) || edition.Equals("None", StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrEmpty(edition)
+                || edition.Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
                 return baseJoker;
 
             IImage? result = baseJoker;
@@ -1883,7 +2137,8 @@ namespace BalatroSeedOracle.Services
             ArgumentNullException.ThrowIfNull(edition);
 
             // Check cache first (precomputed during loading screen)
-            var cacheKey = $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
+            var cacheKey =
+                $"joker_composite_{edition.ToLowerInvariant()}_{(debuff ? "debuff" : "normal")}";
             if (_precomputedComposites.TryGetValue(cacheKey, out var cached))
             {
                 return cached;
@@ -1894,7 +2149,10 @@ namespace BalatroSeedOracle.Services
             var baseJoker = GetItemImage("Joker", "Joker");
             if (baseJoker == null)
             {
-                DebugLogger.LogError("SpriteService", "Failed to get base Joker image for edition composite");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    "Failed to get base Joker image for edition composite"
+                );
                 return null;
             }
 
@@ -1910,7 +2168,10 @@ namespace BalatroSeedOracle.Services
                     if (inverted != null)
                         result = inverted;
                     else
-                        DebugLogger.LogError("SpriteService", "Failed to invert Joker colors for Negative edition");
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            "Failed to invert Joker colors for Negative edition"
+                        );
                 }
                 else
                 {
@@ -1924,7 +2185,10 @@ namespace BalatroSeedOracle.Services
                     }
                     else
                     {
-                        DebugLogger.LogError("SpriteService", $"Failed to get edition overlay for: {edition}");
+                        DebugLogger.LogError(
+                            "SpriteService",
+                            $"Failed to get edition overlay for: {edition}"
+                        );
                     }
                 }
             }
@@ -2024,7 +2288,10 @@ namespace BalatroSeedOracle.Services
                 $"Loading pattern {rank} of {suit} from position ({position.Pos.X}, {position.Pos.Y}) -> pixel ({x}, {y})"
             );
 
-            return new CroppedBitmap(playingCardsSheet, new PixelRect(x, y, spriteWidth, spriteHeight));
+            return new CroppedBitmap(
+                playingCardsSheet,
+                new PixelRect(x, y, spriteWidth, spriteHeight)
+            );
         }
 
         // Helper method to load stickers metadata
@@ -2053,7 +2320,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error loading stickers metadata: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading stickers metadata: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -2092,7 +2362,10 @@ namespace BalatroSeedOracle.Services
         }
 
         // Helper method to load playing card metadata
-        private static Dictionary<string, Dictionary<string, SpritePosition>> LoadPlayingCardMetadata(string jsonUri)
+        private static Dictionary<
+            string,
+            Dictionary<string, SpritePosition>
+        > LoadPlayingCardMetadata(string jsonUri)
         {
             try
             {
@@ -2127,7 +2400,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error loading playing card metadata: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading playing card metadata: {ex.Message}"
+                );
                 return new();
             }
         }
@@ -2161,7 +2437,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SpriteService", $"Error loading enhancers metadata: {ex.Message}");
+                DebugLogger.LogError(
+                    "SpriteService",
+                    $"Error loading enhancers metadata: {ex.Message}"
+                );
                 return null;
             }
         }
@@ -2207,7 +2486,8 @@ namespace BalatroSeedOracle.Services
 
         private sealed record EnhancersSprites(
             [property: JsonPropertyName("decks")] Dictionary<string, EnhancerSprite>? Decks,
-            [property: JsonPropertyName("enhancements")] Dictionary<string, EnhancerSprite>? Enhancements,
+            [property: JsonPropertyName("enhancements")]
+                Dictionary<string, EnhancerSprite>? Enhancements,
             [property: JsonPropertyName("seals")] Dictionary<string, EnhancerSprite>? Seals,
             [property: JsonPropertyName("special")] Dictionary<string, EnhancerSprite>? Special
         );

@@ -21,10 +21,10 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// When true, modal uses auto sizing instead of fixed 1080x600
         /// </summary>
-        public static readonly StyledProperty<bool> SqueezeProperty = AvaloniaProperty.Register<StandardModal, bool>(
-            nameof(Squeeze),
-            defaultValue: false
-        );
+        public static readonly StyledProperty<bool> SqueezeProperty = AvaloniaProperty.Register<
+            StandardModal,
+            bool
+        >(nameof(Squeeze), defaultValue: false);
 
         public bool Squeeze
         {
@@ -245,7 +245,10 @@ namespace BalatroSeedOracle.Views.Modals
                 var content = ModalContent?.Content;
 
                 // Try view-level implementation first
-                if (content is BalatroSeedOracle.Helpers.IModalBackNavigable viewNav && viewNav.TryGoBack())
+                if (
+                    content is BalatroSeedOracle.Helpers.IModalBackNavigable viewNav
+                    && viewNav.TryGoBack()
+                )
                 {
                     return true;
                 }
@@ -262,7 +265,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("StandardModal", $"Error during back navigation attempt: {ex.Message}");
+                DebugLogger.LogError(
+                    "StandardModal",
+                    $"Error during back navigation attempt: {ex.Message}"
+                );
             }
 
             return false;
@@ -275,7 +281,12 @@ namespace BalatroSeedOracle.Views.Modals
         /// <param name="title">The modal title</param>
         /// <param name="content">The content to display</param>
         /// <param name="showBackButton">Whether to show the back button</param>
-        public static async Task ShowModal(Window parent, string title, Control content, bool showBackButton = true)
+        public static async Task ShowModal(
+            Window parent,
+            string title,
+            Control content,
+            bool showBackButton = true
+        )
         {
             var modal = new StandardModal();
             modal.SetTitle(title);

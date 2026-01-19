@@ -32,7 +32,11 @@ namespace BalatroSeedOracle.Services
 
         public TriggerService()
         {
-            _audioTriggersPath = Path.Combine(AppContext.BaseDirectory, "visualizer", "audio_triggers");
+            _audioTriggersPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "visualizer",
+                "audio_triggers"
+            );
 
             // Ensure directory exists
             Directory.CreateDirectory(_audioTriggersPath);
@@ -53,7 +57,10 @@ namespace BalatroSeedOracle.Services
             }
 
             _triggers[trigger.Name] = trigger;
-            DebugLogger.Log("TriggerService", $"Registered trigger: {trigger.Name} (Type: {trigger.TriggerType})");
+            DebugLogger.Log(
+                "TriggerService",
+                $"Registered trigger: {trigger.Name} (Type: {trigger.TriggerType})"
+            );
         }
 
         /// <summary>
@@ -100,7 +107,10 @@ namespace BalatroSeedOracle.Services
             {
                 if (!Directory.Exists(_audioTriggersPath))
                 {
-                    DebugLogger.Log("TriggerService", "Audio triggers directory does not exist, creating it");
+                    DebugLogger.Log(
+                        "TriggerService",
+                        "Audio triggers directory does not exist, creating it"
+                    );
                     Directory.CreateDirectory(_audioTriggersPath);
                     return;
                 }
@@ -113,7 +123,10 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         var json = File.ReadAllText(file);
-                        var triggerPoint = JsonSerializer.Deserialize<AudioTriggerPoint>(json, JsonOptions);
+                        var triggerPoint = JsonSerializer.Deserialize<AudioTriggerPoint>(
+                            json,
+                            JsonOptions
+                        );
 
                         if (triggerPoint != null && !string.IsNullOrEmpty(triggerPoint.Name))
                         {
@@ -137,7 +150,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to load audio trigger points: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to load audio trigger points: {ex.Message}"
+                );
             }
         }
 
@@ -157,11 +173,17 @@ namespace BalatroSeedOracle.Services
                 // Register the trigger
                 RegisterTrigger(trigger);
 
-                DebugLogger.LogImportant("TriggerService", $"Saved audio trigger: {trigger.Name} to {fileName}");
+                DebugLogger.LogImportant(
+                    "TriggerService",
+                    $"Saved audio trigger: {trigger.Name} to {fileName}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to save trigger {trigger.Name}: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to save trigger {trigger.Name}: {ex.Message}"
+                );
             }
         }
 
@@ -184,7 +206,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("TriggerService", $"Failed to delete trigger {triggerName}: {ex.Message}");
+                DebugLogger.LogError(
+                    "TriggerService",
+                    $"Failed to delete trigger {triggerName}: {ex.Message}"
+                );
             }
         }
 
@@ -192,7 +217,9 @@ namespace BalatroSeedOracle.Services
         /// Update all AudioTriggerPoint states from audio manager
         /// Should be called each frame
         /// </summary>
-        public void UpdateAudioTriggers(Dictionary<string, (double Low, double Mid, double High)> bandValues)
+        public void UpdateAudioTriggers(
+            Dictionary<string, (double Low, double Mid, double High)> bandValues
+        )
         {
             foreach (var trigger in GetTriggersByType("Audio").OfType<AudioTriggerPoint>())
             {
@@ -218,7 +245,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="mappings">List of trigger-to-shader mappings</param>
         /// <param name="currentParams">Current shader parameter values (will be modified in-place)</param>
-        public void ApplyShaderMappings(List<ShaderParamMapping> mappings, Dictionary<string, float> currentParams)
+        public void ApplyShaderMappings(
+            List<ShaderParamMapping> mappings,
+            Dictionary<string, float> currentParams
+        )
         {
             foreach (var mapping in mappings)
             {

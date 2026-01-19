@@ -23,10 +23,10 @@ namespace BalatroSeedOracle.Controls
         private Canvas? _jokerCanvas;
         private ItemsControl? _tagsControl;
 
-        public static readonly StyledProperty<FavoritesService.JokerSet?> JokerSetProperty = AvaloniaProperty.Register<
-            JokerSetDisplay,
-            FavoritesService.JokerSet?
-        >(nameof(JokerSet));
+        public static readonly StyledProperty<FavoritesService.JokerSet?> JokerSetProperty =
+            AvaloniaProperty.Register<JokerSetDisplay, FavoritesService.JokerSet?>(
+                nameof(JokerSet)
+            );
 
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent = RoutedEvent.Register<
             JokerSetDisplay,
@@ -66,7 +66,10 @@ namespace BalatroSeedOracle.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == JokerSetProperty && change.NewValue is FavoritesService.JokerSet set)
+            if (
+                change.Property == JokerSetProperty
+                && change.NewValue is FavoritesService.JokerSet set
+            )
             {
                 LoadJokerSet(set);
             }
@@ -127,7 +130,10 @@ namespace BalatroSeedOracle.Controls
                         Width = cardWidth,
                         Height = cardHeight,
                         Stretch = Stretch.Uniform,
-                        RenderTransform = new TranslateTransform(startX + i * (cardWidth - overlap), startY),
+                        RenderTransform = new TranslateTransform(
+                            startX + i * (cardWidth - overlap),
+                            startY
+                        ),
                     };
 
                     // Add slight rotation for a "hand of cards" effect
@@ -152,7 +158,10 @@ namespace BalatroSeedOracle.Controls
                         {
                             Children =
                             {
-                                new TranslateTransform(startX + i * (cardWidth - overlap) + 2, startY + 2),
+                                new TranslateTransform(
+                                    startX + i * (cardWidth - overlap) + 2,
+                                    startY + 2
+                                ),
                                 new RotateTransform(rotation, cardWidth / 2, cardHeight / 2),
                             },
                         },

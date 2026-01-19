@@ -38,7 +38,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 catch (Exception ex)
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.LogError("CreditsModal", $"Error opening link: {ex.Message}");
+                    BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                        "CreditsModal",
+                        $"Error opening link: {ex.Message}"
+                    );
                 }
             }
         }

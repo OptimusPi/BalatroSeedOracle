@@ -58,7 +58,11 @@ public interface IDuckDBConnection : IAsyncDisposable, IDisposable
     /// <summary>
     /// Get all seeds from a table (uses Motely's DuckDBQueryHelpers internally)
     /// </summary>
-    Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null);
+    Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    );
 
     /// <summary>
     /// Clear all rows from a table

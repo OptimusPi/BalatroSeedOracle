@@ -93,7 +93,8 @@ namespace BalatroSeedOracle.Services
                 // Check if file exists (synchronous check is acceptable here)
                 if (_configurationService.FileExists(filePath))
                 {
-                    var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                    var isBrowser =
+                        _platformServices != null && !_platformServices.SupportsFileSystem;
                     if (isBrowser)
                     {
                         await _store.DeleteAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
@@ -124,7 +125,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var config = await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(filePath);
+                var config =
+                    await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
+                        filePath
+                    );
                 return config != null;
             }
             catch
@@ -186,7 +190,9 @@ namespace BalatroSeedOracle.Services
             }
 
             // Keep only alphanumeric, underscore, hyphen
-            normalized = new string(normalized.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray());
+            normalized = new string(
+                normalized.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray()
+            );
 
             // Collapse multiple underscores into single underscore
             while (normalized.Contains("__"))
@@ -222,16 +228,20 @@ namespace BalatroSeedOracle.Services
                         AllowTrailingCommas = true,
                     };
 
-                    var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        json,
-                        deserializeOptions
-                    );
+                    var config =
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            json,
+                            deserializeOptions
+                        );
                     return config?.Name ?? "";
                 }
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("FilterService", $"Error reading filter name: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "FilterService",
+                    $"Error reading filter name: {ex.Message}"
+                );
             }
 
             return string.Empty;
@@ -246,7 +256,10 @@ namespace BalatroSeedOracle.Services
 
                 if (!File.Exists(filterPath))
                 {
-                    Helpers.DebugLogger.LogError("FilterService", $"Filter not found: {filterPath}");
+                    Helpers.DebugLogger.LogError(
+                        "FilterService",
+                        $"Filter not found: {filterPath}"
+                    );
                     return string.Empty;
                 }
 
@@ -260,10 +273,11 @@ namespace BalatroSeedOracle.Services
                     AllowTrailingCommas = true,
                 };
 
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                    json,
-                    deserializeOptions
-                );
+                var config =
+                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        json,
+                        deserializeOptions
+                    );
 
                 if (config != null)
                 {
@@ -282,20 +296,34 @@ namespace BalatroSeedOracle.Services
                     {
                         WriteIndented = true,
                         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                        DefaultIgnoreCondition = System
+                            .Text
+                            .Json
+                            .Serialization
+                            .JsonIgnoreCondition
+                            .WhenWritingNull,
                     };
 
-                    var newJson = System.Text.Json.JsonSerializer.Serialize(config, serializeOptions);
+                    var newJson = System.Text.Json.JsonSerializer.Serialize(
+                        config,
+                        serializeOptions
+                    );
                     await File.WriteAllTextAsync(newPath, newJson);
 
                     // Cache will auto-refresh on next access (file watcher)
-                    Helpers.DebugLogger.Log("FilterService", $"Filter cloned: {filterId} -> {newId} (name: {newName})");
+                    Helpers.DebugLogger.Log(
+                        "FilterService",
+                        $"Filter cloned: {filterId} -> {newId} (name: {newName})"
+                    );
                     return newId;
                 }
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("FilterService", $"Error cloning filter: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "FilterService",
+                    $"Error cloning filter: {ex.Message}"
+                );
             }
 
             return string.Empty;

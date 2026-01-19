@@ -81,7 +81,11 @@ namespace BalatroSeedOracle.Views.Modals
         {
             UpdateButton(_musicMixerButton, _musicMixerStatus, _toggles.ShowMusicMixer);
             UpdateButton(_visualizerButton, _visualizerStatus, _toggles.ShowVisualizer);
-            UpdateButton(_transitionDesignerButton, _transitionDesignerStatus, _toggles.ShowTransitionDesigner);
+            UpdateButton(
+                _transitionDesignerButton,
+                _transitionDesignerStatus,
+                _toggles.ShowTransitionDesigner
+            );
             UpdateButton(_fertilizerButton, _fertilizerStatus, _toggles.ShowFertilizer);
             UpdateButton(_hostApiButton, _hostApiStatus, _toggles.ShowHostServer);
             UpdateButton(_eventFXButton, _eventFXStatus, _toggles.ShowEventFX);

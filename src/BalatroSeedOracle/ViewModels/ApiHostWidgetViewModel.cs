@@ -50,7 +50,10 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [ObservableProperty]
     private bool _isSupported = true;
 
-    public ApiHostWidgetViewModel(IApiHostService apiHostService, WidgetPositionService? positionService = null)
+    public ApiHostWidgetViewModel(
+        IApiHostService apiHostService,
+        WidgetPositionService? positionService = null
+    )
         : base(positionService)
     {
         _apiHostService = apiHostService;

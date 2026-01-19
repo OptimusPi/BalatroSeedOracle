@@ -33,7 +33,8 @@ namespace BalatroSeedOracle.Services
         public UserProfileService(IAppDataStore store, IPlatformServices platformServices)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
+            _platformServices =
+                platformServices ?? throw new ArgumentNullException(nameof(platformServices));
             _profileKey = $"User/{PROFILE_FILENAME}";
 
             DebugLogger.Log("UserProfileService", $"Profile key: {_profileKey}");
@@ -69,7 +70,10 @@ namespace BalatroSeedOracle.Services
                     if (profile != null)
                     {
                         _currentProfile = profile;
-                        DebugLogger.Log("UserProfileService", $"Loaded profile for author: {profile.AuthorName}");
+                        DebugLogger.Log(
+                            "UserProfileService",
+                            $"Loaded profile for author: {profile.AuthorName}"
+                        );
                         return profile;
                     }
                 }
@@ -88,7 +92,10 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public string GetAuthorName()
         {
-            DebugLogger.Log("UserProfileService", $"GetAuthorName() returning: '{_currentProfile.AuthorName}'");
+            DebugLogger.Log(
+                "UserProfileService",
+                $"GetAuthorName() returning: '{_currentProfile.AuthorName}'"
+            );
             return _currentProfile.AuthorName;
         }
 
@@ -145,7 +152,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_disposed)
             {
-                DebugLogger.LogError("UserProfileService", "Cannot flush profile - service disposed");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    "Cannot flush profile - service disposed"
+                );
                 return;
             }
 
@@ -219,7 +229,10 @@ namespace BalatroSeedOracle.Services
                         var profile = JsonSerializer.Deserialize<UserProfile>(json);
                         if (profile != null)
                         {
-                            DebugLogger.Log("UserProfileService", $"Loaded profile for author: {profile.AuthorName}");
+                            DebugLogger.Log(
+                                "UserProfileService",
+                                $"Loaded profile for author: {profile.AuthorName}"
+                            );
                             return profile;
                         }
                     }
@@ -231,7 +244,10 @@ namespace BalatroSeedOracle.Services
             }
 
             // Return default profile with "pifreak" as the author
-            DebugLogger.Log("UserProfileService", "Creating new profile with default author: pifreak");
+            DebugLogger.Log(
+                "UserProfileService",
+                "Creating new profile with default author: pifreak"
+            );
             return new UserProfile();
         }
 
@@ -243,7 +259,10 @@ namespace BalatroSeedOracle.Services
         {
             if (_disposed)
             {
-                DebugLogger.LogError("UserProfileService", "Cannot save profile - service disposed");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    "Cannot save profile - service disposed"
+                );
                 return;
             }
 
@@ -415,7 +434,10 @@ namespace BalatroSeedOracle.Services
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("UserProfileService", $"Error flushing profile on dispose: {ex.Message}");
+                        DebugLogger.LogError(
+                            "UserProfileService",
+                            $"Error flushing profile on dispose: {ex.Message}"
+                        );
                     }
                 }
 
@@ -440,7 +462,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("UserProfileService", $"Error in debounced save: {ex.Message}");
+                DebugLogger.LogError(
+                    "UserProfileService",
+                    $"Error in debounced save: {ex.Message}"
+                );
             }
         }
     }

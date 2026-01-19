@@ -84,7 +84,10 @@ namespace BalatroSeedOracle.Services
                     var itemConfig = itemConfigs[item];
 
                     // Handle operator items specially
-                    if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
+                    if (
+                        itemConfig.ItemType == "Operator"
+                        && !string.IsNullOrEmpty(itemConfig.OperatorType)
+                    )
                     {
                         var operatorClause = CreateOperatorClause(itemConfig);
                         if (operatorClause != null)
@@ -104,7 +107,10 @@ namespace BalatroSeedOracle.Services
 
                     // Remove the unique key suffix if present
                     var hashIndex = itemNameWithSuffix.IndexOf('#');
-                    var itemName = hashIndex > 0 ? itemNameWithSuffix.Substring(0, hashIndex) : itemNameWithSuffix;
+                    var itemName =
+                        hashIndex > 0
+                            ? itemNameWithSuffix.Substring(0, hashIndex)
+                            : itemNameWithSuffix;
 
                     var hasConfig = itemConfigs.ContainsKey(item);
                     var itemConfig = hasConfig ? itemConfigs[item] : new ItemConfig();
@@ -123,7 +129,9 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Creates a MotleyJsonFilterClause for an operator (Or/And) with nested child clauses
         /// </summary>
-        private MotelyJsonConfig.MotelyJsonFilterClause? CreateOperatorClause(ItemConfig operatorConfig)
+        private MotelyJsonConfig.MotelyJsonFilterClause? CreateOperatorClause(
+            ItemConfig operatorConfig
+        )
         {
             if (string.IsNullOrEmpty(operatorConfig.OperatorType))
                 return null;
@@ -140,7 +148,9 @@ namespace BalatroSeedOracle.Services
             // Set Mode for Or/And operators (default to "Max" if not specified)
             if (operatorType == "Or" || operatorType == "And")
             {
-                operatorClause.Mode = !string.IsNullOrEmpty(operatorConfig.Mode) ? operatorConfig.Mode : "Max";
+                operatorClause.Mode = !string.IsNullOrEmpty(operatorConfig.Mode)
+                    ? operatorConfig.Mode
+                    : "Max";
             }
 
             // Convert each child ItemConfig to a MotleyJsonFilterClause
@@ -167,7 +177,9 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Converts an ItemConfig to a MotleyJsonFilterClause
         /// </summary>
-        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(ItemConfig config)
+        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(
+            ItemConfig config
+        )
         {
             var antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
             var normalizedType = config.ItemType.ToLower();
@@ -183,7 +195,9 @@ namespace BalatroSeedOracle.Services
                         Antes = antes,
                         Min = config.Min,
                         Edition =
-                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none") ? config.Edition : null,
+                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                                ? config.Edition
+                                : null,
                     };
                     break;
 
@@ -270,7 +284,10 @@ namespace BalatroSeedOracle.Services
                     break;
 
                 default:
-                    DebugLogger.LogError("FilterConfigurationService", $"Unknown ItemType: {config.ItemType}");
+                    DebugLogger.LogError(
+                        "FilterConfigurationService",
+                        $"Unknown ItemType: {config.ItemType}"
+                    );
                     return null;
             }
 
@@ -299,7 +316,9 @@ namespace BalatroSeedOracle.Services
                         Antes = antes,
                         Min = config.Min,
                         Edition =
-                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none") ? config.Edition : null,
+                            (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
+                                ? config.Edition
+                                : null,
                     };
                     break;
 
@@ -384,7 +403,10 @@ namespace BalatroSeedOracle.Services
                     break;
 
                 default:
-                    DebugLogger.LogError("FilterConfigurationService", $"Unknown category: {category}");
+                    DebugLogger.LogError(
+                        "FilterConfigurationService",
+                        $"Unknown category: {category}"
+                    );
                     return null;
             }
 

@@ -41,7 +41,11 @@ public class AndroidDuckDBService : IDuckDBService
     )
     {
         // Use Motely's DuckDBConnectionFactory which handles DuckLake setup
-        var duckDBConnection = DuckDBConnectionFactory.CreateConnectionWithDuckLake(catalogPath, dataPath, schemaName);
+        var duckDBConnection = DuckDBConnectionFactory.CreateConnectionWithDuckLake(
+            catalogPath,
+            dataPath,
+            schemaName
+        );
 
         // Wrap in our abstraction
         var connection = new AndroidDuckDBConnection(duckDBConnection);

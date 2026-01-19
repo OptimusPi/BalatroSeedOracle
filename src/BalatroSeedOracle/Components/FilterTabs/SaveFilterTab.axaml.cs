@@ -21,7 +21,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             if (ViewModel != null)
             {
-                ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+                ViewModel.CopyToClipboardRequested += async (s, text) =>
+                    await CopyToClipboardAsync(text);
             }
         }
 

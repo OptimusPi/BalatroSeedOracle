@@ -62,7 +62,10 @@ namespace BalatroSeedOracle.Services
                 await writer.WriteAsync(csvContent);
                 await writer.FlushAsync();
 
-                DebugLogger.Log("DbListExportService", $"Exported {results.Count} results to {file.Name}");
+                DebugLogger.Log(
+                    "DbListExportService",
+                    $"Exported {results.Count} results to {file.Name}"
+                );
                 return true;
             }
             catch (Exception ex)
@@ -124,7 +127,10 @@ namespace BalatroSeedOracle.Services
                 await writer.WriteAsync(jsonContent);
                 await writer.FlushAsync();
 
-                DebugLogger.Log("DbListExportService", $"Exported {results.Count} results to {file.Name}");
+                DebugLogger.Log(
+                    "DbListExportService",
+                    $"Exported {results.Count} results to {file.Name}"
+                );
                 return true;
             }
             catch (Exception ex)
@@ -186,7 +192,10 @@ namespace BalatroSeedOracle.Services
                 await writer.WriteAsync(textContent);
                 await writer.FlushAsync();
 
-                DebugLogger.Log("DbListExportService", $"Exported {results.Count} seeds to {file.Name}");
+                DebugLogger.Log(
+                    "DbListExportService",
+                    $"Exported {results.Count} seeds to {file.Name}"
+                );
                 return true;
             }
             catch (Exception ex)
@@ -251,7 +260,12 @@ namespace BalatroSeedOracle.Services
                 return "";
 
             // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
-            if (field.Contains(',') || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
+            if (
+                field.Contains(',')
+                || field.Contains('"')
+                || field.Contains('\n')
+                || field.Contains('\r')
+            )
             {
                 return $"\"{field.Replace("\"", "\"\"")}\"";
             }

@@ -51,7 +51,8 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 try
                 {
-                    var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+                    var configurationService =
+                        ServiceHelper.GetRequiredService<IConfigurationService>();
                     var filterService = ServiceHelper.GetRequiredService<IFilterService>();
                     var filterCache = ServiceHelper.GetService<IFilterCacheService>();
 
@@ -80,7 +81,11 @@ namespace BalatroSeedOracle.Views.Modals
                             if (extension == ".jaml")
                             {
                                 if (
-                                    !Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError)
+                                    !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                        text,
+                                        out config,
+                                        out var parseError
+                                    )
                                     || config == null
                                 )
                                 {
@@ -94,19 +99,27 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             else
                             {
-                                config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                                    text,
-                                    new System.Text.Json.JsonSerializerOptions
-                                    {
-                                        PropertyNameCaseInsensitive = true,
-                                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                        AllowTrailingCommas = true,
-                                    }
-                                );
+                                config =
+                                    System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                                        text,
+                                        new System.Text.Json.JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true,
+                                            ReadCommentHandling = System
+                                                .Text
+                                                .Json
+                                                .JsonCommentHandling
+                                                .Skip,
+                                            AllowTrailingCommas = true,
+                                        }
+                                    );
 
                                 if (config == null)
                                 {
-                                    DebugLogger.LogError("ToolsModal", $"Failed to parse JSON {storageFile.Name}");
+                                    DebugLogger.LogError(
+                                        "ToolsModal",
+                                        $"Failed to parse JSON {storageFile.Name}"
+                                    );
                                     failCount++;
                                     continue;
                                 }
@@ -136,7 +149,10 @@ namespace BalatroSeedOracle.Views.Modals
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError("ToolsModal", $"Failed to import file {file.Name}: {ex.Message}");
+                            DebugLogger.LogError(
+                                "ToolsModal",
+                                $"Failed to import file {file.Name}: {ex.Message}"
+                            );
                             failCount++;
                         }
                     }
@@ -148,7 +164,11 @@ namespace BalatroSeedOracle.Views.Modals
                         var message =
                             successCount > 0
                                 ? $"Successfully imported {successCount} file(s)"
-                                    + (failCount > 0 ? $"\n{failCount} file(s) failed to import" : "")
+                                    + (
+                                        failCount > 0
+                                            ? $"\n{failCount} file(s) failed to import"
+                                            : ""
+                                    )
                                 : "Failed to import files";
 
                         // Create a simple message modal
@@ -323,7 +343,10 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
                             }
                         }
                     }
@@ -332,7 +355,11 @@ namespace BalatroSeedOracle.Views.Modals
                     var resultsDir = AppPaths.SearchResultsDir;
                     if (Directory.Exists(resultsDir))
                     {
-                        var resultFiles = Directory.GetFiles(resultsDir, "*.*", SearchOption.AllDirectories);
+                        var resultFiles = Directory.GetFiles(
+                            resultsDir,
+                            "*.*",
+                            SearchOption.AllDirectories
+                        );
                         foreach (var file in resultFiles)
                         {
                             try
@@ -342,7 +369,10 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("NukeEverything", $"Failed to delete {file}: {ex.Message}");
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
                             }
                         }
 
@@ -384,7 +414,10 @@ namespace BalatroSeedOracle.Views.Modals
                     };
                     mainMenu.ShowModalContent(resultModal, "NUKE COMPLETE");
 
-                    DebugLogger.Log("NukeEverything", $"Nuked {deletedFilters} filters and {deletedResults} results");
+                    DebugLogger.Log(
+                        "NukeEverything",
+                        $"Nuked {deletedFilters} filters and {deletedResults} results"
+                    );
                 }
                 catch (Exception ex)
                 {

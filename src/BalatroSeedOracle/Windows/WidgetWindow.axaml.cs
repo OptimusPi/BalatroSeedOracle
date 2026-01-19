@@ -41,7 +41,8 @@ namespace BalatroSeedOracle.Windows
         {
             // Set up window properties
             if (
-                Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                Application.Current?.ApplicationLifetime
+                    is IClassicDesktopStyleApplicationLifetime desktop
                 && desktop.MainWindow is not null
             )
             {
@@ -106,7 +107,10 @@ namespace BalatroSeedOracle.Windows
                 var delta = currentPoint - _dragStartPoint;
 
                 // Update window position
-                var newPos = new PixelPoint((int)(_windowStartPos.X + delta.X), (int)(_windowStartPos.Y + delta.Y));
+                var newPos = new PixelPoint(
+                    (int)(_windowStartPos.X + delta.X),
+                    (int)(_windowStartPos.Y + delta.Y)
+                );
 
                 Position = newPos;
 
@@ -137,11 +141,15 @@ namespace BalatroSeedOracle.Windows
 
             // Use actual screen bounds; fallback to window bounds if unavailable
             var primary = Screens?.Primary;
-            var screenBounds =
-                primary?.WorkingArea is { } wa
-                    ? new Rect(wa.X, wa.Y, wa.Width, wa.Height)
-                    : new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
-            var windowBounds = new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
+            var screenBounds = primary?.WorkingArea is { } wa
+                ? new Rect(wa.X, wa.Y, wa.Width, wa.Height)
+                : new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
+            var windowBounds = new Rect(
+                Position.X,
+                Position.Y,
+                ClientSize.Width,
+                ClientSize.Height
+            );
 
             // Check each edge
             if (Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance)

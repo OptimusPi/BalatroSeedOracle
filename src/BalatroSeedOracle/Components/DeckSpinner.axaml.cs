@@ -15,10 +15,11 @@ namespace BalatroSeedOracle.Components
         public event EventHandler<int>? DeckChanged;
 
         // Expose ShowArrows property to forward to inner PanelSpinner
-        public static readonly StyledProperty<bool> ShowArrowsProperty = Avalonia.AvaloniaProperty.Register<
-            DeckSpinner,
-            bool
-        >(nameof(ShowArrows), defaultValue: true);
+        public static readonly StyledProperty<bool> ShowArrowsProperty =
+            Avalonia.AvaloniaProperty.Register<DeckSpinner, bool>(
+                nameof(ShowArrows),
+                defaultValue: true
+            );
 
         public bool ShowArrows
         {
@@ -27,10 +28,12 @@ namespace BalatroSeedOracle.Components
         }
 
         // Bindable SelectedDeckIndex for MVVM
-        public static readonly StyledProperty<int> SelectedDeckIndexProperty = Avalonia.AvaloniaProperty.Register<
-            DeckSpinner,
-            int
-        >(nameof(SelectedDeckIndex), defaultValue: 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+        public static readonly StyledProperty<int> SelectedDeckIndexProperty =
+            Avalonia.AvaloniaProperty.Register<DeckSpinner, int>(
+                nameof(SelectedDeckIndex),
+                defaultValue: 0,
+                defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
+            );
 
         public int SelectedDeckIndex
         {
@@ -39,10 +42,11 @@ namespace BalatroSeedOracle.Components
         }
 
         // Bindable StakeIndex for MVVM (updates overlay)
-        public static readonly StyledProperty<int> StakeIndexProperty = Avalonia.AvaloniaProperty.Register<
-            DeckSpinner,
-            int
-        >(nameof(StakeIndex), defaultValue: 0);
+        public static readonly StyledProperty<int> StakeIndexProperty =
+            Avalonia.AvaloniaProperty.Register<DeckSpinner, int>(
+                nameof(StakeIndex),
+                defaultValue: 0
+            );
 
         public int StakeIndex
         {
@@ -81,7 +85,10 @@ namespace BalatroSeedOracle.Components
                 };
 
                 // Apply initial SelectedDeckIndex
-                _innerSpinner.SelectedIndex = Math.Max(0, Math.Min(SelectedDeckIndex, _innerSpinner.Items.Count - 1));
+                _innerSpinner.SelectedIndex = Math.Max(
+                    0,
+                    Math.Min(SelectedDeckIndex, _innerSpinner.Items.Count - 1)
+                );
 
                 // Apply initial stake overlay to deck images
                 SetStakeIndex(StakeIndex);
@@ -138,7 +145,10 @@ namespace BalatroSeedOracle.Components
             {
                 int current = _innerSpinner.SelectedIndex;
                 _innerSpinner.Items = PanelItemFactory.CreateDeckItemsWithStake(stakeName);
-                _innerSpinner.SelectedIndex = Math.Max(0, Math.Min(current, _innerSpinner.Items.Count - 1));
+                _innerSpinner.SelectedIndex = Math.Max(
+                    0,
+                    Math.Min(current, _innerSpinner.Items.Count - 1)
+                );
                 _innerSpinner.RefreshCurrentImage();
             }
         }

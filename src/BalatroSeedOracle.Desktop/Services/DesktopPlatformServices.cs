@@ -67,7 +67,10 @@ namespace BalatroSeedOracle.Desktop.Services
                     "Samples",
                     "TelescopeObservatory.json"
                 );
-                var targetFilter = System.IO.Path.Combine(AppPaths.FiltersDir, "TelescopeObservatory.json");
+                var targetFilter = System.IO.Path.Combine(
+                    AppPaths.FiltersDir,
+                    "TelescopeObservatory.json"
+                );
                 if (System.IO.File.Exists(sampleFilter) && !System.IO.File.Exists(targetFilter))
                 {
                     EnsureDirectoryExists(System.IO.Path.GetDirectoryName(targetFilter)!);
@@ -75,13 +78,20 @@ namespace BalatroSeedOracle.Desktop.Services
                 }
 
                 // Copy visualizer presets
-                var samplePresetsDir = System.IO.Path.Combine(AppContext.BaseDirectory, "Samples", "VisualizerPresets");
+                var samplePresetsDir = System.IO.Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Samples",
+                    "VisualizerPresets"
+                );
                 if (System.IO.Directory.Exists(samplePresetsDir))
                 {
                     foreach (var file in System.IO.Directory.GetFiles(samplePresetsDir, "*.json"))
                     {
                         var fileName = System.IO.Path.GetFileName(file);
-                        var target = System.IO.Path.Combine(AppPaths.VisualizerPresetsDir, fileName);
+                        var target = System.IO.Path.Combine(
+                            AppPaths.VisualizerPresetsDir,
+                            fileName
+                        );
                         if (!System.IO.File.Exists(target))
                         {
                             EnsureDirectoryExists(System.IO.Path.GetDirectoryName(target)!);
@@ -91,7 +101,11 @@ namespace BalatroSeedOracle.Desktop.Services
                 }
 
                 // Copy mixer presets
-                var sampleMixerDir = System.IO.Path.Combine(AppContext.BaseDirectory, "Samples", "MixerPresets");
+                var sampleMixerDir = System.IO.Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Samples",
+                    "MixerPresets"
+                );
                 if (System.IO.Directory.Exists(sampleMixerDir))
                 {
                     foreach (var file in System.IO.Directory.GetFiles(sampleMixerDir, "*.json"))
@@ -109,11 +123,17 @@ namespace BalatroSeedOracle.Desktop.Services
                 // Mark as done
                 EnsureDirectoryExists(System.IO.Path.GetDirectoryName(markerFile)!);
                 System.IO.File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
-                Helpers.DebugLogger.Log("DesktopPlatformServices", "Sample content copied to AppData successfully");
+                Helpers.DebugLogger.Log(
+                    "DesktopPlatformServices",
+                    "Sample content copied to AppData successfully"
+                );
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("DesktopPlatformServices", $"Failed to copy samples: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "DesktopPlatformServices",
+                    $"Failed to copy samples: {ex.Message}"
+                );
             }
 
             return Task.CompletedTask;

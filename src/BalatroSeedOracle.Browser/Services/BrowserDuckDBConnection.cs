@@ -46,7 +46,10 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return ConvertJsonElement<T>(firstValue.Current);
     }
 
-    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(string sql, Func<IDuckDBDataReader, T> mapper)
+    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(
+        string sql,
+        Func<IDuckDBDataReader, T> mapper
+    )
     {
         var json = await QueryAsync(_connectionId, sql);
         var rows = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
@@ -97,7 +100,11 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return ExecuteNonQueryAsync(createTableSql);
     }
 
-    public async Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null)
+    public async Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var query = $"SELECT {seedColumnName} FROM {tableName}";
@@ -147,7 +154,8 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
             conditions.Add($"stake = '{stake}'");
 
         var whereClause = conditions.Count > 0 ? " WHERE " + string.Join(" AND ", conditions) : "";
-        var query = $"SELECT * FROM {tableName}{whereClause} ORDER BY score DESC, seed ASC LIMIT {limit}";
+        var query =
+            $"SELECT * FROM {tableName}{whereClause} ORDER BY score DESC, seed ASC LIMIT {limit}";
 
         // Execute and convert to ResultWithTallies
         var rows = await ExecuteReaderAsync<Dictionary<string, object>>(
@@ -169,7 +177,9 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         {
             var seed = row.TryGetValue("seed", out var s) ? s?.ToString() ?? "" : "";
             var score = row.TryGetValue("score", out var sc) ? Convert.ToInt32(sc) : 0;
-            var tallies = row.Where(kvp => kvp.Key != "seed" && kvp.Key != "score" && kvp.Value != null)
+            var tallies = row.Where(kvp =>
+                    kvp.Key != "seed" && kvp.Key != "score" && kvp.Value != null
+                )
                 .Select(kvp => Convert.ToInt32(kvp.Value))
                 .ToList();
 
@@ -186,7 +196,11 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return results;
     }
 
-    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(string tableName, string idColumn, int id)
+    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(
+        string tableName,
+        string idColumn,
+        int id
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var query = $"SELECT * FROM {tableName} WHERE {idColumn} = {id} LIMIT 1";
@@ -205,7 +219,11 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return results.FirstOrDefault();
     }
 
-    public async Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn)
+    public async Task UpsertRowAsync(
+        string tableName,
+        Dictionary<string, object?> values,
+        string keyColumn
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var columns = string.Join(", ", values.Keys);
@@ -217,7 +235,10 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
                 : kvp.Value.ToString()
             )
         );
-        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}"));
+        var updates = string.Join(
+            ", ",
+            values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}")
+        );
 
         var sql =
             $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) "
@@ -274,7 +295,11 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
     private static extern Task CloseConnectionAsync(int connId);
 
     [JSImport("DuckDB.createAppender", "globalThis")]
-    private static extern Task<int> CreateAppenderInternalAsync(int connId, string schema, string table);
+    private static extern Task<int> CreateAppenderInternalAsync(
+        int connId,
+        string schema,
+        string table
+    );
 
     [JSImport("DuckDB.exportToCSV", "globalThis")]
     private static extern Task<string> ExportToCSVInternalAsync(int connId, string tableName);
@@ -309,7 +334,8 @@ public class BrowserDuckDBDataReader : IDuckDBDataReader
         throw new ArgumentException($"Column '{name}' not found");
     }
 
-    public bool IsDBNull(int ordinal) => _row[_columnNames[ordinal]].ValueKind == JsonValueKind.Null;
+    public bool IsDBNull(int ordinal) =>
+        _row[_columnNames[ordinal]].ValueKind == JsonValueKind.Null;
 
     public string GetString(int ordinal) => _row[_columnNames[ordinal]].GetString() ?? string.Empty;
 

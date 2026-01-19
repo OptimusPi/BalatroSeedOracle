@@ -61,7 +61,12 @@ namespace BalatroSeedOracle.Helpers
             }
         }
 
-        private void DrawSquigglyLine(DrawingContext drawingContext, Point start, Point end, Color color)
+        private void DrawSquigglyLine(
+            DrawingContext drawingContext,
+            Point start,
+            Point end,
+            Color color
+        )
         {
             var pen = new Pen(new SolidColorBrush(color), 1.0);
             var width = end.X - start.X;

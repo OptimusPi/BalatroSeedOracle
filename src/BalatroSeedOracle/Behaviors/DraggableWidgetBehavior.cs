@@ -36,7 +36,12 @@ namespace BalatroSeedOracle.Behaviors
             var selfBounds = AssociatedObject.Bounds;
 
             // If bounds are not available yet, avoid clamping to prevent jumpy behavior
-            if (parentBounds.Width <= 0 || parentBounds.Height <= 0 || selfBounds.Width <= 0 || selfBounds.Height <= 0)
+            if (
+                parentBounds.Width <= 0
+                || parentBounds.Height <= 0
+                || selfBounds.Width <= 0
+                || selfBounds.Height <= 0
+            )
                 return (Math.Max(0, x), Math.Max(0, y));
 
             var maxX = Math.Max(0, parentBounds.Width - selfBounds.Width);
@@ -81,10 +86,11 @@ namespace BalatroSeedOracle.Behaviors
         /// If set, ONLY elements with this class can be dragged
         /// If empty/null, allows drag from anywhere (entire control)
         /// </summary>
-        public static readonly StyledProperty<string?> DragHandleClassProperty = AvaloniaProperty.Register<
-            DraggableWidgetBehavior,
-            string?
-        >(nameof(DragHandleClass), null);
+        public static readonly StyledProperty<string?> DragHandleClassProperty =
+            AvaloniaProperty.Register<DraggableWidgetBehavior, string?>(
+                nameof(DragHandleClass),
+                null
+            );
 
         public string? DragHandleClass
         {
@@ -202,7 +208,10 @@ namespace BalatroSeedOracle.Behaviors
             if (parent != null)
             {
                 _pointerPressedPoint = e.GetPosition(parent);
-                DebugLogger.Log("DragBehavior", $"Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})");
+                DebugLogger.Log(
+                    "DragBehavior",
+                    $"Press point: ({_pointerPressedPoint.X}, {_pointerPressedPoint.Y})"
+                );
             }
             else
             {
@@ -266,7 +275,10 @@ namespace BalatroSeedOracle.Behaviors
 
                     // Calculate the initial offset from the widget's top-left corner to the mouse position
                     // This allows us to maintain the relative position during drag
-                    _dragStartPoint = new Point(_pointerPressedPoint.X - X, _pointerPressedPoint.Y - Y);
+                    _dragStartPoint = new Point(
+                        _pointerPressedPoint.X - X,
+                        _pointerPressedPoint.Y - Y
+                    );
                 }
                 else
                 {

@@ -36,7 +36,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             }
         }
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
             if (
                 e.PropertyName == nameof(SearchModalViewModel.SelectedDeckIndex)
@@ -58,7 +61,9 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
             // Get deck and stake names
             var deckName = vm.DeckDisplayValues[vm.SelectedDeckIndex];
-            var stakeName = System.Linq.Enumerable.ToArray(BalatroData.Stakes.Values)[vm.SelectedStakeIndex];
+            var stakeName = System.Linq.Enumerable.ToArray(BalatroData.Stakes.Values)[
+                vm.SelectedStakeIndex
+            ];
 
             // Load deck image
             var deckImage = SpriteService.Instance.GetDeckImage(deckName);
@@ -75,7 +80,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             }
 
             // Update deck description
-            if (_deckDescriptionText != null && BalatroData.Decks.TryGetValue(deckName, out var deckFullName))
+            if (
+                _deckDescriptionText != null
+                && BalatroData.Decks.TryGetValue(deckName, out var deckFullName)
+            )
             {
                 var description = GetDeckDescription(deckName);
                 _deckDescriptionText.Text = description;
@@ -94,15 +102,18 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 "Black Deck" => "Start with +1 Joker slot, +1 Hand, -1 Discard",
                 "Magic Deck" => "Start with 2 Crystal Balls and 1 extra Consumable slot",
                 "Nebula Deck" => "Start with Voucher [Telescope]. +3 Consumable slots",
-                "Ghost Deck" => "Spectral cards and Hex shop vouchers appear 2X more often. Start with 1 Hex",
+                "Ghost Deck" =>
+                    "Spectral cards and Hex shop vouchers appear 2X more often. Start with 1 Hex",
                 "Abandoned Deck" => "Start with no Face Cards in deck",
                 "Checkered Deck" => "Start with 26 Spades and 26 Hearts in deck",
-                "Zodiac Deck" => "Start with Voucher [Tarot Merchant], Voucher [Planet Merchant], Voucher [Overstock]",
+                "Zodiac Deck" =>
+                    "Start with Voucher [Tarot Merchant], Voucher [Planet Merchant], Voucher [Overstock]",
                 "Painted Deck" => "All cards start with a random enhancement. +1 Hand Size",
                 "Anaglyph Deck" => "After defeating each Boss Blind, gain a Double Tag",
                 "Plasma Deck" =>
                     "Balance Chips and Mult when calculating score for played hand. Base Chips and Mult set to stake Ante × 4",
-                "Erratic Deck" => "All ranks and suits are unknown until card is played. Random starting deck.",
+                "Erratic Deck" =>
+                    "All ranks and suits are unknown until card is played. Random starting deck.",
                 _ => "",
             };
         }

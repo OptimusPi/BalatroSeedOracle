@@ -30,7 +30,11 @@ namespace BalatroSeedOracle.Views.Modals
                     );
                 }
 
-                var viewModel = new FiltersModalViewModel(configService, filterService, platformServices);
+                var viewModel = new FiltersModalViewModel(
+                    configService,
+                    filterService,
+                    platformServices
+                );
                 DataContext = viewModel;
 
                 // Initialize tabs synchronously so they're ready when UI renders
@@ -43,8 +47,14 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("FiltersModal", $"Stack trace: {ex.StackTrace}");
                 if (ex.InnerException != null)
                 {
-                    DebugLogger.LogError("FiltersModal", $"Inner exception: {ex.InnerException.Message}");
-                    DebugLogger.LogError("FiltersModal", $"Inner stack trace: {ex.InnerException.StackTrace}");
+                    DebugLogger.LogError(
+                        "FiltersModal",
+                        $"Inner exception: {ex.InnerException.Message}"
+                    );
+                    DebugLogger.LogError(
+                        "FiltersModal",
+                        $"Inner stack trace: {ex.InnerException.StackTrace}"
+                    );
                 }
                 // Create a minimal fallback
                 DataContext = null;

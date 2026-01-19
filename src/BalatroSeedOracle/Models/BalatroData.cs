@@ -31,13 +31,19 @@ namespace BalatroSeedOracle.Models
         }
 
         public static readonly Dictionary<string, string> Jokers = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> TarotCards = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> SpectralCards = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> Vouchers = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> TarotCards =
+            new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> SpectralCards =
+            new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> Vouchers =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Tags = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> BossBlinds = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> PlanetCards = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> BoosterPacks = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> BossBlinds =
+            new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> PlanetCards =
+            new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> BoosterPacks =
+            new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Decks = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> Stakes = new Dictionary<string, string>();
 
@@ -207,7 +213,10 @@ namespace BalatroSeedOracle.Models
             { "Zodiac", "Start run with 'Tarot Merchant'\n'Planet Merchant' and 'Overstock'" },
             { "Painted", "+2 hand size\n-1 Joker slot" },
             { "Anaglyph", "After defeating each Boss Blind,\ngain a Double Tag" },
-            { "Plasma", "Balance chips and mult\nwhen calculating score for played hand\nX2 base blind size" },
+            {
+                "Plasma",
+                "Balance chips and mult\nwhen calculating score for played hand\nX2 base blind size"
+            },
             { "Erratic", "All ranks and suits are randomized" },
         };
 
@@ -445,7 +454,8 @@ namespace BalatroSeedOracle.Models
         }
 
         public static readonly List<string> LegendaryJokers = new List<string>();
-        public static readonly Dictionary<string, List<string>> JokersByRarity = new Dictionary<string, List<string>>();
+        public static readonly Dictionary<string, List<string>> JokersByRarity =
+            new Dictionary<string, List<string>>();
 
         static void InitializeCompatibilityCollections()
         {

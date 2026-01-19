@@ -24,7 +24,7 @@ namespace BalatroSeedOracle.Components.WebView
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             _webView = this.FindControl<Control>("WebViewControl");
             _urlTextBox = this.FindControl<TextBox>("UrlTextBox");
             _backButton = this.FindControl<Button>("BackButton");
@@ -111,7 +111,10 @@ namespace BalatroSeedOracle.Components.WebView
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ExternalContentModal", $"Failed to navigate to {url}: {ex.Message}");
+                DebugLogger.LogError(
+                    "ExternalContentModal",
+                    $"Failed to navigate to {url}: {ex.Message}"
+                );
             }
         }
     }

@@ -104,7 +104,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("EventFXService", $"Failed to load config for {eventType}: {ex.Message}");
+                DebugLogger.LogError(
+                    "EventFXService",
+                    $"Failed to load config for {eventType}: {ex.Message}"
+                );
                 return null;
             }
         }

@@ -12,15 +12,11 @@ namespace BalatroSeedOracle.Controls
             string
         >(nameof(Label), "CATEGORY");
 
-        public static readonly StyledProperty<IBrush> LabelForegroundProperty = AvaloniaProperty.Register<
-            FilterCategoryStrip,
-            IBrush
-        >(nameof(LabelForeground));
+        public static readonly StyledProperty<IBrush> LabelForegroundProperty =
+            AvaloniaProperty.Register<FilterCategoryStrip, IBrush>(nameof(LabelForeground));
 
-        public static readonly StyledProperty<IEnumerable> ItemsProperty = AvaloniaProperty.Register<
-            FilterCategoryStrip,
-            IEnumerable
-        >(nameof(Items));
+        public static readonly StyledProperty<IEnumerable> ItemsProperty =
+            AvaloniaProperty.Register<FilterCategoryStrip, IEnumerable>(nameof(Items));
 
         public string Label
         {

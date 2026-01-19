@@ -103,7 +103,8 @@ namespace BalatroSeedOracle.Controls
             {
                 // Center the triangle above the tab
                 // Triangle is 16px wide, so subtract half width (8px) to center it
-                var triangleCenterX = tabPosition.Value.X + (tabBounds.Width / 2.0) - TRIANGLE_HALF_WIDTH;
+                var triangleCenterX =
+                    tabPosition.Value.X + (tabBounds.Width / 2.0) - TRIANGLE_HALF_WIDTH;
                 Canvas.SetLeft(_triangleIndicator, triangleCenterX);
                 _triangleIndicator.IsVisible = true;
             }
@@ -114,10 +115,8 @@ namespace BalatroSeedOracle.Controls
         }
 
         // Items collection to hold TabItem children
-        public static readonly StyledProperty<AvaloniaList<object>> ItemsProperty = AvaloniaProperty.Register<
-            BalatroTabControl,
-            AvaloniaList<object>
-        >(nameof(Items));
+        public static readonly StyledProperty<AvaloniaList<object>> ItemsProperty =
+            AvaloniaProperty.Register<BalatroTabControl, AvaloniaList<object>>(nameof(Items));
 
         public AvaloniaList<object> Items
         {
@@ -126,10 +125,12 @@ namespace BalatroSeedOracle.Controls
         }
 
         // SelectedIndex property with TwoWay binding support
-        public static readonly StyledProperty<int> SelectedIndexProperty = AvaloniaProperty.Register<
-            BalatroTabControl,
-            int
-        >(nameof(SelectedIndex), defaultValue: 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+        public static readonly StyledProperty<int> SelectedIndexProperty =
+            AvaloniaProperty.Register<BalatroTabControl, int>(
+                nameof(SelectedIndex),
+                defaultValue: 0,
+                defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
+            );
 
         public int SelectedIndex
         {

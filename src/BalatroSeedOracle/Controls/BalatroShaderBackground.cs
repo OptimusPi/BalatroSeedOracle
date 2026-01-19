@@ -91,9 +91,11 @@ namespace BalatroSeedOracle.Controls
 
         public float GetZoomScale() => _renderer != null ? _renderer.GetZoomScale() : 0f;
 
-        public float GetSaturationAmount() => _renderer != null ? _renderer.GetSaturationAmount() : 0f;
+        public float GetSaturationAmount() =>
+            _renderer != null ? _renderer.GetSaturationAmount() : 0f;
 
-        public float GetSaturationAmount2() => _renderer != null ? _renderer.GetSaturationAmount2() : 0f;
+        public float GetSaturationAmount2() =>
+            _renderer != null ? _renderer.GetSaturationAmount2() : 0f;
 
         public float GetPixelSize() => _renderer != null ? _renderer.GetPixelSize() : 1440.0f;
 
@@ -147,7 +149,8 @@ namespace BalatroSeedOracle.Controls
             private SKRuntimeShaderBuilder? _psyShaderBuilder;
             private bool _isDisposed;
             private bool _isAnimating = true;
-            private readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            private readonly System.Diagnostics.Stopwatch _stopwatch =
+                System.Diagnostics.Stopwatch.StartNew();
 
             // Animation speed multipliers (controlled by sliders)
             private float _timeSpeed = 1.0f;
@@ -331,7 +334,10 @@ namespace BalatroSeedOracle.Controls
                 if (_isDisposed)
                     return;
 
-                if (context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature)) is ISkiaSharpApiLeaseFeature leaseFeature)
+                if (
+                    context.TryGetFeature(typeof(ISkiaSharpApiLeaseFeature))
+                    is ISkiaSharpApiLeaseFeature leaseFeature
+                )
                 {
                     using var lease = leaseFeature.Lease();
                     var canvas = lease.SkCanvas;
@@ -351,7 +357,10 @@ namespace BalatroSeedOracle.Controls
                 if (_shaderBuilder != null)
                     return;
 
-                var effect = SKRuntimeEffect.CreateShader(ShaderConstants.BALATRO_SHADER, out var error);
+                var effect = SKRuntimeEffect.CreateShader(
+                    ShaderConstants.BALATRO_SHADER,
+                    out var error
+                );
                 if (effect != null)
                 {
                     _shaderBuilder = new SKRuntimeShaderBuilder(effect);
@@ -361,14 +370,20 @@ namespace BalatroSeedOracle.Controls
                     Helpers.DebugLogger.LogError("Shader", $"Shader compilation failed: {error}");
                 }
 
-                var psyEffect = SKRuntimeEffect.CreateShader(ShaderConstants.PSYCHEDELIC_SHADER, out var perr);
+                var psyEffect = SKRuntimeEffect.CreateShader(
+                    ShaderConstants.PSYCHEDELIC_SHADER,
+                    out var perr
+                );
                 if (psyEffect != null)
                 {
                     _psyShaderBuilder = new SKRuntimeShaderBuilder(psyEffect);
                 }
                 else
                 {
-                    Helpers.DebugLogger.LogError("Shader", $"Psychedelic shader compilation failed: {perr}");
+                    Helpers.DebugLogger.LogError(
+                        "Shader",
+                        $"Psychedelic shader compilation failed: {perr}"
+                    );
                 }
             }
 
@@ -450,7 +465,12 @@ namespace BalatroSeedOracle.Controls
 
                     using var psyShader = _psyShaderBuilder.Build();
                     using var paint2 = new SKPaint { Shader = psyShader };
-                    paint2.Color = new SKColor(255, 255, 255, (byte)(Math.Clamp(_psyBlend, 0f, 1f) * 255));
+                    paint2.Color = new SKColor(
+                        255,
+                        255,
+                        255,
+                        (byte)(Math.Clamp(_psyBlend, 0f, 1f) * 255)
+                    );
                     canvas.DrawRect(rect, paint2);
                 }
             }

@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Services.DuckDB;
-using DuckDB.NET.Data;
 using BalatroSeedOracle.Services.DuckDB;
+using DuckDB.NET.Data;
 
 namespace BalatroSeedOracle.Desktop.Services;
 

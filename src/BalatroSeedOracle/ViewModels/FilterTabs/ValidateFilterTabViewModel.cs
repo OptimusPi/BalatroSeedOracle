@@ -150,13 +150,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     FilterName = _parentViewModel.LoadedConfig.Name;
                     FilterDescription = _parentViewModel.LoadedConfig.Description ?? "";
-                    DebugLogger.Log("ValidateFilterTab", $"Pre-filled from LoadedConfig: {FilterName}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Pre-filled from LoadedConfig: {FilterName}"
+                    );
                 }
                 // Fall back to loaded filter file name
                 else if (!string.IsNullOrWhiteSpace(_parentViewModel.CurrentFilterPath))
                 {
-                    FilterName = Path.GetFileNameWithoutExtension(_parentViewModel.CurrentFilterPath);
-                    DebugLogger.Log("ValidateFilterTab", $"Pre-filled from CurrentFilterPath: {FilterName}");
+                    FilterName = Path.GetFileNameWithoutExtension(
+                        _parentViewModel.CurrentFilterPath
+                    );
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Pre-filled from CurrentFilterPath: {FilterName}"
+                    );
                 }
                 // Fall back to parent's current name/description (for new unsaved filters)
                 else
@@ -171,12 +179,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         FilterDescription = _parentViewModel.FilterDescription;
                     }
 
-                    DebugLogger.Log("ValidateFilterTab", $"Pre-filled from parent state: {FilterName}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Pre-filled from parent state: {FilterName}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ValidateFilterTab", $"Error pre-filling filter data: {ex.Message}");
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"Error pre-filling filter data: {ex.Message}"
+                );
             }
         }
 
@@ -216,16 +230,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                                     var config = _parentViewModel.ItemConfigs.ContainsKey(
                                         $"{child.Category}:{child.Name}"
                                     )
-                                        ? _parentViewModel.ItemConfigs[$"{child.Category}:{child.Name}"]
+                                        ? _parentViewModel.ItemConfigs[
+                                            $"{child.Category}:{child.Name}"
+                                        ]
                                         : new ItemConfig();
-                                    var clause = _clauseConversionService.ConvertFilterItemToClause(child, config);
+                                    var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                        child,
+                                        config
+                                    );
                                     if (clause != null)
                                     {
-                                        var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
-                                            clause,
-                                            child.Category,
-                                            0
-                                        );
+                                        var clauseRow =
+                                            _clauseConversionService.ConvertToClauseViewModel(
+                                                clause,
+                                                child.Category,
+                                                0
+                                            );
                                         if (clauseRow != null)
                                             MustNotClauses.Add(clauseRow);
                                     }
@@ -233,17 +253,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             }
                             else
                             {
-                                var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                                var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                    $"{item.Category}:{item.Name}"
+                                )
                                     ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                     : new ItemConfig();
-                                var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                                var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                    item,
+                                    config
+                                );
                                 if (clause != null)
                                 {
-                                    var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
-                                        clause,
-                                        item.Category,
-                                        0
-                                    );
+                                    var clauseRow =
+                                        _clauseConversionService.ConvertToClauseViewModel(
+                                            clause,
+                                            item.Category,
+                                            0
+                                        );
                                     if (clauseRow != null)
                                         MustClauses.Add(clauseRow);
                                 }
@@ -253,10 +279,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         // Convert Should items
                         foreach (var item in visualVm.SelectedShould)
                         {
-                            var config = _parentViewModel.ItemConfigs.ContainsKey($"{item.Category}:{item.Name}")
+                            var config = _parentViewModel.ItemConfigs.ContainsKey(
+                                $"{item.Category}:{item.Name}"
+                            )
                                 ? _parentViewModel.ItemConfigs[$"{item.Category}:{item.Name}"]
                                 : new ItemConfig();
-                            var clause = _clauseConversionService.ConvertFilterItemToClause(item, config);
+                            var clause = _clauseConversionService.ConvertFilterItemToClause(
+                                item,
+                                config
+                            );
                             if (clause != null)
                             {
                                 var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
@@ -326,7 +357,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             });
         }
 
-        private ClauseRowViewModel? ConvertItemConfigDirectly(ItemConfig config, string itemKey, int nestingLevel)
+        private ClauseRowViewModel? ConvertItemConfigDirectly(
+            ItemConfig config,
+            string itemKey,
+            int nestingLevel
+        )
         {
             try
             {
@@ -364,7 +399,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Convert the clause to a view model
-                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(clause, category, nestingLevel);
+                var clauseRow = _clauseConversionService.ConvertToClauseViewModel(
+                    clause,
+                    category,
+                    nestingLevel
+                );
 
                 if (clauseRow == null)
                 {
@@ -384,7 +423,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             catch (Exception ex)
             {
                 // Don't crash the whole tab - just skip this item and log the error
-                DebugLogger.LogError("ValidateFilterTab", $"❌ Failed to convert itemKey '{itemKey}': {ex.Message}");
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"❌ Failed to convert itemKey '{itemKey}': {ex.Message}"
+                );
                 DebugLogger.LogError("ValidateFilterTab", $"Stack trace: {ex.StackTrace}");
                 return null; // Skip this item, continue with others
             }
@@ -406,7 +448,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             else
             {
-                DebugLogger.LogError("ValidateFilterTab", $"ItemConfig not found for clause: {row.ItemKey}");
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"ItemConfig not found for clause: {row.ItemKey}"
+                );
             }
         }
 
@@ -421,11 +466,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MustClauses.Remove(row);
 
                     // Find and remove from parent's SelectedMust
-                    var itemToRemove = visualVm.SelectedMust.FirstOrDefault(item => item.ItemKey == row.ItemKey);
+                    var itemToRemove = visualVm.SelectedMust.FirstOrDefault(item =>
+                        item.ItemKey == row.ItemKey
+                    );
                     if (itemToRemove != null)
                     {
                         visualVm.SelectedMust.Remove(itemToRemove);
-                        DebugLogger.Log("ValidateFilterTab", $"Removed clause from Must: {row.ItemKey}");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"Removed clause from Must: {row.ItemKey}"
+                        );
                     }
                 }
                 // Remove from MustNot collection
@@ -438,11 +488,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     {
                         if (item.OperatorType == "BannedItems")
                         {
-                            var childToRemove = item.Children.FirstOrDefault(child => child.ItemKey == row.ItemKey);
+                            var childToRemove = item.Children.FirstOrDefault(child =>
+                                child.ItemKey == row.ItemKey
+                            );
                             if (childToRemove != null)
                             {
                                 item.Children.Remove(childToRemove);
-                                DebugLogger.Log("ValidateFilterTab", $"Removed clause from BannedItems: {row.ItemKey}");
+                                DebugLogger.Log(
+                                    "ValidateFilterTab",
+                                    $"Removed clause from BannedItems: {row.ItemKey}"
+                                );
                                 break;
                             }
                         }
@@ -454,11 +509,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ShouldClauses.Remove(row);
 
                     // Find and remove from parent's SelectedShould
-                    var itemToRemove = visualVm.SelectedShould.FirstOrDefault(item => item.ItemKey == row.ItemKey);
+                    var itemToRemove = visualVm.SelectedShould.FirstOrDefault(item =>
+                        item.ItemKey == row.ItemKey
+                    );
                     if (itemToRemove != null)
                     {
                         visualVm.SelectedShould.Remove(itemToRemove);
-                        DebugLogger.Log("ValidateFilterTab", $"Removed clause from Should: {row.ItemKey}");
+                        DebugLogger.Log(
+                            "ValidateFilterTab",
+                            $"Removed clause from Should: {row.ItemKey}"
+                        );
                     }
                 }
             }
@@ -469,19 +529,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     MustClauses.Remove(row);
                     _parentViewModel.SelectedMust.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from Must (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from Must (key-based): {row.ItemKey}"
+                    );
                 }
                 else if (MustNotClauses.Contains(row))
                 {
                     MustNotClauses.Remove(row);
                     _parentViewModel.SelectedMustNot.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from MustNot (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from MustNot (key-based): {row.ItemKey}"
+                    );
                 }
                 else if (ShouldClauses.Contains(row))
                 {
                     ShouldClauses.Remove(row);
                     _parentViewModel.SelectedShould.Remove(row.ItemKey);
-                    DebugLogger.Log("ValidateFilterTab", $"Removed clause from Should (key-based): {row.ItemKey}");
+                    DebugLogger.Log(
+                        "ValidateFilterTab",
+                        $"Removed clause from Should (key-based): {row.ItemKey}"
+                    );
                 }
             }
 
@@ -551,7 +620,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Show validation warning to user
             HasValidationWarnings = true;
-            ValidationWarningText = "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
+            ValidationWarningText =
+                "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
 
             // For now, we proceed automatically after showing the warning.
             // A proper modal dialog system would allow user confirmation here.
@@ -653,7 +723,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (string.IsNullOrWhiteSpace(filterFileName))
                 {
                     // Fallback to generating filename from filter name
-                    filterFileName = Path.GetFileName(_filterService.GenerateFilterFileName(FilterName));
+                    filterFileName = Path.GetFileName(
+                        _filterService.GenerateFilterFileName(FilterName)
+                    );
                 }
 
                 // Close the filter modal and open search modal with this filter
@@ -662,7 +734,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Request navigation to search modal with the saved filter
                 _parentViewModel.RequestNavigateToSearch?.Invoke(filterFileName);
 
-                DebugLogger.Log("ValidateFilterTab", $"Navigating to search modal with filter: {filterFileName}");
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    $"Navigating to search modal with filter: {filterFileName}"
+                );
             }
             catch (Exception ex)
             {
@@ -787,7 +862,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                var searchManager = ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
+                var searchManager =
+                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
                 if (searchManager == null)
                 {
                     IsTestRunning = false;
@@ -846,13 +922,19 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                DebugLogger.Log("ValidateFilterTab", "✅ PHASE 1: No seeds found (good - filter not too permissive)");
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "✅ PHASE 1: No seeds found (good - filter not too permissive)"
+                );
 
                 // PHASE 2: Progressive escalation with batch size 1, CPU-1 threads
                 // Use CPU count - 1 for threads
                 var cpuCount = Environment.ProcessorCount;
                 var threadCount = Math.Max(1, cpuCount - 1);
-                DebugLogger.Log("ValidateFilterTab", $"Using {threadCount} threads (CPU count: {cpuCount})");
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    $"Using {threadCount} threads (CPU count: {cpuCount})"
+                );
 
                 // Sub-phase 2a: Try 1,000 batches (35K seeds)
                 LiveSearchStatus = "Phase 2a: Searching 1,000 batches (35K seeds)...";
@@ -868,8 +950,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1, // Stop at first match
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2a: Testing 1,000 batches (35K seeds)");
-                var phase2aResults = await searchManager.RunQuickSearchAsync(phase2aCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2a: Testing 1,000 batches (35K seeds)"
+                );
+                var phase2aResults = await searchManager.RunQuickSearchAsync(
+                    phase2aCriteria,
+                    config
+                );
 
                 if (phase2aResults.Success && phase2aResults.Count > 0)
                 {
@@ -878,7 +966,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2aResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2aResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2aResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -899,8 +988,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1,
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2b: Testing 100,000 batches (3.5M seeds)");
-                var phase2bResults = await searchManager.RunQuickSearchAsync(phase2bCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2b: Testing 100,000 batches (3.5M seeds)"
+                );
+                var phase2bResults = await searchManager.RunQuickSearchAsync(
+                    phase2bCriteria,
+                    config
+                );
 
                 if (phase2bResults.Success && phase2bResults.Count > 0)
                 {
@@ -909,7 +1004,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2bResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2bResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2bResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -931,7 +1027,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 };
 
                 DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2c: Testing batches 100K-100.25K");
-                var phase2cResults = await searchManager.RunQuickSearchAsync(phase2cCriteria, config);
+                var phase2cResults = await searchManager.RunQuickSearchAsync(
+                    phase2cCriteria,
+                    config
+                );
 
                 if (phase2cResults.Success && phase2cResults.Count > 0)
                 {
@@ -940,7 +1039,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2cResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2cResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2cResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -961,8 +1061,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     MaxResults = 1,
                 };
 
-                DebugLogger.Log("ValidateFilterTab", "🚀 PHASE 2d: Testing 1M batches (35M seeds) - FINAL PUSH");
-                var phase2dResults = await searchManager.RunQuickSearchAsync(phase2dCriteria, config);
+                DebugLogger.Log(
+                    "ValidateFilterTab",
+                    "🚀 PHASE 2d: Testing 1M batches (35M seeds) - FINAL PUSH"
+                );
+                var phase2dResults = await searchManager.RunQuickSearchAsync(
+                    phase2dCriteria,
+                    config
+                );
 
                 LiveSearchProgress = 100;
                 IsTestRunning = false;
@@ -975,7 +1081,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     IsFilterVerified = true;
                     FoundSeed = phase2dResults.Seeds?[0].ToString() ?? "Unknown";
                     ExampleSeedForPreview = FoundSeed;
-                    TestResultMessage = $"✓ VERIFIED - Found seed in {phase2dResults.ElapsedTime:F1}s";
+                    TestResultMessage =
+                        $"✓ VERIFIED - Found seed in {phase2dResults.ElapsedTime:F1}s";
                     UpdateStatus($"✓ Filter verified: {FoundSeed}", false);
                 }
                 else if (phase2dResults.Success && phase2dResults.Count == 0)
@@ -986,7 +1093,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         $"⚠ NO SEEDS FOUND\nSearched 35M seeds in {phase2dResults.ElapsedTime:F1}s\nFilter may be too restrictive";
                     UpdateStatus($"⚠ No seeds found in 35M seeds", true);
                     HasValidationWarnings = true;
-                    ValidationWarningText = "No matching seeds found. Try making filter less restrictive.";
+                    ValidationWarningText =
+                        "No matching seeds found. Try making filter less restrictive.";
                 }
                 else
                 {

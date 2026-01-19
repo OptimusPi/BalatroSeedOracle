@@ -12,7 +12,12 @@ namespace BalatroSeedOracle.Converters
     /// </summary>
     public class FilterCriteriaConverter : IValueConverter
     {
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not List<string> itemKeys || itemKeys.Count == 0)
             {
@@ -46,7 +51,12 @@ namespace BalatroSeedOracle.Converters
             return result;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }

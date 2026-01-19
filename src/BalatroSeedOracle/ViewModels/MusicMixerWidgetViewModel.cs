@@ -39,7 +39,8 @@ namespace BalatroSeedOracle.ViewModels
         )
             : base(widgetPositionService)
         {
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _userProfileService =
+                userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
             _soundFlowAudioManager = soundFlowAudioManager;
 
             // Configure widget appearance and position - fourth position (90px spacing)
@@ -363,7 +364,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_soundFlowAudioManager == null)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", "SoundFlowAudioManager service not found!");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    "SoundFlowAudioManager service not found!"
+                );
                 return;
             }
 
@@ -378,7 +382,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_soundFlowAudioManager == null)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", "SoundFlowAudioManager service not found!");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    "SoundFlowAudioManager service not found!"
+                );
                 return;
             }
 
@@ -392,7 +399,17 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void HandleSoloToggle(string trackName, bool isSolo)
         {
-            var trackList = new[] { "Drums1", "Drums2", "Bass1", "Bass2", "Chords1", "Chords2", "Melody1", "Melody2" };
+            var trackList = new[]
+            {
+                "Drums1",
+                "Drums2",
+                "Bass1",
+                "Bass2",
+                "Chords1",
+                "Chords2",
+                "Melody1",
+                "Melody2",
+            };
 
             if (isSolo)
             {
@@ -598,14 +615,23 @@ namespace BalatroSeedOracle.ViewModels
                     Directory.CreateDirectory(MIXER_SETTINGS_DIR);
                 }
 
-                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(
+                    settings,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 File.WriteAllText(MIXER_SETTINGS_FILE, json);
 
-                DebugLogger.Log("MusicMixerWidgetViewModel", $"Mixer settings saved to {MIXER_SETTINGS_FILE}");
+                DebugLogger.Log(
+                    "MusicMixerWidgetViewModel",
+                    $"Mixer settings saved to {MIXER_SETTINGS_FILE}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"Failed to save mixer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"Failed to save mixer settings: {ex.Message}"
+                );
             }
         }
 
@@ -676,12 +702,18 @@ namespace BalatroSeedOracle.ViewModels
                     Melody2Muted = settings.Melody2.Muted;
                     Melody2Solo = settings.Melody2.Solo;
 
-                    DebugLogger.Log("MusicMixerWidgetViewModel", "Mixer settings loaded successfully");
+                    DebugLogger.Log(
+                        "MusicMixerWidgetViewModel",
+                        "Mixer settings loaded successfully"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"Failed to load mixer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"Failed to load mixer settings: {ex.Message}"
+                );
             }
         }
 
@@ -702,7 +734,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"SaveMixAs failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"SaveMixAs failed: {ex.Message}"
+                );
             }
         }
 
@@ -731,7 +766,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"LoadMixFrom failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"LoadMixFrom failed: {ex.Message}"
+                );
             }
         }
 
@@ -743,7 +781,11 @@ namespace BalatroSeedOracle.ViewModels
                 var names = MixerHelper.LoadAllMixerNames();
                 if (names.Count == 0)
                     return;
-                var selected = await ShowSelectionDialog("Animate To Mix", "Choose a saved mix:", names);
+                var selected = await ShowSelectionDialog(
+                    "Animate To Mix",
+                    "Choose a saved mix:",
+                    names
+                );
                 if (string.IsNullOrWhiteSpace(selected))
                     return;
                 var target = MixerHelper.LoadMixer(selected);
@@ -753,11 +795,17 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("MusicMixerWidgetViewModel", $"AnimateToMix failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "MusicMixerWidgetViewModel",
+                    $"AnimateToMix failed: {ex.Message}"
+                );
             }
         }
 
-        private async System.Threading.Tasks.Task AnimateToMixer(MixerSettings target, TimeSpan duration)
+        private async System.Threading.Tasks.Task AnimateToMixer(
+            MixerSettings target,
+            TimeSpan duration
+        )
         {
             var start = DateTime.UtcNow;
             var sD1V = Drums1Volume;
@@ -1016,7 +1064,10 @@ namespace BalatroSeedOracle.ViewModels
                 };
                 textBox.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Avalonia.Input.Key.Enter && !string.IsNullOrWhiteSpace(textBox.Text))
+                    if (
+                        e.Key == Avalonia.Input.Key.Enter
+                        && !string.IsNullOrWhiteSpace(textBox.Text)
+                    )
                     {
                         result = textBox.Text;
                         dialog.Close();
@@ -1075,7 +1126,11 @@ namespace BalatroSeedOracle.ViewModels
                     Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
                     FontSize = 14,
                 };
-                var combo = new ComboBox { ItemsSource = options, SelectedIndex = options.Count > 0 ? 0 : -1 };
+                var combo = new ComboBox
+                {
+                    ItemsSource = options,
+                    SelectedIndex = options.Count > 0 ? 0 : -1,
+                };
                 var buttons = new StackPanel
                 {
                     Orientation = Avalonia.Layout.Orientation.Horizontal,

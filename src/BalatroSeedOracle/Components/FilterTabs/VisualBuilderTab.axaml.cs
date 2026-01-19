@@ -68,7 +68,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"DataContext set to: {DataContext?.GetType().Name ?? "null"}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"DataContext set to: {DataContext?.GetType().Name ?? "null"}"
+                    );
                     DebugLogger.Log(
                         "VisualBuilderTab",
                         $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}"
@@ -100,11 +103,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 topLevel.PointerMoved += OnPointerMovedManualDrag;
                 topLevel.PointerReleased += OnPointerReleasedManualDrag;
-                DebugLogger.Log("VisualBuilderTab", "Manual drag pointer handlers attached to TopLevel");
+                DebugLogger.Log(
+                    "VisualBuilderTab",
+                    "Manual drag pointer handlers attached to TopLevel"
+                );
             }
             else
             {
-                DebugLogger.LogError("VisualBuilderTab", "Failed to attach pointer handlers - no TopLevel");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    "Failed to attach pointer handlers - no TopLevel"
+                );
             }
         }
 
@@ -127,7 +136,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnUnifiedTrayChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void OnUnifiedTrayChildrenChanged(
+            object? sender,
+            NotifyCollectionChangedEventArgs e
+        )
         {
             // Update the fanned card layout whenever children change
             UpdateUnifiedTrayFannedLayout();
@@ -151,7 +163,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             );
         }
 
-        private void CalculateUnifiedTrayFannedPositions(ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+        private void CalculateUnifiedTrayFannedPositions(
+            ViewModels.FilterTabs.VisualBuilderTabViewModel vm
+        )
         {
             if (UnifiedTrayItemsControl == null)
                 return;
@@ -215,7 +229,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             double startX = -totalWidth / 2.0 + cardWidth / 2.0;
 
             // Apply transforms to each card container
-            var containers = UnifiedTrayItemsControl.GetVisualDescendants().OfType<Border>().ToList();
+            var containers = UnifiedTrayItemsControl
+                .GetVisualDescendants()
+                .OfType<Border>()
+                .ToList();
 
             for (int i = 0; i < Math.Min(count, containers.Count); i++)
             {
@@ -318,7 +335,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     var topLevel = TopLevel.GetTopLevel(this);
                     if (topLevel != null && _originalDragSource != null)
                     {
-                        var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                        var sourcePos = _originalDragSource.TranslatePoint(
+                            new Avalonia.Point(0, 0),
+                            topLevel
+                        );
                         _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
 
                         // Store the click offset relative to the card origin (where user grabbed)
@@ -338,7 +358,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _previousMousePosition = e.GetPosition(this);
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"🎯 MANUAL DRAG START for item: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"🎯 MANUAL DRAG START for item: {item.Name}"
+                    );
 
                     // Play card select sound
                     // SoundEffectService.Instance.PlayCardSelect();
@@ -357,7 +380,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (_originalDragSource != null)
                     {
                         _originalDragSource.Opacity = 0; // Hide original while dragging
-                        DebugLogger.Log("VisualBuilderTab", "Hidden original shelf card during drag");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "Hidden original shelf card during drag"
+                        );
                     }
 
                     // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
@@ -379,7 +405,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void OnDropZoneItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+        private void OnDropZoneItemPointerPressed(
+            object? sender,
+            Avalonia.Input.PointerPressedEventArgs e
+        )
         {
             // Prevent starting a new drag if one is already in progress or animating
             if (_isDragging || _isAnimating)
@@ -435,12 +464,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (vm.SelectedMust.Contains(item))
                 {
                     _sourceDropZone = "MustDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Must zone: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drag initiated from Must zone: {item.Name}"
+                    );
                 }
                 else if (vm.SelectedShould.Contains(item))
                 {
                     _sourceDropZone = "ShouldDropZone";
-                    DebugLogger.Log("VisualBuilderTab", $"Drag initiated from Should zone: {item.Name}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Drag initiated from Should zone: {item.Name}"
+                    );
                 }
 
                 // Now start the drag operation
@@ -452,7 +487,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel != null && _originalDragSource != null)
                 {
-                    var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                    var sourcePos = _originalDragSource.TranslatePoint(
+                        new Avalonia.Point(0, 0),
+                        topLevel
+                    );
                     _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
 
                     // Store the click offset relative to the card origin (where user grabbed)
@@ -494,7 +532,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     if (ReturnOverlay != null)
                     {
                         ReturnOverlay.IsVisible = true;
-                        DebugLogger.Log("VisualBuilderTab", "✅ Showing return overlay immediately on drag start");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "✅ Showing return overlay immediately on drag start"
+                        );
                     }
 
                     // Show overlays for OTHER drop zones (not the source)
@@ -606,7 +647,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                 }
                 // Check if over drop zone container
-                else if (DropZoneContainer != null && IsPointOverControl(cursorPos, DropZoneContainer, _topLevel))
+                else if (
+                    DropZoneContainer != null
+                    && IsPointOverControl(cursorPos, DropZoneContainer, _topLevel)
+                )
                 {
                     // Drop zone overlays are handled by PointerEntered/Exited events - don't manipulate them here
                     // Zones stay always visible - no accordion-style expansion during drag
@@ -619,7 +663,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Error in OnPointerMovedManualDrag: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Error in OnPointerMovedManualDrag: {ex.Message}"
+                );
             }
         }
 
@@ -661,12 +708,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return null;
 
             // Get the appropriate collection based on zone
-            System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection = zoneName switch
-            {
-                "MustDropZone" => vm.SelectedMust,
-                "ShouldDropZone" => vm.SelectedShould,
-                _ => null,
-            };
+            System.Collections.ObjectModel.ObservableCollection<Models.FilterItem>? collection =
+                zoneName switch
+                {
+                    "MustDropZone" => vm.SelectedMust,
+                    "ShouldDropZone" => vm.SelectedShould,
+                    _ => null,
+                };
 
             if (collection == null)
                 return null;
@@ -728,7 +776,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Remove all visual feedback
                 RemoveDragOverClassExcept(null);
 
-                var vm = DataContext as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
+                var vm =
+                    DataContext
+                    as BalatroSeedOracle.ViewModels.FilterTabs.VisualBuilderTabViewModel;
                 if (vm == null)
                 {
                     DebugLogger.Log("VisualBuilderTab", "Drop failed - no ViewModel");
@@ -748,16 +798,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 string? zoneName = null;
 
                 // HIGH-004 FIX: Check if dropped on Favorites (CategoryNav) with null safety
-                if (_draggedItem is not FilterOperatorItem && IsPointOverControl(cursorPos, CategoryNav, _topLevel))
+                if (
+                    _draggedItem is not FilterOperatorItem
+                    && IsPointOverControl(cursorPos, CategoryNav, _topLevel)
+                )
                 {
                     // Validate item has a name before adding to favorites
                     if (string.IsNullOrEmpty(_draggedItem?.Name))
                     {
-                        DebugLogger.LogError("VisualBuilderTab", "Cannot add item with null/empty name to favorites");
+                        DebugLogger.LogError(
+                            "VisualBuilderTab",
+                            "Cannot add item with null/empty name to favorites"
+                        );
                         return;
                     }
 
-                    DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into Favorites");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Dropped {_draggedItem.Name} into Favorites"
+                    );
 
                     var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
                     if (favoritesService != null)
@@ -776,11 +835,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 vm.SetCategory("Favorites");
                             }
 
-                            DebugLogger.Log("VisualBuilderTab", $"✅ {_draggedItem.Name} added to favorites");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"✅ {_draggedItem.Name} added to favorites"
+                            );
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError("VisualBuilderTab", $"Failed to add favorite: {ex.Message}");
+                            DebugLogger.LogError(
+                                "VisualBuilderTab",
+                                $"Failed to add favorite: {ex.Message}"
+                            );
                         }
                     }
                     else
@@ -792,10 +857,16 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 }
 
                 // Check if dropped on unified operator tray (only for FilterItem, NOT operators)
-                if (_draggedItem is FilterItem && IsPointOverControl(cursorPos, UnifiedTray, _topLevel))
+                if (
+                    _draggedItem is FilterItem
+                    && IsPointOverControl(cursorPos, UnifiedTray, _topLevel)
+                )
                 {
                     // Drop into unified tray
-                    DebugLogger.Log("VisualBuilderTab", $"Dropped {_draggedItem.Name} into unified tray");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"Dropped {_draggedItem.Name} into unified tray"
+                    );
 
                     var itemCopy = new Models.FilterItem
                     {
@@ -821,7 +892,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         Enhancement = _draggedItem.Enhancement,
                         Seal = _draggedItem.Seal,
                         // Copy stickers for overlay rendering (eternal/perishable/rental)
-                        Stickers = _draggedItem.Stickers != null ? new List<string>(_draggedItem.Stickers) : null,
+                        Stickers =
+                            _draggedItem.Stickers != null
+                                ? new List<string>(_draggedItem.Stickers)
+                                : null,
                         // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
                         IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
                     };
@@ -842,16 +916,25 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     zoneName = "ItemGridBorder";
                 }
                 // Check if over drop zones - use proper hit testing instead of Y-position math
-                else if (DropZoneContainer != null && IsPointOverControl(cursorPos, DropZoneContainer, _topLevel))
+                else if (
+                    DropZoneContainer != null
+                    && IsPointOverControl(cursorPos, DropZoneContainer, _topLevel)
+                )
                 {
                     // Use direct hit testing on each drop zone (fixes bug where operator tray offset broke Y-position math)
-                    if (MustDropZone != null && IsPointOverControl(cursorPos, MustDropZone, _topLevel))
+                    if (
+                        MustDropZone != null
+                        && IsPointOverControl(cursorPos, MustDropZone, _topLevel)
+                    )
                     {
                         zoneName = "MustDropZone";
                         targetZone = MustDropZone;
                         DebugLogger.Log("VisualBuilderTab", "✅ Over MUST drop zone (FILTER)");
                     }
-                    else if (ShouldDropZone != null && IsPointOverControl(cursorPos, ShouldDropZone, _topLevel))
+                    else if (
+                        ShouldDropZone != null
+                        && IsPointOverControl(cursorPos, ShouldDropZone, _topLevel)
+                    )
                     {
                         zoneName = "ShouldDropZone";
                         targetZone = ShouldDropZone;
@@ -861,7 +944,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 if (targetZone != null && zoneName != null)
                 {
-                    DebugLogger.Log("VisualBuilderTab", $"✅ Dropping {_draggedItem.Name} into {zoneName}");
+                    DebugLogger.Log(
+                        "VisualBuilderTab",
+                        $"✅ Dropping {_draggedItem.Name} into {zoneName}"
+                    );
 
                     // Hide overlay after drop
                     if (ReturnOverlay != null)
@@ -894,7 +980,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         }
                         else
                         {
-                            DebugLogger.Log("VisualBuilderTab", "Can't trash item from shelf (it was never added)");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                "Can't trash item from shelf (it was never added)"
+                            );
                         }
                     }
                     // Check if we're dropping to the same zone we dragged from
@@ -920,7 +1009,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // If dragging from a drop zone, remove from source first
                         if (_sourceDropZone != null)
                         {
-                            DebugLogger.Log("VisualBuilderTab", $"Removing {_draggedItem.Name} from {_sourceDropZone}");
+                            DebugLogger.Log(
+                                "VisualBuilderTab",
+                                $"Removing {_draggedItem.Name} from {_sourceDropZone}"
+                            );
                             switch (_sourceDropZone)
                             {
                                 case "MustDropZone":
@@ -978,7 +1070,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 );
 
                                 // VALIDATION: BannedItems can ONLY drop into MUST zone
-                                if (operatorItem.OperatorType == "BannedItems" && zoneName == "ShouldDropZone")
+                                if (
+                                    operatorItem.OperatorType == "BannedItems"
+                                    && zoneName == "ShouldDropZone"
+                                )
                                 {
                                     DebugLogger.Log(
                                         "VisualBuilderTab",
@@ -997,7 +1092,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 if (isUnifiedOperator && operatorItem.Children.Count > 0)
                                 {
                                     // Create a copy of the operator with deep copied children
-                                    var operatorCopy = new Models.FilterOperatorItem(operatorItem.OperatorType)
+                                    var operatorCopy = new Models.FilterOperatorItem(
+                                        operatorItem.OperatorType
+                                    )
                                     {
                                         DisplayName = operatorItem.DisplayName,
                                         Name = operatorItem.Name,
@@ -1012,12 +1109,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                         var spriteService = SpriteService.Instance;
                                         var childImage = child.Type switch
                                         {
-                                            "Joker" or "SoulJoker" => spriteService.GetJokerImage(child.Name),
-                                            "SmallBlindTag" or "BigBlindTag" => spriteService.GetTagImage(child.Name),
+                                            "Joker" or "SoulJoker" => spriteService.GetJokerImage(
+                                                child.Name
+                                            ),
+                                            "SmallBlindTag" or "BigBlindTag" =>
+                                                spriteService.GetTagImage(child.Name),
                                             "Voucher" => spriteService.GetVoucherImage(child.Name),
                                             "Tarot" => spriteService.GetTarotImage(child.Name),
-                                            "Planet" => spriteService.GetPlanetCardImage(child.Name),
-                                            "Spectral" => spriteService.GetSpectralImage(child.Name),
+                                            "Planet" => spriteService.GetPlanetCardImage(
+                                                child.Name
+                                            ),
+                                            "Spectral" => spriteService.GetSpectralImage(
+                                                child.Name
+                                            ),
                                             "Boss" => spriteService.GetBossImage(child.Name),
                                             _ => child.ItemImage, // Fallback to original if type unknown
                                         };
@@ -1046,7 +1150,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                             Enhancement = child.Enhancement,
                                             Seal = child.Seal,
                                             // Copy stickers for overlay rendering (eternal/perishable/rental)
-                                            Stickers = child.Stickers != null ? new List<string>(child.Stickers) : null,
+                                            Stickers =
+                                                child.Stickers != null
+                                                    ? new List<string>(child.Stickers)
+                                                    : null,
                                         };
                                         operatorCopy.Children.Add(childCopy);
 
@@ -1064,7 +1171,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                 }
 
                                 // MERGE LOGIC: Check if BannedItems tray already exists in MUST zone
-                                if (operatorItem.OperatorType == "BannedItems" && zoneName == "MustDropZone")
+                                if (
+                                    operatorItem.OperatorType == "BannedItems"
+                                    && zoneName == "MustDropZone"
+                                )
                                 {
                                     var existingBanned = vm
                                         .SelectedMust.OfType<Models.FilterOperatorItem>()
@@ -1160,7 +1270,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                                     Seal = _draggedItem.Seal,
                                     // Copy stickers for overlay rendering (eternal/perishable/rental)
                                     Stickers =
-                                        _draggedItem.Stickers != null ? new List<string>(_draggedItem.Stickers) : null,
+                                        _draggedItem.Stickers != null
+                                            ? new List<string>(_draggedItem.Stickers)
+                                            : null,
                                     // Note: SoulFaceImage, EditionImage, DebuffedOverlayImage are read-only (computed from other properties)
                                     IsInBannedItemsTray = _draggedItem.IsInBannedItemsTray,
                                 };
@@ -1204,7 +1316,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     else
                     {
                         // Item came from shelf - just animate back
-                        DebugLogger.Log("VisualBuilderTab", "Returning to shelf with rubber band animation");
+                        DebugLogger.Log(
+                            "VisualBuilderTab",
+                            "Returning to shelf with rubber band animation"
+                        );
                         await AnimateGhostBackToOrigin();
                     }
                 }
@@ -1280,7 +1395,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Error animating ghost back: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Error animating ghost back: {ex.Message}"
+                );
             }
             finally
             {
@@ -1296,7 +1414,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             if (PopupOverlay == null || PopupContent == null)
             {
-                DebugLogger.LogError("VisualBuilderTab", "Could not find PopupOverlay or PopupContent controls");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    "Could not find PopupOverlay or PopupContent controls"
+                );
                 return;
             }
 
@@ -1359,15 +1480,24 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         // No pagination - categories are now directly clickable in left nav
 
-        private async void OnStartOverClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void OnStartOverClick(
+            object? sender,
+            Avalonia.Interactivity.RoutedEventArgs e
+        )
         {
             try
             {
                 // Get Balatro color resources from App.axaml
-                var darkBg = Application.Current?.FindResource("DarkBackground") as Avalonia.Media.SolidColorBrush;
-                var modalGrey = Application.Current?.FindResource("ModalGrey") as Avalonia.Media.SolidColorBrush;
-                var red = Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
-                var white = Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
+                var darkBg =
+                    Application.Current?.FindResource("DarkBackground")
+                    as Avalonia.Media.SolidColorBrush;
+                var modalGrey =
+                    Application.Current?.FindResource("ModalGrey")
+                    as Avalonia.Media.SolidColorBrush;
+                var red =
+                    Application.Current?.FindResource("Red") as Avalonia.Media.SolidColorBrush;
+                var white =
+                    Application.Current?.FindResource("White") as Avalonia.Media.SolidColorBrush;
 
                 // Show confirmation dialog with Balatro-style colors
                 var dialog = new Window
@@ -1376,7 +1506,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Height = 200,
                     CanResize = false,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Background = darkBg ?? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(45, 54, 59)),
+                    Background =
+                        darkBg
+                        ?? new Avalonia.Media.SolidColorBrush(
+                            Avalonia.Media.Color.FromRgb(45, 54, 59)
+                        ),
                     Title = "Start Over?",
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
                     SystemDecorations = SystemDecorations.Full,
@@ -1466,7 +1600,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Error in OnStartOverClick: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Error in OnStartOverClick: {ex.Message}"
+                );
             }
         }
 
@@ -1566,7 +1703,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Seal overlay (purple, gold, red, blue - for StandardCards)
                     if (!string.IsNullOrEmpty(item?.Seal) && item.Seal != "None")
                     {
-                        var sealImage = Services.SpriteService.Instance.GetSealImage(item.Seal.ToLowerInvariant());
+                        var sealImage = Services.SpriteService.Instance.GetSealImage(
+                            item.Seal.ToLowerInvariant()
+                        );
                         if (sealImage != null)
                         {
                             imageGrid.Children.Add(
@@ -1641,7 +1780,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
 
                     // INCLUDE LABEL in the drag adorner (not just card image)
-                    var whiteBrush = Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
+                    var whiteBrush =
+                        Application.Current?.FindResource("White") as IBrush ?? Brushes.White;
 
                     var cardWithLabel = new StackPanel
                     {
@@ -1663,7 +1803,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         },
                     };
 
-                    cardContent = new Border { Background = Brushes.Transparent, Child = cardWithLabel };
+                    cardContent = new Border
+                    {
+                        Background = Brushes.Transparent,
+                        Child = cardWithLabel,
+                    };
                 }
 
                 // ADD BALATRO-STYLE SWAY PHYSICS TO THE CARD!
@@ -1692,14 +1836,20 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _topLevel != null
                         ? _previousMousePosition
                         : // Use the stored mouse position from drag start
-                        new Avalonia.Point(startPosition.X + _dragOffset.X, startPosition.Y + _dragOffset.Y);
+                        new Avalonia.Point(
+                            startPosition.X + _dragOffset.X,
+                            startPosition.Y + _dragOffset.Y
+                        );
 
                 // Position adorner so the grabbed point stays under the cursor
                 // CRITICAL: Convert TopLevel coordinates to Canvas coordinates!
                 // The Canvas is inside VisualBuilderTab, not at TopLevel origin
                 if (_topLevel != null)
                 {
-                    var canvasOffsetPoint = _adornerLayer.TranslatePoint(new Avalonia.Point(0, 0), _topLevel);
+                    var canvasOffsetPoint = _adornerLayer.TranslatePoint(
+                        new Avalonia.Point(0, 0),
+                        _topLevel
+                    );
                     _canvasOffset = canvasOffsetPoint ?? new Avalonia.Point(0, 0);
                 }
                 else
@@ -1723,7 +1873,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 transformGroup.Children.Add(_adornerTransform);
 
                 _dragAdorner.RenderTransform = transformGroup;
-                _dragAdorner.RenderTransformOrigin = new RelativePoint(0.5, 0.8, RelativeUnit.Relative); // Pivot near bottom-center
+                _dragAdorner.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.8,
+                    RelativeUnit.Relative
+                ); // Pivot near bottom-center
                 _dragAdorner.HorizontalAlignment = HorizontalAlignment.Left;
                 _dragAdorner.VerticalAlignment = VerticalAlignment.Top;
 
@@ -1740,7 +1894,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         _topLevel,
                         new Avalonia.Point(35, 47), // Center of the card
                         (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                        new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                        new PointerPointProperties(
+                            RawInputModifiers.None,
+                            PointerUpdateKind.LeftButtonPressed
+                        ),
                         KeyModifiers.None
                     );
 
@@ -1754,7 +1911,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("VisualBuilderTab", $"Failed to create drag adorner: {ex.Message}");
+                DebugLogger.LogError(
+                    "VisualBuilderTab",
+                    $"Failed to create drag adorner: {ex.Message}"
+                );
             }
         }
 
@@ -1779,7 +1939,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("RemoveDragAdorner", $"Failed to remove adorner: {ex.Message}");
+                        DebugLogger.LogError(
+                            "RemoveDragAdorner",
+                            $"Failed to remove adorner: {ex.Message}"
+                        );
                         // If removal fails, try clearing entire layer as fallback
                         try
                         {
@@ -1837,7 +2000,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
             if (MustDropOverlay != null)
                 MustDropOverlay.IsVisible = (excludeZone != "MustDropZone");
             if (ShouldDropOverlay != null)
-                ShouldDropOverlay.IsVisible = (excludeZone != "ShouldDropZone") && !isDraggingBannedItems;
+                ShouldDropOverlay.IsVisible =
+                    (excludeZone != "ShouldDropZone") && !isDraggingBannedItems;
 
             // Always show Favorites overlay during drag
             if (FavoritesDropOverlay != null)
@@ -1958,7 +2122,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private void OnShouldLabelClick(object? sender, PointerPressedEventArgs e)
         {
             // Zones are always expanded - no action needed
-            DebugLogger.Log("VisualBuilderTab", "SHOULD zone label clicked (zones always expanded)");
+            DebugLogger.Log(
+                "VisualBuilderTab",
+                "SHOULD zone label clicked (zones always expanded)"
+            );
         }
 
         /// <summary>
@@ -2023,12 +2190,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel != null && _originalDragSource != null)
             {
-                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                var sourcePos = _originalDragSource.TranslatePoint(
+                    new Avalonia.Point(0, 0),
+                    topLevel
+                );
                 _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
 
                 // Store the click offset relative to the card origin (where user grabbed)
                 var clickPos = e.GetPosition(topLevel);
-                _dragOffset = new Avalonia.Point(clickPos.X - _dragStartPosition.X, clickPos.Y - _dragStartPosition.Y);
+                _dragOffset = new Avalonia.Point(
+                    clickPos.X - _dragStartPosition.X,
+                    clickPos.Y - _dragStartPosition.Y
+                );
 
                 // Initialize previous position for velocity tracking
                 _previousMousePosition = clickPos;
@@ -2075,7 +2248,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 bool canDrop =
                     (_draggedItem is not FilterOperatorItem)
-                    || (_draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone));
+                    || (
+                        _draggedItem is FilterOperatorItem && !string.IsNullOrEmpty(_sourceDropZone)
+                    );
 
                 if (canDrop)
                 {
@@ -2154,7 +2329,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         #region Property Changed Handler
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(
+            object? sender,
+            System.ComponentModel.PropertyChangedEventArgs e
+        )
         {
             // Arrow positioning is now handled via data binding in XAML
             // Other property change handling can go here if needed

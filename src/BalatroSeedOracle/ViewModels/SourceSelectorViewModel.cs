@@ -64,7 +64,12 @@ namespace BalatroSeedOracle.ViewModels
         private void InitializeSources()
         {
             Sources.Add(
-                new SourceOptionViewModel("", "Any Source", "Any source - item can come from anywhere in the run", "🌟")
+                new SourceOptionViewModel(
+                    "",
+                    "Any Source",
+                    "Any source - item can come from anywhere in the run",
+                    "🌟"
+                )
             );
             Sources.Add(
                 new SourceOptionViewModel(
@@ -99,7 +104,12 @@ namespace BalatroSeedOracle.ViewModels
                 )
             );
             Sources.Add(
-                new SourceOptionViewModel("Shop", "🛒 Shop", "Shop - purchasable from the shop during blinds", "🛒")
+                new SourceOptionViewModel(
+                    "Shop",
+                    "🛒 Shop",
+                    "Shop - purchasable from the shop during blinds",
+                    "🛒"
+                )
             );
             Sources.Add(
                 new SourceOptionViewModel(
@@ -199,7 +209,16 @@ namespace BalatroSeedOracle.ViewModels
 
         public static string[] GetAllSources()
         {
-            return new[] { "", "SmallBlindTag", "BigBlindTag", "StandardPack", "BuffoonPack", "Shop", "StartingItems" };
+            return new[]
+            {
+                "",
+                "SmallBlindTag",
+                "BigBlindTag",
+                "StandardPack",
+                "BuffoonPack",
+                "Shop",
+                "StartingItems",
+            };
         }
 
         #endregion
@@ -210,7 +229,12 @@ namespace BalatroSeedOracle.ViewModels
     /// </summary>
     public class SourceOptionViewModel
     {
-        public SourceOptionViewModel(string tag, string displayName, string description, string emoji)
+        public SourceOptionViewModel(
+            string tag,
+            string displayName,
+            string description,
+            string emoji
+        )
         {
             Tag = tag;
             DisplayName = displayName;

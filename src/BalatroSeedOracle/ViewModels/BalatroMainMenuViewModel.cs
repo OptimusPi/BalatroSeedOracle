@@ -94,7 +94,9 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnIsSearchWidgetsVisibleChanged(bool value)
         {
-            SearchWidgetsIcon = value ? PackIconMaterialKind.Magnify : PackIconMaterialKind.MagnifyPlus;
+            SearchWidgetsIcon = value
+                ? PackIconMaterialKind.Magnify
+                : PackIconMaterialKind.MagnifyPlus;
             UpdateToggleAllWidgetsIcon();
         }
 
@@ -110,7 +112,9 @@ namespace BalatroSeedOracle.ViewModels
                 && (IsEventFXWidgetVisible == IsEventFXWidgetEnabled)
                 && IsSearchWidgetsVisible;
 
-            ToggleAllWidgetsIcon = allVisible ? PackIconMaterialKind.Widgets : PackIconMaterialKind.WidgetsOutline;
+            ToggleAllWidgetsIcon = allVisible
+                ? PackIconMaterialKind.Widgets
+                : PackIconMaterialKind.WidgetsOutline;
         }
 
         partial void OnIsModalVisibleChanged(bool value)
@@ -199,7 +203,10 @@ namespace BalatroSeedOracle.ViewModels
             // Create child widget ViewModels (owned by parent, bound via XAML)
             if (_apiHostService != null)
             {
-                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(_apiHostService, widgetPositionService);
+                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(
+                    _apiHostService,
+                    widgetPositionService
+                );
             }
 
             // Load settings
@@ -245,7 +252,8 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnVolumeChanged(double value)
         {
             VolumePercentText = $"{(int)value}%";
-            MusicIcon = value > 0 ? PackIconMaterialKind.VolumeHigh : PackIconMaterialKind.VolumeOff;
+            MusicIcon =
+                value > 0 ? PackIconMaterialKind.VolumeHigh : PackIconMaterialKind.VolumeOff;
             MuteButtonText = value > 0 ? "MUTE" : "UNMUTE";
             IsMusicPlaying = value > 0;
             ApplyVolumeChange(value);
@@ -317,8 +325,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open search modal: {ex}");
-                ShowErrorModal($"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open search modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -337,8 +350,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open filters modal: {ex}");
-                ShowErrorModal($"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open filters modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -355,8 +373,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open analyze modal: {ex}");
-                ShowErrorModal($"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open analyze modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -373,8 +396,13 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 IsModalVisible = false;
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open settings modal: {ex}");
-                ShowErrorModal($"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details.");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to open settings modal: {ex}"
+                );
+                ShowErrorModal(
+                    $"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+                );
             }
         }
 
@@ -598,7 +626,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error opening Balatro website: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error opening Balatro website: {ex.Message}"
+                );
             }
         }
 
@@ -695,7 +726,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error loading settings: {ex.Message}"
+                );
             }
         }
 
@@ -749,7 +783,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error saving volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error saving volume: {ex.Message}"
+                );
             }
         }
 
@@ -788,7 +825,10 @@ namespace BalatroSeedOracle.ViewModels
                 ApplySpinSource(shader, Math.Clamp(settings.SpinSource, 0, 4));
                 ApplyTwirlSource(shader, Math.Clamp(settings.TwirlSource, 0, 4));
                 ApplyZoomThumpSource(shader, Math.Clamp(settings.ZoomThumpSource, 0, 4));
-                ApplyColorSaturationSource(shader, Math.Clamp(settings.ColorSaturationSource, 0, 4));
+                ApplyColorSaturationSource(
+                    shader,
+                    Math.Clamp(settings.ColorSaturationSource, 0, 4)
+                );
 
                 // Per-track volume balancing for SoundFlow audio stems
 #if !BROWSER
@@ -812,7 +852,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error loading visualizer settings: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error loading visualizer settings: {ex.Message}"
+                );
             }
         }
 
@@ -832,7 +875,10 @@ namespace BalatroSeedOracle.ViewModels
                         $"Found resumable search state from {timeSinceSearch.TotalMinutes:F0} minutes ago"
                     );
 
-                    if (!string.IsNullOrEmpty(resumeState.ConfigPath) && File.Exists(resumeState.ConfigPath))
+                    if (
+                        !string.IsNullOrEmpty(resumeState.ConfigPath)
+                        && File.Exists(resumeState.ConfigPath)
+                    )
                     {
                         var placeholderSearchId = Guid.NewGuid().ToString();
                         showIconCallback?.Invoke(placeholderSearchId, resumeState.ConfigPath);
@@ -854,7 +900,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Error checking for resumable search: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Error checking for resumable search: {ex.Message}"
+                );
             }
         }
 
@@ -873,7 +922,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to play button click sound: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to play button click sound: {ex.Message}"
+                );
             }
         }
 
@@ -892,7 +944,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to apply volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to apply volume: {ex.Message}"
+                );
             }
         }
 
@@ -907,7 +962,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to set track volume: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to set track volume: {ex.Message}"
+                );
             }
         }
 
@@ -925,12 +983,18 @@ namespace BalatroSeedOracle.ViewModels
                     };
 
                     _audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-                    DebugLogger.Log("ViewModel", "✅ Audio analysis handler connected (awaiting effect binding system)");
+                    DebugLogger.Log(
+                        "ViewModel",
+                        "✅ Audio analysis handler connected (awaiting effect binding system)"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to wire audio analysis: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to wire audio analysis: {ex.Message}"
+                );
             }
         }
 

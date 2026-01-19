@@ -15,7 +15,10 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
     private readonly TransitionService? _transitionService;
     private readonly EventFXService? _eventFXService;
 
-    public EventFXWidgetViewModel(TransitionService? transitionService = null, EventFXService? eventFXService = null)
+    public EventFXWidgetViewModel(
+        TransitionService? transitionService = null,
+        EventFXService? eventFXService = null
+    )
     {
         _transitionService = transitionService;
         _eventFXService = eventFXService;
@@ -59,12 +62,14 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
     [ObservableProperty]
     private string _selectedTransitionPreset = "(none)";
 
-    public ObservableCollection<string> DurationOptions { get; } = new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
+    public ObservableCollection<string> DurationOptions { get; } =
+        new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
 
     [ObservableProperty]
     private string _selectedDuration = "2s";
 
-    public ObservableCollection<string> EasingOptions { get; } = new() { "Linear", "EaseIn", "EaseOut", "EaseInOut" };
+    public ObservableCollection<string> EasingOptions { get; } =
+        new() { "Linear", "EaseIn", "EaseOut", "EaseInOut" };
 
     [ObservableProperty]
     private string _selectedEasing = "EaseOut";
@@ -84,7 +89,10 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("EventFXWidget", $"Failed to load transition presets: {ex.Message}");
+            DebugLogger.LogError(
+                "EventFXWidget",
+                $"Failed to load transition presets: {ex.Message}"
+            );
         }
     }
 
@@ -158,7 +166,10 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
             };
 
             var configPath = Path.Combine(AppPaths.EventFXDir, GetConfigFileName(SelectedEvent));
-            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(
+                config,
+                new JsonSerializerOptions { WriteIndented = true }
+            );
             File.WriteAllText(configPath, json);
 
             _eventFXService?.ClearCache();

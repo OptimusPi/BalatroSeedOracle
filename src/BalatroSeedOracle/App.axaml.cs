@@ -130,8 +130,12 @@ public partial class App : Application
         try
         {
             await Task.Delay(1000); // Wait for JS to initialize
-            var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
-            DebugLogger.Log("App", $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
+            var testResult =
+                await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
+            DebugLogger.Log(
+                "App",
+                $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}"
+            );
         }
         catch (Exception ex)
         {
@@ -234,11 +238,16 @@ public partial class App : Application
         }
     }
 
-    private async void ShowLoadingWindowAndPreloadSprites(IClassicDesktopStyleApplicationLifetime desktop)
+    private async void ShowLoadingWindowAndPreloadSprites(
+        IClassicDesktopStyleApplicationLifetime desktop
+    )
     {
         try
         {
-            DebugLogger.LogImportant("App", "Starting shader-driven intro with sprite pre-loading...");
+            DebugLogger.LogImportant(
+                "App",
+                "Starting shader-driven intro with sprite pre-loading..."
+            );
 
             // Create main window FIRST (so we have access to shader background)
             var mainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
@@ -271,7 +280,10 @@ public partial class App : Application
             var mainMenu = mainWindow.MainMenu;
             if (mainMenu is null)
             {
-                DebugLogger.LogError("App", "Failed to find BalatroMainMenu - falling back to normal startup");
+                DebugLogger.LogError(
+                    "App",
+                    "Failed to find BalatroMainMenu - falling back to normal startup"
+                );
                 await PreloadSpritesWithoutTransition();
                 return;
             }
@@ -301,7 +313,10 @@ public partial class App : Application
             }
             else
             {
-                DebugLogger.LogError("App", "TransitionService not found - falling back to instant transition");
+                DebugLogger.LogError(
+                    "App",
+                    "TransitionService not found - falling back to instant transition"
+                );
                 ApplyShaderParametersToMainMenu(mainMenu, normalParams);
                 await PreloadSpritesWithoutTransition();
             }
@@ -309,7 +324,8 @@ public partial class App : Application
             // Initialize background music with SoundFlow (8-track)
             try
             {
-                var audioManager = _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
+                var audioManager =
+                    _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
                 DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
                 DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
             }
@@ -324,7 +340,10 @@ public partial class App : Application
                 transitionService.SetProgress(1.0f);
             }
 
-            DebugLogger.LogImportant("App", "Application ready! All sprites pre-loaded with shader intro.");
+            DebugLogger.LogImportant(
+                "App",
+                "Application ready! All sprites pre-loaded with shader intro."
+            );
         }
         catch (Exception ex)
         {
@@ -341,7 +360,10 @@ public partial class App : Application
         }
     }
 
-    private void ApplyShaderParametersToMainMenu(Views.BalatroMainMenu mainMenu, Models.ShaderParameters parameters)
+    private void ApplyShaderParametersToMainMenu(
+        Views.BalatroMainMenu mainMenu,
+        Models.ShaderParameters parameters
+    )
     {
         mainMenu.ApplyShaderParameters(parameters);
     }
@@ -349,7 +371,9 @@ public partial class App : Application
     /// <summary>
     /// Pre-load sprites WITH smooth shader transition driven by progress
     /// </summary>
-    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(Services.TransitionService transitionService)
+    private async System.Threading.Tasks.Task PreloadSpritesWithTransition(
+        Services.TransitionService transitionService
+    )
     {
         try
         {
@@ -362,7 +386,10 @@ public partial class App : Application
 
             var progress = new Progress<(string category, int current, int total)>(update =>
             {
-                DebugLogger.Log("App", $"Loading {update.category}: {update.current}/{update.total}");
+                DebugLogger.Log(
+                    "App",
+                    $"Loading {update.category}: {update.current}/{update.total}"
+                );
             });
 
             await spriteService.PreloadAllSpritesAsync(progress);
@@ -374,7 +401,10 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("App", $"Failed to pre-load sprites with transition: {ex.Message}");
+            DebugLogger.LogError(
+                "App",
+                $"Failed to pre-load sprites with transition: {ex.Message}"
+            );
             // Don't complete transition here - let caller handle it
             transitionService.SetProgress(0.95f);
         }
@@ -492,7 +522,10 @@ public partial class App : Application
             if (filterCache != null)
             {
                 filterCache.Initialize();
-                DebugLogger.Log("App", $"Filter cache initialized with {filterCache.Count} filters");
+                DebugLogger.Log(
+                    "App",
+                    $"Filter cache initialized with {filterCache.Count} filters"
+                );
             }
             else
             {

@@ -19,7 +19,9 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             this.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
-        public void ForceRefreshResults(System.Collections.Generic.IEnumerable<Models.SearchResult> results)
+        public void ForceRefreshResults(
+            System.Collections.Generic.IEnumerable<Models.SearchResult> results
+        )
         {
             try
             {
@@ -64,7 +66,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
                         if (topLevel == null)
                         {
-                            DebugLogger.LogError("ResultsTab", "Could not get TopLevel for file picker");
+                            DebugLogger.LogError(
+                                "ResultsTab",
+                                "Could not get TopLevel for file picker"
+                            );
                             return;
                         }
 
@@ -74,7 +79,8 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             {
                                 Title = "Export Search Results to Excel",
                                 DefaultExtension = "xlsx",
-                                SuggestedFileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                                SuggestedFileName =
+                                    $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
                                 FileTypeChoices = new[]
                                 {
                                     new Avalonia.Platform.Storage.FilePickerFileType("Excel Files")
@@ -107,7 +113,11 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             var worksheet = workbook.Worksheets.Add("Search Results");
 
                             // CRITICAL: Build headers with all columns
-                            var headers = new System.Collections.Generic.List<string> { "SEED", "TOTALSCORE" };
+                            var headers = new System.Collections.Generic.List<string>
+                            {
+                                "SEED",
+                                "TOTALSCORE",
+                            };
                             headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
 
                             // Write headers
@@ -142,7 +152,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
                             // Save workbook
                             workbook.SaveAs(filePath);
-                            DebugLogger.Log("ResultsTab", $"Exported {results.Count()} results to Excel: {filePath}");
+                            DebugLogger.Log(
+                                "ResultsTab",
+                                $"Exported {results.Count()} results to Excel: {filePath}"
+                            );
                         }
                         else
                         {
@@ -150,7 +163,9 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             var header = "SEED,TOTALSCORE";
                             if (labels.Length > 0)
                             {
-                                header += "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                                header +=
+                                    ","
+                                    + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
                             }
 
                             var csv = new System.Text.StringBuilder();
@@ -167,7 +182,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             }
 
                             await System.IO.File.WriteAllTextAsync(filePath, csv.ToString());
-                            DebugLogger.Log("ResultsTab", $"Exported {results.Count()} results to CSV: {filePath}");
+                            DebugLogger.Log(
+                                "ResultsTab",
+                                $"Exported {results.Count()} results to CSV: {filePath}"
+                            );
                         }
                     }
                     catch (System.Exception ex)
@@ -223,7 +241,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         }
 
                         // Create and show the pop-out window
-                        var popOutWindow = new Windows.DataGridResultsWindow(searchInstance, vm.LoadedConfig?.Name);
+                        var popOutWindow = new Windows.DataGridResultsWindow(
+                            searchInstance,
+                            vm.LoadedConfig?.Name
+                        );
                         popOutWindow.Show();
 
                         DebugLogger.Log(
@@ -233,7 +254,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("ResultsTab", $"Failed to pop out results: {ex.Message}");
+                        DebugLogger.LogError(
+                            "ResultsTab",
+                            $"Failed to pop out results: {ex.Message}"
+                        );
                     }
                 };
             }

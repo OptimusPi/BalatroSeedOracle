@@ -109,7 +109,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                DebugLogger.Log("SoundFlowAudioManager", "Initializing cross-platform audio engine...");
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "Initializing cross-platform audio engine..."
+                );
 
                 // 1. Create audio engine (cross-platform)
                 _engine = new MiniAudioEngine();
@@ -153,7 +156,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SoundFlowAudioManager", $"Error initializing SoundFlow: {ex.Message}");
+                DebugLogger.LogError(
+                    "SoundFlowAudioManager",
+                    $"Error initializing SoundFlow: {ex.Message}"
+                );
                 DebugLogger.LogError("SoundFlowAudioManager", $"Stack trace: {ex.StackTrace}");
             }
         }
@@ -180,7 +186,10 @@ namespace BalatroSeedOracle.Services
 
                 try
                 {
-                    DebugLogger.Log("SoundFlowAudioManager", $"Loading {trackName} from {filePath}");
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"Loading {trackName} from {filePath}"
+                    );
 
                     // Create StreamDataProvider - this will auto-detect format and decode
                     var fileStream = File.OpenRead(filePath);
@@ -209,11 +218,17 @@ namespace BalatroSeedOracle.Services
                     _analyzers[trackName] = analyzer;
 
                     var extension = Path.GetExtension(filePath);
-                    DebugLogger.Log("SoundFlowAudioManager", $"✓ Loaded and playing: {trackName}{extension}");
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"✓ Loaded and playing: {trackName}{extension}"
+                    );
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SoundFlowAudioManager", $"Error loading {trackName}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Error loading {trackName}: {ex.Message}"
+                    );
                     DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
@@ -235,13 +250,19 @@ namespace BalatroSeedOracle.Services
                 var filePath = Path.Combine(sfxDir, $"{sfxName}.ogg");
                 if (!File.Exists(filePath))
                 {
-                    DebugLogger.LogError("SoundFlowAudioManager", $"Missing {sfxName}.ogg at {filePath}");
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Missing {sfxName}.ogg at {filePath}"
+                    );
                     continue;
                 }
 
                 try
                 {
-                    DebugLogger.Log("SoundFlowAudioManager", $"Loading SFX {sfxName} from {filePath}");
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"Loading SFX {sfxName} from {filePath}"
+                    );
 
                     // Create StreamDataProvider for the SFX file
                     var fileStream = File.OpenRead(filePath);
@@ -262,7 +283,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("SoundFlowAudioManager", $"Error loading SFX {sfxName}: {ex.Message}");
+                    DebugLogger.LogError(
+                        "SoundFlowAudioManager",
+                        $"Error loading SFX {sfxName}: {ex.Message}"
+                    );
                     DebugLogger.LogError("SoundFlowAudioManager", $"  Stack: {ex.StackTrace}");
                 }
             }
@@ -615,7 +639,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                DebugLogger.Log("SoundFlowAudioManager", "Initializing Web Audio API for browser...");
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "Initializing Web Audio API for browser..."
+                );
 
                 // Initialize Web Audio API
                 await InitializeWebAudioJS();
@@ -644,11 +671,17 @@ namespace BalatroSeedOracle.Services
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
 
                 _isInitialized = true;
-                DebugLogger.Log("SoundFlowAudioManager", "✓ Web Audio API initialized with 8 tracks and SFX");
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "✓ Web Audio API initialized with 8 tracks and SFX"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SoundFlowAudioManager", $"Error initializing Web Audio API: {ex.Message}");
+                DebugLogger.LogError(
+                    "SoundFlowAudioManager",
+                    $"Error initializing Web Audio API: {ex.Message}"
+                );
             }
         }
 

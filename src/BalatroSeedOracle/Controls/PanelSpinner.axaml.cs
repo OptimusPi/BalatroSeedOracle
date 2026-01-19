@@ -34,18 +34,23 @@ public partial class PanelSpinner : UserControl
             (o, v) => o.Items = v
         );
 
-    public static readonly DirectProperty<PanelSpinner, int> SelectedIndexProperty = AvaloniaProperty.RegisterDirect<
-        PanelSpinner,
-        int
-    >(nameof(SelectedIndex), o => o.SelectedIndex, (o, v) => o.SelectedIndex = v);
+    public static readonly DirectProperty<PanelSpinner, int> SelectedIndexProperty =
+        AvaloniaProperty.RegisterDirect<PanelSpinner, int>(
+            nameof(SelectedIndex),
+            o => o.SelectedIndex,
+            (o, v) => o.SelectedIndex = v
+        );
 
     public static readonly DirectProperty<PanelSpinner, PanelItem?> SelectedItemProperty =
-        AvaloniaProperty.RegisterDirect<PanelSpinner, PanelItem?>(nameof(SelectedItem), o => o.SelectedItem);
+        AvaloniaProperty.RegisterDirect<PanelSpinner, PanelItem?>(
+            nameof(SelectedItem),
+            o => o.SelectedItem
+        );
 
-    public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<PanelSpinner, bool>(
-        nameof(ShowArrows),
-        defaultValue: true
-    );
+    public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<
+        PanelSpinner,
+        bool
+    >(nameof(ShowArrows), defaultValue: true);
 
     public bool ShowArrows
     {
@@ -79,7 +84,8 @@ public partial class PanelSpinner : UserControl
         }
     }
 
-    public PanelItem? SelectedItem => _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
+    public PanelItem? SelectedItem =>
+        _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
 
     public event EventHandler<PanelItem?>? SelectionChanged;
 
@@ -225,7 +231,9 @@ public partial class PanelSpinner : UserControl
             var pageIndicator = new TextBlock
             {
                 Text = $"{_currentIndex + 1}/{_items.Count}",
-                FontFamily = Application.Current?.Resources["BalatroFont"] as FontFamily ?? FontFamily.Default,
+                FontFamily =
+                    Application.Current?.Resources["BalatroFont"] as FontFamily
+                    ?? FontFamily.Default,
                 FontSize = 14,
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -281,7 +289,9 @@ public static class PanelItemFactory
                 new PanelItem
                 {
                     Title = deck.Value,
-                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc) ? desc : "",
+                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc)
+                        ? desc
+                        : "",
                     Value = $"{deckKey}_Deck",
                     GetImage = () => SpriteService.Instance.GetDeckImage(deckKey),
                 }
@@ -304,9 +314,12 @@ public static class PanelItemFactory
                 new PanelItem
                 {
                     Title = deck.Value,
-                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc) ? desc : "",
+                    Description = BalatroData.DeckDescriptions.TryGetValue(deckKey, out var desc)
+                        ? desc
+                        : "",
                     Value = $"{deckKey}_Deck",
-                    GetImage = () => SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
+                    GetImage = () =>
+                        SpriteService.Instance.GetDeckWithStakeSticker(deckKey, stakeName),
                 }
             );
         }

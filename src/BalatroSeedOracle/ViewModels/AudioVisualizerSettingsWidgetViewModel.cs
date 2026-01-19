@@ -40,7 +40,8 @@ namespace BalatroSeedOracle.ViewModels
             : base(widgetPositionService)
         {
             // Inject UserProfileService via DI
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _userProfileService =
+                userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
             _soundFlowAudioManager = soundFlowAudioManager;
             _transitionService = transitionService;
 
@@ -126,7 +127,10 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             FrequencyBreakpoints.Add(newBreakpoint);
-            DebugLogger.Log("AudioVisualizerWidget", $"Added frequency breakpoint: {newBreakpoint.Name}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Added frequency breakpoint: {newBreakpoint.Name}"
+            );
         }
 
         /// <summary>
@@ -138,7 +142,10 @@ namespace BalatroSeedOracle.ViewModels
             if (breakpoint != null)
             {
                 FrequencyBreakpoints.Remove(breakpoint);
-                DebugLogger.Log("AudioVisualizerWidget", $"Removed frequency breakpoint: {breakpoint.Name}");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Removed frequency breakpoint: {breakpoint.Name}"
+                );
             }
         }
 
@@ -165,7 +172,10 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             MelodicBreakpoints.Add(newBreakpoint);
-            DebugLogger.Log("AudioVisualizerWidget", $"Added melodic breakpoint: {newBreakpoint.Name}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Added melodic breakpoint: {newBreakpoint.Name}"
+            );
         }
 
         /// <summary>
@@ -177,7 +187,10 @@ namespace BalatroSeedOracle.ViewModels
             if (breakpoint != null)
             {
                 MelodicBreakpoints.Remove(breakpoint);
-                DebugLogger.Log("AudioVisualizerWidget", $"Removed melodic breakpoint: {breakpoint.Name}");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Removed melodic breakpoint: {breakpoint.Name}"
+                );
             }
         }
 
@@ -219,7 +232,12 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     var startParams = ShaderPresetHelper.Load(ManualTransitionPresetA!);
                     var endParams = ShaderPresetHelper.Load(ManualTransitionPresetB!);
-                    _transitionService.StartTransition(startParams, endParams, ApplyShaderParameters, duration);
+                    _transitionService.StartTransition(
+                        startParams,
+                        endParams,
+                        ApplyShaderParameters,
+                        duration
+                    );
                 }
 
                 while (true)
@@ -239,7 +257,9 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Drums1",
-                        (float)(((s.Drums1.Volume + (mixB.Drums1.Volume - s.Drums1.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Drums1.Volume + (mixB.Drums1.Volume - s.Drums1.Volume) * p)) / 100.0
+                        )
                     );
                     var d1PanUi = (s.Drums1.Pan + (mixB.Drums1.Pan - s.Drums1.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -249,7 +269,9 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Drums2",
-                        (float)(((s.Drums2.Volume + (mixB.Drums2.Volume - s.Drums2.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Drums2.Volume + (mixB.Drums2.Volume - s.Drums2.Volume) * p)) / 100.0
+                        )
                     );
                     var d2PanUi = (s.Drums2.Pan + (mixB.Drums2.Pan - s.Drums2.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -259,21 +281,34 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Bass1",
-                        (float)(((s.Bass1.Volume + (mixB.Bass1.Volume - s.Bass1.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Bass1.Volume + (mixB.Bass1.Volume - s.Bass1.Volume) * p)) / 100.0
+                        )
                     );
                     var b1PanUi = (s.Bass1.Pan + (mixB.Bass1.Pan - s.Bass1.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan("Bass1", (float)Math.Clamp((b1PanUi + 100.0) / 200.0, 0.0, 1.0));
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Bass1",
+                        (float)Math.Clamp((b1PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Bass2",
-                        (float)(((s.Bass2.Volume + (mixB.Bass2.Volume - s.Bass2.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Bass2.Volume + (mixB.Bass2.Volume - s.Bass2.Volume) * p)) / 100.0
+                        )
                     );
                     var b2PanUi = (s.Bass2.Pan + (mixB.Bass2.Pan - s.Bass2.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan("Bass2", (float)Math.Clamp((b2PanUi + 100.0) / 200.0, 0.0, 1.0));
+                    _soundFlowAudioManager.SetTrackPan(
+                        "Bass2",
+                        (float)Math.Clamp((b2PanUi + 100.0) / 200.0, 0.0, 1.0)
+                    );
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Chords1",
-                        (float)(((s.Chords1.Volume + (mixB.Chords1.Volume - s.Chords1.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Chords1.Volume + (mixB.Chords1.Volume - s.Chords1.Volume) * p))
+                            / 100.0
+                        )
                     );
                     var c1PanUi = (s.Chords1.Pan + (mixB.Chords1.Pan - s.Chords1.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -283,7 +318,10 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Chords2",
-                        (float)(((s.Chords2.Volume + (mixB.Chords2.Volume - s.Chords2.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Chords2.Volume + (mixB.Chords2.Volume - s.Chords2.Volume) * p))
+                            / 100.0
+                        )
                     );
                     var c2PanUi = (s.Chords2.Pan + (mixB.Chords2.Pan - s.Chords2.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -293,7 +331,10 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Melody1",
-                        (float)(((s.Melody1.Volume + (mixB.Melody1.Volume - s.Melody1.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Melody1.Volume + (mixB.Melody1.Volume - s.Melody1.Volume) * p))
+                            / 100.0
+                        )
                     );
                     var m1PanUi = (s.Melody1.Pan + (mixB.Melody1.Pan - s.Melody1.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -303,7 +344,10 @@ namespace BalatroSeedOracle.ViewModels
 
                     _soundFlowAudioManager.SetTrackVolume(
                         "Melody2",
-                        (float)(((s.Melody2.Volume + (mixB.Melody2.Volume - s.Melody2.Volume) * p)) / 100.0)
+                        (float)(
+                            ((s.Melody2.Volume + (mixB.Melody2.Volume - s.Melody2.Volume) * p))
+                            / 100.0
+                        )
                     );
                     var m2PanUi = (s.Melody2.Pan + (mixB.Melody2.Pan - s.Melody2.Pan) * p);
                     _soundFlowAudioManager.SetTrackPan(
@@ -325,7 +369,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"AnimateVisualAndMixToB failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"AnimateVisualAndMixToB failed: {ex.Message}"
+                );
             }
         }
 
@@ -392,7 +439,10 @@ namespace BalatroSeedOracle.ViewModels
         private void TestZoomPunch()
         {
             VisualizerEventManager.Instance.TriggerManualEffect("Zoom", (float)TestZoomPunchValue);
-            DebugLogger.Log("AudioVisualizerWidget", $"Testing Zoom Punch: {TestZoomPunchValue:F1}");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                $"Testing Zoom Punch: {TestZoomPunchValue:F1}"
+            );
         }
 
         /// <summary>
@@ -401,7 +451,10 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void TestContrast()
         {
-            VisualizerEventManager.Instance.TriggerManualEffect("Contrast", (float)TestContrastValue);
+            VisualizerEventManager.Instance.TriggerManualEffect(
+                "Contrast",
+                (float)TestContrastValue
+            );
             DebugLogger.Log("AudioVisualizerWidget", $"Testing Contrast: {TestContrastValue:F1}");
         }
 
@@ -511,7 +564,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (!Directory.Exists(audioTriggersDir))
                 {
-                    DebugLogger.Log("AudioVisualizerWidget", "Audio triggers directory not found, creating it");
+                    DebugLogger.Log(
+                        "AudioVisualizerWidget",
+                        "Audio triggers directory not found, creating it"
+                    );
                     Directory.CreateDirectory(audioTriggersDir);
                     return;
                 }
@@ -524,13 +580,18 @@ namespace BalatroSeedOracle.ViewModels
                     try
                     {
                         var json = await File.ReadAllTextAsync(file);
-                        var trigger = System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(
-                            json,
-                            new System.Text.Json.JsonSerializerOptions
-                            {
-                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                            }
-                        );
+                        var trigger =
+                            System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(
+                                json,
+                                new System.Text.Json.JsonSerializerOptions
+                                {
+                                    PropertyNamingPolicy = System
+                                        .Text
+                                        .Json
+                                        .JsonNamingPolicy
+                                        .CamelCase,
+                                }
+                            );
 
                         if (trigger != null && !string.IsNullOrEmpty(trigger.Name))
                         {
@@ -553,7 +614,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load audio triggers: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load audio triggers: {ex.Message}"
+                );
             }
         }
 
@@ -865,7 +929,9 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnMainColorRChanged(int value)
         {
             ApplyShaderParameter(menu =>
-                menu.ApplyMainColor(new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB))
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
             );
         }
 
@@ -875,7 +941,9 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnMainColorGChanged(int value)
         {
             ApplyShaderParameter(menu =>
-                menu.ApplyMainColor(new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB))
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
             );
         }
 
@@ -885,7 +953,9 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnMainColorBChanged(int value)
         {
             ApplyShaderParameter(menu =>
-                menu.ApplyMainColor(new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB))
+                menu.ApplyMainColor(
+                    new SkiaSharp.SKColor((byte)_mainColorR, (byte)_mainColorG, (byte)_mainColorB)
+                )
             );
         }
 
@@ -896,7 +966,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             ApplyShaderParameter(menu =>
                 menu.ApplyAccentColor(
-                    new SkiaSharp.SKColor((byte)_accentColorR, (byte)_accentColorG, (byte)_accentColorB)
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
                 )
             );
         }
@@ -908,7 +982,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             ApplyShaderParameter(menu =>
                 menu.ApplyAccentColor(
-                    new SkiaSharp.SKColor((byte)_accentColorR, (byte)_accentColorG, (byte)_accentColorB)
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
                 )
             );
         }
@@ -920,7 +998,11 @@ namespace BalatroSeedOracle.ViewModels
         {
             ApplyShaderParameter(menu =>
                 menu.ApplyAccentColor(
-                    new SkiaSharp.SKColor((byte)_accentColorR, (byte)_accentColorG, (byte)_accentColorB)
+                    new SkiaSharp.SKColor(
+                        (byte)_accentColorR,
+                        (byte)_accentColorG,
+                        (byte)_accentColorB
+                    )
                 )
             );
         }
@@ -1196,7 +1278,9 @@ namespace BalatroSeedOracle.ViewModels
             // Save to user profile when changed
             if (_userProfileService != null)
             {
-                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionStartPresetName = value;
+                _userProfileService
+                    .GetProfile()
+                    .VisualizerSettings.SearchTransitionStartPresetName = value;
                 _userProfileService.SaveProfile();
             }
         }
@@ -1206,7 +1290,8 @@ namespace BalatroSeedOracle.ViewModels
             // Save to user profile when changed
             if (_userProfileService != null)
             {
-                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName = value;
+                _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName =
+                    value;
                 _userProfileService.SaveProfile();
             }
         }
@@ -1260,11 +1345,17 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                DebugLogger.Log("AudioVisualizerWidget", $"Loaded {AvailablePresetNames.Count} preset names");
+                DebugLogger.Log(
+                    "AudioVisualizerWidget",
+                    $"Loaded {AvailablePresetNames.Count} preset names"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset names: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load preset names: {ex.Message}"
+                );
             }
         }
 
@@ -1304,9 +1395,14 @@ namespace BalatroSeedOracle.ViewModels
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
-                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
+                    new Avalonia.Platform.Storage.FilePickerFileType("JSON Files")
+                    {
+                        Patterns = new[] { "*.json" },
+                    },
                 },
-                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(new Uri(presetsPath)),
+                SuggestedStartLocation = await window.StorageProvider.TryGetFolderFromPathAsync(
+                    new Uri(presetsPath)
+                ),
             };
 
             var result = await window.StorageProvider.OpenFilePickerAsync(dialog);
@@ -1363,7 +1459,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(json);
+                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    json
+                );
 
                 if (preset != null)
                 {
@@ -1430,7 +1528,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to load preset: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to load preset: {ex.Message}"
+                );
             }
         }
 
@@ -1458,11 +1559,15 @@ namespace BalatroSeedOracle.ViewModels
                     },
                     FrequencyBreakpoints =
                         FrequencyBreakpoints.Count > 0
-                            ? new System.Collections.Generic.List<FrequencyBreakpoint>(FrequencyBreakpoints)
+                            ? new System.Collections.Generic.List<FrequencyBreakpoint>(
+                                FrequencyBreakpoints
+                            )
                             : null,
                     MelodicBreakpoints =
                         MelodicBreakpoints.Count > 0
-                            ? new System.Collections.Generic.List<MelodicBreakpoint>(MelodicBreakpoints)
+                            ? new System.Collections.Generic.List<MelodicBreakpoint>(
+                                MelodicBreakpoints
+                            )
                             : null,
                 };
 
@@ -1475,7 +1580,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to save preset: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to save preset: {ex.Message}"
+                );
             }
         }
 
@@ -1543,14 +1651,20 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_soundFlowAudioManager == null)
                 return;
-            _soundFlowAudioManager.SetTrackVolume("Drums1", (float)(settings.Drums1.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Drums1",
+                (float)(settings.Drums1.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Drums1",
                 (float)Math.Clamp((settings.Drums1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _soundFlowAudioManager.SetTrackMuted("Drums1", settings.Drums1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Drums2", (float)(settings.Drums2.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Drums2",
+                (float)(settings.Drums2.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Drums2",
                 (float)Math.Clamp((settings.Drums2.Pan + 100.0) / 200.0, 0.0, 1.0)
@@ -1571,28 +1685,40 @@ namespace BalatroSeedOracle.ViewModels
             );
             _soundFlowAudioManager.SetTrackMuted("Bass2", settings.Bass2.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Chords1", (float)(settings.Chords1.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Chords1",
+                (float)(settings.Chords1.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Chords1",
                 (float)Math.Clamp((settings.Chords1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _soundFlowAudioManager.SetTrackMuted("Chords1", settings.Chords1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Chords2", (float)(settings.Chords2.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Chords2",
+                (float)(settings.Chords2.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Chords2",
                 (float)Math.Clamp((settings.Chords2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _soundFlowAudioManager.SetTrackMuted("Chords2", settings.Chords2.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Melody1", (float)(settings.Melody1.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Melody1",
+                (float)(settings.Melody1.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Melody1",
                 (float)Math.Clamp((settings.Melody1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _soundFlowAudioManager.SetTrackMuted("Melody1", settings.Melody1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Melody2", (float)(settings.Melody2.Volume / 100.0));
+            _soundFlowAudioManager.SetTrackVolume(
+                "Melody2",
+                (float)(settings.Melody2.Volume / 100.0)
+            );
             _soundFlowAudioManager.SetTrackPan(
                 "Melody2",
                 (float)Math.Clamp((settings.Melody2.Pan + 100.0) / 200.0, 0.0, 1.0)
@@ -1600,7 +1726,11 @@ namespace BalatroSeedOracle.ViewModels
             _soundFlowAudioManager.SetTrackMuted("Melody2", settings.Melody2.Muted);
         }
 
-        private async Task<string?> ShowNameDialogAsync(string title, string labelText, string watermark)
+        private async Task<string?> ShowNameDialogAsync(
+            string title,
+            string labelText,
+            string watermark
+        )
         {
             try
             {
@@ -1658,7 +1788,10 @@ namespace BalatroSeedOracle.ViewModels
                 };
                 textBox.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Avalonia.Input.Key.Enter && !string.IsNullOrWhiteSpace(textBox.Text))
+                    if (
+                        e.Key == Avalonia.Input.Key.Enter
+                        && !string.IsNullOrWhiteSpace(textBox.Text)
+                    )
                     {
                         result = textBox.Text;
                         dialog.Close();
@@ -1714,7 +1847,11 @@ namespace BalatroSeedOracle.ViewModels
                     Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
                     FontSize = 14,
                 };
-                var combo = new ComboBox { ItemsSource = options, SelectedIndex = options.Count > 0 ? 0 : -1 };
+                var combo = new ComboBox
+                {
+                    ItemsSource = options,
+                    SelectedIndex = options.Count > 0 ? 0 : -1,
+                };
                 var buttons = new StackPanel
                 {
                     Orientation = Avalonia.Layout.Orientation.Horizontal,
@@ -1780,7 +1917,8 @@ namespace BalatroSeedOracle.ViewModels
 
             // Skip if presets not selected
             if (
-                string.IsNullOrWhiteSpace(ManualTransitionPresetA) || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
+                string.IsNullOrWhiteSpace(ManualTransitionPresetA)
+                || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
             )
             {
                 return;
@@ -1806,11 +1944,15 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load preset A
                 var jsonA = await File.ReadAllTextAsync(presetAPath);
-                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonA);
+                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    jsonA
+                );
 
                 // Load preset B
                 var jsonB = await File.ReadAllTextAsync(presetBPath);
-                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(jsonB);
+                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
+                    jsonB
+                );
 
                 if (presetA != null && presetB != null)
                 {
@@ -1819,7 +1961,9 @@ namespace BalatroSeedOracle.ViewModels
 
                     // LERP theme index (rounded to nearest int)
                     var lerpedThemeIndex = (int)
-                        Math.Round(presetA.ThemeIndex * (1 - progress) + presetB.ThemeIndex * progress);
+                        Math.Round(
+                            presetA.ThemeIndex * (1 - progress) + presetB.ThemeIndex * progress
+                        );
 
                     // Apply the interpolated theme
                     ThemeIndex = ClampThemeIndex(lerpedThemeIndex);
@@ -1832,7 +1976,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerWidget", $"Failed to apply manual transition: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerWidget",
+                    $"Failed to apply manual transition: {ex.Message}"
+                );
             }
             finally
             {
@@ -1847,7 +1994,8 @@ namespace BalatroSeedOracle.ViewModels
         private async Task PlayManualTransition()
         {
             if (
-                string.IsNullOrWhiteSpace(ManualTransitionPresetA) || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
+                string.IsNullOrWhiteSpace(ManualTransitionPresetA)
+                || string.IsNullOrWhiteSpace(ManualTransitionPresetB)
             )
             {
                 DebugLogger.Log(
@@ -1865,7 +2013,10 @@ namespace BalatroSeedOracle.ViewModels
             // Set to 100% - the DoubleTransition in XAML will smoothly animate from 0 to 100
             ManualTransitionProgress = 100;
 
-            DebugLogger.Log("AudioVisualizerWidget", "Manual transition animation started (Avalonia Transitions)");
+            DebugLogger.Log(
+                "AudioVisualizerWidget",
+                "Manual transition animation started (Avalonia Transitions)"
+            );
         }
 
         #endregion

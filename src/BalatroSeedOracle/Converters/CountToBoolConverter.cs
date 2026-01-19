@@ -12,7 +12,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly CountToBoolConverter IsZero = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -22,7 +27,12 @@ namespace BalatroSeedOracle.Converters
             return true; // Default to visible
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }

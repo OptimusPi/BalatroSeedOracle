@@ -104,7 +104,9 @@ namespace BalatroSeedOracle.Services
 
         public FilterCacheService(IAppDataStore store, IPlatformServices? platformServices = null)
         {
-            _cache = new ConcurrentDictionary<string, CachedFilter>(StringComparer.OrdinalIgnoreCase);
+            _cache = new ConcurrentDictionary<string, CachedFilter>(
+                StringComparer.OrdinalIgnoreCase
+            );
             _cacheLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _platformServices = platformServices;
@@ -138,7 +140,10 @@ namespace BalatroSeedOracle.Services
                 var filtersDir = Helpers.AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
-                    DebugLogger.Log("FilterCacheService", $"Filters directory does not exist: {filtersDir}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Filters directory does not exist: {filtersDir}"
+                    );
                     _platformServices?.EnsureDirectoryExists(filtersDir);
                     _isInitialized = true;
                     return;
@@ -227,7 +232,8 @@ namespace BalatroSeedOracle.Services
                         try
                         {
                             var filterId = Path.GetFileNameWithoutExtension(filePath);
-                            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId).ConfigureAwait(false);
+                            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId)
+                                .ConfigureAwait(false);
 
                             if (cachedFilter != null)
                             {
@@ -261,7 +267,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterCacheService", $"Error in async initialization: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCacheService",
+                    $"Error in async initialization: {ex.Message}"
+                );
             }
         }
 
@@ -274,7 +283,9 @@ namespace BalatroSeedOracle.Services
             {
                 MotelyJsonConfig? config = null;
 
-                var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                var json = await _store
+                    .ReadTextAsync(filePath.Replace('\\', '/'))
+                    .ConfigureAwait(false);
                 if (string.IsNullOrWhiteSpace(json))
                     return null;
 
@@ -397,7 +408,10 @@ namespace BalatroSeedOracle.Services
                 {
                     // File was deleted, remove from cache
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Removed deleted filter from cache: {filterId}"
+                    );
                     return;
                 }
 
@@ -406,12 +420,18 @@ namespace BalatroSeedOracle.Services
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Invalidated and reloaded filter: {filterId}"
+                    );
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
+                    DebugLogger.LogError(
+                        "FilterCacheService",
+                        $"Failed to reload filter: {filterId}"
+                    );
                 }
             }
             finally
@@ -547,7 +567,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterCacheService", $"Error loading filter {filterId}: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCacheService",
+                    $"Error loading filter {filterId}: {ex.Message}"
+                );
                 return null;
             }
         }

@@ -14,10 +14,17 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly OperatorColorConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not string operatorType)
-                throw new ArgumentException($"Expected string operatorType, got {value?.GetType().Name ?? "null"}");
+                throw new ArgumentException(
+                    $"Expected string operatorType, got {value?.GetType().Name ?? "null"}"
+                );
 
             var colorKey = operatorType switch
             {
@@ -28,7 +35,8 @@ namespace BalatroSeedOracle.Converters
             };
 
             if (
-                Application.Current?.Resources.TryGetResource(colorKey, null, out var resource) == true
+                Application.Current?.Resources.TryGetResource(colorKey, null, out var resource)
+                    == true
                 && resource is IBrush brush
             )
             {
@@ -39,7 +47,12 @@ namespace BalatroSeedOracle.Converters
             );
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -52,7 +65,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly LessThanFiveConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -61,7 +79,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -74,7 +97,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly GreaterThanFourConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -83,7 +111,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -96,7 +129,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly EqualsZeroConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is int count)
             {
@@ -105,7 +143,12 @@ namespace BalatroSeedOracle.Converters
             return true;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -119,7 +162,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly IsBannedItemsConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is string operatorType)
             {
@@ -128,7 +176,12 @@ namespace BalatroSeedOracle.Converters
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }

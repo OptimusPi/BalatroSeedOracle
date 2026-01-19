@@ -76,7 +76,10 @@ namespace BalatroSeedOracle.Models
                 var result = _itemImage;
                 if (result == null)
                 {
-                    Helpers.DebugLogger.Log("ItemImage", $"GET for '{_name}' (Type={_type}): RETURNING NULL!");
+                    Helpers.DebugLogger.Log(
+                        "ItemImage",
+                        $"GET for '{_name}' (Type={_type}): RETURNING NULL!"
+                    );
                 }
                 return result;
             }
@@ -112,14 +115,20 @@ namespace BalatroSeedOracle.Models
             {
                 if (string.IsNullOrEmpty(Edition) || Edition == "None")
                 {
-                    Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition is null/empty/None");
+                    Helpers.DebugLogger.Log(
+                        "EditionImage",
+                        $"Item '{_name}': Edition is null/empty/None"
+                    );
                     return null;
                 }
 
                 // Get the edition overlay sprite (foil/holo/poly/negative)
                 // Negative now works just like other editions with an overlay sprite
                 var img = Services.SpriteService.Instance.GetEditionImage(Edition);
-                Helpers.DebugLogger.Log("EditionImage", $"Item '{_name}': Edition='{Edition}', Image={img != null}");
+                Helpers.DebugLogger.Log(
+                    "EditionImage",
+                    $"Item '{_name}': Edition='{Edition}', Image={img != null}"
+                );
                 return img;
             }
         }
@@ -276,7 +285,10 @@ namespace BalatroSeedOracle.Models
                 if (_edition != value)
                 {
                     _edition = value;
-                    Helpers.DebugLogger.Log("Edition.SET", $"Item '{_name}': CHANGED! Calling OnPropertyChanged...");
+                    Helpers.DebugLogger.Log(
+                        "Edition.SET",
+                        $"Item '{_name}': CHANGED! Calling OnPropertyChanged..."
+                    );
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(EditionImage)); // Notify EditionImage to refresh
                 }

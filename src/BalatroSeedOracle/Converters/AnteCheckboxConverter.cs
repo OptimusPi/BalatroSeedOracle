@@ -8,16 +8,30 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly AnteCheckboxConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
-            if (value is int[] antes && parameter is string anteStr && int.TryParse(anteStr, out int ante))
+            if (
+                value is int[] antes
+                && parameter is string anteStr
+                && int.TryParse(anteStr, out int ante)
+            )
             {
                 return Array.IndexOf(antes, ante) >= 0;
             }
             return false;
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             return null;
         }

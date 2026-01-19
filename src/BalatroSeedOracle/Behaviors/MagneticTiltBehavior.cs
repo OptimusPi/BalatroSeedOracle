@@ -106,7 +106,11 @@ namespace BalatroSeedOracle.Behaviors
             {
                 matrixTransform = new MatrixTransform();
                 AssociatedObject.RenderTransform = matrixTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
             }
 
             // If not hovering, reset to identity matrix

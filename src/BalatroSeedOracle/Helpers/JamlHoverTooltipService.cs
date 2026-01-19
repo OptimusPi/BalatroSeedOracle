@@ -88,7 +88,11 @@ namespace BalatroSeedOracle.Helpers
 
             while (
                 end < lineText.Length
-                && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_' || lineText[end] == '*')
+                && (
+                    char.IsLetterOrDigit(lineText[end])
+                    || lineText[end] == '_'
+                    || lineText[end] == '*'
+                )
             )
                 end++;
 
@@ -184,16 +188,19 @@ namespace BalatroSeedOracle.Helpers
             return property.ToLower() switch
             {
                 "joker" => "**joker**\n\nSpecifies a joker card name",
-                "antes" => "**antes**\n\nArray of antes (1-8) to check. Children inherit from parent And/Or clauses.",
+                "antes" =>
+                    "**antes**\n\nArray of antes (1-8) to check. Children inherit from parent And/Or clauses.",
                 "score" => "**score**\n\nScoring weight for 'should' clauses",
                 "shopslots" => "**ShopSlots**\n\nArray of shop slot positions (0-5)",
                 "packslots" => "**PackSlots**\n\nArray of pack slot positions (0-5)",
-                "edition" => "**edition**\n\nRequired edition: Foil, Holographic, Polychrome, or Negative",
+                "edition" =>
+                    "**edition**\n\nRequired edition: Foil, Holographic, Polychrome, or Negative",
                 "mode" => "**Mode**\n\nAnd/Or clause mode: Max or Sum",
                 "clauses" => "**clauses**\n\nArray of child clauses for And/Or operators",
                 "and" => "**And**\n\nAND clause - all child clauses must pass",
                 "or" => "**Or**\n\nOR clause - any child clause can pass",
-                "smallblindtag" => "**smallblindtag**\n\nSmall blind tag requirement (e.g., NegativeTag)",
+                "smallblindtag" =>
+                    "**smallblindtag**\n\nSmall blind tag requirement (e.g., NegativeTag)",
                 "bigblindtag" => "**bigblindtag**\n\nBig blind tag requirement",
                 _ => "",
             };

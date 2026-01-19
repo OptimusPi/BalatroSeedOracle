@@ -20,7 +20,8 @@ namespace BalatroSeedOracle.Services
 
         public DbListQueryExecutor(IDuckDBService duckDBService)
         {
-            _duckDBService = duckDBService ?? throw new ArgumentNullException(nameof(duckDBService));
+            _duckDBService =
+                duckDBService ?? throw new ArgumentNullException(nameof(duckDBService));
         }
 
         /// <summary>
@@ -34,7 +35,10 @@ namespace BalatroSeedOracle.Services
         )
         {
             if (string.IsNullOrEmpty(dbFilePath))
-                throw new ArgumentException("Database file path cannot be null or empty", nameof(dbFilePath));
+                throw new ArgumentException(
+                    "Database file path cannot be null or empty",
+                    nameof(dbFilePath)
+                );
 
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
@@ -72,7 +76,10 @@ namespace BalatroSeedOracle.Services
                 var connectionString = _duckDBService.CreateConnectionString(dbFilePath);
 
                 // Open connection with timeout
-                using var connection = await OpenConnectionWithTimeout(connectionString, cancellationToken);
+                using var connection = await OpenConnectionWithTimeout(
+                    connectionString,
+                    cancellationToken
+                );
 
                 // Validate database schema
                 await ValidateDatabaseSchema(connection, criteria);
@@ -92,7 +99,9 @@ namespace BalatroSeedOracle.Services
 
                 // Use high-level method - no SQL construction in BSO!
                 // This uses Motely's DuckDBQueryHelpers internally
-                progress?.Report(new SearchProgress { PercentComplete = 50.0, Message = "Querying database..." });
+                progress?.Report(
+                    new SearchProgress { PercentComplete = 50.0, Message = "Querying database..." }
+                );
 
                 var resultsWithTallies = await connection.QueryResultsAsync(
                     tableName,
@@ -113,7 +122,10 @@ namespace BalatroSeedOracle.Services
                     })
                     .ToList();
 
-                DebugLogger.Log("DbListQueryExecutor", $"Query completed. Found {results.Count} results");
+                DebugLogger.Log(
+                    "DbListQueryExecutor",
+                    $"Query completed. Found {results.Count} results"
+                );
 
                 // Report final progress
                 progress?.Report(
@@ -136,8 +148,14 @@ namespace BalatroSeedOracle.Services
             }
             catch (FileNotFoundException ex)
             {
-                DebugLogger.LogError("DbListQueryExecutor", $"Database file not found: {ex.Message}");
-                throw new InvalidOperationException($"Database file not found: {Path.GetFileName(dbFilePath)}", ex);
+                DebugLogger.LogError(
+                    "DbListQueryExecutor",
+                    $"Database file not found: {ex.Message}"
+                );
+                throw new InvalidOperationException(
+                    $"Database file not found: {Path.GetFileName(dbFilePath)}",
+                    ex
+                );
             }
             catch (InvalidDataException ex)
             {
@@ -149,12 +167,18 @@ namespace BalatroSeedOracle.Services
             }
             catch (InvalidOperationException ex)
             {
-                DebugLogger.LogError("DbListQueryExecutor", $"Database operation failed: {ex.Message}");
+                DebugLogger.LogError(
+                    "DbListQueryExecutor",
+                    $"Database operation failed: {ex.Message}"
+                );
                 throw;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DbListQueryExecutor", $"Unexpected database query error: {ex.Message}");
+                DebugLogger.LogError(
+                    "DbListQueryExecutor",
+                    $"Unexpected database query error: {ex.Message}"
+                );
                 throw new InvalidOperationException($"Failed to query database: {ex.Message}", ex);
             }
         }
@@ -177,7 +201,10 @@ namespace BalatroSeedOracle.Services
             return await connectionTask;
         }
 
-        private async Task ValidateDatabaseSchema(IDuckDBConnection connection, SearchCriteria criteria)
+        private async Task ValidateDatabaseSchema(
+            IDuckDBConnection connection,
+            SearchCriteria criteria
+        )
         {
             try
             {
@@ -186,14 +213,19 @@ namespace BalatroSeedOracle.Services
 
                 if (tableCount == 0)
                 {
-                    throw new InvalidOperationException("Cannot read database schema - database may be corrupted");
+                    throw new InvalidOperationException(
+                        "Cannot read database schema - database may be corrupted"
+                    );
                 }
 
                 DebugLogger.Log("DbListQueryExecutor", "Database schema validation passed");
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Database schema validation failed: {ex.Message}", ex);
+                throw new InvalidOperationException(
+                    $"Database schema validation failed: {ex.Message}",
+                    ex
+                );
             }
         }
 

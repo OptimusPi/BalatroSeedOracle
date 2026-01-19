@@ -56,7 +56,10 @@ public class AndroidDuckDBConnection : IDuckDBConnection
         return (T)Convert.ChangeType(result, typeof(T));
     }
 
-    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(string sql, Func<IDuckDBDataReader, T> mapper)
+    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(
+        string sql,
+        Func<IDuckDBDataReader, T> mapper
+    )
     {
         EnsureOpen();
         var results = new List<T>();
@@ -110,11 +113,19 @@ public class AndroidDuckDBConnection : IDuckDBConnection
         return Task.CompletedTask;
     }
 
-    public Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null)
+    public Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    )
     {
         EnsureOpen();
         // Use Motely's helper - no SQL in BSO!
-        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName);
+        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(
+            _connection,
+            tableName,
+            seedColumnName
+        );
         return Task.FromResult(seeds);
     }
 
@@ -176,7 +187,11 @@ public class AndroidDuckDBConnection : IDuckDBConnection
         return Task.FromResult(results);
     }
 
-    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(string tableName, string idColumn, int id)
+    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(
+        string tableName,
+        string idColumn,
+        int id
+    )
     {
         EnsureOpen();
         var query = $"SELECT * FROM {tableName} WHERE {idColumn} = {id} LIMIT 1";
@@ -195,7 +210,11 @@ public class AndroidDuckDBConnection : IDuckDBConnection
         return results.FirstOrDefault();
     }
 
-    public async Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn)
+    public async Task UpsertRowAsync(
+        string tableName,
+        Dictionary<string, object?> values,
+        string keyColumn
+    )
     {
         EnsureOpen();
         var columns = string.Join(", ", values.Keys);
@@ -208,7 +227,10 @@ public class AndroidDuckDBConnection : IDuckDBConnection
                     : kvp.Value.ToString()
             )
         );
-        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}"));
+        var updates = string.Join(
+            ", ",
+            values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}")
+        );
 
         var sql =
             $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) "

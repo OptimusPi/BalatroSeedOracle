@@ -38,7 +38,8 @@ public class FertilizerService : IDisposable
     public FertilizerService(IDuckDBService duckDB, IPlatformServices platformServices)
     {
         _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
-        _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
+        _platformServices =
+            platformServices ?? throw new ArgumentNullException(nameof(platformServices));
     }
 
     /// <summary>
@@ -84,7 +85,9 @@ public class FertilizerService : IDisposable
 
             // Create index (schema doesn't include indexes, add separately)
             // Use high-level method - no SQL construction in BSO!
-            await _connection.CreateIndexAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
+            await _connection.CreateIndexAsync(
+                "CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);"
+            );
 
             if (_platformServices.SupportsFileSystem)
             {
@@ -161,7 +164,10 @@ public class FertilizerService : IDisposable
             if (_platformServices.SupportsFileSystem)
             {
                 // Desktop: Bulk insert via temp file + COPY FROM (handles duplicates via ON CONFLICT in schema)
-                var tempFile = Path.Combine(_platformServices.GetTempDirectory(), Path.GetRandomFileName());
+                var tempFile = Path.Combine(
+                    _platformServices.GetTempDirectory(),
+                    Path.GetRandomFileName()
+                );
                 try
                 {
                     // ASYNC file write - don't block the thread!
@@ -185,7 +191,10 @@ public class FertilizerService : IDisposable
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("FertilizerService", $"Temp file cleanup failed: {ex.Message}");
+                        DebugLogger.LogError(
+                            "FertilizerService",
+                            $"Temp file cleanup failed: {ex.Message}"
+                        );
                     }
                 }
             }

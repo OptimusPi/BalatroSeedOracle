@@ -206,11 +206,17 @@ public partial class AnalyzerViewModel : ObservableObject
                 $"https://miaklwalker.github.io/Blueprint/?seed={CurrentSeed}&deck={deckName}+Deck&antes={maxAnte}&stake={stakeName}+Stake";
 
             CopyToClipboardRequested?.Invoke(this, url);
-            Helpers.DebugLogger.Log("AnalyzerViewModel", $"Copied Blueprint URL to clipboard: {url}");
+            Helpers.DebugLogger.Log(
+                "AnalyzerViewModel",
+                $"Copied Blueprint URL to clipboard: {url}"
+            );
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Error copying Blueprint URL: {ex.Message}");
+            Helpers.DebugLogger.LogError(
+                "AnalyzerViewModel",
+                $"Error copying Blueprint URL: {ex.Message}"
+            );
         }
 
         return Task.CompletedTask;
@@ -275,7 +281,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
     public MotelyAnteAnalysis? GetCurrentAnte()
     {
-        if (CurrentAnalysis == null || CurrentAnteIndex < 0 || CurrentAnteIndex >= CurrentAnalysis.Antes.Count)
+        if (
+            CurrentAnalysis == null
+            || CurrentAnteIndex < 0
+            || CurrentAnteIndex >= CurrentAnalysis.Antes.Count
+        )
             return null;
 
         return CurrentAnalysis.Antes[CurrentAnteIndex];
@@ -307,7 +317,9 @@ public partial class AnalyzerViewModel : ObservableObject
             if (ante == null)
                 return [];
 
-            return ante.ShopQueue.Select((item, i) => $"{i + 1}) {FormatUtils.FormatItem(item)}").ToList();
+            return ante
+                .ShopQueue.Select((item, i) => $"{i + 1}) {FormatUtils.FormatItem(item)}")
+                .ToList();
         }
     }
 
@@ -480,7 +492,11 @@ public partial class AnalyzerViewModel : ObservableObject
                 AnteNumber = ante.Ante,
                 Boss = ante.Boss,
                 Voucher = ante.Voucher,
-                SmallBlindTag = new TagModel { BlindType = "Small Blind", Tag = ante.SmallBlindTag },
+                SmallBlindTag = new TagModel
+                {
+                    BlindType = "Small Blind",
+                    Tag = ante.SmallBlindTag,
+                },
                 BigBlindTag = new TagModel { BlindType = "Big Blind", Tag = ante.BigBlindTag },
             };
 

@@ -214,8 +214,14 @@ namespace BalatroSeedOracle.Services
         /// <param name="audioSource">Audio source index (1=Drums, 2=Bass, 3=Chords, 4=Melody)</param>
         public void TriggerBeatDetected(float intensity, int audioSource)
         {
-            DebugLogger.Log("VisualizerEventManager", $"Beat detected: intensity={intensity:F2}, source={audioSource}");
-            BeatDetected?.Invoke(this, new BeatDetectedEventArgs { Intensity = intensity, AudioSource = audioSource });
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Beat detected: intensity={intensity:F2}, source={audioSource}"
+            );
+            BeatDetected?.Invoke(
+                this,
+                new BeatDetectedEventArgs { Intensity = intensity, AudioSource = audioSource }
+            );
         }
 
         /// <summary>
@@ -229,7 +235,10 @@ namespace BalatroSeedOracle.Services
                 "VisualizerEventManager",
                 $"Drop detected: intensity={intensity:F2}, frequency={frequencyHz}Hz"
             );
-            DropDetected?.Invoke(this, new DropDetectedEventArgs { Intensity = intensity, FrequencyHz = frequencyHz });
+            DropDetected?.Invoke(
+                this,
+                new DropDetectedEventArgs { Intensity = intensity, FrequencyHz = frequencyHz }
+            );
         }
 
         /// <summary>
@@ -306,7 +315,10 @@ namespace BalatroSeedOracle.Services
         /// <param name="isPersonalRecord">Whether this is a personal record</param>
         public void TriggerHighScore(string seed, long score, bool isPersonalRecord = false)
         {
-            DebugLogger.Log("VisualizerEventManager", $"High score: {seed} (score={score}, PR={isPersonalRecord})");
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"High score: {seed} (score={score}, PR={isPersonalRecord})"
+            );
             HighScore?.Invoke(
                 this,
                 new HighScoreEventArgs
@@ -348,7 +360,10 @@ namespace BalatroSeedOracle.Services
         /// <param name="intensity">Effect intensity</param>
         public void TriggerManualEffect(string effectName, float intensity)
         {
-            DebugLogger.Log("VisualizerEventManager", $"Manual effect test: {effectName} @ {intensity:F2}");
+            DebugLogger.Log(
+                "VisualizerEventManager",
+                $"Manual effect test: {effectName} @ {intensity:F2}"
+            );
 
             // Route to appropriate event using FrequencyBreakpointHit
             FrequencyBreakpointHit?.Invoke(

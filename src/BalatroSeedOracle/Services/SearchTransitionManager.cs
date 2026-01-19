@@ -110,7 +110,10 @@ namespace BalatroSeedOracle.Services
 
             if (progress.IsComplete)
             {
-                DebugLogger.LogImportant("SearchTransitionManager", "Search complete - transition finished!");
+                DebugLogger.LogImportant(
+                    "SearchTransitionManager",
+                    "Search complete - transition finished!"
+                );
                 StopSearchTransition();
             }
         }
@@ -140,7 +143,10 @@ namespace BalatroSeedOracle.Services
 
                 if (!File.Exists(presetFile))
                 {
-                    DebugLogger.LogError("SearchTransitionManager", $"Preset file not found: {presetFile}");
+                    DebugLogger.LogError(
+                        "SearchTransitionManager",
+                        $"Preset file not found: {presetFile}"
+                    );
                     return null;
                 }
 
@@ -160,7 +166,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchTransitionManager", $"Failed to load preset {presetName}: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchTransitionManager",
+                    $"Failed to load preset {presetName}: {ex.Message}"
+                );
             }
 
             return null;
@@ -180,7 +189,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchTransitionManager", $"Failed to apply shader parameters: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchTransitionManager",
+                    $"Failed to apply shader parameters: {ex.Message}"
+                );
             }
         }
 
@@ -193,10 +205,14 @@ namespace BalatroSeedOracle.Services
             {
                 var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
                     "_shaderBackground",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance
                 );
 
-                if (shaderBackgroundField?.GetValue(mainMenu) is Controls.BalatroShaderBackground shaderBackground)
+                if (
+                    shaderBackgroundField?.GetValue(mainMenu)
+                    is Controls.BalatroShaderBackground shaderBackground
+                )
                 {
                     shaderBackground.SetTime(parameters.TimeSpeed);
                     shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
@@ -216,7 +232,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchTransitionManager", $"Failed to apply to main menu: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchTransitionManager",
+                    $"Failed to apply to main menu: {ex.Message}"
+                );
             }
         }
     }

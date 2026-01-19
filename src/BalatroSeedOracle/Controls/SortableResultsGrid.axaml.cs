@@ -79,7 +79,8 @@ namespace BalatroSeedOracle.Controls
             ViewModel.DisplayedResults.CollectionChanged += OnDisplayedResultsChanged;
 
             // Wire up clipboard event
-            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
         }
 
         public async Task CopyToClipboardAsync(string text)
@@ -95,7 +96,10 @@ namespace BalatroSeedOracle.Controls
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SortableResultsGrid", $"Failed to copy to clipboard: {ex.Message}");
+                DebugLogger.LogError(
+                    "SortableResultsGrid",
+                    $"Failed to copy to clipboard: {ex.Message}"
+                );
             }
         }
 
@@ -110,7 +114,10 @@ namespace BalatroSeedOracle.Controls
             );
 
             // Ensure tally columns are updated when results change
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
+            if (
+                e.Action == NotifyCollectionChangedAction.Add
+                || e.Action == NotifyCollectionChangedAction.Reset
+            )
             {
                 EnsureTallyColumns();
             }
@@ -137,7 +144,10 @@ namespace BalatroSeedOracle.Controls
             EnsureTallyColumns();
 
             // DataGrid is bound to DisplayedResults via XAML - no need to set explicitly
-            DebugLogger.Log("SortableResultsGrid", "DataGrid initialized with XAML binding to DisplayedResults");
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                "DataGrid initialized with XAML binding to DisplayedResults"
+            );
         }
 
         private void OnDataGridKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
@@ -183,13 +193,21 @@ namespace BalatroSeedOracle.Controls
         {
             var menu = new ContextMenu();
 
-            var copyItem = new MenuItem { Header = "Copy Seed", Command = ViewModel.CopySeedCommand };
+            var copyItem = new MenuItem
+            {
+                Header = "Copy Seed",
+                Command = ViewModel.CopySeedCommand,
+            };
             var copySelectedItem = new MenuItem
             {
                 Header = "Copy Selected Seeds",
                 Command = ViewModel.CopySelectedCommand,
             };
-            var analyzeItem = new MenuItem { Header = "Analyze Seed", Command = ViewModel.AnalyzeCommand };
+            var analyzeItem = new MenuItem
+            {
+                Header = "Analyze Seed",
+                Command = ViewModel.AnalyzeCommand,
+            };
             var exportSelectedItem = new MenuItem
             {
                 Header = "Export Selected",
@@ -259,12 +277,16 @@ namespace BalatroSeedOracle.Controls
             }
 
             // Check if we need to rebuild columns
-            bool needsRebuild = !_tallyColumnsInitialized || _initializedColumnCount != first!.Scores!.Length;
+            bool needsRebuild =
+                !_tallyColumnsInitialized || _initializedColumnCount != first!.Scores!.Length;
 
             // Also rebuild if we now have Labels when we didn't before
             if (_tallyColumnsInitialized && first.Labels != null && first.Labels.Length > 0)
             {
-                var existingColumns = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                var existingColumns = dataGrid
+                    .Columns.Skip(2)
+                    .Take(_initializedColumnCount)
+                    .ToList();
                 if (existingColumns.Any(c => c.Header?.ToString()?.StartsWith("TALLY") == true))
                 {
                     needsRebuild = true; // We have placeholder names, rebuild with real Labels
@@ -277,7 +299,10 @@ namespace BalatroSeedOracle.Controls
             // Clear existing tally columns (keep SEED and SCORE)
             if (_tallyColumnsInitialized)
             {
-                var columnsToRemove = dataGrid.Columns.Skip(2).Take(_initializedColumnCount).ToList();
+                var columnsToRemove = dataGrid
+                    .Columns.Skip(2)
+                    .Take(_initializedColumnCount)
+                    .ToList();
                 foreach (var col in columnsToRemove)
                 {
                     dataGrid.Columns.Remove(col);
@@ -311,7 +336,9 @@ namespace BalatroSeedOracle.Controls
                 var template = new FuncDataTemplate<Models.SearchResult>(
                     (item, _) =>
                     {
-                        var fontFamily = this.FindResource("BalatroFont") as FontFamily ?? new FontFamily("Consolas");
+                        var fontFamily =
+                            this.FindResource("BalatroFont") as FontFamily
+                            ?? new FontFamily("Consolas");
                         var tb = new TextBlock
                         {
                             FontFamily = fontFamily,
@@ -339,7 +366,10 @@ namespace BalatroSeedOracle.Controls
 
         private void ResetFromItemsSource()
         {
-            DebugLogger.LogImportant("SortableResultsGrid", "ResetFromItemsSource: Clearing existing results");
+            DebugLogger.LogImportant(
+                "SortableResultsGrid",
+                "ResetFromItemsSource: Clearing existing results"
+            );
             ViewModel.ClearResults();
 
             if (_itemsSource != null)
@@ -356,7 +386,10 @@ namespace BalatroSeedOracle.Controls
             }
             else
             {
-                DebugLogger.Log("SortableResultsGrid", "ResetFromItemsSource: No ItemsSource to add from");
+                DebugLogger.Log(
+                    "SortableResultsGrid",
+                    "ResetFromItemsSource: No ItemsSource to add from"
+                );
             }
 
             // Rebuild tally columns if needed
@@ -428,7 +461,10 @@ namespace BalatroSeedOracle.Controls
                 }
                 else
                 {
-                    DebugLogger.Log("SortableResultsGrid", "ItemsSource set to null - clearing results");
+                    DebugLogger.Log(
+                        "SortableResultsGrid",
+                        "ItemsSource set to null - clearing results"
+                    );
                     ClearResults();
                 }
             }
@@ -449,7 +485,10 @@ namespace BalatroSeedOracle.Controls
                 case NotifyCollectionChangedAction.Add:
                     if (e.NewItems != null)
                     {
-                        DebugLogger.Log("SortableResultsGrid", $"Adding {e.NewItems.Count} items to grid");
+                        DebugLogger.Log(
+                            "SortableResultsGrid",
+                            $"Adding {e.NewItems.Count} items to grid"
+                        );
                         foreach (var item in e.NewItems)
                         {
                             if (item is SearchResult r)

@@ -112,21 +112,41 @@ namespace BalatroSeedOracle.Services
                     {
                         Name = "Legendary Lineup",
                         Description = "The legendary joker collection",
-                        Items = new List<string> { "chicot", "perkeo", "triboulet", "yorick", "canio" },
+                        Items = new List<string>
+                        {
+                            "chicot",
+                            "perkeo",
+                            "triboulet",
+                            "yorick",
+                            "canio",
+                        },
                         Tags = new List<string> { "#Legendary", "#LateGame", "#XMult" },
                     },
                     new JokerSet
                     {
                         Name = "ReTrigger",
                         Description = "Maximum retrigger synergy",
-                        Items = new List<string> { "sockandbuskin", "hangingchad", "dusk", "dejavu" },
+                        Items = new List<string>
+                        {
+                            "sockandbuskin",
+                            "hangingchad",
+                            "dusk",
+                            "dejavu",
+                        },
                         Tags = new List<string> { "#Retrigger", "#FaceCards", "#Spectral" },
                     },
                     new JokerSet
                     {
                         Name = "Money Makers",
                         Description = "Economic powerhouse combo",
-                        Items = new List<string> { "businesscard", "bull", "tothemoon", "bootstraps", "egg" },
+                        Items = new List<string>
+                        {
+                            "businesscard",
+                            "bull",
+                            "tothemoon",
+                            "bootstraps",
+                            "egg",
+                        },
                         Tags = new List<string> { "#Money", "#Gold", "#Economy" },
                     },
                     new JokerSet
@@ -167,7 +187,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(
+                    _data,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 await File.WriteAllTextAsync(_favoritesPath, json);
                 DebugLogger.Log("FavoritesService", "Favorites saved successfully");
             }

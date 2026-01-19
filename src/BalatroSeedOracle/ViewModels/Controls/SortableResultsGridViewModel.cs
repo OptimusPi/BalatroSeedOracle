@@ -172,7 +172,10 @@ namespace BalatroSeedOracle.ViewModels.Controls
             // For single additions (like real-time search), use debounced refresh
             if (resultsArray.Length > 10)
             {
-                DebugLogger.Log("SortableResultsGridVM", "Bulk addition detected - forcing immediate refresh");
+                DebugLogger.Log(
+                    "SortableResultsGridVM",
+                    "Bulk addition detected - forcing immediate refresh"
+                );
                 ForceRefresh();
             }
             else
@@ -251,8 +254,14 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     filtered = filtered.Where(r =>
                         r.Seed.ToLowerInvariant().Contains(filterLower)
                         || r.TotalScore.ToString().Contains(filterLower)
-                        || (r.Scores != null && r.Scores.Any(s => s.ToString().Contains(filterLower)))
-                        || (r.Labels != null && r.Labels.Any(l => l.ToLowerInvariant().Contains(filterLower)))
+                        || (
+                            r.Scores != null
+                            && r.Scores.Any(s => s.ToString().Contains(filterLower))
+                        )
+                        || (
+                            r.Labels != null
+                            && r.Labels.Any(l => l.ToLowerInvariant().Contains(filterLower))
+                        )
                     );
                 }
 
@@ -261,7 +270,9 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 // Handle sorting based on CurrentSortProperty
                 if (CurrentSortProperty == "Seed")
                 {
-                    query = SortDescending ? filtered.OrderByDescending(r => r.Seed) : filtered.OrderBy(r => r.Seed);
+                    query = SortDescending
+                        ? filtered.OrderByDescending(r => r.Seed)
+                        : filtered.OrderBy(r => r.Seed);
                 }
                 else if (CurrentSortProperty == "TotalScore")
                 {
@@ -276,14 +287,20 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     {
                         int startIndex = CurrentSortProperty.IndexOf('[') + 1;
                         int endIndex = CurrentSortProperty.IndexOf(']');
-                        int scoreIndex = int.Parse(CurrentSortProperty.Substring(startIndex, endIndex - startIndex));
+                        int scoreIndex = int.Parse(
+                            CurrentSortProperty.Substring(startIndex, endIndex - startIndex)
+                        );
 
                         query = SortDescending
                             ? filtered.OrderByDescending(r =>
-                                (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0
+                                (r.Scores != null && scoreIndex < r.Scores.Length)
+                                    ? r.Scores[scoreIndex]
+                                    : 0
                             )
                             : filtered.OrderBy(r =>
-                                (r.Scores != null && scoreIndex < r.Scores.Length) ? r.Scores[scoreIndex] : 0
+                                (r.Scores != null && scoreIndex < r.Scores.Length)
+                                    ? r.Scores[scoreIndex]
+                                    : 0
                             );
                     }
                     catch
@@ -409,9 +426,11 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
             var highestScore = DisplayedResults.Max(r => r.TotalScore);
             var averageScore = DisplayedResults.Average(r => r.TotalScore);
-            var showingText = TotalResultCount > MaxDisplayResults ? $" (showing top {MaxDisplayResults})" : "";
+            var showingText =
+                TotalResultCount > MaxDisplayResults ? $" (showing top {MaxDisplayResults})" : "";
 
-            StatsText = $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {TotalResultCount}{showingText}";
+            StatsText =
+                $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {TotalResultCount}{showingText}";
         }
 
         private Task CopySeedAsync(string? seed)

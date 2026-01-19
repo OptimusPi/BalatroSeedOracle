@@ -14,7 +14,10 @@ namespace BalatroSeedOracle.Services.Storage
         {
             try
             {
-                DebugLogger.LogImportant("LocalStorageTester", "=== Testing LocalStorage Interop ===");
+                DebugLogger.LogImportant(
+                    "LocalStorageTester",
+                    "=== Testing LocalStorage Interop ==="
+                );
 
                 // Test 1: Direct localStorage access
                 try
@@ -39,7 +42,10 @@ namespace BalatroSeedOracle.Services.Storage
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("LocalStorageTester", $"Wrapper test failed: {ex.Message}");
+                    DebugLogger.LogError(
+                        "LocalStorageTester",
+                        $"Wrapper test failed: {ex.Message}"
+                    );
                 }
 
                 // Test 3: Test BrowserLocalStorageAppDataStore

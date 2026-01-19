@@ -102,7 +102,10 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 var zIndex = IsMinimized ? 1 : (100 + _zIndexOffset);
-                DebugLogger.Log(WidgetTitle, $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})");
+                DebugLogger.Log(
+                    WidgetTitle,
+                    $"ZIndex: {zIndex} (IsMinimized: {IsMinimized}, Offset: {_zIndexOffset})"
+                );
                 return zIndex;
             }
         }
@@ -205,7 +208,8 @@ namespace BalatroSeedOracle.ViewModels
                 WidgetWindow = window;
 
                 // Set initial position using position service
-                var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+                var positionService =
+                    Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
                 if (positionService != null)
                 {
                     var (x, y) = positionService.FindNextAvailablePosition(this, IsMinimized);
@@ -251,7 +255,8 @@ namespace BalatroSeedOracle.ViewModels
         private void CloseWidget()
         {
             // Unregister from position service
-            var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+            var positionService =
+                Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
             positionService?.UnregisterWidget(this);
 
             // Close and cleanup window

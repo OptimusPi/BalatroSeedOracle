@@ -11,10 +11,11 @@ namespace BalatroSeedOracle.Components
     public partial class FilterSelectorControl : UserControl
     {
         // IsInSearchModal Dependency Property
-        public static readonly StyledProperty<bool> IsInSearchModalProperty = AvaloniaProperty.Register<
-            FilterSelectorControl,
-            bool
-        >(nameof(IsInSearchModal), defaultValue: false);
+        public static readonly StyledProperty<bool> IsInSearchModalProperty =
+            AvaloniaProperty.Register<FilterSelectorControl, bool>(
+                nameof(IsInSearchModal),
+                defaultValue: false
+            );
 
         public bool IsInSearchModal
         {
@@ -149,7 +150,9 @@ namespace BalatroSeedOracle.Components
                             var spacing = stackPanel != null ? stackPanel.Spacing : 0;
 
                             // Add a small safety buffer to avoid off‑by‑one clipping
-                            return Math.Ceiling(measuredHeight + marginTop + marginBottom + spacing + 2);
+                            return Math.Ceiling(
+                                measuredHeight + marginTop + marginBottom + spacing + 2
+                            );
                         }
                     }
                 }
@@ -238,7 +241,10 @@ namespace BalatroSeedOracle.Components
         {
             Helpers.DebugLogger.Log("FilterSelectorControl", "SELECT THIS FILTER button clicked!");
             var filterPath = _viewModel?.GetSelectedFilterPath();
-            Helpers.DebugLogger.Log("FilterSelectorControl", $"Filter path: {filterPath ?? "null"}");
+            Helpers.DebugLogger.Log(
+                "FilterSelectorControl",
+                $"Filter path: {filterPath ?? "null"}"
+            );
 
             if (!string.IsNullOrEmpty(filterPath))
             {
@@ -251,7 +257,10 @@ namespace BalatroSeedOracle.Components
             }
             else
             {
-                Helpers.DebugLogger.LogError("FilterSelectorControl", "No filter selected or path is empty!");
+                Helpers.DebugLogger.LogError(
+                    "FilterSelectorControl",
+                    "No filter selected or path is empty!"
+                );
             }
         }
 

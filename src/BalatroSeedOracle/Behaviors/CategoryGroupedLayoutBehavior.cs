@@ -106,7 +106,10 @@ namespace BalatroSeedOracle.Behaviors
             var vouchers = itemList.Where(i => i.Category == "Vouchers").ToList();
             var consumables = itemList
                 .Where(i =>
-                    i.Category != "Jokers" && i.Category != "Tags" && i.Category != "Bosses" && i.Category != "Vouchers"
+                    i.Category != "Jokers"
+                    && i.Category != "Tags"
+                    && i.Category != "Bosses"
+                    && i.Category != "Vouchers"
                 )
                 .ToList();
 
@@ -129,7 +132,10 @@ namespace BalatroSeedOracle.Behaviors
                     if (containers.Count == 0)
                     {
                         // Items not yet realized, try again with a delay
-                        DebugLogger.Log("CategoryGroupedLayout", "No containers found, retrying...");
+                        DebugLogger.Log(
+                            "CategoryGroupedLayout",
+                            "No containers found, retrying..."
+                        );
                         Avalonia.Threading.DispatcherTimer.RunOnce(
                             () => ArrangeItems(),
                             TimeSpan.FromMilliseconds(100)
@@ -144,7 +150,12 @@ namespace BalatroSeedOracle.Behaviors
                     currentX = LayoutJokers(jokers, containers, ref containerIndex, currentX);
 
                     // Layout consumables (normal spacing, center)
-                    currentX = LayoutConsumables(consumables, containers, ref containerIndex, currentX);
+                    currentX = LayoutConsumables(
+                        consumables,
+                        containers,
+                        ref containerIndex,
+                        currentX
+                    );
 
                     // Layout vouchers (fanned, right side)
                     currentX = LayoutVouchers(vouchers, containers, ref containerIndex, currentX);
@@ -174,7 +185,11 @@ namespace BalatroSeedOracle.Behaviors
             if (jokers.Count == 0)
                 return startX;
 
-            for (int i = 0; i < jokers.Count && containerIndex < containers.Count; i++, containerIndex++)
+            for (
+                int i = 0;
+                i < jokers.Count && containerIndex < containers.Count;
+                i++, containerIndex++
+            )
             {
                 var control = containers[containerIndex];
                 var centerIndex = (jokers.Count - 1) / 2.0;
@@ -210,7 +225,11 @@ namespace BalatroSeedOracle.Behaviors
             if (consumables.Count == 0)
                 return startX;
 
-            for (int i = 0; i < consumables.Count && containerIndex < containers.Count; i++, containerIndex++)
+            for (
+                int i = 0;
+                i < consumables.Count && containerIndex < containers.Count;
+                i++, containerIndex++
+            )
             {
                 var control = containers[containerIndex];
 
@@ -236,7 +255,11 @@ namespace BalatroSeedOracle.Behaviors
             if (vouchers.Count == 0)
                 return startX;
 
-            for (int i = 0; i < vouchers.Count && containerIndex < containers.Count; i++, containerIndex++)
+            for (
+                int i = 0;
+                i < vouchers.Count && containerIndex < containers.Count;
+                i++, containerIndex++
+            )
             {
                 var control = containers[containerIndex];
                 var centerIndex = (vouchers.Count - 1) / 2.0;
@@ -257,12 +280,20 @@ namespace BalatroSeedOracle.Behaviors
             return startX + (vouchers.Count * VoucherCardSpacing);
         }
 
-        private void LayoutTags(List<FilterItem> tags, List<Control> containers, ref int containerIndex)
+        private void LayoutTags(
+            List<FilterItem> tags,
+            List<Control> containers,
+            ref int containerIndex
+        )
         {
             if (tags.Count == 0)
                 return;
 
-            for (int i = 0; i < tags.Count && containerIndex < containers.Count; i++, containerIndex++)
+            for (
+                int i = 0;
+                i < tags.Count && containerIndex < containers.Count;
+                i++, containerIndex++
+            )
             {
                 var control = containers[containerIndex];
 
@@ -290,7 +321,11 @@ namespace BalatroSeedOracle.Behaviors
 
             var startX = 8 + (tagCount * (TagBossSize + TagBossSpacing)) + 12; // Start after tags with gap
 
-            for (int i = 0; i < bosses.Count && containerIndex < containers.Count; i++, containerIndex++)
+            for (
+                int i = 0;
+                i < bosses.Count && containerIndex < containers.Count;
+                i++, containerIndex++
+            )
             {
                 var control = containers[containerIndex];
 

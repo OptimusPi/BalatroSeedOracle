@@ -40,7 +40,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            DebugLogger.LogError("MainWindow", "MainMenuHost not found - cannot attach BalatroMainMenu");
+            DebugLogger.LogError(
+                "MainWindow",
+                "MainMenuHost not found - cannot attach BalatroMainMenu"
+            );
         }
 
         // Sync IsVibeOutMode from MainMenu to MainWindow
@@ -79,7 +82,6 @@ public partial class MainWindow : Window
         // Do cleanup asynchronously to avoid blocking UI
         _ = CleanupAndExitAsync();
     }
-
 
     private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
     {
@@ -129,7 +131,10 @@ public partial class MainWindow : Window
                 BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
             if (userProfileService is not null)
             {
-                DebugLogger.LogImportant("MainWindow", "Flushing user profile to save search state...");
+                DebugLogger.LogImportant(
+                    "MainWindow",
+                    "Flushing user profile to save search state..."
+                );
                 userProfileService.FlushProfile();
             }
 

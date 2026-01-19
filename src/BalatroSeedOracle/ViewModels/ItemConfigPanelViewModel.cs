@@ -53,9 +53,12 @@ namespace BalatroSeedOracle.ViewModels
         public bool IsMinCountVisible => _item?.Status == FilterItemStatus.MustHave;
 
         public bool IsEditionVisible =>
-            _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker" || _item?.ItemType == "StandardCard";
+            _item?.ItemType == "Joker"
+            || _item?.ItemType == "SoulJoker"
+            || _item?.ItemType == "StandardCard";
 
-        public bool IsStickersVisible => _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker";
+        public bool IsStickersVisible =>
+            _item?.ItemType == "Joker" || _item?.ItemType == "SoulJoker";
 
         public bool IsSealVisible => _item?.ItemType == "StandardCard";
         public bool IsEnhancementVisible => _item?.ItemType == "StandardCard";
@@ -152,7 +155,11 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _enableOrGroup = false;
 
-        public ItemConfigPanelViewModel(FilterItem item, Action? onApply = null, Action? onClose = null)
+        public ItemConfigPanelViewModel(
+            FilterItem item,
+            Action? onApply = null,
+            Action? onClose = null
+        )
         {
             _item = item;
             _onApply = onApply;
@@ -372,7 +379,10 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 // Use the robust GetItemImage helper
-                _item.ItemImage = Services.SpriteService.Instance.GetItemImage(_item.Name, _item.ItemType);
+                _item.ItemImage = Services.SpriteService.Instance.GetItemImage(
+                    _item.Name,
+                    _item.ItemType
+                );
             }
         }
 
@@ -572,13 +582,40 @@ namespace BalatroSeedOracle.ViewModels
 
         private string? ValidateEnhancement(string? enhancement)
         {
-            var validEnhancements = new[] { "Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold" };
-            return (enhancement != "None" && validEnhancements.Contains(enhancement)) ? enhancement : null;
+            var validEnhancements = new[]
+            {
+                "Bonus",
+                "Mult",
+                "Wild",
+                "Glass",
+                "Steel",
+                "Stone",
+                "Lucky",
+                "Gold",
+            };
+            return (enhancement != "None" && validEnhancements.Contains(enhancement))
+                ? enhancement
+                : null;
         }
 
         private string? ValidateRank(string? rank)
         {
-            var validRanks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+            var validRanks = new[]
+            {
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "J",
+                "Q",
+                "K",
+                "A",
+            };
             return validRanks.Contains(rank) ? rank : null;
         }
 

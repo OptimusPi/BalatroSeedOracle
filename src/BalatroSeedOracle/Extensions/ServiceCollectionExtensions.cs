@@ -8,7 +8,9 @@ namespace BalatroSeedOracle.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddBalatroSeedOracleServices(this IServiceCollection services)
+        public static IServiceCollection AddBalatroSeedOracleServices(
+            this IServiceCollection services
+        )
         {
             // Services
             services.AddSingleton<IConfigurationService>(sp => new ConfigurationService(
@@ -84,10 +86,12 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<AudioVisualizerSettingsWidgetViewModel>();
             services.AddTransient<MusicMixerWidgetViewModel>();
-            services.AddTransient<TransitionDesignerWidgetViewModel>(sp => new TransitionDesignerWidgetViewModel(
-                sp.GetService<TransitionService>(),
-                sp.GetService<TriggerService>()
-            ));
+            services.AddTransient<TransitionDesignerWidgetViewModel>(
+                sp => new TransitionDesignerWidgetViewModel(
+                    sp.GetService<TransitionService>(),
+                    sp.GetService<TriggerService>()
+                )
+            );
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();

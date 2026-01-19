@@ -52,12 +52,11 @@ namespace BalatroSeedOracle.Controls
             "#Cryptid",
         };
 
-        private readonly ObservableCollection<string> _currentTags = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _currentTags =
+            new ObservableCollection<string>();
 
-        public static readonly StyledProperty<List<string>> TagsProperty = AvaloniaProperty.Register<
-            TagEditor,
-            List<string>
-        >(nameof(Tags), new List<string>());
+        public static readonly StyledProperty<List<string>> TagsProperty =
+            AvaloniaProperty.Register<TagEditor, List<string>>(nameof(Tags), new List<string>());
 
         public List<string> Tags
         {

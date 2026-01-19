@@ -12,7 +12,8 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class WidgetPositionService
     {
-        private readonly Dictionary<BaseWidgetViewModel, (double X, double Y)> _widgetPositions = new();
+        private readonly Dictionary<BaseWidgetViewModel, (double X, double Y)> _widgetPositions =
+            new();
         private double _lastKnownParentWidth = 1200.0; // Track parent window dimensions
         private double _lastKnownParentHeight = 700.0;
         private readonly DateTime _startupTime = DateTime.Now; // Track startup time
@@ -122,7 +123,10 @@ namespace BalatroSeedOracle.Services
             // Subscribe to position changes to keep track
             widget.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(widget.PositionX) || e.PropertyName == nameof(widget.PositionY))
+                if (
+                    e.PropertyName == nameof(widget.PositionX)
+                    || e.PropertyName == nameof(widget.PositionY)
+                )
                 {
                     _widgetPositions[widget] = (widget.PositionX, widget.PositionY);
                 }
@@ -216,8 +220,10 @@ namespace BalatroSeedOracle.Services
                 var padding = 10.0;
 
                 // Check if rectangles overlap using proper AABB collision
-                bool overlapsX = x < widgetX + widget2Width + padding && x + widget1Width + padding > widgetX;
-                bool overlapsY = y < widgetY + widget2Height + padding && y + widget1Height + padding > widgetY;
+                bool overlapsX =
+                    x < widgetX + widget2Width + padding && x + widget1Width + padding > widgetX;
+                bool overlapsY =
+                    y < widgetY + widget2Height + padding && y + widget1Height + padding > widgetY;
 
                 if (overlapsX && overlapsY)
                 {
@@ -286,22 +292,34 @@ namespace BalatroSeedOracle.Services
             // to allow widgets to position at their intended locations
             if (IsStartupMode)
             {
-                DebugLogger.Log("WidgetPosition", $"Startup mode - widget at ({snappedX}, {snappedY})");
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Startup mode - widget at ({snappedX}, {snappedY})"
+                );
                 return (snappedX, snappedY);
             }
 
             // Check if the snapped position is occupied
             if (IsPositionOccupied(snappedX, snappedY, widget, widget.IsMinimized))
             {
-                DebugLogger.Log("WidgetPosition", $"Position ({snappedX}, {snappedY}) occupied, finding alternative");
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Position ({snappedX}, {snappedY}) occupied, finding alternative"
+                );
                 // Find the nearest available position
                 var (nearestX, nearestY) = FindNearestAvailablePosition(snappedX, snappedY, widget);
-                DebugLogger.Log("WidgetPosition", $"Alternative position: ({nearestX}, {nearestY})");
+                DebugLogger.Log(
+                    "WidgetPosition",
+                    $"Alternative position: ({nearestX}, {nearestY})"
+                );
 
                 return (nearestX, nearestY);
             }
 
-            DebugLogger.Log("WidgetPositionService", $"Position ({snappedX}, {snappedY}) available");
+            DebugLogger.Log(
+                "WidgetPositionService",
+                $"Position ({snappedX}, {snappedY}) available"
+            );
             return (snappedX, snappedY);
         }
 
@@ -320,7 +338,10 @@ namespace BalatroSeedOracle.Services
 
             // Get dynamic exclusion zones to determine safe bounds
             var exclusionZones = GetDynamicExclusionZones();
-            var bottomExclusionStart = exclusionZones.Where(z => z.Y > _lastKnownParentHeight / 2).FirstOrDefault().Y;
+            var bottomExclusionStart = exclusionZones
+                .Where(z => z.Y > _lastKnownParentHeight / 2)
+                .FirstOrDefault()
+                .Y;
             var topExclusionEnd = exclusionZones.Where(z => z.Y == 0).FirstOrDefault().Height;
 
             // Set dynamic bounds based on actual exclusion zones
@@ -350,7 +371,8 @@ namespace BalatroSeedOracle.Services
                     {
                         // Calculate actual distance (not just grid steps)
                         var distance = Math.Sqrt(
-                            (testX - targetX) * (testX - targetX) + (testY - targetY) * (testY - targetY)
+                            (testX - targetX) * (testX - targetX)
+                                + (testY - targetY) * (testY - targetY)
                         );
                         candidates.Add((testX, testY, distance));
                     }
@@ -385,7 +407,10 @@ namespace BalatroSeedOracle.Services
 
             // Get the new exclusion zones based on updated dimensions
             var exclusionZones = GetDynamicExclusionZones();
-            var bottomExclusionStart = exclusionZones.Where(z => z.Y > newHeight / 2).FirstOrDefault().Y;
+            var bottomExclusionStart = exclusionZones
+                .Where(z => z.Y > newHeight / 2)
+                .FirstOrDefault()
+                .Y;
             var topExclusionEnd = exclusionZones.Where(z => z.Y == 0).FirstOrDefault().Height;
 
             // Calculate safe bounds
@@ -477,8 +502,17 @@ namespace BalatroSeedOracle.Services
             {
                 var snappedPos = SnapToGrid(columnX, y);
                 if (
-                    !IsPositionOccupied(snappedPos.X, snappedPos.Y, excludeWidget, excludeWidget?.IsMinimized ?? true)
-                    && !IsInExclusionZone(snappedPos.X, snappedPos.Y, excludeWidget?.IsMinimized ?? true)
+                    !IsPositionOccupied(
+                        snappedPos.X,
+                        snappedPos.Y,
+                        excludeWidget,
+                        excludeWidget?.IsMinimized ?? true
+                    )
+                    && !IsInExclusionZone(
+                        snappedPos.X,
+                        snappedPos.Y,
+                        excludeWidget?.IsMinimized ?? true
+                    )
                 )
                 {
                     return snappedPos;

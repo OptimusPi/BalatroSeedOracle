@@ -10,40 +10,37 @@ namespace BalatroSeedOracle.Components
     public partial class PaginatedFilterBrowser : UserControl
     {
         // Styled properties for parent configuration
-        public static readonly StyledProperty<string> MainButtonTextProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            string
-        >(nameof(MainButtonText), "Select");
+        public static readonly StyledProperty<string> MainButtonTextProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, string>(
+                nameof(MainButtonText),
+                "Select"
+            );
 
-        public static readonly StyledProperty<string> SecondaryButtonTextProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            string
-        >(nameof(SecondaryButtonText), "View");
+        public static readonly StyledProperty<string> SecondaryButtonTextProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, string>(
+                nameof(SecondaryButtonText),
+                "View"
+            );
 
-        public static readonly StyledProperty<bool> ShowSecondaryButtonProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            bool
-        >(nameof(ShowSecondaryButton), true);
+        public static readonly StyledProperty<bool> ShowSecondaryButtonProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, bool>(
+                nameof(ShowSecondaryButton),
+                true
+            );
 
-        public static readonly StyledProperty<bool> ShowDeleteButtonProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            bool
-        >(nameof(ShowDeleteButton), true);
+        public static readonly StyledProperty<bool> ShowDeleteButtonProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, bool>(nameof(ShowDeleteButton), true);
 
-        public static readonly StyledProperty<ICommand> MainButtonCommandProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            ICommand
-        >(nameof(MainButtonCommand));
+        public static readonly StyledProperty<ICommand> MainButtonCommandProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, ICommand>(nameof(MainButtonCommand));
 
-        public static readonly StyledProperty<ICommand> SecondaryButtonCommandProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            ICommand
-        >(nameof(SecondaryButtonCommand));
+        public static readonly StyledProperty<ICommand> SecondaryButtonCommandProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, ICommand>(
+                nameof(SecondaryButtonCommand)
+            );
 
-        public static readonly StyledProperty<ICommand> DeleteCommandProperty = AvaloniaProperty.Register<
-            PaginatedFilterBrowser,
-            ICommand
-        >(nameof(DeleteCommand));
+        public static readonly StyledProperty<ICommand> DeleteCommandProperty =
+            AvaloniaProperty.Register<PaginatedFilterBrowser, ICommand>(nameof(DeleteCommand));
 
         // Properties
         public string MainButtonText
@@ -104,7 +101,8 @@ namespace BalatroSeedOracle.Components
             this.PropertyChanged += OnPropertyChanged;
 
             // Wire up ViewModel events - convert FilterBrowserItem to string path
-            ViewModel.FilterSelected += (s, filter) => FilterSelected?.Invoke(this, filter.FilePath);
+            ViewModel.FilterSelected += (s, filter) =>
+                FilterSelected?.Invoke(this, filter.FilePath);
 
             // Handle item clicks in code-behind (simpler than complex XAML binding)
             this.Loaded += OnLoaded;

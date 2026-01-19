@@ -66,7 +66,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
 
@@ -82,7 +85,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
 
@@ -111,7 +117,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SettingsModal", $"Error opening filters directory: {ex.Message}");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    $"Error opening filters directory: {ex.Message}"
+                );
             }
         }
 
@@ -153,7 +162,10 @@ namespace BalatroSeedOracle.Views.Modals
             }
             else
             {
-                DebugLogger.LogError("SettingsModal", "Could not find BalatroMainMenu in visual tree");
+                DebugLogger.LogError(
+                    "SettingsModal",
+                    "Could not find BalatroMainMenu in visual tree"
+                );
             }
         }
     }

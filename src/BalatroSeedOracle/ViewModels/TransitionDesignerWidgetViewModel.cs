@@ -53,7 +53,13 @@ namespace BalatroSeedOracle.ViewModels
             Height = 650; // Increased height for music controls
 
             // Initialize easing options
-            EasingOptions = new ObservableCollection<string> { "Linear", "EaseIn", "EaseOut", "EaseInOut" };
+            EasingOptions = new ObservableCollection<string>
+            {
+                "Linear",
+                "EaseIn",
+                "EaseOut",
+                "EaseInOut",
+            };
 
             // Load real preset options
             LoadPresetOptions();
@@ -77,7 +83,9 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Load audio mixer presets
             var mixerNames = MixerHelper.LoadAllMixerNames();
-            AudioMixOptions = new ObservableCollection<string>(mixerNames.Count > 0 ? mixerNames : new[] { "(none)" });
+            AudioMixOptions = new ObservableCollection<string>(
+                mixerNames.Count > 0 ? mixerNames : new[] { "(none)" }
+            );
 
             // Load visual shader presets
             var shaderNames = ShaderPresetHelper.ListNames();
@@ -99,10 +107,16 @@ namespace BalatroSeedOracle.ViewModels
                 return;
             }
 
-            var triggers = _triggerService.GetTriggersByType("Audio").Select(t => t.Name).OrderBy(n => n).ToList();
+            var triggers = _triggerService
+                .GetTriggersByType("Audio")
+                .Select(t => t.Name)
+                .OrderBy(n => n)
+                .ToList();
 
             AudioTriggerOptions = new ObservableCollection<string>(
-                triggers.Count > 0 ? new[] { NoneOption }.Concat(triggers).ToList() : new[] { NoneOption }
+                triggers.Count > 0
+                    ? new[] { NoneOption }.Concat(triggers).ToList()
+                    : new[] { NoneOption }
             );
 
             DebugLogger.Log("TransitionDesigner", $"Loaded {triggers.Count} audio triggers");
@@ -149,7 +163,8 @@ namespace BalatroSeedOracle.ViewModels
         private string _selectedEasing = "Linear";
 
         // Duration options
-        public ObservableCollection<string> DurationOptions { get; } = new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
+        public ObservableCollection<string> DurationOptions { get; } =
+            new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
 
         [ObservableProperty]
         private string _selectedDuration = "2s";
@@ -279,7 +294,10 @@ namespace BalatroSeedOracle.ViewModels
             _audioUpdateTimer.Elapsed += (s, e) => UpdateAudioDrivenProgress();
             _audioUpdateTimer.Start();
 
-            DebugLogger.Log("TransitionDesigner", "Started audio monitoring for music-activated transition");
+            DebugLogger.Log(
+                "TransitionDesigner",
+                "Started audio monitoring for music-activated transition"
+            );
         }
 
         private void StopAudioMonitoring()
@@ -317,12 +335,17 @@ namespace BalatroSeedOracle.ViewModels
                 var range = TriggerMax - TriggerThreshold;
                 if (range > 0)
                 {
-                    rawProgress = Math.Clamp((triggerIntensity - TriggerThreshold) / range, 0.0, 1.0);
+                    rawProgress = Math.Clamp(
+                        (triggerIntensity - TriggerThreshold) / range,
+                        0.0,
+                        1.0
+                    );
                 }
             }
 
             // Apply smoothing (exponential moving average)
-            _smoothedAudioProgress = AudioSmoothing * _smoothedAudioProgress + (1.0 - AudioSmoothing) * rawProgress;
+            _smoothedAudioProgress =
+                AudioSmoothing * _smoothedAudioProgress + (1.0 - AudioSmoothing) * rawProgress;
 
             // Apply easing
             TransitionProgress = ApplyEasing(_smoothedAudioProgress);
@@ -377,7 +400,9 @@ namespace BalatroSeedOracle.ViewModels
                     Duration = TransitionDuration > 0 ? TransitionDuration : DefaultDuration,
                     MusicActivated = MusicActivated,
                     AudioTriggerName =
-                        MusicActivated && SelectedAudioTrigger != NoneOption ? SelectedAudioTrigger : null,
+                        MusicActivated && SelectedAudioTrigger != NoneOption
+                            ? SelectedAudioTrigger
+                            : null,
                     TriggerThreshold = TriggerThreshold,
                     TriggerMax = TriggerMax,
                     AudioSmoothing = AudioSmoothing,
@@ -418,11 +443,17 @@ namespace BalatroSeedOracle.ViewModels
                 if (preset is not null)
                 {
                     SelectedVisualPresetA =
-                        preset.VisualPresetAName ?? VisualPresetOptions.FirstOrDefault() ?? NoneOption;
+                        preset.VisualPresetAName
+                        ?? VisualPresetOptions.FirstOrDefault()
+                        ?? NoneOption;
                     SelectedVisualPresetB =
-                        preset.VisualPresetBName ?? VisualPresetOptions.FirstOrDefault() ?? NoneOption;
-                    SelectedAudioMixA = preset.MixAName ?? AudioMixOptions.FirstOrDefault() ?? NoneOption;
-                    SelectedAudioMixB = preset.MixBName ?? AudioMixOptions.FirstOrDefault() ?? NoneOption;
+                        preset.VisualPresetBName
+                        ?? VisualPresetOptions.FirstOrDefault()
+                        ?? NoneOption;
+                    SelectedAudioMixA =
+                        preset.MixAName ?? AudioMixOptions.FirstOrDefault() ?? NoneOption;
+                    SelectedAudioMixB =
+                        preset.MixBName ?? AudioMixOptions.FirstOrDefault() ?? NoneOption;
                     SelectedEasing = preset.Easing ?? DefaultEasing;
                     TransitionDuration = preset.Duration > 0 ? preset.Duration : DefaultDuration;
 

@@ -32,9 +32,14 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("CreditsModalViewModel", $"JSON loaded, length: {json.Length}");
 
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var items = JsonSerializer.Deserialize<Credit[]>(json, options) ?? Array.Empty<Credit>();
+                    var items =
+                        JsonSerializer.Deserialize<Credit[]>(json, options)
+                        ?? Array.Empty<Credit>();
 
-                    DebugLogger.Log("CreditsModalViewModel", $"Deserialized {items.Length} credits");
+                    DebugLogger.Log(
+                        "CreditsModalViewModel",
+                        $"Deserialized {items.Length} credits"
+                    );
 
                     Credits = new ObservableCollection<Credit>(items);
                 }
@@ -46,7 +51,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("CreditsModalViewModel", $"Failed to load credits: {ex.Message}\n{ex.StackTrace}");
+                DebugLogger.LogError(
+                    "CreditsModalViewModel",
+                    $"Failed to load credits: {ex.Message}\n{ex.StackTrace}"
+                );
                 Credits = new ObservableCollection<Credit>();
             }
         }

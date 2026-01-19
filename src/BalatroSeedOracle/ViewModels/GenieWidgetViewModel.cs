@@ -58,7 +58,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public string ButtonContent => GenerateButtonText + " " + GeneratingSpinner;
 
-        public GenieWidgetViewModel(SearchManager searchManager, WidgetPositionService? widgetPositionService = null)
+        public GenieWidgetViewModel(
+            SearchManager searchManager,
+            WidgetPositionService? widgetPositionService = null
+        )
             : base(widgetPositionService)
         {
             _searchManager = searchManager;
@@ -133,13 +136,18 @@ namespace BalatroSeedOracle.ViewModels
                         if (localResponse.IsSuccessStatusCode)
                         {
                             var localResponseText = await localResponse.Content.ReadAsStringAsync();
-                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
+                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(
+                                localResponseText
+                            );
                             jamlResult = localResult?.jaml;
                         }
                     }
                     catch (Exception localEx)
                     {
-                        DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
+                        DebugLogger.Log(
+                            "GenieWidget",
+                            $"Local API not available: {localEx.Message}"
+                        );
                     }
                 }
 
@@ -151,7 +159,11 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Parse the JAML to get a JSON config for display
                 if (
-                    Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError)
+                    Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        jamlResult!,
+                        out var config,
+                        out var parseError
+                    )
                     && config != null
                 )
                 {
@@ -165,7 +177,8 @@ namespace BalatroSeedOracle.ViewModels
                     int shouldCount = config.Should?.Count ?? 0;
                     int mustNotCount = config.MustNot?.Count ?? 0;
 
-                    GeneratedFilterSummary = $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
+                    GeneratedFilterSummary =
+                        $"Deck: {config.Deck ?? "Any"} | Stake: {config.Stake ?? "Any"}\n";
                     GeneratedFilterSummary +=
                         $"{mustCount} must-have, {shouldCount} should-have, {mustNotCount} must-not items";
 
@@ -217,7 +230,10 @@ namespace BalatroSeedOracle.ViewModels
                 int counter = 1;
                 while (System.IO.File.Exists(filePath))
                 {
-                    filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}_{counter}.jaml");
+                    filePath = System.IO.Path.Combine(
+                        AppPaths.FiltersDir,
+                        $"{fileName}_{counter}.jaml"
+                    );
                     counter++;
                 }
 
@@ -244,9 +260,10 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Parse the generated JSON into a MotelyJsonConfig
-                var config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                    GeneratedJson
-                );
+                var config =
+                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        GeneratedJson
+                    );
 
                 if (config == null)
                 {

@@ -74,7 +74,9 @@ namespace BalatroSeedOracle.Behaviors
                 Avalonia.Threading.Dispatcher.UIThread.Post(
                     () =>
                     {
-                        var panel = AssociatedObject.GetValue(ItemsControl.ItemsPanelProperty)?.Build() as Canvas;
+                        var panel =
+                            AssociatedObject.GetValue(ItemsControl.ItemsPanelProperty)?.Build()
+                            as Canvas;
 
                         if (panel == null)
                             return;
@@ -102,7 +104,11 @@ namespace BalatroSeedOracle.Behaviors
                                 Canvas.SetTop(control, y);
 
                                 control.RenderTransform = new RotateTransform(rotation);
-                                control.RenderTransformOrigin = new RelativePoint(0.5, 1.0, RelativeUnit.Relative);
+                                control.RenderTransformOrigin = new RelativePoint(
+                                    0.5,
+                                    1.0,
+                                    RelativeUnit.Relative
+                                );
 
                                 index++;
                             }

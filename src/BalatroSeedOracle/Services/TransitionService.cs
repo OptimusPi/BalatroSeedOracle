@@ -79,7 +79,10 @@ namespace BalatroSeedOracle.Services
         {
             if (!_isRunning || _activeTransition == null)
             {
-                DebugLogger.LogError("TransitionService", "Cannot set progress - no active transition");
+                DebugLogger.LogError(
+                    "TransitionService",
+                    "Cannot set progress - no active transition"
+                );
                 return;
             }
 
@@ -147,7 +150,10 @@ namespace BalatroSeedOracle.Services
                 // Stop when complete
                 if (_activeTransition.CurrentProgress >= 1.0f)
                 {
-                    DebugLogger.LogImportant("TransitionService", "Time-based transition complete!");
+                    DebugLogger.LogImportant(
+                        "TransitionService",
+                        "Time-based transition complete!"
+                    );
                     StopTransition();
                 }
             };

@@ -60,7 +60,10 @@ namespace BalatroSeedOracle.Helpers
             catch (System.Exception ex)
             {
                 // Log the failure but gracefully return empty list
-                DebugLogger.LogError("ShaderPresetHelper", $"❌ Failed to list shader presets from {Dir}: {ex.Message}");
+                DebugLogger.LogError(
+                    "ShaderPresetHelper",
+                    $"❌ Failed to list shader presets from {Dir}: {ex.Message}"
+                );
             }
             return list;
         }
@@ -68,7 +71,10 @@ namespace BalatroSeedOracle.Helpers
         public static void Activate(string role, string name)
         {
             var roleFile = System.IO.Path.Combine(Dir, role.ToLowerInvariant() + ".json");
-            if (string.IsNullOrWhiteSpace(name) || name.Equals("Default", System.StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrWhiteSpace(name)
+                || name.Equals("Default", System.StringComparison.OrdinalIgnoreCase)
+            )
             {
                 if (System.IO.File.Exists(roleFile))
                     System.IO.File.Delete(roleFile);

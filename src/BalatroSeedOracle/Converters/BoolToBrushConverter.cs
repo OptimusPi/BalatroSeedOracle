@@ -14,7 +14,12 @@ namespace BalatroSeedOracle.Converters
     {
         public static readonly BoolToBrushConverter Instance = new();
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             if (value is not bool isTrue)
                 return GetDefaultBrush();
@@ -25,7 +30,11 @@ namespace BalatroSeedOracle.Converters
                 if (isTrue)
                 {
                     if (
-                        Application.Current?.Resources.TryGetResource("AccentGreen", null, out var greenRes) == true
+                        Application.Current?.Resources.TryGetResource(
+                            "AccentGreen",
+                            null,
+                            out var greenRes
+                        ) == true
                         && greenRes is IBrush greenBrush
                     )
                         return greenBrush;
@@ -34,7 +43,11 @@ namespace BalatroSeedOracle.Converters
                 else
                 {
                     if (
-                        Application.Current?.Resources.TryGetResource("ModalBorder", null, out var borderRes) == true
+                        Application.Current?.Resources.TryGetResource(
+                            "ModalBorder",
+                            null,
+                            out var borderRes
+                        ) == true
                         && borderRes is IBrush borderBrush
                     )
                         return borderBrush;
@@ -46,7 +59,11 @@ namespace BalatroSeedOracle.Converters
             if (isTrue)
             {
                 if (
-                    Application.Current?.Resources.TryGetResource("AccentGreen", null, out var greenRes) == true
+                    Application.Current?.Resources.TryGetResource(
+                        "AccentGreen",
+                        null,
+                        out var greenRes
+                    ) == true
                     && greenRes is IBrush greenBrush
                 )
                     return greenBrush;
@@ -55,7 +72,11 @@ namespace BalatroSeedOracle.Converters
             else
             {
                 if (
-                    Application.Current?.Resources.TryGetResource("DarkBackground", null, out var darkRes) == true
+                    Application.Current?.Resources.TryGetResource(
+                        "DarkBackground",
+                        null,
+                        out var darkRes
+                    ) == true
                     && darkRes is IBrush darkBrush
                 )
                     return darkBrush;
@@ -63,7 +84,12 @@ namespace BalatroSeedOracle.Converters
             }
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture
+        )
         {
             throw new NotSupportedException("One-way binding only");
         }
@@ -71,7 +97,8 @@ namespace BalatroSeedOracle.Converters
         private IBrush GetDefaultBrush()
         {
             if (
-                Application.Current?.Resources.TryGetResource("DarkBackground", null, out var res) == true
+                Application.Current?.Resources.TryGetResource("DarkBackground", null, out var res)
+                    == true
                 && res is IBrush brush
             )
                 return brush;

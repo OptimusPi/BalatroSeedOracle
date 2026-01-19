@@ -53,8 +53,10 @@ namespace BalatroSeedOracle.ViewModels
         )
             : base(widgetPositionService)
         {
-            _searchInstance = searchInstance ?? throw new ArgumentNullException(nameof(searchInstance));
-            _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+            _searchInstance =
+                searchInstance ?? throw new ArgumentNullException(nameof(searchInstance));
+            _spriteService =
+                spriteService ?? throw new ArgumentNullException(nameof(spriteService));
 
             // Initialize from SearchInstance
             FilterName = _searchInstance.FilterName ?? "Search";
@@ -91,19 +93,25 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var clause in config.Must)
                     {
-                        if (!string.IsNullOrEmpty(clause.Value) && !string.IsNullOrEmpty(clause.Type))
+                        if (
+                            !string.IsNullOrEmpty(clause.Value)
+                            && !string.IsNullOrEmpty(clause.Type)
+                        )
                         {
                             // Load sprite based on type
                             FilterIcon = clause.Type.ToLowerInvariant() switch
                             {
                                 "joker" => _spriteService.GetJokerImage(clause.Value) as Bitmap,
                                 "tarot" => _spriteService.GetTarotImage(clause.Value) as Bitmap,
-                                "planet" => _spriteService.GetPlanetCardImage(clause.Value) as Bitmap,
-                                "spectral" => _spriteService.GetSpectralImage(clause.Value) as Bitmap,
+                                "planet" => _spriteService.GetPlanetCardImage(clause.Value)
+                                    as Bitmap,
+                                "spectral" => _spriteService.GetSpectralImage(clause.Value)
+                                    as Bitmap,
                                 "voucher" => _spriteService.GetVoucherImage(clause.Value) as Bitmap,
                                 "tag" => _spriteService.GetTagImage(clause.Value) as Bitmap,
                                 "booster" => _spriteService.GetBoosterImage(clause.Value) as Bitmap,
-                                _ => _spriteService.GetItemImage(clause.Value, clause.Type) as Bitmap,
+                                _ => _spriteService.GetItemImage(clause.Value, clause.Type)
+                                    as Bitmap,
                             };
 
                             if (FilterIcon is not null)
@@ -120,11 +128,17 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Fallback to default Joker icon
                 FilterIcon = _spriteService.GetJokerImage("Joker") as Bitmap;
-                DebugLogger.Log("SearchWidgetViewModel", "Using default Joker icon (no Must clauses with Value found)");
+                DebugLogger.Log(
+                    "SearchWidgetViewModel",
+                    "Using default Joker icon (no Must clauses with Value found)"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchWidgetViewModel", $"Failed to load filter icon: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchWidgetViewModel",
+                    $"Failed to load filter icon: {ex.Message}"
+                );
                 FilterIcon = _spriteService.GetJokerImage("Joker") as Bitmap;
             }
         }
@@ -168,7 +182,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.Log("SearchWidgetViewModel", $"Opening SearchModal for search: {_searchInstance.SearchId}");
+                DebugLogger.Log(
+                    "SearchWidgetViewModel",
+                    $"Opening SearchModal for search: {_searchInstance.SearchId}"
+                );
 
                 // Request to open SearchModal with this SearchInstance
                 // This will be handled by the View (BalatroMainMenu)
@@ -176,7 +193,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchWidgetViewModel", $"Failed to open SearchModal: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchWidgetViewModel",
+                    $"Failed to open SearchModal: {ex.Message}"
+                );
             }
         }
 
@@ -218,14 +238,19 @@ namespace BalatroSeedOracle.ViewModels
                 var profileService = ServiceHelper.GetService<UserProfileService>();
                 if (profileService is null)
                 {
-                    DebugLogger.LogError("SearchWidgetViewModel", "UserProfileService not available for save");
+                    DebugLogger.LogError(
+                        "SearchWidgetViewModel",
+                        "UserProfileService not available for save"
+                    );
                     return;
                 }
 
                 var profile = profileService.GetProfile();
 
                 // Find existing saved widget or create new
-                var saved = profile.SavedSearchWidgets.FirstOrDefault(w => w.SearchInstanceId == SearchInstanceId);
+                var saved = profile.SavedSearchWidgets.FirstOrDefault(w =>
+                    w.SearchInstanceId == SearchInstanceId
+                );
                 if (saved is null)
                 {
                     saved = new SavedSearchWidget();
@@ -242,11 +267,17 @@ namespace BalatroSeedOracle.ViewModels
 
                 profileService.SaveProfile(profile);
 
-                DebugLogger.Log("SearchWidgetViewModel", $"Saved widget state for {SearchInstanceId}");
+                DebugLogger.Log(
+                    "SearchWidgetViewModel",
+                    $"Saved widget state for {SearchInstanceId}"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchWidgetViewModel", $"Failed to save widget state: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchWidgetViewModel",
+                    $"Failed to save widget state: {ex.Message}"
+                );
             }
         }
 
@@ -262,15 +293,23 @@ namespace BalatroSeedOracle.ViewModels
                 if (profileService is not null)
                 {
                     var profile = profileService.GetProfile();
-                    profile.SavedSearchWidgets.RemoveAll(w => w.SearchInstanceId == SearchInstanceId);
+                    profile.SavedSearchWidgets.RemoveAll(w =>
+                        w.SearchInstanceId == SearchInstanceId
+                    );
                     profileService.SaveProfile(profile);
 
-                    DebugLogger.Log("SearchWidgetViewModel", $"Removed saved widget state for {SearchInstanceId}");
+                    DebugLogger.Log(
+                        "SearchWidgetViewModel",
+                        $"Removed saved widget state for {SearchInstanceId}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchWidgetViewModel", $"Failed to remove saved widget: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchWidgetViewModel",
+                    $"Failed to remove saved widget: {ex.Message}"
+                );
             }
 
             base.OnClosed();

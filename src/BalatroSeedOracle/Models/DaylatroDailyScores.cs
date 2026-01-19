@@ -13,6 +13,7 @@ namespace BalatroSeedOracle.Models
         public DateTime DateUtc { get; set; } // canonical date at UTC midnight
         public List<DaylatroHighScore> Scores { get; set; } = new();
 
-        public DaylatroHighScore? GetTopScore() => Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+        public DaylatroHighScore? GetTopScore() =>
+            Scores.OrderByDescending(s => s.Score).FirstOrDefault();
     }
 }

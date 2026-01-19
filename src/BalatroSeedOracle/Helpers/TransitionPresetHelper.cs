@@ -9,7 +9,9 @@ namespace BalatroSeedOracle.Helpers
 {
     public static class TransitionPresetHelper
     {
-        private static readonly string Dir = AppPaths.EnsureDir(Path.Combine(AppPaths.UserDir, "Transitions"));
+        private static readonly string Dir = AppPaths.EnsureDir(
+            Path.Combine(AppPaths.UserDir, "Transitions")
+        );
         private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
         public static bool Save(TransitionPreset preset)
@@ -21,7 +23,10 @@ namespace BalatroSeedOracle.Helpers
                 var safe = Normalize(preset.Name);
                 var path = Path.Combine(Dir, safe + ".json");
                 File.WriteAllText(path, JsonSerializer.Serialize(preset, JsonOptions));
-                DebugLogger.Log("TransitionPresetHelper", $"Saved transition '{preset.Name}' → {path}");
+                DebugLogger.Log(
+                    "TransitionPresetHelper",
+                    $"Saved transition '{preset.Name}' → {path}"
+                );
                 return true;
             }
             catch (Exception ex)

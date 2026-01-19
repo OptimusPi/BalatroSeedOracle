@@ -21,7 +21,8 @@ namespace BalatroSeedOracle.Helpers
         private static string DataRoot => _dataRoot ?? ResolveDataRoot();
 
         public static string DataRootDir => DataRoot;
-        public static string VisualizerPresetsDir => EnsureDir(Path.Combine(DataRoot, "VisualizerPresets"));
+        public static string VisualizerPresetsDir =>
+            EnsureDir(Path.Combine(DataRoot, "VisualizerPresets"));
         public static string MixerSettingsDir => EnsureDir(Path.Combine(DataRoot, "MixerSettings"));
         public static string MixerPresetsDir => EnsureDir(Path.Combine(DataRoot, "MixerPresets"));
         public static string SearchResultsDir => EnsureDir(Path.Combine(DataRoot, "SearchResults"));

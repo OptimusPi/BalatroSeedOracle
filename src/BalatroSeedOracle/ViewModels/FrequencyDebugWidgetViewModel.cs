@@ -250,7 +250,10 @@ namespace BalatroSeedOracle.ViewModels
                     if (_audioManager == null)
                         break;
 
-                    Helpers.DebugLogger.LogError("FrequencyDebugWidget", $"Update error: {ex.Message}");
+                    Helpers.DebugLogger.LogError(
+                        "FrequencyDebugWidget",
+                        $"Update error: {ex.Message}"
+                    );
                     await Task.Delay(100, cancellationToken);
                 }
             }
@@ -300,12 +303,18 @@ namespace BalatroSeedOracle.ViewModels
                 if (!Directory.Exists(MetadataDirectory))
                 {
                     Directory.CreateDirectory(MetadataDirectory);
-                    DebugLogger.Log("FrequencyDebugWidget", $"Created metadata directory: {MetadataDirectory}");
+                    DebugLogger.Log(
+                        "FrequencyDebugWidget",
+                        $"Created metadata directory: {MetadataDirectory}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to create metadata directory: {ex.Message}");
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to create metadata directory: {ex.Message}"
+                );
             }
         }
 
@@ -352,12 +361,18 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log("FrequencyDebugWidget", $"No metadata file found for {trackName}, using defaults");
+                    DebugLogger.Log(
+                        "FrequencyDebugWidget",
+                        $"No metadata file found for {trackName}, using defaults"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to load metadata for {trackName}: {ex.Message}");
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to load metadata for {trackName}: {ex.Message}"
+                );
             }
         }
 
@@ -423,7 +438,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save metadata for {trackName}: {ex.Message}");
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to save metadata for {trackName}: {ex.Message}"
+                );
             }
         }
 
@@ -464,7 +482,10 @@ namespace BalatroSeedOracle.ViewModels
                 var mainWindow = _ownerControl?.FindAncestorOfType<Window>();
                 if (mainWindow == null)
                 {
-                    DebugLogger.LogError("FrequencyDebugWidget", "Cannot show dialog: main window not found");
+                    DebugLogger.LogError(
+                        "FrequencyDebugWidget",
+                        "Cannot show dialog: main window not found"
+                    );
                     return;
                 }
 
@@ -629,7 +650,11 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Create trigger point directory if it doesn't exist
-                var triggerPointsDir = Path.Combine(AppContext.BaseDirectory, "visualizer", "audio_triggers");
+                var triggerPointsDir = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "visualizer",
+                    "audio_triggers"
+                );
                 Directory.CreateDirectory(triggerPointsDir);
 
                 // Save as individual JSON file
@@ -646,7 +671,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FrequencyDebugWidget", $"Failed to save audio trigger: {ex.Message}");
+                DebugLogger.LogError(
+                    "FrequencyDebugWidget",
+                    $"Failed to save audio trigger: {ex.Message}"
+                );
             }
         }
 

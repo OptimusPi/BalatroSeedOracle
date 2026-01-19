@@ -21,7 +21,10 @@ namespace BalatroSeedOracle.Controls
             this.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
-        private void OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+        private void OnAttachedToVisualTree(
+            object? sender,
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
         {
             // Find the parent window
             _parentWindow = this.GetVisualAncestors().OfType<Window>().FirstOrDefault();

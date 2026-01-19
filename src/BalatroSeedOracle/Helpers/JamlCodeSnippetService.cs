@@ -42,7 +42,8 @@ namespace BalatroSeedOracle.Helpers
             _snippets["and"] = new Snippet
             {
                 Trigger = "and",
-                Content = "And:\n  Antes: [1, 2]\n  Mode: Max\n  Score: 100\n  clauses:\n    - joker: Blueprint",
+                Content =
+                    "And:\n  Antes: [1, 2]\n  Mode: Max\n  Score: 100\n  clauses:\n    - joker: Blueprint",
                 Description = "And clause template",
             };
 

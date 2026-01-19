@@ -17,7 +17,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             if (ViewModel != null)
             {
-                ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+                ViewModel.CopyToClipboardRequested += async (s, text) =>
+                    await CopyToClipboardAsync(text);
             }
         }
 
@@ -34,7 +35,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ValidateFilterTab", $"Failed to copy to clipboard: {ex.Message}");
+                DebugLogger.LogError(
+                    "ValidateFilterTab",
+                    $"Failed to copy to clipboard: {ex.Message}"
+                );
             }
         }
 

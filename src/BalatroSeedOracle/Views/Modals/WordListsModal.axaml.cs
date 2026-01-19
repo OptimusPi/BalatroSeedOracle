@@ -20,7 +20,13 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _statusText;
         private Button? _saveButton;
 
-        private string _wordListsPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "WordLists");
+        private string _wordListsPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "..",
+            "..",
+            "..",
+            "WordLists"
+        );
         private string? _currentFile;
         private bool _hasUnsavedChanges = false;
 
@@ -112,7 +118,10 @@ tag"
 
             _fileSelector.Items.Clear();
 
-            var files = Directory.GetFiles(_wordListsPath, "*.db").Select(f => Path.GetFileName(f)).OrderBy(f => f);
+            var files = Directory
+                .GetFiles(_wordListsPath, "*.db")
+                .Select(f => Path.GetFileName(f))
+                .OrderBy(f => f);
 
             foreach (var file in files)
             {
@@ -129,7 +138,10 @@ tag"
         {
             try
             {
-                if (_fileSelector?.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+                if (
+                    _fileSelector?.SelectedItem is ComboBoxItem item
+                    && item.Content is string fileName
+                )
                 {
                     if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
@@ -146,7 +158,10 @@ tag"
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                DebugLogger.LogError(
+                    "WordListsModal",
+                    $"Error in OnFileSelectionChanged: {ex.Message}"
+                );
                 UpdateStatus($"Error loading file: {ex.Message}");
             }
         }
@@ -196,7 +211,10 @@ tag"
 
             try
             {
-                File.WriteAllText(newFilePath, "# New word list\n# One word or phrase per line\n\n");
+                File.WriteAllText(
+                    newFilePath,
+                    "# New word list\n# One word or phrase per line\n\n"
+                );
                 LoadFileList();
 
                 // Select the new file
@@ -204,7 +222,10 @@ tag"
                 {
                     for (int i = 0; i < _fileSelector.Items.Count; i++)
                     {
-                        if (_fileSelector.Items[i] is ComboBoxItem item && item.Content?.ToString() == newFileName)
+                        if (
+                            _fileSelector.Items[i] is ComboBoxItem item
+                            && item.Content?.ToString() == newFileName
+                        )
                         {
                             _fileSelector.SelectedIndex = i;
                             break;

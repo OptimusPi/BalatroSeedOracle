@@ -46,7 +46,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                DebugLogger.Log("ConfigurationService", $"SaveFilterAsync called with path: {filePath}");
+                DebugLogger.Log(
+                    "ConfigurationService",
+                    $"SaveFilterAsync called with path: {filePath}"
+                );
 
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
                 DebugLogger.Log(
@@ -69,11 +72,16 @@ namespace BalatroSeedOracle.Services
                     var serializationService = new FilterSerializationService(_userProfileService!);
                     var json = serializationService.SerializeConfig(motelyConfig);
 
-                    DebugLogger.Log("ConfigurationService", $"Serialized config to {json.Length} characters");
+                    DebugLogger.Log(
+                        "ConfigurationService",
+                        $"Serialized config to {json.Length} characters"
+                    );
 
                     if (isBrowser)
                     {
-                        await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
+                        await _store
+                            .WriteTextAsync(filePath.Replace('\\', '/'), json)
+                            .ConfigureAwait(false);
                         DebugLogger.Log(
                             "ConfigurationService",
                             $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}"
@@ -82,7 +90,10 @@ namespace BalatroSeedOracle.Services
                     else
                     {
                         await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
-                        DebugLogger.Log("ConfigurationService", $"Successfully wrote to file: {filePath}");
+                        DebugLogger.Log(
+                            "ConfigurationService",
+                            $"Successfully wrote to file: {filePath}"
+                        );
                     }
 
                     // Invalidate cache for this filter
@@ -97,7 +108,10 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Error saving filter
-                DebugLogger.LogError("ConfigurationService", $"ERROR saving filter to {filePath}: {ex.Message}");
+                DebugLogger.LogError(
+                    "ConfigurationService",
+                    $"ERROR saving filter to {filePath}: {ex.Message}"
+                );
                 DebugLogger.LogError("ConfigurationService", $"Stack trace: {ex.StackTrace}");
                 return false;
             }
@@ -112,7 +126,9 @@ namespace BalatroSeedOracle.Services
 
                 if (isBrowser)
                 {
-                    var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                    var json = await _store
+                        .ReadTextAsync(filePath.Replace('\\', '/'))
+                        .ConfigureAwait(false);
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
@@ -125,7 +141,10 @@ namespace BalatroSeedOracle.Services
                             ReadCommentHandling = JsonCommentHandling.Skip,
                             AllowTrailingCommas = true,
                         };
-                        var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
+                        var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            json,
+                            options
+                        );
                         return config as T;
                     }
 
@@ -154,7 +173,12 @@ namespace BalatroSeedOracle.Services
                     {
                         if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                         {
-                            if (Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
+                            if (
+                                Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
+                                    filePath,
+                                    out var config
+                                )
+                            )
                             {
                                 return config as T;
                             }
@@ -230,7 +254,10 @@ namespace BalatroSeedOracle.Services
 
         public void EnsureDirectoryExists(string directoryPath)
         {
-            if (_platformServices?.SupportsFileSystem == true && !string.IsNullOrEmpty(directoryPath))
+            if (
+                _platformServices?.SupportsFileSystem == true
+                && !string.IsNullOrEmpty(directoryPath)
+            )
             {
                 _platformServices.EnsureDirectoryExists(directoryPath);
             }

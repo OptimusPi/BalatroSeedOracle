@@ -69,7 +69,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    DebugLogger.LogError("AnalyzeModal", "ViewModel is null, cannot set seed and analyze");
+                    DebugLogger.LogError(
+                        "AnalyzeModal",
+                        "ViewModel is null, cannot set seed and analyze"
+                    );
                 }
             }
 

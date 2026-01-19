@@ -21,7 +21,9 @@ namespace BalatroSeedOracle.Services
 
         private WidgetWindowManager()
         {
-            _positionService = Helpers.ServiceHelper.GetService<WidgetPositionService>() ?? new WidgetPositionService();
+            _positionService =
+                Helpers.ServiceHelper.GetService<WidgetPositionService>()
+                ?? new WidgetPositionService();
         }
 
         /// <summary>
@@ -45,7 +47,10 @@ namespace BalatroSeedOracle.Services
             viewModel.WidgetWindow = window;
 
             // Position using collision avoidance
-            var (x, y) = _positionService.FindNextAvailablePosition(viewModel, viewModel.IsMinimized);
+            var (x, y) = _positionService.FindNextAvailablePosition(
+                viewModel,
+                viewModel.IsMinimized
+            );
             window.Position = new PixelPoint((int)x, (int)y);
 
             // Register and show
@@ -236,12 +241,18 @@ namespace BalatroSeedOracle.Services
 
             return edge switch
             {
-                SnapEdge.Left => new PixelPoint(20, (int)(screenBounds.Top + spacing * (index + 1))),
+                SnapEdge.Left => new PixelPoint(
+                    20,
+                    (int)(screenBounds.Top + spacing * (index + 1))
+                ),
                 SnapEdge.Right => new PixelPoint(
                     (int)(screenBounds.Right - 120),
                     (int)(screenBounds.Top + spacing * (index + 1))
                 ),
-                SnapEdge.Top => new PixelPoint((int)(screenBounds.Left + spacing * (index + 1)), 20),
+                SnapEdge.Top => new PixelPoint(
+                    (int)(screenBounds.Left + spacing * (index + 1)),
+                    20
+                ),
                 SnapEdge.Bottom => new PixelPoint(
                     (int)(screenBounds.Left + spacing * (index + 1)),
                     (int)(screenBounds.Bottom - 120)

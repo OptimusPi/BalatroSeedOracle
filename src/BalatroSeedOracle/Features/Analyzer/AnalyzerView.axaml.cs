@@ -31,7 +31,8 @@ public partial class AnalyzerView : UserControl
         // Wire up clipboard event
         if (ViewModel != null)
         {
-            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
         }
     }
 
@@ -48,7 +49,10 @@ public partial class AnalyzerView : UserControl
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError("AnalyzerView", $"Failed to copy to clipboard: {ex.Message}");
+            Helpers.DebugLogger.LogError(
+                "AnalyzerView",
+                $"Failed to copy to clipboard: {ex.Message}"
+            );
         }
     }
 
@@ -65,7 +69,10 @@ public partial class AnalyzerView : UserControl
         }
     }
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void ViewModel_PropertyChanged(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs e
+    )
     {
         Helpers.DebugLogger.Log("AnalyzerView", $"Property changed: {e.PropertyName}");
         // Re-render images when ante changes or analysis updates

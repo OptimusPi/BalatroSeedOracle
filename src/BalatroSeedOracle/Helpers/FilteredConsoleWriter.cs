@@ -15,7 +15,10 @@ namespace BalatroSeedOracle.Helpers
         private readonly bool _filterSeedLines;
 
         // Regex to match Motely's CSV output format: SEED,SCORE,TALLY1,TALLY2,...
-        private static readonly Regex SeedLineRegex = new Regex(@"^[A-Z0-9]+,\d+(?:,\d+)*$", RegexOptions.Compiled);
+        private static readonly Regex SeedLineRegex = new Regex(
+            @"^[A-Z0-9]+,\d+(?:,\d+)*$",
+            RegexOptions.Compiled
+        );
 
         public FilteredConsoleWriter(
             TextWriter originalWriter,

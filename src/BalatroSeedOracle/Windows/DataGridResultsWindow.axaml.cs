@@ -180,7 +180,9 @@ LIMIT 100;";
                         if (_sqlEditor != null)
                         {
                             _sqlEditor.SyntaxHighlighting =
-                                AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition("SQL");
+                                AvaloniaEdit.Highlighting.HighlightingManager.Instance.GetDefinition(
+                                    "SQL"
+                                );
                         }
                     }
                     catch
@@ -226,7 +228,9 @@ LIMIT 100;";
 
                 // Update title
                 _totalCount = _searchInstance.ResultCount;
-                var filterDisplay = !string.IsNullOrEmpty(_filterName) ? _filterName : "Unknown Filter";
+                var filterDisplay = !string.IsNullOrEmpty(_filterName)
+                    ? _filterName
+                    : "Unknown Filter";
                 Title = $"Results for {filterDisplay} ({_totalCount:N0} seeds)";
 
                 // Get column names from SearchInstance (skip seed and score columns for tally names)
@@ -240,7 +244,11 @@ LIMIT 100;";
                 });
 
                 // Load top results
-                var topResults = await _searchInstance.GetTopResultsAsync("score", false, _currentLoadedCount);
+                var topResults = await _searchInstance.GetTopResultsAsync(
+                    "score",
+                    false,
+                    _currentLoadedCount
+                );
 
                 // Convert to DataGrid items
                 var items = topResults
@@ -395,7 +403,9 @@ LIMIT 100;";
                 // Get the database path from SearchInstance
                 var dbPath = _searchInstance.DatabasePath;
 
-                using (var connection = new DuckDB.NET.Data.DuckDBConnection($"DataSource={dbPath}"))
+                using (
+                    var connection = new DuckDB.NET.Data.DuckDBConnection($"DataSource={dbPath}")
+                )
                 {
                     connection.Open();
                     using (var command = connection.CreateCommand())
@@ -497,7 +507,10 @@ LIMIT 50;",
                 {
                     Title = "Export to CSV",
                     DefaultExtension = "csv",
-                    FileTypeChoices = new[] { new FilePickerFileType("CSV Files") { Patterns = new[] { "*.csv" } } },
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("CSV Files") { Patterns = new[] { "*.csv" } },
+                    },
                 }
             );
 
@@ -513,14 +526,17 @@ LIMIT 50;",
                     "Rank,Seed,Total Score,"
                         + string.Join(
                             ",",
-                            _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " ")) ?? new List<string>()
+                            _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
+                                ?? new List<string>()
                         )
                 );
 
                 // Data
                 foreach (var item in _filteredResults)
                 {
-                    sb.AppendLine($"{item.Rank},{item.Seed},{item.TotalScore},{string.Join(",", item.TallyScores)}");
+                    sb.AppendLine(
+                        $"{item.Rank},{item.Seed},{item.TotalScore},{string.Join(",", item.TallyScores)}"
+                    );
                 }
 
                 await File.WriteAllTextAsync(file.Path.LocalPath, sb.ToString());
@@ -544,7 +560,10 @@ LIMIT 50;",
                 {
                     Title = "Export to JSON",
                     DefaultExtension = "json",
-                    FileTypeChoices = new[] { new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } } },
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
+                    },
                 }
             );
 
@@ -578,7 +597,10 @@ LIMIT 50;",
                 {
                     Title = "Export to Excel",
                     DefaultExtension = "xlsx",
-                    FileTypeChoices = new[] { new FilePickerFileType("Excel Files") { Patterns = new[] { "*.xlsx" } } },
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("Excel Files") { Patterns = new[] { "*.xlsx" } },
+                    },
                 }
             );
 
@@ -593,7 +615,8 @@ LIMIT 50;",
                 // Headers
                 var headers = new List<string> { "Rank", "Seed", "Score" };
                 headers.AddRange(
-                    _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " ")) ?? new List<string>()
+                    _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
+                        ?? new List<string>()
                 );
 
                 for (int i = 0; i < headers.Count; i++)
@@ -641,7 +664,10 @@ LIMIT 50;",
                     Title = "Export to Wordlist",
                     DefaultExtension = "txt",
                     SuggestedFileName = $"{_filterName ?? "seeds"}_wordlist",
-                    FileTypeChoices = new[] { new FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } } },
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } },
+                    },
                 }
             );
 
@@ -671,14 +697,17 @@ LIMIT 50;",
                 "Rank\tSeed\tTotal Score\t"
                     + string.Join(
                         "\t",
-                        _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " ")) ?? new List<string>()
+                        _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
+                            ?? new List<string>()
                     )
             );
 
             // Data
             foreach (var item in _filteredResults)
             {
-                sb.AppendLine($"{item.Rank}\t{item.Seed}\t{item.TotalScore}\t{string.Join("\t", item.TallyScores)}");
+                sb.AppendLine(
+                    $"{item.Rank}\t{item.Seed}\t{item.TotalScore}\t{string.Join("\t", item.TallyScores)}"
+                );
             }
 
             Clipboard?.SetTextAsync(sb.ToString());
@@ -693,7 +722,9 @@ LIMIT 50;",
             var sb = new StringBuilder();
             foreach (DataGridResultItem item in _resultsGrid.SelectedItems)
             {
-                sb.AppendLine($"{item.Rank}\t{item.Seed}\t{item.TotalScore}\t{string.Join("\t", item.TallyScores)}");
+                sb.AppendLine(
+                    $"{item.Rank}\t{item.Seed}\t{item.TotalScore}\t{string.Join("\t", item.TallyScores)}"
+                );
             }
 
             Clipboard?.SetTextAsync(sb.ToString());
@@ -706,7 +737,10 @@ LIMIT 50;",
                 return;
 
             var items = _resultsGrid.SelectedItems.Cast<DataGridResultItem>().ToList();
-            var json = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(
+                items,
+                new JsonSerializerOptions { WriteIndented = true }
+            );
 
             Clipboard?.SetTextAsync(json);
             UpdateStatus($"Copied {items.Count} rows as JSON");
@@ -742,16 +776,25 @@ LIMIT 50;",
                         modal.BackClicked += (s, ev) => mainMenu.HideModalContent();
 
                         mainMenu.ShowModalContent(modal, "SEED ANALYZER");
-                        DebugLogger.Log("DataGridResultsWindow", $"Opened analyzer modal for seed: {item.Seed}");
+                        DebugLogger.Log(
+                            "DataGridResultsWindow",
+                            $"Opened analyzer modal for seed: {item.Seed}"
+                        );
                     }
                     else
                     {
-                        DebugLogger.LogError("DataGridResultsWindow", "Could not find main menu for modal display");
+                        DebugLogger.LogError(
+                            "DataGridResultsWindow",
+                            "Could not find main menu for modal display"
+                        );
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("DataGridResultsWindow", $"Error opening analyzer: {ex.Message}");
+                    DebugLogger.LogError(
+                        "DataGridResultsWindow",
+                        $"Error opening analyzer: {ex.Message}"
+                    );
                 }
             }
         }
@@ -785,7 +828,10 @@ LIMIT 50;",
             // F11 for fullscreen
             else if (e.Key == Key.F11)
             {
-                WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+                WindowState =
+                    WindowState == WindowState.FullScreen
+                        ? WindowState.Normal
+                        : WindowState.FullScreen;
                 e.Handled = true;
             }
             // Escape to exit fullscreen
