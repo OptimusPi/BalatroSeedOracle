@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: false
+  commands:
+    csharpier:
+      glob: "**/*.cs"
+      run: dotnet csharpier format {staged_files} --config-path .config/csharpierrc
+      stage_fixed: true
+
+    dprint:
+      glob: "*.{md,mdx,yml,yaml,json,jsonc}"
+      run: dprint fmt --config .config/dprint.json --allow-no-files {staged_files}
+      stage_fixed: true

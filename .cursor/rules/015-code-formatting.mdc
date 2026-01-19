@@ -1,0 +1,79 @@
+---
+description: "Code formatting rules and automatic formatting via Lefthook"
+globs: *.cs,*.ts,*.tsx,*.js,*.jsx,*.py,*.go,*.rs,*.rb,*.sh,*.json,*.yaml,*.yml,*.md,*.css,*.scss,*.axaml
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Code Formatting Rules
+
+## Automatic Formatting via Lefthook
+
+Lefthook automatically formats staged files on commit via pre-commit hooks. Agents do not need to format files manually.
+
+- Formatting is handled automatically by `lefthook.yml` pre-commit hooks
+- Respect `.editorconfig` and project formatter configs
+- Format only what you touched—never reformat unrelated files
+
+## Project-Specific Formatters
+
+### C# Files (*.cs)
+
+- **Tool**: CSharpier
+- **Config**: `.config/csharpierrc`
+- **Manual command**: `dotnet csharpier format . --config-path .config/csharpierrc`
+- **Auto-format**: Runs on pre-commit for staged `**/*.cs` files
+
+### Markdown/YAML/JSON Files
+
+- **Tool**: dprint
+- **Config**: `.config/dprint.json`
+- **Manual command**: `dprint fmt --config .config/dprint.json`
+- **Auto-format**: Runs on pre-commit for staged `*.{md,mdx,yml,yaml,json,jsonc}` files
+
+## One-Time Setup
+
+Developers must install tools and hooks once:
+
+```bash
+# Install lefthook (macOS)
+brew install lefthook
+
+# Install dprint (macOS)
+brew install dprint
+
+# Or on Windows/Linux, see:
+# - https://github.com/evilmartians/lefthook#installation
+# - https://dprint.dev/install/
+
+# Restore .NET tools (includes CSharpier)
+dotnet tool restore
+
+# Install git hooks
+lefthook install
+```
+
+## Day-to-Day Workflow
+
+1. Make code changes
+2. Stage files normally (`git add`)
+3. Commit (`git commit`)
+4. Hooks automatically format staged files and re-stage fixes
+5. Commit completes with formatted code
+
+## Important Notes
+
+- **Do NOT format the Motely submodule** (`external/Motely/`) unless explicitly working upstream
+- **Do NOT reformat unrelated files** - only format code you are actively changing
+- Verify formatter did not introduce build/test regressions before pushing
+- If hooks fail, fix the issue and commit again
+
+## EditorConfig
+
+The repo includes `.editorconfig` for baseline whitespace/newline rules. IDEs and formatters respect these settings automatically.
+
+## Workflow Safeguards
+
+- Hooks only format **staged files**, not the entire repo
+- `stage_fixed: true` ensures formatted changes are included in the commit
+- Formatters skip generated, vendor, and readonly directories via exclusion patterns

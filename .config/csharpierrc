@@ -1,0 +1,12 @@
+# CSharpier configuration
+# https://csharpier.com/docs/Configuration
+
+printWidth: 120
+endOfLine: lf
+useTabs: false
+tabWidth: 4
+
+# Exclude patterns (relative to repo root)
+preprocessorSymbolSets:
+  - DEBUG
+  - RELEASE
