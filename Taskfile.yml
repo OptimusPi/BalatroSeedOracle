@@ -8,16 +8,19 @@ vars:
 tasks:
   submodule:init:
     desc: Initialize git submodules (Motely)
+    silent: true
     cmds:
       - git submodule update --init --recursive
 
   tool:restore:
     desc: Restore .NET local tools (CSharpier, etc.)
+    silent: true
     cmds:
       - dotnet tool restore
 
   workload:check:
     desc: Check if required .NET workloads (android, ios) are installed
+    silent: true
     cmds:
       - |
         # Check for android workload
@@ -77,16 +80,19 @@ tasks:
 
   workload:install:
     desc: Install .NET workloads (android, ios) for mobile builds
+    silent: true
     cmds:
       - dotnet workload install android ios
 
   workload:restore:
     desc: Restore .NET workloads (android, ios) for mobile builds
+    silent: true
     cmds:
       - dotnet workload restore
 
   restore:
     desc: Restore NuGet packages for solution
+    silent: true
     deps:
       - workload:check
     cmds:
@@ -94,6 +100,7 @@ tasks:
 
   setup:
     desc: One-time setup - submodules, tools, packages, and formatting hooks
+    silent: true
     deps:
       - submodule:init
       - tool:restore
@@ -118,21 +125,25 @@ tasks:
 
   run:desktop:
     desc: Run desktop app (Release - fast)
+    silent: true
     cmds:
       - dotnet run -c Release --project {{.BSO_PROJECT}}
 
   run:desktop:debug:
     desc: Run desktop app (Debug - with breakpoints)
+    silent: true
     cmds:
       - dotnet run -c Debug --project {{.BSO_PROJECT}}
 
   run:browser:
     desc: Run browser/WASM app (Debug dev server)
+    silent: true
     cmds:
       - dotnet run -c Debug --project {{.BROWSER_PROJECT}}
 
   publish:browser:
     desc: Publish browser/WASM app (Release, non-threaded)
+    silent: true
     cmds:
       - dotnet publish -c Release {{.BROWSER_PROJECT}}
       - echo ""
@@ -140,6 +151,7 @@ tasks:
 
   publish:browser:threaded:
     desc: Publish browser/WASM app (Release, with threads)
+    silent: true
     cmds:
       - dotnet publish -c Release -p:EnableWasmThreads=true {{.BROWSER_PROJECT}}
       - echo ""
@@ -151,11 +163,13 @@ tasks:
 
   format:csharp:
     desc: Format C# files (scoped to ./src)
+    silent: true
     cmds:
       - dotnet csharpier ./src --config-path .config/csharpierrc
 
   format:other:
     desc: Format Markdown/YAML/JSON files
+    silent: true
     preconditions:
       - sh: command -v dprint
         msg: "dprint not found - install via 'brew install dprint' or see https://dprint.dev/install/"
@@ -164,12 +178,14 @@ tasks:
 
   format:
     desc: Format all files (C#, Markdown, YAML, JSON)
+    silent: true
     deps:
       - format:csharp
       - format:other
 
   clean:
     desc: Clean build artifacts
+    silent: true
     deps:
       - workload:check
     cmds:
@@ -181,6 +197,7 @@ tasks:
 
   test:
     desc: Run tests (Release configuration)
+    silent: true
     deps:
       - workload:check
     cmds:
@@ -188,5 +205,6 @@ tasks:
 
   default:
     desc: Show available tasks
+    silent: true
     cmds:
       - task --list
