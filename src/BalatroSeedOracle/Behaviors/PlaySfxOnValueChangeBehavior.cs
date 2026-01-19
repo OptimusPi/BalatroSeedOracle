@@ -105,10 +105,8 @@ namespace BalatroSeedOracle.Behaviors
             // Play the configured sound effect
             try
             {
-                // Use DI container instance, fallback to singleton
-                var audioManager =
-                    ServiceHelper.GetService<SoundFlowAudioManager>()
-                    ?? SoundFlowAudioManager.Instance;
+                // Use DI container instance
+                var audioManager = ServiceHelper.GetService<IAudioManager>();
                 audioManager?.PlaySfx(Sound, 1.0f);
             }
             catch (Exception ex)

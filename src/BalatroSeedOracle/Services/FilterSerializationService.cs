@@ -244,6 +244,7 @@ namespace BalatroSeedOracle.Services
         {
             var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
             {
+                Type = "", // Will be set below based on category
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
             };

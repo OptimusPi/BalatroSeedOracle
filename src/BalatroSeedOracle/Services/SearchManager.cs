@@ -15,12 +15,12 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class SearchManager : IDisposable
     {
-        private readonly ConcurrentDictionary<string, SearchInstance> _activeSearches;
+        private readonly ConcurrentDictionary<string, ISearchInstance> _activeSearches;
         private readonly EventFXService? _eventFXService;
 
         public SearchManager()
         {
-            _activeSearches = new ConcurrentDictionary<string, SearchInstance>();
+            _activeSearches = new ConcurrentDictionary<string, ISearchInstance>();
             _eventFXService = ServiceHelper.GetService<EventFXService>();
         }
 
@@ -46,7 +46,7 @@ namespace BalatroSeedOracle.Services
             // Create new search instance only if one doesn't exist
             var searchResultsDir = AppPaths.SearchResultsDir;
             var dbPath = System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
-            var searchInstance = new SearchInstance(searchId, dbPath);
+            ISearchInstance searchInstance = new SearchInstance(searchId, dbPath);
             WireEventFXToSearchInstance(searchInstance);
 
             if (_activeSearches.TryAdd(searchId, searchInstance))
@@ -63,7 +63,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="searchId">The ID of the search to retrieve</param>
         /// <returns>The search instance if found, null otherwise</returns>
-        public SearchInstance? GetSearch(string searchId)
+        public ISearchInstance? GetSearch(string searchId)
         {
             if (_activeSearches.TryGetValue(searchId, out var search))
             {
@@ -77,7 +77,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="searchId">The ID of the search to retrieve</param>
         /// <returns>The search instance if found, null otherwise</returns>
-        public SearchInstance? GetSearch(
+        public ISearchInstance? GetSearch(
             string filterNameNormalized,
             string deckName,
             string stakeName
@@ -107,7 +107,7 @@ namespace BalatroSeedOracle.Services
         /// Gets all active search instances
         /// </summary>
         /// <returns>Collection of active searches</returns>
-        public IEnumerable<SearchInstance> GetActiveSearches()
+        public IEnumerable<ISearchInstance> GetActiveSearches()
         {
             return _activeSearches.Values.Where(s => s.IsRunning);
         }
@@ -116,7 +116,7 @@ namespace BalatroSeedOracle.Services
         /// Gets all search instances (active and completed)
         /// </summary>
         /// <returns>Collection of all searches</returns>
-        public IEnumerable<SearchInstance> GetAllSearches()
+        public IEnumerable<ISearchInstance> GetAllSearches()
         {
             return _activeSearches.Values;
         }
@@ -127,7 +127,7 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         /// <param name="searchInstanceId">The SearchInstance ID to get or restore</param>
         /// <returns>The SearchInstance if found/restored, null if DB file doesn't exist</returns>
-        public SearchInstance? GetOrRestoreSearch(string searchInstanceId)
+        public ISearchInstance? GetOrRestoreSearch(string searchInstanceId)
         {
             // First check if already in memory
             if (_activeSearches.TryGetValue(searchInstanceId, out var existingSearch))
@@ -151,7 +151,7 @@ namespace BalatroSeedOracle.Services
             // Database exists, create SearchInstance to reconnect to it
             try
             {
-                var searchInstance = new SearchInstance(searchInstanceId, dbPath);
+                ISearchInstance searchInstance = new SearchInstance(searchInstanceId, dbPath);
                 WireEventFXToSearchInstance(searchInstance);
 
                 if (_activeSearches.TryAdd(searchInstanceId, searchInstance))
@@ -178,7 +178,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Starts a new search with the given criteria and config
         /// </summary>
-        public async Task<SearchInstance> StartSearchAsync(
+        public async Task<ISearchInstance> StartSearchAsync(
             SearchCriteria criteria,
             Motely.Filters.MotelyJsonConfig config
         )
@@ -321,7 +321,7 @@ namespace BalatroSeedOracle.Services
                     $"{tempSearchId}.db"
                 );
 
-                SearchInstance? searchInstance = null;
+                ISearchInstance? searchInstance = null;
 
                 try
                 {
@@ -361,12 +361,11 @@ namespace BalatroSeedOracle.Services
                     // Delete the temporary database file
                     try
                     {
-#if !BROWSER
-                        if (System.IO.File.Exists(tempDbPath))
+                        var platformServices = ServiceHelper.GetService<IPlatformServices>();
+                        if (platformServices?.SupportsFileSystem == true && System.IO.File.Exists(tempDbPath))
                         {
                             System.IO.File.Delete(tempDbPath);
                         }
-#endif
                     }
                     catch (Exception ex)
                     {
@@ -406,7 +405,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private void WireEventFXToSearchInstance(SearchInstance instance)
+        private void WireEventFXToSearchInstance(ISearchInstance instance)
         {
             if (_eventFXService == null)
                 return;

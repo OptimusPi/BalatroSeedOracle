@@ -1,12 +1,12 @@
-#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Desktop.Services;
 
 /// <summary>
 /// Desktop implementation of IDuckDBConnection wrapping DuckDBConnection
@@ -114,8 +114,7 @@ public class DesktopDuckDBConnection : IDuckDBConnection
     {
         EnsureOpen();
         // Use Motely's helper - no SQL in BSO!
-        var limit = orderBy != null ? $" {orderBy}" : "";
-        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName, limit);
+        var seeds = Motely.DuckDB.DuckDBQueryHelpers.GetAllSeeds(_connection, tableName, seedColumnName);
         return Task.FromResult(seeds);
     }
 
@@ -154,14 +153,14 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         // Use Motely's helper - no SQL construction in BSO!
         // Note: Filters (minScore, deck, stake) would need to be added to Motely's helper
         // For now, get all results and filter in memory (not ideal, but no SQL in BSO)
-        var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(_connection, tableName, limit, 2);
+        var motelyResults = Motely.DuckDB.DuckDBQueryHelpers.GetResultsWithTallies(_connection, 0, limit, "score", false);
         
-        // Convert from Motely.DuckDB.ResultWithTallies to BSO Models.ResultWithTallies
+        // Convert from Motely.DuckDB dictionary to BSO Models.ResultWithTallies
         var results = motelyResults.Select(r => new Models.ResultWithTallies
         {
-            Seed = r.Seed,
-            Score = r.Score,
-            Tallies = r.Tallies
+            Seed = r["seed"]?.ToString() ?? "",
+            Score = Convert.ToInt32(r["score"] ?? 0),
+            Tallies = null // TODO: Extract tallies from dictionary if needed
         }).ToList();
         
         // Apply filters in memory (should be moved to Motely's helper)
@@ -247,4 +246,3 @@ internal class DesktopDuckDBDataReader : IDuckDBDataReader
     public bool GetBoolean(int ordinal) => _reader.GetBoolean(ordinal);
     public object GetValue(int ordinal) => _reader.GetValue(ordinal);
 }
-#endif

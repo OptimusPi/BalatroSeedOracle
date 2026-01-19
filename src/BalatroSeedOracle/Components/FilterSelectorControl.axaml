@@ -72,8 +72,8 @@
 
                 <!-- Paginated filter list with numbers OUTSIDE buttons -->
                 <!-- Add inner padding and disable clipping to prevent buttons appearing cut off near the divider -->
-                <Border Grid.Row="0" Name="FilterListContainer" ClipToBounds="False" Padding="6,6,12,6">
-                    <ItemsControl Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
+                <Border Grid.Row="0" x:Name="FilterListContainer" ClipToBounds="False" Padding="6,6,12,6">
+                    <ItemsControl x:Name="FilterListControl" ItemsSource="{Binding DisplayedFilters}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Vertical" Spacing="0.5"/>

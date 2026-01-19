@@ -54,10 +54,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public event System.Action<int, int>? JumpToError;
 
         /// <summary>
-        /// Invokes the JumpToError event if any handlers are subscribed.
-        /// This method allows external classes to trigger the event.
+        /// Public method to trigger jump to error (for use from outside the class)
         /// </summary>
-        public void InvokeJumpToError(int lineNumber, int column)
+        public void RequestJumpToError(int lineNumber, int column)
         {
             JumpToError?.Invoke(lineNumber, column);
         }

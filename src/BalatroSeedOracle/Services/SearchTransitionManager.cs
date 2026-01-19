@@ -15,22 +15,28 @@ namespace BalatroSeedOracle.Services
     {
         private readonly TransitionService _transitionService;
         private readonly UserProfileService _userProfileService;
-        private SearchInstance? _activeSearch;
+        private readonly Views.MainWindow? _mainWindow;
+        private readonly Views.BalatroMainMenu? _mainMenu;
+        private ISearchInstance? _activeSearch;
         private bool _isTransitionActive = false;
 
         public SearchTransitionManager(
             TransitionService transitionService,
-            UserProfileService userProfileService
+            UserProfileService userProfileService,
+            Views.MainWindow? mainWindow = null,
+            Views.BalatroMainMenu? mainMenu = null
         )
         {
             _transitionService = transitionService;
             _userProfileService = userProfileService;
+            _mainWindow = mainWindow;
+            _mainMenu = mainMenu;
         }
 
         /// <summary>
         /// Starts monitoring a search and driving shader transitions based on progress
         /// </summary>
-        public void StartSearchTransition(SearchInstance searchInstance)
+        public void StartSearchTransition(ISearchInstance searchInstance)
         {
             // Check if search transitions are enabled
             var settings = _userProfileService.GetProfile().VisualizerSettings;
@@ -176,21 +182,9 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                // Find the main window and apply shader parameters
-                // This is a bit hacky but works for now - could be improved with dependency injection
-                if (
-                    Avalonia.Application.Current?.ApplicationLifetime
-                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
-                )
+                if (_mainMenu != null)
                 {
-                    if (desktop.MainWindow is Views.MainWindow mainWindow)
-                    {
-                        var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
-                        if (mainMenu != null)
-                        {
-                            ApplyToMainMenu(mainMenu, parameters);
-                        }
-                    }
+                    ApplyToMainMenu(_mainMenu, parameters);
                 }
             }
             catch (Exception ex)

@@ -38,8 +38,9 @@ namespace BalatroSeedOracle.ViewModels
         private readonly CircularConsoleBuffer _consoleBuffer;
         private readonly UserProfileService _userProfileService;
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
+        private readonly IPlatformServices _platformServices;
 
-        private SearchInstance? _searchInstance;
+        private ISearchInstance? _searchInstance;
         private string _currentSearchId = string.Empty;
 
         public Views.BalatroMainMenu? MainMenu { get; set; }
@@ -165,7 +166,8 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isDbListVisible = false;
 
-        public bool CanMinimizeToDesktopVisible => _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
+        public bool CanMinimizeToDesktopVisible => 
+            _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
 
         // WordList index properties for SpinnerControl binding
         [ObservableProperty]
@@ -254,12 +256,14 @@ namespace BalatroSeedOracle.ViewModels
         public SearchModalViewModel(
             SearchManager searchManager,
             UserProfileService userProfileService,
-            BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore
+            BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore,
+            IPlatformServices platformServices
         )
         {
             _searchManager = searchManager;
             _userProfileService = userProfileService;
             _appDataStore = appDataStore;
+            _platformServices = platformServices;
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -331,7 +335,8 @@ namespace BalatroSeedOracle.ViewModels
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
         public string ProgressText => LatestProgress?.ToString() ?? "No search active";
-        public int ResultsCount => _searchInstance?.ResultCount ?? SearchResults.Count;
+        public int ResultsCount => 
+            _searchInstance?.ResultCount ?? SearchResults.Count;
 
         public string CurrentSearchId => _currentSearchId;
 
@@ -428,10 +433,11 @@ namespace BalatroSeedOracle.ViewModels
                 AddConsoleMessage($"Batch size: {searchCriteria.BatchSize}");
 
                 AddConsoleMessage($"Creating search instance...");
-                _searchInstance = await _searchManager.StartSearchAsync(
+                var searchInstance = await _searchManager.StartSearchAsync(
                     searchCriteria,
                     LoadedConfig
                 );
+                _searchInstance = searchInstance;
                 AddConsoleMessage($"Search instance created successfully!");
 
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
@@ -1161,7 +1167,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Text = formattedMessage,
                 CopyableText = seed, // Copy button will copy just the seed name
-                CopyCommand = new RelayCommand(async () =>
+                CopyCommand = new RelayCommand(() =>
                 {
                     // Copy seed to clipboard - will be handled by the View
                     CopyToClipboardRequested?.Invoke(this, seed);
@@ -1329,6 +1335,7 @@ namespace BalatroSeedOracle.ViewModels
             if (_searchInstance == null)
                 return;
 
+            _isLoadingResults = true;
             try
             {
                 SearchResults.Clear();
@@ -1361,39 +1368,33 @@ namespace BalatroSeedOracle.ViewModels
                     }
 
                     // CRITICAL FIX: Force grid to reinitialize columns after loading results
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    if (_platformServices.SupportsResultsGrid)
                     {
-                        try
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                         {
-#if !BROWSER
-                            var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
-                            if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
+                            try
                             {
-                                var grid =
-                                    tab.FindControl<BalatroSeedOracle.Controls.SortableResultsGrid>(
-                                        "ResultsGrid"
-                                    );
-                                if (grid != null)
+#if !BROWSER
+                                var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
+                                if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
                                 {
-                                    // Force column reinitialization
-                                    grid.ClearResults();
-                                    grid.AddResults(SearchResults);
+                                    tab.ForceRefreshResults(SearchResults);
                                     DebugLogger.Log(
                                         "SearchModalViewModel",
                                         "Forced grid refresh after loading results"
                                     );
                                 }
-                            }
 #endif
-                        }
-                        catch (Exception gridEx)
-                        {
-                            DebugLogger.LogError(
-                                "SearchModalViewModel",
-                                $"Failed to refresh grid: {gridEx.Message}"
-                            );
-                        }
-                    });
+                            }
+                            catch (Exception gridEx)
+                            {
+                                DebugLogger.LogError(
+                                    "SearchModalViewModel",
+                                    $"Failed to refresh grid: {gridEx.Message}"
+                                );
+                            }
+                        });
+                    }
                 }
 
                 DebugLogger.Log(
@@ -1407,6 +1408,10 @@ namespace BalatroSeedOracle.ViewModels
                     "SearchModalViewModel",
                     $"Failed to load existing results: {ex.Message}"
                 );
+            }
+            finally
+            {
+                _isLoadingResults = false;
             }
         }
 
@@ -1508,42 +1513,16 @@ namespace BalatroSeedOracle.ViewModels
             {
                 DebugLogger.LogImportant("SearchModalViewModel", $"🔍 LoadConfigFromPathAsync called with: {configPath}");
 
-                string json;
-#if BROWSER
-                // Normalize path for browser storage
-                var storeKey = configPath.Replace('\\', '/');
-                if (storeKey.StartsWith("/data/"))
-                    storeKey = storeKey.Substring(6);
-                else if (storeKey.StartsWith("data/"))
-                    storeKey = storeKey.Substring(5);
-
-                DebugLogger.Log("SearchModalViewModel", $"🔍 Checking store key: {storeKey}");
-                
-                if (!await _appDataStore.ExistsAsync(storeKey))
-                {
-                     DebugLogger.LogError("SearchModalViewModel", $"❌ Filter file not found in store: {storeKey}");
-                     return;
-                }
-                json = await _appDataStore.ReadTextAsync(storeKey) ?? string.Empty;
-#else
-                DebugLogger.Log("SearchModalViewModel", $"🔍 File.Exists check: {System.IO.File.Exists(configPath)}");
-
-                if (!System.IO.File.Exists(configPath))
+                if (!await _platformServices.FileExistsAsync(configPath))
                 {
                     DebugLogger.LogError(
                         "SearchModalViewModel",
                         $"❌ Filter file not found: {configPath}"
                     );
-                    DebugLogger.LogError(
-                        "SearchModalViewModel",
-                        $"❌ Current directory: {System.IO.Directory.GetCurrentDirectory()}"
-                    );
                     return;
                 }
 
-                // Read and parse the filter configuration
-                json = await System.IO.File.ReadAllTextAsync(configPath);
-#endif
+                var json = await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
                 var config =
                     System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
@@ -1626,7 +1605,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private DateTime _lastProgressLog = DateTime.MinValue;
         
-        private async void OnProgressUpdated(object? sender, SearchProgress e)
+        private void OnProgressUpdated(object? sender, SearchProgress e)
         {
             try
             {
@@ -1937,17 +1916,23 @@ namespace BalatroSeedOracle.ViewModels
             // PROPER MVVM: Use XAML UserControls
             SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
+            
+            if (_platformServices.SupportsResultsGrid)
+            {
 #if !BROWSER
-            ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
+                ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
 #endif
+            }
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
             // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
             // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
-#if !BROWSER
-            TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
-#endif
+            
+            if (_platformServices.SupportsResultsGrid)
+            {
+                TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
+            }
         }
 
         private void LoadAvailableWordLists()

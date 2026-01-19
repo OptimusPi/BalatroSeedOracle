@@ -79,7 +79,7 @@ namespace BalatroSeedOracle.Helpers
             while (start > 0 && (char.IsLetterOrDigit(lineText[start - 1]) || lineText[start - 1] == '_' || lineText[start - 1] == '*'))
                 start--;
 
-            while (end < lineText.Length && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_' || lineText[end] == '*'))
+            while (end < lineText.Length && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_'))
                 end++;
 
             if (start < end)

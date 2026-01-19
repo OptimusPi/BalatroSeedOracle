@@ -24,7 +24,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Notify parent to jump to error location
                 if (DataContext is JamlEditorTabViewModel viewModel)
                 {
-                    viewModel.InvokeJumpToError(error.LineNumber, error.Column);
+                    viewModel.RequestJumpToError(error.LineNumber, error.Column);
                 }
             }
         }

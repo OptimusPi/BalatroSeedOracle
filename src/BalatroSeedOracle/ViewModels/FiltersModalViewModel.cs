@@ -34,6 +34,8 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
+        private readonly IPlatformServices _platformServices;
+        private readonly NotificationService? _notificationService;
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -146,11 +148,15 @@ namespace BalatroSeedOracle.ViewModels
 
         public FiltersModalViewModel(
             IConfigurationService configurationService,
-            IFilterService filterService
+            IFilterService filterService,
+            IPlatformServices platformServices,
+            NotificationService? notificationService = null
         )
         {
             _configurationService = configurationService;
             _filterService = filterService;
+            _platformServices = platformServices;
+            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             _itemCategories = InitializeItemCategories();
 
@@ -346,6 +352,14 @@ namespace BalatroSeedOracle.ViewModels
                         $"✅ Filter saved: {CurrentFilterPath}"
                     );
 
+                    // Show notification
+                    var notificationService = ServiceHelper.GetService<NotificationService>();
+                    notificationService?.ShowSuccess(
+                        "Filter Saved",
+                        $"Filter '{FilterName}' saved successfully",
+                        TimeSpan.FromSeconds(3)
+                    );
+
                     // If we successfully saved to a new non-_UNSAVED_ path, clean up the old temp file.
                     // This prevents orphaned _UNSAVED_ files accumulating and removes confusion.
                     if (!string.IsNullOrWhiteSpace(originalPath)
@@ -485,11 +499,8 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
         {
-#if BROWSER
-            // DuckDB not available in browser
-            await Task.CompletedTask;
-            return;
-#else
+            // DuckDB-WASM works in browser, but file system access doesn't
+            // Browser can still dump to console/logs, just not to files
             if (dbFiles is null || dbFiles.Length == 0)
             {
                 BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
@@ -566,7 +577,6 @@ namespace BalatroSeedOracle.ViewModels
                 );
                 // Don't throw - fertilizer dump is a nice-to-have, not critical
             }
-#endif
         }
 
         [RelayCommand]
@@ -1620,7 +1630,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Regular item (not a clause operator)
-            // CRITICAL: Convert "Any" back to wildcard name for round-trip compatibility
+            // Convert "Any" back to wildcard name for round-trip
             string itemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "";
             if (
                 itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
@@ -1710,17 +1720,7 @@ namespace BalatroSeedOracle.ViewModels
             };
 
             // Wire up filter name edit activation event
-            OnFilterNameEditActivated += (s, e) =>
-            {
-                var filterNameEdit = visualBuilderTab.FindControl<Avalonia.Controls.TextBox>(
-                    "FilterNameEdit"
-                );
-                if (filterNameEdit is not null)
-                {
-                    filterNameEdit.Focus();
-                    filterNameEdit.SelectAll();
-                }
-            };
+            // Filter name focus is handled by the view; no view lookups from the ViewModel.
 
             TabItems.Add(new TabItemViewModel("BUILD FILTER", visualBuilderTab));
 
@@ -1750,14 +1750,12 @@ namespace BalatroSeedOracle.ViewModels
             var userProfileService =
                 ServiceHelper.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-            var filterConfigService =
-                ServiceHelper.GetService<IFilterConfigurationService>()
-                ?? new FilterConfigurationService(userProfileService);
+            var platformServices = ServiceHelper.GetService<IPlatformServices>();
             var validateFilterViewModel = new FilterTabs.ValidateFilterTabViewModel(
                 this,
                 configService,
                 filterService,
-                filterConfigService
+                platformServices
             );
             var validateFilterTab = new Components.FilterTabs.ValidateFilterTab
             {

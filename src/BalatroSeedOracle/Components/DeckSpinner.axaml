@@ -28,6 +28,6 @@
         </Style>
     </UserControl.Styles>
 
-    <controls:PanelSpinner Name="InnerPanelSpinner" />
+    <controls:PanelSpinner x:Name="InnerPanelSpinner" />
 
 </UserControl>

@@ -36,11 +36,10 @@ namespace BalatroSeedOracle.Views.Modals
         {
             InitializeComponent();
 
-            // Wire up events
-            var backButton = this.FindControl<Button>("BackButton");
-            if (backButton != null)
+            // Wire up events - direct field access from x:Name
+            if (BackButton != null)
             {
-                backButton.Click += OnBackButtonClick;
+                BackButton.Click += OnBackButtonClick;
             }
 
             // Only popup controls (like volume slider) should have click-away behavior
@@ -67,9 +66,8 @@ namespace BalatroSeedOracle.Views.Modals
         /// <param name="title">The title to display</param>
         public void SetTitle(string title)
         {
-            var modalTitle = this.FindControl<TextBlock>("ModalTitle");
-            if (modalTitle != null)
-                modalTitle.Text = title;
+            // Note: ModalTitle doesn't exist in current XAML - this method may be unused
+            // If needed, add x:Name="ModalTitle" to a TextBlock in the XAML
         }
 
         /// <summary>
@@ -78,8 +76,8 @@ namespace BalatroSeedOracle.Views.Modals
         /// <param name="content">The content control to display</param>
         public void SetContent(Control content)
         {
-            var modalContent = this.FindControl<ContentPresenter>("ModalContent");
-            if (modalContent == null)
+            // Direct field access from x:Name
+            if (ModalContent == null)
             {
                 DebugLogger.LogError("ModalContent is null!");
                 return;
@@ -88,7 +86,7 @@ namespace BalatroSeedOracle.Views.Modals
             DebugLogger.Log($"Content size: {content?.Width ?? 0} x {content?.Height ?? 0}");
             content?.InvalidateVisual();
             content?.UpdateLayout();
-            modalContent.Content = content;
+            ModalContent.Content = content;
 
             // Force layout update
             content?.InvalidateVisual();
@@ -101,9 +99,9 @@ namespace BalatroSeedOracle.Views.Modals
         /// <param name="text">The text to display on the back button</param>
         public void SetBackButtonText(string text)
         {
-            var backButton = this.FindControl<Button>("BackButton");
-            if (backButton != null)
-                backButton.Content = text;
+            // Direct field access from x:Name
+            if (BackButton != null)
+                BackButton.Content = text;
         }
 
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
@@ -167,25 +165,25 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void ApplySqueezeSizing()
         {
-            var modalSizeGrid = this.FindControl<Grid>("ModalSizeGrid");
-            if (modalSizeGrid == null)
+            // Direct field access from x:Name
+            if (ModalSizeGrid == null)
                 return;
 
             if (Squeeze)
             {
                 // Compact mode: auto-size with max constraints
-                modalSizeGrid.Width = double.NaN; // Auto
-                modalSizeGrid.Height = double.NaN; // Auto
-                modalSizeGrid.MaxWidth = 700;
-                modalSizeGrid.MaxHeight = 500;
+                ModalSizeGrid.Width = double.NaN; // Auto
+                ModalSizeGrid.Height = double.NaN; // Auto
+                ModalSizeGrid.MaxWidth = 700;
+                ModalSizeGrid.MaxHeight = 500;
             }
             else
             {
                 // Standard mode: fixed size
-                modalSizeGrid.Width = 1080;
-                modalSizeGrid.Height = 600;
-                modalSizeGrid.MaxWidth = double.PositiveInfinity;
-                modalSizeGrid.MaxHeight = double.PositiveInfinity;
+                ModalSizeGrid.Width = 1080;
+                ModalSizeGrid.Height = 600;
+                ModalSizeGrid.MaxWidth = double.PositiveInfinity;
+                ModalSizeGrid.MaxHeight = double.PositiveInfinity;
             }
         }
 
@@ -194,23 +192,12 @@ namespace BalatroSeedOracle.Views.Modals
         /// </summary>
         private void AnimateIn()
         {
-            var overlay = this.FindControl<Border>("OverlayBackground");
-            var modalBorder = this.FindControl<Border>("ModalBorder");
-            if (overlay == null || modalBorder == null)
+            // Direct field access from x:Name
+            if (ModalBorder == null)
                 return;
 
-            // Set up transitions
-            overlay.Transitions = new Transitions
-            {
-                new DoubleTransition
-                {
-                    Property = Border.OpacityProperty,
-                    Duration = TimeSpan.FromMilliseconds(UIConstants.FastAnimationDurationMs),
-                    Easing = new CubicEaseOut(),
-                },
-            };
-
-            modalBorder.Transitions = new Transitions
+            // Set up transitions for modal border
+            ModalBorder.Transitions = new Transitions
             {
                 new DoubleTransition
                 {
@@ -227,9 +214,8 @@ namespace BalatroSeedOracle.Views.Modals
             };
 
             // Start from offscreen and transparent
-            overlay.Opacity = UIConstants.InvisibleOpacity;
-            modalBorder.Opacity = UIConstants.InvisibleOpacity;
-            modalBorder.Margin = new Thickness(
+            ModalBorder.Opacity = UIConstants.InvisibleOpacity;
+            ModalBorder.Margin = new Thickness(
                 0,
                 UIConstants.ModalSlideOffsetY,
                 0,
@@ -240,9 +226,8 @@ namespace BalatroSeedOracle.Views.Modals
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    overlay.Opacity = UIConstants.FullOpacity;
-                    modalBorder.Opacity = UIConstants.FullOpacity;
-                    modalBorder.Margin = new Thickness(0, 0, 0, 0);
+                    ModalBorder.Opacity = UIConstants.FullOpacity;
+                    ModalBorder.Margin = new Thickness(0, 0, 0, 0);
                 },
                 DispatcherPriority.Render
             );
@@ -256,8 +241,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var contentPresenter = this.FindControl<ContentPresenter>("ModalContent");
-                var content = contentPresenter?.Content;
+                // Direct field access from x:Name
+                var content = ModalContent?.Content;
 
                 // Try view-level implementation first
                 if (
@@ -307,10 +292,10 @@ namespace BalatroSeedOracle.Views.Modals
             modal.SetTitle(title);
             modal.SetContent(content);
 
-            var backButton = modal.FindControl<Button>("BackButton");
-            if (backButton != null)
+            // Direct field access from x:Name
+            if (modal.BackButton != null)
             {
-                backButton.IsVisible = showBackButton;
+                modal.BackButton.IsVisible = showBackButton;
             }
 
             // Create overlay and show

@@ -1,9 +1,9 @@
-#if !BROWSER
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Motely.DuckDB;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Desktop.Services;
 
 /// <summary>
 /// Desktop implementation of IDuckDBService using DuckDB.NET.Data
@@ -51,4 +51,3 @@ public class DesktopDuckDBService : IDuckDBService
         return Task.FromResult<IDuckDBConnection>(connection);
     }
 }
-#endif

@@ -3,8 +3,12 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using BalatroSeedOracle;
+using BalatroSeedOracle.Desktop.Services;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.Storage;
+using BalatroSeedOracle.Services.DuckDB;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Desktop;
 
@@ -21,6 +25,22 @@ public class Program
 
             // Enable debug logging
             DebugLogger.SetDebugEnabled(true);
+
+            // Register Desktop-specific services
+            PlatformServices.RegisterServices = services =>
+            {
+                // Platform-specific implementations
+                services.AddSingleton<IAppDataStore, Desktop.Services.DesktopAppDataStore>();
+                services.AddSingleton<IDuckDBService, Desktop.Services.DesktopDuckDBService>();
+                services.AddSingleton<IPlatformServices, Desktop.Services.DesktopPlatformServices>();
+                
+                // Desktop-only services
+                services.AddSingleton<IAudioManager, SoundFlowAudioManager>();
+                services.AddSingleton<SoundEffectsService>();
+                
+                // API host
+                services.AddSingleton<IApiHostService, DesktopApiHostService>();
+            };
 
             // Start Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -139,5 +159,7 @@ public class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .LogToTrace();
+            .LogToTrace()
+            .WithInterFont()
+            .UseDeveloperTools(); // Enable Avalonia Accelerate Developer Tools (F12 gesture)
 }

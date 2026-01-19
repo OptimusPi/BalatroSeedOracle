@@ -10,7 +10,8 @@
                 "-c",
                 "Release",
                 "--project",
-                "./src/BalatroSeedOracle/BalatroSeedOracle.csproj",
+                "./src/BalatroSeedOracle.csproj",
+                "--no-build"
             ],
             "group": {
                 "kind": "build",
@@ -31,7 +32,7 @@
                 "-c",
                 "Debug",
                 "--project",
-                "./src/BalatroSeedOracle/BalatroSeedOracle.csproj",
+                "./src/BalatroSeedOracle.csproj",
                 "--no-build"
             ],
             "group": "build",
@@ -87,7 +88,8 @@
                 "build",
                 "-c",
                 "Release",
-                "./src/BalatroSeedOracle/BalatroSeedOracle.csproj"
+                "--project",
+                "./src/BalatroSeedOracle.csproj"
             ],
             "group": "build",
             "presentation": {
@@ -104,7 +106,8 @@
                 "build",
                 "-c",
                 "Debug",
-                "./src/BalatroSeedOracle/BalatroSeedOracle.csproj"
+                "--project",
+                "./src/BalatroSeedOracle.csproj"
             ],
             "group": "build",
             "presentation": {

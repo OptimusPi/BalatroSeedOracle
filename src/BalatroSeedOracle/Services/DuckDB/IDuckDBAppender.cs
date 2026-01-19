@@ -52,10 +52,10 @@ public interface IDuckDBAppender : IDisposable, IAsyncDisposable
     /// <summary>
     /// Flush the appender buffer to the database
     /// </summary>
-    void Flush();
+    Task FlushAsync();
 
     /// <summary>
     /// Close the appender (automatically flushes)
     /// </summary>
-    void Close();
+    Task CloseAsync();
 }

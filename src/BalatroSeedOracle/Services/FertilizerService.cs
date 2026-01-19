@@ -19,6 +19,7 @@ namespace BalatroSeedOracle.Services;
 public class FertilizerService : IDisposable
 {
     private readonly IDuckDBService _duckDB;
+    private readonly IPlatformServices _platformServices;
     private IDuckDBConnection? _connection;
     private bool _disposed;
     private bool _initialized;
@@ -34,9 +35,10 @@ public class FertilizerService : IDisposable
     /// </summary>
     public long SeedCount { get; private set; }
 
-    public FertilizerService(IDuckDBService duckDB)
+    public FertilizerService(IDuckDBService duckDB, IPlatformServices platformServices)
     {
         _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
+        _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
     }
 
     /// <summary>
@@ -53,18 +55,23 @@ public class FertilizerService : IDisposable
 
             await _duckDB.InitializeAsync();
 
-#if !BROWSER
-            var dataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "BalatroSeedOracle"
-            );
-            Directory.CreateDirectory(dataDir);
-            var dbPath = Path.Combine(dataDir, "fertilizer.db");
-            var txtPath = Path.Combine(dataDir, "fertilizer.txt");
-#else
-            var dbPath = ":memory:";
-            var txtPath = string.Empty;
-#endif
+            string dbPath;
+            string txtPath;
+            if (_platformServices.SupportsFileSystem)
+            {
+                var dataDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "BalatroSeedOracle"
+                );
+                _platformServices.EnsureDirectoryExists(dataDir);
+                dbPath = Path.Combine(dataDir, "fertilizer.db");
+                txtPath = Path.Combine(dataDir, "fertilizer.txt");
+            }
+            else
+            {
+                dbPath = ":memory:";
+                txtPath = string.Empty;
+            }
 
             var connectionString = _duckDB.CreateConnectionString(dbPath);
             _connection = await _duckDB.OpenConnectionAsync(connectionString);
@@ -77,10 +84,11 @@ public class FertilizerService : IDisposable
             // Use high-level method - no SQL construction in BSO!
             await _connection.CreateIndexAsync("CREATE INDEX IF NOT EXISTS idx_seed ON seeds(seed);");
 
-#if !BROWSER
-            // Import from txt file if db is empty and txt exists
-            await MigrateFromTxtIfNeededAsync(txtPath);
-#endif
+            if (_platformServices.SupportsFileSystem)
+            {
+                // Import from txt file if db is empty and txt exists
+                await MigrateFromTxtIfNeededAsync(txtPath);
+            }
 
             // Update count
             await RefreshSeedCountAsync();
@@ -98,7 +106,6 @@ public class FertilizerService : IDisposable
         }
     }
 
-#if !BROWSER
     private async Task MigrateFromTxtIfNeededAsync(string txtPath)
     {
         try
@@ -127,7 +134,6 @@ public class FertilizerService : IDisposable
             throw;
         }
     }
-#endif
 
     /// <summary>
     /// Add seeds to the fertilizer pile (deduplicates automatically)
@@ -145,54 +151,57 @@ public class FertilizerService : IDisposable
             var seedList = seeds.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
             if (seedList.Count == 0) return;
 
-#if !BROWSER
-            // Desktop: Bulk insert via temp file + COPY FROM (handles duplicates via ON CONFLICT in schema)
-            var tempFile = Path.GetTempFileName();
-            try
+            if (_platformServices.SupportsFileSystem)
             {
-                // ASYNC file write - don't block the thread!
-                await File.WriteAllLinesAsync(tempFile, seedList, ct);
+                // Desktop: Bulk insert via temp file + COPY FROM (handles duplicates via ON CONFLICT in schema)
+                var tempFile = Path.Combine(_platformServices.GetTempDirectory(), Path.GetRandomFileName());
+                try
+                {
+                    // ASYNC file write - don't block the thread!
+                    await File.WriteAllLinesAsync(tempFile, seedList, ct);
 
-                // Use high-level CopyFromFileAsync - no SQL construction in BSO!
-                // Note: DuckDB COPY handles duplicates if table has PRIMARY KEY/UNIQUE constraint
-                await _connection.CopyFromFileAsync(
-                    tempFile,
-                    "seeds",
-                    "HEADER false, DELIMITER E'\\n', COLUMNS {'seed': 'VARCHAR'}"
-                );
+                    // Use high-level CopyFromFileAsync - no SQL construction in BSO!
+                    // Note: DuckDB COPY handles duplicates if table has PRIMARY KEY/UNIQUE constraint
+                    await _connection.CopyFromFileAsync(
+                        tempFile,
+                        "seeds",
+                        "HEADER false, DELIMITER E'\\n', COLUMNS {'seed': 'VARCHAR'}"
+                    );
+                }
+                finally
+                {
+                    // ALWAYS cleanup temp file, log failures
+                    try
+                    {
+                        if (File.Exists(tempFile))
+                            File.Delete(tempFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLogger.LogError("FertilizerService", $"Temp file cleanup failed: {ex.Message}");
+                    }
+                }
             }
-            finally
+            else
             {
-                // ALWAYS cleanup temp file, log failures
-                try
+                // Browser: Use appender for bulk insert
+                await using var appender = await _connection.CreateAppenderAsync("main", "seeds");
+                foreach (var seed in seedList)
                 {
-                    if (File.Exists(tempFile))
-                        File.Delete(tempFile);
+                    if (ct.IsCancellationRequested) break;
+                    try
+                    {
+                        appender.CreateRow()
+                            .AppendValue(seed)
+                            .EndRow();
+                    }
+                    catch
+                    {
+                        // Ignore duplicates (PRIMARY KEY violation)
+                    }
                 }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("FertilizerService", $"Temp file cleanup failed: {ex.Message}");
-                }
+                await appender.FlushAsync();
             }
-#else
-            // Browser: Use appender for bulk insert
-            await using var appender = await _connection.CreateAppenderAsync("main", "seeds");
-            foreach (var seed in seedList)
-            {
-                if (ct.IsCancellationRequested) break;
-                try
-                {
-                    appender.CreateRow()
-                        .AppendValue(seed)
-                        .EndRow();
-                }
-                catch
-                {
-                    // Ignore duplicates (PRIMARY KEY violation)
-                }
-            }
-            appender.Flush();
-#endif
 
             await RefreshSeedCountAsync();
         }
@@ -253,18 +262,19 @@ public class FertilizerService : IDisposable
         {
             await _connection.ClearTableAsync("seeds");
 
-#if !BROWSER
-            // Also clear the txt file if it exists
-            var dataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "BalatroSeedOracle"
-            );
-            var txtPath = Path.Combine(dataDir, "fertilizer.txt");
-            if (File.Exists(txtPath))
+            if (_platformServices.SupportsFileSystem)
             {
-                File.Delete(txtPath);
+                // Also clear the txt file if it exists
+                var dataDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "BalatroSeedOracle"
+                );
+                var txtPath = Path.Combine(dataDir, "fertilizer.txt");
+                if (File.Exists(txtPath))
+                {
+                    File.Delete(txtPath);
+                }
             }
-#endif
 
             await RefreshSeedCountAsync();
             DebugLogger.Log("FertilizerService", "Fertilizer pile cleared");
@@ -280,7 +290,9 @@ public class FertilizerService : IDisposable
     /// </summary>
     public async Task ExportToTxtAsync()
     {
-#if !BROWSER
+        if (!_platformServices.SupportsFileSystem)
+            return;
+
         if (_connection == null)
         {
             await InitializeAsync();
@@ -294,6 +306,7 @@ public class FertilizerService : IDisposable
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "BalatroSeedOracle"
             );
+            _platformServices.EnsureDirectoryExists(dataDir);
             var txtPath = Path.Combine(dataDir, "fertilizer.txt");
             await File.WriteAllLinesAsync(txtPath, seeds);
             DebugLogger.Log("FertilizerService", $"Exported {seeds.Count} seeds to txt");
@@ -302,11 +315,6 @@ public class FertilizerService : IDisposable
         {
             DebugLogger.LogError("FertilizerService", $"Failed to export: {ex.Message}");
         }
-#else
-        // Browser: No file system access - could export to download in future
-        await Task.CompletedTask;
-        DebugLogger.Log("FertilizerService", "Export not available in browser");
-#endif
     }
 
     private async Task RefreshSeedCountAsync()

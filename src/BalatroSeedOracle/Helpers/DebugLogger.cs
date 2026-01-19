@@ -1,4 +1,5 @@
 using System;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Helpers;
 
@@ -10,6 +11,15 @@ public static class DebugLogger
     // Set to false for production builds - AI AGENT COMPATIBLE
     private static bool EnableDebugLogging = false; // DEFAULT TO FALSE FOR AI COMPATIBILITY
     private static bool EnableVerboseLogging = false; // DEFAULT TO FALSE FOR AI COMPATIBILITY
+    private static IPlatformServices? _platformServices;
+
+    /// <summary>
+    /// Initialize DebugLogger with platform services (called from App.axaml.cs)
+    /// </summary>
+    public static void Initialize(IPlatformServices platformServices)
+    {
+        _platformServices = platformServices;
+    }
 
     /// <summary>
     /// Sets whether debug logging is enabled
@@ -89,28 +99,22 @@ public static class DebugLogger
             ? $"[{timestamp}] [{category}] {message}"
             : $"[{timestamp}] {message}";
 
-#if !BROWSER
-        Console.WriteLine(formattedMessage);
-#else
-        // In browser, we use System.Console.WriteLine which is usually shimmed to console.log
-        // But we wrap it in a try-catch to prevent _fd_write errors from crashing the app
-        try 
+        if (_platformServices != null)
         {
-            System.Console.WriteLine(formattedMessage);
+            _platformServices.WriteLog(formattedMessage);
         }
-        catch 
+        else
         {
-            // If Console.WriteLine fails (e.g. _fd_write error), we try System.Diagnostics.Debug as fallback
-            try 
+            // Fallback if not initialized (shouldn't happen in normal operation)
+            try
             {
-                System.Diagnostics.Debug.WriteLine(formattedMessage);
+                Console.WriteLine(formattedMessage);
             }
-            catch 
+            catch
             {
                 // Last resort: nothing we can do without potentially crashing
             }
         }
-#endif
     }
 
     /// <summary>
@@ -123,11 +127,15 @@ public static class DebugLogger
 #if DEBUG
         if (EnableVerboseLogging || EnableDebugLogging)
         {
-#if !BROWSER
-            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] INFO: {message}");
-#else
-            System.Diagnostics.Debug.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] INFO: {message}");
-#endif
+            var formattedMessage = $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] INFO: {message}";
+            if (_platformServices != null)
+            {
+                _platformServices.WriteDebugLog(formattedMessage);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(formattedMessage);
+            }
         }
 #endif
     }
@@ -141,11 +149,14 @@ public static class DebugLogger
         if (EnableDebugLogging)
         {
             var msg = $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {string.Format(format, args)}";
-#if !BROWSER
-            Console.WriteLine(msg);
-#else
-            System.Diagnostics.Debug.WriteLine(msg);
-#endif
+            if (_platformServices != null)
+            {
+                _platformServices.WriteDebugLog(msg);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(msg);
+            }
         }
 #endif
     }

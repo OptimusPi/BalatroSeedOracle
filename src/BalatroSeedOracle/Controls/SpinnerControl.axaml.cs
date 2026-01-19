@@ -139,34 +139,30 @@ namespace BalatroSeedOracle.Controls
         {
             base.OnApplyTemplate(e);
 
-            // Update the initial display value
-            var valueText = this.FindControl<TextBlock>("ValueText");
-            if (valueText != null)
+            // Update the initial display value - direct field access from x:Name
+            if (ValueText != null)
             {
-                valueText.Text = GetDisplayValue();
+                ValueText.Text = GetDisplayValue();
             }
 
-            // Hide label if empty
-            var labelText = this.FindControl<TextBlock>("LabelText");
-            if (labelText != null)
+            // Hide label if empty - direct field access from x:Name
+            if (LabelText != null)
             {
-                labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
+                LabelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
             }
 
-            // Update button states
-            var decrementButton = this.FindControl<Button>("DecrementButton");
-            var incrementButton = this.FindControl<Button>("IncrementButton");
+            // Update button states - direct field access from x:Name
 
             // In circular stake mode, arrows should always be enabled if we have multiple values
             bool circularStake = IsCircularStakeSpinner();
 
-            if (decrementButton != null)
-                decrementButton.IsEnabled = circularStake
+            if (DecrementButton != null)
+                DecrementButton.IsEnabled = circularStake
                     ? HasMultipleValuesForCircular()
                     : Value > Minimum;
 
-            if (incrementButton != null)
-                incrementButton.IsEnabled = circularStake
+            if (IncrementButton != null)
+                IncrementButton.IsEnabled = circularStake
                     ? HasMultipleValuesForCircular()
                     : Value < Maximum;
         }
@@ -208,20 +204,18 @@ namespace BalatroSeedOracle.Controls
                 || change.Property == AllowAutoProperty
             )
             {
-                // Update display text
-                var valueText = this.FindControl<TextBlock>("ValueText");
-                if (valueText != null)
+                // Update display text - direct field access from x:Name
+                if (ValueText != null)
                 {
-                    valueText.Text = GetDisplayValue();
+                    ValueText.Text = GetDisplayValue();
                 }
 
-                // Update label visibility if label changed
+                // Update label visibility if label changed - direct field access from x:Name
                 if (change.Property == LabelProperty)
                 {
-                    var labelText = this.FindControl<TextBlock>("LabelText");
-                    if (labelText != null)
+                    if (LabelText != null)
                     {
-                        labelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
+                        LabelText.IsVisible = !string.IsNullOrWhiteSpace(Label);
                     }
                 }
 
@@ -235,18 +229,16 @@ namespace BalatroSeedOracle.Controls
                         ValueChanged?.Invoke(this, newValue);
                     }
 
-                    // Update button states
-                    var decrementButton = this.FindControl<Button>("DecrementButton");
-                    var incrementButton = this.FindControl<Button>("IncrementButton");
+                    // Update button states - direct field access from x:Name
                     bool circularStake = IsCircularStakeSpinner();
 
-                    if (decrementButton != null)
-                        decrementButton.IsEnabled = circularStake
+                    if (DecrementButton != null)
+                        DecrementButton.IsEnabled = circularStake
                             ? HasMultipleValuesForCircular()
                             : newValue > Minimum;
 
-                    if (incrementButton != null)
-                        incrementButton.IsEnabled = circularStake
+                    if (IncrementButton != null)
+                        IncrementButton.IsEnabled = circularStake
                             ? HasMultipleValuesForCircular()
                             : newValue < Maximum;
                 }
@@ -298,10 +290,10 @@ namespace BalatroSeedOracle.Controls
         /// </summary>
         public void SetDisplayText(string text)
         {
-            var valueText = this.FindControl<TextBlock>("ValueText");
-            if (valueText != null)
+            // Direct field access from x:Name
+            if (ValueText != null)
             {
-                valueText.Text = text;
+                ValueText.Text = text;
             }
         }
 
@@ -313,12 +305,11 @@ namespace BalatroSeedOracle.Controls
 
             IsEditing = true;
 
-            // Focus and select text in the edit box
-            var valueEdit = this.FindControl<TextBox>("ValueEdit");
-            if (valueEdit != null)
+            // Focus and select text in the edit box - direct field access from x:Name
+            if (ValueEdit != null)
             {
-                valueEdit.Focus();
-                valueEdit.SelectAll();
+                ValueEdit.Focus();
+                ValueEdit.SelectAll();
             }
         }
 
@@ -343,10 +334,10 @@ namespace BalatroSeedOracle.Controls
 
         private void SaveEditValue()
         {
-            var valueEdit = this.FindControl<TextBox>("ValueEdit");
-            if (valueEdit != null && IsEditing)
+            // Direct field access from x:Name
+            if (ValueEdit != null && IsEditing)
             {
-                var inputText = valueEdit.Text?.Trim();
+                var inputText = ValueEdit.Text?.Trim();
 
                 if (!string.IsNullOrEmpty(inputText))
                 {

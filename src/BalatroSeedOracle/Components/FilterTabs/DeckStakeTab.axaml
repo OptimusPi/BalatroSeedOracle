@@ -5,7 +5,7 @@
              x:Class="BalatroSeedOracle.Components.FilterTabs.DeckStakeTab"
              x:DataType="vm:DeckStakeTabViewModel">
                 <components:DeckAndStakeSelector
-                    Name="DeckAndStakeSelector"
+                    x:Name="DeckAndStakeSelector"
                     DeckIndex="{Binding SelectedDeckIndex, Mode=TwoWay}"
                     StakeIndex="{Binding SelectedStakeIndex, Mode=TwoWay}"
                     HorizontalAlignment="Center"

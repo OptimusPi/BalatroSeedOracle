@@ -68,9 +68,9 @@ namespace BalatroSeedOracle.Components
 
         private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            // Find the filter list container
-            _filterListContainer = this.FindControl<Border>("FilterListContainer");
-            var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
+            // Direct field access from x:Name
+            _filterListContainer = FilterListContainer;
+            var itemsControl = FilterListControl;
 
             // Do not set page size here; wait for template attach to measure item height
 
@@ -121,7 +121,8 @@ namespace BalatroSeedOracle.Components
         {
             try
             {
-                var itemsControl = this.FindControl<ItemsControl>("FilterListControl");
+                // Direct field access from x:Name
+                var itemsControl = FilterListControl;
                 if (itemsControl != null)
                 {
                     // Find the first Button inside the item template

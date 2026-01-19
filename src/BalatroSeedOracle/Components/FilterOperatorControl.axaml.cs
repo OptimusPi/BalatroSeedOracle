@@ -25,19 +25,17 @@ namespace BalatroSeedOracle.Components
             Helpers.DebugLogger.Log("FilterOperatorControl", "Constructor called");
 
             // Set up drag-drop handlers for the child drop zone
-            var dropZone = this.FindControl<Border>("ChildrenDropZone");
-            if (dropZone != null)
+            if (ChildrenDropZone != null)
             {
-                dropZone.AddHandler(DragDrop.DragOverEvent, OnChildrenDragOver);
-                dropZone.AddHandler(DragDrop.DropEvent, OnChildrenDrop);
-                dropZone.AddHandler(DragDrop.DragLeaveEvent, OnChildrenDragLeave);
+                ChildrenDropZone.AddHandler(DragDrop.DragOverEvent, OnChildrenDragOver);
+                ChildrenDropZone.AddHandler(DragDrop.DropEvent, OnChildrenDrop);
+                ChildrenDropZone.AddHandler(DragDrop.DragLeaveEvent, OnChildrenDragLeave);
             }
 
             // Make the entire container draggable by clicking the header
-            var headerBorder = this.FindControl<Border>("OperatorHeader");
-            if (headerBorder != null)
+            if (OperatorHeader != null)
             {
-                headerBorder.PointerPressed += OnHeaderPointerPressed;
+                OperatorHeader.PointerPressed += OnHeaderPointerPressed;
             }
 
             // Set up the operator control
@@ -76,12 +74,11 @@ namespace BalatroSeedOracle.Components
 
         private void SetupCardDragHandlers()
         {
-            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
-            if (itemsControl == null)
+            if (ChildrenItemsControl == null)
                 return;
 
             // Add pointer handlers to enable dragging individual cards
-            itemsControl.AddHandler(
+            ChildrenItemsControl.AddHandler(
                 PointerPressedEvent,
                 OnCardPointerPressed,
                 handledEventsToo: true
@@ -130,8 +127,7 @@ namespace BalatroSeedOracle.Components
             if (DataContext is not FilterOperatorItem operatorItem)
                 return;
 
-            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
-            if (itemsControl == null)
+            if (ChildrenItemsControl == null)
                 return;
 
             // Wait for the visual tree to be FULLY rendered (Background priority runs after layout/render)
@@ -146,8 +142,7 @@ namespace BalatroSeedOracle.Components
 
         private void CalculateFannedPositions(FilterOperatorItem operatorItem)
         {
-            var itemsControl = this.FindControl<ItemsControl>("ChildrenItemsControl");
-            if (itemsControl == null)
+            if (ChildrenItemsControl == null)
                 return;
 
             int count = operatorItem.Children.Count;
@@ -209,7 +204,7 @@ namespace BalatroSeedOracle.Components
             double startX = -totalWidth / 2.0 + cardWidth / 2.0;
 
             // Apply transforms to each card container
-            var containers = itemsControl.GetVisualDescendants().OfType<Border>().ToList();
+            var containers = ChildrenItemsControl.GetVisualDescendants().OfType<Border>().ToList();
 
             for (int i = 0; i < Math.Min(count, containers.Count); i++)
             {
@@ -266,13 +261,12 @@ namespace BalatroSeedOracle.Components
                         dropZone.Classes.Add("drag-active");
                     }
 
-                    var operatorContainer = this.FindControl<Border>("OperatorContainer");
                     if (
-                        operatorContainer != null
-                        && !operatorContainer.Classes.Contains("drag-over")
+                        OperatorContainer != null
+                        && !OperatorContainer.Classes.Contains("drag-over")
                     )
                     {
-                        operatorContainer.Classes.Add("drag-over");
+                        OperatorContainer.Classes.Add("drag-over");
                     }
                     return;
                 }
@@ -289,10 +283,9 @@ namespace BalatroSeedOracle.Components
                 dropZone.Classes.Remove("drag-active");
             }
 
-            var operatorContainer = this.FindControl<Border>("OperatorContainer");
-            if (operatorContainer != null)
+            if (OperatorContainer != null)
             {
-                operatorContainer.Classes.Remove("drag-over");
+                OperatorContainer.Classes.Remove("drag-over");
             }
         }
 
@@ -304,10 +297,9 @@ namespace BalatroSeedOracle.Components
                 dropZone.Classes.Remove("drag-active");
             }
 
-            var operatorContainer = this.FindControl<Border>("OperatorContainer");
-            if (operatorContainer != null)
+            if (OperatorContainer != null)
             {
-                operatorContainer.Classes.Remove("drag-over");
+                OperatorContainer.Classes.Remove("drag-over");
             }
 
             if (e.Data.Contains(FilterItemFormatId))

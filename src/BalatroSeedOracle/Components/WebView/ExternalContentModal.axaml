@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:webview="using:Avalonia.Controls.WebView"
+             x:Class="BalatroSeedOracle.Components.WebView.ExternalContentModal">
+    
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header with URL bar -->
+        <Border Grid.Row="0"
+                Background="{StaticResource DarkBackground}"
+                BorderBrush="{StaticResource ModalBorder}"
+                BorderThickness="0,0,0,1"
+                Padding="12,8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0"
+                        x:Name="BackButton"
+                        Content="←"
+                        Margin="0,0,8,0"
+                        Padding="8,4"
+                        Classes="btn-blue"
+                        ToolTip.Tip="Go back"/>
+                <TextBox Grid.Column="1"
+                         x:Name="UrlTextBox"
+                         Watermark="Enter URL or search..."
+                         FontSize="12"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Column="2"
+                        x:Name="GoButton"
+                        Content="Go"
+                        Margin="8,0,0,0"
+                        Padding="8,4"
+                        Classes="btn-green"
+                        ToolTip.Tip="Navigate"/>
+            </Grid>
+        </Border>
+        
+        <!-- WebView -->
+        <webview:NativeWebView Grid.Row="1"
+                                x:Name="WebViewControl"
+                                Background="White"/>
+    </Grid>
+</UserControl>

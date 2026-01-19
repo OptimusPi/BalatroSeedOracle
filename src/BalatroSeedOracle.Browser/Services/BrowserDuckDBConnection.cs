@@ -1,12 +1,12 @@
-#if BROWSER
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Browser.Services;
 
 /// <summary>
 /// Browser implementation of IDuckDBConnection using DuckDB-WASM via JavaScript interop
@@ -316,4 +316,3 @@ public class BrowserDuckDBDataReader : IDuckDBDataReader
         };
     }
 }
-#endif

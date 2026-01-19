@@ -74,16 +74,17 @@ namespace BalatroSeedOracle.Windows
         {
             AvaloniaXamlLoader.Load(this);
 
-            // Get control references
-            _resultsGrid = this.FindControl<DataGrid>("ResultsGrid");
-            _queryResultsGrid = this.FindControl<DataGrid>("QueryResultsGrid");
-            _quickSearchBox = this.FindControl<TextBox>("QuickSearchBox");
-            _statusText = this.FindControl<SelectableTextBlock>("StatusText");
-            _queryStatusText = this.FindControl<SelectableTextBlock>("QueryStatusText");
-            _clearSearchButton = this.FindControl<Button>("ClearSearchButton");
-            _loadMoreButton = this.FindControl<Button>("LoadMoreButton");
-            _sqlEditor = this.FindControl<TextEditor>("SqlEditor");
-            _exampleQueriesCombo = this.FindControl<ComboBox>("ExampleQueriesCombo");
+            // Control references are now auto-generated from x:Name attributes
+            // No FindControl anti-pattern needed!
+            _resultsGrid = ResultsGrid;
+            _queryResultsGrid = QueryResultsGrid;
+            _quickSearchBox = QuickSearchBox;
+            _statusText = StatusText;
+            _queryStatusText = QueryStatusText;
+            _clearSearchButton = ClearSearchButton;
+            _loadMoreButton = LoadMoreButton;
+            _sqlEditor = SqlEditor;
+            _exampleQueriesCombo = ExampleQueriesCombo;
 
             // Add keyboard shortcuts
             KeyDown += OnKeyDown;
@@ -122,46 +123,31 @@ namespace BalatroSeedOracle.Windows
                 _loadMoreButton.Click += async (s, e) => await LoadMoreResultsAsync();
             }
 
-            // Export menu items
-            var exportCsv = this.FindControl<MenuItem>("ExportCsvMenuItem");
-            var exportJson = this.FindControl<MenuItem>("ExportJsonMenuItem");
-            var exportExcel = this.FindControl<MenuItem>("ExportExcelMenuItem");
-            var copyClipboard = this.FindControl<MenuItem>("CopyToClipboardMenuItem");
+            // Export menu items - direct field access from x:Name
+            if (ExportCsvMenuItem != null)
+                ExportCsvMenuItem.Click += async (s, e) => await ExportToCsvAsync();
+            if (ExportJsonMenuItem != null)
+                ExportJsonMenuItem.Click += async (s, e) => await ExportToJsonAsync();
+            if (ExportExcelMenuItem != null)
+                ExportExcelMenuItem.Click += async (s, e) => await ExportToExcelAsync();
+            if (ExportWordlistMenuItem != null)
+                ExportWordlistMenuItem.Click += async (s, e) => await ExportToWordlistAsync();
+            if (CopyToClipboardMenuItem != null)
+                CopyToClipboardMenuItem.Click += CopyToClipboard;
 
-            if (exportCsv != null)
-                exportCsv.Click += async (s, e) => await ExportToCsvAsync();
-            if (exportJson != null)
-                exportJson.Click += async (s, e) => await ExportToJsonAsync();
-            if (exportExcel != null)
-                exportExcel.Click += async (s, e) => await ExportToExcelAsync();
+            // Other buttons - direct field access from x:Name
+            if (CopyButton != null)
+                CopyButton.Click += CopySelectedRows;
+            if (SelectAllButton != null)
+                SelectAllButton.Click += (s, e) => _resultsGrid?.SelectAll();
+            if (ClearSelectionButton != null)
+                ClearSelectionButton.Click += (s, e) => _resultsGrid?.SelectedItems.Clear();
 
-            var exportWordlist = this.FindControl<MenuItem>("ExportWordlistMenuItem");
-            if (exportWordlist != null)
-                exportWordlist.Click += async (s, e) => await ExportToWordlistAsync();
-
-            if (copyClipboard != null)
-                copyClipboard.Click += CopyToClipboard;
-
-            // Other buttons
-            var copyButton = this.FindControl<Button>("CopyButton");
-            var selectAllButton = this.FindControl<Button>("SelectAllButton");
-            var clearSelectionButton = this.FindControl<Button>("ClearSelectionButton");
-
-            if (copyButton != null)
-                copyButton.Click += CopySelectedRows;
-            if (selectAllButton != null)
-                selectAllButton.Click += (s, e) => _resultsGrid?.SelectAll();
-            if (clearSelectionButton != null)
-                clearSelectionButton.Click += (s, e) => _resultsGrid?.SelectedItems.Clear();
-
-            // SQL controls
-            var runQueryButton = this.FindControl<Button>("RunQueryButton");
-            var clearQueryButton = this.FindControl<Button>("ClearQueryButton");
-
-            if (runQueryButton != null)
-                runQueryButton.Click += async (s, e) => await RunSqlQueryAsync();
-            if (clearQueryButton != null)
-                clearQueryButton.Click += (s, e) => _sqlEditor?.Clear();
+            // SQL controls - direct field access from x:Name
+            if (RunQueryButton != null)
+                RunQueryButton.Click += async (s, e) => await RunSqlQueryAsync();
+            if (ClearQueryButton != null)
+                ClearQueryButton.Click += (s, e) => _sqlEditor?.Clear();
 
             if (_exampleQueriesCombo != null)
             {
@@ -777,7 +763,7 @@ LIMIT 50;",
                 {
                     // Find the main window and show as modal
                     var mainWindow = this.GetVisualRoot() as Views.MainWindow;
-                    var mainMenu = mainWindow?.FindControl<Views.BalatroMainMenu>("MainMenu");
+                    var mainMenu = mainWindow?.MainMenu;
 
                     if (mainMenu != null)
                     {

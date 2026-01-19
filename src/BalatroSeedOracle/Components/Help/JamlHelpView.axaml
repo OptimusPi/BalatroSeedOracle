@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Components.Help.JamlHelpView">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Border Background="{StaticResource DarkBackground}"
+                Padding="20"
+                Margin="10">
+            <!-- Using TextBlock instead of Markdown for WASM compatibility -->
+            <TextBlock x:Name="MarkdownViewer"
+                       Background="Transparent"
+                       Foreground="White"
+                       TextWrapping="Wrap"/>
+        </Border>
+    </ScrollViewer>
+</UserControl>

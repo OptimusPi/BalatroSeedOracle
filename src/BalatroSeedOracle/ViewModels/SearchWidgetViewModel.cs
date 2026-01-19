@@ -18,14 +18,14 @@ namespace BalatroSeedOracle.ViewModels
     public partial class SearchWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
         private bool _disposed;
-        private readonly SearchInstance _searchInstance;
+        private readonly ISearchInstance _searchInstance;
         private readonly SpriteService _spriteService;
         private CancellationTokenSource? _saveDebounceToken;
 
         /// <summary>
         /// SearchInstance ID for identifying this widget
         /// </summary>
-        public string SearchInstanceId => _searchInstance.SearchId;
+        public string SearchInstanceId => _searchInstance.SearchId ?? "";
 
         [ObservableProperty]
         private bool _isHovered;
@@ -42,10 +42,13 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private string _progressText = "0%";
 
+        private readonly NotificationService? _notificationService;
+
         public SearchWidgetViewModel(
-            SearchInstance searchInstance,
+            ISearchInstance searchInstance,
             SpriteService spriteService,
-            WidgetPositionService? widgetPositionService = null
+            WidgetPositionService? widgetPositionService = null,
+            NotificationService? notificationService = null
         )
             : base(widgetPositionService)
         {
@@ -53,6 +56,7 @@ namespace BalatroSeedOracle.ViewModels
                 searchInstance ?? throw new ArgumentNullException(nameof(searchInstance));
             _spriteService =
                 spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             // Initialize from SearchInstance
             FilterName = _searchInstance.FilterName ?? "Search";
@@ -168,6 +172,16 @@ namespace BalatroSeedOracle.ViewModels
 
             // Format progress text
             ProgressText = $"{(int)progress.PercentComplete}%";
+
+            // Show notification for completion
+            if (progress.PercentComplete >= 100.0 && _notificationService != null)
+            {
+                _notificationService.ShowSuccess(
+                    "Search Complete",
+                    $"Search finished: {FilterName}",
+                    TimeSpan.FromSeconds(3)
+                );
+            }
         }
 
         /// <summary>

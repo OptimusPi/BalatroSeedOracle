@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle;
@@ -33,29 +34,43 @@ public partial class App : Application
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-#if !BROWSER
-            // Ensure required directories exist (desktop only)
-            EnsureDirectoriesExist();
-
-            // Copy sample content to AppData on first run (desktop only)
-            CopySamplesToAppData();
-#endif
-
             // Set up services
             var services = new ServiceCollection();
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
-#if BROWSER
-            // Test localStorage interop early - fire-and-forget with proper error handling
-            _ = TestLocalStorageInteropAsync();
-            
-            // TODO: Implement browser sample filter seeding
-            // _ = SeedBrowserSampleFiltersAsync();
-#endif
+            // Get platform services for platform-specific initialization
+            var platformServices = _serviceProvider.GetService<Services.IPlatformServices>();
+            if (platformServices != null)
+            {
+                // Initialize DebugLogger with platform services (removes need for #if directives)
+                Helpers.DebugLogger.Initialize(platformServices);
 
-            // TODO: Implement filter cache initialization
-            // _ = InitializeFilterCacheAsync();
+                // Initialize AppPaths with platform services (removes need for #if directives)
+                Helpers.AppPaths.Initialize(platformServices);
+
+                // Ensure required directories exist (platform-specific)
+                if (platformServices.SupportsFileSystem)
+                {
+                    EnsureDirectoriesExist(platformServices);
+                }
+
+                // Copy sample content to AppData on first run (platform-specific)
+                _ = platformServices.CopySamplesToAppDataAsync();
+            }
+
+            // Browser-specific initialization
+            if (platformServices != null && !platformServices.SupportsFileSystem)
+            {
+                // Test localStorage interop early - fire-and-forget with proper error handling
+                _ = TestLocalStorageInteropAsync();
+                
+                // Seed browser sample filters (fire-and-forget, best-effort)
+                _ = SeedBrowserSampleFiltersAsync();
+            }
+
+            // Initialize filter cache (works on all platforms)
+            InitializeFilterCache();
 
             // Line below is needed to remove Avalonia data validation.
             // Without this line you will get duplicate validations from both Avalonia and CT
@@ -97,30 +112,30 @@ public partial class App : Application
         catch (Exception ex)
         {
             HandleException("INITIALIZATION", ex);
-#if !BROWSER
-            Console.ReadLine(); // Desktop only - browser has no stdin
-#endif
+            // Desktop platforms can use Console.ReadLine, browser cannot
+            var platformServices = _serviceProvider?.GetService<Services.IPlatformServices>();
+            if (platformServices?.SupportsFileSystem == true)
+            {
+                Console.ReadLine(); // Desktop only - browser has no stdin
+            }
             throw;
         }
     }
 
-#if BROWSER
-#if BROWSER
     private async Task TestLocalStorageInteropAsync()
     {
         try
         {
             await Task.Delay(1000); // Wait for JS to initialize
-            var testResult = await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
-            DebugLogger.Log("App", $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}");
+            // LocalStorageTester is browser-only, excluded from shared project
+            // Test is handled by BrowserPlatformServices initialization
+            DebugLogger.Log("App", "LocalStorage interop test handled by platform services");
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"LocalStorage interop test failed: {ex.Message}");
         }
     }
-#endif
-#endif
 
     private async Task UniformProgressLoopAsync(
         Services.TransitionService transitionService,
@@ -192,11 +207,10 @@ public partial class App : Application
             DebugLogger.LogError(source, $"Inner Stack trace: {ex.InnerException.StackTrace}");
         }
 
-        // Write to crash log
-#if !BROWSER
-        try
+        // Write to crash log (platform-specific)
+        var platformServices = _serviceProvider?.GetService<Services.IPlatformServices>();
+        if (platformServices != null)
         {
-            var crashLog = System.IO.Path.Combine(AppPaths.DataRootDir, "crash.log");
             var errorMsg =
                 $"=== {source} EXCEPTION: {DateTime.Now} ===\n"
                 + $"Exception: {ex.GetType().FullName}\n"
@@ -211,14 +225,8 @@ public partial class App : Application
             }
             errorMsg += "\n";
 
-            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(crashLog)!);
-            System.IO.File.AppendAllText(crashLog, errorMsg);
+            _ = platformServices.WriteCrashLogAsync(errorMsg);
         }
-        catch
-        {
-            // If crash log writing fails, at least we logged to debug
-        }
-#endif
     }
 
     private async void ShowLoadingWindowAndPreloadSprites(
@@ -233,7 +241,7 @@ public partial class App : Application
             );
 
             // Create main window FIRST (so we have access to shader background)
-            var mainWindow = new Views.MainWindow();
+            var mainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
             desktop.MainWindow = mainWindow;
             
             // Subscribe to window state changes to close popups when minimized
@@ -244,8 +252,8 @@ public partial class App : Application
                     if (mainWindow.WindowState == WindowState.Minimized)
                     {
                         // Close all popups when window is minimized
-                        var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
-                        if (mainMenu?.DataContext is ViewModels.BalatroMainMenuViewModel vm)
+                        var vm = mainWindow.MainMenu?.ViewModel;
+                        if (vm is not null)
                         {
                             vm.IsVolumePopupOpen = false;
                             vm.IsWidgetDockVisible = false;
@@ -260,8 +268,8 @@ public partial class App : Application
             await System.Threading.Tasks.Task.Delay(100);
 
             // Get reference to BalatroMainMenu and its shader background
-            var mainMenu = mainWindow.FindControl<Views.BalatroMainMenu>("MainMenu");
-            if (mainMenu == null)
+            var mainMenu = mainWindow.MainMenu;
+            if (mainMenu is null)
             {
                 DebugLogger.LogError(
                     "App",
@@ -304,13 +312,15 @@ public partial class App : Application
                 await PreloadSpritesWithoutTransition();
             }
 
-            // Initialize background music with SoundFlow (8-track)
+            // Initialize background music with SoundFlow (8-track) - Desktop only
             try
             {
-                var audioManager =
-                    _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
-                DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
-                DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
+                var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
+                if (audioManager != null)
+                {
+                    DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
+                    DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
+                }
             }
             catch (Exception ex)
             {
@@ -336,7 +346,7 @@ public partial class App : Application
             // Fall back to showing main window without transition
             if (desktop.MainWindow == null)
             {
-                desktop.MainWindow = new Views.MainWindow();
+                desktop.MainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
                 desktop.MainWindow.Show();
             }
             await PreloadSpritesWithoutTransition();
@@ -426,8 +436,11 @@ public partial class App : Application
             }
 
             // Stop audio
-            var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
-            audioManager?.Dispose();
+            var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
+            if (audioManager is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
 
             // Dispose filter cache
             var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
@@ -467,10 +480,12 @@ public partial class App : Application
         services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
             BalatroSeedOracle.Services.SpriteService.Instance
         );
+
+        // Register platform-specific services (set by Desktop/Browser Program.cs)
+        PlatformServices.RegisterServices?.Invoke(services);
     }
 
-#if BROWSER
-    private void SeedBrowserSampleFilters()
+    private async Task SeedBrowserSampleFiltersAsync()
     {
         try
         {
@@ -479,20 +494,19 @@ public partial class App : Application
                 return;
 
             const string sampleKey = "Filters/TelescopeObservatory.json";
-            var exists = store.ExistsAsync(sampleKey).GetAwaiter().GetResult();
+            var exists = await store.ExistsAsync(sampleKey).ConfigureAwait(false);
             if (exists)
                 return;
 
             var sampleJson = "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
 
-            store.WriteTextAsync(sampleKey, sampleJson).GetAwaiter().GetResult();
+            await store.WriteTextAsync(sampleKey, sampleJson).ConfigureAwait(false);
         }
         catch
         {
             // Best-effort seeding; ignore failures.
         }
     }
-#endif
 
     private void InitializeFilterCache()
     {
@@ -519,17 +533,17 @@ public partial class App : Application
         }
     }
 
-    private void EnsureDirectoriesExist()
+    private void EnsureDirectoriesExist(Services.IPlatformServices platformServices)
     {
         try
         {
             // Directories are now managed by AppPaths - they are auto-created on access
-            // No need to explicitly create them here since AppPaths.EnsureDir() handles it
+            // Use platform services to ensure directories exist
             DebugLogger.Log("App", "Using AppPaths for directory management");
 
             // Touch directories to ensure they exist
-            _ = AppPaths.FiltersDir;
-            _ = AppPaths.SearchResultsDir;
+            platformServices.EnsureDirectoryExists(AppPaths.FiltersDir);
+            platformServices.EnsureDirectoryExists(AppPaths.SearchResultsDir);
         }
         catch (Exception ex)
         {
@@ -537,83 +551,6 @@ public partial class App : Application
         }
     }
 
-    /// <summary>
-    /// Copies sample content from the installed location to AppData on first run.
-    /// This provides new users with example filters and default presets.
-    /// </summary>
-    private static void CopySamplesToAppData()
-    {
-        // Only run once - check for marker file
-        var markerFile = System.IO.Path.Combine(AppPaths.DataRootDir, ".samples_imported");
-        if (System.IO.File.Exists(markerFile))
-        {
-            return;
-        }
-
-        try
-        {
-            // Copy sample filter
-            var sampleFilter = System.IO.Path.Combine(
-                AppContext.BaseDirectory,
-                "Samples",
-                "TelescopeObservatory.json"
-            );
-            var targetFilter = System.IO.Path.Combine(
-                AppPaths.FiltersDir,
-                "TelescopeObservatory.json"
-            );
-            if (System.IO.File.Exists(sampleFilter) && !System.IO.File.Exists(targetFilter))
-            {
-                System.IO.File.Copy(sampleFilter, targetFilter);
-            }
-
-            // Copy visualizer presets
-            var samplePresetsDir = System.IO.Path.Combine(
-                AppContext.BaseDirectory,
-                "Samples",
-                "VisualizerPresets"
-            );
-            if (System.IO.Directory.Exists(samplePresetsDir))
-            {
-                foreach (var file in System.IO.Directory.GetFiles(samplePresetsDir, "*.json"))
-                {
-                    var fileName = System.IO.Path.GetFileName(file);
-                    var target = System.IO.Path.Combine(AppPaths.VisualizerPresetsDir, fileName);
-                    if (!System.IO.File.Exists(target))
-                    {
-                        System.IO.File.Copy(file, target);
-                    }
-                }
-            }
-
-            // Copy mixer presets
-            var sampleMixerDir = System.IO.Path.Combine(
-                AppContext.BaseDirectory,
-                "Samples",
-                "MixerPresets"
-            );
-            if (System.IO.Directory.Exists(sampleMixerDir))
-            {
-                foreach (var file in System.IO.Directory.GetFiles(sampleMixerDir, "*.json"))
-                {
-                    var fileName = System.IO.Path.GetFileName(file);
-                    var target = System.IO.Path.Combine(AppPaths.MixerPresetsDir, fileName);
-                    if (!System.IO.File.Exists(target))
-                    {
-                        System.IO.File.Copy(file, target);
-                    }
-                }
-            }
-
-            // Mark as done
-            System.IO.File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
-            DebugLogger.Log("App", "Sample content copied to AppData successfully");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("App", $"Failed to copy samples: {ex.Message}");
-        }
-    }
 
     /// <summary>
     /// Get a service from the DI container (temporary until full DI migration)

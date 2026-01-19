@@ -1,11 +1,11 @@
-#if BROWSER
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Browser.Services;
 
 /// <summary>
 /// Browser implementation of IDuckDBAppender using DuckDB-WASM via JavaScript interop
@@ -72,22 +72,25 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
         return this;
     }
 
-    public void Flush()
+    public async Task FlushAsync()
     {
-        // Fire and forget - we'll handle async in Close
-        _ = FlushAppenderAsync(_appenderId);
+        await FlushAppenderAsync(_appenderId);
     }
 
-    public void Close()
+    public async Task CloseAsync()
     {
         if (_disposed) return;
-        _ = CloseAppenderAsync(_appenderId);
+        await CloseAppenderAsync(_appenderId);
         _disposed = true;
     }
 
     public void Dispose()
     {
-        Close();
+        if (!_disposed)
+        {
+            CloseAppenderAsync(_appenderId).GetAwaiter().GetResult();
+            _disposed = true;
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -106,4 +109,3 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
     [JSImport("DuckDB.closeAppender", "globalThis")]
     private static partial Task CloseAppenderAsync(int appenderId);
 }
-#endif

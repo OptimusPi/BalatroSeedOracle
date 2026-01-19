@@ -78,7 +78,7 @@
             
             <!-- Editor Content -->
             <AvaloniaEdit:TextEditor Grid.Row="1"
-                                    Name="JsonEditor"
+                                    x:Name="JsonEditor"
                                     SyntaxHighlighting="Json"
                                     ShowLineNumbers="True"
                                     FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
 using System.Diagnostics;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Browser.Services;
 
 namespace BalatroSeedOracle.Services.Storage
 {

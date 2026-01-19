@@ -1,11 +1,24 @@
 using System;
 using System.IO;
+using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Helpers
 {
     public static class AppPaths
     {
-        private static readonly string DataRoot = ResolveDataRoot();
+        private static IPlatformServices? _platformServices;
+        private static string? _dataRoot;
+
+        /// <summary>
+        /// Initialize AppPaths with platform services. Called during app startup.
+        /// </summary>
+        public static void Initialize(IPlatformServices platformServices)
+        {
+            _platformServices = platformServices;
+            _dataRoot = ResolveDataRoot();
+        }
+
+        private static string DataRoot => _dataRoot ?? ResolveDataRoot();
 
         public static string DataRootDir => DataRoot;
         public static string VisualizerPresetsDir =>
@@ -25,34 +38,53 @@ namespace BalatroSeedOracle.Helpers
         /// </summary>
         private static string GetTempDirectory()
         {
-#if BROWSER
+            if (_platformServices != null)
+            {
+                return _platformServices.GetTempDirectory();
+            }
+            
+            // Fallback for early initialization before platform services are available
+            // This should only happen during static initialization
             return Path.Combine(DataRoot, "Temp");
-#else
-            return Path.GetTempPath();
-#endif
         }
 
         public static string EnsureDir(string path)
         {
-#if !BROWSER
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-#endif
+            if (_platformServices != null)
+            {
+                _platformServices.EnsureDirectoryExists(path);
+            }
+            else
+            {
+                // Fallback for early initialization
+                // Only create directory if platform supports file system
+                // This is a best-effort fallback
+            }
             return path;
         }
 
         private static string ResolveDataRoot()
         {
-#if BROWSER
-            // Browser: Use virtual in-memory path (no actual file I/O)
-            return "/data";
-#else
+            if (_platformServices != null && !_platformServices.SupportsFileSystem)
+            {
+                // Browser: Use virtual in-memory path (no actual file I/O)
+                return "/data";
+            }
+
+            // Desktop: Resolve actual file system path
             var overrideDir = Environment.GetEnvironmentVariable("BSO_DATA_DIR");
             if (!string.IsNullOrWhiteSpace(overrideDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(overrideDir);
+                    if (_platformServices != null)
+                    {
+                        _platformServices.EnsureDirectoryExists(overrideDir);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(overrideDir);
+                    }
                     return overrideDir;
                 }
                 catch
@@ -64,7 +96,14 @@ namespace BalatroSeedOracle.Helpers
             var localData = Path.Combine(exeDir, "Data");
             try
             {
-                Directory.CreateDirectory(localData);
+                if (_platformServices != null)
+                {
+                    _platformServices.EnsureDirectoryExists(localData);
+                }
+                else
+                {
+                    Directory.CreateDirectory(localData);
+                }
                 return localData;
             }
             catch
@@ -73,9 +112,15 @@ namespace BalatroSeedOracle.Helpers
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var root = Path.Combine(appData, "BalatroSeedOracle");
-            Directory.CreateDirectory(root);
+            if (_platformServices != null)
+            {
+                _platformServices.EnsureDirectoryExists(root);
+            }
+            else
+            {
+                Directory.CreateDirectory(root);
+            }
             return root;
-#endif
         }
     }
 }

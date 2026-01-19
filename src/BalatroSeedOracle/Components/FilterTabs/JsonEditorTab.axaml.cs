@@ -35,7 +35,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             InitializeComponent();
 
             // Setup JSON editor after initialization
-            _jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            _jsonEditor = JsonEditor;
             if (_jsonEditor != null)
             {
                 _jsonEditor.TextArea.TextEntering += OnTextEntering;
@@ -71,7 +71,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
             AvaloniaXamlLoader.Load(this);
 
             // Get reference to the TextEditor
-            _jsonEditor = this.FindControl<TextEditor>("JsonEditor");
+            _jsonEditor = JsonEditor;
 
             // Set up two-way binding for TextEditor
             if (_jsonEditor != null)

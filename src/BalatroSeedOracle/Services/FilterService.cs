@@ -21,71 +21,82 @@ namespace BalatroSeedOracle.Services
     {
         private readonly IConfigurationService _configurationService;
         private readonly IAppDataStore _store;
+        private readonly IPlatformServices? _platformServices;
 
-        public FilterService(IConfigurationService configurationService, IAppDataStore store)
+        public FilterService(IConfigurationService configurationService, IAppDataStore store, IPlatformServices? platformServices = null)
         {
             _configurationService = configurationService;
             _store = store;
+            _platformServices = platformServices;
         }
 
-        public Task<List<string>> GetAvailableFiltersAsync()
+        public async Task<List<string>> GetAvailableFiltersAsync()
         {
             var filters = new List<string>();
 
             try
             {
-#if BROWSER
-                var keys = _store.ListKeysAsync("Filters/").GetAwaiter().GetResult();
-                foreach (var key in keys)
+                var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                if (isBrowser)
                 {
-                    if (!key.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var fileName = Path.GetFileName(key);
-                    if (fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
-                        || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    filters.Add(key);
-                }
-#else
-                var filtersDir = _configurationService.GetFiltersDirectory();
-                if (Directory.Exists(filtersDir))
-                {
-                    var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
-                    foreach (var file in jsonFiles)
+                    var keys = await _store.ListKeysAsync("Filters/").ConfigureAwait(false);
+                    foreach (var key in keys)
                     {
-                        if (
-                            !Path.GetFileName(file).StartsWith("_UNSAVED_")
-                            && !Path.GetFileName(file).StartsWith("__TEMP_")
-                        )
+                        if (!key.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        var fileName = Path.GetFileName(key);
+                        if (fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                            || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        filters.Add(key);
+                    }
+                }
+                else
+                {
+                    var filtersDir = _configurationService.GetFiltersDirectory();
+                    if (Directory.Exists(filtersDir))
+                    {
+                        var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
+                        foreach (var file in jsonFiles)
                         {
-                            filters.Add(file);
+                            if (
+                                !Path.GetFileName(file).StartsWith("_UNSAVED_")
+                                && !Path.GetFileName(file).StartsWith("__TEMP_")
+                            )
+                            {
+                                filters.Add(file);
+                            }
                         }
                     }
                 }
-#endif
             }
             catch
             {
                 // Error getting filters - return empty list
             }
 
-            return Task.FromResult(filters);
+            return filters;
         }
 
         public async Task<bool> DeleteFilterAsync(string filePath)
         {
             try
             {
+                // Check if file exists (synchronous check is acceptable here)
                 if (_configurationService.FileExists(filePath))
                 {
-#if BROWSER
-                    await _store.DeleteAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
-#else
-                    // File.Delete is fast, no need for Task.Run
-                    File.Delete(filePath);
-#endif
+                    var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                    if (isBrowser)
+                    {
+                        await _store.DeleteAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // File.Delete is fast, no need for Task.Run
+                        File.Delete(filePath);
+                    }
 
                     // Remove from cache (use ServiceHelper to avoid circular dependency)
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
@@ -125,11 +136,15 @@ namespace BalatroSeedOracle.Services
             // NORMALIZE the filter name to create a safe filename/ID
             var safeFileName = NormalizeFilterName(baseName);
             var fileName = $"{safeFileName}.json";
-#if BROWSER
-            return $"{filtersDir}/{fileName}";
-#else
-            return Path.Combine(filtersDir, fileName);
-#endif
+            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            if (isBrowser)
+            {
+                return $"{filtersDir}/{fileName}";
+            }
+            else
+            {
+                return Path.Combine(filtersDir, fileName);
+            }
         }
 
         /// <summary>

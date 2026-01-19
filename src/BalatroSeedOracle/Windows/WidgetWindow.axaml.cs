@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Markup.Xaml;
@@ -32,7 +33,12 @@ namespace BalatroSeedOracle.Windows
         public WidgetWindow()
         {
             // Set up window properties
-            // Owner = Application.Current?.MainWindow; // TODO: Fix this later
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+                && desktop.MainWindow is not null)
+            {
+                Owner = desktop.MainWindow;
+            }
+
             SystemDecorations = SystemDecorations.None;
             // TransparencyLevelHint = WindowTransparencyLevel.Transparent;
             Background = Brushes.Transparent;
@@ -122,8 +128,11 @@ namespace BalatroSeedOracle.Windows
         {
             if (_isSnapped) return; // Don't snap if already snapped
             
-            // Use default screen bounds for now
-            var screenBounds = new Rect(0, 0, 1920, 1080);
+            // Use actual screen bounds; fallback to window bounds if unavailable
+            var primary = Screens?.Primary;
+            var screenBounds = primary?.WorkingArea is { } pixelRect 
+                ? new Rect(pixelRect.X, pixelRect.Y, pixelRect.Width, pixelRect.Height)
+                : new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
             var windowBounds = new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
             
             // Check each edge

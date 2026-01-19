@@ -287,16 +287,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public IImage? TenOfSpadesImage =>
             Services.SpriteService.Instance.GetPlayingCardImage("Spades", "10");
 
-        // Legacy properties (kept for compatibility)
-        [ObservableProperty]
-        private string _currentEdition = "None";
-
-        [ObservableProperty]
-        private string _currentEnhancement = "None";
-
-        [ObservableProperty]
-        private string _currentSeal = "None";
-
         // Preferred Deck/Stake selection for previews
         [ObservableProperty]
         private int _selectedDeckIndex = 0;
@@ -380,6 +370,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public ObservableCollection<FilterItem> SelectedMust { get; }
         public ObservableCollection<FilterItem> SelectedShould { get; }
         public ObservableCollection<FilterItem> SelectedMustNot { get; }
+
+        // Paged views for UI
+        public ObservableCollection<FilterItem> PagedMust { get; } = new();
+        public ObservableCollection<FilterItem> PagedShould { get; } = new();
+        public ObservableCollection<FilterItem> PagedMustNot { get; } = new();
+
+        private const int PageSize = 24;
+        private int _mustPageIndex;
+        private int _shouldPageIndex;
+        private int _bannedPageIndex;
 
         // Operator trays for Configure Score tab
         public ObservableCollection<FilterItem> OrTrayItems { get; }
@@ -574,6 +574,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private readonly Dictionary<string, List<ItemGroup>> _groupedItemsCache = new();
 
+    [RelayCommand]
+    private void SelectCategory(string category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return;
+
+        SetCategory(category);
+    }
+
         public void SetCategory(string category)
         {
             // Auto-clear search when switching tabs for clean navigation
@@ -614,6 +623,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 ApplyFilter();
             }
+
+            RefreshPagedCollections();
         }
 
         private void RebuildGroupedItems()
@@ -2429,7 +2440,116 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Trigger debounced auto-save
             TriggerAutoSave();
+
+            // Refresh paged views when collections change
+            RefreshPagedCollections();
         }
+
+        private static int GetMaxPageIndex(int count)
+        {
+            if (count <= 0)
+                return 0;
+            return (count - 1) / PageSize;
+        }
+
+        private void RefreshPagedCollections()
+        {
+            RefreshPagedCollection(SelectedMust, PagedMust, ref _mustPageIndex);
+            RefreshPagedCollection(SelectedShould, PagedShould, ref _shouldPageIndex);
+            RefreshPagedCollection(SelectedMustNot, PagedMustNot, ref _bannedPageIndex);
+        }
+
+        private void RefreshPagedCollection(
+            IList<FilterItem> source,
+            ObservableCollection<FilterItem> target,
+            ref int pageIndex
+        )
+        {
+            int maxPage = GetMaxPageIndex(source.Count);
+            if (pageIndex > maxPage)
+            {
+                pageIndex = maxPage;
+            }
+            if (pageIndex < 0)
+            {
+                pageIndex = 0;
+            }
+
+            target.Clear();
+            if (source.Count == 0)
+                return;
+
+            int start = pageIndex * PageSize;
+            int end = Math.Min(start + PageSize, source.Count);
+            for (int i = start; i < end; i++)
+            {
+                target.Add(source[i]);
+            }
+        }
+
+        #region Pagination Commands
+
+        [RelayCommand]
+        private void MustPrev()
+        {
+            if (_mustPageIndex > 0)
+            {
+                _mustPageIndex--;
+                RefreshPagedCollections();
+            }
+        }
+
+        [RelayCommand]
+        private void MustNext()
+        {
+            if (_mustPageIndex < GetMaxPageIndex(SelectedMust.Count))
+            {
+                _mustPageIndex++;
+                RefreshPagedCollections();
+            }
+        }
+
+        [RelayCommand]
+        private void ShouldPrev()
+        {
+            if (_shouldPageIndex > 0)
+            {
+                _shouldPageIndex--;
+                RefreshPagedCollections();
+            }
+        }
+
+        [RelayCommand]
+        private void ShouldNext()
+        {
+            if (_shouldPageIndex < GetMaxPageIndex(SelectedShould.Count))
+            {
+                _shouldPageIndex++;
+                RefreshPagedCollections();
+            }
+        }
+
+        [RelayCommand]
+        private void BannedPrev()
+        {
+            if (_bannedPageIndex > 0)
+            {
+                _bannedPageIndex--;
+                RefreshPagedCollections();
+            }
+        }
+
+        [RelayCommand]
+        private void BannedNext()
+        {
+            if (_bannedPageIndex < GetMaxPageIndex(SelectedMustNot.Count))
+            {
+                _bannedPageIndex++;
+                RefreshPagedCollections();
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Triggers a debounced auto-save operation.

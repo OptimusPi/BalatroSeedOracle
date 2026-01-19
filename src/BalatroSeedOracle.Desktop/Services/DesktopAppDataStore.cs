@@ -1,11 +1,14 @@
-#if !BROWSER
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services.Storage;
 
-namespace BalatroSeedOracle.Services.Storage;
+namespace BalatroSeedOracle.Desktop.Services;
 
+/// <summary>
+/// Desktop implementation of IAppDataStore using file system.
+/// </summary>
 public sealed class DesktopAppDataStore : IAppDataStore
 {
     private static string NormalizeKey(string key)
@@ -71,5 +74,9 @@ public sealed class DesktopAppDataStore : IAppDataStore
         }
         return Task.FromResult<IReadOnlyList<string>>(keys);
     }
+
+    public Task<bool> FileExistsAsync(string path)
+    {
+        return Task.FromResult(File.Exists(path));
+    }
 }
-#endif

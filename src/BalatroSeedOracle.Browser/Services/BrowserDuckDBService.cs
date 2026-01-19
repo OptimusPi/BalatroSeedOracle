@@ -1,9 +1,9 @@
-#if BROWSER
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
 
-namespace BalatroSeedOracle.Services.DuckDB;
+namespace BalatroSeedOracle.Browser.Services;
 
 /// <summary>
 /// Browser implementation of IDuckDBService using DuckDB-WASM via JavaScript interop
@@ -54,4 +54,3 @@ public partial class BrowserDuckDBService : IDuckDBService
     [JSImport("DuckDB.openConnection", "globalThis")]
     private static partial Task<int> OpenConnectionInternalAsync();
 }
-#endif

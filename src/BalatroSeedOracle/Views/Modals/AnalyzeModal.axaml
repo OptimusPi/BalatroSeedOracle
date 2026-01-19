@@ -173,7 +173,7 @@
                           Margin="0,8,0,0"/>
 
                 <!-- Deck and Stake selector (no wrapper needed - component styles itself) -->
-                <components:DeckAndStakeSelector Name="DeckAndStakeSelector"
+                <components:DeckAndStakeSelector x:Name="DeckAndStakeSelector"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"/>
             </StackPanel>

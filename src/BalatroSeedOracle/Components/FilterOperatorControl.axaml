@@ -78,7 +78,7 @@
     </UserControl.Styles>
 
     <Border
-        Name="OperatorContainer"
+        x:Name="OperatorContainer"
         Classes="operator-card-container"
         Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
         ClipToBounds="False">
@@ -93,7 +93,7 @@
         <Grid RowDefinitions="Auto,*">
             <!-- Header with OR/AND/Banned Items Label -->
             <Border
-                Name="OperatorHeader"
+                x:Name="OperatorHeader"
                 Grid.Row="0"
                 Classes="operator-header"
                 Classes.banned="{Binding OperatorType, Converter={x:Static converters:IsBannedItemsConverter.Instance}}"
@@ -106,7 +106,7 @@
             <!-- Fanned Cards Container -->
             <Border
                 Grid.Row="1"
-                Name="ChildrenDropZone"
+                x:Name="ChildrenDropZone"
                 Classes="operator-drop-zone"
                 Padding="12,8"
                 Background="Transparent"
@@ -119,7 +119,7 @@
                 <Grid>
                     <!-- Less than 5 cards: simple side-by-side layout -->
                     <ItemsControl ItemsSource="{Binding Children}"
-                                  Name="ChildrenItemsControl"
+                                  x:Name="ChildrenItemsControl"
                                   IsVisible="{Binding Children.Count, Converter={x:Static converters:LessThanFiveConverter.Instance}}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

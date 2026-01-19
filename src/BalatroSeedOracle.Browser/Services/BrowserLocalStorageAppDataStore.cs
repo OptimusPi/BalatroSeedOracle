@@ -1,13 +1,15 @@
-#if BROWSER
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services.Storage;
 
-namespace BalatroSeedOracle.Services.Storage;
+namespace BalatroSeedOracle.Browser.Services;
 
+/// <summary>
+/// Browser implementation of IAppDataStore using localStorage via JS interop.
+/// </summary>
 public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 {
     private const string Prefix = "bso:";
@@ -152,5 +154,16 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 
     [JSImport("window.BSO.getLocalStorageKey")]
     private static partial string? GetLocalStorageKey(int index);
+
+    public Task<bool> FileExistsAsync(string path)
+    {
+        // Convert file path to localStorage key format
+        var key = path.Replace('\\', '/');
+        if (key.StartsWith("/data/"))
+            key = key.Substring(6);
+        else if (key.StartsWith("data/"))
+            key = key.Substring(5);
+        
+        return ExistsAsync(key);
+    }
 }
-#endif

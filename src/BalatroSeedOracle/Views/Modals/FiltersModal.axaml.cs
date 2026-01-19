@@ -29,7 +29,9 @@ namespace BalatroSeedOracle.Views.Modals
                     );
                 }
 
-                var viewModel = new FiltersModalViewModel(configService, filterService);
+                var platformServices = App.GetService<IPlatformServices>();
+                var notificationService = App.GetService<NotificationService>();
+                var viewModel = new FiltersModalViewModel(configService, filterService, platformServices!, notificationService);
                 DataContext = viewModel;
 
                 // Initialize tabs synchronously so they're ready when UI renders
@@ -73,7 +75,6 @@ namespace BalatroSeedOracle.Views.Modals
         public void EnableAllTabs()
         {
             // In proper MVVM, tabs are always enabled via binding
-            // This is for backwards compatibility with old calls
         }
     }
 }

@@ -183,6 +183,7 @@ namespace BalatroSeedOracle.Services
         {
             var clause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
+                Type = "", // Will be set below based on ItemType
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
             };
@@ -262,6 +263,7 @@ namespace BalatroSeedOracle.Services
         {
             var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
             {
+                Type = "joker", // Default, will be overridden in switch below
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
             };

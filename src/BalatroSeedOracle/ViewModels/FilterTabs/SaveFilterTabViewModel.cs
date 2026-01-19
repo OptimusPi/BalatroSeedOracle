@@ -20,8 +20,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
-        private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
+        private readonly IPlatformServices _platformServices;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -202,17 +202,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
         }
 
+        private readonly NotificationService? _notificationService;
+
         public SaveFilterTabViewModel(
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
             IFilterService filterService,
-            IFilterConfigurationService filterConfigurationService
+            IPlatformServices platformServices,
+            NotificationService? notificationService = null
         )
         {
             _parentViewModel = parentViewModel;
             _configurationService = configurationService;
             _filterService = filterService;
-            _filterConfigurationService = filterConfigurationService;
+            _platformServices = platformServices;
+            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -269,6 +273,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     LastModified = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
                     UpdateStatus($"✓ Filter saved: {CurrentFileName}", false);
                     DebugLogger.Log("SaveFilterTab", $"Filter saved to: {filePath}");
+
+                    // Show notification
+                    _notificationService?.ShowSuccess(
+                        "Filter Saved",
+                        $"Filter '{FilterName}' saved successfully",
+                        TimeSpan.FromSeconds(3)
+                    );
 
                     // Sync back to parent ViewModel so it knows the filter is saved
                     _parentViewModel.LoadedConfig = config;
@@ -348,11 +359,16 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
 
-#if BROWSER
                 var topLevel = TopLevelHelper.GetTopLevel();
                 if (topLevel?.StorageProvider == null)
                 {
                     UpdateStatus("Export not available (no StorageProvider)", true);
+                    return;
+                }
+
+                if (!topLevel.StorageProvider.CanSave)
+                {
+                    UpdateStatus("File saving not supported in this environment", true);
                     return;
                 }
 
@@ -380,16 +396,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     await stream.WriteAsync(bytes, 0, bytes.Length);
                 }
 
-                UpdateStatus($"✅ Exported: {exportFileName}", false);
-#else
-                // Desktop: Export to desktop folder
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var exportPath = Path.Combine(desktopPath, exportFileName);
-                await File.WriteAllTextAsync(exportPath, json);
-
-                UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
-                DebugLogger.Log("SaveFilterTab", $"Filter exported to: {exportPath}");
-#endif
+                UpdateStatus($"✅ Exported: {file.Name}", false);
+                DebugLogger.Log("SaveFilterTab", $"Filter exported to: {file.Name}");
             }
             catch (Exception ex)
             {
@@ -474,6 +482,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // We need to create a simple clause from the itemConfig
                 var clause = new MotelyJsonConfig.MotelyJsonFilterClause
                 {
+                    Type = "", // Will be set below based on ItemType
                     Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Min = itemConfig.Min,
                 };
@@ -549,6 +558,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
             {
+                Type = "", // Will be set below based on item.Type
                 Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
             };
 
