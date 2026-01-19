@@ -25,6 +25,8 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
@@ -40,7 +42,7 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore Dependencies
-      run: dotnet restore
+      run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
 
     - name: Build Browser Version
       run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true

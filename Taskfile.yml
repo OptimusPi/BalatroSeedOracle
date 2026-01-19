@@ -4,6 +4,7 @@ vars:
   BSO_PROJECT: ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
   DESKTOP_PROJECT: ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
   BROWSER_PROJECT: ./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+  TEST_PROJECT: ./tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
   SOLUTION: ./BalatroSeedOracle.sln
 
 tasks:
@@ -199,10 +200,8 @@ tasks:
   test:
     desc: Run tests (Release configuration)
     silent: true
-    deps:
-      - workload:check
     cmds:
-      - dotnet test {{.SOLUTION}} -c Release
+      - dotnet test {{.TEST_PROJECT}} -c Release
 
   default:
     desc: Show available tasks

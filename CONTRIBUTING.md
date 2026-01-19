@@ -111,6 +111,8 @@ Formatting is automatically applied via pre-commit hooks when you commit.
 
 ### Testing
 
+The project includes unit tests in `tests/BalatroSeedOracle.Tests/`. Tests are required to pass before PRs can be merged.
+
 Run tests with:
 
 ```bash
@@ -120,8 +122,15 @@ task test
 Or manually:
 
 ```bash
-dotnet test -c Release
+dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release
 ```
+
+When adding new features or fixing bugs:
+
+- Add tests for new functionality in core services
+- Focus on testing pure logic (services, helpers, data transformations)
+- Use xUnit for test framework, Moq for mocking dependencies
+- Test files should mirror the structure of the code they test
 
 ### Building
 
