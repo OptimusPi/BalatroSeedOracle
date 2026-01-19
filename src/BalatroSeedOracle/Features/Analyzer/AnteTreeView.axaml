@@ -77,7 +77,7 @@
 
                                 <!-- Shop Items Count -->
                                 <TextBlock Grid.Row="4"
-                                           Text="{Binding ShopItems.Count, StringFormat='{}{0} shop items'}"
+                                           Text="{Binding ShopItems.Count, StringFormat='{0} shop items'}"
                                            FontSize="11"
                                            Foreground="{StaticResource MediumGrey}"
                                            Margin="0,4,0,0"/>

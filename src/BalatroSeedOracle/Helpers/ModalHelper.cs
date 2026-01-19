@@ -10,6 +10,8 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace BalatroSeedOracle.Helpers
 {
@@ -509,6 +511,63 @@ namespace BalatroSeedOracle.Helpers
             {
                 DebugLogger.LogError("ModalHelper", $"Failed to load filter and navigate: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Shows an error message box
+        /// </summary>
+        public static async Task ShowErrorAsync(string title, string message)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard(
+                title,
+                message,
+                ButtonEnum.Ok,
+                Icon.Error
+            );
+            await box.ShowAsync();
+        }
+
+        /// <summary>
+        /// Shows a confirmation message box and returns true if user confirmed
+        /// </summary>
+        public static async Task<bool> ShowConfirmationAsync(string title, string message)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard(
+                title,
+                message,
+                ButtonEnum.YesNo,
+                Icon.Warning
+            );
+            var result = await box.ShowAsync();
+            return result == ButtonResult.Yes;
+        }
+
+        /// <summary>
+        /// Shows an informational message box
+        /// </summary>
+        public static async Task ShowInfoAsync(string title, string message)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard(
+                title,
+                message,
+                ButtonEnum.Ok,
+                Icon.Info
+            );
+            await box.ShowAsync();
+        }
+
+        /// <summary>
+        /// Shows a success message box
+        /// </summary>
+        public static async Task ShowSuccessAsync(string title, string message)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard(
+                title,
+                message,
+                ButtonEnum.Ok,
+                Icon.Success
+            );
+            await box.ShowAsync();
         }
     }
 }

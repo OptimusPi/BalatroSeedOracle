@@ -25,7 +25,8 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var effectiveVolume = _volume * volumeMultiplier;
-                SoundFlowAudioManager.Instance.PlaySfx(soundName, effectiveVolume);
+                var audioManager = ServiceHelper.GetService<IAudioManager>();
+                audioManager?.PlaySfx(soundName, effectiveVolume);
             }
             catch (Exception ex)
             {

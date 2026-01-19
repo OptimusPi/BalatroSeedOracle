@@ -11,15 +11,15 @@ using CommunityToolkit.Mvvm.Input;
 namespace BalatroSeedOracle.ViewModels
 {
     /// <summary>
-    /// ViewModel for GenieWidget - AI-powered filter generation
-    /// Uses local Host API (/genie endpoint) for keyword-based JAML generation
-    /// Falls back to Cloudflare Workers AI if configured
+    /// ViewModel for GenieWidget - RAG-powered AI filter generation
+    /// Uses Cloudflare Workers AI with Vectorize RAG for intelligent JAML generation
+    /// Falls back to local Host API (/genie endpoint) for keyword-based generation
     /// </summary>
     public partial class GenieWidgetViewModel : BaseWidgetViewModel
     {
         private static readonly HttpClient _httpClient = new();
         private const string LOCAL_GENIE_API = "http://localhost:3141/genie";
-        private const string CLOUD_GENIE_API = "https://balatrogenie.app/generate";
+        private const string CLOUD_GENIE_API = "https://jamlgenie.optimuspi.workers.dev";
         private readonly SearchManager _searchManager;
 
         [ObservableProperty]
@@ -81,7 +81,7 @@ namespace BalatroSeedOracle.ViewModels
 
             IsGenerating = true;
             HasGeneratedConfig = false;
-            SetStatus("Asking the genie...", "#6B46C1");
+            SetStatus("Asking RAG-powered genie...", "#6B46C1");
 
             try
             {
@@ -95,7 +95,7 @@ namespace BalatroSeedOracle.ViewModels
                 try
                 {
                     _httpClient.Timeout = TimeSpan.FromSeconds(30);
-                    SetStatus("Consulting cloud AI...", "#6B46C1");
+                    SetStatus("Consulting RAG AI...", "#6B46C1");
                     var cloudResponse = await _httpClient.PostAsync(CLOUD_GENIE_API, content);
 
                     if (cloudResponse.IsSuccessStatusCode)
@@ -105,10 +105,14 @@ namespace BalatroSeedOracle.ViewModels
                             cloudResponseText,
                             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                         );
-                        jamlResult = cloudResult?.Jaml ?? cloudResult?.Filter;
+                        jamlResult = cloudResult?.jaml;
                         if (!string.IsNullOrWhiteSpace(jamlResult))
                         {
-                            SetStatus("Cloud AI responded!", "#6B46C1");
+                            SetStatus("RAG AI responded with context!", "#6B46C1");
+                        }
+                        else if (cloudResult?.success == false)
+                        {
+                            SetStatus($"AI error: {cloudResult?.error}", "#EF4444");
                         }
                     }
                 }
@@ -297,9 +301,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private class CloudGenieResponse
         {
-            public string? Jaml { get; set; }
-            public string? Filter { get; set; }
-            public string? Error { get; set; }
+            public bool success { get; set; }
+            public string? jaml { get; set; }
+            public object? config { get; set; }
+            public string? error { get; set; }
         }
     }
 }

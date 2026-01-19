@@ -95,14 +95,18 @@
                                    ClipToBounds="False"/>
 
             <!-- 🎨 AUDIO VISUALIZER WIDGET - Show/hide on paint palette button click -->
+            <!-- DISABLED FOR WASM BUILD
             <components:AudioVisualizerSettingsWidget x:Name="AudioVisualizerWidget"
                                                     IsVisible="{Binding IsVisualizerWidgetVisible}"
                                                     ClipToBounds="False"/>
+            -->
 
             <!-- 🎵 MUSIC MIXER WIDGET - 8-track volume and mute controls -->
+            <!-- DISABLED FOR WASM BUILD
             <components:MusicMixerWidget x:Name="MusicMixerWidget"
                                         IsVisible="{Binding IsMusicMixerWidgetVisible}"
                                         ClipToBounds="False"/>
+            -->
 
             <!-- ✨ EVENT FX WIDGET - Configure event animations -->
             <components:EventFXWidget x:Name="EventFXWidget"

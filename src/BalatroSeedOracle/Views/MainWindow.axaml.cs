@@ -55,6 +55,13 @@ public partial class MainWindow : Window
             };
         }
 
+        // Initialize notification service
+        var notificationService = ServiceHelper.GetService<Services.NotificationService>();
+        if (notificationService != null)
+        {
+            notificationService.Initialize(this);
+        }
+
         // Handle window closing
         Closing += OnWindowClosing;
 

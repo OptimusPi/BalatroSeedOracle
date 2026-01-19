@@ -532,7 +532,7 @@ using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Services
 {
-    public sealed partial class SoundFlowAudioManager : IDisposable
+    public sealed partial class SoundFlowAudioManager : IAudioManager, IDisposable
     {
         private const int UPDATE_RATE_MS = 16; // ~60 FPS
 

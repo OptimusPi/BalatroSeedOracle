@@ -1,0 +1,35 @@
+<Project>
+  <!-- Centralized Package Versioning -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!-- Shared Assembly Metadata -->
+  <PropertyGroup>
+    <Product>Balatro Seed Oracle</Product>
+    <Company>OptimusPi</Company>
+    <Copyright>Copyright 2025</Copyright>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Avalonia License Key Configuration -->
+  <PropertyGroup>
+    <!-- License key from environment variable or avalonia.license.local file -->
+    <!-- Set AVALONIA_LICENSE_KEY environment variable or configure in avalonia.license.local -->
+    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' != ''">$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey>
+  </PropertyGroup>
+
+  <!-- Code Quality Settings -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AnalysisMode>Default</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+</Project>

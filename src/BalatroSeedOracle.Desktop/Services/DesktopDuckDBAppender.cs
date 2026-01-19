@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Services.DuckDB;
 using DuckDB.NET.Data;
+using BalatroSeedOracle.Services.DuckDB;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -103,6 +104,18 @@ public class DesktopDuckDBAppender : IDuckDBAppender
         _appender.Close();
     }
 
+    public async Task FlushAsync()
+    {
+        // DuckDBAppender doesn't have an async Flush method - data is committed on Close
+        await Task.CompletedTask;
+    }
+
+    public async Task CloseAsync()
+    {
+        _appender.Close();
+        await Task.CompletedTask;
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -112,9 +125,9 @@ public class DesktopDuckDBAppender : IDuckDBAppender
         _disposed = true;
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        await CloseAsync();
         Dispose();
-        return ValueTask.CompletedTask;
     }
 }

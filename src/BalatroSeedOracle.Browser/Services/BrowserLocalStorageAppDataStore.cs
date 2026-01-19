@@ -163,4 +163,16 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 
     [JSImport("window.BSO.getLocalStorageKey")]
     private static partial string? GetLocalStorageKey(int index);
+
+    public Task<bool> FileExistsAsync(string path)
+    {
+        // Convert file path to localStorage key format
+        var key = path.Replace('\\', '/');
+        if (key.StartsWith("/data/"))
+            key = key.Substring(6);
+        else if (key.StartsWith("data/"))
+            key = key.Substring(5);
+        
+        return ExistsAsync(key);
+    }
 }

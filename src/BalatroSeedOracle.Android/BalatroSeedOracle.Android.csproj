@@ -3,14 +3,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
-    <Nullable>enable</Nullable>
     <ApplicationId>com.optimuspi.balatroseedoracle</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <!-- Android-specific settings -->
   <PropertyGroup>
@@ -26,6 +23,8 @@
     <PackageReference Include="Avalonia.Android" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
     <PackageReference Include="Xamarin.AndroidX.AppCompat" />
+    <!-- Android uses native DuckDB like Desktop -->
+    <PackageReference Include="DuckDB.NET.Data.Full" />
   </ItemGroup>
 
   <ItemGroup>

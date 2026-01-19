@@ -74,4 +74,9 @@ public sealed class DesktopAppDataStore : IAppDataStore
         }
         return Task.FromResult<IReadOnlyList<string>>(keys);
     }
+
+    public Task<bool> FileExistsAsync(string path)
+    {
+        return Task.FromResult(File.Exists(path));
+    }
 }
