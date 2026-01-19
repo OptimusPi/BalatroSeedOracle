@@ -28,7 +28,7 @@ jobs:
       run: dotnet tool restore
 
     - name: Check CSharpier Formatting
-      run: dotnet csharpier ./src --config-path .config/csharpierrc --check
+      run: dotnet csharpier format ./src --config-path .config/csharpierrc --check --no-msbuild-check
 
     - name: Setup dprint
       uses: dprint/check@v2.2
@@ -59,11 +59,17 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Restore Dependencies
-      run: |
-        dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj /p:TargetFramework=net10.0
-        dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
-        dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
+    - name: Install Android Workload
+      run: dotnet workload install android
+
+    - name: Restore Core Library
+      run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj /p:TargetFramework=net10.0
+
+    - name: Restore Desktop
+      run: dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+
+    - name: Restore Browser
+      run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
 
     - name: Build Core Library (with warnings as errors)
       run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore /p:TargetFramework=net10.0 -p:TreatWarningsAsErrors=true
@@ -89,6 +95,9 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
+
+    - name: Install Android Workload
+      run: dotnet workload install android
 
     - name: Restore Dependencies
       run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
