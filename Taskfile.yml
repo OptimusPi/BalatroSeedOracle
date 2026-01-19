@@ -16,8 +16,79 @@ tasks:
     cmds:
       - dotnet tool restore
 
+  workload:check:
+    desc: Check if required .NET workloads (android, ios) are installed
+    cmds:
+      - |
+        # Check for android workload
+        if command -v grep > /dev/null 2>&1; then
+          # Unix-like (macOS/Linux)
+          if ! dotnet workload list | grep -q "android"; then
+            echo "❌ Required workload 'android' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        elif command -v findstr > /dev/null 2>&1; then
+          # Windows (cmd)
+          if ! dotnet workload list | findstr /c:"android" > nul 2>&1; then
+            echo "❌ Required workload 'android' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        fi
+      - |
+        # Check for ios workload
+        if command -v grep > /dev/null 2>&1; then
+          # Unix-like (macOS/Linux)
+          if ! dotnet workload list | grep -q "ios"; then
+            echo "❌ Required workload 'ios' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        elif command -v findstr > /dev/null 2>&1; then
+          # Windows (cmd)
+          if ! dotnet workload list | findstr /c:"ios" > nul 2>&1; then
+            echo "❌ Required workload 'ios' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        fi
+      - echo "✅ All required workloads are installed"
+
+  workload:install:
+    desc: Install .NET workloads (android, ios) for mobile builds
+    cmds:
+      - dotnet workload install android ios
+
+  workload:restore:
+    desc: Restore .NET workloads (android, ios) for mobile builds
+    cmds:
+      - dotnet workload restore
+
   restore:
     desc: Restore NuGet packages for solution
+    deps:
+      - workload:check
     cmds:
       - dotnet restore {{.SOLUTION}}
 
@@ -39,6 +110,9 @@ tasks:
       - echo ""
       - echo "  Then install git hooks:"
       - echo "    lefthook install"
+      - echo ""
+      - echo "📱 For mobile builds (Android/iOS), install workloads:"
+      - echo "    task workload:restore"
       - echo ""
       - echo "🚀 Ready to run! Try 'task run:desktop' or 'task run:browser'"
 
@@ -78,7 +152,7 @@ tasks:
   format:csharp:
     desc: Format C# files (scoped to ./src)
     cmds:
-      - dotnet csharpier format ./src --config-path .config/csharpierrc
+      - dotnet csharpier ./src --config-path .config/csharpierrc
 
   format:other:
     desc: Format Markdown/YAML/JSON files
@@ -96,6 +170,8 @@ tasks:
 
   clean:
     desc: Clean build artifacts
+    deps:
+      - workload:check
     cmds:
       - dotnet clean {{.SOLUTION}}
       - cmd: pwsh ./clean.ps1
@@ -105,6 +181,8 @@ tasks:
 
   test:
     desc: Run tests (Release configuration)
+    deps:
+      - workload:check
     cmds:
       - dotnet test {{.SOLUTION}} -c Release
 
