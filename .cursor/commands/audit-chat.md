@@ -60,7 +60,7 @@ One of:
    - **Quick Wins**: Easy optimizations
 
 5. **Load Template**
-   - Read template from `.local/templates/chat-audit.md`
+   - Read template from `.cursor/templates/chat-audit.md`
    - Fill all sections with findings
 
 6. **Create Output File**

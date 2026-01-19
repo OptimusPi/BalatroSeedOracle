@@ -39,7 +39,7 @@ Analyze workspace cursor rules, commands, and skills to identify improvements.
 6. **Check Best Practices**
 
    Compare current configuration against research findings and templates:
-   - Templates: `.local/templates/cursor-*.md`
+   - Templates: `.cursor/templates/cursor-*.md`
    - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
    Default checklist if no research:

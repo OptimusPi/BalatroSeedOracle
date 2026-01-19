@@ -16,7 +16,7 @@ Summarize the current chat session and save to `.local/chats/`.
    - Examples: `vite-config-fix`, `auth-setup`, `react-island-impl`
 
 3. **Load Template**
-   - Read template from `.local/templates/chat-summary.md`
+   - Read template from `.cursor/templates/chat-summary.md`
    - Fill all sections based on chat analysis
 
 4. **Create Output File**

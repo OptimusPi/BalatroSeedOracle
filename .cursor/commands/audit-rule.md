@@ -93,13 +93,13 @@ Use when no research available:
 - No overlap with always-apply rules
 - No duplicate/conflicting content with `.cursor/skills/`
 - Uses file references for large code examples
-- Follows template structure from `.local/templates/cursor-rule.md`
+- Follows template structure from `.cursor/templates/cursor-rule.md`
 
 ## Template Reference
 
 When creating new rules or restructuring existing ones:
 
-- Template: `.local/templates/cursor-rule.md`
+- Template: `.cursor/templates/cursor-rule.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
@@ -116,7 +116,7 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other rules before applying changes
 - Backup original if making significant structural changes
-- For creating new rules, use the `create-rule` skill (global) or template at `.local/templates/cursor-rule.md`
+- For creating new rules, use the `create-rule` skill (global) or template at `.cursor/templates/cursor-rule.md`
 - Rule vs Skill distinction:
   - Rules: constraints, standards, auto-injected context (passive)
   - Skills: workflows, procedures, on-demand guidance (active)

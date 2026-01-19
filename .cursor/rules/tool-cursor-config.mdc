@@ -12,7 +12,7 @@ lastReviewed: 2026-01-19
 - **Prefer editing existing artifacts** over creating new ones
 - **Keep artifacts concise**: rules <500 lines, commands <300 lines
 - **Reference files** instead of copying large content blocks inline
-- **Use templates** from `.local/templates/cursor-*.md` when creating new artifacts
+- **Use templates** from `.cursor/templates/cursor-*.md` when creating new artifacts
 
 ## Rules
 
@@ -32,7 +32,7 @@ Guidelines:
 - Scope rules with `globs` whenever possible; avoid `alwaysApply: true` unless truly universal
 - Use specific, actionable instructions (not vague guidance)
 - Include examples where helpful
-- Template: `.local/templates/cursor-rule.md`
+- Template: `.cursor/templates/cursor-rule.md`
 
 ## Commands
 
@@ -43,7 +43,7 @@ Structure:
 - Numbered, sequential steps
 - Approval gates for external operations (git push, PR creation, API calls)
 - Error handling for failure cases
-- Template: `.local/templates/cursor-command.md`
+- Template: `.cursor/templates/cursor-command.md`
 
 ## Skills
 
@@ -53,7 +53,7 @@ Required sections:
 - "When to Use" section
 - Step-by-step instructions
 - Code examples matching project conventions
-- Template: `.local/templates/cursor-skill.md`
+- Template: `.cursor/templates/cursor-skill.md`
 
 ## Creating New Artifacts
 

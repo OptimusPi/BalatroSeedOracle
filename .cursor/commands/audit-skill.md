@@ -85,13 +85,13 @@ Use when no research available:
 - File paths reference actual project structure
 - Commands tested and working
 - No overlap with always-apply rules
-- Follows template structure from `.local/templates/cursor-skill.md`
+- Follows template structure from `.cursor/templates/cursor-skill.md`
 
 ## Template Reference
 
 When creating new skills or restructuring existing ones:
 
-- Template: `.local/templates/cursor-skill.md`
+- Template: `.cursor/templates/cursor-skill.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
@@ -108,4 +108,4 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other skills before applying changes
 - Verify all code examples compile/run before finalizing
-- For creating new skills, use the `create-skill` skill (global) or template at `.local/templates/cursor-skill.md`
+- For creating new skills, use the `create-skill` skill (global) or template at `.cursor/templates/cursor-skill.md`

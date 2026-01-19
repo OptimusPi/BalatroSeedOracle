@@ -21,7 +21,7 @@ Analyze a specific command file for relevance, quality, and alignment with best 
    - Flag commands for workflows not applicable to project
 
 3. **Check Related Artifacts**
-   - Verify templates in `.local/templates/` exist if referenced
+   - Verify templates in `.cursor/templates/` exist if referenced
    - Check rules in `.cursor/rules/` referenced by command
    - Check skills in `.cursor/skills/` referenced by command
    - Verify scripts/tools referenced are available
@@ -92,13 +92,13 @@ Use when no research available:
 - Referenced templates/files exist
 - Shell commands tested and working
 - No overlap with other commands
-- Follows template structure from `.local/templates/cursor-command.md`
+- Follows template structure from `.cursor/templates/cursor-command.md`
 
 ## Template Reference
 
 When creating new commands or restructuring existing ones:
 
-- Template: `.local/templates/cursor-command.md`
+- Template: `.cursor/templates/cursor-command.md`
 - Standards: `.cursor/rules/tool-cursor-config.mdc`
 
 ## Output
@@ -115,7 +115,7 @@ Display inline:
 - Run `/cursor-research` first if research is older than 3 months
 - Check for conflicts with other commands before applying changes
 - Verify all shell commands work before finalizing
-- For creating new commands, follow the template at `.local/templates/cursor-command.md`
+- For creating new commands, follow the template at `.cursor/templates/cursor-command.md`
 - Command vs Skill distinction:
   - Commands: user-invoked workflows via `/command-name` (explicit trigger)
   - Skills: agent-loaded context for task types (implicit loading)

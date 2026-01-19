@@ -57,7 +57,7 @@ Produce a plan that is directly executable (no vague tasks). For each item inclu
 If the plan includes creating a new Cursor rule or skill:
 
 - Use the `create-rule` or `create-skill` skills (global) for detailed instructions
-- Use templates from `.local/templates/cursor-*.md`
+- Use templates from `.cursor/templates/cursor-*.md`
 - Follow standards in `.cursor/rules/tool-cursor-config.mdc`
 - Prefer doing it only when the audit evidence shows a repeated, durable pattern
 
