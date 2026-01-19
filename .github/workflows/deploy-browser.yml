@@ -69,7 +69,7 @@ jobs:
           commit = "${{ github.sha }}"
           branch = "${{ github.ref_name }}"
           buildTime = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ")
-          version = "${{ github.ref_type == 'tag' && github.ref_name || 'dev-' + github.sha.Substring(0, 8) }}"
+          version = "${{ github.ref_type == 'tag' && github.ref_name || format('dev-{0}', github.sha) }}"
         }
         $buildInfo | ConvertTo-Json | Out-File -FilePath "publish/browser/build-info.json"
 
