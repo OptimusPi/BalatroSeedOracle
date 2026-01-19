@@ -73,10 +73,6 @@ public partial class MainWindow : Window
         _ = CleanupAndExitAsync();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 
     private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)
     {
