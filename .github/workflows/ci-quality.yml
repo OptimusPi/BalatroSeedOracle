@@ -28,7 +28,7 @@ jobs:
       run: dotnet tool install --local csharpier --version 0.30.2
 
     - name: Check CSharpier Formatting
-      run: dotnet csharpier format ./src --config-path .config/csharpierrc --check --no-msbuild-check
+      run: dotnet csharpier ./src --config-path .config/csharpierrc --check --no-msbuild-check
 
     - name: Setup dprint
       uses: dprint/check@v2.2
@@ -59,14 +59,19 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Install Required Workloads
+    - name: Install Required Workloads (Windows)
+      if: runner.os == 'Windows'
       run: dotnet workload install android ios
+
+    - name: Install Required Workloads (Linux)
+      if: runner.os == 'Linux'
+      run: dotnet workload install android
 
     - name: Restore Core Library
       run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj /p:TargetFramework=net10.0
 
     - name: Restore Desktop
-      run: dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+      run: dotnet restore src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj /p:RestoreIgnoreFailedSources=true
 
     - name: Restore Browser
       run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
@@ -97,10 +102,10 @@ jobs:
         dotnet-version: '10.0.x'
 
     - name: Install Required Workloads
-      run: dotnet workload install android ios
+      run: dotnet workload install android
 
     - name: Restore Dependencies
-      run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
+      run: dotnet restore tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj /p:RestoreIgnoreFailedSources=true
 
     - name: Run Tests with Coverage
       run: dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./coverage
