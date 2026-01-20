@@ -574,14 +574,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private readonly Dictionary<string, List<ItemGroup>> _groupedItemsCache = new();
 
-    [RelayCommand]
-    private void SelectCategory(string category)
-    {
-        if (string.IsNullOrWhiteSpace(category))
-            return;
+        [RelayCommand]
+        private void SelectCategory(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+                return;
 
-        SetCategory(category);
-    }
+            SetCategory(category);
+        }
 
         public void SetCategory(string category)
         {
@@ -3312,7 +3312,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // This ensures the UI updates even if bindings are stale (especially important for browser)
             OnPropertyChanged(nameof(SelectedMust));
             OnPropertyChanged(nameof(SelectedShould));
-            
+
             // Also refresh expanded state to ensure drop zones are visible
             OnPropertyChanged(nameof(IsMustExpanded));
             OnPropertyChanged(nameof(IsShouldExpanded));
@@ -3344,7 +3344,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 Name = config.ItemName,
                 DisplayName = config.ItemName,
-                Type = effectiveType,  // FIX: Use effective type that respects IsSoulJoker
+                Type = effectiveType, // FIX: Use effective type that respects IsSoulJoker
                 Category = category,
                 ItemKey = config.ItemKey,
                 Edition = config.Edition,

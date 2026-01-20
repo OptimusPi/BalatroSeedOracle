@@ -361,7 +361,8 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdatePreviewImage()
         {
-            if (_item == null) return;
+            if (_item == null)
+                return;
 
             if (_item.Category == "Playing Cards" || _item.ItemType == "StandardCard")
             {
@@ -378,7 +379,10 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 // Use the robust GetItemImage helper
-                _item.ItemImage = Services.SpriteService.Instance.GetItemImage(_item.Name, _item.ItemType);
+                _item.ItemImage = Services.SpriteService.Instance.GetItemImage(
+                    _item.Name,
+                    _item.ItemType
+                );
             }
         }
 
@@ -399,13 +403,17 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateStickers()
         {
-            if (_item == null) return;
+            if (_item == null)
+                return;
             var stickers = new System.Collections.Generic.List<string>();
-            if (IsEternal) stickers.Add("eternal");
-            if (IsPerishable) stickers.Add("perishable");
-            if (IsRental) stickers.Add("rental");
+            if (IsEternal)
+                stickers.Add("eternal");
+            if (IsPerishable)
+                stickers.Add("perishable");
+            if (IsRental)
+                stickers.Add("rental");
             _item.Stickers = stickers.Count > 0 ? stickers : null;
-            
+
             // CRITICAL: Update the preview images for the stickers too!
             UpdatePreviewImage();
         }
@@ -487,10 +495,14 @@ namespace BalatroSeedOracle.ViewModels
 
             // Save sources configuration according to JAML schema
             var sources = new System.Collections.Generic.List<string>();
-            if (SourceShop) sources.Add("shop");
-            if (SourcePack) sources.Add("pack");
-            if (SourceTag) sources.Add("tag");
-            if (SourceVoucher) sources.Add("voucher");
+            if (SourceShop)
+                sources.Add("shop");
+            if (SourcePack)
+                sources.Add("pack");
+            if (SourceTag)
+                sources.Add("tag");
+            if (SourceVoucher)
+                sources.Add("voucher");
             _item.Sources = sources.Count > 0 ? sources.ToArray() : null;
 
             // Save edition, seal, enhancement, rank, suit - validate against JAML schema
@@ -570,13 +582,40 @@ namespace BalatroSeedOracle.ViewModels
 
         private string? ValidateEnhancement(string? enhancement)
         {
-            var validEnhancements = new[] { "Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold" };
-            return (enhancement != "None" && validEnhancements.Contains(enhancement)) ? enhancement : null;
+            var validEnhancements = new[]
+            {
+                "Bonus",
+                "Mult",
+                "Wild",
+                "Glass",
+                "Steel",
+                "Stone",
+                "Lucky",
+                "Gold",
+            };
+            return (enhancement != "None" && validEnhancements.Contains(enhancement))
+                ? enhancement
+                : null;
         }
 
         private string? ValidateRank(string? rank)
         {
-            var validRanks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+            var validRanks = new[]
+            {
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "J",
+                "Q",
+                "K",
+                "A",
+            };
             return validRanks.Contains(rank) ? rank : null;
         }
 

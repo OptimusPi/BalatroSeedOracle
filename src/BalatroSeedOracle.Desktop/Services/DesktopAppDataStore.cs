@@ -13,7 +13,8 @@ public sealed class DesktopAppDataStore : IAppDataStore
 {
     private static string NormalizeKey(string key)
     {
-        var normalized = key.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+        var normalized = key.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
         return normalized.TrimStart(Path.DirectorySeparatorChar);
     }
 

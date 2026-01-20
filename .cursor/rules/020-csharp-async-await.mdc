@@ -1,0 +1,65 @@
+---
+description: "Async/await patterns and best practices"
+globs: *.cs
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+# C# Async/Await Rules
+
+## Method Return Patterns
+
+- Methods returning `Task` without `await` should return `Task.CompletedTask`
+- Remove `async` keyword if no `await` is used
+- Use `ConfigureAwait(false)` for library/service code
+
+```csharp
+// ✅ Good - No fake async
+public Task DoSomething()
+{
+    // Synchronous work
+    return Task.CompletedTask;
+}
+
+// ❌ Bad - Fake async
+public async Task DoSomething() 
+{
+    // Synchronous work - unnecessary async
+}
+```
+
+## ❌ Forbidden Patterns
+
+**NO** `Task.Run()` for async work - use proper async methods:
+
+```csharp
+// ❌ Bad
+Task.Run(() => DoWork());
+
+// ✅ Good  
+await DoWorkAsync();
+```
+
+**NO** blocking calls in async code:
+
+```csharp
+// ❌ Bad - blocks thread
+var result = asyncMethod.Result;
+asyncMethod.Wait();
+asyncMethod.GetAwaiter().GetResult();
+
+// ✅ Good
+var result = await asyncMethod;
+```
+
+## Fire-and-Forget
+
+Use proper error handling:
+
+```csharp
+// ✅ Good
+_ = MethodAsync(); // with proper error handling in the method
+```
+
+## ConfigureAwait
+
+Use `ConfigureAwait(false)` in library/service code to avoid deadlocks.

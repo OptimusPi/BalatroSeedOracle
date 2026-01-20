@@ -1,15 +1,19 @@
 {
-    "files.exclude": {
-        "**/bin": true,
-        "**/obj": true
-    },
-    "search.exclude": {
-        "**/bin": true,
-        "**/obj": true,
-        "**/node_modules": true
-    },
-    "dotnet.defaultSolution": "BalatroSeedOracle.sln",
-    "omnisharp.enableRoslynAnalyzers": true,
-    "omnisharp.enableEditorConfigSupport": true,
-    "dotnet.formatting.organizeImportsOnFormat": true
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/node_modules": true,
+    "external/**": true
+  },
+  "files.readonlyInclude": {
+    "external/Motely/**": true
+  },
+  "dotnet.defaultSolution": "BalatroSeedOracle.sln",
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  "dotnet.formatting.organizeImportsOnFormat": true
 }

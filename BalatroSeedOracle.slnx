@@ -13,6 +13,9 @@
       <Project Path="external\Motely\Motely\Motely.csproj" />
     </Folder>
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\BalatroSeedOracle.Tests\BalatroSeedOracle.Tests.csproj" />
+  </Folder>
   <Properties>
     <Property Name="Configuration" Value="Debug|Release" />
     <Property Name="Platform" Value="Any CPU|x64|x86" />

@@ -225,7 +225,7 @@ namespace BalatroSeedOracle.Models
 
         // Additional properties for filter configuration
         public string? Value { get; set; }
-        
+
         private string? _label;
         public string? Label
         {
@@ -301,10 +301,10 @@ namespace BalatroSeedOracle.Models
         public bool IncludeBoosterPacks { get; set; }
         public bool IncludeShopStream { get; set; }
         public bool IncludeSkipTags { get; set; }
-        
+
         // JAML sources array - according to schema: "shop", "pack", "tag", "voucher"
         public string[]? Sources { get; set; }
-        
+
         // JAML nested conditions for complex logic
         public FilterItem[]? AndConditions { get; set; }
         public FilterItem[]? OrConditions { get; set; }

@@ -1,0 +1,66 @@
+---
+description: ".NET project files and dependency management"
+globs: *.csproj,*.sln,*.props,*.targets
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# .NET Project Files & Dependencies
+
+## Central Package Management
+
+This project uses **Central Package Management** via `Directory.Packages.props`.
+
+### ❌ Don't Add Inline Versions
+
+```xml
+<!-- ❌ Bad - Don't add Version inline -->
+<PackageReference Include="Avalonia" Version="11.3.10" />
+
+<!-- ✅ Good - Version managed centrally -->
+<PackageReference Include="Avalonia" />
+```
+
+### ✅ Add New Packages to Directory.Packages.props
+
+```xml
+<!-- In Directory.Packages.props -->
+<PackageVersion Include="NewPackage" Version="1.0.0" />
+```
+
+Then reference in csproj:
+
+```xml
+<!-- In *.csproj -->
+<PackageReference Include="NewPackage" />
+```
+
+## Project Structure
+
+- **Solution**: `BalatroSeedOracle.sln` - Main solution file
+- **Core Library**: `src/BalatroSeedOracle/BalatroSeedOracle.csproj` - Shared library (no platform workloads needed)
+- **Meta Project**: `src/BalatroSeedOracle.csproj` - Multi-TFM wrapper (requires all platform workloads)
+- **Platforms**: `src/BalatroSeedOracle.Desktop/`, `src/BalatroSeedOracle.Browser/`, etc.
+- **Tests**: `tests/BalatroSeedOracle.Tests/` - Unit tests (xUnit)
+
+**Important**: When verifying builds locally, prefer building the **test project** or **Desktop project** first. The meta project (`src/BalatroSeedOracle.csproj`) includes Android/iOS TFMs that require mobile workloads.
+
+```bash
+# Preferred: Build test project (automatically builds core dependencies)
+dotnet test tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj -c Release
+
+# Or build Desktop specifically
+dotnet build src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj -c Release
+```
+
+## dotnet-tools.json
+
+Global tools are defined in `.config/dotnet-tools.json`:
+
+- `avaloniaui.parcel` - Avalonia packaging tool
+
+Use `dotnet tool restore` to install tools.
+
+## Target Framework
+
+All projects target **.NET 10** for latest features and performance.

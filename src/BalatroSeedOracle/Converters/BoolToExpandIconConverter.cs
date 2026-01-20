@@ -24,7 +24,9 @@ namespace BalatroSeedOracle.Converters
         {
             if (value is bool isExpanded)
             {
-                return isExpanded ? PackIconMaterialKind.ChevronUp : PackIconMaterialKind.ChevronDown;
+                return isExpanded
+                    ? PackIconMaterialKind.ChevronUp
+                    : PackIconMaterialKind.ChevronDown;
             }
             return PackIconMaterialKind.ChevronDown; // Default to collapsed
         }

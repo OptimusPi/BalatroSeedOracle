@@ -40,7 +40,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            DebugLogger.LogError("MainWindow", "MainMenuHost not found - cannot attach BalatroMainMenu");
+            DebugLogger.LogError(
+                "MainWindow",
+                "MainMenuHost not found - cannot attach BalatroMainMenu"
+            );
         }
 
         // Sync IsVibeOutMode from MainMenu to MainWindow
@@ -78,11 +81,6 @@ public partial class MainWindow : Window
 
         // Do cleanup asynchronously to avoid blocking UI
         _ = CleanupAndExitAsync();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     private void OnBuyBalatroClick(object? sender, PointerPressedEventArgs e)

@@ -1,303 +1,303 @@
 [
-    {
-        "name": "arcanapack",
-        "pos": {
-            "x": 0,
-            "y": 0
-        }
-    },
-    {
-        "name": "arcanapack1",
-        "pos": {
-            "x": 0,
-            "y": 0
-        }
-    },
-    {
-        "name": "arcanapack2",
-        "pos": {
-            "x": 1,
-            "y": 0
-        }
-    },
-    {
-        "name": "arcanapack3",
-        "pos": {
-            "x": 2,
-            "y": 0
-        }
-    },
-    {
-        "name": "arcanapack4",
-        "pos": {
-            "x": 3,
-            "y": 0
-        }
-    },
-    {
-        "name": "celestialpack",
-        "pos": {
-            "x": 0,
-            "y": 1
-        }
-    },
-    {
-        "name": "celestialpack1",
-        "pos": {
-            "x": 0,
-            "y": 1
-        }
-    },
-    {
-        "name": "celestialpack2",
-        "pos": {
-            "x": 1,
-            "y": 1
-        }
-    },
-    {
-        "name": "celestialpack3",
-        "pos": {
-            "x": 2,
-            "y": 1
-        }
-    },
-    {
-        "name": "celestialpack4",
-        "pos": {
-            "x": 3,
-            "y": 1
-        }
-    },
-    {
-        "name": "jumboarcanapack",
-        "pos": {
-            "x": 0,
-            "y": 2
-        }
-    },
-    {
-        "name": "jumboarcanapack1",
-        "pos": {
-            "x": 0,
-            "y": 2
-        }
-    },
-    {
-        "name": "jumboarcanapack2",
-        "pos": {
-            "x": 1,
-            "y": 2
-        }
-    },
-    {
-        "name": "megaarcanapack",
-        "pos": {
-            "x": 2,
-            "y": 2
-        }
-    },
-    {
-        "name": "megaarcanapack1",
-        "pos": {
-            "x": 2,
-            "y": 2
-        }
-    },
-    {
-        "name": "megaarcanapack2",
-        "pos": {
-            "x": 3,
-            "y": 2
-        }
-    },
-    {
-        "name": "jumbocelestialpack",
-        "pos": {
-            "x": 0,
-            "y": 3
-        }
-    },
-    {
-        "name": "jumbocelestialpack1",
-        "pos": {
-            "x": 0,
-            "y": 3
-        }
-    },
-    {
-        "name": "jumbocelestialpack2",
-        "pos": {
-            "x": 1,
-            "y": 3
-        }
-    },
-    {
-        "name": "megacelestialpack",
-        "pos": {
-            "x": 2,
-            "y": 3
-        }
-    },
-    {
-        "name": "megacelestialpack1",
-        "pos": {
-            "x": 2,
-            "y": 3
-        }
-    },
-    {
-        "name": "megacelestialpack2",
-        "pos": {
-            "x": 3,
-            "y": 3
-        }
-    },
-    {
-        "name": "spectralpack",
-        "pos": {
-            "x": 0,
-            "y": 4
-        }
-    },
-    {
-        "name": "spectralpack1",
-        "pos": {
-            "x": 0,
-            "y": 4
-        }
-    },
-    {
-        "name": "spectralpack2",
-        "pos": {
-            "x": 1,
-            "y": 4
-        }
-    },
-    {
-        "name": "jumbospectralpack",
-        "pos": {
-            "x": 2,
-            "y": 4
-        }
-    },
-    {
-        "name": "megaspectralpack",
-        "pos": {
-            "x": 3,
-            "y": 4
-        }
-    },
-    {
-        "name": "blanktemplatepack",
-        "pos": {
-            "x": 0,
-            "y": 5
-        }
-    },
-    {
-        "name": "standard",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "standardpack",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "standardpack1",
-        "pos": {
-            "x": 1,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoon",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoonpack",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
-        "name": "buffoonpack1",
-        "pos": {
-            "x": 2,
-            "y": 5
-        }
-    },
-    {
-        "name": "arcana",
-        "pos": {
-            "x": 0,
-            "y": 0
-        }
-    },
-    {
-        "name": "celestial",
-        "pos": {
-            "x": 0,
-            "y": 1
-        }
-    },
-    {
-        "name": "spectral",
-        "pos": {
-            "x": 0,
-            "y": 4
-        }
-    },
-    {
-        "name": "jumboarcana",
-        "pos": {
-            "x": 0,
-            "y": 2
-        }
-    },
-    {
-        "name": "jumbocelestial",
-        "pos": {
-            "x": 0,
-            "y": 3
-        }
-    },
-    {
-        "name": "jumbospectral",
-        "pos": {
-            "x": 2,
-            "y": 4
-        }
-    },
-    {
-        "name": "megaarcana",
-        "pos": {
-            "x": 2,
-            "y": 2
-        }
-    },
-    {
-        "name": "megacelestial",
-        "pos": {
-            "x": 2,
-            "y": 3
-        }
-    },
-    {
-        "name": "megaspectral",
-        "pos": {
-            "x": 3,
-            "y": 4
-        }
+  {
+    "name": "arcanapack",
+    "pos": {
+      "x": 0,
+      "y": 0
     }
+  },
+  {
+    "name": "arcanapack1",
+    "pos": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  {
+    "name": "arcanapack2",
+    "pos": {
+      "x": 1,
+      "y": 0
+    }
+  },
+  {
+    "name": "arcanapack3",
+    "pos": {
+      "x": 2,
+      "y": 0
+    }
+  },
+  {
+    "name": "arcanapack4",
+    "pos": {
+      "x": 3,
+      "y": 0
+    }
+  },
+  {
+    "name": "celestialpack",
+    "pos": {
+      "x": 0,
+      "y": 1
+    }
+  },
+  {
+    "name": "celestialpack1",
+    "pos": {
+      "x": 0,
+      "y": 1
+    }
+  },
+  {
+    "name": "celestialpack2",
+    "pos": {
+      "x": 1,
+      "y": 1
+    }
+  },
+  {
+    "name": "celestialpack3",
+    "pos": {
+      "x": 2,
+      "y": 1
+    }
+  },
+  {
+    "name": "celestialpack4",
+    "pos": {
+      "x": 3,
+      "y": 1
+    }
+  },
+  {
+    "name": "jumboarcanapack",
+    "pos": {
+      "x": 0,
+      "y": 2
+    }
+  },
+  {
+    "name": "jumboarcanapack1",
+    "pos": {
+      "x": 0,
+      "y": 2
+    }
+  },
+  {
+    "name": "jumboarcanapack2",
+    "pos": {
+      "x": 1,
+      "y": 2
+    }
+  },
+  {
+    "name": "megaarcanapack",
+    "pos": {
+      "x": 2,
+      "y": 2
+    }
+  },
+  {
+    "name": "megaarcanapack1",
+    "pos": {
+      "x": 2,
+      "y": 2
+    }
+  },
+  {
+    "name": "megaarcanapack2",
+    "pos": {
+      "x": 3,
+      "y": 2
+    }
+  },
+  {
+    "name": "jumbocelestialpack",
+    "pos": {
+      "x": 0,
+      "y": 3
+    }
+  },
+  {
+    "name": "jumbocelestialpack1",
+    "pos": {
+      "x": 0,
+      "y": 3
+    }
+  },
+  {
+    "name": "jumbocelestialpack2",
+    "pos": {
+      "x": 1,
+      "y": 3
+    }
+  },
+  {
+    "name": "megacelestialpack",
+    "pos": {
+      "x": 2,
+      "y": 3
+    }
+  },
+  {
+    "name": "megacelestialpack1",
+    "pos": {
+      "x": 2,
+      "y": 3
+    }
+  },
+  {
+    "name": "megacelestialpack2",
+    "pos": {
+      "x": 3,
+      "y": 3
+    }
+  },
+  {
+    "name": "spectralpack",
+    "pos": {
+      "x": 0,
+      "y": 4
+    }
+  },
+  {
+    "name": "spectralpack1",
+    "pos": {
+      "x": 0,
+      "y": 4
+    }
+  },
+  {
+    "name": "spectralpack2",
+    "pos": {
+      "x": 1,
+      "y": 4
+    }
+  },
+  {
+    "name": "jumbospectralpack",
+    "pos": {
+      "x": 2,
+      "y": 4
+    }
+  },
+  {
+    "name": "megaspectralpack",
+    "pos": {
+      "x": 3,
+      "y": 4
+    }
+  },
+  {
+    "name": "blanktemplatepack",
+    "pos": {
+      "x": 0,
+      "y": 5
+    }
+  },
+  {
+    "name": "standard",
+    "pos": {
+      "x": 1,
+      "y": 5
+    }
+  },
+  {
+    "name": "standardpack",
+    "pos": {
+      "x": 1,
+      "y": 5
+    }
+  },
+  {
+    "name": "standardpack1",
+    "pos": {
+      "x": 1,
+      "y": 5
+    }
+  },
+  {
+    "name": "buffoon",
+    "pos": {
+      "x": 2,
+      "y": 5
+    }
+  },
+  {
+    "name": "buffoonpack",
+    "pos": {
+      "x": 2,
+      "y": 5
+    }
+  },
+  {
+    "name": "buffoonpack1",
+    "pos": {
+      "x": 2,
+      "y": 5
+    }
+  },
+  {
+    "name": "arcana",
+    "pos": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  {
+    "name": "celestial",
+    "pos": {
+      "x": 0,
+      "y": 1
+    }
+  },
+  {
+    "name": "spectral",
+    "pos": {
+      "x": 0,
+      "y": 4
+    }
+  },
+  {
+    "name": "jumboarcana",
+    "pos": {
+      "x": 0,
+      "y": 2
+    }
+  },
+  {
+    "name": "jumbocelestial",
+    "pos": {
+      "x": 0,
+      "y": 3
+    }
+  },
+  {
+    "name": "jumbospectral",
+    "pos": {
+      "x": 2,
+      "y": 4
+    }
+  },
+  {
+    "name": "megaarcana",
+    "pos": {
+      "x": 2,
+      "y": 2
+    }
+  },
+  {
+    "name": "megacelestial",
+    "pos": {
+      "x": 2,
+      "y": 3
+    }
+  },
+  {
+    "name": "megaspectral",
+    "pos": {
+      "x": 3,
+      "y": 4
+    }
+  }
 ]

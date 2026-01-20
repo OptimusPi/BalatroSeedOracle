@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels;
 
@@ -18,7 +18,7 @@ public enum ServerStatus
     Running,
     Stopping,
     Failed,
-    Unsupported
+    Unsupported,
 }
 
 /// <summary>
@@ -50,17 +50,20 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [ObservableProperty]
     private bool _isSupported = true;
 
-    public ApiHostWidgetViewModel(IApiHostService apiHostService, WidgetPositionService? positionService = null)
+    public ApiHostWidgetViewModel(
+        IApiHostService apiHostService,
+        WidgetPositionService? positionService = null
+    )
         : base(positionService)
     {
         _apiHostService = apiHostService;
-        
+
         WidgetTitle = "API Host";
         WidgetIcon = "ServerNetwork";
         IsMinimized = true;
 
         IsSupported = _apiHostService.IsSupported;
-        
+
         if (!IsSupported)
         {
             CurrentStatus = ServerStatus.Unsupported;
@@ -92,7 +95,8 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private async Task StartServerAsync()
     {
-        if (!IsSupported || IsServerRunning) return;
+        if (!IsSupported || IsServerRunning)
+            return;
 
         try
         {
@@ -115,7 +119,8 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private async Task StopServerAsync()
     {
-        if (!IsSupported || !IsServerRunning) return;
+        if (!IsSupported || !IsServerRunning)
+            return;
 
         try
         {
@@ -136,14 +141,12 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private void OpenInBrowser()
     {
-        if (!IsServerRunning) return;
-        
+        if (!IsServerRunning)
+            return;
+
         try
         {
-            var psi = new System.Diagnostics.ProcessStartInfo(ServerUrl)
-            {
-                UseShellExecute = true
-            };
+            var psi = new System.Diagnostics.ProcessStartInfo(ServerUrl) { UseShellExecute = true };
             System.Diagnostics.Process.Start(psi);
             LogMessage($"Opened browser: {ServerUrl}");
         }
@@ -158,11 +161,11 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     {
         try
         {
-            var topLevel = Avalonia.Application.Current?.ApplicationLifetime is
-                Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+            var topLevel = Avalonia.Application.Current?.ApplicationLifetime
+                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow
                 : null;
-            
+
             if (topLevel?.Clipboard is { } clipboard)
             {
                 await clipboard.SetTextAsync(ServerUrl);
@@ -195,7 +198,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
         Dispatcher.UIThread.Post(() =>
         {
             LogText += line;
-            
+
             // Trim log if it gets too long
             if (LogText.Length > 5000)
             {
@@ -210,7 +213,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     {
         _apiHostService.LogMessage -= OnServiceLogMessage;
         _apiHostService.StatusChanged -= OnServiceStatusChanged;
-        
+
         if (IsServerRunning)
         {
             await StopServerAsync();

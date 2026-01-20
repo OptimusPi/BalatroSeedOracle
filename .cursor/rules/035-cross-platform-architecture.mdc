@@ -1,0 +1,216 @@
+---
+description: "Cross-platform architecture patterns and project structure"
+globs: *.cs,*.csproj
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Cross-Platform Architecture
+
+## Overview
+
+BalatroSeedOracle uses a head/core architecture where platform-agnostic code lives in the core project and platform-specific implementations are provided by head projects (Desktop, Browser, Android, iOS). This enables true cross-platform development with Avalonia UI.
+
+## Project Structure
+
+```
+src/
+├── BalatroSeedOracle/              # Core (shared code)
+│   ├── ViewModels/                 # Platform-agnostic ViewModels
+│   ├── Services/                   # Interfaces + shared services
+│   │   ├── IPlatformServices.cs    # Platform capability flags
+│   │   ├── IAppDataStore.cs        # Storage abstraction
+│   │   └── IDuckDBService.cs       # Database abstraction
+│   └── Views/                      # XAML views (shared)
+├── BalatroSeedOracle.Desktop/      # Desktop head (Windows/macOS/Linux)
+│   ├── Program.cs                  # DI registration
+│   └── Services/                   # Desktop implementations
+├── BalatroSeedOracle.Browser/      # Browser head (WASM)
+│   ├── Program.cs                  # DI registration
+│   └── Services/                   # Browser implementations
+└── BalatroSeedOracle.Android/      # Android head
+    └── Services/                   # Android implementations
+```
+
+## Platform Abstraction Interfaces
+
+Core project defines interfaces; head projects provide implementations:
+
+| Interface | Purpose | Desktop | Browser | Android |
+|-----------|---------|---------|---------|---------|
+| `IPlatformServices` | Feature flags + utility methods | Full support | Limited | Full support |
+| `IAppDataStore` | Key-value storage | File system | localStorage | Android storage |
+| `IDuckDBService` | Database operations | DuckDB.NET | DuckDB-WASM | DuckDB.NET |
+| `IApiHostService` | API hosting | Kestrel | Browser API | Android API |
+
+**Key insight**: Core code never knows which platform it's running on - it only knows what capabilities are available via interface methods.
+
+## Principles
+
+- **Abstraction over detection**: Use interfaces and capability flags, not platform checks
+- **Core is platform-agnostic**: No `#if BROWSER` in core project (except rare cases)
+- **Heads provide implementations**: Platform-specific code lives in head projects only
+- **Graceful degradation**: Features unavailable on a platform should degrade gracefully, not crash
+
+## Decision Flowchart
+
+When implementing a feature that may differ by platform:
+
+```
+Need platform-specific behavior?
+├─ YES → Does IPlatformServices have a capability flag for this?
+│  ├─ YES → Use runtime check: if (_platformServices.SupportsX)
+│  └─ NO → Does this need a new abstraction?
+│     ├─ YES → Create interface in core, implement in heads
+│     └─ NO → Is the type unavailable on some platforms?
+│        ├─ YES → Use #if BROWSER compile guard
+│        └─ NO → Use IPlatformServices runtime check
+└─ NO → Implement in core project (shared code)
+```
+
+## Rules
+
+**MUST follow:**
+
+- Define all platform abstractions as interfaces in `src/BalatroSeedOracle/Services/`
+- Implement interfaces in each head project's `Services/` directory
+- Register implementations in each head's `Program.cs` DI setup
+- Use `IPlatformServices.SupportsX` for runtime capability checks
+- Provide fallback behavior when features are unsupported (log + graceful no-op)
+
+**MUST NOT do:**
+
+- Put platform-specific implementations in core project
+- Use `#if BROWSER` when `IPlatformServices.SupportsX` would work
+- Forget to implement interface in ALL head projects (even if no-op)
+- Throw exceptions for unsupported features without user-friendly messages
+- Access file system, audio, or other platform APIs directly from core
+
+## Common Mistakes
+
+### ❌ Mistake 1: Platform detection in core
+
+```csharp
+// BAD - Core shouldn't know about platforms
+#if BROWSER
+    return false;
+#else
+    return _searchInstance != null;
+#endif
+```
+
+```csharp
+// GOOD - Use capability flag
+if (!_platformServices.SupportsAnalyzer)
+{
+    return false;
+}
+return _searchInstance != null;
+```
+
+### ❌ Mistake 2: Direct file access in core
+
+```csharp
+// BAD - File system not available on Browser
+var content = await File.ReadAllTextAsync(path);
+```
+
+```csharp
+// GOOD - Use platform abstraction
+var content = await _platformServices.ReadTextFromPathAsync(path);
+```
+
+### ❌ Mistake 3: Missing implementation in head
+
+```csharp
+// BAD - Only implemented in Desktop, forgot Browser/Android
+// (This will cause runtime errors on other platforms)
+```
+
+```csharp
+// GOOD - Implement in ALL heads, even if no-op
+public class BrowserMyService : IMyService
+{
+    public Task DoWorkAsync()
+    {
+        // Browser doesn't support this feature
+        DebugLogger.Log("BrowserMyService", "Feature not supported on Browser");
+        return Task.CompletedTask;
+    }
+}
+```
+
+### ❌ Mistake 4: Silent failures
+
+```csharp
+// BAD - User has no idea why feature doesn't work
+if (!_platformServices.SupportsAudio)
+{
+    return;
+}
+```
+
+```csharp
+// GOOD - Log and/or show user-friendly message
+if (!_platformServices.SupportsAudio)
+{
+    DebugLogger.Log("AudioManager", "Audio not supported on this platform");
+    // Optionally: Show toast/notification to user
+    return;
+}
+```
+
+## Adding a New Platform Capability
+
+When you need to add a new platform-specific feature:
+
+1. **Add capability flag to `IPlatformServices`**:
+   ```csharp
+   bool SupportsNewFeature { get; }
+   ```
+
+2. **Implement in all platform services**:
+   - `DesktopPlatformServices`: `return true;`
+   - `BrowserPlatformServices`: `return false;`
+   - `AndroidPlatformServices`: `return true;` (or false)
+
+3. **Use in core code**:
+   ```csharp
+   if (_platformServices.SupportsNewFeature)
+   {
+       // Feature implementation
+   }
+   ```
+
+## Creating a New Platform Abstraction
+
+When you need different implementations per platform:
+
+1. **Define interface in core**: `src/BalatroSeedOracle/Services/IMyService.cs`
+2. **Implement in each head**: `DesktopMyService`, `BrowserMyService`, etc.
+3. **Register in DI**: Each head's `Program.cs` registers its implementation
+4. **Consume in core**: Inject `IMyService` via constructor
+
+See `@implement-cross-platform-feature/SKILL.md` for detailed workflow.
+
+## Documentation Resources
+
+For Avalonia cross-platform patterns and best practices:
+
+- **DeepWiki MCP**: Query `AvaloniaUI/Avalonia` repo for:
+  - Cross-platform UI patterns
+  - Platform-specific rendering
+  - Conditional compilation strategies
+- **Context7 MCP**: Query for Avalonia library documentation
+
+Example DeepWiki queries:
+- "How does Avalonia handle platform-specific code?"
+- "What are best practices for cross-platform Avalonia apps?"
+- "How to implement platform-specific services in Avalonia?"
+
+## Related
+
+- `@030-platform-guards.mdc` - Runtime vs compile-time guards
+- `@090-browser-wasm-constraints.mdc` - Browser-specific limitations
+- `@implement-cross-platform-feature/SKILL.md` - Step-by-step implementation workflow
+- `@register-services-and-platform-overrides/SKILL.md` - DI registration patterns

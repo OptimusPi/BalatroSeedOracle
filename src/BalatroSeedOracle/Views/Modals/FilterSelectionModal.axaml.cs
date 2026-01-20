@@ -14,9 +14,9 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
+using Motely.Filters;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
-using Motely.Filters;
 
 #pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
 
@@ -56,9 +56,8 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnFilterDragOver(object? sender, DragEventArgs e)
         {
             // Check if files are being dragged
-            e.DragEffects = e.Data.GetFiles()?.Any() == true
-                ? DragDropEffects.Copy
-                : DragDropEffects.None;
+            e.DragEffects =
+                e.Data.GetFiles()?.Any() == true ? DragDropEffects.Copy : DragDropEffects.None;
             e.Handled = true;
         }
 
@@ -389,22 +388,31 @@ namespace BalatroSeedOracle.Views.Modals
             return await tcs.Task;
         }
 
-        private async void OnBrowseFilterClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void OnBrowseFilterClick(
+            object? sender,
+            Avalonia.Interactivity.RoutedEventArgs e
+        )
         {
             try
             {
                 var topLevel = TopLevel.GetTopLevel(this);
                 if (topLevel == null)
                 {
-                    DebugLogger.LogError("FilterSelectionModal", "TopLevel not found for file picker");
+                    DebugLogger.LogError(
+                        "FilterSelectionModal",
+                        "TopLevel not found for file picker"
+                    );
                     return;
                 }
 
                 // Check if StorageProvider supports file operations (important for browser)
                 if (!topLevel.StorageProvider.CanOpen)
                 {
-                    await MsBox.Avalonia.MessageBoxManager
-                        .GetMessageBoxStandard("Not Supported", "File opening is not supported in this environment.")
+                    await MsBox
+                        .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                            "Not Supported",
+                            "File opening is not supported in this environment."
+                        )
                         .ShowAsync();
                     return;
                 }
@@ -419,32 +427,44 @@ namespace BalatroSeedOracle.Views.Modals
                         {
                             new FilePickerFileType("Filter Files")
                             {
-                                Patterns = new[] { "*.jaml", "*.json" }
+                                Patterns = new[] { "*.jaml", "*.json" },
                             },
                             new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } },
                         },
                     }
                 );
 
-                DebugLogger.Log("FilterSelectionModal", $"File picker returned {files.Count} files");
+                DebugLogger.Log(
+                    "FilterSelectionModal",
+                    $"File picker returned {files.Count} files"
+                );
 
                 if (files.Count > 0)
                 {
                     if (files[0] is IStorageFile storageFile)
                     {
-                        DebugLogger.Log("FilterSelectionModal", $"Selected file: {storageFile.Name}");
+                        DebugLogger.Log(
+                            "FilterSelectionModal",
+                            $"Selected file: {storageFile.Name}"
+                        );
                         await ImportFilterFile(storageFile);
                     }
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSelectionModal", $"Error in OnBrowseFilterClick: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterSelectionModal",
+                    $"Error in OnBrowseFilterClick: {ex.Message}"
+                );
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
-                
+
                 // Show error message to user
-                await MsBox.Avalonia.MessageBoxManager
-                    .GetMessageBoxStandard("Error", $"Failed to open file picker: {ex.Message}")
+                await MsBox
+                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                        "Error",
+                        $"Failed to open file picker: {ex.Message}"
+                    )
                     .ShowAsync();
             }
         }
@@ -477,7 +497,14 @@ namespace BalatroSeedOracle.Views.Modals
                 MotelyJsonConfig? config;
                 if (extension == ".jaml")
                 {
-                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
+                    if (
+                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                            text,
+                            out config,
+                            out var parseError
+                        )
+                        || config == null
+                    )
                     {
                         DebugLogger.LogError(
                             "FilterSelectionModal",
@@ -488,33 +515,38 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        text,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true,
-                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                            AllowTrailingCommas = true,
-                        }
-                    );
+                    config =
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            text,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                                AllowTrailingCommas = true,
+                            }
+                        );
 
                     if (config == null)
                     {
-                        DebugLogger.LogError("FilterSelectionModal", "Failed to deserialize JSON filter");
+                        DebugLogger.LogError(
+                            "FilterSelectionModal",
+                            "Failed to deserialize JSON filter"
+                        );
                         return;
                     }
                 }
 
                 DebugLogger.Log("FilterSelectionModal", $"Parsed config: {config.Name}. Saving...");
 
-                var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+                var configurationService =
+                    ServiceHelper.GetRequiredService<IConfigurationService>();
                 var filterService = ServiceHelper.GetRequiredService<IFilterService>();
 
                 var baseName = !string.IsNullOrWhiteSpace(config.Name)
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);
                 var destKey = filterService.GenerateFilterFileName(baseName);
-                
+
                 // Remove ConfigureAwait(false) here too
                 var saved = await configurationService.SaveFilterAsync(destKey, config);
                 if (!saved)
@@ -530,23 +562,32 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     DebugLogger.Log("FilterSelectionModal", "Refreshing filter list...");
                     ViewModel.FilterList.RefreshFilters();
-                    
+
                     // Auto-select the imported filter if possible
                     // We need to reload the filters first, then find the one we just saved
                     // This logic might be better in the ViewModel, but let's just refresh for now.
                 }
                 else
                 {
-                    DebugLogger.Log("FilterSelectionModal", "WARNING: ViewModel is null, cannot refresh list");
+                    DebugLogger.Log(
+                        "FilterSelectionModal",
+                        "WARNING: ViewModel is null, cannot refresh list"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSelectionModal", $"Failed to import filter: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterSelectionModal",
+                    $"Failed to import filter: {ex.Message}"
+                );
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
-                
-                await MsBox.Avalonia.MessageBoxManager
-                    .GetMessageBoxStandard("Import Error", $"Failed to import filter: {ex.Message}")
+
+                await MsBox
+                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                        "Import Error",
+                        $"Failed to import filter: {ex.Message}"
+                    )
                     .ShowAsync();
             }
         }

@@ -40,7 +40,9 @@ namespace BalatroSeedOracle.ViewModels
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
 
+#if !BROWSER
         private ISearchInstance? _searchInstance;
+#endif
         private string _currentSearchId = string.Empty;
 
         public Views.BalatroMainMenu? MainMenu { get; set; }
@@ -166,8 +168,12 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isDbListVisible = false;
 
-        public bool CanMinimizeToDesktopVisible => 
+        public bool CanMinimizeToDesktopVisible =>
+#if !BROWSER
             _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
+#else
+            false;
+#endif
 
         // WordList index properties for SpinnerControl binding
         [ObservableProperty]
@@ -335,8 +341,11 @@ namespace BalatroSeedOracle.ViewModels
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
         public string ProgressText => LatestProgress?.ToString() ?? "No search active";
-        public int ResultsCount => 
-            _searchInstance?.ResultCount ?? SearchResults.Count;
+        public int ResultsCount =>
+#if !BROWSER
+            _searchInstance?.ResultCount ??
+#endif
+            SearchResults.Count;
 
         public string CurrentSearchId => _currentSearchId;
 
@@ -422,7 +431,13 @@ namespace BalatroSeedOracle.ViewModels
                 var searchCriteria = await BuildSearchCriteriaAsync();
 
                 // Apply SMART Auto Mode overrides
-                if (IsSmartAutoMode && (SelectedSearchMode == SearchMode.AllSeeds || SelectedSearchMode == SearchMode.WordList))
+                if (
+                    IsSmartAutoMode
+                    && (
+                        SelectedSearchMode == SearchMode.AllSeeds
+                        || SelectedSearchMode == SearchMode.WordList
+                    )
+                )
                 {
                     searchCriteria.ThreadCount = MaxThreadCount; // Use all cores
                     AddConsoleMessage($"SMART Auto Mode: Optimized for {MaxThreadCount} threads");
@@ -433,11 +448,11 @@ namespace BalatroSeedOracle.ViewModels
                 AddConsoleMessage($"Batch size: {searchCriteria.BatchSize}");
 
                 AddConsoleMessage($"Creating search instance...");
-                var searchInstance = await _searchManager.StartSearchAsync(
+#if !BROWSER
+                _searchInstance = await _searchManager.StartSearchAsync(
                     searchCriteria,
                     LoadedConfig
                 );
-                _searchInstance = searchInstance;
                 AddConsoleMessage($"Search instance created successfully!");
 
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
@@ -446,6 +461,11 @@ namespace BalatroSeedOracle.ViewModels
                 // Subscribe to SearchInstance events directly
                 _searchInstance.SearchCompleted += OnSearchCompleted;
                 _searchInstance.ProgressUpdated += OnProgressUpdated;
+#else
+                // Browser: Search functionality not available
+                AddConsoleMessage("Search functionality is not available in browser mode.");
+                return;
+#endif
 
                 // CRITICAL FIX: Add immediate feedback that search is starting
                 AddConsoleMessage($"Search started with ID: {_currentSearchId}");
@@ -480,6 +500,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
+#if !BROWSER
                 if (_searchInstance != null)
                 {
                     // CRITICAL: Different behavior based on Continue checkbox state
@@ -524,6 +545,7 @@ namespace BalatroSeedOracle.ViewModels
                     var actionText = shouldSaveState ? "paused" : "stopped";
                     AddConsoleMessage($"Search {actionText} by user.");
                 }
+#endif
 
                 IsSearching = false;
 
@@ -804,7 +826,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             else
             {
-                DebugLogger.LogError("SearchModalViewModel", "New filter requested action is null!");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    "New filter requested action is null!"
+                );
             }
         }
 
@@ -1003,12 +1028,14 @@ namespace BalatroSeedOracle.ViewModels
             var normalizedFilterName = filterName?.Replace(" ", "_") ?? "unknown";
 
             // Use the current deck/stake selection, defaulting to "Red" and "White"
-            var deck = string.IsNullOrEmpty(DeckSelection) || DeckSelection == "All Decks"
-                ? "Red"
-                : DeckSelection.Replace(" Deck", "");
-            var stake = string.IsNullOrEmpty(StakeSelection) || StakeSelection == "All Stakes"
-                ? "White"
-                : StakeSelection;
+            var deck =
+                string.IsNullOrEmpty(DeckSelection) || DeckSelection == "All Decks"
+                    ? "Red"
+                    : DeckSelection.Replace(" Deck", "");
+            var stake =
+                string.IsNullOrEmpty(StakeSelection) || StakeSelection == "All Stakes"
+                    ? "White"
+                    : StakeSelection;
 
             return $"{normalizedFilterName}_{deck}_{stake}";
         }
@@ -1028,18 +1055,30 @@ namespace BalatroSeedOracle.ViewModels
 
         private async Task<SearchCriteria> BuildSearchCriteriaAsync()
         {
-            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'");
-            DebugLogger.LogImportant("SearchModalViewModel", $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}");
+            DebugLogger.LogImportant(
+                "SearchModalViewModel",
+                $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'"
+            );
+            DebugLogger.LogImportant(
+                "SearchModalViewModel",
+                $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}"
+            );
 
             if (string.IsNullOrEmpty(CurrentFilterPath))
             {
-                DebugLogger.LogError("SearchModalViewModel", "❌ CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    "❌ CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!"
+                );
                 throw new InvalidOperationException(
                     "No filter path available - filter must be loaded first!"
                 );
             }
 
-            DebugLogger.Log("SearchModalViewModel", $"✅ Using CurrentFilterPath: {CurrentFilterPath}");
+            DebugLogger.Log(
+                "SearchModalViewModel",
+                $"✅ Using CurrentFilterPath: {CurrentFilterPath}"
+            );
             var criteria = new SearchCriteria
             {
                 ConfigPath = CurrentFilterPath,
@@ -1063,10 +1102,12 @@ namespace BalatroSeedOracle.ViewModels
                         var dbPath = GetDatabasePath();
 
                         AddConsoleMessage($"Checking for saved state at: {dbPath}");
-                        var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
-                        var savedState = searchStateManager != null 
-                            ? await searchStateManager.LoadSearchStateAsync(dbPath)
-                            : null;
+                        var searchStateManager =
+                            ServiceHelper.GetService<Services.SearchStateManager>();
+                        var savedState =
+                            searchStateManager != null
+                                ? await searchStateManager.LoadSearchStateAsync(dbPath)
+                                : null;
                         if (savedState != null)
                         {
                             ulong resumeBatch = (ulong)savedState.LastCompletedBatch;
@@ -1191,6 +1232,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public void Dispose()
         {
+#if !BROWSER
             if (_searchInstance != null)
             {
                 _searchInstance.SearchStarted -= OnSearchStarted;
@@ -1198,16 +1240,19 @@ namespace BalatroSeedOracle.ViewModels
                 _searchInstance.ProgressUpdated -= OnProgressUpdated;
                 _searchInstance.Dispose();
             }
+#endif
             // CircularConsoleBuffer doesn't need disposal
         }
 
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
         private void PauseSearch()
         {
+#if !BROWSER
             if (_searchInstance != null && IsSearching)
             {
                 _searchInstance.PauseSearch();
             }
+#endif
         }
 
         private bool CanPauseSearch() => IsSearching;
@@ -1268,6 +1313,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 _currentSearchId = searchId;
+#if !BROWSER
                 _searchInstance = _searchManager.GetSearch(searchId);
 
                 if (_searchInstance != null)
@@ -1307,7 +1353,7 @@ namespace BalatroSeedOracle.ViewModels
                         "SearchModalViewModel",
                         $"Successfully reconnected to search: {searchId}, Running: {_searchInstance?.IsRunning ?? false}, Results: {SearchResults.Count}"
                     );
-                    
+
                     OnPropertyChanged(nameof(CanMinimizeToDesktopVisible));
                 }
                 else
@@ -1317,6 +1363,11 @@ namespace BalatroSeedOracle.ViewModels
                         $"Search instance not found: {searchId}"
                     );
                 }
+#else
+                // Browser: Search functionality not available
+                AddConsoleMessage("Search functionality is not available in browser mode.");
+                return;
+#endif
             }
             catch (Exception ex)
             {
@@ -1332,10 +1383,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task LoadExistingResults()
         {
+#if !BROWSER
             if (_searchInstance == null)
                 return;
 
-            _isLoadingResults = true;
             try
             {
                 SearchResults.Clear();
@@ -1374,8 +1425,9 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             try
                             {
-#if !BROWSER
-                                var resultsTab = TabItems.FirstOrDefault(t => t.Header == "RESULTS");
+                                var resultsTab = TabItems.FirstOrDefault(t =>
+                                    t.Header == "RESULTS"
+                                );
                                 if (resultsTab?.Content is Views.SearchModalTabs.ResultsTab tab)
                                 {
                                     tab.ForceRefreshResults(SearchResults);
@@ -1384,7 +1436,6 @@ namespace BalatroSeedOracle.ViewModels
                                         "Forced grid refresh after loading results"
                                     );
                                 }
-#endif
                             }
                             catch (Exception gridEx)
                             {
@@ -1409,10 +1460,10 @@ namespace BalatroSeedOracle.ViewModels
                     $"Failed to load existing results: {ex.Message}"
                 );
             }
-            finally
-            {
-                _isLoadingResults = false;
-            }
+#else
+            // Browser: Search functionality not available
+            return;
+#endif
         }
 
         /// <summary>
@@ -1421,6 +1472,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void RefreshSearchStats()
         {
+#if !BROWSER
             if (_searchInstance == null)
                 return;
 
@@ -1453,6 +1505,10 @@ namespace BalatroSeedOracle.ViewModels
                     $"Failed to refresh search stats: {ex.Message}"
                 );
             }
+#else
+            // Browser: Search functionality not available
+            return;
+#endif
         }
 
         /// <summary>
@@ -1476,7 +1532,12 @@ namespace BalatroSeedOracle.ViewModels
 
         private async Task RefreshStatsLoopAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested && _searchInstance?.IsRunning == true && IsSearching)
+#if !BROWSER
+            while (
+                !cancellationToken.IsCancellationRequested
+                && _searchInstance?.IsRunning == true
+                && IsSearching
+            )
             {
                 try
                 {
@@ -1502,6 +1563,11 @@ namespace BalatroSeedOracle.ViewModels
                     break; // Exit on any error
                 }
             }
+#else
+            // Browser: Search functionality not available
+            await Task.CompletedTask;
+            return;
+#endif
         }
 
         /// <summary>
@@ -1511,7 +1577,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.LogImportant("SearchModalViewModel", $"🔍 LoadConfigFromPathAsync called with: {configPath}");
+                DebugLogger.LogImportant(
+                    "SearchModalViewModel",
+                    $"🔍 LoadConfigFromPathAsync called with: {configPath}"
+                );
 
                 if (!await _platformServices.FileExistsAsync(configPath))
                 {
@@ -1522,7 +1591,8 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var json = await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
+                var json =
+                    await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
                 var config =
                     System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
@@ -1533,7 +1603,10 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
-                    DebugLogger.LogImportant("SearchModalViewModel", $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}");
+                    DebugLogger.LogImportant(
+                        "SearchModalViewModel",
+                        $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}"
+                    );
 
                     // Update deck and stake from the loaded config
                     if (!string.IsNullOrEmpty(config.Deck))
@@ -1604,7 +1677,7 @@ namespace BalatroSeedOracle.ViewModels
         private Task? _loadResultsTask; // Track background result loading
 
         private DateTime _lastProgressLog = DateTime.MinValue;
-        
+
         private void OnProgressUpdated(object? sender, SearchProgress e)
         {
             try
@@ -1612,7 +1685,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Store immutable data on background thread (safe)
                 LatestProgress = e;
                 LastKnownResultCount = e.ResultsFound;
-                
+
                 // Log progress to console every 2 seconds so user knows search is working
                 var now = DateTime.Now;
                 if ((now - _lastProgressLog).TotalSeconds >= 2.0)
@@ -1620,7 +1693,9 @@ namespace BalatroSeedOracle.ViewModels
                     _lastProgressLog = now;
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        AddConsoleMessage($"Progress: {e.SeedsSearched:N0} seeds | {e.SeedsPerMillisecond:F1} seeds/ms | {e.ResultsFound} found");
+                        AddConsoleMessage(
+                            $"Progress: {e.SeedsSearched:N0} seeds | {e.SeedsPerMillisecond:F1} seeds/ms | {e.ResultsFound} found"
+                        );
                     });
                 }
 
@@ -1635,7 +1710,8 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         try
                         {
-                            var interpolatedParams = ActiveSearchTransition.GetInterpolatedParameters();
+                            var interpolatedParams =
+                                ActiveSearchTransition.GetInterpolatedParameters();
                             ApplyShaderParametersToMainMenu(MainMenu, interpolatedParams);
                         }
                         catch (Exception ex)
@@ -1653,12 +1729,12 @@ namespace BalatroSeedOracle.ViewModels
                 now = DateTime.Now;
                 var canCheckResults = (now - _lastResultsLoad).TotalSeconds >= 0.5; // Reduced from 1.0s for snappier updates
 
-                if (
-                    canCheckResults
+                if (canCheckResults
+#if !BROWSER
                     && _searchInstance != null
                     && _searchInstance.HasNewResultsSinceLastQuery
-                    && !_isLoadingResults
-                )
+#endif
+                    && !_isLoadingResults)
                 {
                     _lastResultsLoad = now;
                     _isLoadingResults = true;
@@ -1680,23 +1756,27 @@ namespace BalatroSeedOracle.ViewModels
                         && !string.IsNullOrEmpty(CurrentFilterPath)
                     )
                     {
-                    // Fire-and-forget is OK here - state saving is non-critical
-                    _ = SaveSearchStateBackgroundAsync(currentBatch);
+                        // Fire-and-forget is OK here - state saving is non-critical
+                        _ = SaveSearchStateBackgroundAsync(currentBatch);
+                    }
                 }
-            }
 
-            // Update UI properties on UI thread
-            UpdateUIFromProgress(e);
-        }
+                // Update UI properties on UI thread
+                UpdateUIFromProgress(e);
+            }
             catch (Exception ex)
             {
                 // Event handlers must catch all exceptions - async void can't be awaited
-                DebugLogger.LogError("SearchModalViewModel", $"Error in OnProgressUpdated: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error in OnProgressUpdated: {ex.Message}"
+                );
             }
         }
 
         private async Task LoadResultsInBackgroundAsync()
         {
+#if !BROWSER
             try
             {
                 if (_searchInstance == null)
@@ -1749,6 +1829,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _isLoadingResults = false;
             }
+#else
+            // Browser: Search functionality not available
+            await Task.CompletedTask;
+#endif
         }
 
         private async Task SaveSearchStateBackgroundAsync(int currentBatch)
@@ -1770,13 +1854,18 @@ namespace BalatroSeedOracle.ViewModels
                 var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
                 if (searchStateManager != null)
                 {
-                    await searchStateManager.SaveSearchStateAsync(dbPath, state).ConfigureAwait(false);
+                    await searchStateManager
+                        .SaveSearchStateAsync(dbPath, state)
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 // Non-critical - log but don't crash
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to save search state: {ex.Message}");
+                DebugLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to save search state: {ex.Message}"
+                );
             }
         }
 
@@ -1809,6 +1898,7 @@ namespace BalatroSeedOracle.ViewModels
                 SearchSpeed = FormatSeedSpeed(seedsPerSecond);
 
                 // Use the search instance for additional stats if available
+#if !BROWSER
                 if (_searchInstance != null)
                 {
                     SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
@@ -1832,6 +1922,11 @@ namespace BalatroSeedOracle.ViewModels
                     TimeElapsed = "00:00:00";
                     EstimatedTimeRemaining = "--:--:--";
                 }
+#else
+                SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
+                TimeElapsed = "00:00:00";
+                EstimatedTimeRemaining = "--:--:--";
+#endif
 
                 // Batch info - we'll need to calculate these or leave as placeholders
                 // These aren't in the SearchProgress model currently
@@ -1916,19 +2011,17 @@ namespace BalatroSeedOracle.ViewModels
             // PROPER MVVM: Use XAML UserControls
             SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
             SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
-            
+
             if (_platformServices.SupportsResultsGrid)
             {
-#if !BROWSER
                 ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
-#endif
             }
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
             // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
             // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
             TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
-            
+
             if (_platformServices.SupportsResultsGrid)
             {
                 TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
@@ -1939,7 +2032,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var wordListDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "WordLists");
+                var wordListDir = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "..",
+                    "..",
+                    "..",
+                    "WordLists"
+                );
                 if (Directory.Exists(wordListDir))
                 {
                     var files = Directory
@@ -1988,7 +2087,13 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var searchResultsDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "SearchResults");
+                var searchResultsDir = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "..",
+                    "..",
+                    "..",
+                    "SearchResults"
+                );
                 if (Directory.Exists(searchResultsDir))
                 {
                     var files = Directory
@@ -2095,9 +2200,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
-                var savedState = searchStateManager != null 
-                    ? await searchStateManager.LoadSearchStateAsync(dbPath)
-                    : null;
+                var savedState =
+                    searchStateManager != null
+                        ? await searchStateManager.LoadSearchStateAsync(dbPath)
+                        : null;
                 if (savedState != null)
                 {
                     // Calculate progress percentage from saved batch
@@ -2160,7 +2266,10 @@ namespace BalatroSeedOracle.ViewModels
                     settings.SearchTransitionStartPresetName ?? "Default Balatro",
                     true
                 );
-                var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName ?? "Default Balatro", false);
+                var endParams = LoadPresetParameters(
+                    settings.SearchTransitionEndPresetName ?? "Default Balatro",
+                    false
+                );
 
                 // Create transition
                 ActiveSearchTransition = new Models.VisualizerPresetTransition
@@ -2191,10 +2300,7 @@ namespace BalatroSeedOracle.ViewModels
         private Models.ShaderParameters LoadPresetParameters(string? presetName, bool isDarkPreset)
         {
             // If no preset name specified or it's a default preset, use built-in defaults
-            if (
-                string.IsNullOrWhiteSpace(presetName)
-                || presetName == "Default Balatro"
-            )
+            if (string.IsNullOrWhiteSpace(presetName) || presetName == "Default Balatro")
             {
                 return isDarkPreset
                     ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()

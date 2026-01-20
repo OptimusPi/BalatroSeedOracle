@@ -8,7 +8,7 @@ namespace BalatroSeedOracle.Components.Help
 {
     public partial class JamlHelpView : UserControl
     {
-        private Markdown? _markdownViewer;
+        private TextBlock? _markdownViewer;
 
         public JamlHelpView()
         {
@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Components.Help
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            _markdownViewer = this.FindControl<Avalonia.Controls.Markdown>("MarkdownViewer");
+            _markdownViewer = this.FindControl<TextBlock>("MarkdownViewer");
         }
 
         private void LoadJamlHelp()
@@ -30,9 +30,7 @@ namespace BalatroSeedOracle.Components.Help
                 var helpContent = GetJamlHelpMarkdown();
                 if (_markdownViewer != null && !string.IsNullOrEmpty(helpContent))
                 {
-                    // Use reflection to set Markdown property (type is in Avalonia.Controls.Markdown namespace)
-                    var markdownProp = _markdownViewer.GetType().GetProperty("Markdown");
-                    markdownProp?.SetValue(_markdownViewer, helpContent);
+                    _markdownViewer.Text = helpContent;
                 }
             }
             catch (Exception ex)

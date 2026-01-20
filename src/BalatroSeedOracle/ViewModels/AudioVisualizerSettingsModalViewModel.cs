@@ -1014,7 +1014,10 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("AudioVisualizerSettingsModalViewModel", $"Error saving profile: {ex.Message}");
+                DebugLogger.LogError(
+                    "AudioVisualizerSettingsModalViewModel",
+                    $"Error saving profile: {ex.Message}"
+                );
             }
         }
     }

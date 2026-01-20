@@ -1,0 +1,43 @@
+---
+description: "Core project context and architecture overview"
+alwaysApply: true
+lastReviewed: 2026-01-19
+---
+
+# BalatroSeedOracle - Project Context
+
+## Project Overview
+
+Cross-platform Avalonia UI application for searching Balatro game seeds. Built with .NET 10, MVVM pattern, supports Desktop/Browser/Android/iOS.
+
+## Architecture
+
+- **Desktop is primary target, Browser is secondary**
+- **MVVM Structure**: ViewModels inherit from `ObservableObject` (CommunityToolkit.Mvvm)
+- **Services**: Business logic registered in `App.axaml.cs` using `IServiceCollection`
+- **Dependency Injection**: Constructor injection in ViewModels/Services
+
+## Key Directories
+
+- `src/BalatroSeedOracle/ViewModels/` - MVVM ViewModels
+- `src/BalatroSeedOracle/Views/` - Avalonia XAML files (.axaml)
+- `src/BalatroSeedOracle/Services/` - Business logic services
+- `src/BalatroSeedOracle/Helpers/` - Utilities including `DebugLogger`
+
+## Important Principles
+
+- **Database Abstraction**: BSO should not know about SQL or database internals
+- **Platform Abstraction**: Use `IPlatformServices` for platform differences
+- **Keep it simple and maintainable**
+
+For specific guidance, see:
+
+- `@010-csharp-logging.mdc` for logging rules
+- `@020-csharp-async-await.mdc` for async patterns
+- `@030-platform-guards.mdc` for platform-specific code
+- `@035-cross-platform-architecture.mdc` for head/core architecture and abstractions
+- `@040-avalonia-mvvm-xaml.mdc` for MVVM and XAML patterns
+- `@060-filters-format-and-roundtrip.mdc` for filter JSON/JAML conventions
+- `@070-results-duckdb-lifecycle.mdc` for results storage and invalidation
+- `@080-motely-integration-boundary.mdc` for Motely submodule integration
+- `@090-browser-wasm-constraints.mdc` for Browser/WASM limitations

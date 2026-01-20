@@ -205,36 +205,36 @@ namespace BalatroSeedOracle.ViewModels
                         HighAvg = bands.HighAvg;
                         HighPeak = bands.HighPeak;
 
-                                // Capture max values
-                                if (bands.BassAvg > BassAvgMax)
-                                    BassAvgMax = bands.BassAvg;
-                                if (bands.BassPeak > BassPeakMax)
-                                    BassPeakMax = bands.BassPeak;
-                                if (bands.MidAvg > MidAvgMax)
-                                    MidAvgMax = bands.MidAvg;
-                                if (bands.MidPeak > MidPeakMax)
-                                    MidPeakMax = bands.MidPeak;
-                                if (bands.HighAvg > HighAvgMax)
-                                    HighAvgMax = bands.HighAvg;
-                                if (bands.HighPeak > HighPeakMax)
-                                    HighPeakMax = bands.HighPeak;
+                        // Capture max values
+                        if (bands.BassAvg > BassAvgMax)
+                            BassAvgMax = bands.BassAvg;
+                        if (bands.BassPeak > BassPeakMax)
+                            BassPeakMax = bands.BassPeak;
+                        if (bands.MidAvg > MidAvgMax)
+                            MidAvgMax = bands.MidAvg;
+                        if (bands.MidPeak > MidPeakMax)
+                            MidPeakMax = bands.MidPeak;
+                        if (bands.HighAvg > HighAvgMax)
+                            HighAvgMax = bands.HighAvg;
+                        if (bands.HighPeak > HighPeakMax)
+                            HighPeakMax = bands.HighPeak;
 
-                                // Beat detection with decay
-                                // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
-                                if (bands.BassPeak > BassThreshold)
-                                    BassBeatBrightness = 1.0;
-                                else
-                                    BassBeatBrightness *= DECAY_RATE;
+                        // Beat detection with decay
+                        // If beat detected, snap to 100%. Otherwise, decay by 25% per frame.
+                        if (bands.BassPeak > BassThreshold)
+                            BassBeatBrightness = 1.0;
+                        else
+                            BassBeatBrightness *= DECAY_RATE;
 
-                                if (bands.MidPeak > MidThreshold)
-                                    MidBeatBrightness = 1.0;
-                                else
-                                    MidBeatBrightness *= DECAY_RATE;
+                        if (bands.MidPeak > MidThreshold)
+                            MidBeatBrightness = 1.0;
+                        else
+                            MidBeatBrightness *= DECAY_RATE;
 
-                                if (bands.HighPeak > HighThreshold)
-                                    HighBeatBrightness = 1.0;
-                                else
-                                    HighBeatBrightness *= DECAY_RATE;
+                        if (bands.HighPeak > HighThreshold)
+                            HighBeatBrightness = 1.0;
+                        else
+                            HighBeatBrightness *= DECAY_RATE;
                     });
 
                     // ~60 FPS update rate

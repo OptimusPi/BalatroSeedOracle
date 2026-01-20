@@ -16,7 +16,8 @@ public partial class BrowserDuckDBService : IDuckDBService
 
     public async Task InitializeAsync()
     {
-        if (_initialized) return;
+        if (_initialized)
+            return;
 
         await InitializeDuckDBAsync();
         _initialized = true;
@@ -43,14 +44,17 @@ public partial class BrowserDuckDBService : IDuckDBService
     public Task<IDuckDBConnection> OpenDuckLakeConnectionAsync(
         string catalogPath,
         string dataPath,
-        string schemaName = "seed_source")
+        string schemaName = "seed_source"
+    )
     {
-        throw new NotSupportedException("DuckLake is not supported in browser builds. Use standard DuckDB connections instead.");
+        throw new NotSupportedException(
+            "DuckLake is not supported in browser builds. Use standard DuckDB connections instead."
+        );
     }
 
     [JSImport("DuckDB.initialize", "globalThis")]
-    private static partial Task<bool> InitializeDuckDBAsync();
+    private static extern Task<bool> InitializeDuckDBAsync();
 
     [JSImport("DuckDB.openConnection", "globalThis")]
-    private static partial Task<int> OpenConnectionInternalAsync();
+    private static extern Task<int> OpenConnectionInternalAsync();
 }

@@ -42,7 +42,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 return _platformServices.GetTempDirectory();
             }
-            
+
             // Fallback for early initialization before platform services are available
             // This should only happen during static initialization
             return Path.Combine(DataRoot, "Temp");
@@ -87,9 +87,7 @@ namespace BalatroSeedOracle.Helpers
                     }
                     return overrideDir;
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
             var exeDir = AppContext.BaseDirectory;
@@ -106,9 +104,7 @@ namespace BalatroSeedOracle.Helpers
                 }
                 return localData;
             }
-            catch
-            {
-            }
+            catch { }
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var root = Path.Combine(appData, "BalatroSeedOracle");

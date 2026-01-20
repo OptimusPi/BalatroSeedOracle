@@ -31,7 +31,8 @@ namespace BalatroSeedOracle.Components
 
             // Wire up ViewModel events that require view interaction
             ViewModel.AnalyzeSeedRequested += OnAnalyzeSeedRequested;
-            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
 
             InitializeComponent();
 
@@ -59,7 +60,10 @@ namespace BalatroSeedOracle.Components
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DayLatroWidget", $"Failed to copy to clipboard: {ex.Message}");
+                DebugLogger.LogError(
+                    "DayLatroWidget",
+                    $"Failed to copy to clipboard: {ex.Message}"
+                );
             }
         }
 

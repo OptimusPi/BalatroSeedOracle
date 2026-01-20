@@ -33,7 +33,8 @@ namespace BalatroSeedOracle.Services
         public UserProfileService(IAppDataStore store, IPlatformServices platformServices)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
+            _platformServices =
+                platformServices ?? throw new ArgumentNullException(nameof(platformServices));
             _profileKey = $"User/{PROFILE_FILENAME}";
 
             DebugLogger.Log("UserProfileService", $"Profile key: {_profileKey}");
@@ -324,10 +325,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "UserProfileService",
-                    $"Error saving profile: {ex.Message}"
-                );
+                DebugLogger.LogError("UserProfileService", $"Error saving profile: {ex.Message}");
             }
         }
 
@@ -356,13 +354,21 @@ namespace BalatroSeedOracle.Services
                 {
                     // Browser: must use async, but this is called from sync context
                     // Fire-and-forget with best effort
-                    _ = _store.WriteTextAsync(_profileKey, json).ContinueWith(t =>
-                    {
-                        if (t.IsCompletedSuccessfully)
-                            ThrottledLogSaveSuccess();
-                        else
-                            DebugLogger.LogError("UserProfileService", $"Error in flush save: {t.Exception?.Message}");
-                    }, TaskContinuationOptions.ExecuteSynchronously);
+                    _ = _store
+                        .WriteTextAsync(_profileKey, json)
+                        .ContinueWith(
+                            t =>
+                            {
+                                if (t.IsCompletedSuccessfully)
+                                    ThrottledLogSaveSuccess();
+                                else
+                                    DebugLogger.LogError(
+                                        "UserProfileService",
+                                        $"Error in flush save: {t.Exception?.Message}"
+                                    );
+                            },
+                            TaskContinuationOptions.ExecuteSynchronously
+                        );
                 }
                 else
                 {
@@ -374,10 +380,7 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "UserProfileService",
-                    $"Error saving profile: {ex.Message}"
-                );
+                DebugLogger.LogError("UserProfileService", $"Error saving profile: {ex.Message}");
             }
         }
 
@@ -397,10 +400,7 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    DebugLogger.Log(
-                        "UserProfileService",
-                        "Profile saved successfully"
-                    );
+                    DebugLogger.Log("UserProfileService", "Profile saved successfully");
                 }
                 _lastSaveLogTime = now;
             }

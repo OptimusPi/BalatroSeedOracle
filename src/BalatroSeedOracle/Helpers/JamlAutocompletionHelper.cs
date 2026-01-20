@@ -131,7 +131,13 @@ namespace BalatroSeedOracle.Helpers
                 return YamlCompletionContext.StakeValue;
 
             // Check if we're after "type:" or "Type:"
-            if (Regex.IsMatch(textBefore, @"type\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"type\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.TypeValue;
 
             // Check what type was specified to give context-aware value suggestions
@@ -142,7 +148,13 @@ namespace BalatroSeedOracle.Helpers
             );
 
             // Check if we're after "value:" or "joker:" or "soulJoker:" etc
-            if (Regex.IsMatch(textBefore, @"(?:value|joker|soulJoker|SoulJoker)\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"(?:value|joker|soulJoker|SoulJoker)\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
             {
                 if (typeMatch.Success)
                 {
@@ -160,31 +172,73 @@ namespace BalatroSeedOracle.Helpers
             }
 
             // Check if we're after "edition:"
-            if (Regex.IsMatch(textBefore, @"edition\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"edition\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.EditionValue;
 
             // Check if we're after "seal:"
-            if (Regex.IsMatch(textBefore, @"seal\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"seal\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.SealValue;
 
             // Check if we're after "enhancement:"
-            if (Regex.IsMatch(textBefore, @"enhancement\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"enhancement\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.EnhancementValue;
 
             // Check if we're after "rank:"
-            if (Regex.IsMatch(textBefore, @"rank\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"rank\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.RankValue;
 
             // Check if we're after "suit:"
-            if (Regex.IsMatch(textBefore, @"suit\s*:\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"suit\s*:\s*$",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.SuitValue;
 
             // Check if we're in "antes:" array
-            if (Regex.IsMatch(textBefore, @"antes\s*:\s*\[", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"antes\s*:\s*\[",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.AntesArray;
 
             // Check if we're in "shopSlots:" or "packSlots:" array
-            if (Regex.IsMatch(textBefore, @"(?:shop|pack)Slots\s*:\s*\[", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+            if (
+                Regex.IsMatch(
+                    textBefore,
+                    @"(?:shop|pack)Slots\s*:\s*\[",
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                )
+            )
                 return YamlCompletionContext.SlotsArray;
 
             // Check if we're at top level (not indented much) or in a clause
@@ -215,7 +269,10 @@ namespace BalatroSeedOracle.Helpers
             return spaces;
         }
 
-        private static void AddTopLevelPropertyCompletions(List<ICompletionData> completions, string textBefore)
+        private static void AddTopLevelPropertyCompletions(
+            List<ICompletionData> completions,
+            string textBefore
+        )
         {
             // YAML anchor definition snippet (YAML best practice!)
             completions.Add(
@@ -276,7 +333,10 @@ namespace BalatroSeedOracle.Helpers
             );
         }
 
-        private static void AddClausePropertyCompletions(List<ICompletionData> completions, string textBefore)
+        private static void AddClausePropertyCompletions(
+            List<ICompletionData> completions,
+            string textBefore
+        )
         {
             // Check if we're in an And/Or clause
             bool inAndOr = Regex.IsMatch(textBefore, @"(?:And|Or)\s*:\s*$", RegexOptions.Multiline);
@@ -313,19 +373,39 @@ namespace BalatroSeedOracle.Helpers
                     new SmartCompletionData("joker", "joker: Blueprint", "Joker name", priority: 15)
                 );
                 completions.Add(
-                    new SmartCompletionData("soulJoker", "soulJoker: Perkeo", "Soul joker", priority: 15)
+                    new SmartCompletionData(
+                        "soulJoker",
+                        "soulJoker: Perkeo",
+                        "Soul joker",
+                        priority: 15
+                    )
                 );
                 completions.Add(
-                    new SmartCompletionData("voucher", "voucher: Telescope", "Voucher", priority: 14)
+                    new SmartCompletionData(
+                        "voucher",
+                        "voucher: Telescope",
+                        "Voucher",
+                        priority: 14
+                    )
                 );
                 completions.Add(
                     new SmartCompletionData("tarot", "tarot: Fool", "Tarot card", priority: 14)
                 );
                 completions.Add(
-                    new SmartCompletionData("spectral", "spectral: Spectral", "Spectral card", priority: 14)
+                    new SmartCompletionData(
+                        "spectral",
+                        "spectral: Spectral",
+                        "Spectral card",
+                        priority: 14
+                    )
                 );
                 completions.Add(
-                    new SmartCompletionData("planet", "planet: Mercury", "Planet card", priority: 14)
+                    new SmartCompletionData(
+                        "planet",
+                        "planet: Mercury",
+                        "Planet card",
+                        priority: 14
+                    )
                 );
                 completions.Add(
                     new SmartCompletionData(
@@ -372,7 +452,12 @@ namespace BalatroSeedOracle.Helpers
                     new SmartCompletionData("And", "And:\n  Mode: Max", "AND clause", priority: 10)
                 );
                 completions.Add(
-                    new SmartCompletionData("Or", "Or:\n  - joker: Blueprint", "OR clause", priority: 10)
+                    new SmartCompletionData(
+                        "Or",
+                        "Or:\n  - joker: Blueprint",
+                        "OR clause",
+                        priority: 10
+                    )
                 );
             }
         }
@@ -380,22 +465,39 @@ namespace BalatroSeedOracle.Helpers
         private static void AddTypeValueCompletions(List<ICompletionData> completions)
         {
             completions.Add(new SmartCompletionData("Joker", "Joker", "Jokers", priority: 10));
-            completions.Add(new SmartCompletionData("SoulJoker", "SoulJoker", "Soul jokers", priority: 9));
-            completions.Add(new SmartCompletionData("Voucher", "Voucher", "Vouchers", priority: 9));
-            completions.Add(new SmartCompletionData("TarotCard", "TarotCard", "Tarot cards", priority: 9));
             completions.Add(
-                new SmartCompletionData("SpectralCard", "SpectralCard", "Spectral cards", priority: 9)
+                new SmartCompletionData("SoulJoker", "SoulJoker", "Soul jokers", priority: 9)
+            );
+            completions.Add(new SmartCompletionData("Voucher", "Voucher", "Vouchers", priority: 9));
+            completions.Add(
+                new SmartCompletionData("TarotCard", "TarotCard", "Tarot cards", priority: 9)
+            );
+            completions.Add(
+                new SmartCompletionData(
+                    "SpectralCard",
+                    "SpectralCard",
+                    "Spectral cards",
+                    priority: 9
+                )
             );
             completions.Add(
                 new SmartCompletionData("PlanetCard", "PlanetCard", "Planet cards", priority: 8)
             );
             completions.Add(
-                new SmartCompletionData("StandardCard", "StandardCard", "Playing cards", priority: 7)
+                new SmartCompletionData(
+                    "StandardCard",
+                    "StandardCard",
+                    "Playing cards",
+                    priority: 7
+                )
             );
             completions.Add(new SmartCompletionData("Boss", "Boss", "Boss blinds", priority: 7));
         }
 
-        private static void AddJokerCompletions(List<ICompletionData> completions, string textBefore)
+        private static void AddJokerCompletions(
+            List<ICompletionData> completions,
+            string textBefore
+        )
         {
             // Wildcards
             completions.Add(
@@ -481,7 +583,9 @@ namespace BalatroSeedOracle.Helpers
             completions.Add(new SmartCompletionData("Red", "Red", "Red seal", priority: 10));
             completions.Add(new SmartCompletionData("Blue", "Blue", "Blue seal", priority: 9));
             completions.Add(new SmartCompletionData("Gold", "Gold", "Gold seal", priority: 8));
-            completions.Add(new SmartCompletionData("Purple", "Purple", "Purple seal", priority: 7));
+            completions.Add(
+                new SmartCompletionData("Purple", "Purple", "Purple seal", priority: 7)
+            );
         }
 
         private static void AddEnhancementCompletions(List<ICompletionData> completions)
@@ -501,17 +605,13 @@ namespace BalatroSeedOracle.Helpers
             var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
             foreach (var rank in ranks)
             {
-                completions.Add(
-                    new SmartCompletionData(rank, rank, $"Rank {rank}", priority: 5)
-                );
+                completions.Add(new SmartCompletionData(rank, rank, $"Rank {rank}", priority: 5));
             }
         }
 
         private static void AddSuitCompletions(List<ICompletionData> completions)
         {
-            completions.Add(
-                new SmartCompletionData("Hearts", "Hearts", "Hearts", priority: 10)
-            );
+            completions.Add(new SmartCompletionData("Hearts", "Hearts", "Hearts", priority: 10));
             completions.Add(
                 new SmartCompletionData("Diamonds", "Diamonds", "Diamonds", priority: 9)
             );
@@ -542,7 +642,12 @@ namespace BalatroSeedOracle.Helpers
         private static void AddAnteSnippets(List<ICompletionData> completions)
         {
             completions.Add(
-                new SmartCompletionData("1-8", "[1, 2, 3, 4, 5, 6, 7, 8]", "All antes", priority: 10)
+                new SmartCompletionData(
+                    "1-8",
+                    "[1, 2, 3, 4, 5, 6, 7, 8]",
+                    "All antes",
+                    priority: 10
+                )
             );
             completions.Add(
                 new SmartCompletionData("1-4", "[1, 2, 3, 4]", "Early game", priority: 9)
@@ -551,7 +656,12 @@ namespace BalatroSeedOracle.Helpers
                 new SmartCompletionData("5-8", "[5, 6, 7, 8]", "Late game", priority: 9)
             );
             completions.Add(
-                new SmartCompletionData("2-12", "[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]", "Antes 2-12 (extended)", priority: 8)
+                new SmartCompletionData(
+                    "2-12",
+                    "[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]",
+                    "Antes 2-12 (extended)",
+                    priority: 8
+                )
             );
         }
 
@@ -604,7 +714,10 @@ namespace BalatroSeedOracle.Helpers
             );
         }
 
-        private static void AddAnchorReferenceCompletions(List<ICompletionData> completions, string textBefore)
+        private static void AddAnchorReferenceCompletions(
+            List<ICompletionData> completions,
+            string textBefore
+        )
         {
             // Extract all anchor definitions from the text
             var anchorMatches = Regex.Matches(

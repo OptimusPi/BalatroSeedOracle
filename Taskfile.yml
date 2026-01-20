@@ -1,0 +1,210 @@
+version: '3'
+
+vars:
+  BSO_PROJECT: ./src/BalatroSeedOracle/BalatroSeedOracle.csproj
+  DESKTOP_PROJECT: ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
+  BROWSER_PROJECT: ./src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+  TEST_PROJECT: ./tests/BalatroSeedOracle.Tests/BalatroSeedOracle.Tests.csproj
+  SOLUTION: ./BalatroSeedOracle.sln
+
+tasks:
+  submodule:init:
+    desc: Initialize git submodules (Motely)
+    silent: true
+    cmds:
+      - git submodule update --init --recursive
+
+  tool:restore:
+    desc: Restore .NET local tools (CSharpier, etc.)
+    silent: true
+    cmds:
+      - dotnet tool restore
+
+  workload:check:
+    desc: Check if required .NET workloads (android, ios) are installed
+    silent: true
+    cmds:
+      - |
+        # Check for android workload
+        if command -v grep > /dev/null 2>&1; then
+          # Unix-like (macOS/Linux)
+          if ! dotnet workload list | grep -q "android"; then
+            echo "❌ Required workload 'android' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        elif command -v findstr > /dev/null 2>&1; then
+          # Windows (cmd)
+          if ! dotnet workload list | findstr /c:"android" > nul 2>&1; then
+            echo "❌ Required workload 'android' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        fi
+      - |
+        # Check for ios workload
+        if command -v grep > /dev/null 2>&1; then
+          # Unix-like (macOS/Linux)
+          if ! dotnet workload list | grep -q "ios"; then
+            echo "❌ Required workload 'ios' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        elif command -v findstr > /dev/null 2>&1; then
+          # Windows (cmd)
+          if ! dotnet workload list | findstr /c:"ios" > nul 2>&1; then
+            echo "❌ Required workload 'ios' not installed."
+            echo ""
+            echo "To install workloads, run:"
+            echo "  task workload:install"
+            echo ""
+            echo "Or manually:"
+            echo "  dotnet workload install android ios"
+            exit 1
+          fi
+        fi
+      - echo "✅ All required workloads are installed"
+
+  workload:install:
+    desc: Install .NET workloads (android, ios) for mobile builds
+    silent: true
+    cmds:
+      - dotnet workload install android ios
+
+  workload:restore:
+    desc: Restore .NET workloads (android, ios) for mobile builds
+    silent: true
+    cmds:
+      - dotnet workload restore
+
+  restore:
+    desc: Restore NuGet packages for solution
+    silent: true
+    deps:
+      - workload:check
+    cmds:
+      - dotnet restore {{.SOLUTION}}
+
+  setup:
+    desc: One-time setup - submodules, tools, packages, and formatting hooks
+    silent: true
+    deps:
+      - submodule:init
+      - tool:restore
+      - restore
+    cmds:
+      - echo "✅ Submodules, tools, and packages restored!"
+      - echo ""
+      - echo "📋 One-time setup for formatting hooks:"
+      - echo "  macOS:"
+      - echo "    brew install lefthook dprint"
+      - echo "  Windows/Linux:"
+      - echo "    See https://github.com/evilmartians/lefthook#installation"
+      - echo "    See https://dprint.dev/install/"
+      - echo ""
+      - echo "  Then install git hooks:"
+      - echo "    lefthook install"
+      - echo ""
+      - echo "📱 For mobile builds (Android/iOS), install workloads:"
+      - echo "    task workload:restore"
+      - echo ""
+      - echo "🚀 Ready to run! Try 'task run:desktop' or 'task run:browser'"
+
+  run:desktop:
+    desc: Run desktop app (Release - fast)
+    silent: true
+    cmds:
+      - dotnet run -c Release --project {{.DESKTOP_PROJECT}}
+
+  run:desktop:debug:
+    desc: Run desktop app (Debug - with breakpoints)
+    silent: true
+    cmds:
+      - dotnet run -c Debug --project {{.DESKTOP_PROJECT}}
+
+  run:browser:
+    desc: Run browser/WASM app (Debug dev server)
+    silent: true
+    cmds:
+      - dotnet run -c Debug --project {{.BROWSER_PROJECT}}
+
+  publish:browser:
+    desc: Publish browser/WASM app (Release, non-threaded)
+    silent: true
+    cmds:
+      - dotnet publish -c Release {{.BROWSER_PROJECT}}
+      - echo ""
+      - echo "✅ Published to ./src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/browser-wasm/AppBundle/"
+
+  publish:browser:threaded:
+    desc: Publish browser/WASM app (Release, with threads)
+    silent: true
+    cmds:
+      - dotnet publish -c Release -p:EnableWasmThreads=true {{.BROWSER_PROJECT}}
+      - echo ""
+      - echo "✅ Published to ./src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/browser-wasm/AppBundle/"
+      - echo ""
+      - echo "⚠️  Threaded build requires COOP/COEP headers:"
+      - echo "    Cross-Origin-Opener-Policy - same-origin"
+      - echo "    Cross-Origin-Embedder-Policy - require-corp"
+
+  format:csharp:
+    desc: Format C# files (scoped to ./src)
+    silent: true
+    cmds:
+      - dotnet csharpier ./src --config-path .config/csharpierrc
+
+  format:other:
+    desc: Format Markdown/YAML/JSON files
+    silent: true
+    preconditions:
+      - sh: command -v dprint
+        msg: "dprint not found - install via 'brew install dprint' or see https://dprint.dev/install/"
+    cmds:
+      - dprint fmt --config .config/dprint.json
+
+  format:
+    desc: Format all files (C#, Markdown, YAML, JSON)
+    silent: true
+    deps:
+      - format:csharp
+      - format:other
+
+  clean:
+    desc: Clean build artifacts
+    silent: true
+    deps:
+      - workload:check
+    cmds:
+      - dotnet clean {{.SOLUTION}}
+      - cmd: pwsh ./clean.ps1
+        ignore_error: true
+      - echo ""
+      - echo "💡 For deeper clean, run 'pwsh ./clean.ps1' manually"
+
+  test:
+    desc: Run tests (Release configuration)
+    silent: true
+    cmds:
+      - dotnet test {{.TEST_PROJECT}} -c Release
+
+  default:
+    desc: Show available tasks
+    silent: true
+    cmds:
+      - task --list

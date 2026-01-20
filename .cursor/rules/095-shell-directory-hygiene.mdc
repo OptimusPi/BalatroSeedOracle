@@ -1,0 +1,77 @@
+---
+description: "Shell command directory management - always use working_directory parameter"
+globs: 
+alwaysApply: true
+lastReviewed: 2026-01-19
+---
+
+# Shell Directory Hygiene
+
+## Overview
+
+When executing shell commands, always use the `working_directory` parameter instead of `cd` commands. This prevents shell state confusion and ensures commands run in the expected directory.
+
+## Principles
+
+- **Explicit over implicit**: Specify the directory explicitly rather than relying on shell state
+- **Stateless thinking**: Treat each command as independent; don't rely on prior `cd` commands
+- **Predictable execution**: Commands should work the same regardless of prior shell history
+
+## Rules
+
+**MUST follow:**
+
+- Use the `working_directory` parameter for all shell commands that need to run in a specific directory
+- Verify the working directory is correct before running commands with side effects
+- When running git commands in submodules, use `working_directory: "external/Motely"` (not `cd external/Motely`)
+
+**MUST NOT do:**
+
+- Use `cd path &&` to change directories before commands
+- Rely on shell state from previous tool calls
+- Chain directory changes across multiple commands
+
+## Examples
+
+### Good Example
+
+```typescript
+// Correct: Use working_directory parameter
+Shell({
+  command: "git status",
+  working_directory: "external/Motely"
+})
+
+Shell({
+  command: "dotnet build",
+  working_directory: "src/BalatroSeedOracle"
+})
+```
+
+### Bad Example
+
+```typescript
+// Wrong: Using cd changes shell state unpredictably
+Shell({
+  command: "cd external/Motely && git status"
+})
+
+// Later command may run in wrong directory
+Shell({
+  command: "git add ."  // Where does this run? Unclear!
+})
+```
+
+## Why This Matters
+
+Shell state persists between tool calls. If you run `cd external/Motely` in one command, subsequent commands may unexpectedly run in that directory. This caused significant issues in a past session where:
+
+1. Agent ran `cd external/Motely && git checkout ...`
+2. Shell state persisted in submodule directory
+3. Later git commands ran in submodule context instead of parent repo
+4. Submodule state was corrupted
+
+## Related
+
+- `@080-motely-integration-boundary.mdc` - Submodule safety rules
+- `@motely-submodule-workflow/SKILL.md` - Submodule operations guide

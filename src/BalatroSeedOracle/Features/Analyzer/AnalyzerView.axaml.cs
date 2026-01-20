@@ -14,43 +14,47 @@ public partial class AnalyzerView : UserControl
     private AnalyzerViewModel? ViewModel => DataContext as AnalyzerViewModel;
 
     public AnalyzerView()
+    {
+        Helpers.DebugLogger.Log("AnalyzerView", "Constructor called!");
+        InitializeComponent();
+
+        // Set up hotkeys
+        this.KeyDown += OnKeyDown;
+
+        // Make control focusable for hotkeys
+        this.Focusable = true;
+        this.Loaded += (s, e) => this.Focus();
+
+        // Wire up data context change to render images
+        this.DataContextChanged += OnDataContextChanged;
+
+        // Wire up clipboard event
+        if (ViewModel != null)
         {
-            Helpers.DebugLogger.Log("AnalyzerView", "Constructor called!");
-            InitializeComponent();
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
+        }
+    }
 
-            // Set up hotkeys
-            this.KeyDown += OnKeyDown;
-
-            // Make control focusable for hotkeys
-            this.Focusable = true;
-            this.Loaded += (s, e) => this.Focus();
-
-            // Wire up data context change to render images
-            this.DataContextChanged += OnDataContextChanged;
-            
-            // Wire up clipboard event
-            if (ViewModel != null)
+    public async Task CopyToClipboardAsync(string text)
+    {
+        try
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel?.Clipboard != null)
             {
-                ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+                await topLevel.Clipboard.SetTextAsync(text);
+                Helpers.DebugLogger.Log("AnalyzerView", $"Copied to clipboard: {text}");
             }
         }
-
-        public async Task CopyToClipboardAsync(string text)
+        catch (Exception ex)
         {
-            try
-            {
-                var topLevel = TopLevel.GetTopLevel(this);
-                if (topLevel?.Clipboard != null)
-                {
-                    await topLevel.Clipboard.SetTextAsync(text);
-                    Helpers.DebugLogger.Log("AnalyzerView", $"Copied to clipboard: {text}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Helpers.DebugLogger.LogError("AnalyzerView", $"Failed to copy to clipboard: {ex.Message}");
-            }
+            Helpers.DebugLogger.LogError(
+                "AnalyzerView",
+                $"Failed to copy to clipboard: {ex.Message}"
+            );
         }
+    }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {

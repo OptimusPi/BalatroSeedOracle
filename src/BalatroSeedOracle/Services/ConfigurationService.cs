@@ -1,12 +1,12 @@
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
-using Microsoft.Extensions.Logging;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Storage;
+using Microsoft.Extensions.Logging;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
@@ -46,12 +46,18 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                DebugLogger.Log("ConfigurationService", $"SaveFilterAsync called with path: {filePath}");
-                
+                DebugLogger.Log(
+                    "ConfigurationService",
+                    $"SaveFilterAsync called with path: {filePath}"
+                );
+
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
-                DebugLogger.Log("ConfigurationService", isBrowser 
-                    ? "Running in BROWSER mode - using IAppDataStore" 
-                    : "Running in DESKTOP mode - using file system");
+                DebugLogger.Log(
+                    "ConfigurationService",
+                    isBrowser
+                        ? "Running in BROWSER mode - using IAppDataStore"
+                        : "Running in DESKTOP mode - using file system"
+                );
 
                 // In browser, filePath is treated as a logical key (e.g. "Filters/MyFilter.json").
                 if (_platformServices?.SupportsFileSystem == true)
@@ -66,17 +72,28 @@ namespace BalatroSeedOracle.Services
                     var serializationService = new FilterSerializationService(_userProfileService!);
                     var json = serializationService.SerializeConfig(motelyConfig);
 
-                    DebugLogger.Log("ConfigurationService", $"Serialized config to {json.Length} characters");
+                    DebugLogger.Log(
+                        "ConfigurationService",
+                        $"Serialized config to {json.Length} characters"
+                    );
 
                     if (isBrowser)
                     {
-                        await _store.WriteTextAsync(filePath.Replace('\\', '/'), json).ConfigureAwait(false);
-                        DebugLogger.Log("ConfigurationService", $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}");
+                        await _store
+                            .WriteTextAsync(filePath.Replace('\\', '/'), json)
+                            .ConfigureAwait(false);
+                        DebugLogger.Log(
+                            "ConfigurationService",
+                            $"Successfully wrote to browser store with key: {filePath.Replace('\\', '/')}"
+                        );
                     }
                     else
                     {
                         await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
-                        DebugLogger.Log("ConfigurationService", $"Successfully wrote to file: {filePath}");
+                        DebugLogger.Log(
+                            "ConfigurationService",
+                            $"Successfully wrote to file: {filePath}"
+                        );
                     }
 
                     // Invalidate cache for this filter
@@ -91,7 +108,10 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Error saving filter
-                DebugLogger.LogError("ConfigurationService", $"ERROR saving filter to {filePath}: {ex.Message}");
+                DebugLogger.LogError(
+                    "ConfigurationService",
+                    $"ERROR saving filter to {filePath}: {ex.Message}"
+                );
                 DebugLogger.LogError("ConfigurationService", $"Stack trace: {ex.StackTrace}");
                 return false;
             }
@@ -103,10 +123,12 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
-                
+
                 if (isBrowser)
                 {
-                    var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                    var json = await _store
+                        .ReadTextAsync(filePath.Replace('\\', '/'))
+                        .ConfigureAwait(false);
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
@@ -119,7 +141,10 @@ namespace BalatroSeedOracle.Services
                             ReadCommentHandling = JsonCommentHandling.Skip,
                             AllowTrailingCommas = true,
                         };
-                        var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(json, options);
+                        var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            json,
+                            options
+                        );
                         return config as T;
                     }
 
@@ -229,7 +254,10 @@ namespace BalatroSeedOracle.Services
 
         public void EnsureDirectoryExists(string directoryPath)
         {
-            if (_platformServices?.SupportsFileSystem == true && !string.IsNullOrEmpty(directoryPath))
+            if (
+                _platformServices?.SupportsFileSystem == true
+                && !string.IsNullOrEmpty(directoryPath)
+            )
             {
                 _platformServices.EnsureDirectoryExists(directoryPath);
             }

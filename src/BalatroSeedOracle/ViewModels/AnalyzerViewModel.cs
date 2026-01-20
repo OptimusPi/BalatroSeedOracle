@@ -16,6 +16,7 @@ namespace BalatroSeedOracle.ViewModels;
 public partial class AnalyzerViewModel : ObservableObject
 {
     public event EventHandler<string>? CopyToClipboardRequested;
+
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
 
@@ -40,16 +41,16 @@ public partial class AnalyzerViewModel : ObservableObject
     // Display values for spinners
     public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
     public string[] StakeDisplayValues { get; } =
-    [
-        "White Stake",
-        "Red Stake",
-        "Green Stake",
-        "Black Stake",
-        "Blue Stake",
-        "Purple Stake",
-        "Orange Stake",
-        "Gold Stake",
-    ];
+        [
+            "White Stake",
+            "Red Stake",
+            "Green Stake",
+            "Black Stake",
+            "Blue Stake",
+            "Purple Stake",
+            "Orange Stake",
+            "Gold Stake",
+        ];
 
     [ObservableProperty]
     private MotelySeedAnalysis? _currentAnalysis;
@@ -212,9 +213,12 @@ public partial class AnalyzerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Error copying Blueprint URL: {ex.Message}");
+            Helpers.DebugLogger.LogError(
+                "AnalyzerViewModel",
+                $"Error copying Blueprint URL: {ex.Message}"
+            );
         }
-        
+
         return Task.CompletedTask;
     }
 

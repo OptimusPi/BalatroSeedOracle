@@ -1467,7 +1467,10 @@ namespace BalatroSeedOracle.Services
                     "stake" or "stakes" => GetStakeImage(name),
                     "enhancement" or "enhancements" => GetEnhancementImage(name),
                     "seal" or "seals" => GetSealImage(name),
-                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage("Spades", "Ace"),
+                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage(
+                        "Spades",
+                        "Ace"
+                    ),
                     _ => null,
                 };
             }

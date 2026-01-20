@@ -4,10 +4,11 @@ using Android.OS;
 using Avalonia;
 using Avalonia.Android;
 using BalatroSeedOracle;
+using BalatroSeedOracle.Android.Services;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Platforms;
 using BalatroSeedOracle.Services.Storage;
-using BalatroSeedOracle.Services.DuckDB;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Android;
@@ -17,7 +18,10 @@ namespace BalatroSeedOracle.Android;
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,
-    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
+    ConfigurationChanges = ConfigChanges.Orientation
+        | ConfigChanges.ScreenSize
+        | ConfigChanges.UiMode
+)]
 public class MainActivity : AvaloniaMainActivity<App>
 {
     protected override void OnCreate(Bundle? savedInstanceState)
@@ -32,9 +36,9 @@ public class MainActivity : AvaloniaMainActivity<App>
         {
             // Use shared file system implementations (Android has file system access like Desktop)
             services.AddSingleton<IAppDataStore, FileSystemAppDataStore>();
-            services.AddSingleton<IDuckDBService, FileSystemDuckDBService>();
+            services.AddSingleton<IDuckDBService, AndroidDuckDBService>();
             services.AddSingleton<IPlatformServices, FileSystemPlatformServices>();
-            
+
             // Audio (Android supports audio via SoundFlow)
             services.AddSingleton<IAudioManager, SoundFlowAudioManager>();
             services.AddSingleton<SoundEffectsService>();

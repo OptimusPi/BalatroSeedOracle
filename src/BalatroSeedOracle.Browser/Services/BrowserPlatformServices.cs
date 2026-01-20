@@ -9,7 +9,7 @@ namespace BalatroSeedOracle.Browser.Services
 {
     /// <summary>
     /// Browser platform implementation of IPlatformServices.
-    /// Uses localStorage for storage, Web Audio API for audio, DuckDB-WASM for database.
+    /// Uses localStorage for storage, no file system access, no audio, no analyzer.
     /// </summary>
     public sealed class BrowserPlatformServices : IPlatformServices
     {
@@ -20,10 +20,10 @@ namespace BalatroSeedOracle.Browser.Services
             _store = store;
         }
 
-        public bool SupportsFileSystem => false; // No native file system, but localStorage works
-        public bool SupportsAudio => true; // Web Audio API fully supported
-        public bool SupportsAnalyzer => false; // Analyzer requires native DuckDB extensions
-        public bool SupportsResultsGrid => true; // Avalonia DataGrid works perfectly in browser
+        public bool SupportsFileSystem => false;
+        public bool SupportsAudio => false;
+        public bool SupportsAnalyzer => false;
+        public bool SupportsResultsGrid => false;
 
         public string GetTempDirectory()
         {
@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ReadTextAsync(storeKey);
         }
 
@@ -69,7 +69,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ExistsAsync(storeKey);
         }
 

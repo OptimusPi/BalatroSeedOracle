@@ -1,0 +1,71 @@
+---
+description: "Standards for authoring Cursor rules, commands, and skills"
+globs: .cursor/commands/*.md,.cursor/rules/*.mdc,.cursor/skills/**/SKILL.md
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Cursor Configuration Authoring Standards
+
+## General Principles
+
+- **Prefer editing existing artifacts** over creating new ones
+- **Keep artifacts concise**: rules <500 lines, commands <300 lines
+- **Reference files** instead of copying large content blocks inline
+- **Use templates** from `.cursor/templates/cursor-*.md` when creating new artifacts
+
+## Rules
+
+Required frontmatter fields:
+
+```yaml
+---
+description: "Brief description of what the rule covers"
+globs: pattern1,pattern2  # or alwaysApply: true
+alwaysApply: false        # true only if needed for every session
+lastReviewed: YYYY-MM-DD
+---
+```
+
+Guidelines:
+
+- Scope rules with `globs` whenever possible; avoid `alwaysApply: true` unless truly universal
+- Use specific, actionable instructions (not vague guidance)
+- Include examples where helpful
+- Template: `.cursor/templates/cursor-rule.md`
+
+## Commands
+
+Structure:
+
+- Clear title describing purpose
+- Input section with all expected parameters
+- Numbered, sequential steps
+- Approval gates for external operations (git push, PR creation, API calls)
+- Error handling for failure cases
+- Template: `.cursor/templates/cursor-command.md`
+
+## Skills
+
+Required sections:
+
+- Frontmatter with `name` and `description`
+- "When to Use" section
+- Step-by-step instructions
+- Code examples matching project conventions
+- Template: `.cursor/templates/cursor-skill.md`
+
+## Creating New Artifacts
+
+Use the global skills for detailed guidance:
+
+- `create-rule` - for creating new Cursor rules
+- `create-skill` - for creating new Cursor skills
+
+## Rule vs Skill vs Command
+
+| Type | Purpose | Trigger |
+| --- | --- | --- |
+| Rule | Constraints, standards, auto-injected context | Automatic (glob match or always-apply) |
+| Skill | Workflows, procedures, domain knowledge | Agent loads when relevant |
+| Command | User-invoked workflows | Explicit `/command-name` |

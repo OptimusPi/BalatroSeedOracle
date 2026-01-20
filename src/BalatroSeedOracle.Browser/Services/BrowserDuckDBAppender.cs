@@ -72,40 +72,39 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
         return this;
     }
 
-    public async Task FlushAsync()
+    public void Flush()
     {
-        await FlushAppenderAsync(_appenderId);
+        // Fire and forget - we'll handle async in Close
+        _ = FlushAppenderAsync(_appenderId);
     }
 
-    public async Task CloseAsync()
+    public void Close()
     {
-        if (_disposed) return;
-        await CloseAppenderAsync(_appenderId);
+        if (_disposed)
+            return;
+        _ = CloseAppenderAsync(_appenderId);
         _disposed = true;
     }
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            CloseAppenderAsync(_appenderId).GetAwaiter().GetResult();
-            _disposed = true;
-        }
+        Close();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await CloseAppenderAsync(_appenderId);
         _disposed = true;
     }
 
     [JSImport("DuckDB.appendRow", "globalThis")]
-    private static partial void AppendRowInternal(int appenderId, string valuesJson);
+    private static extern void AppendRowInternal(int appenderId, string valuesJson);
 
     [JSImport("DuckDB.flushAppender", "globalThis")]
-    private static partial Task FlushAppenderAsync(int appenderId);
+    private static extern Task FlushAppenderAsync(int appenderId);
 
     [JSImport("DuckDB.closeAppender", "globalThis")]
-    private static partial Task CloseAppenderAsync(int appenderId);
+    private static extern Task CloseAppenderAsync(int appenderId);
 }

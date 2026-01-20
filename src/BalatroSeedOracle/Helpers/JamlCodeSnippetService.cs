@@ -27,7 +27,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 Trigger = "joker",
                 Content = "joker: Blueprint\nantes: [1, 2]\nscore: 10",
-                Description = "Joker clause template"
+                Description = "Joker clause template",
             };
 
             // Anchor definition snippet
@@ -35,15 +35,16 @@ namespace BalatroSeedOracle.Helpers
             {
                 Trigger = "anchor",
                 Content = "name: &name value",
-                Description = "Anchor definition"
+                Description = "Anchor definition",
             };
 
             // And clause snippet
             _snippets["and"] = new Snippet
             {
                 Trigger = "and",
-                Content = "And:\n  Antes: [1, 2]\n  Mode: Max\n  Score: 100\n  clauses:\n    - joker: Blueprint",
-                Description = "And clause template"
+                Content =
+                    "And:\n  Antes: [1, 2]\n  Mode: Max\n  Score: 100\n  clauses:\n    - joker: Blueprint",
+                Description = "And clause template",
             };
 
             // Or clause snippet
@@ -51,15 +52,16 @@ namespace BalatroSeedOracle.Helpers
             {
                 Trigger = "or",
                 Content = "Or:\n  - joker: Blueprint\n    antes: [1, 2]",
-                Description = "Or clause template"
+                Description = "Or clause template",
             };
 
             // Cluster pattern snippet
             _snippets["cluster"] = new Snippet
             {
                 Trigger = "cluster",
-                Content = "joker_cluster: &joker_cluster\n  - joker: *desired_joker\n    ShopSlots: [2,3,4]\n    score: *score_per_joker\n  - joker: *desired_joker\n    ShopSlots: [4,5,6]\n    score: *score_per_joker",
-                Description = "Joker cluster pattern with anchors"
+                Content =
+                    "joker_cluster: &joker_cluster\n  - joker: *desired_joker\n    ShopSlots: [2,3,4]\n    score: *score_per_joker\n  - joker: *desired_joker\n    ShopSlots: [4,5,6]\n    score: *score_per_joker",
+                Description = "Joker cluster pattern with anchors",
             };
 
             // Negative tag snippet
@@ -67,7 +69,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 Trigger = "neg",
                 Content = "smallblindtag: NegativeTag",
-                Description = "Negative tag clause"
+                Description = "Negative tag clause",
             };
         }
 

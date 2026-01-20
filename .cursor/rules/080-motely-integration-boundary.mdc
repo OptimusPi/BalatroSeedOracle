@@ -1,0 +1,132 @@
+---
+description: "Motely submodule integration and API boundary"
+globs: *.cs,*.csproj
+alwaysApply: true
+lastReviewed: 2026-01-19
+---
+
+# Motely Integration Boundary Rules
+
+## Submodule Location
+
+Motely is a git submodule at `external/Motely/`. It **must be initialized** before building:
+
+```bash
+git submodule update --init --recursive
+```
+
+Build will fail with "type or namespace 'Motely' could not be found" if missing.
+
+## Project References
+
+- **Shared library**: `@src/BalatroSeedOracle/BalatroSeedOracle.csproj` → `Motely.csproj`
+- **Desktop**: `@src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj` → `Motely.API.csproj`
+
+```xml
+<!-- Core reference -->
+<ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
+
+<!-- Desktop API reference (with BSO_LIBRARY flag) -->
+<ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj"
+                  AdditionalProperties="BSO_LIBRARY=true" />
+```
+
+## Integration Pattern
+
+Motely types are used **directly** - no abstraction layer:
+
+```csharp
+// ✅ Direct usage (current pattern)
+using Motely.Filters;
+MotelyJsonConfig config = ...;
+IMotelySearch search = ...;
+MotelySearchDatabase db = ...;
+
+// ❌ Not used - no adapter/facade pattern exists
+ISearchEngine engine = new MotelyAdapter(...);
+```
+
+## Key Motely Types Used in BSO
+
+| Type                                    | Purpose                                 |
+| --------------------------------------- | --------------------------------------- |
+| `MotelyJsonConfig`                      | Filter configuration                    |
+| `MotelyJsonFilterClause`                | Individual filter clause                |
+| `IMotelySearch`                         | Search engine interface                 |
+| `MotelySearchDatabase`                  | DuckDB abstraction (treat as black box) |
+| `MotelyDeck`, `MotelyStake`             | Game setting enums                      |
+| `MotelyJoker*`, `MotelyTarotCard`, etc. | Item enums                              |
+
+## Rules
+
+**MUST follow:**
+
+- Treat `MotelySearchDatabase` as a black box - don't access its internals
+- Motely enums are the source of truth for item names
+- Use nullable types for Motely objects that may not be initialized
+
+**MUST NOT do:**
+
+- Copy Motely source files into BSO
+- Vendor Motely binaries
+- Modify files inside `external/Motely/` (contribute upstream instead)
+
+## ⚠️ CRITICAL: Submodule Commit Pointer Safety
+
+**NEVER change the submodule commit pointer without explicit user approval.**
+
+The parent repo tracks a specific Motely commit. Changing this pointer can introduce breaking API changes.
+
+**Safe operations:**
+```bash
+# Reset to tracked commit (safe - restores to what parent expects)
+git submodule update --init --recursive
+
+# Check status (safe - read-only)
+git submodule status
+```
+
+**Dangerous operations requiring user approval:**
+```bash
+# DANGEROUS: --remote changes the tracked commit!
+git submodule update --remote  # ❌ Never use without approval
+
+# DANGEROUS: Pulling inside submodule changes pointer
+cd external/Motely && git pull  # ❌ Never use without approval
+```
+
+**Before ANY submodule operation:**
+1. Run `git submodule status` to record current state
+2. After operation, verify the commit hasn't changed unexpectedly
+3. If commit changed unintentionally, reset with `git submodule update --init --recursive`
+
+```csharp
+// ✅ Good - Nullable Motely types with checks
+private MotelyJsonConfig? _currentConfig;
+private IMotelySearch? _currentSearch;
+
+if (_currentSearch != null && _currentSearch.Status == MotelySearchStatus.Running)
+{
+    // Safe to use
+}
+```
+
+## Workflow for Editing Motely
+
+The submodule is **read-only by default** in the editor. To make changes to Motely:
+
+1. **Open Motely as its own workspace**: Open `external/Motely` folder in a separate Cursor window
+2. **Create a branch and commit** in the submodule repo
+3. **Push to your fork** and open a PR to upstream (`https://github.com/OptimusPi/MotelyJAML`)
+4. **Update the parent repo** after the PR is merged:
+   - `cd external/Motely && git pull`
+   - `cd ../.. && git add external/Motely`
+   - `git commit -m "Bump Motely submodule to [commit SHA or description]"`
+
+**Why separate workspace?** The parent repo has `external/` excluded from Cursor indexing and marked read-only to prevent accidental edits/refactors.
+
+## Key Files
+
+- `@.gitmodules` - Submodule configuration
+- `@src/BalatroSeedOracle/Services/SearchInstance.cs` - Primary Motely integration
+- `@src/BalatroSeedOracle/Data/BalatroData.cs` - Initializes from Motely enums

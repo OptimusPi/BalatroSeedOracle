@@ -2,14 +2,25 @@
   <PropertyGroup>
     <!-- Shared library - single target (platform-specific code moved to head projects) -->
     <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced projects -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Product>Balatro Seed Oracle</Product>
+    <Company>OptimusPi</Company>
+    <Copyright>Copyright 2025</Copyright>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <!-- Enable more warnings for code quality -->
+    <AnalysisMode>Default</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
-  <!-- Apply license key from Directory.Build.props for Avalonia Accelerate components -->
-  <ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" Condition="'$(AvaloniaUILicenseKey)' != ''" />
-  </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
@@ -50,13 +61,12 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Svg" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Controls.TreeDataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
-    <!-- Avalonia Accelerate Components -->
-    <PackageReference Include="Avalonia.Controls.TreeDataGrid" />
-    <PackageReference Include="Avalonia.Controls.Markdown" />
-    <PackageReference Include="Avalonia.Controls.WebView" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
     <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
     <PackageReference Include="IconPacks.Avalonia.Material" />
@@ -74,44 +84,7 @@
     <PackageReference Include="SoundFlow" />
     <PackageReference Include="ClosedXML" />
   </ItemGroup>
-  <!-- Note: Browser-specific packages are now in BalatroSeedOracle.Browser project -->
-  <!-- Note: Platform-specific file exclusions are now handled in head projects -->
-  <!-- Exclude platform-specific files that are entirely wrapped in #if directives -->
-  <ItemGroup>
-    <!-- Desktop-only files (entire file wrapped in #if !BROWSER) -->
-    <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
-    <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
-    <Compile Remove="Services\SoundFlowAudioManager.cs" />
-    <!-- Desktop-only ViewModels that reference desktop-only types -->
-    <Compile Remove="ViewModels\AudioMixerWidgetViewModel.cs" />
-    <Compile Remove="ViewModels\MusicMixerWidgetViewModel.cs" />
-    <Compile Remove="ViewModels\AudioVisualizerSettingsWidgetViewModel.cs" />
-    <Compile Remove="ViewModels\FrequencyDebugWidgetViewModel.cs" />
-    <Compile Remove="ViewModels\SearchWidgetViewModel.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <!-- Desktop-only widget code-behind files that reference desktop-only ViewModels -->
-    <Compile Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml.cs" />
-    <Compile Remove="Components\Widgets\FrequencyDebugWidget.axaml.cs" />
-    <Compile Remove="Components\Widgets\MusicMixerWidget.axaml.cs" />
-    <Compile Remove="Components\Widgets\AudioMixerWidget.axaml.cs" />
-    <Compile Remove="Components\Widgets\SearchWidget.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <!-- Desktop-only widget XAML files -->
-    <AvaloniaXaml Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml" />
-    <AvaloniaXaml Remove="Components\Widgets\FrequencyDebugWidget.axaml" />
-    <AvaloniaXaml Remove="Components\Widgets\MusicMixerWidget.axaml" />
-    <AvaloniaXaml Remove="Components\Widgets\AudioMixerWidget.axaml" />
-    <AvaloniaXaml Remove="Components\Widgets\SearchWidget.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
-    <!-- Desktop-only components (entire file uses platform-specific APIs) -->
-    <Compile Remove="Components\WebView\ExternalContentModal.axaml.cs" />
-    <AvaloniaXaml Remove="Components\WebView\ExternalContentModal.axaml" />
-    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" />
-    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" />
-    <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" />
-    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" />
-    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" />
-    <Compile Remove="Services\Platforms\FileSystemDuckDBService.cs" />
-    <!-- Browser-only files (entire file wrapped in #if BROWSER) -->
-    <Compile Remove="Services\Storage\LocalStorageTester.cs" />
-  </ItemGroup>
+  <!-- Note: Browser-specific packages are in BalatroSeedOracle.Browser project -->
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
     <!-- Motely.API referenced from platform-specific projects (Desktop) that need it -->

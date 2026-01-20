@@ -15,7 +15,7 @@ namespace BalatroSeedOracle.Services
         SearchLaunchModal,
         DesignerLaunchModal,
         AnalyzerLaunchModal,
-        SettingsLaunchModal
+        SettingsLaunchModal,
     }
 
     public class EventFXConfig
@@ -124,7 +124,7 @@ namespace BalatroSeedOracle.Services
                 EventFXType.DesignerLaunchModal => "designer_launch_modal.json",
                 EventFXType.AnalyzerLaunchModal => "analyzer_launch_modal.json",
                 EventFXType.SettingsLaunchModal => "settings_launch_modal.json",
-                _ => "unknown.json"
+                _ => "unknown.json",
             };
         }
     }

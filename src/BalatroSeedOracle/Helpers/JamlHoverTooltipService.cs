@@ -76,10 +76,24 @@ namespace BalatroSeedOracle.Helpers
             int start = column;
             int end = column;
 
-            while (start > 0 && (char.IsLetterOrDigit(lineText[start - 1]) || lineText[start - 1] == '_' || lineText[start - 1] == '*'))
+            while (
+                start > 0
+                && (
+                    char.IsLetterOrDigit(lineText[start - 1])
+                    || lineText[start - 1] == '_'
+                    || lineText[start - 1] == '*'
+                )
+            )
                 start--;
 
-            while (end < lineText.Length && (char.IsLetterOrDigit(lineText[end]) || lineText[end] == '_'))
+            while (
+                end < lineText.Length
+                && (
+                    char.IsLetterOrDigit(lineText[end])
+                    || lineText[end] == '_'
+                    || lineText[end] == '*'
+                )
+            )
                 end++;
 
             if (start < end)
@@ -154,7 +168,13 @@ namespace BalatroSeedOracle.Helpers
         private string GetJokerRarity(string jokerKey)
         {
             // Simple rarity detection based on joker key patterns
-            if (jokerKey.Contains("Legendary") || jokerKey == "Perkeo" || jokerKey == "Triboulet" || jokerKey == "Canio" || jokerKey == "Chicot")
+            if (
+                jokerKey.Contains("Legendary")
+                || jokerKey == "Perkeo"
+                || jokerKey == "Triboulet"
+                || jokerKey == "Canio"
+                || jokerKey == "Chicot"
+            )
                 return "Legendary";
             if (jokerKey.Contains("Rare"))
                 return "Rare";
@@ -168,18 +188,21 @@ namespace BalatroSeedOracle.Helpers
             return property.ToLower() switch
             {
                 "joker" => "**joker**\n\nSpecifies a joker card name",
-                "antes" => "**antes**\n\nArray of antes (1-8) to check. Children inherit from parent And/Or clauses.",
+                "antes" =>
+                    "**antes**\n\nArray of antes (1-8) to check. Children inherit from parent And/Or clauses.",
                 "score" => "**score**\n\nScoring weight for 'should' clauses",
                 "shopslots" => "**ShopSlots**\n\nArray of shop slot positions (0-5)",
                 "packslots" => "**PackSlots**\n\nArray of pack slot positions (0-5)",
-                "edition" => "**edition**\n\nRequired edition: Foil, Holographic, Polychrome, or Negative",
+                "edition" =>
+                    "**edition**\n\nRequired edition: Foil, Holographic, Polychrome, or Negative",
                 "mode" => "**Mode**\n\nAnd/Or clause mode: Max or Sum",
                 "clauses" => "**clauses**\n\nArray of child clauses for And/Or operators",
                 "and" => "**And**\n\nAND clause - all child clauses must pass",
                 "or" => "**Or**\n\nOR clause - any child clause can pass",
-                "smallblindtag" => "**smallblindtag**\n\nSmall blind tag requirement (e.g., NegativeTag)",
+                "smallblindtag" =>
+                    "**smallblindtag**\n\nSmall blind tag requirement (e.g., NegativeTag)",
                 "bigblindtag" => "**bigblindtag**\n\nBig blind tag requirement",
-                _ => ""
+                _ => "",
             };
         }
 
@@ -213,23 +236,22 @@ namespace BalatroSeedOracle.Helpers
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(4),
                         Padding = new Thickness(8),
-                        Child = _tooltipContent = new TextBlock
-                        {
-                            Foreground = Brushes.White,
-                            FontSize = 12,
-                            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                            MaxWidth = 300
-                        }
-                    }
+                        Child = _tooltipContent =
+                            new TextBlock
+                            {
+                                Foreground = Brushes.White,
+                                FontSize = 12,
+                                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                                MaxWidth = 300,
+                            },
+                    },
                 };
             }
 
             if (_tooltipContent != null)
             {
                 // Simple markdown-like formatting
-                var formattedText = text
-                    .Replace("**", "")
-                    .Replace("\n\n", "\n");
+                var formattedText = text.Replace("**", "").Replace("\n\n", "\n");
                 _tooltipContent.Text = formattedText;
             }
 

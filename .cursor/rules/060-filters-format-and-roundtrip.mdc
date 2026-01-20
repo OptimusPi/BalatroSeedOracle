@@ -1,0 +1,87 @@
+---
+description: "Filter JSON/JAML format conventions and roundtrip invariants"
+globs: *.cs,*.json,*.jaml,*.yaml
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Filter Format & Roundtrip Rules
+
+## Canonical Locations
+
+- **Schema**: `@jaml.schema.json` - JSON Schema (draft-07) defining JAML format
+- **Serialization**: `@src/BalatroSeedOracle/Services/FilterSerializationService.cs`
+- **Type Mapping**: `@src/BalatroSeedOracle/Services/ClauseConversionService.cs`
+- **Valid Values**: `@src/BalatroSeedOracle/Helpers/JamlAutocompletionHelper.cs`
+
+## Casing Conventions
+
+| Context | Convention | Examples |
+|---------|------------|----------|
+| JSON/JAML property keys | camelCase | `mustNot`, `dateCreated`, `shopSlots` |
+| Type values | PascalCase | `Joker`, `SoulJoker`, `TarotCard` |
+| Edition/Seal/Enhancement | PascalCase | `Negative`, `Polychrome`, `Gold` |
+| Deck/Stake names | PascalCase | `Red`, `Nebula`, `White` |
+| Stickers | lowercase | `eternal`, `perishable`, `rental` |
+| Sources keys | lowercase | `shop`, `pack`, `tag`, `voucher` |
+
+## Type Aliases (Both Accepted on Read)
+
+- `Tarot` ↔ `TarotCard`
+- `Planet` ↔ `PlanetCard`
+- `Spectral` ↔ `SpectralCard`
+- `Boss` ↔ `BossBlind`
+- `PlayingCard` ↔ `StandardCard`
+
+## Roundtrip Invariants
+
+**MUST preserve without modification:**
+- `type` and `value` on every clause
+- Numeric arrays (`antes`, `shopSlots`, `packSlots`) - compacted to single-line JSON
+- Clause structure (`must`, `should`, `mustNot` arrays)
+- Nested `clauses` for `Or`/`And` operators
+
+```csharp
+// ✅ Good - Preserves roundtrip semantics
+"antes": [1,2,3,4,5,6,7,8]  // Single-line array compaction
+
+// ❌ Bad - Multi-line arrays break roundtrip consistency
+"antes": [
+  1,
+  2,
+  3
+]
+```
+
+## Breaking vs Non-Breaking Changes
+
+**Non-Breaking (safe):**
+- Adding new optional properties (ignored by older parsers)
+- Adding new type enum values
+- Changing metadata (`name`, `description`, `author`, `notes`)
+
+**Breaking (requires migration):**
+- Renaming existing properties
+- Removing required properties (`type`, `value`)
+- Changing casing conventions
+- Changing array semantics for `antes`, `sources`
+
+## Deserialization Settings
+
+Both JSON and YAML use **case-insensitive** property matching:
+
+```csharp
+// JSON - case-insensitive, allows comments/trailing commas
+new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true,
+    ReadCommentHandling = JsonCommentHandling.Skip,
+    AllowTrailingCommas = true,
+}
+
+// YAML - camelCase naming, ignores unknown properties
+new DeserializerBuilder()
+    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+    .IgnoreUnmatchedProperties()
+    .Build();
+```

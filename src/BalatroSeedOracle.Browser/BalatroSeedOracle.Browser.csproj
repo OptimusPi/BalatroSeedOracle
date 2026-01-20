@@ -2,27 +2,30 @@
   <PropertyGroup>
     <TargetFramework>net10.0-browser</TargetFramework>
     <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
-    <!-- WASM Optimization Settings -->
-    <WasmEnableSIMD>true</WasmEnableSIMD>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Define BROWSER compilation symbol for conditional compilation -->
+    <DefineConstants>BROWSER</DefineConstants>
+    <!-- Enable multi-threading for seed search! Requires COOP/COEP headers on web server -->
+    <!-- Disable for now to fix 'unreachable' error when running on non-localhost IP without HTTPS -->
     <WasmEnableThreads>false</WasmEnableThreads>
+    <!-- Enable SIMD for vectorized seed searching (128-bit SIMD in WASM) -->
+    <WasmEnableSIMD>true</WasmEnableSIMD>
     <PublishTrimmed>false</PublishTrimmed>
+    <!-- Disable HotReload in release builds -->
     <WasmEnableHotReload Condition="'$(Configuration)'=='Release'">false</WasmEnableHotReload>
-    <!-- Publish to Motely API wwwroot -->
+    <!-- Publish to temp location, then copy wwwroot contents to final destination -->
     <PublishDir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\_publish\</PublishDir>
   </PropertyGroup>
   
   <Target Name="DeployWasmOutput" AfterTargets="Publish">
     <ItemGroup>
-      <!-- Copy all files recursively, including .dat files -->
       <WasmFiles Include="$(PublishDir)wwwroot\**\*" />
     </ItemGroup>
-    <Message Text="Copying $(WasmFiles.Count) files from $(PublishDir)wwwroot to BSO folder" Importance="high" />
-    <!-- Copy all files preserving directory structure -->
-    <Copy SourceFiles="@(WasmFiles)" 
-          DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\%(RecursiveDir)" 
-          SkipUnchangedFiles="false" />
-    <Message Text="Deployment complete. Files copied to: $(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\" Importance="high" />
+    <Copy SourceFiles="@(WasmFiles)" DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\%(RecursiveDir)" />
     <RemoveDir Directories="$(PublishDir)" />
   </Target>
   <PropertyGroup Condition="'$(EnableWasmThreads)'=='true'">
@@ -34,10 +37,18 @@
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
+    <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
+
+  <!-- Include browser-only files that were excluded from shared project -->
+  <ItemGroup>
+    <Compile Include="..\BalatroSeedOracle\Services\Storage\LocalStorageTester.cs" Link="Services\Storage\LocalStorageTester.cs" />
+  </ItemGroup>
+
+  <!-- Don't include browser HostApiWidget - let main project handle exclusion -->
 
   <!-- Shared property for Motely BSO destination - use source wwwroot -->
   <PropertyGroup>

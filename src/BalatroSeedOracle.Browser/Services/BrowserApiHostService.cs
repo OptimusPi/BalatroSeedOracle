@@ -12,7 +12,7 @@ public class BrowserApiHostService : IApiHostService
     public bool IsSupported => false;
     public bool IsRunning => false;
     public string ServerUrl => "";
-    
+
     public event Action<string>? LogMessage;
     public event Action<bool>? StatusChanged;
 

@@ -14,7 +14,8 @@ namespace BalatroSeedOracle.Services.Platforms
     {
         private static string NormalizeKey(string key)
         {
-            var normalized = key.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+            var normalized = key.Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
             return normalized.TrimStart(Path.DirectorySeparatorChar);
         }
 
@@ -67,7 +68,9 @@ namespace BalatroSeedOracle.Services.Platforms
                 return ValueTask.FromResult<IReadOnlyList<string>>(new List<string>());
 
             var keys = new List<string>();
-            foreach (var file in Directory.EnumerateFiles(baseDir, "*", SearchOption.AllDirectories))
+            foreach (
+                var file in Directory.EnumerateFiles(baseDir, "*", SearchOption.AllDirectories)
+            )
             {
                 var rel = Path.GetRelativePath(AppPaths.DataRootDir, file);
                 rel = rel.Replace(Path.DirectorySeparatorChar, '/');

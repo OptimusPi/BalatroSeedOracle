@@ -1,163 +1,163 @@
 [
-    {
-        "name": "thefool",
-        "pos": {
-            "x": 0,
-            "y": 0
-        }
-    },
-    {
-        "name": "themagician",
-        "pos": {
-            "x": 1,
-            "y": 0
-        }
-    },
-    {
-        "name": "thehighpriestess",
-        "pos": {
-            "x": 2,
-            "y": 0
-        }
-    },
-    {
-        "name": "theempress",
-        "pos": {
-            "x": 3,
-            "y": 0
-        }
-    },
-    {
-        "name": "theemperor",
-        "pos": {
-            "x": 4,
-            "y": 0
-        }
-    },
-    {
-        "name": "thehierophant",        
-        "pos": {
-            "x": 5,
-            "y": 0
-        }
-    },
-    {
-        "name": "thelovers",
-        "pos": {
-            "x": 6,
-            "y": 0
-        }
-    },
-    {
-        "name": "thechariot",
-        "pos": {
-            "x": 7,
-            "y": 0
-        }
-    },
-    {
-        "name": "justice",
-        "pos": {
-            "x": 8,
-            "y": 0
-        }
-    },
-    {
-        "name": "thehermit",
-        "pos": {
-            "x": 9,
-            "y": 0
-        }
-    },
-    {
-        "name": "thewheeloffortune",
-        "pos": {
-            "x": 0,
-            "y": 1
-        }
-    },
-    {
-        "name": "strength",
-        "pos": {
-            "x": 1,
-            "y": 1
-        }
-    },
-    {
-        "name": "thehangedman",
-        "pos": {
-            "x": 2,
-            "y": 1
-        }
-    },
-    {
-        "name": "death",
-        "pos": {
-            "x": 3,
-            "y": 1
-        }
-    },
-    {
-        "name": "temperance",
-        "pos": {
-            "x": 4,
-            "y": 1
-        }
-    },
-    {
-        "name": "thedevil",
-        "pos": {
-            "x": 5,
-            "y": 1
-        }
-    },
-    {
-        "name": "thetower",
-        "pos": {
-            "x": 6,
-            "y": 1
-        }
-    },
-    {
-        "name": "thestar",
-        "pos": {
-            "x": 7,
-            "y": 1
-        }
-    },
-    {
-        "name": "themoon",
-        "pos": {
-            "x": 8,
-            "y": 1
-        }
-    },
-    {
-        "name": "thesun",
-        "pos": {
-            "x": 9,
-            "y": 1
-        }
-    },
-    {
-        "name": "judgement",
-        "pos": {
-            "x": 0,
-            "y": 2
-        }
-    },
-    {
-        "name": "theworld",
-        "pos": {
-            "x": 1,
-            "y": 2
-        }
-    },
-    {
-        "name": "anytarot",
-        "pos": {
-            "x": 6,
-            "y": 2
-        }
+  {
+    "name": "thefool",
+    "pos": {
+      "x": 0,
+      "y": 0
     }
+  },
+  {
+    "name": "themagician",
+    "pos": {
+      "x": 1,
+      "y": 0
+    }
+  },
+  {
+    "name": "thehighpriestess",
+    "pos": {
+      "x": 2,
+      "y": 0
+    }
+  },
+  {
+    "name": "theempress",
+    "pos": {
+      "x": 3,
+      "y": 0
+    }
+  },
+  {
+    "name": "theemperor",
+    "pos": {
+      "x": 4,
+      "y": 0
+    }
+  },
+  {
+    "name": "thehierophant",
+    "pos": {
+      "x": 5,
+      "y": 0
+    }
+  },
+  {
+    "name": "thelovers",
+    "pos": {
+      "x": 6,
+      "y": 0
+    }
+  },
+  {
+    "name": "thechariot",
+    "pos": {
+      "x": 7,
+      "y": 0
+    }
+  },
+  {
+    "name": "justice",
+    "pos": {
+      "x": 8,
+      "y": 0
+    }
+  },
+  {
+    "name": "thehermit",
+    "pos": {
+      "x": 9,
+      "y": 0
+    }
+  },
+  {
+    "name": "thewheeloffortune",
+    "pos": {
+      "x": 0,
+      "y": 1
+    }
+  },
+  {
+    "name": "strength",
+    "pos": {
+      "x": 1,
+      "y": 1
+    }
+  },
+  {
+    "name": "thehangedman",
+    "pos": {
+      "x": 2,
+      "y": 1
+    }
+  },
+  {
+    "name": "death",
+    "pos": {
+      "x": 3,
+      "y": 1
+    }
+  },
+  {
+    "name": "temperance",
+    "pos": {
+      "x": 4,
+      "y": 1
+    }
+  },
+  {
+    "name": "thedevil",
+    "pos": {
+      "x": 5,
+      "y": 1
+    }
+  },
+  {
+    "name": "thetower",
+    "pos": {
+      "x": 6,
+      "y": 1
+    }
+  },
+  {
+    "name": "thestar",
+    "pos": {
+      "x": 7,
+      "y": 1
+    }
+  },
+  {
+    "name": "themoon",
+    "pos": {
+      "x": 8,
+      "y": 1
+    }
+  },
+  {
+    "name": "thesun",
+    "pos": {
+      "x": 9,
+      "y": 1
+    }
+  },
+  {
+    "name": "judgement",
+    "pos": {
+      "x": 0,
+      "y": 2
+    }
+  },
+  {
+    "name": "theworld",
+    "pos": {
+      "x": 1,
+      "y": 2
+    }
+  },
+  {
+    "name": "anytarot",
+    "pos": {
+      "x": 6,
+      "y": 2
+    }
+  }
 ]

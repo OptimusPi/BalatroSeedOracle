@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     {
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
+        private readonly IFilterConfigurationService _filterConfigurationService;
         private readonly FiltersModalViewModel _parentViewModel;
         private readonly ClauseConversionService _clauseConversionService;
         private readonly IPlatformServices _platformServices;
@@ -115,12 +116,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
             IFilterService filterService,
+            IFilterConfigurationService filterConfigurationService,
             IPlatformServices platformServices
         )
         {
             _parentViewModel = parentViewModel;
             _configurationService = configurationService;
             _filterService = filterService;
+            _filterConfigurationService = filterConfigurationService;
             _clauseConversionService = new ClauseConversionService();
             _platformServices = platformServices;
 
@@ -617,7 +620,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Show validation warning to user
             HasValidationWarnings = true;
-            ValidationWarningText = "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
+            ValidationWarningText =
+                "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
 
             // For now, we proceed automatically after showing the warning.
             // A proper modal dialog system would allow user confirmation here.
@@ -677,7 +681,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         [RelayCommand]
-        private Task CopyJson()
+        private void CopyJson()
         {
             try
             {
@@ -685,7 +689,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (config == null)
                 {
                     UpdateStatus("Cannot copy JSON - invalid filter configuration", true);
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 // Serialize to JSON
@@ -704,8 +708,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 UpdateStatus($"Copy error: {ex.Message}", true);
                 DebugLogger.LogError("ValidateFilterTab", $"Error copying JSON: {ex.Message}");
             }
-            
-            return Task.CompletedTask;
         }
 
         [RelayCommand(CanExecute = nameof(CanSave))]
@@ -721,7 +723,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (string.IsNullOrWhiteSpace(filterFileName))
                 {
                     // Fallback to generating filename from filter name
-                    filterFileName = Path.GetFileName(_filterService.GenerateFilterFileName(FilterName));
+                    filterFileName = Path.GetFileName(
+                        _filterService.GenerateFilterFileName(FilterName)
+                    );
                 }
 
                 // Close the filter modal and open search modal with this filter
@@ -761,45 +765,51 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
-                var topLevel = TopLevelHelper.GetTopLevel();
-                if (topLevel?.StorageProvider == null)
+                if (!_platformServices.SupportsFileSystem)
                 {
-                    UpdateStatus("Export not available (no StorageProvider)", true);
-                    return;
-                }
-
-                if (!topLevel.StorageProvider.CanSave)
-                {
-                    UpdateStatus("File saving not supported in this environment", true);
-                    return;
-                }
-
-                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
-                    new FilePickerSaveOptions
+                    var topLevel = TopLevelHelper.GetTopLevel();
+                    if (topLevel?.StorageProvider == null)
                     {
-                        Title = "Export Filter",
-                        SuggestedFileName = exportFileName,
-                        FileTypeChoices = new[]
-                        {
-                            new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
-                        },
+                        UpdateStatus("Export not available (no StorageProvider)", true);
+                        return;
                     }
-                );
 
-                if (file == null)
-                {
-                    UpdateStatus("Export cancelled", true);
-                    return;
+                    var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                        new FilePickerSaveOptions
+                        {
+                            Title = "Export Filter",
+                            SuggestedFileName = exportFileName,
+                            FileTypeChoices = new[]
+                            {
+                                new FilePickerFileType("JSON") { Patterns = new[] { "*.json" } },
+                            },
+                        }
+                    );
+
+                    if (file == null)
+                    {
+                        UpdateStatus("Export cancelled", true);
+                        return;
+                    }
+
+                    await using (var stream = await file.OpenWriteAsync())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(json);
+                        await stream.WriteAsync(bytes, 0, bytes.Length);
+                    }
+
+                    UpdateStatus($"✅ Exported: {exportFileName}", false);
                 }
-
-                await using (var stream = await file.OpenWriteAsync())
+                else
                 {
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
-                }
+                    // Desktop: Export to desktop folder
+                    var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    var exportPath = Path.Combine(desktopPath, exportFileName);
+                    await File.WriteAllTextAsync(exportPath, json);
 
-                UpdateStatus($"✅ Exported: {file.Name}", false);
-                DebugLogger.Log("ValidateFilterTab", $"Filter exported to: {file.Name}");
+                    UpdateStatus($"✅ Exported to Desktop: {exportFileName}", false);
+                    DebugLogger.Log("ValidateFilterTab", $"Filter exported to: {exportPath}");
+                }
             }
             catch (Exception ex)
             {
@@ -1176,7 +1186,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StatusColor = isError ? Brushes.Red : Brushes.Green;
             DebugLogger.Log("ValidateFilterTab", $"Status: {message} (Error: {isError})");
         }
-
 
         #endregion
     }

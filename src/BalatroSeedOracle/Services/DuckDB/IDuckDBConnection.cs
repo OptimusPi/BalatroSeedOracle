@@ -58,7 +58,11 @@ public interface IDuckDBConnection : IAsyncDisposable, IDisposable
     /// <summary>
     /// Get all seeds from a table (uses Motely's DuckDBQueryHelpers internally)
     /// </summary>
-    Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null);
+    Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    );
 
     /// <summary>
     /// Clear all rows from a table
@@ -84,7 +88,8 @@ public interface IDuckDBConnection : IAsyncDisposable, IDisposable
         int? minScore = null,
         string? deck = null,
         string? stake = null,
-        int limit = 1000);
+        int limit = 1000
+    );
 
     /// <summary>
     /// Load a single row by ID from a table (uses Motely's helpers internally)

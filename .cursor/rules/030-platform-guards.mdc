@@ -1,0 +1,69 @@
+---
+description: "Platform-specific code and conditional compilation"
+globs: *.cs,*.axaml,*.axaml.cs
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Platform-Specific Code Rules
+
+## Preferred: Runtime Platform Services
+
+Use `IPlatformServices` for runtime platform detection:
+
+```csharp
+// ✅ Good - Runtime check
+if (platformServices.SupportsFileSystem)
+{
+    // Desktop-only file operations
+}
+
+if (platformServices.SupportsAudio)
+{
+    // Audio functionality
+}
+```
+
+## Compile-Time Guards
+
+When compile-time detection is required, use:
+
+- `#if BROWSER` - Browser-specific code
+- `#if !BROWSER` - Desktop/Mobile code
+
+```csharp
+#if !BROWSER
+private SearchInstance? _searchInstance;
+#endif
+
+public bool CanMinimizeToDesktop =>
+#if !BROWSER
+    _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
+#else
+    false;
+#endif
+```
+
+## Browser Constraints
+
+Browser platform has these limitations:
+
+- **No file system access** - use `IAppDataStore` (localStorage)
+- **No stdin** - can't use `Console.ReadLine()`
+- **No native file dialogs**
+- **Limited audio support**
+
+## Platform Services Capabilities
+
+Check capabilities before using features:
+
+- `SupportsFileSystem` - File I/O operations
+- `SupportsAudio` - Audio playback
+- `SupportsAnalyzer` - Seed analysis tools
+- `SupportsResultsGrid` - DataGrid results display
+
+## Related
+
+- `@035-cross-platform-architecture.mdc` - Architecture overview and abstraction patterns
+- `@apply-platform-guards-browser-vs-desktop/SKILL.md` - Platform guard implementation
+- `@implement-cross-platform-feature/SKILL.md` - Complete cross-platform feature workflow

@@ -63,8 +63,10 @@ public partial class App : Application
             if (platformServices != null && !platformServices.SupportsFileSystem)
             {
                 // Test localStorage interop early - fire-and-forget with proper error handling
+#if BROWSER
                 _ = TestLocalStorageInteropAsync();
-                
+#endif
+
                 // Seed browser sample filters (fire-and-forget, best-effort)
                 _ = SeedBrowserSampleFiltersAsync();
             }
@@ -122,25 +124,31 @@ public partial class App : Application
         }
     }
 
+#if BROWSER
     private async Task TestLocalStorageInteropAsync()
     {
         try
         {
             await Task.Delay(1000); // Wait for JS to initialize
-            // LocalStorageTester is browser-only, excluded from shared project
-            // Test is handled by BrowserPlatformServices initialization
-            DebugLogger.Log("App", "LocalStorage interop test handled by platform services");
+            var testResult =
+                await BalatroSeedOracle.Services.Storage.LocalStorageTester.TestLocalStorageInterop();
+            DebugLogger.Log(
+                "App",
+                $"LocalStorage interop test result: {(testResult ? "PASSED" : "FAILED")}"
+            );
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("App", $"LocalStorage interop test failed: {ex.Message}");
         }
     }
+#endif
 
     private async Task UniformProgressLoopAsync(
         Services.TransitionService transitionService,
         DateTime introStart,
-        TimeSpan minIntro)
+        TimeSpan minIntro
+    )
     {
         while (true)
         {
@@ -216,12 +224,13 @@ public partial class App : Application
                 + $"Exception: {ex.GetType().FullName}\n"
                 + $"Message: {ex.Message}\n"
                 + $"Stack Trace:\n{ex.StackTrace}\n";
-            
+
             if (ex.InnerException != null)
             {
-                errorMsg += $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
-                         + $"Inner Message: {ex.InnerException.Message}\n"
-                         + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
+                errorMsg +=
+                    $"Inner Exception: {ex.InnerException.GetType().FullName}\n"
+                    + $"Inner Message: {ex.InnerException.Message}\n"
+                    + $"Inner Stack Trace:\n{ex.InnerException.StackTrace}\n";
             }
             errorMsg += "\n";
 
@@ -243,7 +252,7 @@ public partial class App : Application
             // Create main window FIRST (so we have access to shader background)
             var mainWindow = _serviceProvider!.GetRequiredService<Views.MainWindow>();
             desktop.MainWindow = mainWindow;
-            
+
             // Subscribe to window state changes to close popups when minimized
             mainWindow.PropertyChanged += (s, e) =>
             {
@@ -261,7 +270,7 @@ public partial class App : Application
                     }
                 }
             };
-            
+
             mainWindow.Show();
 
             // Give UI a moment to render and initialize shader
@@ -312,15 +321,13 @@ public partial class App : Application
                 await PreloadSpritesWithoutTransition();
             }
 
-            // Initialize background music with SoundFlow (8-track) - Desktop only
+            // Initialize background music with SoundFlow (8-track)
             try
             {
-                var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
-                if (audioManager != null)
-                {
-                    DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
-                    DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
-                }
+                var audioManager =
+                    _serviceProvider!.GetRequiredService<Services.SoundFlowAudioManager>();
+                DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
+                DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
             }
             catch (Exception ex)
             {
@@ -436,11 +443,8 @@ public partial class App : Application
             }
 
             // Stop audio
-            var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
-            if (audioManager is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            var audioManager = _serviceProvider?.GetService<Services.SoundFlowAudioManager>();
+            audioManager?.Dispose();
 
             // Dispose filter cache
             var filterCache = _serviceProvider?.GetService<Services.IFilterCacheService>();
@@ -498,7 +502,8 @@ public partial class App : Application
             if (exists)
                 return;
 
-            var sampleJson = "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
+            var sampleJson =
+                "{\n  \"name\": \"Perkeo Observatory\",\n  \"description\": \"Perkeo with the Telescope and Observatory Vouchers.\",\n  \"author\": \"tacodiva\",\n  \"dateCreated\": \"2025-01-01T05:46:12.6691000Z\",\n  \"must\": [\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Telescope\",\n      \"antes\": [1]\n    },\n    {\n      \"type\": \"Voucher\",\n      \"value\": \"Observatory\",\n      \"antes\": [2]\n    }\n  ],\n  \"should\": [],\n  \"mustNot\": []\n}";
 
             await store.WriteTextAsync(sampleKey, sampleJson).ConfigureAwait(false);
         }
@@ -550,7 +555,6 @@ public partial class App : Application
             DebugLogger.LogError("App", $"Failed to create directories: {ex.Message}");
         }
     }
-
 
     /// <summary>
     /// Get a service from the DI container (temporary until full DI migration)

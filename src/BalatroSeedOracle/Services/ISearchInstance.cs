@@ -7,6 +7,10 @@ using Motely.Filters;
 
 namespace BalatroSeedOracle.Services;
 
+/// <summary>
+/// Interface for search instance operations - platform-agnostic abstraction
+/// Following Avalonia UI pattern: interface in shared project, implementation in platform head projects
+/// </summary>
 public interface ISearchInstance : IDisposable
 {
     string SearchId { get; }
@@ -23,23 +27,22 @@ public interface ISearchInstance : IDisposable
     bool IsDatabaseInitialized { get; }
     bool HasNewResultsSinceLastQuery { get; }
 
-    event EventHandler<SearchResultEventArgs>? SearchStarted;
-    event EventHandler<SearchResultEventArgs>? SearchCompleted;
+    event EventHandler? SearchStarted;
+    event EventHandler? SearchCompleted;
     event EventHandler<SearchProgress>? ProgressUpdated;
+    event EventHandler<int>? NewHighScoreFound;
 
-    Task<List<SearchResult>> GetResultsPageAsync(int offset, int count);
-    Task<List<SearchResult>> GetTopResultsAsync(int count);
-    Task<List<SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit = 1000);
-    Task StartSearchAsync(SearchCriteria criteria);
     Task StartSearchAsync(
         SearchCriteria criteria,
         MotelyJsonConfig config,
         IProgress<SearchProgress>? progress = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<List<SearchResult>> GetResultsPageAsync(int offset, int count);
+    Task<List<SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit = 1000);
     void AcknowledgeResultsQueried();
     void StopSearch();
     void PauseSearch();
     List<string> GetConsoleHistory();
-    event EventHandler<int>? NewHighScoreFound;
 }

@@ -55,14 +55,39 @@ nunit-*.xml
 /.vs
 /src/SearchResults
 /SearchResults
+/ouija_configs
 *.local.json
-/node_modules
-/.trae
+userprofile.json
+/JsonItemFilters/
+/JsonFilters/
+/JamlFilters/
+*.csv
+/.claude
+/.specify
+nul
+*.log
 
-external/*
+# License keys and secrets
+*.license
 avalonia.license
-avalonia.license.local
-*.license.local
-.env.local
+.env
+.env.*
+**/appsettings.*.json
+!**/appsettings.json
+/node_modules
+.samples_imported
+fertilizer.db
+fertilizer.db.wal
+/.trae
+/publish-browser
 /WordLists
-/JamlFilters
+build_log.txt
+/published_browser
+/src/BalatroSeedOracle.Browser/Motely.API/wwwroot/BSO
+
+# Local files
+.local
+
+# Includes
+!.cursor/
+!.cursor/**/*

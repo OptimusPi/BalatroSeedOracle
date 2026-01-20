@@ -24,7 +24,24 @@
     },
     "deck": {
       "type": "string",
-      "enum": ["Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic", "Challenge"],
+      "enum": [
+        "Red",
+        "Blue",
+        "Yellow",
+        "Green",
+        "Black",
+        "Magic",
+        "Nebula",
+        "Ghost",
+        "Abandoned",
+        "Checkered",
+        "Zodiac",
+        "Painted",
+        "Anaglyph",
+        "Plasma",
+        "Erratic",
+        "Challenge"
+      ],
       "default": "Red",
       "description": "Balatro deck to search with"
     },
@@ -99,7 +116,22 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["Joker", "SoulJoker", "Voucher", "Tarot", "TarotCard", "Planet", "PlanetCard", "Spectral", "SpectralCard", "Tag", "Boss", "BossBlind", "PlayingCard", "StandardCard"],
+          "enum": [
+            "Joker",
+            "SoulJoker",
+            "Voucher",
+            "Tarot",
+            "TarotCard",
+            "Planet",
+            "PlanetCard",
+            "Spectral",
+            "SpectralCard",
+            "Tag",
+            "Boss",
+            "BossBlind",
+            "PlayingCard",
+            "StandardCard"
+          ],
           "description": "Type of item to search for"
         },
         "value": {

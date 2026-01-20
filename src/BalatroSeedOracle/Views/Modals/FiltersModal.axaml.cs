@@ -21,17 +21,20 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
+                var platformServices = ServiceHelper.GetService<IPlatformServices>();
 
-                if (configService is null || filterService is null)
+                if (configService is null || filterService is null || platformServices is null)
                 {
                     throw new InvalidOperationException(
-                        "Required services not available (IConfigurationService/IFilterService)"
+                        "Required services not available (IConfigurationService/IFilterService/IPlatformServices)"
                     );
                 }
 
-                var platformServices = App.GetService<IPlatformServices>();
-                var notificationService = App.GetService<NotificationService>();
-                var viewModel = new FiltersModalViewModel(configService, filterService, platformServices!, notificationService);
+                var viewModel = new FiltersModalViewModel(
+                    configService,
+                    filterService,
+                    platformServices
+                );
                 DataContext = viewModel;
 
                 // Initialize tabs synchronously so they're ready when UI renders
@@ -75,6 +78,7 @@ namespace BalatroSeedOracle.Views.Modals
         public void EnableAllTabs()
         {
             // In proper MVVM, tabs are always enabled via binding
+            // This is for backwards compatibility with old calls
         }
     }
 }

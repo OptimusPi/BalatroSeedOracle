@@ -46,9 +46,8 @@ namespace BalatroSeedOracle.Views
 
         public Action<UserControl>? RequestContentSwap { get; set; }
 
-        public BalatroMainMenu() : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>())
-        {
-        }
+        public BalatroMainMenu()
+            : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>()) { }
 
         public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
         {
@@ -96,9 +95,7 @@ namespace BalatroSeedOracle.Views
             e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
         }
 
-        private void OnModalContainerDrop(object? sender, DragEventArgs e)
-        {
-        }
+        private void OnModalContainerDrop(object? sender, DragEventArgs e) { }
 
         private void WireViewModelEvents()
         {
@@ -242,7 +239,7 @@ namespace BalatroSeedOracle.Views
                                 filtersDir,
                                 result.FilterId + ".jaml"
                             );
-                            
+
                             if (!System.IO.File.Exists(configPath))
                             {
                                 configPath = System.IO.Path.Combine(
@@ -253,35 +250,56 @@ namespace BalatroSeedOracle.Views
 
                             try
                             {
-                                var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-                                var json = await platformServices.ReadTextFromPathAsync(configPath) ?? "{}";
-                                
+                                var platformServices =
+                                    ServiceHelper.GetRequiredService<IPlatformServices>();
+                                var json =
+                                    await platformServices.ReadTextFromPathAsync(configPath)
+                                    ?? "{}";
+
                                 // Parse based on file extension
                                 Motely.Filters.MotelyJsonConfig config;
-                                if (configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
+                                if (
+                                    configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase)
+                                )
                                 {
-                                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(json, out config, out var parseError) || config == null)
+                                    if (
+                                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                            json,
+                                            out config,
+                                            out var parseError
+                                        )
+                                        || config == null
+                                    )
                                     {
-                                        throw new InvalidOperationException($"Failed to parse JAML: {parseError ?? "Unknown error"}");
+                                        throw new InvalidOperationException(
+                                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
+                                        );
                                     }
                                 }
                                 else
                                 {
-                                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                        json,
-                                        new System.Text.Json.JsonSerializerOptions
-                                        {
-                                            PropertyNameCaseInsensitive = true,
-                                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                            AllowTrailingCommas = true,
-                                        }
-                                    );
+                                    config =
+                                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                                            json,
+                                            new System.Text.Json.JsonSerializerOptions
+                                            {
+                                                PropertyNameCaseInsensitive = true,
+                                                ReadCommentHandling = System
+                                                    .Text
+                                                    .Json
+                                                    .JsonCommentHandling
+                                                    .Skip,
+                                                AllowTrailingCommas = true,
+                                            }
+                                        );
                                     if (config == null)
                                     {
-                                        throw new InvalidOperationException("Failed to deserialize JSON filter");
+                                        throw new InvalidOperationException(
+                                            "Failed to deserialize JSON filter"
+                                        );
                                     }
                                 }
-                                
+
                                 if (config != null && !string.IsNullOrEmpty(config.Name))
                                 {
                                     SetTitle($"🔍 {config.Name}");
@@ -295,32 +313,32 @@ namespace BalatroSeedOracle.Views
                                     ViewModel.IsModalVisible = false;
                                 }
                                 HideModalContent();
-                                
+
                                 Helpers.DebugLogger.LogError(
                                     "BalatroMainMenu",
                                     $"Failed to show search modal with filter: {ex.Message}"
                                 );
-                                
+
                                 // Show error using existing modal system
                                 var errorText = $"Failed to load filter:\n\n{ex.Message}";
                                 var errorContent = new StackPanel
                                 {
                                     Margin = new Thickness(20),
-                                    Children = 
+                                    Children =
                                     {
-                                        new TextBlock 
-                                        { 
-                                            Text = "Error", 
-                                            FontSize = 24, 
+                                        new TextBlock
+                                        {
+                                            Text = "Error",
+                                            FontSize = 24,
                                             FontWeight = FontWeight.Bold,
-                                            Margin = new Thickness(0,0,0,10)
+                                            Margin = new Thickness(0, 0, 0, 10),
                                         },
-                                        new TextBlock 
-                                        { 
-                                            Text = errorText, 
-                                            TextWrapping = TextWrapping.Wrap 
-                                        }
-                                    }
+                                        new TextBlock
+                                        {
+                                            Text = errorText,
+                                            TextWrapping = TextWrapping.Wrap,
+                                        },
+                                    },
                                 };
                                 var errorControl = new UserControl { Content = errorContent };
                                 ShowModalContent(errorControl, "❌ ERROR");
@@ -471,8 +489,8 @@ namespace BalatroSeedOracle.Views
                             var newFilterId = await CreateNewFilterWithName(filterName);
                             if (!string.IsNullOrEmpty(newFilterId))
                             {
-                                await Dispatcher.UIThread.InvokeAsync(() =>
-                                    ShowFiltersModalDirectAsync(newFilterId)
+                                await Dispatcher.UIThread.InvokeAsync(
+                                    () => ShowFiltersModalDirectAsync(newFilterId)
                                 );
                             }
                         }
@@ -490,8 +508,8 @@ namespace BalatroSeedOracle.Views
                         // Open designer with selected filter loaded (replaces current modal)
                         if (result.FilterId != null)
                         {
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                                ShowFiltersModalDirectAsync(result.FilterId)
+                            await Dispatcher.UIThread.InvokeAsync(
+                                () => ShowFiltersModalDirectAsync(result.FilterId)
                             );
                         }
                         break;
@@ -518,8 +536,8 @@ namespace BalatroSeedOracle.Views
                                 );
                                 if (!string.IsNullOrEmpty(clonedId))
                                 {
-                                    await Dispatcher.UIThread.InvokeAsync(() =>
-                                        ShowFiltersModalDirectAsync(clonedId)
+                                    await Dispatcher.UIThread.InvokeAsync(
+                                        () => ShowFiltersModalDirectAsync(clonedId)
                                     );
                                 }
                             }
@@ -537,6 +555,7 @@ namespace BalatroSeedOracle.Views
                     case Models.FilterAction.Delete:
                         // NOTE: Delete is now handled entirely in FilterSelectionModalViewModel.ConfirmDelete()
                         // This case should never be reached since ConfirmDelete() doesn't invoke ModalCloseRequested anymore
+                        // Kept for backwards compatibility in case of refactoring
                         Helpers.DebugLogger.Log(
                             "BalatroMainMenu",
                             "Delete action reached ModalCloseRequested - this should not happen. Delete is handled in ViewModel."
@@ -635,7 +654,7 @@ namespace BalatroSeedOracle.Views
                     var filtersDir = AppPaths.FiltersDir;
                     // Try .jaml first, then .json as fallback
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
-                    
+
                     if (!System.IO.File.Exists(filterPath))
                     {
                         filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
@@ -772,7 +791,7 @@ namespace BalatroSeedOracle.Views
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Width = 450,
-                Height = 250
+                Height = 250,
             };
 
             var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
@@ -849,7 +868,8 @@ namespace BalatroSeedOracle.Views
             ShowModalContent(contentControl, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
 
             // Focus textbox after a short delay
-            Dispatcher.UIThread.Post(async () => {
+            Dispatcher.UIThread.Post(async () =>
+            {
                 await Task.Delay(100);
                 textBox.Focus();
                 textBox.SelectAll();
@@ -1095,9 +1115,13 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to apply shader parameters: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to apply shader parameters: {ex.Message}"
+                );
             }
         }
+
         /// <summary>
         /// Open analyzer with the specified filter (filter selection happens inside analyzer)
         /// </summary>
@@ -1208,11 +1232,6 @@ namespace BalatroSeedOracle.Views
 
                     // Create SearchWidget at saved position
                     var spriteService = Services.SpriteService.Instance;
-                    // SearchWidget is desktop-only - registered in Desktop Program.cs
-                    DebugLogger.Log("BalatroMainMenu", "SearchWidget is desktop-only feature");
-                    return;
-                    // Commented out - SearchWidget is desktop-only
-                    /*
                     var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
                     var searchWidget = new Components.Widgets.SearchWidget
                     {
@@ -1229,7 +1248,8 @@ namespace BalatroSeedOracle.Views
                     viewModel.WidgetTitle = $"Search #{savedWidget.SearchInstanceId}";
 
                     // Register with position service for collision avoidance
-                    var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
+                    var positionService =
+                        Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
                     positionService?.RegisterWidget(viewModel);
 
                     // Wire up event to reopen SearchModal when widget is clicked
@@ -1246,7 +1266,6 @@ namespace BalatroSeedOracle.Views
                         "BalatroMainMenu",
                         $"Restored widget window: {savedWidget.SearchInstanceId} at ({savedWidget.PositionX}, {savedWidget.PositionY})"
                     );
-                    */
                 }
 
                 // Clean up orphaned widgets
@@ -1656,7 +1675,7 @@ namespace BalatroSeedOracle.Views
                 DispatcherPriority.Background
             );
 
-            // Audio manager cleanup handled via IAudioManager interface
+            var audioManager = App.GetService<Services.SoundFlowAudioManager>();
         }
 
         #endregion
@@ -1980,39 +1999,35 @@ namespace BalatroSeedOracle.Views
                 // Get search instance from service
                 var searchManager = Helpers.ServiceHelper.GetService<SearchManager>();
                 var searchInstance = searchManager?.GetSearch(searchId);
-                
+
                 if (searchInstance == null)
                 {
-                    DebugLogger.LogError("BalatroMainMenu", $"Search instance not found: {searchId}");
+                    DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        $"Search instance not found: {searchId}"
+                    );
                     return;
                 }
 
-                var platformServices = ServiceHelper.GetService<IPlatformServices>();
-                if (platformServices?.SupportsResultsGrid == true)
+                // Create SearchWidget with proper ViewModel
+                var spriteService = Services.SpriteService.Instance;
+                var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
+                var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
+
+                // Wire up event to reopen SearchModal when widget is clicked
+                viewModel.SearchModalOpenRequested += async (s, sid) =>
                 {
-#if !BROWSER
-                    // Create SearchWidget with proper ViewModel
-                    var spriteService = Services.SpriteService.Instance;
-                    var notificationService = ServiceHelper.GetService<NotificationService>();
-                    var viewModel = new SearchWidgetViewModel(searchInstance, spriteService, null, notificationService);
-                    var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
+                    await ShowSearchModalForInstanceAsync(sid);
+                };
 
-                    // Wire up event to reopen SearchModal when widget is clicked
-                    viewModel.SearchModalOpenRequested += async (s, sid) =>
-                    {
-                        await ShowSearchModalForInstanceAsync(sid);
-                    };
+                // Set widget content for window system
+                viewModel.WidgetContent = searchWidget;
+                viewModel.WidgetTitle = $"Search #{searchId}";
+                viewModel.IsMinimized = true;
 
-                    // Set widget content for window system
-                    viewModel.WidgetContent = searchWidget;
-                    viewModel.WidgetTitle = $"Search #{searchId}";
-                    viewModel.IsMinimized = true;
-
-                    // Use the new window manager instead of desktop canvas
-                    var widgetManager = Services.WidgetWindowManager.Instance;
-                    widgetManager.CreateWidget(viewModel);
-#endif
-                }
+                // Use the new window manager instead of desktop canvas
+                var widgetManager = Services.WidgetWindowManager.Instance;
+                widgetManager.CreateWidget(viewModel);
 
                 DebugLogger.Log(
                     "BalatroMainMenu",
@@ -2040,14 +2055,14 @@ namespace BalatroSeedOracle.Views
 
             try
             {
-#if !BROWSER
                 // Find the widget in the window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 var activeWidgets = widgetManager.GetActiveWidgets();
-                
-                var widgetToRemove = activeWidgets.FirstOrDefault(w => 
-                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId);
-                
+
+                var widgetToRemove = activeWidgets.FirstOrDefault(w =>
+                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId
+                );
+
                 if (widgetToRemove != null)
                 {
                     widgetManager.CloseWidget(widgetToRemove);
@@ -2063,7 +2078,6 @@ namespace BalatroSeedOracle.Views
                         $"No SearchWidget window found for searchId: {searchId}"
                     );
                 }
-#endif
             }
             catch (Exception ex)
             {
@@ -2100,7 +2114,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<IAudioManager>();
+                var audioManager = ServiceHelper.GetService<SoundFlowAudioManager>();
                 if (audioManager != null && _audioAnalysisHandler != null)
                 {
                     audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;

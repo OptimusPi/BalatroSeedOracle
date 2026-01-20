@@ -23,7 +23,11 @@ namespace BalatroSeedOracle.Services
         private readonly IAppDataStore _store;
         private readonly IPlatformServices? _platformServices;
 
-        public FilterService(IConfigurationService configurationService, IAppDataStore store, IPlatformServices? platformServices = null)
+        public FilterService(
+            IConfigurationService configurationService,
+            IAppDataStore store,
+            IPlatformServices? platformServices = null
+        )
         {
             _configurationService = configurationService;
             _store = store;
@@ -46,8 +50,10 @@ namespace BalatroSeedOracle.Services
                             continue;
 
                         var fileName = Path.GetFileName(key);
-                        if (fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
-                            || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase))
+                        if (
+                            fileName.StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                            || fileName.StartsWith("__TEMP_", StringComparison.OrdinalIgnoreCase)
+                        )
                             continue;
 
                         filters.Add(key);
@@ -87,7 +93,8 @@ namespace BalatroSeedOracle.Services
                 // Check if file exists (synchronous check is acceptable here)
                 if (_configurationService.FileExists(filePath))
                 {
-                    var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                    var isBrowser =
+                        _platformServices != null && !_platformServices.SupportsFileSystem;
                     if (isBrowser)
                     {
                         await _store.DeleteAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);

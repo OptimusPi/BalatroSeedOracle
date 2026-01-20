@@ -13,9 +13,9 @@ using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.Views.Modals;
 using DuckDB.NET.Data;
 using Motely;
+using Motely.DuckDB;
 using Motely.Filters;
 using Motely.Utils;
-using Motely.DuckDB;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 using SearchResult = BalatroSeedOracle.Models.SearchResult;
 using SearchResultEventArgs = BalatroSeedOracle.Models.SearchResultEventArgs;
@@ -30,6 +30,9 @@ namespace BalatroSeedOracle.Services
     {
         private readonly string _searchId;
         private readonly UserProfileService? _userProfileService;
+        private readonly IAppDataStore? _appDataStore;
+        private readonly IPlatformServices? _platformServices;
+        private readonly IDuckDBService? _duckDBService;
 
         // DuckDB database for this search instance
         private string _dbPath = string.Empty;
@@ -108,30 +111,20 @@ namespace BalatroSeedOracle.Services
         }
 
         // Events for UI integration
-        public event EventHandler<SearchResultEventArgs>? SearchStarted;
-        public event EventHandler<SearchResultEventArgs>? SearchCompleted;
+        public event EventHandler? SearchStarted;
+        public event EventHandler? SearchCompleted;
         public event EventHandler<SearchProgress>? ProgressUpdated;
         public event EventHandler<int>? NewHighScoreFound;
         private volatile int _bestScore = 0;
         private DateTime _lastHighScoreTime = DateTime.MinValue;
 
-        private readonly IAppDataStore? _appDataStore;
-        private readonly IPlatformServices? _platformServices;
-        private readonly IDuckDBService? _duckDBService;
-
-        public SearchInstance(
-            string searchId, 
-            string dbPath,
-            UserProfileService? userProfileService = null,
-            IAppDataStore? appDataStore = null,
-            IPlatformServices? platformServices = null,
-            IDuckDBService? duckDBService = null)
+        public SearchInstance(string searchId, string dbPath)
         {
             _searchId = searchId;
-            _userProfileService = userProfileService ?? ServiceHelper.GetService<UserProfileService>();
-            _appDataStore = appDataStore ?? ServiceHelper.GetService<IAppDataStore>();
-            _platformServices = platformServices ?? ServiceHelper.GetService<IPlatformServices>();
-            _duckDBService = duckDBService ?? ServiceHelper.GetService<IDuckDBService>();
+            _userProfileService = ServiceHelper.GetService<UserProfileService>();
+            _appDataStore = ServiceHelper.GetService<IAppDataStore>();
+            _platformServices = ServiceHelper.GetService<IPlatformServices>();
+            _duckDBService = ServiceHelper.GetService<IDuckDBService>();
 
             // Require a non-empty path immediately so query helpers are safe to call early
             if (string.IsNullOrWhiteSpace(dbPath))
@@ -172,7 +165,6 @@ namespace BalatroSeedOracle.Services
             InitializeDatabase();
         }
 
-
         private void InitializeDatabase()
         {
             try
@@ -184,13 +176,14 @@ namespace BalatroSeedOracle.Services
                     _columnNames,
                     logCallback: msg => DebugLogger.Log($"SearchInstance[{_searchId}]", msg)
                 );
-                
+
                 // Create BSO-specific search_meta table (not in Motely schema)
                 // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection (avoids file locking!)
                 // Note: This is infrastructure setup, not business logic - SQL is in Motely's API
                 _searchDatabase.ExecuteNonQuery(
-                    "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )");
-                
+                    "CREATE TABLE IF NOT EXISTS search_meta ( key VARCHAR PRIMARY KEY, value VARCHAR )"
+                );
+
                 _dbInitialized = true;
                 DebugLogger.Log(
                     $"SearchInstance[{_searchId}]",
@@ -236,7 +229,7 @@ namespace BalatroSeedOracle.Services
             {
                 // Convert BSO SearchResult to MotelySearchDatabase format
                 var tallies = result.Scores?.ToList() ?? new List<int>();
-                
+
                 // Use MotelySearchDatabase.InsertRow() - handles all appender logic internally
                 _searchDatabase.InsertRow(result.Seed, result.TotalScore, tallies);
 
@@ -247,7 +240,11 @@ namespace BalatroSeedOracle.Services
             {
                 // MotelySearchDatabase handles duplicate keys gracefully internally
                 // Only log non-duplicate errors
-                if (!ex.Message.Contains("PRIMARY KEY") && !ex.Message.Contains("Duplicate") && !ex.Message.Contains("UNIQUE constraint"))
+                if (
+                    !ex.Message.Contains("PRIMARY KEY")
+                    && !ex.Message.Contains("Duplicate")
+                    && !ex.Message.Contains("UNIQUE constraint")
+                )
                 {
                     DebugLogger.LogError(
                         $"SearchInstance[{_searchId}]",
@@ -271,8 +268,10 @@ namespace BalatroSeedOracle.Services
 
             // Use MotelySearchDatabase.GetResultsPage() - uses SAME connection as appender (avoids file locking!)
             // This ensures we don't create temporary connections that conflict with the open appender
-            var rows = _searchDatabase?.GetResultsPage(offset, limit, "score", ascending: false) ?? new List<Dictionary<string, object?>>();
-            
+            var rows =
+                _searchDatabase?.GetResultsPage(offset, limit, "score", ascending: false)
+                ?? new List<Dictionary<string, object?>>();
+
             foreach (var row in rows)
             {
                 var seed = row["seed"]?.ToString() ?? string.Empty;
@@ -318,13 +317,6 @@ namespace BalatroSeedOracle.Services
         /// <param name="orderBy">seed | score | tally{n}</param>
         /// <param name="ascending">True for ASC, false for DESC</param>
         /// <param name="limit">Max rows to return (default 1000)</param>
-        // Interface implementation
-        public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetTopResultsAsync(int count)
-        {
-            return await GetTopResultsAsync("score", ascending: false, limit: count);
-        }
-
-        // Full implementation with ordering options
         public async Task<List<BalatroSeedOracle.Models.SearchResult>> GetTopResultsAsync(
             string orderBy,
             bool ascending,
@@ -376,15 +368,18 @@ namespace BalatroSeedOracle.Services
 
             // Rely on row.EndRow() visibility; appender stays open during active search.
 
-            var resolvedOrderBy = resolvedColumn.Equals("seed", StringComparison.OrdinalIgnoreCase)
+            var resolvedOrderBy =
+                resolvedColumn.Equals("seed", StringComparison.OrdinalIgnoreCase)
                 || resolvedColumn.Equals("score", StringComparison.OrdinalIgnoreCase)
-                ? resolvedColumn
-                : $"\"{resolvedColumn.Replace("\"", "\"\"")}\"";
+                    ? resolvedColumn
+                    : $"\"{resolvedColumn.Replace("\"", "\"\"")}\"";
 
             // Use MotelySearchDatabase.GetResultsOrderedBy() - uses SAME connection as appender (avoids file locking!)
             // Column name is validated against _columnNames whitelist; quote to support spaces/symbols
-            var rows = _searchDatabase?.GetResultsOrderedBy(resolvedOrderBy, ascending, limit) ?? new List<Dictionary<string, object?>>();
-            
+            var rows =
+                _searchDatabase?.GetResultsOrderedBy(resolvedOrderBy, ascending, limit)
+                ?? new List<Dictionary<string, object?>>();
+
             foreach (var row in rows)
             {
                 var seed = row["seed"]?.ToString() ?? string.Empty;
@@ -461,7 +456,8 @@ namespace BalatroSeedOracle.Services
                 // Use MotelySearchDatabase.ExecuteNonQuery() - uses SAME connection as appender (avoids file locking!)
                 var escapedPath = filePath.Replace("'", "''");
                 _searchDatabase?.ExecuteNonQuery(
-                    $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{escapedPath}' (HEADER true, DELIMITER ',')");
+                    $"COPY (SELECT * FROM results ORDER BY score DESC) TO '{escapedPath}' (HEADER true, DELIMITER ',')"
+                );
 
                 return count;
             }
@@ -483,7 +479,9 @@ namespace BalatroSeedOracle.Services
                     return null;
                 // Use MotelySearchDatabase.ExecuteScalar() - uses SAME connection as appender (avoids file locking!)
                 // search_meta is BSO-specific table
-                var val = _searchDatabase?.ExecuteScalar<string>("SELECT value FROM search_meta WHERE key='last_batch'");
+                var val = _searchDatabase?.ExecuteScalar<string>(
+                    "SELECT value FROM search_meta WHERE key='last_batch'"
+                );
                 if (val == null)
                     return null;
                 return ulong.TryParse(val, out var batch) ? batch : null;
@@ -508,7 +506,8 @@ namespace BalatroSeedOracle.Services
                 // search_meta is BSO-specific table
                 _searchDatabase?.ExecuteNonQuery(
                     "INSERT OR REPLACE INTO search_meta (key, value) VALUES ('last_batch', ?)",
-                    new DuckDBParameter(batchNumber.ToString()));
+                    new DuckDBParameter { Value = batchNumber.ToString() }
+                );
             }
             catch (Exception ex)
             {
@@ -543,7 +542,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                if (!_dbInitialized || (_platformServices != null && _platformServices.SupportsFileSystem && !await _platformServices.FileExistsAsync(_dbPath)))
+                if (
+                    !_dbInitialized
+                    || (_appDataStore != null && !await _appDataStore.ExistsAsync(_dbPath))
+                )
                 {
                     DebugLogger.Log(
                         $"SearchInstance[{_searchId}]",
@@ -558,10 +560,12 @@ namespace BalatroSeedOracle.Services
                 var fertilizerPath = System.IO.Path.Combine(wordListsDir, "fertilizer.txt");
 
                 // Use MotelySearchDatabase.ExecuteQuery() - uses SAME connection as appender (avoids file locking!)
-                var rows = _searchDatabase?.ExecuteQuery("SELECT seed FROM results ORDER BY seed") ?? new List<Dictionary<string, object?>>();
+                var rows =
+                    _searchDatabase?.ExecuteQuery("SELECT seed FROM results ORDER BY seed")
+                    ?? new List<Dictionary<string, object?>>();
                 var seeds = rows.Select(r => r["seed"]?.ToString() ?? string.Empty)
-                               .Where(s => !string.IsNullOrWhiteSpace(s))
-                               .ToList();
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToList();
 
                 if (seeds.Count == 0)
                 {
@@ -576,7 +580,10 @@ namespace BalatroSeedOracle.Services
                 if (_appDataStore != null)
                 {
                     var existingContent = await _appDataStore.ReadTextAsync(fertilizerPath) ?? "";
-                    var newContent = existingContent + (string.IsNullOrEmpty(existingContent) ? "" : "\n") + string.Join("\n", seeds);
+                    var newContent =
+                        existingContent
+                        + (string.IsNullOrEmpty(existingContent) ? "" : "\n")
+                        + string.Join("\n", seeds);
                     await _appDataStore.WriteTextAsync(fertilizerPath, newContent);
                 }
 
@@ -655,7 +662,7 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Notify UI that search started
-                SearchStarted?.Invoke(this, new SearchResultEventArgs());
+                SearchStarted?.Invoke(this, EventArgs.Empty);
 
                 // Progress is handled directly in motelyProgress callback below
 
@@ -732,7 +739,8 @@ namespace BalatroSeedOracle.Services
                     _cancellationTokenSource.Token
                 );
 
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search task started");
+                // Fire-and-forget is intentional here - UI should not wait
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search started in background");
             }
             catch (Exception ex)
             {
@@ -749,13 +757,6 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Start searching with a config file path
         /// </summary>
-        // Interface implementation
-        public async Task StartSearchAsync(SearchCriteria criteria)
-        {
-            await StartSearchAsync(criteria, null, default);
-        }
-
-        // Full implementation with progress and cancellation
         public async Task StartSearchAsync(
             SearchCriteria criteria,
             IProgress<SearchProgress>? progress = null,
@@ -777,15 +778,15 @@ namespace BalatroSeedOracle.Services
 
             // Check file existence using platform abstraction
             bool configExists = false;
-            if (_platformServices != null && _platformServices.SupportsFileSystem)
+            if (_appDataStore != null)
             {
-                configExists = await _platformServices.FileExistsAsync(criteria.ConfigPath);
+                configExists = await _appDataStore.ExistsAsync(criteria.ConfigPath);
             }
-            else if (_platformServices != null)
+            else if (_platformServices != null && _platformServices.SupportsFileSystem)
             {
                 configExists = System.IO.File.Exists(criteria.ConfigPath);
             }
-            
+
             if (!configExists)
             {
                 var errorMsg = $"Config file not found: {criteria.ConfigPath}";
@@ -857,7 +858,8 @@ namespace BalatroSeedOracle.Services
                 {
                     if (_appDataStore != null)
                     {
-                        rawJsonForDebug = await _appDataStore.ReadTextAsync(criteria.ConfigPath) ?? "";
+                        rawJsonForDebug =
+                            await _appDataStore.ReadTextAsync(criteria.ConfigPath) ?? "";
                     }
                     else if (_platformServices != null && _platformServices.SupportsFileSystem)
                     {
@@ -968,7 +970,6 @@ namespace BalatroSeedOracle.Services
             StartSearchFromFile(criteria.ConfigPath, searchConfig, progress, cancellationToken);
         }
 
-            
         /// <summary>
         /// Start searching with a config object directly (no file I/O)
         /// Used for quick in-memory tests of unsaved filters
@@ -1045,15 +1046,17 @@ namespace BalatroSeedOracle.Services
                 DebugSeed = criteria.DebugSeed,
             };
 
-            // Start the search and return the task - NOT fire-and-forget!
-            return StartSearchFromConfig(config, searchConfig, progress, cancellationToken) ?? Task.CompletedTask;
+            // Call the main search method with the config object (synchronous fire-and-forget)
+            StartSearchFromConfig(config, searchConfig, progress, cancellationToken);
+
+            // Return completed task immediately (fire-and-forget pattern by design)
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Private method to run search from a config object (no file loading)
-        /// Returns the search task which must be awaited
         /// </summary>
-        private Task? StartSearchFromConfig(
+        private void StartSearchFromConfig(
             MotelyJsonConfig filterConfig,
             SearchConfiguration config,
             IProgress<SearchProgress>? progress = null,
@@ -1068,7 +1071,7 @@ namespace BalatroSeedOracle.Services
             if (_isRunning)
             {
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search already running");
-                return null;
+                return;
             }
 
             try
@@ -1089,7 +1092,7 @@ namespace BalatroSeedOracle.Services
                 );
 
                 // Notify UI that search started
-                SearchStarted?.Invoke(this, new SearchResultEventArgs());
+                SearchStarted?.Invoke(this, EventArgs.Empty);
 
                 // Set up search configuration from the modal
                 var searchCriteria = new SearchCriteria
@@ -1162,8 +1165,8 @@ namespace BalatroSeedOracle.Services
                     _cancellationTokenSource.Token
                 );
 
-                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search task started");
-                return _searchTask;
+                // Fire-and-forget is intentional here - UI should not wait
+                DebugLogger.Log($"SearchInstance[{_searchId}]", "Search started in background");
             }
             catch (Exception ex)
             {
@@ -1173,7 +1176,7 @@ namespace BalatroSeedOracle.Services
                     $"Failed to start: {ex.Message}"
                 );
                 _isRunning = false;
-                return null;
+                throw;
             }
         }
 
@@ -1231,8 +1234,8 @@ namespace BalatroSeedOracle.Services
                 $"Resuming search from batch {resumeCriteria.StartBatch} to {resumeCriteria.EndBatch}"
             );
 
-            // Restart the search from the saved position
-            _ = StartSearchAsync(resumeCriteria).ConfigureAwait(false);
+            // Restart the search from the saved position (fire-and-forget is intentional for UI responsiveness)
+            _ = StartSearchAsync(resumeCriteria);
         }
 
         /// <summary>
@@ -1255,10 +1258,15 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    await RunSearchInProcess(filterConfig, searchCriteria, progress, cancellationToken)
+                    await RunSearchInProcess(
+                            filterConfig,
+                            searchCriteria,
+                            progress,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                 }
-                
+
                 DebugLogger.Log($"SearchInstance[{_searchId}]", "Search completed");
             }
             catch (OperationCanceledException)
@@ -1277,7 +1285,7 @@ namespace BalatroSeedOracle.Services
             {
                 // Ensure search is marked as not running
                 _isRunning = false;
-                SearchCompleted?.Invoke(this, new SearchResultEventArgs());
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -1318,7 +1326,7 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Send completed event immediately so UI updates
-                SearchCompleted?.Invoke(this, new SearchResultEventArgs());
+                SearchCompleted?.Invoke(this, EventArgs.Empty);
 
                 // IMPORTANT: Stop the actual search service!
                 if (_currentSearch != null)
@@ -1369,33 +1377,36 @@ namespace BalatroSeedOracle.Services
 
             try
             {
-                // Use injected DuckDB service
-                if (_duckDBService == null)
+                // Get DuckDB service from DI container
+                var duckDBService = App.GetService<IDuckDBService>();
+                if (duckDBService == null)
                 {
                     throw new InvalidOperationException("DuckDB service is not available");
                 }
 
                 // Create DbListQueryExecutor
-                using var queryExecutor = new DbListQueryExecutor(_duckDBService);
+                using var queryExecutor = new DbListQueryExecutor(duckDBService);
 
                 // Build the full path to the database file
                 var dbFilePath = System.IO.Path.Combine(
-                    AppContext.BaseDirectory ?? "", 
-                    "..", "..", "..", 
-                    "SearchResults", 
+                    AppContext.BaseDirectory ?? "",
+                    "..",
+                    "..",
+                    "..",
+                    "SearchResults",
                     searchCriteria.DbList ?? ""
                 );
 
                 DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]", 
+                    $"SearchInstance[{_searchId}]",
                     $"Querying database: {dbFilePath}"
                 );
 
                 // Execute the query
                 var results = await queryExecutor.QueryDatabaseAsync(
-                    dbFilePath, 
-                    searchCriteria, 
-                    progress, 
+                    dbFilePath,
+                    searchCriteria,
+                    progress,
                     cancellationToken
                 );
 
@@ -1406,14 +1417,14 @@ namespace BalatroSeedOracle.Services
                 }
 
                 DebugLogger.LogImportant(
-                    $"SearchInstance[{_searchId}]", 
+                    $"SearchInstance[{_searchId}]",
                     $"DbList query completed. Found {results.Count} results"
                 );
             }
             catch (Exception ex)
             {
                 DebugLogger.LogError(
-                    $"SearchInstance[{_searchId}]", 
+                    $"SearchInstance[{_searchId}]",
                     $"DbList query failed: {ex.Message}"
                 );
                 throw;
@@ -2065,7 +2076,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error flushing appender: {ex.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Error flushing appender: {ex.Message}"
+                    );
                 }
 
                 // Dispose search
@@ -2075,7 +2089,10 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing search: {ex.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Error disposing search: {ex.Message}"
+                    );
                 }
 
                 // Close and dispose connection (DuckDB best practice: close before dispose)
@@ -2087,12 +2104,18 @@ namespace BalatroSeedOracle.Services
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error disposing connection: {ex.Message}");
+                    DebugLogger.LogError(
+                        $"SearchInstance[{_searchId}]",
+                        $"Error disposing connection: {ex.Message}"
+                    );
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError($"SearchInstance[{_searchId}]", $"Error in Dispose: {ex.Message}");
+                DebugLogger.LogError(
+                    $"SearchInstance[{_searchId}]",
+                    $"Error in Dispose: {ex.Message}"
+                );
             }
 
             GC.SuppressFinalize(this);
@@ -2117,7 +2140,10 @@ namespace BalatroSeedOracle.Services
             catch (Exception ex)
             {
                 // Expected when task is cancelled or has errors
-                DebugLogger.Log($"SearchInstance[{_searchId}]", $"Search task completion: {ex.Message}");
+                DebugLogger.Log(
+                    $"SearchInstance[{_searchId}]",
+                    $"Search task completion: {ex.Message}"
+                );
             }
         }
 

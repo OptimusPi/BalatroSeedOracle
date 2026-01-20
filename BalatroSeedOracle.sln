@@ -6,6 +6,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{A288BEE0-695A-BEEA-455C-649571D89326}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7F9E8D1-4A2C-4E5F-9B6D-8C7E9F0A1B2C}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BalatroSeedOracle", "src\BalatroSeedOracle\BalatroSeedOracle.csproj", "{8A9CDFC3-0A84-2161-EF0D-78B2610389F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BalatroSeedOracle.Android", "src\BalatroSeedOracle.Android\BalatroSeedOracle.Android.csproj", "{C7E811EE-10D0-2CD9-143B-0B5BB78B26CA}"
@@ -25,6 +27,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.Tests", "external\Motely\Motely.Tests\Motely.Tests.csproj", "{49688DA2-4307-246E-963D-4C09A7C3DAB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.TUI", "external\Motely\Motely.TUI\Motely.TUI.csproj", "{287004BE-1C2A-7335-791E-EC405C0D9760}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BalatroSeedOracle.Tests", "tests\BalatroSeedOracle.Tests\BalatroSeedOracle.Tests.csproj", "{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,10 @@ Global
 		{287004BE-1C2A-7335-791E-EC405C0D9760}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{287004BE-1C2A-7335-791E-EC405C0D9760}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{287004BE-1C2A-7335-791E-EC405C0D9760}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +91,7 @@ Global
 		{E8AFF8C0-8A08-EF5F-1857-CC83539C61E1} = {2C7DF5F9-C613-49D4-3348-9C271BBB65CD}
 		{49688DA2-4307-246E-963D-4C09A7C3DAB7} = {2C7DF5F9-C613-49D4-3348-9C271BBB65CD}
 		{287004BE-1C2A-7335-791E-EC405C0D9760} = {2C7DF5F9-C613-49D4-3348-9C271BBB65CD}
+		{D3E4F5A6-7B8C-9D0E-1F2A-3B4C5D6E7F8A} = {B7F9E8D1-4A2C-4E5F-9B6D-8C7E9F0A1B2C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {052E9016-5A04-4712-AB89-F609BDE3624C}

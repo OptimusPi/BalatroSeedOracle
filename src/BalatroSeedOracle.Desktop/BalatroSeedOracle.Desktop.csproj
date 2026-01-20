@@ -2,10 +2,20 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\BalatroSeedOracle\BalatroSeedOracle.ico</ApplicationIcon>
     <AssemblyName>BalatroSeedOracle.Desktop</AssemblyName>
+    <!-- Disable auto-generation of assembly info to avoid duplicates with referenced project -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Product>Balatro Seed Oracle</Product>
+    <Company>OptimusPi</Company>
+    <Copyright>Copyright © 2025</Copyright>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <!-- Optimizations for smaller published bundle size -->
@@ -39,7 +49,6 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
-    <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Diagnostics">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
@@ -51,30 +60,5 @@
     <!-- Motely.API for hosting the search API server - compiled as library for BSO -->
     <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" 
                       AdditionalProperties="BSO_LIBRARY=true" />
-  </ItemGroup>
-
-    <!-- Include desktop-only files that were excluded from shared project -->
-  <ItemGroup>
-    <Compile Include="..\BalatroSeedOracle\Windows\DataGridResultsWindow.axaml.cs" Link="Windows\DataGridResultsWindow.axaml.cs" />
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Windows\DataGridResultsWindow.axaml" Link="Windows\DataGridResultsWindow.axaml" />
-    <Compile Include="..\BalatroSeedOracle\Services\SoundFlowAudioManager.cs" Link="Services\SoundFlowAudioManager.cs" />
-    <!-- Desktop-only ViewModels -->
-    <Compile Include="..\BalatroSeedOracle\ViewModels\SearchWidgetViewModel.cs" Link="ViewModels\SearchWidgetViewModel.cs" />
-    <Compile Include="..\BalatroSeedOracle\ViewModels\AudioMixerWidgetViewModel.cs" Link="ViewModels\AudioMixerWidgetViewModel.cs" />
-    <Compile Include="..\BalatroSeedOracle\ViewModels\MusicMixerWidgetViewModel.cs" Link="ViewModels\MusicMixerWidgetViewModel.cs" />
-    <Compile Include="..\BalatroSeedOracle\ViewModels\AudioVisualizerSettingsWidgetViewModel.cs" Link="ViewModels\AudioVisualizerSettingsWidgetViewModel.cs" />
-    <Compile Include="..\BalatroSeedOracle\ViewModels\FrequencyDebugWidgetViewModel.cs" Link="ViewModels\FrequencyDebugWidgetViewModel.cs" />
-    <!-- Desktop-only widget code-behind files -->
-    <Compile Include="..\BalatroSeedOracle\Components\Widgets\AudioVisualizerSettingsWidget.axaml.cs" Link="Components\Widgets\AudioVisualizerSettingsWidget.axaml.cs" />
-    <Compile Include="..\BalatroSeedOracle\Components\Widgets\FrequencyDebugWidget.axaml.cs" Link="Components\Widgets\FrequencyDebugWidget.axaml.cs" />
-    <Compile Include="..\BalatroSeedOracle\Components\Widgets\MusicMixerWidget.axaml.cs" Link="Components\Widgets\MusicMixerWidget.axaml.cs" />
-    <Compile Include="..\BalatroSeedOracle\Components\Widgets\AudioMixerWidget.axaml.cs" Link="Components\Widgets\AudioMixerWidget.axaml.cs" />
-    <Compile Include="..\BalatroSeedOracle\Components\Widgets\SearchWidget.axaml.cs" Link="Components\Widgets\SearchWidget.axaml.cs" />
-    <!-- Desktop-only widget XAML files -->
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Components\Widgets\AudioVisualizerSettingsWidget.axaml" Link="Components\Widgets\AudioVisualizerSettingsWidget.axaml" />
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Components\Widgets\FrequencyDebugWidget.axaml" Link="Components\Widgets\FrequencyDebugWidget.axaml" />
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Components\Widgets\MusicMixerWidget.axaml" Link="Components\Widgets\MusicMixerWidget.axaml" />
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Components\Widgets\AudioMixerWidget.axaml" Link="Components\Widgets\AudioMixerWidget.axaml" />
-    <AvaloniaXaml Include="..\BalatroSeedOracle\Components\Widgets\SearchWidget.axaml" Link="Components\Widgets\SearchWidget.axaml" />
   </ItemGroup>
 </Project>

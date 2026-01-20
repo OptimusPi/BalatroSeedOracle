@@ -1,0 +1,84 @@
+---
+description: "DuckDB results storage, invalidation, and platform differences"
+globs: *.cs
+alwaysApply: false
+lastReviewed: 2026-01-19
+---
+
+# Results & DuckDB Lifecycle Rules
+
+## Storage Locations
+
+- **Desktop**: `{DataRoot}/SearchResults/{searchId}.db` (real files)
+- **Browser**: In-memory DuckDB via DuckDB-WASM (no persistence)
+- **Fertilizer**: `WordLists/fertilizer.txt` (seed preservation)
+
+Search ID format: `{filterName}_{deck}_{stake}` (e.g., `MyFilter_Red_White.db`)
+
+## Invalidation Triggers
+
+Results **MUST be invalidated** when filter criteria hash changes:
+
+```csharp
+// ✅ Criteria that invalidate results:
+// - MUST/SHOULD/MUSTNOT clauses change
+// - Item types, values, scores, mins change
+// - Antes, editions, seals, enhancements change
+
+// ❌ Metadata that does NOT invalidate results:
+// - name, description, author, notes
+```
+
+See `@src/BalatroSeedOracle/ViewModels/FiltersModalViewModel.cs` - `ComputeCriteriaHash()` and `CleanupFilterDatabases()`.
+
+## Invalidation Workflow
+
+1. Stop running searches via `SearchManager.StopSearchesForFilter()`
+2. Dump seeds to `fertilizer.txt` (preserves work done)
+3. Delete `.db` and `.db.wal` files matching the filter
+
+## Browser Restrictions
+
+**Browser has no file system** - always check before file operations:
+
+```csharp
+// ✅ Good - Platform guard before file operations
+if (_platformServices.SupportsFileSystem)
+{
+    var dbPath = Path.Combine(AppPaths.SearchResultsDir, $"{searchId}.db");
+    // Desktop file operations
+}
+else
+{
+    // Browser: skip or use in-memory alternative
+}
+```
+
+| Feature | Desktop | Browser |
+|---------|---------|---------|
+| DuckDB Storage | File system | In-memory |
+| Results Persistence | `.db` files | Session only |
+| Fertilizer Dump | Works | Skipped |
+| DuckLake | Supported | Throws `NotSupportedException` |
+
+## Platform Services Checks
+
+```csharp
+// Required checks before DuckDB file operations
+if (!_platformServices.SupportsFileSystem)
+{
+    return; // Skip on browser
+}
+
+// Required check before results grid
+if (!_platformServices.SupportsResultsGrid)
+{
+    // Hide results tab on browser
+}
+```
+
+## Key Files
+
+- `@src/BalatroSeedOracle/Helpers/AppPaths.cs` - `SearchResultsDir` path
+- `@src/BalatroSeedOracle/Services/SearchInstance.cs` - Database lifecycle
+- `@src/BalatroSeedOracle/Services/FertilizerService.cs` - Seed preservation

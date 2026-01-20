@@ -16,8 +16,8 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class DaylatroHighScoreService
     {
-        private static readonly Lazy<DaylatroHighScoreService> _lazy = new(() =>
-            new DaylatroHighScoreService()
+        private static readonly Lazy<DaylatroHighScoreService> _lazy = new(
+            () => new DaylatroHighScoreService()
         );
         public static DaylatroHighScoreService Instance => _lazy.Value;
 
@@ -54,7 +54,7 @@ namespace BalatroSeedOracle.Services
         {
             if (_loaded)
                 return;
-            
+
             var platformServices = ServiceHelper.GetService<IPlatformServices>();
             if (platformServices == null || !platformServices.SupportsFileSystem)
             {
@@ -62,7 +62,7 @@ namespace BalatroSeedOracle.Services
                 _loaded = true;
                 return;
             }
-            
+
             try
             {
                 if (File.Exists(_dataPath))

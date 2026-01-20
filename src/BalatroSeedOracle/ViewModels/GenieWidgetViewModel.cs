@@ -136,13 +136,18 @@ namespace BalatroSeedOracle.ViewModels
                         if (localResponse.IsSuccessStatusCode)
                         {
                             var localResponseText = await localResponse.Content.ReadAsStringAsync();
-                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(localResponseText);
+                            var localResult = JsonSerializer.Deserialize<LocalGenieResponse>(
+                                localResponseText
+                            );
                             jamlResult = localResult?.jaml;
                         }
                     }
                     catch (Exception localEx)
                     {
-                        DebugLogger.Log("GenieWidget", $"Local API not available: {localEx.Message}");
+                        DebugLogger.Log(
+                            "GenieWidget",
+                            $"Local API not available: {localEx.Message}"
+                        );
                     }
                 }
 
@@ -153,7 +158,14 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Parse the JAML to get a JSON config for display
-                if (Motely.JamlConfigLoader.TryLoadFromJamlString(jamlResult!, out var config, out var parseError) && config != null)
+                if (
+                    Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        jamlResult!,
+                        out var config,
+                        out var parseError
+                    )
+                    && config != null
+                )
                 {
                     GeneratedFilterName = config.Name ?? "Generated Filter";
                     GeneratedJson = JsonSerializer.Serialize(
@@ -218,7 +230,10 @@ namespace BalatroSeedOracle.ViewModels
                 int counter = 1;
                 while (System.IO.File.Exists(filePath))
                 {
-                    filePath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{fileName}_{counter}.jaml");
+                    filePath = System.IO.Path.Combine(
+                        AppPaths.FiltersDir,
+                        $"{fileName}_{counter}.jaml"
+                    );
                     counter++;
                 }
 

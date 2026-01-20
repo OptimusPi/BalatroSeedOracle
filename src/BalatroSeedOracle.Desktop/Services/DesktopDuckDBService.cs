@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Services.DuckDB;
 using DuckDB.NET.Data;
 using Motely.DuckDB;
-using BalatroSeedOracle.Services.DuckDB;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -37,7 +38,8 @@ public class DesktopDuckDBService : IDuckDBService
     public Task<IDuckDBConnection> OpenDuckLakeConnectionAsync(
         string catalogPath,
         string dataPath,
-        string schemaName = "seed_source")
+        string schemaName = "seed_source"
+    )
     {
         // Use Motely's DuckDBConnectionFactory which handles DuckLake setup
         var duckDBConnection = DuckDBConnectionFactory.CreateConnectionWithDuckLake(

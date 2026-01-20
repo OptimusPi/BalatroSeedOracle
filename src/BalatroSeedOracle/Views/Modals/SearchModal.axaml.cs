@@ -21,14 +21,21 @@ namespace BalatroSeedOracle.Views.Modals
         {
             var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
             var userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
-            var appDataStore = ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
+            var appDataStore =
+                ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
             var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-            ViewModel = new SearchModalViewModel(searchManager, userProfileService, appDataStore, platformServices);
+            ViewModel = new SearchModalViewModel(
+                searchManager,
+                userProfileService,
+                appDataStore,
+                platformServices
+            );
             DataContext = ViewModel;
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
             ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
-            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
 
             InitializeComponent();
             WireUpComponentEvents();
@@ -91,7 +98,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 DebugLogger.Log("SearchModal", "OpenFiltersModal called");
-                
+
                 if (ViewModel.MainMenu != null)
                 {
                     DebugLogger.Log("SearchModal", "Calling MainMenu.ShowFiltersModal()");
@@ -108,10 +115,7 @@ namespace BalatroSeedOracle.Views.Modals
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "SearchModal",
-                    $"Error opening FiltersModal: {ex.Message}"
-                );
+                DebugLogger.LogError("SearchModal", $"Error opening FiltersModal: {ex.Message}");
             }
         }
 

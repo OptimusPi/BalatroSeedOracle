@@ -1,0 +1,122 @@
+# Build outputs - these cause Cursor to crash due to massive file counts
+[Bb]in/
+[Oo]bj/
+[Rr]elease/
+[Dd]ebug/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# .NET build artifacts
+*.binlog
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Git internals
+.git/
+**/.git/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Large framework directories
+**/wwwroot/_framework/
+**/wwwroot/_content/
+**/wwwroot/BSO/_framework/
+**/wwwroot/BSO/wwwroot/
+
+node_modules/
+packages/
+
+# Large binary files that cause crashes
+*.wasm
+*.dll
+*.exe
+*.so
+*.dylib
+*.db
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.pkg
+*.pdb
+*.lib
+*.a
+*.obj
+*.o
+*.pyc
+*.class
+
+# Large data files
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Search results databases
+SearchResults/
+**/SearchResults/
+
+# Word lists (large text files)
+WordLists/
+**/WordLists/
+
+# Additional problematic patterns
+**/runtimes/
+**/fr-FR/
+**/ja-JP/
+**/pt-PT/
+**/zh-Hans/
+*.runtimeconfig.json
+*.deps.json
+*.assets.json
+
+# Font files (binary assets)
+*.otf
+*.ttf
+
+# Audio files (binary assets)
+*.ogg
+
+# IDE directories
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Syntax highlighting definition files
+*.xshd
+
+# Temporary and backup files
+*~
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Log files
+*.log
+*.out
+
+# Package manager lock files
+yarn.lock
+pnpm-lock.yaml
+
+
+# Submodules
+external/
+
+!.local

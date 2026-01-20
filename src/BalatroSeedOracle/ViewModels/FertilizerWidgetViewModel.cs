@@ -149,7 +149,8 @@ public partial class FertilizerWidgetViewModel : BaseWidgetViewModel, IDisposabl
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         _fertilizerService.SeedCountChanged -= OnSeedCountChanged;
         _disposed = true;

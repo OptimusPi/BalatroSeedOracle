@@ -263,8 +263,11 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void CreateNew()
         {
-            DebugLogger.Log("FilterSelectionModalViewModel", "CreateNew command called - CREATE NEW FILTER button clicked!");
-            
+            DebugLogger.Log(
+                "FilterSelectionModalViewModel",
+                "CreateNew command called - CREATE NEW FILTER button clicked!"
+            );
+
             // Create new filter directly (called from placeholder button)
             Result = new FilterSelectionResult
             {
@@ -273,7 +276,10 @@ namespace BalatroSeedOracle.ViewModels
                 FilterId = null,
             };
 
-            DebugLogger.Log("FilterSelectionModalViewModel", "Invoking ModalCloseRequested for CreateNew");
+            DebugLogger.Log(
+                "FilterSelectionModalViewModel",
+                "Invoking ModalCloseRequested for CreateNew"
+            );
             ModalCloseRequested?.Invoke(this, EventArgs.Empty);
         }
 

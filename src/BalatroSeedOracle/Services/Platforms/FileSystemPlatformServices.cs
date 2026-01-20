@@ -67,10 +67,7 @@ namespace BalatroSeedOracle.Services.Platforms
                     "Samples",
                     "TelescopeObservatory.json"
                 );
-                var targetFilter = Path.Combine(
-                    AppPaths.FiltersDir,
-                    "TelescopeObservatory.json"
-                );
+                var targetFilter = Path.Combine(AppPaths.FiltersDir, "TelescopeObservatory.json");
                 if (File.Exists(sampleFilter) && !File.Exists(targetFilter))
                 {
                     EnsureDirectoryExists(Path.GetDirectoryName(targetFilter)!);
@@ -120,11 +117,17 @@ namespace BalatroSeedOracle.Services.Platforms
                 // Mark as done
                 EnsureDirectoryExists(Path.GetDirectoryName(markerFile)!);
                 File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
-                DebugLogger.Log("FileSystemPlatformServices", "Sample content copied to AppData successfully");
+                DebugLogger.Log(
+                    "FileSystemPlatformServices",
+                    "Sample content copied to AppData successfully"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FileSystemPlatformServices", $"Failed to copy samples: {ex.Message}");
+                DebugLogger.LogError(
+                    "FileSystemPlatformServices",
+                    $"Failed to copy samples: {ex.Message}"
+                );
             }
 
             return Task.CompletedTask;

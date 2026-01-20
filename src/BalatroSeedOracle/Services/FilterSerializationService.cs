@@ -242,14 +242,16 @@ namespace BalatroSeedOracle.Services
             ItemConfig config
         )
         {
+            var normalizedCategory = category.ToLower();
+            var clauseType = MapCategoryToType(normalizedCategory, itemName);
+
             var filterItem = new MotelyJsonConfig.MotelyJsonFilterClause
             {
-                Type = "", // Will be set below based on category
+                Type = clauseType,
+                Value = itemName,
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min,
             };
-
-            var normalizedCategory = category.ToLower();
 
             // Determine if this item type can have sources
             bool canHaveSources = IsSourceCapableCategory(normalizedCategory);
@@ -264,10 +266,6 @@ namespace BalatroSeedOracle.Services
                     RequireMega = config.IsMegaArcana ? true : null,
                 };
             }
-
-            // Map category to type
-            filterItem.Type = MapCategoryToType(normalizedCategory, itemName);
-            filterItem.Value = itemName;
 
             // Handle edition for applicable items
             if (config.Edition != null && config.Edition != "none")

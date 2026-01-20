@@ -35,7 +35,6 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IConfigurationService _configurationService;
         private readonly IFilterService _filterService;
         private readonly IPlatformServices _platformServices;
-        private readonly NotificationService? _notificationService;
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -149,14 +148,12 @@ namespace BalatroSeedOracle.ViewModels
         public FiltersModalViewModel(
             IConfigurationService configurationService,
             IFilterService filterService,
-            IPlatformServices platformServices,
-            NotificationService? notificationService = null
+            IPlatformServices platformServices
         )
         {
             _configurationService = configurationService;
             _filterService = filterService;
             _platformServices = platformServices;
-            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             _itemCategories = InitializeItemCategories();
 
@@ -301,13 +298,17 @@ namespace BalatroSeedOracle.ViewModels
                 // in the filter picker (which excludes _UNSAVED_ files).
                 var originalPath = CurrentFilterPath;
 
-                if (string.IsNullOrWhiteSpace(CurrentFilterPath)
+                if (
+                    string.IsNullOrWhiteSpace(CurrentFilterPath)
                     || Path.GetFileName(CurrentFilterPath)
-                        .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase))
+                        .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                )
                 {
                     if (!string.IsNullOrWhiteSpace(FilterName))
                     {
-                        CurrentFilterPath = _filterService.GenerateFilterFileName(FilterName.Trim());
+                        CurrentFilterPath = _filterService.GenerateFilterFileName(
+                            FilterName.Trim()
+                        );
                     }
                     else
                     {
@@ -347,25 +348,20 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     _originalCriteriaHash = currentHash; // Update hash for next save
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"✅ Filter saved: {CurrentFilterPath}"
-                    );
-
-                    // Show notification
-                    var notificationService = ServiceHelper.GetService<NotificationService>();
-                    notificationService?.ShowSuccess(
-                        "Filter Saved",
-                        $"Filter '{FilterName}' saved successfully",
-                        TimeSpan.FromSeconds(3)
-                    );
+                    BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
 
                     // If we successfully saved to a new non-_UNSAVED_ path, clean up the old temp file.
                     // This prevents orphaned _UNSAVED_ files accumulating and removes confusion.
-                    if (!string.IsNullOrWhiteSpace(originalPath)
-                        && !string.Equals(originalPath, CurrentFilterPath, StringComparison.OrdinalIgnoreCase)
+                    if (
+                        !string.IsNullOrWhiteSpace(originalPath)
+                        && !string.Equals(
+                            originalPath,
+                            CurrentFilterPath,
+                            StringComparison.OrdinalIgnoreCase
+                        )
                         && Path.GetFileName(originalPath)
-                            .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase))
+                            .StartsWith("_UNSAVED_", StringComparison.OrdinalIgnoreCase)
+                    )
                     {
                         try
                         {
@@ -499,8 +495,12 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
         {
-            // DuckDB-WASM works in browser, but file system access doesn't
-            // Browser can still dump to console/logs, just not to files
+            if (!_platformServices.SupportsFileSystem)
+            {
+                // Browser: DuckDB not available in browser
+                await Task.CompletedTask;
+                return;
+            }
             if (dbFiles is null || dbFiles.Length == 0)
             {
                 BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
@@ -587,17 +587,11 @@ namespace BalatroSeedOracle.ViewModels
                 var filters = await _filterService.GetAvailableFiltersAsync();
                 // This would typically open a file dialog or selection UI
                 // For now, we'll need UI interaction to select which filter to load
-                BsoLogger.Log(
-                    "FiltersModalViewModel",
-                    $"Found {filters.Count} available filters"
-                );
+                BsoLogger.Log("FiltersModalViewModel", $"Found {filters.Count} available filters");
             }
             catch (Exception ex)
             {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error loading filter: {ex.Message}"
-                );
+                BsoLogger.LogError("FiltersModalViewModel", $"Error loading filter: {ex.Message}");
             }
         }
 
@@ -613,31 +607,40 @@ namespace BalatroSeedOracle.ViewModels
                 FilterName = config.Name ?? "Unnamed Filter";
                 FilterDescription = config.Description ?? "";
                 // Convert string deck/stake to enum values
-                if (!string.IsNullOrEmpty(config.Deck) && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck))
+                if (
+                    !string.IsNullOrEmpty(config.Deck)
+                    && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck)
+                )
                 {
                     SelectedDeck = deck;
                 }
-                if (!string.IsNullOrEmpty(config.Stake) && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake))
+                if (
+                    !string.IsNullOrEmpty(config.Stake)
+                    && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake)
+                )
                 {
                     SelectedStake = stake;
                 }
-                
+
                 // Store original metadata
                 _originalAuthor = config.Author;
                 _originalDateCreated = config.DateCreated;
-                
+
                 // Note: Criteria hash calculation and clause loading will be implemented when needed
-                
+
                 // Don't set CurrentFilterPath since this is editing, not loading from file
                 CurrentFilterPath = null;
-                
+
                 BsoLogger.Log("FiltersModalViewModel", $"Loaded filter for editing: {config.Name}");
             }
             catch (Exception ex)
             {
-                BsoLogger.LogError("FiltersModalViewModel", $"Error loading filter for editing: {ex.Message}");
+                BsoLogger.LogError(
+                    "FiltersModalViewModel",
+                    $"Error loading filter for editing: {ex.Message}"
+                );
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -713,10 +716,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error deleting filter: {ex.Message}"
-                );
+                BsoLogger.LogError("FiltersModalViewModel", $"Error deleting filter: {ex.Message}");
             }
         }
 
@@ -1039,10 +1039,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Error parsing JAML: {ex.Message}"
-                );
+                BsoLogger.LogError("FiltersModalViewModel", $"Error parsing JAML: {ex.Message}");
             }
         }
 
@@ -1630,7 +1627,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Regular item (not a clause operator)
-            // Convert "Any" back to wildcard name for round-trip
+            // CRITICAL: Convert "Any" back to wildcard name for round-trip compatibility
             string itemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "";
             if (
                 itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
@@ -1743,18 +1740,26 @@ namespace BalatroSeedOracle.ViewModels
             TabItems.Add(new TabItemViewModel("JAML EDITOR", jamlEditorTab));
 
             // Save Filter tab
-            var configService = ServiceHelper.GetService<IConfigurationService>()
+            var configService =
+                ServiceHelper.GetService<IConfigurationService>()
                 ?? throw new InvalidOperationException("IConfigurationService not available");
-            var filterService = ServiceHelper.GetService<IFilterService>()
+            var filterService =
+                ServiceHelper.GetService<IFilterService>()
                 ?? throw new InvalidOperationException("IFilterService not available");
             var userProfileService =
                 ServiceHelper.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            var filterConfigService =
+                ServiceHelper.GetService<IFilterConfigurationService>()
+                ?? new FilterConfigurationService(userProfileService);
+            var platformServices =
+                ServiceHelper.GetService<IPlatformServices>()
+                ?? throw new InvalidOperationException("IPlatformServices not available");
             var validateFilterViewModel = new FilterTabs.ValidateFilterTabViewModel(
                 this,
                 configService,
                 filterService,
+                filterConfigService,
                 platformServices
             );
             var validateFilterTab = new Components.FilterTabs.ValidateFilterTab

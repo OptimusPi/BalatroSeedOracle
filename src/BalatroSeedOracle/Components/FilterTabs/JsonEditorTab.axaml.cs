@@ -42,10 +42,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 _jsonEditor.TextArea.TextEntered += OnTextEntered;
                 _jsonEditor.TextArea.KeyDown += OnKeyDown;
             }
-            
+
             if (ViewModel != null)
             {
-                ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+                ViewModel.CopyToClipboardRequested += async (s, text) =>
+                    await CopyToClipboardAsync(text);
             }
         }
 
