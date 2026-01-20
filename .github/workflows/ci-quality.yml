@@ -45,8 +45,6 @@ jobs:
 
     - name: Restore Core Library
       run: dotnet restore src/BalatroSeedOracle/BalatroSeedOracle.csproj /p:TargetFramework=net10.0
-      env:
-        MSBuildEnableWorkloadResolver: ${{ runner.os == 'Linux' && 'false' || 'true' }}
 
     - name: Restore Desktop (Windows)
       if: runner.os == 'Windows'
@@ -60,7 +58,7 @@ jobs:
       run: dotnet restore src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj /p:TargetFramework=net10.0-browser
 
     - name: Build Core Library (with warnings as errors)
-      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release --no-restore /p:TargetFramework=net10.0 -p:TreatWarningsAsErrors=true
+      run: dotnet build src/BalatroSeedOracle/BalatroSeedOracle.csproj -c Release /p:TargetFramework=net10.0 -p:TreatWarningsAsErrors=true
 
     - name: Build Desktop
       run: dotnet build src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj -c Release --no-restore
