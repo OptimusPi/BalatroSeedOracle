@@ -62,6 +62,8 @@ Check capabilities before using features:
 - `SupportsAnalyzer` - Seed analysis tools
 - `SupportsResultsGrid` - DataGrid results display
 
-- `SupportsAudio` - Audio playback
-- `SupportsAnalyzer` - Seed analysis tools
-- `SupportsResultsGrid` - DataGrid results display
+## Related
+
+- `@035-cross-platform-architecture.mdc` - Architecture overview and abstraction patterns
+- `@apply-platform-guards-browser-vs-desktop/SKILL.md` - Platform guard implementation
+- `@implement-cross-platform-feature/SKILL.md` - Complete cross-platform feature workflow

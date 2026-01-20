@@ -35,6 +35,7 @@ For specific guidance, see:
 - `@010-csharp-logging.mdc` for logging rules
 - `@020-csharp-async-await.mdc` for async patterns
 - `@030-platform-guards.mdc` for platform-specific code
+- `@035-cross-platform-architecture.mdc` for head/core architecture and abstractions
 - `@040-avalonia-mvvm-xaml.mdc` for MVVM and XAML patterns
 - `@060-filters-format-and-roundtrip.mdc` for filter JSON/JAML conventions
 - `@070-results-duckdb-lifecycle.mdc` for results storage and invalidation

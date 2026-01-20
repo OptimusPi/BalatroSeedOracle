@@ -132,3 +132,9 @@ public class BrowserDuckDBService : IDuckDBService
 - [ ] Used `IAppDataStore` for browser storage (not file system)
 - [ ] Optional services accessed with null-conditional (`?.`)
 - [ ] Logged platform limitations with `DebugLogger`
+
+## Related
+
+- `@035-cross-platform-architecture.mdc` - Architecture overview and principles
+- `@implement-cross-platform-feature/SKILL.md` - Complete workflow for new features
+- `@030-platform-guards.mdc` - Platform-specific code rules

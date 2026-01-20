@@ -101,3 +101,9 @@ localStorage.getItem('bso:settings');
 - `@src/BalatroSeedOracle.Browser/Services/BrowserPlatformServices.cs`
 - `@src/BalatroSeedOracle.Browser/Services/BrowserLocalStorageAppDataStore.cs`
 - `@src/BalatroSeedOracle.Browser/Services/BrowserDuckDBService.cs`
+
+## Related
+
+- `@035-cross-platform-architecture.mdc` - Architecture overview and abstraction patterns
+- `@030-platform-guards.mdc` - Platform-specific code rules
+- `@implement-cross-platform-feature/SKILL.md` - Cross-platform feature implementation

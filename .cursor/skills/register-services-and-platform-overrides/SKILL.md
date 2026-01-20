@@ -146,3 +146,9 @@ public class BrowserPlatformFeature : IPlatformFeature
 - [ ] Dependencies resolved via constructor injection
 - [ ] Platform-specific services have both Desktop and Browser implementations
 - [ ] Optional dependencies use `GetService<T>()` not `GetRequiredService<T>()`
+
+## Related
+
+- `@035-cross-platform-architecture.mdc` - Architecture overview and abstraction patterns
+- `@implement-cross-platform-feature/SKILL.md` - Complete workflow including DI registration
+- `@030-platform-guards.mdc` - Platform-specific code rules
