@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://balatrogenie.app/jaml.schema.json",
+  "version": "2.0.0",
   "title": "JAML - Jimbo's Ante Markup Language",
-  "description": "Schema for Balatro seed filter configuration files (.jaml)",
+  "description": "Schema for Balatro seed filter configuration files (.jaml). v2.0.0 adds Event type-as-key shorthand and full source support (Judgement, RiffRaff, Seance, SixthSense, Emperor, PurpleSealOrEightBall, RareTag, UncommonTag).",
   "type": "object",
   "properties": {
     "name": {
@@ -24,13 +25,39 @@
     },
     "deck": {
       "type": "string",
-      "enum": ["Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic", "Challenge"],
+      "enum": [
+        "Red",
+        "Blue",
+        "Yellow",
+        "Green",
+        "Black",
+        "Magic",
+        "Nebula",
+        "Ghost",
+        "Abandoned",
+        "Checkered",
+        "Zodiac",
+        "Painted",
+        "Anaglyph",
+        "Plasma",
+        "Erratic",
+        "Challenge"
+      ],
       "default": "Red",
       "description": "Balatro deck to search with"
     },
     "stake": {
       "type": "string",
-      "enum": ["White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold"],
+      "enum": [
+        "White",
+        "Red",
+        "Green",
+        "Black",
+        "Blue",
+        "Purple",
+        "Orange",
+        "Gold"
+      ],
       "default": "White",
       "description": "Balatro stake level"
     },
@@ -42,10 +69,19 @@
           "type": "array",
           "items": {
             "type": "integer",
-            "minimum": 1,
-            "maximum": 8
+            "minimum": 0,
+            "maximum": 39
           },
-          "default": [1, 2, 3, 4, 5, 6, 7, 8],
+          "default": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "description": "Default antes to check if not specified in clause"
         },
         "packSlots": {
@@ -55,7 +91,14 @@
             "minimum": 0,
             "maximum": 5
           },
-          "default": [0, 1, 2, 3, 4, 5],
+          "default": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "description": "Default pack slots (ante 1 limited to 0-3, ante 2+ uses 0-5)"
         },
         "shopSlots": {
@@ -65,7 +108,14 @@
             "minimum": 0,
             "maximum": 5
           },
-          "default": [0, 1, 2, 3, 4, 5],
+          "default": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "description": "Default shop slots (ante 1 limited to 0-3, ante 2+ uses 0-5)"
         },
         "score": {
@@ -80,17 +130,23 @@
     "must": {
       "type": "array",
       "description": "Items that MUST appear in the seed (required)",
-      "items": { "$ref": "#/definitions/clause" }
+      "items": {
+        "$ref": "#/definitions/clause"
+      }
     },
     "should": {
       "type": "array",
       "description": "Items that SHOULD appear for bonus scoring (optional)",
-      "items": { "$ref": "#/definitions/clause" }
+      "items": {
+        "$ref": "#/definitions/clause"
+      }
     },
     "mustNot": {
       "type": "array",
       "description": "Items that MUST NOT appear in the seed (banned)",
-      "items": { "$ref": "#/definitions/clause" }
+      "items": {
+        "$ref": "#/definitions/clause"
+      }
     }
   },
   "definitions": {
@@ -99,21 +155,73 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["Joker", "SoulJoker", "Voucher", "Tarot", "TarotCard", "Planet", "PlanetCard", "Spectral", "SpectralCard", "Tag", "Boss", "BossBlind", "PlayingCard", "StandardCard"],
+          "enum": [
+            "Joker",
+            "SoulJoker",
+            "Voucher",
+            "TarotCard",
+            "Planet",
+            "PlanetCard",
+            "Spectral",
+            "SpectralCard",
+            "Tag",
+            "SmallBlindTag",
+            "BigBlindTag",
+            "Boss",
+            "BossBlind",
+            "StandardCard",
+            "Event",
+            "ErraticRank",
+            "ErraticSuit",
+            "And",
+            "Or"
+          ],
           "description": "Type of item to search for"
         },
         "value": {
           "type": "string",
-          "description": "Name of the specific item (e.g., 'Perkeo', 'Hieroglyph')"
+          "description": "Name of the specific item (e.g., 'Perkeo', 'Hieroglyph'). For Event type, this is the event type name (e.g., 'LuckyMoney', 'LuckyMult'). Shorthand: use 'event: LuckyMoney' instead of 'type: Event, value: LuckyMoney'"
+        },
+        "eventType": {
+          "type": "string",
+          "enum": [
+            "LuckyMoney",
+            "LuckyMult",
+            "MisprintMult",
+            "WheelOfFortune",
+            "CavendishExtinct",
+            "GrosMichelExtinct"
+          ],
+          "description": "Event type (alternative to 'value' for Event clauses). Shorthand: use 'event: LuckyMoney' instead."
+        },
+        "rolls": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Roll indices for Event clauses (e.g. [0, 1] for first two occurrences of the event). Only valid for type: Event. Example: 'rolls: [0]' checks the first occurrence"
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "LuckyMoney",
+            "LuckyMult",
+            "MisprintMult",
+            "WheelOfFortune",
+            "CavendishExtinct",
+            "GrosMichelExtinct"
+          ],
+          "description": "Shorthand for Event type (type-as-key). Example: 'event: LuckyMoney' is equivalent to 'type: Event, value: LuckyMoney'. Use with 'rolls' to specify which occurrences to check."
         },
         "antes": {
           "type": "array",
           "items": {
             "type": "integer",
-            "minimum": 1,
-            "maximum": 8
+            "minimum": 0,
+            "maximum": 39
           },
-          "description": "Which antes (1-8) to search in"
+          "description": "Which antes (0-39) to search in"
         },
         "score": {
           "type": "integer",
@@ -127,45 +235,209 @@
         },
         "edition": {
           "type": "string",
-          "enum": ["Foil", "Holographic", "Polychrome", "Negative"],
+          "enum": [
+            "Foil",
+            "Holographic",
+            "Polychrome",
+            "Negative"
+          ],
           "description": "Required edition for the item"
         },
         "seal": {
           "type": "string",
-          "enum": ["Red", "Blue", "Gold", "Purple"],
+          "enum": [
+            "Red",
+            "Blue",
+            "Gold",
+            "Purple"
+          ],
           "description": "Required seal for playing cards"
         },
         "enhancement": {
           "type": "string",
-          "enum": ["Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold"],
+          "enum": [
+            "Bonus",
+            "Mult",
+            "Wild",
+            "Glass",
+            "Steel",
+            "Stone",
+            "Lucky",
+            "Gold"
+          ],
           "description": "Required enhancement for playing cards"
         },
         "rank": {
           "type": "string",
-          "enum": ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"],
+          "enum": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "J",
+            "Q",
+            "K",
+            "A"
+          ],
           "description": "Card rank for playing cards"
         },
         "suit": {
           "type": "string",
-          "enum": ["Hearts", "Diamonds", "Clubs", "Spades"],
+          "enum": [
+            "Hearts",
+            "Diamonds",
+            "Clubs",
+            "Spades"
+          ],
           "description": "Card suit for playing cards"
         },
         "sources": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["shop", "pack", "tag", "voucher"]
+          "type": "object",
+          "properties": {
+            "shopSlots": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Shop slot indices (0-based). If empty array [], will be populated from minShopSlot/maxShopSlot if provided."
+            },
+            "packSlots": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Pack slot indices (0-based). If empty array [], will be populated from minPackSlot/maxPackSlot if provided."
+            },
+            "minShopSlot": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1023,
+              "description": "Minimum shop slot index (inclusive). If specified with maxShopSlot, generates shopSlots array [minShopSlot..maxShopSlot]."
+            },
+            "maxShopSlot": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1023,
+              "description": "Maximum shop slot index (inclusive). If specified with minShopSlot, generates shopSlots array [minShopSlot..maxShopSlot]."
+            },
+            "minPackSlot": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5,
+              "description": "Minimum pack slot index (inclusive). If specified with maxPackSlot, generates packSlots array [minPackSlot..maxPackSlot]."
+            },
+            "maxPackSlot": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5,
+              "description": "Maximum pack slot index (inclusive). If specified with minPackSlot, generates packSlots array [minPackSlot..maxPackSlot]."
+            },
+            "tags": {
+              "type": "boolean",
+              "description": "Whether item can come from tags (Rare Tag, Uncommon Tag, Negative Tag)"
+            },
+            "requireMega": {
+              "type": "boolean",
+              "description": "Whether pack must be a Mega pack (for pack slots 4-5)"
+            },
+            "judgement": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Judgement tarot joker roll indices (e.g. [0, 1] for first two uses)"
+            },
+            "rareTag": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Rare tag joker roll indices (e.g. [0] for first rare tag)"
+            },
+            "uncommonTag": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Uncommon tag joker roll indices (e.g. [0] for first uncommon tag)"
+            },
+            "riffRaff": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "RiffRaff joker roll indices (e.g. [0, 1] for first two RiffRaff jokers - RiffRaff creates 2 jokers)"
+            },
+            "purpleSealOrEightBall": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Purple Seal / 8Ball tarot card roll indices (e.g. [0] for first tarot from Purple Seal or 8Ball - both use same PRNG key)"
+            },
+            "emperor": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Emperor tarot card roll indices (e.g. [0, 1] for first two tarot cards from Emperor - Emperor creates 2 tarot cards)"
+            },
+            "sixthSense": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "SixthSense spectral card roll indices (e.g. [0] for first spectral card from SixthSense joker)"
+            },
+            "seance": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Seance spectral card roll indices (e.g. [0, 1] for first two spectral cards from Seance joker)"
+            },
+            "uncommonShopJokers": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Raw uncommon shop joker stream roll indices - FAST pre-filter that bypasses shop item type check (e.g. [0, 1, 2] for first 3 uncommon jokers in stream)"
+            },
+            "rareShopJokers": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Raw rare shop joker stream roll indices - FAST pre-filter that bypasses shop item type check (e.g. [0] for first rare joker in stream)"
+            },
+            "commonShopJokers": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Raw common shop joker stream roll indices - FAST pre-filter that bypasses shop item type check (e.g. [0, 1] for first 2 common jokers in stream)"
+            }
           },
-          "description": "Where the item can be found"
+          "additionalProperties": false,
+          "description": "Where the item can be found - object with source-specific roll indices. If sources: is specified (even with empty arrays), the Sources object will exist after processing."
         },
         "and": {
           "type": "array",
-          "items": { "$ref": "#/definitions/clause" },
+          "items": {
+            "$ref": "#/definitions/clause"
+          },
           "description": "Nested AND conditions"
         },
         "or": {
           "type": "array",
-          "items": { "$ref": "#/definitions/clause" },
+          "items": {
+            "$ref": "#/definitions/clause"
+          },
           "description": "Nested OR conditions (any match)"
         }
       }
