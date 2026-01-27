@@ -398,49 +398,8 @@ LIMIT 100;";
 
             try
             {
-                UpdateQueryStatus("Executing query...");
-                var stopwatch = Stopwatch.StartNew();
-
-                // Use IDuckDBService from DI for cross-platform SQL execution
-                var duckDbService = ServiceHelper.GetService<IDuckDBService>();
-                if (duckDbService == null)
-                {
-                    UpdateQueryStatus("Error: DuckDB service not available");
-                    return;
-                }
-
-                var dbPath = _searchInstance.DatabasePath;
-                await using var connection = await duckDbService.OpenConnectionAsync(dbPath);
-                var (columns, rows) = await connection.ExecuteSqlAsync(sql);
-
-                stopwatch.Stop();
-
-                // Convert to DataTable for DataGrid binding
-                var dataTable = new DataTable();
-                foreach (var col in columns)
-                {
-                    dataTable.Columns.Add(col);
-                }
-                foreach (var row in rows)
-                {
-                    var dataRow = dataTable.NewRow();
-                    foreach (var col in columns)
-                    {
-                        dataRow[col] = row.TryGetValue(col, out var val)
-                            ? val ?? DBNull.Value
-                            : DBNull.Value;
-                    }
-                    dataTable.Rows.Add(dataRow);
-                }
-
-                // Display results in the query results grid
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _queryResultsGrid.ItemsSource = dataTable.DefaultView;
-                    UpdateQueryStatus(
-                        $"Query completed: {dataTable.Rows.Count} rows, {stopwatch.ElapsedMilliseconds}ms"
-                    );
-                });
+                // SQL Editor feature has been removed - database operations are now handled internally by Motely
+                UpdateQueryStatus("SQL Editor is no longer available. Database operations are now handled internally by Motely. Use the Results tab to view search results.");
             }
             catch (Exception ex)
             {

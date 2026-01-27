@@ -1,5 +1,4 @@
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +19,7 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<IPlatformServices>()
             ));
 
-            // Note: IAppDataStore, IDuckDBService, and IPlatformServices are registered by platform-specific projects (Desktop/Browser)
+            // Note: IAppDataStore and IPlatformServices are registered by platform-specific projects (Desktop/Browser)
             // IApiHostService is also registered by platform-specific projects
 
             services.AddSingleton<IFilterService>(sp => new FilterService(
@@ -38,7 +37,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<IPlatformServices>()
             ));
             services.AddSingleton<SearchManager>();
-            services.AddSingleton<SearchStateManager>();
 
             // Note: SoundFlowAudioManager and SoundEffectsService are registered by Desktop Program.cs only
             services.AddSingleton<TransitionService>();
@@ -51,10 +49,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<Views.BalatroMainMenu>()
             ));
             services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-            services.AddSingleton<FertilizerService>(sp => new FertilizerService(
-                sp.GetRequiredService<IDuckDBService>(),
-                sp.GetRequiredService<IPlatformServices>()
-            ));
             services.AddSingleton<DaylatroHighScoreService>();
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();

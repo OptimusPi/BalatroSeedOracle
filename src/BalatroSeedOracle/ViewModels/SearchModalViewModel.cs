@@ -1079,49 +1079,17 @@ namespace BalatroSeedOracle.ViewModels
                     criteria.BatchSize = BatchSize;
 
                     // Handle Continue feature
-                    if (ContinueFromLast && !string.IsNullOrEmpty(CurrentFilterPath))
+                    if (ContinueFromLast)
                     {
-                        // Use helper method that includes deck/stake in the database path
-                        var dbPath = GetDatabasePath();
-
-                        AddConsoleMessage($"Checking for saved state at: {dbPath}");
-                        var searchStateManager =
-                            ServiceHelper.GetService<Services.SearchStateManager>();
-                        var savedState =
-                            searchStateManager != null
-                                ? await searchStateManager.LoadSearchStateAsync(dbPath)
-                                : null;
-                        if (savedState != null)
-                        {
-                            ulong resumeBatch = (ulong)savedState.LastCompletedBatch;
-
-                            // INTENTIONALLY REMOVED: Batch size conversion logic
-                            // The batch size is now HARDCODED to 3 for optimal performance
-                            // This eliminates the pitfall where startBatch calculation breaks if batch size changes
-                            // If the user somehow has a saved state with a different batch size, we ignore it
-                            // and start fresh (better than corrupting the search state)
-                            if (savedState.BatchSize != BatchSize)
-                            {
-                                DebugLogger.LogError(
-                                    "SearchModalViewModel",
-                                    $"Saved state has different batch size ({savedState.BatchSize} vs {BatchSize}). "
-                                        + "Batch size is now hardcoded to 3. Ignoring saved state and starting fresh."
-                                );
-                                AddConsoleMessage(
-                                    $"WARNING: Saved state has incompatible batch size. Starting fresh search."
-                                );
-                                criteria.StartBatch = 0;
-                            }
-                            else
-                            {
-                                criteria.StartBatch = (ulong)(resumeBatch + 1); // +1 to start AFTER last completed
-                                AddConsoleMessage($"Resuming from batch {resumeBatch + 1}");
-                            }
-                        }
-                        else
-                        {
-                            AddConsoleMessage($"No saved state found - starting from batch 0");
-                        }
+                        // Let Motely handle continuation from its internal state
+                        // Don't set StartBatch - Motely will auto-resume if it has saved progress
+                        AddConsoleMessage("Continue enabled - Motely will resume from last position if available.");
+                    }
+                    else
+                    {
+                        // User explicitly wants to start fresh - force StartBatch = 0
+                        criteria.StartBatch = 0;
+                        AddConsoleMessage("Starting search from the beginning (batch 0).");
                     }
                     break;
 
@@ -1598,11 +1566,6 @@ namespace BalatroSeedOracle.ViewModels
                         $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})"
                     );
 
-                    // Load saved progress if Continue is enabled
-                    if (ContinueFromLast)
-                    {
-                        await LoadSavedProgressAsync();
-                    }
 
                     // Switch to the Search tab so user can start searching
                     SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
@@ -1796,38 +1759,10 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private async Task SaveSearchStateBackgroundAsync(int currentBatch)
+        private Task SaveSearchStateBackgroundAsync(int currentBatch)
         {
-            try
-            {
-                var dbPath = GetDatabasePath();
-                var state = new SearchState
-                {
-                    Id = 1,
-                    DeckIndex = SelectedDeckIndex,
-                    StakeIndex = SelectedStakeIndex,
-                    BatchSize = BatchSize,
-                    LastCompletedBatch = currentBatch,
-                    SearchMode = (int)SelectedSearchMode,
-                    WordListName = null,
-                    UpdatedAt = DateTime.Now,
-                };
-                var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
-                if (searchStateManager != null)
-                {
-                    await searchStateManager
-                        .SaveSearchStateAsync(dbPath, state)
-                        .ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Non-critical - log but don't crash
-                DebugLogger.LogError(
-                    "SearchModalViewModel",
-                    $"Failed to save search state: {ex.Message}"
-                );
-            }
+            // Search state persistence has been removed - Motely now owns all database operations
+            return Task.CompletedTask;
         }
 
         // Marshal ALL property updates to UI thread (called from OnProgressUpdated)
@@ -2130,70 +2065,13 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Load saved search progress from DuckDB when "Continue from last position" is enabled
+        /// Load saved search progress - feature has been removed
         /// </summary>
-        private async Task LoadSavedProgressAsync()
+        private Task LoadSavedProgressAsync()
         {
-            try
-            {
-                if (string.IsNullOrEmpty(CurrentFilterPath))
-                {
-                    DebugLogger.Log(
-                        "SearchModalViewModel",
-                        "Cannot load saved progress: No filter path"
-                    );
-                    return;
-                }
-
-                // Use helper method that includes deck/stake in the database path
-                var dbPath = GetDatabasePath();
-
-                if (!System.IO.File.Exists(dbPath))
-                {
-                    DebugLogger.Log("SearchModalViewModel", $"No saved state found at: {dbPath}");
-                    ProgressPercent = 0.0;
-                    return;
-                }
-
-                var searchStateManager = ServiceHelper.GetService<Services.SearchStateManager>();
-                var savedState =
-                    searchStateManager != null
-                        ? await searchStateManager.LoadSearchStateAsync(dbPath)
-                        : null;
-                if (savedState != null)
-                {
-                    // Calculate progress percentage from saved batch
-                    // BatchSize is hardcoded to 3, so total batches = 35^4 = 1,500,625
-                    long totalBatches = (long)Math.Pow(35, BatchSize + 1);
-                    double progress =
-                        ((double)savedState.LastCompletedBatch / totalBatches) * 100.0;
-
-                    ProgressPercent = progress;
-                    AddConsoleMessage(
-                        $"Loaded saved state: Batch {savedState.LastCompletedBatch:N0} ({progress:0.00}%)"
-                    );
-
-                    DebugLogger.Log(
-                        "SearchModalViewModel",
-                        $"Loaded saved progress: {progress:0.00}% from batch {savedState.LastCompletedBatch}"
-                    );
-                }
-                else
-                {
-                    ProgressPercent = 0.0;
-                    AddConsoleMessage("No saved progress found for this filter");
-                }
-
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SearchModalViewModel",
-                    $"Failed to load saved progress: {ex.Message}"
-                );
-                ProgressPercent = 0.0;
-            }
+            // Search state persistence has been removed - Motely now owns all database operations
+            ProgressPercent = 0.0;
+            return Task.CompletedTask;
         }
 
         #endregion

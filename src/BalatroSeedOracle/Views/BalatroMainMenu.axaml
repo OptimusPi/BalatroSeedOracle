@@ -113,10 +113,10 @@
                                       IsVisible="{Binding IsEventFXWidgetVisible}"
                                       ClipToBounds="False"/>
 
-            <!-- FERTILIZER WIDGET - Global seed pile management -->
-            <components:FertilizerWidget x:Name="FertilizerWidget"
+            <!-- FERTILIZER WIDGET - Temporarily disabled, needs JSON-based storage implementation -->
+            <!-- <components:FertilizerWidget x:Name="FertilizerWidget"
                                          IsVisible="{Binding IsFertilizerWidgetVisible}"
-                                         ClipToBounds="False"/>
+                                         ClipToBounds="False"/> -->
 
             <!-- TRANSITION DESIGNER WIDGET - Create and test transitions -->
             <components:TransitionDesignerWidget x:Name="TransitionDesignerWidget"

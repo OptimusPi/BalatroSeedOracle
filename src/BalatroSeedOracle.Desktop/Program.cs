@@ -32,7 +32,7 @@ public class Program
             {
                 // Platform-specific implementations
                 services.AddSingleton<IAppDataStore, Desktop.Services.DesktopAppDataStore>();
-                services.AddSingleton<IDuckDBService, Desktop.Services.DesktopDuckDBService>();
+                // IDuckDBService removed - Motely now owns all database operations
                 services.AddSingleton<
                     IPlatformServices,
                     Desktop.Services.DesktopPlatformServices

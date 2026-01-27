@@ -20,7 +20,7 @@ internal sealed partial class Program
         {
             // Platform-specific implementations
             services.AddSingleton<IAppDataStore, BrowserLocalStorageAppDataStore>();
-            services.AddSingleton<IDuckDBService, BrowserDuckDBService>();
+            // IDuckDBService removed - Motely now owns all database operations
             services.AddSingleton<IPlatformServices>(sp =>
             {
                 var store = sp.GetRequiredService<IAppDataStore>();
