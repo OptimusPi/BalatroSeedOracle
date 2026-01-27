@@ -26,7 +26,7 @@ namespace BalatroSeedOracle.Services
             _notificationManager = new WindowNotificationManager(hostWindow)
             {
                 Position = NotificationPosition.TopRight,
-                MaxItems = 5
+                MaxItems = 5,
             };
         }
 
@@ -65,11 +65,19 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Show a notification with custom type
         /// </summary>
-        public void ShowNotification(string title, string message, NotificationType type, TimeSpan? expiration = null)
+        public void ShowNotification(
+            string title,
+            string message,
+            NotificationType type,
+            TimeSpan? expiration = null
+        )
         {
             if (_notificationManager == null)
             {
-                DebugLogger.LogError("NotificationService", "NotificationManager not initialized. Call Initialize() first.");
+                DebugLogger.LogError(
+                    "NotificationService",
+                    "NotificationManager not initialized. Call Initialize() first."
+                );
                 return;
             }
 
@@ -80,11 +88,18 @@ namespace BalatroSeedOracle.Services
             }
             else
             {
-                Dispatcher.UIThread.Post(() => ShowNotificationInternal(title, message, type, expiration));
+                Dispatcher.UIThread.Post(() =>
+                    ShowNotificationInternal(title, message, type, expiration)
+                );
             }
         }
 
-        private void ShowNotificationInternal(string title, string message, NotificationType type, TimeSpan? expiration)
+        private void ShowNotificationInternal(
+            string title,
+            string message,
+            NotificationType type,
+            TimeSpan? expiration
+        )
         {
             try
             {
@@ -99,14 +114,22 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("NotificationService", $"Failed to show notification: {ex.Message}");
+                DebugLogger.LogError(
+                    "NotificationService",
+                    $"Failed to show notification: {ex.Message}"
+                );
             }
         }
 
         /// <summary>
         /// Show a notification asynchronously (for use in async methods)
         /// </summary>
-        public Task ShowNotificationAsync(string title, string message, NotificationType type, TimeSpan? expiration = null)
+        public Task ShowNotificationAsync(
+            string title,
+            string message,
+            NotificationType type,
+            TimeSpan? expiration = null
+        )
         {
             ShowNotification(title, message, type, expiration);
             return Task.CompletedTask;

@@ -268,7 +268,6 @@ namespace BalatroSeedOracle.Services
             return SnapToGrid(startX, startY);
         }
 
-
         /// <summary>
         /// Snap a position to the grid with collision avoidance
         /// Now supports full-screen positioning for both minimized and expanded widgets

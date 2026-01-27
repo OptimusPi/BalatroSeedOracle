@@ -44,13 +44,6 @@ namespace BalatroSeedOracle.Browser.Services
             return Task.CompletedTask;
         }
 
-        public Task CopySamplesToAppDataAsync()
-        {
-            // Browser: Sample files are seeded via SeedBrowserSampleFiltersAsync in App.axaml.cs
-            // This is a no-op for browser
-            return Task.CompletedTask;
-        }
-
         public async Task<string?> ReadTextFromPathAsync(string path)
         {
             var storeKey = path.Replace('\\', '/');
@@ -58,7 +51,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ReadTextAsync(storeKey);
         }
 
@@ -69,7 +62,7 @@ namespace BalatroSeedOracle.Browser.Services
                 storeKey = storeKey.Substring(6);
             else if (storeKey.StartsWith("data/"))
                 storeKey = storeKey.Substring(5);
-            
+
             return await _store.ExistsAsync(storeKey);
         }
 

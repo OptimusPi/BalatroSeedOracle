@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.Services
         private Task? _updateTask;
         private bool _isDisposed;
 
-        #region Public Properties - Per-Track Intensities
+#region Public Properties - Per-Track Intensities
 
         public float Bass1Intensity { get; private set; }
         public float Bass2Intensity { get; private set; }
@@ -69,18 +69,18 @@ namespace BalatroSeedOracle.Services
         public float Melody1Intensity { get; private set; }
         public float Melody2Intensity { get; private set; }
 
-        #endregion
+#endregion
 
-        #region Public Properties - Aggregate Intensities (for compatibility)
+#region Public Properties - Aggregate Intensities (for compatibility)
 
         public float BassIntensity => (Bass1Intensity + Bass2Intensity) / 2f;
         public float DrumsIntensity => (Drums1Intensity + Drums2Intensity) / 2f;
         public float ChordsIntensity => (Chords1Intensity + Chords2Intensity) / 2f;
         public float MelodyIntensity => (Melody1Intensity + Melody2Intensity) / 2f;
 
-        #endregion
+#endregion
 
-        #region Public Properties - Master Controls
+#region Public Properties - Master Controls
 
         private float _masterVolume = 1.0f;
         public float MasterVolume
@@ -97,13 +97,13 @@ namespace BalatroSeedOracle.Services
 
         public bool IsPlaying => _device?.IsRunning == true;
 
-        #endregion
+#endregion
 
-        #region Events
+#region Events
 
         public event Action<float, float, float, float>? AudioAnalysisUpdated;
 
-        #endregion
+#endregion
 
         public SoundFlowAudioManager()
         {
@@ -186,7 +186,10 @@ namespace BalatroSeedOracle.Services
 
                 try
                 {
-                    DebugLogger.Log("SoundFlowAudioManager", $"Loading {trackName} from {filePath}");
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"Loading {trackName} from {filePath}"
+                    );
 
                     // Create StreamDataProvider - this will auto-detect format and decode
                     var fileStream = File.OpenRead(filePath);
@@ -256,7 +259,10 @@ namespace BalatroSeedOracle.Services
 
                 try
                 {
-                    DebugLogger.Log("SoundFlowAudioManager", $"Loading SFX {sfxName} from {filePath}");
+                    DebugLogger.Log(
+                        "SoundFlowAudioManager",
+                        $"Loading SFX {sfxName} from {filePath}"
+                    );
 
                     // Create StreamDataProvider for the SFX file
                     var fileStream = File.OpenRead(filePath);
@@ -482,9 +488,7 @@ namespace BalatroSeedOracle.Services
                 player.Seek(TimeSpan.Zero);
                 player.Play();
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         public void Dispose()
@@ -562,7 +566,14 @@ namespace BalatroSeedOracle.Services
         // Track names
         private readonly string[] _trackNames =
         {
-            "Bass1", "Bass2", "Drums1", "Drums2", "Chords1", "Chords2", "Melody1", "Melody2",
+            "Bass1",
+            "Bass2",
+            "Drums1",
+            "Drums2",
+            "Chords1",
+            "Chords2",
+            "Melody1",
+            "Melody2",
         };
 
         // Sound effect names
@@ -628,7 +639,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                DebugLogger.Log("SoundFlowAudioManager", "Initializing Web Audio API for browser...");
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "Initializing Web Audio API for browser..."
+                );
 
                 // Initialize Web Audio API
                 await InitializeWebAudioJS();
@@ -657,11 +671,17 @@ namespace BalatroSeedOracle.Services
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
 
                 _isInitialized = true;
-                DebugLogger.Log("SoundFlowAudioManager", "✓ Web Audio API initialized with 8 tracks and SFX");
+                DebugLogger.Log(
+                    "SoundFlowAudioManager",
+                    "✓ Web Audio API initialized with 8 tracks and SFX"
+                );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SoundFlowAudioManager", $"Error initializing Web Audio API: {ex.Message}");
+                DebugLogger.LogError(
+                    "SoundFlowAudioManager",
+                    $"Error initializing Web Audio API: {ex.Message}"
+                );
             }
         }
 
@@ -716,8 +736,9 @@ namespace BalatroSeedOracle.Services
         public FrequencyBands GetFrequencyBands(string trackName)
         {
             var jsObj = GetFrequencyBandsJS(trackName);
-            if (jsObj == null) return new FrequencyBands();
-            
+            if (jsObj == null)
+                return new FrequencyBands();
+
             return new FrequencyBands
             {
                 BassAvg = (float)jsObj.GetPropertyAsDouble("bassAvg"),
@@ -737,7 +758,10 @@ namespace BalatroSeedOracle.Services
         public void SetTrackPan(string trackName, float pan)
         {
             // Web Audio API panning - not implemented in basic version
-            DebugLogger.Log("SoundFlowAudioManager", $"Pan not yet implemented for browser (track: {trackName}, pan: {pan})");
+            DebugLogger.Log(
+                "SoundFlowAudioManager",
+                $"Pan not yet implemented for browser (track: {trackName}, pan: {pan})"
+            );
         }
 
         public void SetTrackMuted(string trackName, bool muted)
@@ -762,7 +786,8 @@ namespace BalatroSeedOracle.Services
 
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed)
+                return;
             _isDisposed = true;
 
             _cancellationTokenSource?.Cancel();
@@ -774,13 +799,17 @@ namespace BalatroSeedOracle.Services
 
         // JavaScript interop methods
         [JSImport("WebAudioManager.initialize", "js/webaudio-interop.js")]
-        private static partial Task<bool> InitializeWebAudioJS();
+        private static partial ValueTask<bool> InitializeWebAudioJS();
 
         [JSImport("WebAudioManager.loadTrack", "js/webaudio-interop.js")]
-        private static partial Task<bool> LoadTrackJS(string trackName, string audioUrl, bool loop);
+        private static partial ValueTask<bool> LoadTrackJS(
+            string trackName,
+            string audioUrl,
+            bool loop
+        );
 
         [JSImport("WebAudioManager.loadSfx", "js/webaudio-interop.js")]
-        private static partial Task<bool> LoadSfxJS(string sfxName, string audioUrl);
+        private static partial ValueTask<bool> LoadSfxJS(string sfxName, string audioUrl);
 
         [JSImport("WebAudioManager.setTrackVolume", "js/webaudio-interop.js")]
         private static partial bool SetTrackVolumeJS(string trackName, float volume);
@@ -795,7 +824,7 @@ namespace BalatroSeedOracle.Services
         private static partial bool PauseJS();
 
         [JSImport("WebAudioManager.resume", "js/webaudio-interop.js")]
-        private static partial Task<bool> ResumeJS();
+        private static partial ValueTask<bool> ResumeJS();
 
         [JSImport("WebAudioManager.playSfx", "js/webaudio-interop.js")]
         private static partial bool PlaySfxJS(string sfxName, float volume);

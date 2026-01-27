@@ -3,8 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.ViewModels;
 
@@ -17,24 +17,34 @@ namespace BalatroSeedOracle.Windows
     public partial class WidgetWindow : Window
     {
         private const double SnapDistance = 30.0; // Distance from edge to trigger snap
-        private const double SnapOffset = 10.0;   // Distance from edge when snapped
+        private const double SnapOffset = 10.0; // Distance from edge when snapped
         private bool _isSnapped = false;
         private SnapEdge _snapEdge = SnapEdge.None;
         private Point _dragStartPoint;
         private PixelPoint _windowStartPos;
         private Size _windowStartSize;
-        
+
         public enum SnapEdge
         {
-            None, Left, Right, Top, Bottom, 
-            TopLeft, TopRight, BottomLeft, BottomRight
+            None,
+            Left,
+            Right,
+            Top,
+            Bottom,
+            TopLeft,
+            TopRight,
+            BottomLeft,
+            BottomRight,
         }
 
         public WidgetWindow()
         {
             // Set up window properties
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                && desktop.MainWindow is not null)
+            if (
+                Application.Current?.ApplicationLifetime
+                    is IClassicDesktopStyleApplicationLifetime desktop
+                && desktop.MainWindow is not null
+            )
             {
                 Owner = desktop.MainWindow;
             }
@@ -42,14 +52,14 @@ namespace BalatroSeedOracle.Windows
             SystemDecorations = SystemDecorations.None;
             // TransparencyLevelHint = WindowTransparencyLevel.Transparent;
             Background = Brushes.Transparent;
-            
+
             // Subscribe to events
             PointerPressed += OnPointerPressed;
             PointerMoved += OnPointerMoved;
             PointerReleased += OnPointerReleased;
             PositionChanged += OnPositionChanged;
             Resized += OnResized;
-            
+
             // Initialize snap indicator
             UpdateSnapIndicator();
         }
@@ -62,7 +72,7 @@ namespace BalatroSeedOracle.Windows
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
-            
+
             // Set window content from ViewModel
             if (DataContext is BaseWidgetViewModel vm)
             {
@@ -79,7 +89,7 @@ namespace BalatroSeedOracle.Windows
             _dragStartPoint = e.GetPosition(this);
             _windowStartPos = Position;
             _windowStartSize = ClientSize;
-            
+
             // Unsnap if we were snapped
             if (_isSnapped)
             {
@@ -95,15 +105,15 @@ namespace BalatroSeedOracle.Windows
             {
                 var currentPoint = e.GetPosition(this);
                 var delta = currentPoint - _dragStartPoint;
-                
+
                 // Update window position
                 var newPos = new PixelPoint(
                     (int)(_windowStartPos.X + delta.X),
                     (int)(_windowStartPos.Y + delta.Y)
                 );
-                
+
                 Position = newPos;
-                
+
                 // Check for snap opportunities
                 CheckAndSnapToEdges();
             }
@@ -126,15 +136,21 @@ namespace BalatroSeedOracle.Windows
 
         private void CheckAndSnapToEdges()
         {
-            if (_isSnapped) return; // Don't snap if already snapped
-            
+            if (_isSnapped)
+                return; // Don't snap if already snapped
+
             // Use actual screen bounds; fallback to window bounds if unavailable
             var primary = Screens?.Primary;
-            var screenBounds = primary?.WorkingArea is { } pixelRect 
+            var screenBounds = primary?.WorkingArea is { } pixelRect
                 ? new Rect(pixelRect.X, pixelRect.Y, pixelRect.Width, pixelRect.Height)
                 : new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
-            var windowBounds = new Rect(Position.X, Position.Y, ClientSize.Width, ClientSize.Height);
-            
+            var windowBounds = new Rect(
+                Position.X,
+                Position.Y,
+                ClientSize.Width,
+                ClientSize.Height
+            );
+
             // Check each edge
             if (Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance)
             {
@@ -152,23 +168,31 @@ namespace BalatroSeedOracle.Windows
             {
                 SnapToEdge(SnapEdge.Bottom, screenBounds);
             }
-            else if (Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance && 
-                     Math.Abs(windowBounds.Top - screenBounds.Top) < SnapDistance)
+            else if (
+                Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance
+                && Math.Abs(windowBounds.Top - screenBounds.Top) < SnapDistance
+            )
             {
                 SnapToEdge(SnapEdge.TopLeft, screenBounds);
             }
-            else if (Math.Abs(screenBounds.Right - windowBounds.Right) < SnapDistance && 
-                     Math.Abs(windowBounds.Top - screenBounds.Top) < SnapDistance)
+            else if (
+                Math.Abs(screenBounds.Right - windowBounds.Right) < SnapDistance
+                && Math.Abs(windowBounds.Top - screenBounds.Top) < SnapDistance
+            )
             {
                 SnapToEdge(SnapEdge.TopRight, screenBounds);
             }
-            else if (Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance && 
-                     Math.Abs(screenBounds.Bottom - windowBounds.Bottom) < SnapDistance)
+            else if (
+                Math.Abs(windowBounds.Left - screenBounds.Left) < SnapDistance
+                && Math.Abs(screenBounds.Bottom - windowBounds.Bottom) < SnapDistance
+            )
             {
                 SnapToEdge(SnapEdge.BottomLeft, screenBounds);
             }
-            else if (Math.Abs(screenBounds.Right - windowBounds.Right) < SnapDistance && 
-                     Math.Abs(screenBounds.Bottom - windowBounds.Bottom) < SnapDistance)
+            else if (
+                Math.Abs(screenBounds.Right - windowBounds.Right) < SnapDistance
+                && Math.Abs(screenBounds.Bottom - windowBounds.Bottom) < SnapDistance
+            )
             {
                 SnapToEdge(SnapEdge.BottomRight, screenBounds);
             }
@@ -178,10 +202,10 @@ namespace BalatroSeedOracle.Windows
         {
             _isSnapped = true;
             _snapEdge = edge;
-            
+
             var newX = Position.X;
             var newY = Position.Y;
-            
+
             switch (edge)
             {
                 case SnapEdge.Left:
@@ -213,7 +237,7 @@ namespace BalatroSeedOracle.Windows
                     newY = (int)(screenBounds.Bottom - ClientSize.Height - SnapOffset);
                     break;
             }
-            
+
             Position = new PixelPoint(newX, newY);
             UpdateSnapIndicator();
         }
@@ -224,7 +248,7 @@ namespace BalatroSeedOracle.Windows
             if (indicator != null)
             {
                 indicator.IsVisible = _isSnapped;
-                
+
                 // Update indicator position based on snap edge
                 if (_isSnapped)
                 {
@@ -238,7 +262,7 @@ namespace BalatroSeedOracle.Windows
                         SnapEdge.TopRight => new Thickness(0, -20, -20, 0),
                         SnapEdge.BottomLeft => new Thickness(-20, 0, 0, -20),
                         SnapEdge.BottomRight => new Thickness(0, 0, -20, -20),
-                        _ => new Thickness(0, -20, 0, 0)
+                        _ => new Thickness(0, -20, 0, 0),
                     };
                 }
             }
@@ -247,7 +271,8 @@ namespace BalatroSeedOracle.Windows
         /// <summary>
         /// Create a widget window with the specified content
         /// </summary>
-        public static WidgetWindow Create<T>(T content) where T : Control
+        public static WidgetWindow Create<T>(T content)
+            where T : Control
         {
             var window = new WidgetWindow();
             window.Content = content;

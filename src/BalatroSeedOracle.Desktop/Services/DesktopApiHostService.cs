@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Motely.API;
-using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -15,17 +15,18 @@ public class DesktopApiHostService : IApiHostService
 {
     private WebApplication? _server;
     private CancellationTokenSource? _cts;
-    
+
     public bool IsSupported => true;
     public bool IsRunning { get; private set; }
     public string ServerUrl { get; private set; } = "http://localhost:3141/";
-    
+
     public event Action<string>? LogMessage;
     public event Action<bool>? StatusChanged;
 
     public async Task StartAsync(int port)
     {
-        if (IsRunning) return;
+        if (IsRunning)
+            return;
 
         try
         {
@@ -79,7 +80,8 @@ public class DesktopApiHostService : IApiHostService
 
     public async Task StopAsync()
     {
-        if (!IsRunning) return;
+        if (!IsRunning)
+            return;
 
         Log("Stopping server...");
 

@@ -75,7 +75,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _validationThrottleTask = ThrottledValidationAsync(token);
         }
 
-        private async Task ThrottledValidationAsync(System.Threading.CancellationToken cancellationToken)
+        private async Task ThrottledValidationAsync(
+            System.Threading.CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -118,7 +120,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     .Build();
 
                 var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
-                
+
                 // Additional validation checks
                 ValidateSchema(config);
                 ValidateAnchors(JamlContent);
@@ -146,13 +148,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // Parse YAML error
                 var lineNumber = ExtractLineNumber(yamlEx.Message);
-                ValidationErrors.Add(new ValidationErrorItem
-                {
-                    LineNumber = lineNumber,
-                    Column = 0,
-                    Message = yamlEx.Message,
-                    Severity = ValidationErrorItem.ErrorSeverity.Error
-                });
+                ValidationErrors.Add(
+                    new ValidationErrorItem
+                    {
+                        LineNumber = lineNumber,
+                        Column = 0,
+                        Message = yamlEx.Message,
+                        Severity = ValidationErrorItem.ErrorSeverity.Error,
+                    }
+                );
 
                 ValidationStatus = "✗ Invalid JAML syntax";
                 ValidationStatusColor = Brushes.Red;
@@ -163,13 +167,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
             catch (Exception ex)
             {
-                ValidationErrors.Add(new ValidationErrorItem
-                {
-                    LineNumber = 1,
-                    Column = 0,
-                    Message = ex.Message,
-                    Severity = ValidationErrorItem.ErrorSeverity.Error
-                });
+                ValidationErrors.Add(
+                    new ValidationErrorItem
+                    {
+                        LineNumber = 1,
+                        Column = 0,
+                        Message = ex.Message,
+                        Severity = ValidationErrorItem.ErrorSeverity.Error,
+                    }
+                );
 
                 ValidationStatus = "✗ Error";
                 ValidationStatusColor = Brushes.Red;
@@ -193,32 +199,64 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Validate deck enum
             if (!string.IsNullOrEmpty(config.Deck))
             {
-                var validDecks = new[] { "Red", "Blue", "Yellow", "Green", "Black", "Magic", "Nebula", "Ghost", "Abandoned", "Checkered", "Zodiac", "Painted", "Anaglyph", "Plasma", "Erratic", "Challenge" };
+                var validDecks = new[]
+                {
+                    "Red",
+                    "Blue",
+                    "Yellow",
+                    "Green",
+                    "Black",
+                    "Magic",
+                    "Nebula",
+                    "Ghost",
+                    "Abandoned",
+                    "Checkered",
+                    "Zodiac",
+                    "Painted",
+                    "Anaglyph",
+                    "Plasma",
+                    "Erratic",
+                    "Challenge",
+                };
                 if (!validDecks.Contains(config.Deck))
                 {
-                    ValidationErrors.Add(new ValidationErrorItem
-                    {
-                        LineNumber = 1,
-                        Column = 0,
-                        Message = $"Invalid deck: {config.Deck}",
-                        Severity = ValidationErrorItem.ErrorSeverity.Warning
-                    });
+                    ValidationErrors.Add(
+                        new ValidationErrorItem
+                        {
+                            LineNumber = 1,
+                            Column = 0,
+                            Message = $"Invalid deck: {config.Deck}",
+                            Severity = ValidationErrorItem.ErrorSeverity.Warning,
+                        }
+                    );
                 }
             }
 
             // Validate stake enum
             if (!string.IsNullOrEmpty(config.Stake))
             {
-                var validStakes = new[] { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+                var validStakes = new[]
+                {
+                    "White",
+                    "Red",
+                    "Green",
+                    "Black",
+                    "Blue",
+                    "Purple",
+                    "Orange",
+                    "Gold",
+                };
                 if (!validStakes.Contains(config.Stake))
                 {
-                    ValidationErrors.Add(new ValidationErrorItem
-                    {
-                        LineNumber = 1,
-                        Column = 0,
-                        Message = $"Invalid stake: {config.Stake}",
-                        Severity = ValidationErrorItem.ErrorSeverity.Warning
-                    });
+                    ValidationErrors.Add(
+                        new ValidationErrorItem
+                        {
+                            LineNumber = 1,
+                            Column = 0,
+                            Message = $"Invalid stake: {config.Stake}",
+                            Severity = ValidationErrorItem.ErrorSeverity.Warning,
+                        }
+                    );
                 }
             }
         }
@@ -226,11 +264,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ValidateAnchors(string yamlContent)
         {
             // Find all anchor references
-            var referenceMatches = System.Text.RegularExpressions.Regex.Matches(yamlContent, @"\*(\w+)");
+            var referenceMatches = System.Text.RegularExpressions.Regex.Matches(
+                yamlContent,
+                @"\*(\w+)"
+            );
             var definedAnchors = new System.Collections.Generic.HashSet<string>();
 
             // Find all anchor definitions
-            var definitionMatches = System.Text.RegularExpressions.Regex.Matches(yamlContent, @"&(\w+)");
+            var definitionMatches = System.Text.RegularExpressions.Regex.Matches(
+                yamlContent,
+                @"&(\w+)"
+            );
             foreach (System.Text.RegularExpressions.Match match in definitionMatches)
             {
                 definedAnchors.Add(match.Groups[1].Value);
@@ -243,13 +287,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (!definedAnchors.Contains(anchorName))
                 {
                     var lineNumber = GetLineNumberFromOffset(yamlContent, match.Index);
-                    ValidationErrors.Add(new ValidationErrorItem
-                    {
-                        LineNumber = lineNumber,
-                        Column = match.Index - GetLineStartOffset(yamlContent, lineNumber),
-                        Message = $"Anchor '{anchorName}' is referenced but not defined",
-                        Severity = ValidationErrorItem.ErrorSeverity.Warning
-                    });
+                    ValidationErrors.Add(
+                        new ValidationErrorItem
+                        {
+                            LineNumber = lineNumber,
+                            Column = match.Index - GetLineStartOffset(yamlContent, lineNumber),
+                            Message = $"Anchor '{anchorName}' is referenced but not defined",
+                            Severity = ValidationErrorItem.ErrorSeverity.Warning,
+                        }
+                    );
                 }
             }
         }
@@ -287,7 +333,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 foreach (var clause in config.Must)
                 {
-                    var item = CreateFilterItemFromClause(clause, FilterItemStatus.MustHave, "Must", spriteService);
+                    var item = CreateFilterItemFromClause(
+                        clause,
+                        FilterItemStatus.MustHave,
+                        "Must",
+                        spriteService
+                    );
                     PreviewItems.Add(item);
                 }
             }
@@ -295,17 +346,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 foreach (var clause in config.Should)
                 {
-                    var item = CreateFilterItemFromClause(clause, FilterItemStatus.ShouldHave, "Should", spriteService);
+                    var item = CreateFilterItemFromClause(
+                        clause,
+                        FilterItemStatus.ShouldHave,
+                        "Should",
+                        spriteService
+                    );
                     PreviewItems.Add(item);
                 }
             }
         }
 
         private FilterItem CreateFilterItemFromClause(
-            MotelyJsonConfig.MotelyJsonFilterClause clause, 
-            FilterItemStatus status, 
+            MotelyJsonConfig.MotelyJsonFilterClause clause,
+            FilterItemStatus status,
             string category,
-            SpriteService spriteService)
+            SpriteService spriteService
+        )
         {
             var item = new FilterItem
             {
@@ -320,7 +377,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 Enhancement = clause.Enhancement,
                 Stickers = clause.Stickers?.ToList(),
                 Score = clause.Score,
-                MinCount = clause.Min ?? 0
+                MinCount = clause.Min ?? 0,
             };
 
             // Fetch image based on type and name
@@ -381,21 +438,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     .Build();
 
                 var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
-                if (config == null) return;
+                if (config == null)
+                    return;
 
                 // Load the config into the parent state
                 _parentViewModel.LoadConfigIntoState(config);
 
                 // Update the Visual Builder UI components
                 await _parentViewModel.UpdateVisualBuilderFromItemConfigs();
-                
+
                 // Ensure zones are expanded if they have items
                 _parentViewModel.ExpandDropZonesWithItems();
 
                 ValidationStatus = "✓ Synced to Visual Builder";
                 ValidationStatusColor = Brushes.LightGreen;
-                
-                DebugLogger.LogImportant("JamlEditorTab", "Successfully synced JAML to Visual Builder");
+
+                DebugLogger.LogImportant(
+                    "JamlEditorTab",
+                    "Successfully synced JAML to Visual Builder"
+                );
             }
             catch (Exception ex)
             {
@@ -410,7 +471,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private void FormatJaml()
         {
-            if (string.IsNullOrWhiteSpace(JamlContent)) return;
+            if (string.IsNullOrWhiteSpace(JamlContent))
+                return;
 
             try
             {
@@ -433,11 +495,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private async Task CopyJaml()
         {
-            if (string.IsNullOrWhiteSpace(JamlContent)) return;
-            
+            if (string.IsNullOrWhiteSpace(JamlContent))
+                return;
+
             try
             {
-                var topLevel = Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                var topLevel = Avalonia.Application.Current?.ApplicationLifetime
+                    is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
 
@@ -469,7 +533,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Convert to JAML (uses YAML serialization since JAML is YAML-based)
                 JamlContent = ConvertConfigToJaml(config);
-                
+
                 // Validate the generated JAML immediately to catch errors
                 ValidateAndPreview();
 
@@ -478,13 +542,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     ValidationStatus = $"✗ Invalid JAML: {ErrorMessage}";
                     ValidationStatusColor = Brushes.Red;
-                    DebugLogger.LogError("JamlEditorTab", $"Generated invalid JAML: {ErrorMessage}");
+                    DebugLogger.LogError(
+                        "JamlEditorTab",
+                        $"Generated invalid JAML: {ErrorMessage}"
+                    );
                 }
                 else
                 {
                     // Silent status update
                     var totalItems = (config.Must?.Count ?? 0) + (config.Should?.Count ?? 0);
-                    ValidationStatus = totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
+                    ValidationStatus =
+                        totalItems > 0 ? $"Auto-synced ({totalItems} items)" : "Ready";
                     ValidationStatusColor = Brushes.Gray;
 
                     DebugLogger.Log(
@@ -499,7 +567,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ValidationStatusColor = Brushes.Red;
                 ErrorMessage = ex.Message;
                 HasError = true;
-                DebugLogger.LogError("JamlEditorTab", $"Error generating JAML: {ex.Message}\n{ex.StackTrace}");
+                DebugLogger.LogError(
+                    "JamlEditorTab",
+                    $"Error generating JAML: {ex.Message}\n{ex.StackTrace}"
+                );
             }
         }
 

@@ -132,7 +132,10 @@ namespace BalatroSeedOracle.Behaviors
                     if (containers.Count == 0)
                     {
                         // Items not yet realized, try again with a delay
-                        DebugLogger.Log("CategoryGroupedLayout", "No containers found, retrying...");
+                        DebugLogger.Log(
+                            "CategoryGroupedLayout",
+                            "No containers found, retrying..."
+                        );
                         Avalonia.Threading.DispatcherTimer.RunOnce(
                             () => ArrangeItems(),
                             TimeSpan.FromMilliseconds(100)

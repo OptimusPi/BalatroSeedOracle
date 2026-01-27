@@ -13,7 +13,8 @@ public sealed class DesktopAppDataStore : IAppDataStore
 {
     private static string NormalizeKey(string key)
     {
-        var normalized = key.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+        var normalized = key.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
         return normalized.TrimStart(Path.DirectorySeparatorChar);
     }
 
@@ -23,10 +24,10 @@ public sealed class DesktopAppDataStore : IAppDataStore
         return Path.Combine(AppPaths.DataRootDir, normalized);
     }
 
-    public Task<bool> ExistsAsync(string key)
+    public ValueTask<bool> ExistsAsync(string key)
     {
         var path = GetPath(key);
-        return Task.FromResult(File.Exists(path));
+        return new ValueTask<bool>(File.Exists(path));
     }
 
     public async Task<string?> ReadTextAsync(string key)
@@ -49,21 +50,21 @@ public sealed class DesktopAppDataStore : IAppDataStore
         await File.WriteAllTextAsync(path, content).ConfigureAwait(false);
     }
 
-    public Task DeleteAsync(string key)
+    public ValueTask DeleteAsync(string key)
     {
         var path = GetPath(key);
         if (File.Exists(path))
             File.Delete(path);
-        return Task.CompletedTask;
+        return new ValueTask();
     }
 
-    public Task<IReadOnlyList<string>> ListKeysAsync(string prefix)
+    public ValueTask<IReadOnlyList<string>> ListKeysAsync(string prefix)
     {
         var normalizedPrefix = NormalizeKey(prefix);
         var baseDir = GetPath(normalizedPrefix);
 
         if (!Directory.Exists(baseDir))
-            return Task.FromResult<IReadOnlyList<string>>(new List<string>());
+            return new ValueTask<IReadOnlyList<string>>(new List<string>());
 
         var keys = new List<string>();
         foreach (var file in Directory.EnumerateFiles(baseDir, "*", SearchOption.AllDirectories))
@@ -72,11 +73,11 @@ public sealed class DesktopAppDataStore : IAppDataStore
             rel = rel.Replace(Path.DirectorySeparatorChar, '/');
             keys.Add(rel);
         }
-        return Task.FromResult<IReadOnlyList<string>>(keys);
+        return new ValueTask<IReadOnlyList<string>>(keys);
     }
 
-    public Task<bool> FileExistsAsync(string path)
+    public ValueTask<bool> FileExistsAsync(string path)
     {
-        return Task.FromResult(File.Exists(path));
+        return new ValueTask<bool>(File.Exists(path));
     }
 }

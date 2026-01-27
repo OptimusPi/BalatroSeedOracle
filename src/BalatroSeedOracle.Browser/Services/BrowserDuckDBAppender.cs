@@ -79,7 +79,8 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
 
     public async Task CloseAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await CloseAppenderAsync(_appenderId);
         _disposed = true;
     }
@@ -95,7 +96,8 @@ public partial class BrowserDuckDBAppender : IDuckDBAppender
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await CloseAppenderAsync(_appenderId);
         _disposed = true;
     }

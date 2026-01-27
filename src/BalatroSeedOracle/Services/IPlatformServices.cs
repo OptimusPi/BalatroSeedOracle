@@ -45,12 +45,6 @@ namespace BalatroSeedOracle.Services
         Task WriteCrashLogAsync(string message);
 
         /// <summary>
-        /// Copies sample files to app data directory on first run.
-        /// Platform-specific implementations handle the copy mechanism.
-        /// </summary>
-        Task CopySamplesToAppDataAsync();
-
-        /// <summary>
         /// Reads text from a file path. Uses IAppDataStore on browser, File on desktop.
         /// </summary>
         Task<string?> ReadTextFromPathAsync(string path);

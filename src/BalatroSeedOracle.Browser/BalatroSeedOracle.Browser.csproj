@@ -5,25 +5,36 @@
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
     <!-- WASM Optimization Settings -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
-    <WasmEnableThreads>false</WasmEnableThreads>
-    <PublishTrimmed>false</PublishTrimmed>
-    <WasmEnableHotReload Condition="'$(Configuration)'=='Release'">false</WasmEnableHotReload>
-    <!-- Publish to Motely API wwwroot -->
-    <PublishDir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\_publish\</PublishDir>
+    <WasmEnableThreads>true</WasmEnableThreads>
+    <RunAOTCompilation>true</RunAOTCompilation>
+    <PublishTrimmed>true</PublishTrimmed>
+    <!-- Max heap: 512MB = 536870912 bytes (must be multiple of 16384) -->
+    <EmccMaximumHeapSize>536870912</EmccMaximumHeapSize>
+    <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
+    <!-- Sharded ICU: loads locale data on-demand instead of bundling all 27MB -->
+    <WasmIcuDataMode>Sharded</WasmIcuDataMode>
+    <!-- Disable source-generated JS interop for .NET 10.0 compatibility -->
+    <EnableJavaScriptInteropGeneration>false</EnableJavaScriptInteropGeneration>
   </PropertyGroup>
-  
+
   <Target Name="DeployWasmOutput" AfterTargets="Publish">
     <ItemGroup>
-      <!-- Copy all files recursively, including .dat files -->
-      <WasmFiles Include="$(PublishDir)wwwroot\**\*" />
+      <!-- Copy everything from the generated publish folder (default bin/.../publish output) -->
+      <WasmFiles Include="$(PublishDir)**\*" />
     </ItemGroup>
-    <Message Text="Copying $(WasmFiles.Count) files from $(PublishDir)wwwroot to BSO folder" Importance="high" />
-    <!-- Copy all files preserving directory structure -->
-    <Copy SourceFiles="@(WasmFiles)" 
-          DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\%(RecursiveDir)" 
-          SkipUnchangedFiles="false" />
-    <Message Text="Deployment complete. Files copied to: $(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\" Importance="high" />
-    <RemoveDir Directories="$(PublishDir)" />
+    <Message
+      Text="Deploying WASM files from $(PublishDir) to external/Motely/wwwroot/BSO"
+      Importance="high"
+    />
+    <Copy
+      SourceFiles="@(WasmFiles)"
+      DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\wwwroot\BSO\%(RecursiveDir)"
+      SkipUnchangedFiles="false"
+    />
+    <Message
+      Text="Deployment complete. Files copied to: $(MSBuildThisFileDirectory)..\..\external\Motely\wwwroot\BSO\"
+      Importance="high"
+    />
   </Target>
   <PropertyGroup Condition="'$(EnableWasmThreads)'=='true'">
     <WasmEnableThreads>true</WasmEnableThreads>
@@ -34,9 +45,21 @@
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile
+      Include="..\BalatroSeedOracle\Services\SoundFlowAudioManager.cs"
+      Link="Services\SoundFlowAudioManager.cs"
+    />
+  </ItemGroup>
+
+  <!-- Exclude problematic files from Browser build -->
+  <ItemGroup>
+    <!-- Exclude SoundFlowAudioManager due to JS interop issues -->
+    <Compile Remove="..\BalatroSeedOracle\Services\SoundFlowAudioManager.cs" />
   </ItemGroup>
 
   <!-- Shared property for Motely BSO destination - use source wwwroot -->

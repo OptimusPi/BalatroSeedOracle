@@ -2,40 +2,43 @@ name: Build Browser Only
 
 on:
   push:
-    branches: [ main, develop ]
-    paths: [ 'src/BalatroSeedOracle.Browser/**', 'src/BalatroSeedOracle/**' ]
+    branches: [main, develop]
+    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
   pull_request:
-    branches: [ main ]
-    paths: [ 'src/BalatroSeedOracle.Browser/**', 'src/BalatroSeedOracle/**' ]
+    branches: [main]
+    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+        env:
+          BROWSER_PUBLISH_DIR: src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish
 
-    - name: Restore Dependencies
-      run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore
 
-    - name: Build Browser Version
-      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore
+      - name: Build Browser Version
+        run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore
 
-    - name: Check Build Size
-      run: |
-        $size = (Get-ChildItem -Path "publish/browser" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-        Write-Host "Browser build size: $([math]::Round($size, 2)) MB"
+      - name: Check Build Size
+        run: |
+          $publishDir = "${env:BROWSER_PUBLISH_DIR}"
+          $size = (Get-ChildItem -Path $publishDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
+          Write-Host "Browser build size: $([math]::Round($size, 2)) MB"
 
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: BalatroSeedOracle-Browser
-        path: publish/browser/
-        retention-days: 7
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BalatroSeedOracle-Browser
+          path: ${{ env.BROWSER_PUBLISH_DIR }}/
+          retention-days: 7

@@ -21,7 +21,8 @@ namespace BalatroSeedOracle.Services
         public SearchStateManager(IDuckDBService duckDB, IPlatformServices platformServices)
         {
             _duckDB = duckDB ?? throw new ArgumentNullException(nameof(duckDB));
-            _platformServices = platformServices ?? throw new ArgumentNullException(nameof(platformServices));
+            _platformServices =
+                platformServices ?? throw new ArgumentNullException(nameof(platformServices));
         }
 
         // Static blocking methods removed - all callers now use async versions
@@ -63,14 +64,23 @@ namespace BalatroSeedOracle.Services
                 {
                     Id = row.TryGetValue("id", out var id) ? Convert.ToInt32(id) : 1,
                     DeckIndex = row.TryGetValue("deck_index", out var di) ? Convert.ToInt32(di) : 0,
-                    StakeIndex = row.TryGetValue("stake_index", out var si) ? Convert.ToInt32(si) : 0,
+                    StakeIndex = row.TryGetValue("stake_index", out var si)
+                        ? Convert.ToInt32(si)
+                        : 0,
                     BatchSize = row.TryGetValue("batch_size", out var bs) ? Convert.ToInt32(bs) : 3,
-                    LastCompletedBatch = row.TryGetValue("last_completed_batch", out var lcb) ? Convert.ToInt32(lcb) : 0,
-                    SearchMode = row.TryGetValue("search_mode", out var sm) ? Convert.ToInt32(sm) : 0,
-                    WordListName = row.TryGetValue("wordlist_name", out var wln) ? wln?.ToString() : null,
-                    UpdatedAt = row.TryGetValue("updated_at", out var ua) && ua != null 
-                        ? DateTime.Parse(ua.ToString()!) 
-                        : DateTime.UtcNow,
+                    LastCompletedBatch = row.TryGetValue("last_completed_batch", out var lcb)
+                        ? Convert.ToInt32(lcb)
+                        : 0,
+                    SearchMode = row.TryGetValue("search_mode", out var sm)
+                        ? Convert.ToInt32(sm)
+                        : 0,
+                    WordListName = row.TryGetValue("wordlist_name", out var wln)
+                        ? wln?.ToString()
+                        : null,
+                    UpdatedAt =
+                        row.TryGetValue("updated_at", out var ua) && ua != null
+                            ? DateTime.Parse(ua.ToString()!)
+                            : DateTime.UtcNow,
                 };
             }
             catch (Exception ex)
@@ -117,9 +127,9 @@ namespace BalatroSeedOracle.Services
                     ["last_completed_batch"] = state.LastCompletedBatch,
                     ["search_mode"] = state.SearchMode,
                     ["wordlist_name"] = state.WordListName,
-                    ["updated_at"] = state.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                    ["updated_at"] = state.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                 };
-                
+
                 await connection.UpsertRowAsync("search_state", values, "id");
                 DebugLogger.Log(
                     "SearchStateManager",
@@ -179,16 +189,18 @@ namespace BalatroSeedOracle.Services
             // Use Motely's schema - no SQL construction in BSO!
             var baseSchema = DuckDBSchema.SearchStateTableSchema();
             await connection.EnsureTableExistsAsync(baseSchema);
-            
+
             // Add BalatroSeedOracle-specific columns if they don't exist
             // Note: ALTER TABLE still needs SQL, but this is schema migration, not business logic
-            await connection.ExecuteNonQueryAsync(@"
+            await connection.ExecuteNonQueryAsync(
+                @"
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS deck_index INTEGER;
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS stake_index INTEGER;
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS search_mode INTEGER;
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS wordlist_name TEXT;
                 ALTER TABLE search_state ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
-            ");
+            "
+            );
         }
     }
 }

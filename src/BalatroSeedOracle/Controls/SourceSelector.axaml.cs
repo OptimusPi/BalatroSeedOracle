@@ -30,7 +30,15 @@ namespace BalatroSeedOracle.Controls
             InitializeViewModel();
 
             // Wire up property changes
-            this.GetObservable(SelectedSourceTagProperty).Subscribe(OnSelectedSourceTagChanged);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == SelectedSourceTagProperty)
+            {
+                OnSelectedSourceTagChanged(change.GetNewValue<string>());
+            }
         }
 
         private void InitializeViewModel()

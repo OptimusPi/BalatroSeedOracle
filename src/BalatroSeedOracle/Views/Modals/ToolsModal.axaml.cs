@@ -51,7 +51,8 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 try
                 {
-                    var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+                    var configurationService =
+                        ServiceHelper.GetRequiredService<IConfigurationService>();
                     var filterService = ServiceHelper.GetRequiredService<IFilterService>();
                     var filterCache = ServiceHelper.GetService<IFilterCacheService>();
 
@@ -79,7 +80,14 @@ namespace BalatroSeedOracle.Views.Modals
                             MotelyJsonConfig? config;
                             if (extension == ".jaml")
                             {
-                                if (!Motely.JamlConfigLoader.TryLoadFromJamlString(text, out config, out var parseError) || config == null)
+                                if (
+                                    !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                        text,
+                                        out config,
+                                        out var parseError
+                                    )
+                                    || config == null
+                                )
                                 {
                                     DebugLogger.LogError(
                                         "ToolsModal",
@@ -91,19 +99,27 @@ namespace BalatroSeedOracle.Views.Modals
                             }
                             else
                             {
-                                config = System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                                    text,
-                                    new System.Text.Json.JsonSerializerOptions
-                                    {
-                                        PropertyNameCaseInsensitive = true,
-                                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                        AllowTrailingCommas = true,
-                                    }
-                                );
+                                config =
+                                    System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                                        text,
+                                        new System.Text.Json.JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true,
+                                            ReadCommentHandling = System
+                                                .Text
+                                                .Json
+                                                .JsonCommentHandling
+                                                .Skip,
+                                            AllowTrailingCommas = true,
+                                        }
+                                    );
 
                                 if (config == null)
                                 {
-                                    DebugLogger.LogError("ToolsModal", $"Failed to parse JSON {storageFile.Name}");
+                                    DebugLogger.LogError(
+                                        "ToolsModal",
+                                        $"Failed to parse JSON {storageFile.Name}"
+                                    );
                                     failCount++;
                                     continue;
                                 }
@@ -114,10 +130,15 @@ namespace BalatroSeedOracle.Views.Modals
                                 : Path.GetFileNameWithoutExtension(storageFile.Name);
                             var destKey = filterService.GenerateFilterFileName(baseName);
 
-                            var saved = await configurationService.SaveFilterAsync(destKey, config).ConfigureAwait(false);
+                            var saved = await configurationService
+                                .SaveFilterAsync(destKey, config)
+                                .ConfigureAwait(false);
                             if (!saved)
                             {
-                                DebugLogger.LogError("ToolsModal", $"Failed to save imported filter: {storageFile.Name}");
+                                DebugLogger.LogError(
+                                    "ToolsModal",
+                                    $"Failed to save imported filter: {storageFile.Name}"
+                                );
                                 failCount++;
                                 continue;
                             }

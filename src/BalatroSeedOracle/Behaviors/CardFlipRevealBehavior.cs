@@ -30,7 +30,6 @@ namespace BalatroSeedOracle.Behaviors
     {
         private IImage? _cachedRevealSprite;
         private bool _isAnimating;
-        private IDisposable? _sourceSubscription;
 
         /// <summary>
         /// The deck name to show on the card back (e.g., "Red", "Anaglyph")
@@ -108,31 +107,38 @@ namespace BalatroSeedOracle.Behaviors
                 return;
 
             // Listen for RevealSprite changes to trigger flip
-            this.GetObservable(RevealSpriteProperty)
-                .Subscribe(sprite =>
-                {
-                    if (AutoTrigger && sprite != null && !WatchSource)
-                    {
-                        _ = TriggerFlipAsync();
-                    }
-                });
+            this.PropertyChanged += OnBehaviorPropertyChanged;
 
             // Listen for Image.Source changes when WatchSource is enabled
-            // This supports converter-based bindings like:
-            // <Image Source="{Binding ., Converter={StaticResource ItemNameToSpriteConverter}}" />
             if (WatchSource)
             {
-                _sourceSubscription = AssociatedObject
-                    .GetObservable(Image.SourceProperty)
-                    .Subscribe(newSource =>
-                    {
-                        if (AutoTrigger && newSource != null && !_isAnimating)
-                        {
-                            // Cache the converted sprite and trigger flip
-                            _cachedRevealSprite = newSource;
-                            _ = TriggerFlipAsync();
-                        }
-                    });
+                AssociatedObject.PropertyChanged += OnImagePropertyChanged;
+            }
+        }
+
+        private void OnBehaviorPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == RevealSpriteProperty)
+            {
+                var sprite = e.GetNewValue<IImage?>();
+                if (AutoTrigger && sprite != null && !WatchSource)
+                {
+                    _ = TriggerFlipAsync();
+                }
+            }
+        }
+
+        private void OnImagePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Image.SourceProperty)
+            {
+                var newSource = e.GetNewValue<IImage?>();
+                if (AutoTrigger && newSource != null && !_isAnimating)
+                {
+                    // Cache the converted sprite and trigger flip
+                    _cachedRevealSprite = newSource;
+                    _ = TriggerFlipAsync();
+                }
             }
         }
 
@@ -312,9 +318,11 @@ namespace BalatroSeedOracle.Behaviors
         {
             base.OnDetaching();
 
-            // Clean up the source property subscription
-            _sourceSubscription?.Dispose();
-            _sourceSubscription = null;
+            this.PropertyChanged -= OnBehaviorPropertyChanged;
+            if (AssociatedObject != null)
+            {
+                AssociatedObject.PropertyChanged -= OnImagePropertyChanged;
+            }
             _cachedRevealSprite = null;
         }
     }

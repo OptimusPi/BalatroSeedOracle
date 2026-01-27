@@ -114,13 +114,12 @@ namespace BalatroSeedOracle.ViewModels
                 .ToList();
 
             AudioTriggerOptions = new ObservableCollection<string>(
-                triggers.Count > 0 ? new[] { NoneOption }.Concat(triggers).ToList() : new[] { NoneOption }
+                triggers.Count > 0
+                    ? new[] { NoneOption }.Concat(triggers).ToList()
+                    : new[] { NoneOption }
             );
 
-            DebugLogger.Log(
-                "TransitionDesigner",
-                $"Loaded {triggers.Count} audio triggers"
-            );
+            DebugLogger.Log("TransitionDesigner", $"Loaded {triggers.Count} audio triggers");
         }
 
         // Audio Mix Options
@@ -164,10 +163,8 @@ namespace BalatroSeedOracle.ViewModels
         private string _selectedEasing = "Linear";
 
         // Duration options
-        public ObservableCollection<string> DurationOptions { get; } = new()
-        {
-            "0.5s", "1s", "2s", "3s", "5s", "10s"
-        };
+        public ObservableCollection<string> DurationOptions { get; } =
+            new() { "0.5s", "1s", "2s", "3s", "5s", "10s" };
 
         [ObservableProperty]
         private string _selectedDuration = "2s";
@@ -297,7 +294,10 @@ namespace BalatroSeedOracle.ViewModels
             _audioUpdateTimer.Elapsed += (s, e) => UpdateAudioDrivenProgress();
             _audioUpdateTimer.Start();
 
-            DebugLogger.Log("TransitionDesigner", "Started audio monitoring for music-activated transition");
+            DebugLogger.Log(
+                "TransitionDesigner",
+                "Started audio monitoring for music-activated transition"
+            );
         }
 
         private void StopAudioMonitoring()
@@ -344,7 +344,8 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Apply smoothing (exponential moving average)
-            _smoothedAudioProgress = AudioSmoothing * _smoothedAudioProgress + (1.0 - AudioSmoothing) * rawProgress;
+            _smoothedAudioProgress =
+                AudioSmoothing * _smoothedAudioProgress + (1.0 - AudioSmoothing) * rawProgress;
 
             // Apply easing
             TransitionProgress = ApplyEasing(_smoothedAudioProgress);
@@ -398,7 +399,10 @@ namespace BalatroSeedOracle.ViewModels
                     Easing = SelectedEasing,
                     Duration = TransitionDuration > 0 ? TransitionDuration : DefaultDuration,
                     MusicActivated = MusicActivated,
-                    AudioTriggerName = MusicActivated && SelectedAudioTrigger != NoneOption ? SelectedAudioTrigger : null,
+                    AudioTriggerName =
+                        MusicActivated && SelectedAudioTrigger != NoneOption
+                            ? SelectedAudioTrigger
+                            : null,
                     TriggerThreshold = TriggerThreshold,
                     TriggerMax = TriggerMax,
                     AudioSmoothing = AudioSmoothing,
@@ -406,7 +410,10 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (TransitionPresetHelper.Save(preset))
                 {
-                    DebugLogger.Log("TransitionDesigner", $"Saved transition: {defaultName} (MusicActivated={MusicActivated})");
+                    DebugLogger.Log(
+                        "TransitionDesigner",
+                        $"Saved transition: {defaultName} (MusicActivated={MusicActivated})"
+                    );
                 }
                 else
                 {
@@ -457,7 +464,10 @@ namespace BalatroSeedOracle.ViewModels
                     TriggerMax = preset.TriggerMax;
                     AudioSmoothing = preset.AudioSmoothing;
 
-                    DebugLogger.Log("TransitionDesigner", $"Loaded transition: {preset.Name} (MusicActivated={MusicActivated})");
+                    DebugLogger.Log(
+                        "TransitionDesigner",
+                        $"Loaded transition: {preset.Name} (MusicActivated={MusicActivated})"
+                    );
                 }
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -56,23 +57,40 @@ namespace BalatroSeedOracle.Controls
             if (_innerTabControl != null)
             {
                 // Subscribe to SelectedIndex changes from the inner TabControl
-                _selectedIndexSubscription = _innerTabControl
-                    .GetObservable(TabControl.SelectedIndexProperty)
-                    .Subscribe(_ => UpdateTrianglePosition());
+                _innerTabControl.PropertyChanged += OnInnerTabControlPropertyChanged;
 
                 // Also update on layout changes (handles window resizing, tab content changes, etc.)
-                _innerTabControl.LayoutUpdated += (_, _) => UpdateTrianglePosition();
+                _innerTabControl.LayoutUpdated += OnInnerTabControlLayoutUpdated;
 
                 // Initial update
                 UpdateTrianglePosition();
             }
         }
 
+        private void OnInnerTabControlPropertyChanged(
+            object? sender,
+            AvaloniaPropertyChangedEventArgs e
+        )
+        {
+            if (e.Property == TabControl.SelectedIndexProperty)
+            {
+                UpdateTrianglePosition();
+            }
+        }
+
+        private void OnInnerTabControlLayoutUpdated(object? sender, EventArgs e)
+        {
+            UpdateTrianglePosition();
+        }
+
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _selectedIndexSubscription?.Dispose();
-            _selectedIndexSubscription = null;
+            if (_innerTabControl != null)
+            {
+                _innerTabControl.PropertyChanged -= OnInnerTabControlPropertyChanged;
+                _innerTabControl.LayoutUpdated -= OnInnerTabControlLayoutUpdated;
+            }
         }
 
         private void UpdateTrianglePosition()

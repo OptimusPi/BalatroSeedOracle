@@ -20,6 +20,7 @@ namespace BalatroSeedOracle.ViewModels
     public class DayLatroWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
         public event EventHandler<string>? CopyToClipboardRequested;
+
         #region Services (Injected)
 
         private readonly DaylatroHighScoreService _scoreService;
@@ -546,13 +547,16 @@ namespace BalatroSeedOracle.ViewModels
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "https://daylatro.com",
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 };
                 System.Diagnostics.Process.Start(psi);
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DayLatroWidgetViewModel", $"Failed to open Daylatro website: {ex.Message}");
+                DebugLogger.LogError(
+                    "DayLatroWidgetViewModel",
+                    $"Failed to open Daylatro website: {ex.Message}"
+                );
             }
         }
 

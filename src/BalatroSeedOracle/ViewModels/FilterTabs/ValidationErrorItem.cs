@@ -12,27 +12,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string Message { get; set; } = "";
         public ErrorSeverity Severity { get; set; }
 
-        public string SeverityIcon => Severity switch
-        {
-            ErrorSeverity.Error => "✗",
-            ErrorSeverity.Warning => "⚠",
-            ErrorSeverity.Info => "ℹ",
-            _ => "•"
-        };
+        public string SeverityIcon =>
+            Severity switch
+            {
+                ErrorSeverity.Error => "✗",
+                ErrorSeverity.Warning => "⚠",
+                ErrorSeverity.Info => "ℹ",
+                _ => "•",
+            };
 
-        public IBrush SeverityColor => Severity switch
-        {
-            ErrorSeverity.Error => Brushes.Red,
-            ErrorSeverity.Warning => Brushes.Orange,
-            ErrorSeverity.Info => Brushes.Blue,
-            _ => Brushes.Gray
-        };
+        public IBrush SeverityColor =>
+            Severity switch
+            {
+                ErrorSeverity.Error => Brushes.Red,
+                ErrorSeverity.Warning => Brushes.Orange,
+                ErrorSeverity.Info => Brushes.Blue,
+                _ => Brushes.Gray,
+            };
 
         public enum ErrorSeverity
         {
             Error,
             Warning,
-            Info
+            Info,
         }
     }
 }

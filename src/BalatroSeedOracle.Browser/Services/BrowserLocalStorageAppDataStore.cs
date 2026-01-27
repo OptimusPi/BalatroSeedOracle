@@ -20,44 +20,62 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
     {
         // Console.WriteLine removed for AI compatibility - use DebugLogger instead
         DebugLogger.Log("BrowserLocalStorageAppDataStore", "Initialized");
-        
+
         // Test basic localStorage interop
         try
         {
             SetItem("bso:test", "test-value");
             var testValue = GetItem("bso:test");
-            DebugLogger.Log("BrowserLocalStorageAppDataStore", $"LocalStorage test result: {testValue}");
-            
+            DebugLogger.Log(
+                "BrowserLocalStorageAppDataStore",
+                $"LocalStorage test result: {testValue}"
+            );
+
             if (testValue == "test-value")
             {
-                DebugLogger.LogImportant("BrowserLocalStorageAppDataStore", "LocalStorage interop is working!");
+                DebugLogger.LogImportant(
+                    "BrowserLocalStorageAppDataStore",
+                    "LocalStorage interop is working!"
+                );
             }
             else
             {
-                DebugLogger.LogError("BrowserLocalStorageAppDataStore", "LocalStorage interop failed - wrong value returned");
+                DebugLogger.LogError(
+                    "BrowserLocalStorageAppDataStore",
+                    "LocalStorage interop failed - wrong value returned"
+                );
             }
-            
+
             // Clean up test
             RemoveItem("bso:test");
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"LocalStorage test failed: {ex.Message}");
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Exception type: {ex.GetType().Name}");
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"LocalStorage test failed: {ex.Message}"
+            );
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Exception type: {ex.GetType().Name}"
+            );
         }
     }
 
-    public Task<bool> ExistsAsync(string key)
+    public ValueTask<bool> ExistsAsync(string key)
     {
         try
         {
             var value = GetItem(MakeKey(key));
-            return Task.FromResult(value != null);
+            return new ValueTask<bool>(value != null);
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error checking if key exists: {ex.Message}");
-            return Task.FromResult(false);
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Error checking if key exists: {ex.Message}"
+            );
+            return new ValueTask<bool>(false);
         }
     }
 
@@ -70,7 +88,10 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error reading text for key {key}: {ex.Message}");
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Error reading text for key {key}: {ex.Message}"
+            );
             return Task.FromResult<string?>(null);
         }
     }
@@ -80,31 +101,40 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         try
         {
             SetItem(MakeKey(key), content);
-            DebugLogger.Log("BrowserLocalStorageAppDataStore", $"Successfully wrote {content.Length} chars to key {key}");
+            DebugLogger.Log(
+                "BrowserLocalStorageAppDataStore",
+                $"Successfully wrote {content.Length} chars to key {key}"
+            );
             return Task.CompletedTask;
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error writing text for key {key}: {ex.Message}");
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Error writing text for key {key}: {ex.Message}"
+            );
             throw;
         }
     }
 
-    public Task DeleteAsync(string key)
+    public ValueTask DeleteAsync(string key)
     {
         try
         {
             RemoveItem(MakeKey(key));
-            return Task.CompletedTask;
+            return new ValueTask();
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error deleting key {key}: {ex.Message}");
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Error deleting key {key}: {ex.Message}"
+            );
             throw;
         }
     }
 
-    public Task<IReadOnlyList<string>> ListKeysAsync(string prefix)
+    public ValueTask<IReadOnlyList<string>> ListKeysAsync(string prefix)
     {
         try
         {
@@ -113,8 +143,11 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
 
             // Try to iterate through localStorage
             var len = GetLocalStorageLength();
-            DebugLogger.Log("BrowserLocalStorageAppDataStore", $"LocalStorage has {len} items total");
-            
+            DebugLogger.Log(
+                "BrowserLocalStorageAppDataStore",
+                $"LocalStorage has {len} items total"
+            );
+
             for (var i = 0; i < len; i++)
             {
                 var k = GetLocalStorageKey(i);
@@ -127,12 +160,15 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
                 results.Add(k.Substring(Prefix.Length));
             }
 
-            return Task.FromResult<IReadOnlyList<string>>(results);
+            return new ValueTask<IReadOnlyList<string>>(results);
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError("BrowserLocalStorageAppDataStore", $"Error listing keys with prefix {prefix}: {ex.Message}");
-            return Task.FromResult<IReadOnlyList<string>>(new List<string>());
+            DebugLogger.LogError(
+                "BrowserLocalStorageAppDataStore",
+                $"Error listing keys with prefix {prefix}: {ex.Message}"
+            );
+            return new ValueTask<IReadOnlyList<string>>(new List<string>());
         }
     }
 
@@ -155,7 +191,7 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
     [JSImport("window.BSO.getLocalStorageKey")]
     private static partial string? GetLocalStorageKey(int index);
 
-    public Task<bool> FileExistsAsync(string path)
+    public ValueTask<bool> FileExistsAsync(string path)
     {
         // Convert file path to localStorage key format
         var key = path.Replace('\\', '/');
@@ -163,7 +199,7 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
             key = key.Substring(6);
         else if (key.StartsWith("data/"))
             key = key.Substring(5);
-        
+
         return ExistsAsync(key);
     }
 }

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -617,7 +617,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             // Show validation warning to user
             HasValidationWarnings = true;
-            ValidationWarningText = "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
+            ValidationWarningText =
+                "⚠️ This filter has not been tested. It may not match any seeds. Continue anyway?";
 
             // For now, we proceed automatically after showing the warning.
             // A proper modal dialog system would allow user confirmation here.
@@ -704,7 +705,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 UpdateStatus($"Copy error: {ex.Message}", true);
                 DebugLogger.LogError("ValidateFilterTab", $"Error copying JSON: {ex.Message}");
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -721,7 +722,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (string.IsNullOrWhiteSpace(filterFileName))
                 {
                     // Fallback to generating filename from filter name
-                    filterFileName = Path.GetFileName(_filterService.GenerateFilterFileName(FilterName));
+                    filterFileName = Path.GetFileName(
+                        _filterService.GenerateFilterFileName(FilterName)
+                    );
                 }
 
                 // Close the filter modal and open search modal with this filter
@@ -1176,7 +1179,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             StatusColor = isError ? Brushes.Red : Brushes.Green;
             DebugLogger.Log("ValidateFilterTab", $"Status: {message} (Error: {isError})");
         }
-
 
         #endregion
     }

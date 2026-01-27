@@ -8,10 +8,11 @@
 
   <!-- Apply license key from Directory.Build.props for Avalonia Accelerate components -->
   <ItemGroup>
-    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" Condition="'$(AvaloniaUILicenseKey)' != ''" />
+    <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
   </ItemGroup>
+
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\**\*.ogg" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
   <!-- Copy Audio and Sprite files to output directory -->
@@ -68,52 +69,63 @@
     <PackageReference Include="Avalonia.Skia" />
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
-  <!-- Desktop-only packages (native dependencies that don't work in browser) -->
-  <ItemGroup>
-    <PackageReference Include="DuckDB.NET.Data.Full" />
-    <PackageReference Include="SoundFlow" />
-    <PackageReference Include="ClosedXML" />
-  </ItemGroup>
-  <!-- Note: Browser-specific packages are now in BalatroSeedOracle.Browser project -->
-  <!-- Note: Platform-specific file exclusions are now handled in head projects -->
+  <!-- Note: Desktop-only packages (DuckDB, SoundFlow, ClosedXML) moved to BalatroSeedOracle.Desktop project -->
+  <!-- Note: Browser-specific packages are in BalatroSeedOracle.Browser project -->
+  <!-- Note: Platform-specific file exclusions are handled in head projects -->
   <!-- Exclude platform-specific files that are entirely wrapped in #if directives -->
   <ItemGroup>
     <!-- Desktop-only files (entire file wrapped in #if !BROWSER) -->
-    <Compile Remove="Windows\DataGridResultsWindow.axaml.cs" />
-    <AvaloniaXaml Remove="Windows\DataGridResultsWindow.axaml" />
+    <Compile
+      Remove="Windows\DataGridResultsWindow.axaml.cs"
+      Condition="'$(DefineConstants)' == 'BROWSER' or '$(TargetFramework)' == 'net10.0-browser'"
+    />
+    <AvaloniaXaml
+      Remove="Windows\DataGridResultsWindow.axaml"
+      Condition="'$(DefineConstants)' == 'BROWSER' or '$(TargetFramework)' == 'net10.0-browser'"
+    />
     <Compile Remove="Services\SoundFlowAudioManager.cs" />
     <!-- Desktop-only ViewModels that reference desktop-only types -->
     <Compile Remove="ViewModels\AudioMixerWidgetViewModel.cs" />
     <Compile Remove="ViewModels\MusicMixerWidgetViewModel.cs" />
     <Compile Remove="ViewModels\AudioVisualizerSettingsWidgetViewModel.cs" />
     <Compile Remove="ViewModels\FrequencyDebugWidgetViewModel.cs" />
-    <Compile Remove="ViewModels\SearchWidgetViewModel.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile
+      Remove="ViewModels\SearchWidgetViewModel.cs"
+      Condition="'$(DefineConstants)' == 'BROWSER'"
+    />
     <!-- Desktop-only widget code-behind files that reference desktop-only ViewModels -->
     <Compile Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml.cs" />
     <Compile Remove="Components\Widgets\FrequencyDebugWidget.axaml.cs" />
     <Compile Remove="Components\Widgets\MusicMixerWidget.axaml.cs" />
     <Compile Remove="Components\Widgets\AudioMixerWidget.axaml.cs" />
-    <Compile Remove="Components\Widgets\SearchWidget.axaml.cs" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <Compile
+      Remove="Components\Widgets\SearchWidget.axaml.cs"
+      Condition="'$(DefineConstants)' == 'BROWSER'"
+    />
     <!-- Desktop-only widget XAML files -->
     <AvaloniaXaml Remove="Components\Widgets\AudioVisualizerSettingsWidget.axaml" />
     <AvaloniaXaml Remove="Components\Widgets\FrequencyDebugWidget.axaml" />
     <AvaloniaXaml Remove="Components\Widgets\MusicMixerWidget.axaml" />
     <AvaloniaXaml Remove="Components\Widgets\AudioMixerWidget.axaml" />
-    <AvaloniaXaml Remove="Components\Widgets\SearchWidget.axaml" Condition="'$(DefineConstants)' == 'BROWSER'" />
+    <AvaloniaXaml
+      Remove="Components\Widgets\SearchWidget.axaml"
+      Condition="'$(DefineConstants)' == 'BROWSER'"
+    />
     <!-- Desktop-only components (entire file uses platform-specific APIs) -->
     <Compile Remove="Components\WebView\ExternalContentModal.axaml.cs" />
     <AvaloniaXaml Remove="Components\WebView\ExternalContentModal.axaml" />
-    <Compile Remove="Controls\SortableResultsGrid.axaml.cs" />
-    <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" />
-    <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" />
-    <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" />
-    <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" />
+    <!-- <Compile Remove="Controls\SortableResultsGrid.axaml.cs" /> -->
+    <!-- <AvaloniaXaml Remove="Controls\SortableResultsGrid.axaml" /> -->
+    <!-- <Compile Remove="ViewModels\Controls\SortableResultsGridViewModel.cs" /> -->
+    <!-- <Compile Remove="Views\SearchModalTabs\ResultsTab.axaml.cs" /> -->
+    <!-- <AvaloniaXaml Remove="Views\SearchModalTabs\ResultsTab.axaml" /> -->
     <Compile Remove="Services\Platforms\FileSystemDuckDBService.cs" />
     <!-- Browser-only files (entire file wrapped in #if BROWSER) -->
     <Compile Remove="Services\Storage\LocalStorageTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
+    <ProjectReference Include="..\..\external\Motely\Motely.Orchestration\Motely.Orchestration.csproj" />
     <!-- Motely.API referenced from platform-specific projects (Desktop) that need it -->
   </ItemGroup>
   <ItemGroup>

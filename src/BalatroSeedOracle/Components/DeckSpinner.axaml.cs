@@ -93,23 +93,23 @@ namespace BalatroSeedOracle.Components
                 // Apply initial stake overlay to deck images
                 SetStakeIndex(StakeIndex);
             }
+        }
 
-            // Watch for ShowArrows property changes
-            this.GetObservable(ShowArrowsProperty)
-                .Subscribe(value =>
-                {
-                    if (_innerSpinner != null)
-                    {
-                        _innerSpinner.ShowArrows = value;
-                    }
-                });
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
 
-            // Refresh deck images when StakeIndex changes so overlay sticker matches
-            this.GetObservable(StakeIndexProperty)
-                .Subscribe(index =>
+            if (change.Property == ShowArrowsProperty)
+            {
+                if (_innerSpinner != null)
                 {
-                    SetStakeIndex(index);
-                });
+                    _innerSpinner.ShowArrows = change.GetNewValue<bool>();
+                }
+            }
+            else if (change.Property == StakeIndexProperty)
+            {
+                SetStakeIndex(change.GetNewValue<int>());
+            }
         }
 
         public string SelectedDeckName

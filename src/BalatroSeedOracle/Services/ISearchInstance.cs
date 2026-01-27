@@ -28,6 +28,7 @@ public interface ISearchInstance : IDisposable
     event EventHandler<SearchProgress>? ProgressUpdated;
 
     Task<List<SearchResult>> GetResultsPageAsync(int offset, int count);
+    Task<int> GetResultCountAsync();
     Task<List<SearchResult>> GetTopResultsAsync(int count);
     Task<List<SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit = 1000);
     Task StartSearchAsync(SearchCriteria criteria);

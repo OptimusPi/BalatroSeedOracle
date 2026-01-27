@@ -316,10 +316,7 @@ namespace BalatroSeedOracle.Services
 
                 // Create a temporary search instance for the quick test
                 var tempSearchId = $"QuickTest_{Guid.NewGuid():N}";
-                var tempDbPath = System.IO.Path.Combine(
-                    AppPaths.TempDir,
-                    $"{tempSearchId}.db"
-                );
+                var tempDbPath = System.IO.Path.Combine(AppPaths.TempDir, $"{tempSearchId}.db");
 
                 ISearchInstance? searchInstance = null;
 
@@ -362,7 +359,10 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         var platformServices = ServiceHelper.GetService<IPlatformServices>();
-                        if (platformServices?.SupportsFileSystem == true && System.IO.File.Exists(tempDbPath))
+                        if (
+                            platformServices?.SupportsFileSystem == true
+                            && System.IO.File.Exists(tempDbPath)
+                        )
                         {
                             System.IO.File.Delete(tempDbPath);
                         }

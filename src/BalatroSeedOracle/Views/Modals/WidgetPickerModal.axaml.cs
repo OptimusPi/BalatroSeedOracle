@@ -56,15 +56,17 @@ namespace BalatroSeedOracle.Views.Modals
         private void RefreshToggles()
         {
             _toggles = _userProfileService?.GetProfile().FeatureToggles ?? new FeatureToggles();
-            
-            DebugLogger.Log("WidgetPickerModal", 
-                $"Refreshed toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}, EventFX={_toggles.ShowEventFX}");
+
+            DebugLogger.Log(
+                "WidgetPickerModal",
+                $"Refreshed toggles: Mixer={_toggles.ShowMusicMixer}, Viz={_toggles.ShowVisualizer}, Trans={_toggles.ShowTransitionDesigner}, Fert={_toggles.ShowFertilizer}, Host={_toggles.ShowHostServer}, EventFX={_toggles.ShowEventFX}"
+            );
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             // Refresh toggles when the modal loads to ensure current state
             this.AttachedToVisualTree += (s, e) => RefreshTogglesAndUI();
         }

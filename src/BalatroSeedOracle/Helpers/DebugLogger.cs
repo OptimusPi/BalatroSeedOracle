@@ -95,9 +95,8 @@ public static class DebugLogger
     private static void LogInternal(string? category, string message)
     {
         var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
-        var formattedMessage = category != null 
-            ? $"[{timestamp}] [{category}] {message}"
-            : $"[{timestamp}] {message}";
+        var formattedMessage =
+            category != null ? $"[{timestamp}] [{category}] {message}" : $"[{timestamp}] {message}";
 
         if (_platformServices != null)
         {
@@ -148,7 +147,8 @@ public static class DebugLogger
 #if DEBUG
         if (EnableDebugLogging)
         {
-            var msg = $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {string.Format(format, args)}";
+            var msg =
+                $"[{DateTime.UtcNow:HH:mm:ss.fff}] [{category}] {string.Format(format, args)}";
             if (_platformServices != null)
             {
                 _platformServices.WriteDebugLog(msg);

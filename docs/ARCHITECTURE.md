@@ -75,6 +75,79 @@ Platform head projects (`.Browser`, `.Android`, `.iOS`) should contain **ONLY**:
 - Desktop: Use `SoundFlowAudioManager` (SoundFlow library)
 - Browser: Use `SoundFlowAudioManager` with Web Audio API (same class, different implementation path)
 
+### Excel Export
+
+- Desktop: Use `ClosedXmlExcelExporter` (ClosedXML library)
+- Browser: Use `BrowserExcelExporter` (stub - not yet implemented)
+
+**Interface**: `IExcelExporter` in `src/BalatroSeedOracle/Services/Export/`
+
+```csharp
+public interface IExcelExporter
+{
+    bool IsAvailable { get; }
+    Task ExportAsync(string filePath, string sheetName, 
+                     IReadOnlyList<string> headers, 
+                     IReadOnlyList<IReadOnlyList<object?>> rows);
+}
+```
+
+## AOT Compilation
+
+All platforms support **Ahead-of-Time (AOT) compilation** for optimal performance:
+
+### Desktop AOT
+- Enabled via `<PublishAot>true</PublishAot>` in `BalatroSeedOracle.Desktop.csproj`
+- Native binary output with no JIT overhead
+- Faster startup and reduced memory usage
+
+### Browser AOT
+- Enabled via `<RunAOTCompilation>true</RunAOTCompilation>` in `BalatroSeedOracle.Browser.csproj`
+- Requires `<PublishTrimmed>true</PublishTrimmed>` for WASM
+- Pre-compiled WebAssembly modules for faster execution
+
+### AOT-Compatible Patterns
+
+**JSON Serialization**: Use `System.Text.Json` source generation
+```csharp
+[JsonSerializable(typeof(MotelyJsonConfig))]
+internal partial class MotelyJsonSerializerContext : JsonSerializerContext { }
+
+// Usage
+JsonSerializer.Deserialize(json, MotelyJsonSerializerContext.Default.MotelyJsonConfig);
+```
+
+**YAML Serialization**: Use YamlDotNet static context
+```csharp
+[YamlStaticContext]
+[YamlSerializable(typeof(MotelyJsonConfig))]
+public partial class MotelyYamlStaticContext : StaticContext { }
+
+// Usage
+var deserializer = new StaticDeserializerBuilder(MotelyYamlStaticContext.Instance).Build();
+```
+
+**Enum Operations**: Use generic overloads
+```csharp
+// ✅ AOT-compatible
+var values = Enum.GetValues<MotelyJoker>();
+
+// ❌ Not AOT-compatible
+var values = Enum.GetValues(typeof(MotelyJoker));
+```
+
+**Property Access**: Use static mappings instead of reflection
+```csharp
+// ✅ AOT-compatible
+private static readonly Dictionary<string, Action<object, object?>> PropertySetters = new()
+{
+    ["PropertyName"] = (obj, val) => ((MyType)obj).PropertyName = (string?)val
+};
+
+// ❌ Not AOT-compatible
+propertyInfo.SetValue(obj, value);
+```
+
 ## Service Lifecycle
 
 1. **Registration**: Services registered in platform entry points or `ServiceCollectionExtensions`

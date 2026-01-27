@@ -77,9 +77,10 @@ namespace BalatroSeedOracle.Controls
 
             // CRITICAL FIX: Listen to DisplayedResults changes to force DataGrid refresh
             ViewModel.DisplayedResults.CollectionChanged += OnDisplayedResultsChanged;
-            
+
             // Wire up clipboard event
-            ViewModel.CopyToClipboardRequested += async (s, text) => await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += async (s, text) =>
+                await CopyToClipboardAsync(text);
         }
 
         public async Task CopyToClipboardAsync(string text)
@@ -95,7 +96,10 @@ namespace BalatroSeedOracle.Controls
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SortableResultsGrid", $"Failed to copy to clipboard: {ex.Message}");
+                DebugLogger.LogError(
+                    "SortableResultsGrid",
+                    $"Failed to copy to clipboard: {ex.Message}"
+                );
             }
         }
 
@@ -110,7 +114,10 @@ namespace BalatroSeedOracle.Controls
             );
 
             // Ensure tally columns are updated when results change
-            if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
+            if (
+                e.Action == NotifyCollectionChangedAction.Add
+                || e.Action == NotifyCollectionChangedAction.Reset
+            )
             {
                 EnsureTallyColumns();
             }
@@ -122,22 +129,25 @@ namespace BalatroSeedOracle.Controls
             if (dataGrid != null)
             {
                 dataGrid.Sorting += OnDataGridSorting;
-                
+
                 // Enable multi-select with keyboard shortcuts
                 dataGrid.KeyDown += OnDataGridKeyDown;
-                
+
                 // Context menu for rows
                 dataGrid.ContextMenu = CreateContextMenu();
-                
+
                 // Better selection handling
                 dataGrid.SelectionChanged += OnSelectionChanged;
             }
 
             // Tally columns will be initialized when results are added
             EnsureTallyColumns();
-            
+
             // DataGrid is bound to DisplayedResults via XAML - no need to set explicitly
-            DebugLogger.Log("SortableResultsGrid", "DataGrid initialized with XAML binding to DisplayedResults");
+            DebugLogger.Log(
+                "SortableResultsGrid",
+                "DataGrid initialized with XAML binding to DisplayedResults"
+            );
         }
 
         private void OnDataGridKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
@@ -182,35 +192,35 @@ namespace BalatroSeedOracle.Controls
         private ContextMenu CreateContextMenu()
         {
             var menu = new ContextMenu();
-            
-            var copyItem = new MenuItem 
-            { 
-                Header = "Copy Seed", 
-                Command = ViewModel.CopySeedCommand
+
+            var copyItem = new MenuItem
+            {
+                Header = "Copy Seed",
+                Command = ViewModel.CopySeedCommand,
             };
-            var copySelectedItem = new MenuItem 
-            { 
-                Header = "Copy Selected Seeds", 
-                Command = ViewModel.CopySelectedCommand 
+            var copySelectedItem = new MenuItem
+            {
+                Header = "Copy Selected Seeds",
+                Command = ViewModel.CopySelectedCommand,
             };
-            var analyzeItem = new MenuItem 
-            { 
-                Header = "Analyze Seed", 
-                Command = ViewModel.AnalyzeCommand
+            var analyzeItem = new MenuItem
+            {
+                Header = "Analyze Seed",
+                Command = ViewModel.AnalyzeCommand,
             };
-            var exportSelectedItem = new MenuItem 
-            { 
-                Header = "Export Selected", 
-                Command = ViewModel.ExportSelectedCommand 
+            var exportSelectedItem = new MenuItem
+            {
+                Header = "Export Selected",
+                Command = ViewModel.ExportSelectedCommand,
             };
             var separator = new Separator();
-            
+
             menu.Items.Add(copyItem);
             menu.Items.Add(copySelectedItem);
             menu.Items.Add(separator);
             menu.Items.Add(analyzeItem);
             menu.Items.Add(exportSelectedItem);
-            
+
             // Handle context menu opening to set command parameters
             menu.Opening += (s, e) =>
             {
@@ -221,7 +231,7 @@ namespace BalatroSeedOracle.Controls
                     analyzeItem.CommandParameter = selectedResult;
                 }
             };
-            
+
             return menu;
         }
 
@@ -319,14 +329,16 @@ namespace BalatroSeedOracle.Controls
                     Header = header,
                     Width = new DataGridLength(80),
                     CanUserSort = true,
-                    SortMemberPath = $"Scores[{index}]"
+                    SortMemberPath = $"Scores[{index}]",
                 };
 
                 // Bind TextBlock to Scores[i] using proper AvaloniaUI binding
                 var template = new FuncDataTemplate<Models.SearchResult>(
                     (item, _) =>
                     {
-                        var fontFamily = this.FindResource("BalatroFont") as FontFamily ?? new FontFamily("Consolas");
+                        var fontFamily =
+                            this.FindResource("BalatroFont") as FontFamily
+                            ?? new FontFamily("Consolas");
                         var tb = new TextBlock
                         {
                             FontFamily = fontFamily,
@@ -334,7 +346,10 @@ namespace BalatroSeedOracle.Controls
                             Foreground = Brushes.White,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                            Text = (item?.Scores != null && index < item.Scores.Length) ? item.Scores[index].ToString() : "0"
+                            Text =
+                                (item?.Scores != null && index < item.Scores.Length)
+                                    ? item.Scores[index].ToString()
+                                    : "0",
                         };
                         return tb;
                     },
@@ -351,26 +366,32 @@ namespace BalatroSeedOracle.Controls
 
         private void ResetFromItemsSource()
         {
-            DebugLogger.LogImportant("SortableResultsGrid", "ResetFromItemsSource: Clearing existing results");
+            DebugLogger.LogImportant(
+                "SortableResultsGrid",
+                "ResetFromItemsSource: Clearing existing results"
+            );
             ViewModel.ClearResults();
-            
+
             if (_itemsSource != null)
             {
                 DebugLogger.LogImportant(
-                    "SortableResultsGrid", 
+                    "SortableResultsGrid",
                     $"ResetFromItemsSource: Adding {_itemsSource.Count} results from bound collection"
                 );
                 ViewModel.AddResults(_itemsSource);
                 DebugLogger.LogImportant(
-                    "SortableResultsGrid", 
+                    "SortableResultsGrid",
                     $"ResetFromItemsSource: After adding - DisplayedResults.Count={ViewModel.DisplayedResults.Count}"
                 );
             }
             else
             {
-                DebugLogger.Log("SortableResultsGrid", "ResetFromItemsSource: No ItemsSource to add from");
+                DebugLogger.Log(
+                    "SortableResultsGrid",
+                    "ResetFromItemsSource: No ItemsSource to add from"
+                );
             }
-            
+
             // Rebuild tally columns if needed
             EnsureTallyColumns();
         }
@@ -394,6 +415,13 @@ namespace BalatroSeedOracle.Controls
 
         public IEnumerable<SearchResult> GetDisplayedResults() => ViewModel.GetDisplayedResults();
 
+        public void ForceRefreshResults(IEnumerable<SearchResult> results)
+        {
+            ViewModel.ClearResults();
+            ViewModel.AddResults(results);
+            EnsureTallyColumns();
+        }
+
         // Bind an external collection of results. Updates grid as collection changes.
         public static readonly StyledProperty<ObservableCollection<SearchResult>?> ItemsSourceProperty =
             AvaloniaProperty.Register<SortableResultsGrid, ObservableCollection<SearchResult>?>(
@@ -415,7 +443,7 @@ namespace BalatroSeedOracle.Controls
             {
                 var oldCount = (change.OldValue as ObservableCollection<SearchResult>)?.Count ?? 0;
                 var newCount = (change.NewValue as ObservableCollection<SearchResult>)?.Count ?? 0;
-                
+
                 DebugLogger.LogImportant(
                     "SortableResultsGrid",
                     $"ItemsSource CHANGED: Old collection had {oldCount} items, new collection has {newCount} items"
@@ -440,7 +468,10 @@ namespace BalatroSeedOracle.Controls
                 }
                 else
                 {
-                    DebugLogger.Log("SortableResultsGrid", "ItemsSource set to null - clearing results");
+                    DebugLogger.Log(
+                        "SortableResultsGrid",
+                        "ItemsSource set to null - clearing results"
+                    );
                     ClearResults();
                 }
             }

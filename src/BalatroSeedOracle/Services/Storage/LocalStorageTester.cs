@@ -14,8 +14,11 @@ namespace BalatroSeedOracle.Services.Storage
         {
             try
             {
-                DebugLogger.LogImportant("LocalStorageTester", "=== Testing LocalStorage Interop ===");
-                
+                DebugLogger.LogImportant(
+                    "LocalStorageTester",
+                    "=== Testing LocalStorage Interop ==="
+                );
+
                 // Test 1: Direct localStorage access
                 try
                 {
@@ -28,7 +31,7 @@ namespace BalatroSeedOracle.Services.Storage
                 {
                     DebugLogger.LogError("LocalStorageTester", $"Direct test failed: {ex.Message}");
                 }
-                
+
                 // Test 2: Via window.BSO wrapper
                 try
                 {
@@ -39,9 +42,12 @@ namespace BalatroSeedOracle.Services.Storage
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("LocalStorageTester", $"Wrapper test failed: {ex.Message}");
+                    DebugLogger.LogError(
+                        "LocalStorageTester",
+                        $"Wrapper test failed: {ex.Message}"
+                    );
                 }
-                
+
                 // Test 3: Test BrowserLocalStorageAppDataStore
                 try
                 {
@@ -64,24 +70,24 @@ namespace BalatroSeedOracle.Services.Storage
                 return false;
             }
         }
-        
+
         // Direct localStorage imports
         [JSImport("globalThis.localStorage.setItem")]
         private static partial void SetTestItem(string key, string value);
-        
+
         [JSImport("globalThis.localStorage.getItem")]
         private static partial string? GetTestItem(string key);
-        
+
         [JSImport("globalThis.localStorage.removeItem")]
         private static partial void RemoveTestItem(string key);
-        
+
         // Wrapper imports
         [JSImport("window.BSO.setLocalStorageItem")]
         private static partial void SetLocalStorageItem(string key, string value);
-        
+
         [JSImport("window.BSO.getLocalStorageItem")]
         private static partial string? GetLocalStorageItem(string key);
-        
+
         [JSImport("window.BSO.removeLocalStorageItem")]
         private static partial void RemoveLocalStorageItem(string key);
     }

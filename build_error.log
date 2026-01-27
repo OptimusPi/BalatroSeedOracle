@@ -1,0 +1,15 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Motely -> X:\BalatroSeedOracle\external\Motely\Motely\bin\Release\net10.0\Motely.dll
+  Motely.Orchestration -> X:\BalatroSeedOracle\external\Motely\Motely.Orchestration\bin\Release\net10.0\Motely.Orchestration.dll
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Windows\DataGridResultsWindow.axaml.cs(230,53): error CS1061: 'ISearchInstance' does not contain a definition for 'GetResultCountAsync' and no accessible extension method 'GetResultCountAsync' accepting a first argument of type 'ISearchInstance' could be found (are you missing a using directive or an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(263,98): warning CS8600: Converting null literal or possible null value to non-nullable type. [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+
+Build FAILED.
+
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(263,98): warning CS8600: Converting null literal or possible null value to non-nullable type. [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Windows\DataGridResultsWindow.axaml.cs(230,53): error CS1061: 'ISearchInstance' does not contain a definition for 'GetResultCountAsync' and no accessible extension method 'GetResultCountAsync' accepting a first argument of type 'ISearchInstance' could be found (are you missing a using directive or an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+    1 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:03.54

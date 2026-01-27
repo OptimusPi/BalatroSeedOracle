@@ -17,12 +17,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private static readonly JsonSerializerOptions SerializeOptions = new()
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = System
+                .Text
+                .Json
+                .Serialization
+                .JsonIgnoreCondition
+                .WhenWritingNull,
         };
 
         private static readonly JsonSerializerOptions DeserializeOptions = new()
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
         };
 
         private readonly FiltersModalViewModel? _parentViewModel;

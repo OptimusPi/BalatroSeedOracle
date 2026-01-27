@@ -12,6 +12,7 @@
     <Version>2.0.0</Version>
     <FileVersion>2.0.0</FileVersion>
     <AssemblyVersion>2.0.0</AssemblyVersion>
+    <!-- Don't generate assembly info - let projects handle it -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -19,7 +20,12 @@
   <PropertyGroup>
     <!-- License key from environment variable or avalonia.license.local file -->
     <!-- Set AVALONIA_LICENSE_KEY environment variable or configure in avalonia.license.local -->
-    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' != ''">$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey>
+    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' != ''"
+      >$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey
+    >
+    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' == ''"
+      >avln_on_key:v1:10e441a673ba4e5a9583c6af9509c8fe</AvaloniaUILicenseKey
+    >
   </PropertyGroup>
 
   <!-- Code Quality Settings -->

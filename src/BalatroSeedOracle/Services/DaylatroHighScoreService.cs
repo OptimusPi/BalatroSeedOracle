@@ -54,7 +54,7 @@ namespace BalatroSeedOracle.Services
         {
             if (_loaded)
                 return;
-            
+
             var platformServices = ServiceHelper.GetService<IPlatformServices>();
             if (platformServices == null || !platformServices.SupportsFileSystem)
             {
@@ -62,7 +62,7 @@ namespace BalatroSeedOracle.Services
                 _loaded = true;
                 return;
             }
-            
+
             try
             {
                 if (File.Exists(_dataPath))

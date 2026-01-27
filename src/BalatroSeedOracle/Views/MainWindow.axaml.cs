@@ -40,7 +40,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            DebugLogger.LogError("MainWindow", "MainMenuHost not found - cannot attach BalatroMainMenu");
+            DebugLogger.LogError(
+                "MainWindow",
+                "MainMenuHost not found - cannot attach BalatroMainMenu"
+            );
         }
 
         // Sync IsVibeOutMode from MainMenu to MainWindow

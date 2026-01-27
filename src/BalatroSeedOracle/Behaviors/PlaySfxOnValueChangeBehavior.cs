@@ -111,7 +111,10 @@ namespace BalatroSeedOracle.Behaviors
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("PlaySfxOnValueChangeBehavior", $"Error playing {Sound}: {ex.Message}");
+                DebugLogger.LogError(
+                    "PlaySfxOnValueChangeBehavior",
+                    $"Error playing {Sound}: {ex.Message}"
+                );
             }
         }
     }

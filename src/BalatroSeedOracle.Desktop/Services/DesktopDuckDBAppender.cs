@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using DuckDB.NET.Data;
 using BalatroSeedOracle.Services.DuckDB;
+using DuckDB.NET.Data;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -117,7 +117,8 @@ public class DesktopDuckDBAppender : IDuckDBAppender
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _appender?.Close();
         _appender?.Dispose();
         _disposed = true;

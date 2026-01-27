@@ -12,8 +12,7 @@
   <!-- Android-specific settings -->
   <PropertyGroup>
     <AndroidSdkDirectory>$(LOCALAPPDATA)\Android\android-sdk</AndroidSdkDirectory>
-    <!-- Disable AOT compilation to allow DuckDB.NET.Data to work -->
-    <RunAOTCompilation>false</RunAOTCompilation>
+
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <!-- Suppress 16KB page size warnings until libraries are updated -->
     <NoWarn>$(NoWarn);XA0141</NoWarn>
@@ -25,9 +24,11 @@
     <PackageReference Include="Xamarin.AndroidX.AppCompat" />
     <!-- Android uses native DuckDB like Desktop -->
     <PackageReference Include="DuckDB.NET.Data.Full" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
+    <ProjectReference Include="..\BalatroSeedOracle.Desktop\BalatroSeedOracle.Desktop.csproj" />
   </ItemGroup>
 </Project>

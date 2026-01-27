@@ -56,7 +56,8 @@ namespace BalatroSeedOracle.ViewModels
                 searchInstance ?? throw new ArgumentNullException(nameof(searchInstance));
             _spriteService =
                 spriteService ?? throw new ArgumentNullException(nameof(spriteService));
-            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
+            _notificationService =
+                notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             // Initialize from SearchInstance
             FilterName = _searchInstance.FilterName ?? "Search";

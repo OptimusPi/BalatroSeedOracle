@@ -2,104 +2,106 @@ name: Deploy Browser Version
 
 on:
   push:
-    branches: [ main, develop ]
-    paths: [ 'src/BalatroSeedOracle.Browser/**', 'src/BalatroSeedOracle/**' ]
+    branches: [main, develop]
+    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment environment'
+        description: "Deployment environment"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
-        - staging
-        - production
+          - staging
+          - production
 
 env:
-  DOTNET_VERSION: '10.0.x'
+  DOTNET_VERSION: "10.0.x"
+  BROWSER_PUBLISH_DIR: src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
-    
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Cache NuGet Dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
+      - name: Cache NuGet Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-    - name: Restore Dependencies
-      run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore
 
-    - name: Build Browser Version
-      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true
+      - name: Build Browser Version
+        run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true
 
-    - name: Optimize for Production
-      run: |
-        # Remove debug files
-        Remove-Item publish/browser/**/*.pdb -Recurse -Force
-        # Remove source maps for production
-        Remove-Item publish/**/*.map -Recurse -Force -ErrorAction SilentlyContinue
-        # Remove unnecessary locales
-        Remove-Item publish/browser/_framework/_locales -Recurse -Force -ErrorAction SilentlyContinue
-        # Remove duplicate compressed files (brotli already compressed)
-        Remove-Item publish/browser/**/*.gz -Recurse -Force -ErrorAction SilentlyContinue
-        # Optimize WASM size
-        Compress-Archive -Path publish/browser/*.wasm -DestinationPath temp.zip -Force
-        Expand-Archive -Path temp.zip -DestinationPath publish/browser/optimized -Force
-        Remove-Item publish/browser/*.wasm -Force
-        Move-Item publish/browser/optimized/*.wasm publish/browser/ -Force
-        Remove-Item publish/browser/optimized -Recurse -Force
-        Remove-Item temp.zip
+      - name: Optimize for Production
+        run: |
+          $publishDir = "${env:BROWSER_PUBLISH_DIR}"
+          # Remove debug files
+          Remove-Item $publishDir/**/*.pdb -Recurse -Force
+          # Remove source maps for production
+          Remove-Item $publishDir/**/*.map -Recurse -Force -ErrorAction SilentlyContinue
+          # Remove unnecessary locales
+          Remove-Item $publishDir/_framework/_locales -Recurse -Force -ErrorAction SilentlyContinue
+          # Remove duplicate compressed files (brotli already compressed)
+          Remove-Item $publishDir/**/*.gz -Recurse -Force -ErrorAction SilentlyContinue
+          # Optimize WASM size
+          Compress-Archive -Path $publishDir/*.wasm -DestinationPath temp.zip -Force
+          Expand-Archive -Path temp.zip -DestinationPath publish/browser/optimized -Force
+          Remove-Item $publishDir/*.wasm -Force
+          Move-Item publish/browser/optimized/*.wasm $publishDir/ -Force
+          Remove-Item publish/browser/optimized -Recurse -Force
+          Remove-Item temp.zip
 
-    - name: Generate Build Info
-      run: |
-        $buildInfo = @{
-          commit = "${{ github.sha }}"
-          branch = "${{ github.ref_name }}"
-          buildTime = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ")
-          version = "${{ github.ref_type == 'tag' && github.ref_name || 'dev-' + github.sha.Substring(0, 8) }}"
-        }
-        $buildInfo | ConvertTo-Json | Out-File -FilePath "publish/browser/build-info.json"
+      - name: Generate Build Info
+        run: |
+          $buildInfo = @{
+            commit = "${{ github.sha }}"
+            branch = "${{ github.ref_name }}"
+            buildTime = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ")
+            version = "${{ github.ref_type == 'tag' && github.ref_name || 'dev-' + github.sha.Substring(0, 8) }}"
+          }
+          $buildInfo | ConvertTo-Json | Out-File -FilePath "$publishDir/build-info.json"
 
-    - name: Deploy to Staging
-      if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
-      run: |
-        echo "Deploying to staging environment"
-        # Add your staging deployment commands here
-        # Example: Upload to Azure Blob Storage, S3, etc.
-        
-    - name: Deploy to Production
-      if: github.event.inputs.environment == 'production'
-      run: |
-        echo "Deploying to production environment"
-        # Add your production deployment commands here
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+        run: |
+          echo "Deploying to staging environment"
+          # Add your staging deployment commands here
+          # Example: Upload to Azure Blob Storage, S3, etc.
 
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: browser-build-${{ github.ref_name }}
-        path: publish/browser/
-        retention-days: 30
+      - name: Deploy to Production
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "Deploying to production environment"
+          # Add your production deployment commands here
 
-    - name: Create Deployment Package
-      run: |
-        cd publish/browser
-        7z a -tzip ../../BalatroSeedOracle-Browser-${{ github.ref_name }}.zip *
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-build-${{ github.ref_name }}
+          path: ${{ env.BROWSER_PUBLISH_DIR }}/
+          retention-days: 30
 
-    - name: Upload Deployment Package
-      uses: actions/upload-artifact@v4
-      with:
-        name: browser-deploy-${{ github.ref_name }}
-        path: BalatroSeedOracle-Browser-${{ github.ref_name }}.zip
+      - name: Create Deployment Package
+        run: |
+          cd ${{ env.BROWSER_PUBLISH_DIR }}
+          7z a -tzip ../../BalatroSeedOracle-Browser-${{ github.ref_name }}.zip *
+
+      - name: Upload Deployment Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-deploy-${{ github.ref_name }}
+          path: BalatroSeedOracle-Browser-${{ github.ref_name }}.zip

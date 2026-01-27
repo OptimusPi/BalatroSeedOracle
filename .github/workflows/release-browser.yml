@@ -10,47 +10,49 @@ on:
 jobs:
   build-browser:
     runs-on: windows-latest
-    
+    env:
+      BROWSER_PUBLISH_DIR: src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
 
-    - name: Restore Dependencies
-      run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore
 
-    - name: Build Browser Version
-      run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release -o publish/browser --no-restore
+      - name: Build Browser Version
+        run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore
 
-    - name: Create Browser Archive
-      run: |
-        cd publish/browser
-        7z a -tzip ../../BalatroSeedOracle-Browser.zip *
+      - name: Create Browser Archive
+        run: |
+          $publishDir = Resolve-Path "${{ env.BROWSER_PUBLISH_DIR }}"
+          7z a -tzip BalatroSeedOracle-Browser.zip "$publishDir\*"
 
-    - name: Upload Browser Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: BalatroSeedOracle-Browser
-        path: BalatroSeedOracle-Browser.zip
+      - name: Upload Browser Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BalatroSeedOracle-Browser
+          path: BalatroSeedOracle-Browser.zip
 
-    - name: Prepare for Deployment
-      run: |
-        mkdir -p deploy/wwwroot/bso
-        cp -r publish/browser/* deploy/wwwroot/bso/
+      - name: Prepare for Deployment
+        run: |
+          $publishDir = Resolve-Path "${{ env.BROWSER_PUBLISH_DIR }}"
+          New-Item -ItemType Directory -Force -Path 'deploy/wwwroot/bso' | Out-Null
+          Copy-Item -Path "$publishDir\*" -Destination 'deploy/wwwroot/bso' -Recurse -Force
 
-    - name: Create Deployment Package
-      run: |
-        cd deploy
-        7z a -tzip ../BalatroSeedOracle-Browser-Deploy.zip *
+      - name: Create Deployment Package
+        run: |
+          7z a -tzip BalatroSeedOracle-Browser-Deploy.zip "deploy\*"
 
-    - name: Upload Deployment Package
-      uses: actions/upload-artifact@v4
-      with:
-        name: BalatroSeedOracle-Browser-Deploy
-        path: BalatroSeedOracle-Browser-Deploy.zip
+      - name: Upload Deployment Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: BalatroSeedOracle-Browser-Deploy
+          path: BalatroSeedOracle-Browser-Deploy.zip

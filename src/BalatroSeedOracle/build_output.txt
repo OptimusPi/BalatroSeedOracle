@@ -1,0 +1,23 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Motely -> x:\BalatroSeedOracle\external\Motely\Motely\bin\Release\net10.0\Motely.dll
+  Motely.Orchestration -> x:\BalatroSeedOracle\external\Motely\Motely.Orchestration\bin\Release\net10.0\Motely.Orchestration.dll
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\SearchModalTabs\ResultsTab.axaml.cs(231,56): error CS0234: The type or namespace name 'DataGridResultsWindow' does not exist in the namespace 'BalatroSeedOracle.Windows' (are you missing an assembly reference?) [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\SearchModalTabs\ResultsTab.axaml.cs(256,18): error CS1061: 'SortableResultsGrid' does not contain a definition for 'ForceRefreshResults' and no accessible extension method 'ForceRefreshResults' accepting a first argument of type 'SortableResultsGrid' could be found (are you missing a using directive or an assembly reference?) [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(263,98): warning CS8600: Converting null literal or possible null value to non-nullable type. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(270,46): warning CS8600: Converting null literal or possible null value to non-nullable type. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SearchInstance.cs(885,55): warning CS8602: Dereference of a possibly null reference. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Helpers\JamlAutocompletionHelper.cs(19,38): warning CS0169: The field 'JamlAutocompletionHelper._schemaCache' is never used [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+
+Build FAILED.
+
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(263,98): warning CS8600: Converting null literal or possible null value to non-nullable type. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\BalatroMainMenu.axaml.cs(270,46): warning CS8600: Converting null literal or possible null value to non-nullable type. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SearchInstance.cs(885,55): warning CS8602: Dereference of a possibly null reference. [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Helpers\JamlAutocompletionHelper.cs(19,38): warning CS0169: The field 'JamlAutocompletionHelper._schemaCache' is never used [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\SearchModalTabs\ResultsTab.axaml.cs(231,56): error CS0234: The type or namespace name 'DataGridResultsWindow' does not exist in the namespace 'BalatroSeedOracle.Windows' (are you missing an assembly reference?) [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+x:\BalatroSeedOracle\src\BalatroSeedOracle\Views\SearchModalTabs\ResultsTab.axaml.cs(256,18): error CS1061: 'SortableResultsGrid' does not contain a definition for 'ForceRefreshResults' and no accessible extension method 'ForceRefreshResults' accepting a first argument of type 'SortableResultsGrid' could be found (are you missing a using directive or an assembly reference?) [x:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+    4 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:03.81

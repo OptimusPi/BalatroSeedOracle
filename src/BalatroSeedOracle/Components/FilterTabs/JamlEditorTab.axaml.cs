@@ -65,7 +65,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                         // Subscribe to ViewModel property changes
                         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-                        
+
                         // Subscribe to jump to error event
                         ViewModel.JumpToError += OnJumpToError;
                     }
@@ -138,8 +138,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 return;
 
             var point = e.GetCurrentPoint(_jamlEditor);
-            if (point.Properties.IsLeftButtonPressed &&
-                e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            if (
+                point.Properties.IsLeftButtonPressed && e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            )
             {
                 // Use caret position instead of mouse position for simplicity
                 var offset = _jamlEditor.CaretOffset;
@@ -158,7 +159,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
             // Check if we're on an anchor reference (*anchor_name)
             var anchorMatch = Regex.Match(
-                lineText.Substring(Math.Max(0, column - 20), Math.Min(20, lineText.Length - Math.Max(0, column - 20))),
+                lineText.Substring(
+                    Math.Max(0, column - 20),
+                    Math.Min(20, lineText.Length - Math.Max(0, column - 20))
+                ),
                 @"\*(\w+)"
             );
 
@@ -211,7 +215,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 // Basic YAML validation
                 var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                    .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance)
+                    .WithNamingConvention(
+                        YamlDotNet
+                            .Serialization
+                            .NamingConventions
+                            .CamelCaseNamingConvention
+                            .Instance
+                    )
                     .IgnoreUnmatchedProperties()
                     .Build();
 
@@ -224,7 +234,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             {
                 // Parse YAML error location
                 var lineMatch = Regex.Match(yamlEx.Message, @"line (\d+)");
-                if (lineMatch.Success && int.TryParse(lineMatch.Groups[1].Value, out var lineNumber))
+                if (
+                    lineMatch.Success && int.TryParse(lineMatch.Groups[1].Value, out var lineNumber)
+                )
                 {
                     _errorMarkerService.AddError(
                         lineNumber,
@@ -273,7 +285,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 if (!definedAnchors.Contains(anchorName))
                 {
                     var lineNumber = _jamlEditor.Document.GetLineByOffset(match.Index).LineNumber;
-                    var column = match.Index - _jamlEditor.Document.GetLineByNumber(lineNumber).Offset;
+                    var column =
+                        match.Index - _jamlEditor.Document.GetLineByNumber(lineNumber).Offset;
                     _errorMarkerService.AddError(
                         lineNumber,
                         column,

@@ -21,6 +21,8 @@ namespace BalatroSeedOracle.Services
         private static SpriteService _instance = null!;
         public static SpriteService Instance => _instance ??= new SpriteService();
 
+        private readonly System.Threading.SemaphoreSlim _loadLock = new(1, 1);
+        private bool _metadataLoaded = false;
         private bool _spritesPreloaded = false;
         private readonly Dictionary<string, IImage> _preloadedSprites = new();
         private readonly Dictionary<string, IImage> _precomputedComposites = new();
@@ -72,13 +74,35 @@ namespace BalatroSeedOracle.Services
 
         private SpriteService()
         {
-            LoadAssets();
+            // Removed synchronous LoadAssets() call to prevent blocking UI thread on startup.
+            // Metadata and bitmaps will be loaded asynchronously via EnsureMetadataLoadedAsync() or PreloadAllSpritesAsync().
+        }
+
+        private async Task EnsureMetadataLoadedAsync()
+        {
+            if (_metadataLoaded)
+                return;
+
+            await _loadLock.WaitAsync();
+            try
+            {
+                if (_metadataLoaded)
+                    return;
+                await LoadAssetsAsync();
+                _metadataLoaded = true;
+            }
+            finally
+            {
+                _loadLock.Release();
+            }
         }
 
         public async Task PreloadAllSpritesAsync(
             IProgress<(string category, int current, int total)>? progress = null
         )
         {
+            await EnsureMetadataLoadedAsync();
+
             if (_spritesPreloaded)
             {
                 DebugLogger.Log("SpriteService", "Sprites already preloaded, skipping...");
@@ -646,148 +670,158 @@ namespace BalatroSeedOracle.Services
             );
         }
 
-        private void LoadAssets()
+        private async Task LoadAssetsAsync()
         {
-            DebugLogger.Log("SpriteService", "Loading sprite assets...");
+            DebugLogger.Log("SpriteService", "Loading sprite assets asynchronously...");
             try
             {
-                // Load joker positions from json
-                jokerPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
-                );
-
-                // Load negative joker positions from json
-                jokerNegativePositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.json"
-                );
-
-                // Load tag positions from json
-                tagPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Tags/tags.json"
-                );
-
-                // Load tarot positions from json
-                tarotPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Tarots/tarots.json"
-                );
-
-                // Load spectral positions from json
-                // Load spectral positions from json (they're in the tarots sprite sheet)
-                spectralPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Tarots/spectrals.json"
-                );
-
-                // Load planet positions from json (they're also in the tarots sprite sheet)
-                // NOTE: Planet X, Ceres, and Eris positions are defined at (0,6), (1,6), (2,6)
-                // but the Tarots.png sprite sheet needs to be expanded from 710x570 to 710x665 pixels
-                // and have sprites added for these three planets at row 6.
-                planetPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Tarots/planets.json"
-                );
-
-                // Load voucher positions from json
-                voucherPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json"
-                );
-
-                // Load stake positions from json
-                stakePositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Decks/stakes.json"
-                );
-
-                // Load booster pack positions from json
-                boosterPositions = LoadSpritePositions(
-                    "avares://BalatroSeedOracle/Assets/Other/Boosters.json"
-                );
-
-                // Load deck, enhancement, and seal positions from enhancers metadata
-                var enhancersMetadata = LoadEnhancersMetadata(
-                    "avares://BalatroSeedOracle/Assets/Decks/enhancers_metadata.json"
-                );
-                if (enhancersMetadata != null)
+                // Run IO-heavy tasks on a background thread
+                await Task.Run(() =>
                 {
-                    deckPositions = enhancersMetadata.Decks;
-                    enhancementPositions = enhancersMetadata.Enhancements;
-                    sealPositions = enhancersMetadata.Seals;
-                    specialPositions = enhancersMetadata.Special;
-                }
+                    // Load joker positions from json
+                    jokerPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Jokers/jokers.json"
+                    );
 
-                // Load playing card positions
-                playingCardPositions = LoadPlayingCardMetadata(
-                    "avares://BalatroSeedOracle/Assets/Decks/playing_cards_metadata.json"
-                );
+                    // Load negative joker positions from json
+                    jokerNegativePositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.json"
+                    );
 
-                // Load boss blind positions
-                var bossMetadata = LoadBossMetadata(
-                    "avares://BalatroSeedOracle/Assets/Bosses/blinds_metadata.json"
-                );
-                if (bossMetadata != null)
-                {
-                    blindPositions = bossMetadata.Blinds;
-                    bossPositions = new Dictionary<string, SpritePosition>();
-                    // Merge all boss types into one dictionary
-                    foreach (var kvp in bossMetadata.Bosses)
+                    // Load tag positions from json
+                    tagPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Tags/tags.json"
+                    );
+
+                    // Load tarot positions from json
+                    tarotPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Tarots/tarots.json"
+                    );
+
+                    // Load spectral positions from json
+                    // Load spectral positions from json (they're in the tarots sprite sheet)
+                    spectralPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Tarots/spectrals.json"
+                    );
+
+                    // Load planet positions from json (they're also in the tarots sprite sheet)
+                    // NOTE: Planet X, Ceres, and Eris positions are defined at (0,6), (1,6), (2,6)
+                    // but the Tarots.png sprite sheet needs to be expanded from 710x570 to 710x665 pixels
+                    // and have sprites added for these three planets at row 6.
+                    planetPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Tarots/planets.json"
+                    );
+
+                    // Load voucher positions from json
+                    voucherPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Vouchers/vouchers.json"
+                    );
+
+                    // Load stake positions from json
+                    stakePositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Decks/stakes.json"
+                    );
+
+                    // Load booster pack positions from json
+                    boosterPositions = LoadSpritePositions(
+                        "avares://BalatroSeedOracle/Assets/Other/Boosters.json"
+                    );
+
+                    // Load deck, enhancement, and seal positions from enhancers metadata
+                    var enhancersMetadata = LoadEnhancersMetadata(
+                        "avares://BalatroSeedOracle/Assets/Decks/enhancers_metadata.json"
+                    );
+                    if (enhancersMetadata != null)
                     {
-                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        deckPositions = enhancersMetadata.Decks;
+                        enhancementPositions = enhancersMetadata.Enhancements;
+                        sealPositions = enhancersMetadata.Seals;
+                        specialPositions = enhancersMetadata.Special;
                     }
 
-                    foreach (var kvp in bossMetadata.FinisherBosses)
+                    // Load playing card positions
+                    playingCardPositions = LoadPlayingCardMetadata(
+                        "avares://BalatroSeedOracle/Assets/Decks/playing_cards_metadata.json"
+                    );
+
+                    // Load boss blind positions
+                    var bossMetadata = LoadBossMetadata(
+                        "avares://BalatroSeedOracle/Assets/Bosses/blinds_metadata.json"
+                    );
+                    if (bossMetadata != null)
                     {
-                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        blindPositions = bossMetadata.Blinds;
+                        bossPositions = new Dictionary<string, SpritePosition>();
+                        // Merge all boss types into one dictionary
+                        foreach (var kvp in bossMetadata.Bosses)
+                        {
+                            bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        }
+
+                        foreach (var kvp in bossMetadata.FinisherBosses)
+                        {
+                            bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        }
+
+                        foreach (var kvp in bossMetadata.Special)
+                        {
+                            bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        }
                     }
 
-                    foreach (var kvp in bossMetadata.Special)
+                    // Load sticker positions
+                    var stickerMetadata = LoadStickersMetadata(
+                        "avares://BalatroSeedOracle/Assets/Jokers/stickers_metadata.json"
+                    );
+                    if (stickerMetadata != null)
                     {
-                        bossPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
-                    }
-                }
+                        stickerPositions = new Dictionary<string, SpritePosition>();
+                        // Merge all sticker types into one dictionary
+                        foreach (var kvp in stickerMetadata.JokerStickers)
+                        {
+                            stickerPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        }
 
-                // Load sticker positions
-                var stickerMetadata = LoadStickersMetadata(
-                    "avares://BalatroSeedOracle/Assets/Jokers/stickers_metadata.json"
-                );
-                if (stickerMetadata != null)
-                {
-                    stickerPositions = new Dictionary<string, SpritePosition>();
-                    // Merge all sticker types into one dictionary
-                    foreach (var kvp in stickerMetadata.JokerStickers)
-                    {
-                        stickerPositions[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                        foreach (var kvp in stickerMetadata.StakeStickers)
+                        {
+                            // Store stake stickers with lowercase keys
+                            var lower = kvp.Key.ToLowerInvariant();
+                            stickerPositions[lower] = kvp.Value;
+                        }
                     }
 
-                    foreach (var kvp in stickerMetadata.StakeStickers)
-                    {
-                        // Store stake stickers with lowercase keys
-                        var lower = kvp.Key.ToLowerInvariant();
-                        stickerPositions[lower] = kvp.Value;
-                    }
-                }
+                    // Load spritesheets
+                    jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
+                    jokerNegativeSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png"
+                    );
+                    tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
+                    tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
+                    voucherSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png"
+                    );
+                    spectralSheet = tarotSheet;
 
-                // Load spritesheets
-                jokerSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/Jokers.png");
-                jokerNegativeSheet = LoadBitmap(
-                    "avares://BalatroSeedOracle/Assets/Jokers/jokers_negative.png"
-                );
-                tagSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tags/tags.png");
-                tarotSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Tarots/Tarots.png");
-                voucherSheet = LoadBitmap(
-                    "avares://BalatroSeedOracle/Assets/Vouchers/Vouchers.png"
-                );
-                spectralSheet = tarotSheet;
-
-                stakeSheet = LoadBitmap(
-                    "avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png"
-                );
-                enhancersSheet = LoadBitmap(
-                    "avares://BalatroSeedOracle/Assets/Decks/Enhancers.png"
-                );
-                deckSheet = enhancersSheet;
-                playingCardsSheet = LoadBitmap(
-                    "avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png"
-                );
-                bossSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png");
-                stickersSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Jokers/stickers.png");
-                boosterSheet = LoadBitmap("avares://BalatroSeedOracle/Assets/Other/boosters.png");
+                    stakeSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Decks/balatro-stake-chips.png"
+                    );
+                    enhancersSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Decks/Enhancers.png"
+                    );
+                    deckSheet = enhancersSheet;
+                    playingCardsSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Decks/8BitDeck.png"
+                    );
+                    bossSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Bosses/BlindChips.png"
+                    );
+                    stickersSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Jokers/stickers.png"
+                    );
+                    boosterSheet = LoadBitmap(
+                        "avares://BalatroSeedOracle/Assets/Other/boosters.png"
+                    );
+                });
             }
             catch (Exception ex)
             {
@@ -1467,7 +1501,10 @@ namespace BalatroSeedOracle.Services
                     "stake" or "stakes" => GetStakeImage(name),
                     "enhancement" or "enhancements" => GetEnhancementImage(name),
                     "seal" or "seals" => GetSealImage(name),
-                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage("Spades", "Ace"),
+                    "standardcard" or "playingcard" or "playing card" => GetPlayingCardImage(
+                        "Spades",
+                        "Ace"
+                    ),
                     _ => null,
                 };
             }

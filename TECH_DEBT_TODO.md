@@ -1,8 +1,22 @@
 # Tech Debt TODO - Small Fixes for AI Agents
 
-**Total Items**: 100+  
+**Total Items**: 135+  
 **Status**: Ready for AI agents to grab and complete  
 **Priority**: Small, quick fixes that improve code quality
+
+## ✅ Recently Completed (January 2026)
+
+### AOT Compilation Refactoring
+- [x] **AOT_001**: Removed all reflection from `JamlTypeAsKeyConverter` - replaced with static property mappings
+- [x] **AOT_002**: Implemented `System.Text.Json` source generation via `MotelyJsonSerializerContext`
+- [x] **AOT_003**: Implemented YamlDotNet static context via `MotelyYamlStaticContext`
+- [x] **AOT_004**: Enabled AOT for Desktop builds (`PublishAot=true`)
+- [x] **AOT_005**: Enabled AOT for Browser builds (`RunAOTCompilation=true`, `PublishTrimmed=true`)
+- [x] **AOT_006**: Created `IExcelExporter` interface for platform abstraction
+- [x] **AOT_007**: Implemented `ClosedXmlExcelExporter` for Desktop
+- [x] **AOT_008**: Implemented `BrowserExcelExporter` stub for Browser
+- [x] **AOT_009**: Removed DuckDB references from shared `BalatroSeedOracle` library
+- [x] **AOT_010**: Updated all `Enum.GetValues()` calls to use generic `Enum.GetValues<T>()`
 
 ---
 

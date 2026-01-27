@@ -46,9 +46,8 @@ namespace BalatroSeedOracle.Views
 
         public Action<UserControl>? RequestContentSwap { get; set; }
 
-        public BalatroMainMenu() : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>())
-        {
-        }
+        public BalatroMainMenu()
+            : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>()) { }
 
         public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
         {
@@ -96,9 +95,7 @@ namespace BalatroSeedOracle.Views
             e.DragEffects = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
         }
 
-        private void OnModalContainerDrop(object? sender, DragEventArgs e)
-        {
-        }
+        private void OnModalContainerDrop(object? sender, DragEventArgs e) { }
 
         private void WireViewModelEvents()
         {
@@ -242,7 +239,7 @@ namespace BalatroSeedOracle.Views
                                 filtersDir,
                                 result.FilterId + ".jaml"
                             );
-                            
+
                             if (!System.IO.File.Exists(configPath))
                             {
                                 configPath = System.IO.Path.Combine(
@@ -253,35 +250,57 @@ namespace BalatroSeedOracle.Views
 
                             try
                             {
-                                var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-                                var json = await platformServices.ReadTextFromPathAsync(configPath) ?? "{}";
-                                
+                                var platformServices =
+                                    ServiceHelper.GetRequiredService<IPlatformServices>();
+                                var json =
+                                    await platformServices.ReadTextFromPathAsync(configPath)
+                                    ?? "{}";
+
                                 // Parse based on file extension
-                                Motely.Filters.MotelyJsonConfig config;
-                                if (configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
+                                Motely.Filters.MotelyJsonConfig? config;
+                                if (
+                                    configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase)
+                                )
                                 {
-                                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(json, out config, out var parseError) || config == null)
+                                    if (
+                                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                            json,
+                                            out config,
+                                            out var parseError
+                                        )
+                                        || (object?)config == null
+                                    )
                                     {
-                                        throw new InvalidOperationException($"Failed to parse JAML: {parseError ?? "Unknown error"}");
+                                        throw new InvalidOperationException(
+                                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
+                                        );
                                     }
                                 }
                                 else
                                 {
-                                    config = System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                        json,
-                                        new System.Text.Json.JsonSerializerOptions
-                                        {
-                                            PropertyNameCaseInsensitive = true,
-                                            ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                            AllowTrailingCommas = true,
-                                        }
-                                    );
+                                    config =
+                                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                                            json,
+                                            new System.Text.Json.JsonSerializerOptions
+                                            {
+                                                PropertyNameCaseInsensitive = true,
+                                                ReadCommentHandling = System
+                                                    .Text
+                                                    .Json
+                                                    .JsonCommentHandling
+                                                    .Skip,
+                                                AllowTrailingCommas = true,
+                                            }
+                                        )
+                                        ?? new Motely.Filters.MotelyJsonConfig();
                                     if (config == null)
                                     {
-                                        throw new InvalidOperationException("Failed to deserialize JSON filter");
+                                        throw new InvalidOperationException(
+                                            "Failed to deserialize JSON filter"
+                                        );
                                     }
                                 }
-                                
+
                                 if (config != null && !string.IsNullOrEmpty(config.Name))
                                 {
                                     SetTitle($"🔍 {config.Name}");
@@ -295,32 +314,32 @@ namespace BalatroSeedOracle.Views
                                     ViewModel.IsModalVisible = false;
                                 }
                                 HideModalContent();
-                                
+
                                 Helpers.DebugLogger.LogError(
                                     "BalatroMainMenu",
                                     $"Failed to show search modal with filter: {ex.Message}"
                                 );
-                                
+
                                 // Show error using existing modal system
                                 var errorText = $"Failed to load filter:\n\n{ex.Message}";
                                 var errorContent = new StackPanel
                                 {
                                     Margin = new Thickness(20),
-                                    Children = 
+                                    Children =
                                     {
-                                        new TextBlock 
-                                        { 
-                                            Text = "Error", 
-                                            FontSize = 24, 
+                                        new TextBlock
+                                        {
+                                            Text = "Error",
+                                            FontSize = 24,
                                             FontWeight = FontWeight.Bold,
-                                            Margin = new Thickness(0,0,0,10)
+                                            Margin = new Thickness(0, 0, 0, 10),
                                         },
-                                        new TextBlock 
-                                        { 
-                                            Text = errorText, 
-                                            TextWrapping = TextWrapping.Wrap 
-                                        }
-                                    }
+                                        new TextBlock
+                                        {
+                                            Text = errorText,
+                                            TextWrapping = TextWrapping.Wrap,
+                                        },
+                                    },
                                 };
                                 var errorControl = new UserControl { Content = errorContent };
                                 ShowModalContent(errorControl, "❌ ERROR");
@@ -635,7 +654,7 @@ namespace BalatroSeedOracle.Views
                     var filtersDir = AppPaths.FiltersDir;
                     // Try .jaml first, then .json as fallback
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
-                    
+
                     if (!System.IO.File.Exists(filterPath))
                     {
                         filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
@@ -772,7 +791,7 @@ namespace BalatroSeedOracle.Views
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Width = 450,
-                Height = 250
+                Height = 250,
             };
 
             var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
@@ -849,7 +868,8 @@ namespace BalatroSeedOracle.Views
             ShowModalContent(contentControl, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
 
             // Focus textbox after a short delay
-            Dispatcher.UIThread.Post(async () => {
+            Dispatcher.UIThread.Post(async () =>
+            {
                 await Task.Delay(100);
                 textBox.Focus();
                 textBox.SelectAll();
@@ -1095,9 +1115,13 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("BalatroMainMenu", $"Failed to apply shader parameters: {ex.Message}");
+                DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to apply shader parameters: {ex.Message}"
+                );
             }
         }
+
         /// <summary>
         /// Open analyzer with the specified filter (filter selection happens inside analyzer)
         /// </summary>
@@ -1666,7 +1690,7 @@ namespace BalatroSeedOracle.Views
 
         // ApplyVisualizerTheme removed - was empty stub
 
-        internal void ApplyMainColor(int colorIndex)
+        public void ApplyMainColor(int colorIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1674,7 +1698,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyMainColor(SkiaSharp.SKColor color)
+        public void ApplyMainColor(SkiaSharp.SKColor color)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1682,7 +1706,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyAccentColor(int colorIndex)
+        public void ApplyAccentColor(int colorIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1690,7 +1714,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyAccentColor(SkiaSharp.SKColor color)
+        public void ApplyAccentColor(SkiaSharp.SKColor color)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1701,7 +1725,7 @@ namespace BalatroSeedOracle.Views
         // ApplyAudioIntensity removed - was empty stub
         // ApplyParallaxStrength removed - was empty stub
 
-        internal void ApplyTimeSpeed(float speed)
+        public void ApplyTimeSpeed(float speed)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1709,7 +1733,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderContrast(float contrast)
+        public void ApplyShaderContrast(float contrast)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1717,7 +1741,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderSpinAmount(float spinAmount)
+        public void ApplyShaderSpinAmount(float spinAmount)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1725,7 +1749,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderZoomPunch(float zoom)
+        public void ApplyShaderZoomPunch(float zoom)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1733,7 +1757,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderMelodySaturation(float saturation)
+        public void ApplyShaderMelodySaturation(float saturation)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1741,7 +1765,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderPixelSize(float pixelSize)
+        public void ApplyShaderPixelSize(float pixelSize)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1749,7 +1773,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderSpinEase(float spinEase)
+        public void ApplyShaderSpinEase(float spinEase)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1758,7 +1782,7 @@ namespace BalatroSeedOracle.Views
         }
 
         // New shader parameter methods that call shader directly
-        internal void ApplyShaderTime(float time)
+        public void ApplyShaderTime(float time)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1766,7 +1790,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal float GetTimeSpeed()
+        public float GetTimeSpeed()
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1775,7 +1799,7 @@ namespace BalatroSeedOracle.Views
             return 1f;
         }
 
-        internal float GetSpinTimeSpeed()
+        public float GetSpinTimeSpeed()
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1784,7 +1808,7 @@ namespace BalatroSeedOracle.Views
             return 1f;
         }
 
-        internal void ApplyShaderSpinTime(float spinTime)
+        public void ApplyShaderSpinTime(float spinTime)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1792,7 +1816,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderParallaxX(float parallaxX)
+        public void ApplyShaderParallaxX(float parallaxX)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1800,7 +1824,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderParallaxY(float parallaxY)
+        public void ApplyShaderParallaxY(float parallaxY)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1808,7 +1832,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyShaderLoopCount(float loopCount)
+        public void ApplyShaderLoopCount(float loopCount)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1816,7 +1840,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicBlend(float blend)
+        public void ApplyPsychedelicBlend(float blend)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1824,7 +1848,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicSpeed(float speed)
+        public void ApplyPsychedelicSpeed(float speed)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1832,7 +1856,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicComplexity(float value)
+        public void ApplyPsychedelicComplexity(float value)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1840,7 +1864,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicColorCycle(float value)
+        public void ApplyPsychedelicColorCycle(float value)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1848,7 +1872,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicKaleidoscope(float value)
+        public void ApplyPsychedelicKaleidoscope(float value)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1856,7 +1880,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyPsychedelicFluidFlow(float value)
+        public void ApplyPsychedelicFluidFlow(float value)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1872,7 +1896,7 @@ namespace BalatroSeedOracle.Views
             DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
         }
 
-        internal void ApplyShadowFlickerSource(int sourceIndex)
+        public void ApplyShadowFlickerSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1880,7 +1904,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplySpinSource(int sourceIndex)
+        public void ApplySpinSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1888,7 +1912,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyTwirlSource(int sourceIndex)
+        public void ApplyTwirlSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1896,7 +1920,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyZoomThumpSource(int sourceIndex)
+        public void ApplyZoomThumpSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1904,7 +1928,7 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        internal void ApplyColorSaturationSource(int sourceIndex)
+        public void ApplyColorSaturationSource(int sourceIndex)
         {
             if (_background is BalatroShaderBackground shader)
             {
@@ -1980,10 +2004,13 @@ namespace BalatroSeedOracle.Views
                 // Get search instance from service
                 var searchManager = Helpers.ServiceHelper.GetService<SearchManager>();
                 var searchInstance = searchManager?.GetSearch(searchId);
-                
+
                 if (searchInstance == null)
                 {
-                    DebugLogger.LogError("BalatroMainMenu", $"Search instance not found: {searchId}");
+                    DebugLogger.LogError(
+                        "BalatroMainMenu",
+                        $"Search instance not found: {searchId}"
+                    );
                     return;
                 }
 
@@ -1994,8 +2021,16 @@ namespace BalatroSeedOracle.Views
                     // Create SearchWidget with proper ViewModel
                     var spriteService = Services.SpriteService.Instance;
                     var notificationService = ServiceHelper.GetService<NotificationService>();
-                    var viewModel = new SearchWidgetViewModel(searchInstance, spriteService, null, notificationService);
-                    var searchWidget = new Components.Widgets.SearchWidget { DataContext = viewModel };
+                    var viewModel = new SearchWidgetViewModel(
+                        searchInstance,
+                        spriteService,
+                        null,
+                        notificationService
+                    );
+                    var searchWidget = new Components.Widgets.SearchWidget
+                    {
+                        DataContext = viewModel,
+                    };
 
                     // Wire up event to reopen SearchModal when widget is clicked
                     viewModel.SearchModalOpenRequested += async (s, sid) =>
@@ -2044,10 +2079,11 @@ namespace BalatroSeedOracle.Views
                 // Find the widget in the window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 var activeWidgets = widgetManager.GetActiveWidgets();
-                
-                var widgetToRemove = activeWidgets.FirstOrDefault(w => 
-                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId);
-                
+
+                var widgetToRemove = activeWidgets.FirstOrDefault(w =>
+                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId
+                );
+
                 if (widgetToRemove != null)
                 {
                     widgetManager.CloseWidget(widgetToRemove);

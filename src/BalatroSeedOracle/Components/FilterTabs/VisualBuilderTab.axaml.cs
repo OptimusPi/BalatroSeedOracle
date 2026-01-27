@@ -229,7 +229,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
             double startX = -totalWidth / 2.0 + cardWidth / 2.0;
 
             // Apply transforms to each card container
-            var containers = UnifiedTrayItemsControl.GetVisualDescendants().OfType<Border>().ToList();
+            var containers = UnifiedTrayItemsControl
+                .GetVisualDescendants()
+                .OfType<Border>()
+                .ToList();
 
             for (int i = 0; i < Math.Min(count, containers.Count); i++)
             {
@@ -919,7 +922,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 )
                 {
                     // Use direct hit testing on each drop zone (fixes bug where operator tray offset broke Y-position math)
-                    if (MustDropZone != null && IsPointOverControl(cursorPos, MustDropZone, _topLevel))
+                    if (
+                        MustDropZone != null
+                        && IsPointOverControl(cursorPos, MustDropZone, _topLevel)
+                    )
                     {
                         zoneName = "MustDropZone";
                         targetZone = MustDropZone;
@@ -1840,14 +1846,17 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // The Canvas is inside VisualBuilderTab, not at TopLevel origin
                 if (_topLevel != null)
                 {
-                    var canvasOffsetPoint = _adornerLayer.TranslatePoint(new Avalonia.Point(0, 0), _topLevel);
+                    var canvasOffsetPoint = _adornerLayer.TranslatePoint(
+                        new Avalonia.Point(0, 0),
+                        _topLevel
+                    );
                     _canvasOffset = canvasOffsetPoint ?? new Avalonia.Point(0, 0);
                 }
                 else
                 {
                     _canvasOffset = new Avalonia.Point(0, 0);
                 }
-                
+
                 double initialX = currentMousePos.X - _dragOffset.X - _canvasOffset.X;
                 double initialY = currentMousePos.Y - _dragOffset.Y - _canvasOffset.Y;
 

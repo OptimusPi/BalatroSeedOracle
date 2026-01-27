@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <!-- Dark background similar to Balatro theme -->
-    <path android:fillColor="#1a1a1a" android:pathData="M0,0h108v108h-108z"/>
-    
-    <!-- Orange circle representing Balatro cards -->
-    <path android:fillColor="#FF6B35" android:pathData="M54,20c-18.8,0-34,15.2-34,34s15.2,34,34,34s34-15.2,34-34S72.8,20,54,20z"/>
-    
-    <!-- Inner circle for oracle/seer theme -->
-    <path android:fillColor="#2d2d2d" android:pathData="M54,30c-13.3,0-24,10.7-24,24s10.7,24,24,24s24-10.7,24-24S67.3,30,54,30z"/>
-    
-    <!-- Seed symbol in center -->
-    <path android:fillColor="#FFD700" android:pathData="M54,40c-7.7,0-14,6.3-14,14s6.3,14,14,14s14-6.3,14-14S61.7,40,54,40z M54,60c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S57.3,60,54,60z"/>
-    
-    <!-- Small divots like card pips using paths instead of circles -->
-    <path android:fillColor="#FFFFFF" android:pathData="M45,45m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M63,45m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M45,63m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M63,63m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
+<vector
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="108dp"
+  android:height="108dp"
+  android:viewportWidth="108"
+  android:viewportHeight="108"
+>
+  <!-- Dark background similar to Balatro theme -->
+  <path android:fillColor="#1a1a1a" android:pathData="M0,0h108v108h-108z" />
+
+  <!-- Orange circle representing Balatro cards -->
+  <path
+    android:fillColor="#FF6B35"
+    android:pathData="M54,20c-18.8,0-34,15.2-34,34s15.2,34,34,34s34-15.2,34-34S72.8,20,54,20z"
+  />
+
+  <!-- Inner circle for oracle/seer theme -->
+  <path
+    android:fillColor="#2d2d2d"
+    android:pathData="M54,30c-13.3,0-24,10.7-24,24s10.7,24,24,24s24-10.7,24-24S67.3,30,54,30z"
+  />
+
+  <!-- Seed symbol in center -->
+  <path
+    android:fillColor="#FFD700"
+    android:pathData="M54,40c-7.7,0-14,6.3-14,14s6.3,14,14,14s14-6.3,14-14S61.7,40,54,40z M54,60c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S57.3,60,54,60z"
+  />
+
+  <!-- Small divots like card pips using paths instead of circles -->
+  <path android:fillColor="#FFFFFF" android:pathData="M45,45m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+  <path android:fillColor="#FFFFFF" android:pathData="M63,45m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+  <path android:fillColor="#FFFFFF" android:pathData="M45,63m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+  <path android:fillColor="#FFFFFF" android:pathData="M63,63m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
 </vector>

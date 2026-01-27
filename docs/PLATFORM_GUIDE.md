@@ -20,6 +20,7 @@ PlatformServices.RegisterServices = services =>
     services.AddSingleton<IAppDataStore, {Platform}AppDataStore>();
     services.AddSingleton<IDuckDBService, {Platform}DuckDBService>();
     services.AddSingleton<IPlatformServices, {Platform}PlatformServices>();
+    services.AddSingleton<IExcelExporter, {Platform}ExcelExporter>();
     
     // Platform-specific services
     services.AddSingleton<IAudioManager, {Platform}AudioManager>();
@@ -56,8 +57,10 @@ Platform projects should contain **ONLY**:
 ### Browser (WebAssembly)
 - File System: ❌ (use localStorage)
 - Audio: ✅ Web Audio API
-- Analyzer: ❌ (DuckDB-WASM limitations)
+- Analyzer: ✅ DuckDB-WASM
 - Results Grid: ✅ Full support
+- Excel Export: ❌ (stub implementation)
+- AOT Compilation: ✅ Enabled
 
 ### Android
 - File System: ✅ Native

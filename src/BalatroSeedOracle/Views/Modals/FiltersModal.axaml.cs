@@ -31,7 +31,12 @@ namespace BalatroSeedOracle.Views.Modals
 
                 var platformServices = App.GetService<IPlatformServices>();
                 var notificationService = App.GetService<NotificationService>();
-                var viewModel = new FiltersModalViewModel(configService, filterService, platformServices!, notificationService);
+                var viewModel = new FiltersModalViewModel(
+                    configService,
+                    filterService,
+                    platformServices!,
+                    notificationService
+                );
                 DataContext = viewModel;
 
                 // Initialize tabs synchronously so they're ready when UI renders

@@ -25,7 +25,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly EventFXService? _eventFXService;
         private readonly IApiHostService? _apiHostService;
         private Action<float, float, float, float>? _audioAnalysisHandler;
-        
+
         /// <summary>
         /// ViewModel for the API Host widget - owned by parent, bound via XAML DataContext
         /// </summary>
@@ -94,22 +94,27 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnIsSearchWidgetsVisibleChanged(bool value)
         {
-            SearchWidgetsIcon = value ? PackIconMaterialKind.Magnify : PackIconMaterialKind.MagnifyPlus;
+            SearchWidgetsIcon = value
+                ? PackIconMaterialKind.Magnify
+                : PackIconMaterialKind.MagnifyPlus;
             UpdateToggleAllWidgetsIcon();
         }
 
         private void UpdateToggleAllWidgetsIcon()
         {
             // Check if all enabled widgets are visible
-            var allVisible = (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled) &&
-                           (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled) &&
-                           (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled) &&
-                           (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled) &&
-                           (IsHostApiWidgetVisible == IsHostApiWidgetEnabled) &&
-                           (IsEventFXWidgetVisible == IsEventFXWidgetEnabled) &&
-                           IsSearchWidgetsVisible;
-            
-            ToggleAllWidgetsIcon = allVisible ? PackIconMaterialKind.Widgets : PackIconMaterialKind.WidgetsOutline;
+            var allVisible =
+                (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled)
+                && (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled)
+                && (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled)
+                && (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled)
+                && (IsHostApiWidgetVisible == IsHostApiWidgetEnabled)
+                && (IsEventFXWidgetVisible == IsEventFXWidgetEnabled)
+                && IsSearchWidgetsVisible;
+
+            ToggleAllWidgetsIcon = allVisible
+                ? PackIconMaterialKind.Widgets
+                : PackIconMaterialKind.WidgetsOutline;
         }
 
         partial void OnIsModalVisibleChanged(bool value)
@@ -186,7 +191,8 @@ namespace BalatroSeedOracle.ViewModels
             IApiHostService? apiHostService = null,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
-            WidgetPositionService? widgetPositionService = null)
+            WidgetPositionService? widgetPositionService = null
+        )
         {
             // Store injected services
             _userProfileService = userProfileService;
@@ -197,7 +203,10 @@ namespace BalatroSeedOracle.ViewModels
             // Create child widget ViewModels (owned by parent, bound via XAML)
             if (_apiHostService != null)
             {
-                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(_apiHostService, widgetPositionService);
+                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(
+                    _apiHostService,
+                    widgetPositionService
+                );
             }
 
             // Load settings
@@ -243,7 +252,8 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnVolumeChanged(double value)
         {
             VolumePercentText = $"{(int)value}%";
-            MusicIcon = value > 0 ? PackIconMaterialKind.VolumeHigh : PackIconMaterialKind.VolumeOff;
+            MusicIcon =
+                value > 0 ? PackIconMaterialKind.VolumeHigh : PackIconMaterialKind.VolumeOff;
             MuteButtonText = value > 0 ? "MUTE" : "UNMUTE";
             IsMusicPlaying = value > 0;
             ApplyVolumeChange(value);
@@ -406,7 +416,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleMusicMixerWidget()
         {
-            if (!IsMusicMixerWidgetEnabled) return; // Can't toggle if not enabled
+            if (!IsMusicMixerWidgetEnabled)
+                return; // Can't toggle if not enabled
             PlayButtonClickSound();
             IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible;
         }
@@ -414,7 +425,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleVisualizerWidget()
         {
-            if (!IsVisualizerWidgetEnabled) return;
+            if (!IsVisualizerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
         }
@@ -422,7 +434,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleTransitionDesignerWidget()
         {
-            if (!IsTransitionDesignerWidgetEnabled) return;
+            if (!IsTransitionDesignerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible;
         }
@@ -430,7 +443,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleFertilizerWidget()
         {
-            if (!IsFertilizerWidgetEnabled) return;
+            if (!IsFertilizerWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible;
         }
@@ -438,7 +452,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleHostApiWidget()
         {
-            if (!IsHostApiWidgetEnabled) return;
+            if (!IsHostApiWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsHostApiWidgetVisible = !IsHostApiWidgetVisible;
         }
@@ -446,7 +461,8 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleEventFXWidget()
         {
-            if (!IsEventFXWidgetEnabled) return;
+            if (!IsEventFXWidgetEnabled)
+                return;
             PlayButtonClickSound();
             IsEventFXWidgetVisible = !IsEventFXWidgetVisible;
         }
@@ -455,15 +471,20 @@ namespace BalatroSeedOracle.ViewModels
         private void ToggleAllWidgets()
         {
             PlayButtonClickSound();
-            
+
             // Check if any widgets are currently visible
-            var anyVisible = IsMusicMixerWidgetVisible || IsVisualizerWidgetVisible || 
-                           IsTransitionDesignerWidgetVisible || IsFertilizerWidgetVisible || 
-                           IsHostApiWidgetVisible || IsEventFXWidgetVisible || IsSearchWidgetsVisible;
-            
+            var anyVisible =
+                IsMusicMixerWidgetVisible
+                || IsVisualizerWidgetVisible
+                || IsTransitionDesignerWidgetVisible
+                || IsFertilizerWidgetVisible
+                || IsHostApiWidgetVisible
+                || IsEventFXWidgetVisible
+                || IsSearchWidgetsVisible;
+
             // Toggle all widgets to the opposite state
             var newState = !anyVisible;
-            
+
             IsMusicMixerWidgetVisible = newState && IsMusicMixerWidgetEnabled;
             IsVisualizerWidgetVisible = newState && IsVisualizerWidgetEnabled;
             IsTransitionDesignerWidgetVisible = newState && IsTransitionDesignerWidgetEnabled;
@@ -471,7 +492,7 @@ namespace BalatroSeedOracle.ViewModels
             IsHostApiWidgetVisible = newState && IsHostApiWidgetEnabled;
             IsEventFXWidgetVisible = newState && IsEventFXWidgetEnabled;
             IsSearchWidgetsVisible = newState;
-            
+
             // Show/hide search widgets via window manager
             var widgetManager = Services.WidgetWindowManager.Instance;
             if (newState)
@@ -489,7 +510,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             PlayButtonClickSound();
             IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
-            
+
             // Show/hide all search widgets via window manager
             var widgetManager = Services.WidgetWindowManager.Instance;
             if (IsSearchWidgetsVisible)
@@ -542,7 +563,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsWidgetDockVisible = false;
                 IsSearchWidgetsVisible = false;
-                
+
                 // Hide search widgets via window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 widgetManager.HideAllWidgets();
@@ -550,7 +571,7 @@ namespace BalatroSeedOracle.ViewModels
             else
             {
                 IsSearchWidgetsVisible = true;
-                
+
                 // Show search widgets via window manager
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 widgetManager.ShowAllWidgets();
@@ -686,7 +707,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
                 IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
                 IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-                
+
                 // Initialize visibility to match enabled state
                 IsMusicMixerWidgetVisible = IsMusicMixerWidgetEnabled;
                 IsVisualizerWidgetVisible = IsVisualizerWidgetEnabled;
@@ -719,7 +740,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             var toggles = profile.FeatureToggles;
-            
+
             // Update enabled state (source of truth)
             IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
             IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
@@ -727,14 +748,20 @@ namespace BalatroSeedOracle.ViewModels
             IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
             IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
             IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-            
+
             // If a widget is disabled, hide it. If enabled, keep current visibility.
-            if (!IsMusicMixerWidgetEnabled) IsMusicMixerWidgetVisible = false;
-            if (!IsVisualizerWidgetEnabled) IsVisualizerWidgetVisible = false;
-            if (!IsTransitionDesignerWidgetEnabled) IsTransitionDesignerWidgetVisible = false;
-            if (!IsFertilizerWidgetEnabled) IsFertilizerWidgetVisible = false;
-            if (!IsHostApiWidgetEnabled) IsHostApiWidgetVisible = false;
-            if (!IsEventFXWidgetEnabled) IsEventFXWidgetVisible = false;
+            if (!IsMusicMixerWidgetEnabled)
+                IsMusicMixerWidgetVisible = false;
+            if (!IsVisualizerWidgetEnabled)
+                IsVisualizerWidgetVisible = false;
+            if (!IsTransitionDesignerWidgetEnabled)
+                IsTransitionDesignerWidgetVisible = false;
+            if (!IsFertilizerWidgetEnabled)
+                IsFertilizerWidgetVisible = false;
+            if (!IsHostApiWidgetEnabled)
+                IsHostApiWidgetVisible = false;
+            if (!IsEventFXWidgetEnabled)
+                IsEventFXWidgetVisible = false;
             DebugLogger.Log(
                 "BalatroMainMenuViewModel",
                 $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
@@ -955,7 +982,10 @@ namespace BalatroSeedOracle.ViewModels
                     };
 
                     _audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-                    DebugLogger.Log("ViewModel", "✅ Audio analysis handler connected (awaiting effect binding system)");
+                    DebugLogger.Log(
+                        "ViewModel",
+                        "✅ Audio analysis handler connected (awaiting effect binding system)"
+                    );
                 }
             }
             catch (Exception ex)

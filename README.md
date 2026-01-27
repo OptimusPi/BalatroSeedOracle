@@ -31,8 +31,8 @@ Built for the Balatro community to discover optimal seeds for challenge runs, hi
 - Not sure if other OS will work such as BSD, but it probably will.
 - I think this might work on other CPUs like ARM, but I have not tested it.
 - I think I might need some changes to Motely's Vector helpers to make it work, but it's possible the fallbacks (if AVX512 and/or AVX2 not supported) tacodiva added already will be compatible.
-- Mobile would be really cool in the future.
-- Web page version would be really cool in the future.
+- Mobile support is planned for future releases.
+- **Browser/WASM version is available!** See Browser Build section below.
 
 ## Clone this repository (or download zip, or use Github Desktop)
 
@@ -69,19 +69,33 @@ To run the optimized release build:
 dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 ```
 
-## Browser Build, SIMD and Threads
+## Browser Build (WebAssembly)
 
-- The browser app (`src/BalatroSeedOracle.Browser`) enables WebAssembly SIMD by default.
-- Threads are opt‑in to avoid broken hosting. To enable threads:
-  - Serve the built `out/` directory behind a host that adds:
-    - `Cross-Origin-Opener-Policy: same-origin`
-    - `Cross-Origin-Embedder-Policy: require-corp`
-  - Build with the threads flag:
-    ```
-    dotnet publish -c Release -p:EnableWasmThreads=true src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
-    ```
-  - Recommended hosts: nginx, Caddy, Apache (reverse proxy adding headers), or any static server capable of injecting headers.
-  - Avoid GitHub Pages for threaded builds (no COOP/COEP support).
+The browser app runs entirely in your web browser using WebAssembly with **AOT compilation** for optimal performance.
+
+**Build the browser version:**
+```bash
+dotnet publish -c Release src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+```
+
+**Features:**
+- ✅ **AOT Compiled** - Ahead-of-time compilation for fast startup and execution
+- ✅ **SIMD Enabled** - Hardware-accelerated vectorization (where supported)
+- ✅ **Full Feature Parity** - Same filtering capabilities as desktop version
+- ⚠️ **Threads Optional** - Requires COOP/COEP headers (see below)
+
+**Threading Support (Optional):**
+To enable multi-threading, serve with these headers:
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Embedder-Policy: require-corp`
+
+Build with threads:
+```bash
+dotnet publish -c Release -p:EnableWasmThreads=true src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
+```
+
+**Recommended Hosts:** nginx, Caddy, Apache, or any static server with header injection support.  
+**Note:** GitHub Pages doesn't support COOP/COEP headers for threaded builds.
 
 ## Using the Command Line Interface
 
@@ -209,11 +223,12 @@ This is a community project. Contributions welcome:
 Built on:
 
 - **.NET 10 / C# 14** - Modern C# with high performance features
-- **Avalonia UI** - Cross-platform desktop framework  
-- **DuckDB** - Fast analytical database for results
+- **Avalonia UI** - Cross-platform desktop framework (Desktop, Browser, Android, iOS)
+- **AOT Compilation** - Ahead-of-time compilation for all platforms
+- **DuckDB** - Fast analytical database for results (DuckDB.NET on Desktop, DuckDB-WASM in Browser)
 - **Motely** - Custom vectorized Balatro seed analysis engine
 
-The search engine uses advanced vectorized operations to achieve high throughput when analyzing millions of seed combinations.
+The search engine uses advanced vectorized operations (SIMD) to achieve high throughput when analyzing millions of seed combinations. Full AOT compatibility ensures optimal performance across all platforms.
 
 ## Support
 

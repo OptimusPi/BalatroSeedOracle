@@ -216,7 +216,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _configurationService = configurationService;
             _filterService = filterService;
             _platformServices = platformServices;
-            _notificationService = notificationService ?? ServiceHelper.GetService<NotificationService>();
+            _notificationService =
+                notificationService ?? ServiceHelper.GetService<NotificationService>();
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -231,7 +232,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // We no longer need to manually copy Name/Description as they are now proxied.
                 // But we still need to refresh the criteria display and preview image.
-                
+
                 // CRITICAL: Refresh criteria display when tab becomes visible
                 RefreshCriteriaDisplay();
 

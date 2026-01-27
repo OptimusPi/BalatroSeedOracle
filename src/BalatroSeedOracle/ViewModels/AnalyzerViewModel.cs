@@ -16,6 +16,7 @@ namespace BalatroSeedOracle.ViewModels;
 public partial class AnalyzerViewModel : ObservableObject
 {
     public event EventHandler<string>? CopyToClipboardRequested;
+
     [ObservableProperty]
     private ObservableCollection<string> _seedList = [];
 
@@ -212,9 +213,12 @@ public partial class AnalyzerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Helpers.DebugLogger.LogError("AnalyzerViewModel", $"Error copying Blueprint URL: {ex.Message}");
+            Helpers.DebugLogger.LogError(
+                "AnalyzerViewModel",
+                $"Error copying Blueprint URL: {ex.Message}"
+            );
         }
-        
+
         return Task.CompletedTask;
     }
 

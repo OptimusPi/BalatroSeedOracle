@@ -91,17 +91,23 @@ namespace BalatroSeedOracle.Helpers
         /// <param name="menu">The main menu to show the modal on</param>
         /// <param name="config">The filter config to load for editing</param>
         /// <returns>The created modal</returns>
-        public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu, Motely.Filters.MotelyJsonConfig config)
+        public static StandardModal ShowFiltersModal(
+            this Views.BalatroMainMenu menu,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
             var filtersContent = new Views.Modals.FiltersModal();
-            
+
             // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
             _ = LoadFilterForEditingAsync(filtersContent, config);
-            
+
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
 
-        private static async Task LoadFilterForEditingAsync(Views.Modals.FiltersModal filtersContent, Motely.Filters.MotelyJsonConfig config)
+        private static async Task LoadFilterForEditingAsync(
+            Views.Modals.FiltersModal filtersContent,
+            Motely.Filters.MotelyJsonConfig config
+        )
         {
             try
             {
@@ -115,7 +121,10 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ModalHelper", $"Failed to load filter for editing: {ex.Message}");
+                DebugLogger.LogError(
+                    "ModalHelper",
+                    $"Failed to load filter for editing: {ex.Message}"
+                );
             }
         }
 
@@ -384,20 +393,24 @@ namespace BalatroSeedOracle.Helpers
 
             var stack = new StackPanel { Spacing = 12 };
 
-            stack.Children.Add(new TextBlock
-            {
-                Text = title,
-                FontSize = 20,
-                Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            });
+            stack.Children.Add(
+                new TextBlock
+                {
+                    Text = title,
+                    FontSize = 20,
+                    Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                }
+            );
 
-            stack.Children.Add(new TextBlock
-            {
-                Text = prompt,
-                FontSize = 14,
-                Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
-            });
+            stack.Children.Add(
+                new TextBlock
+                {
+                    Text = prompt,
+                    FontSize = 14,
+                    Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                }
+            );
 
             stack.Children.Add(textBox);
 
@@ -522,7 +535,10 @@ namespace BalatroSeedOracle.Helpers
             return string.Empty;
         }
 
-        private static async Task LoadFilterAndNavigateAsync(Views.Modals.SearchModal searchContent, string configPath)
+        private static async Task LoadFilterAndNavigateAsync(
+            Views.Modals.SearchModal searchContent,
+            string configPath
+        )
         {
             try
             {
@@ -535,7 +551,10 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("ModalHelper", $"Failed to load filter and navigate: {ex.Message}");
+                DebugLogger.LogError(
+                    "ModalHelper",
+                    $"Failed to load filter and navigate: {ex.Message}"
+                );
             }
         }
 

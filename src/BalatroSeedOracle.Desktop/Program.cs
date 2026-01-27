@@ -6,8 +6,9 @@ using BalatroSeedOracle;
 using BalatroSeedOracle.Desktop.Services;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.Storage;
 using BalatroSeedOracle.Services.DuckDB;
+using BalatroSeedOracle.Services.Export;
+using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Desktop;
@@ -32,12 +33,16 @@ public class Program
                 // Platform-specific implementations
                 services.AddSingleton<IAppDataStore, Desktop.Services.DesktopAppDataStore>();
                 services.AddSingleton<IDuckDBService, Desktop.Services.DesktopDuckDBService>();
-                services.AddSingleton<IPlatformServices, Desktop.Services.DesktopPlatformServices>();
-                
+                services.AddSingleton<
+                    IPlatformServices,
+                    Desktop.Services.DesktopPlatformServices
+                >();
+
                 // Desktop-only services
                 services.AddSingleton<IAudioManager, SoundFlowAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
-                
+                services.AddSingleton<IExcelExporter, ClosedXmlExcelExporter>();
+
                 // API host
                 services.AddSingleton<IApiHostService, DesktopApiHostService>();
             };
@@ -116,7 +121,10 @@ public class Program
         }
     }
 
-    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    private static void OnUnobservedTaskException(
+        object? sender,
+        UnobservedTaskExceptionEventArgs e
+    )
     {
         var crashLog = GetCrashLogPath();
 
@@ -126,7 +134,10 @@ public class Program
             + $"Message: {e.Exception.Message}\n"
             + $"Stack Trace:\n{e.Exception.StackTrace}\n\n";
 
-        DebugLogger.LogError("UNOBSERVED_TASK", $"Unobserved task exception: {e.Exception.Message}");
+        DebugLogger.LogError(
+            "UNOBSERVED_TASK",
+            $"Unobserved task exception: {e.Exception.Message}"
+        );
 
         try
         {
@@ -151,15 +162,12 @@ public class Program
         {
             var localAppData = Environment.GetFolderPath(
                 Environment.SpecialFolder.LocalApplicationData,
-                Environment.SpecialFolderOption.Create);
+                Environment.SpecialFolderOption.Create
+            );
             return Path.Combine(localAppData, "BalatroSeedOracle", "crash.log");
         }
     }
 
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .LogToTrace()
-            .WithInterFont()
-            .UseDeveloperTools(); // Enable Avalonia Accelerate Developer Tools (F12 gesture)
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().WithInterFont();
 }

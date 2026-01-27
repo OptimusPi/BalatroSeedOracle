@@ -1,0 +1,23 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Motely -> X:\BalatroSeedOracle\external\Motely\Motely\bin\Debug\net10.0\Motely.dll
+  Motely.Orchestration -> X:\BalatroSeedOracle\external\Motely\Motely.Orchestration\bin\Debug\net10.0\Motely.Orchestration.dll
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(3,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(4,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(5,7): warning CS0105: The using directive for 'System' appeared previously in this namespace [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Components\DeckSpinner.axaml.cs(2,7): warning CS0105: The using directive for 'System' appeared previously in this namespace [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SpriteService.cs(5,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SpriteService.cs(6,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+
+Build FAILED.
+
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(5,7): warning CS0105: The using directive for 'System' appeared previously in this namespace [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Components\DeckSpinner.axaml.cs(2,7): warning CS0105: The using directive for 'System' appeared previously in this namespace [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(3,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Behaviors\CardFlipRevealBehavior.cs(4,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SpriteService.cs(5,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+X:\BalatroSeedOracle\src\BalatroSeedOracle\Services\SpriteService.cs(6,14): error CS0234: The type or namespace name 'Reactive' does not exist in the namespace 'System' (are you missing an assembly reference?) [X:\BalatroSeedOracle\src\BalatroSeedOracle\BalatroSeedOracle.csproj]
+    2 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:06.92

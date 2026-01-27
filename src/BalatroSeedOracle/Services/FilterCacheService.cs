@@ -232,7 +232,8 @@ namespace BalatroSeedOracle.Services
                         try
                         {
                             var filterId = Path.GetFileNameWithoutExtension(filePath);
-                            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId).ConfigureAwait(false);
+                            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId)
+                                .ConfigureAwait(false);
 
                             if (cachedFilter != null)
                             {
@@ -266,7 +267,10 @@ namespace BalatroSeedOracle.Services
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterCacheService", $"Error in async initialization: {ex.Message}");
+                DebugLogger.LogError(
+                    "FilterCacheService",
+                    $"Error in async initialization: {ex.Message}"
+                );
             }
         }
 
@@ -279,7 +283,9 @@ namespace BalatroSeedOracle.Services
             {
                 MotelyJsonConfig? config = null;
 
-                var json = await _store.ReadTextAsync(filePath.Replace('\\', '/')).ConfigureAwait(false);
+                var json = await _store
+                    .ReadTextAsync(filePath.Replace('\\', '/'))
+                    .ConfigureAwait(false);
                 if (string.IsNullOrWhiteSpace(json))
                     return null;
 
@@ -342,7 +348,7 @@ namespace BalatroSeedOracle.Services
 
             var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
             var filterId = Path.GetFileNameWithoutExtension(filePath);
-            
+
             if (isBrowser)
             {
                 // In browser, filePath is a logical key (e.g. "Filters/MyFilter.json")
@@ -382,7 +388,7 @@ namespace BalatroSeedOracle.Services
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
                 string filePath;
                 bool exists;
-                
+
                 if (isBrowser)
                 {
                     filePath = $"Filters/{filterId}.json";
@@ -498,7 +504,7 @@ namespace BalatroSeedOracle.Services
                         // Not completed - return null and let async version handle it
                         return null;
                     }
-                    
+
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 

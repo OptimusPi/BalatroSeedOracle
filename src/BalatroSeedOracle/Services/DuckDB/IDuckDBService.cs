@@ -41,5 +41,6 @@ public interface IDuckDBService
     Task<IDuckDBConnection> OpenDuckLakeConnectionAsync(
         string catalogPath,
         string dataPath,
-        string schemaName = "seed_source");
+        string schemaName = "seed_source"
+    );
 }

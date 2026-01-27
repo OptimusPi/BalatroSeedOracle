@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -6,8 +7,10 @@ using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
@@ -33,7 +36,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 // This allows the proper binding flow: SearchResults -> grid.ItemsSource -> grid.ViewModel.DisplayedResults
 
                 DebugLogger.Log(
-                    "ResultsTab", 
+                    "ResultsTab",
                     $"OnAttachedToVisualTree: Grid found with {vm.SearchResults.Count} search results available for binding"
                 );
 
@@ -94,50 +97,39 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var filePath = file.Path.LocalPath;
                         if (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
                         {
-                            // EXCEL EXPORT using ClosedXML
-                            using var workbook = new ClosedXML.Excel.XLWorkbook();
-                            var worksheet = workbook.Worksheets.Add("Search Results");
-
-                            // CRITICAL: Build headers with all columns
-                            var headers = new System.Collections.Generic.List<string>
+                            // EXCEL EXPORT using platform-specific IExcelExporter
+                            var excelExporter = App.GetService<IExcelExporter>();
+                            if (excelExporter == null || !excelExporter.IsAvailable)
                             {
-                                "SEED",
-                                "TOTALSCORE",
-                            };
+                                DebugLogger.Log(
+                                    "ResultsTab",
+                                    "Excel export not available on this platform"
+                                );
+                                return;
+                            }
+
+                            // Build headers
+                            var headers = new List<string> { "SEED", "TOTALSCORE" };
                             headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
 
-                            // Write headers
-                            for (int i = 0; i < headers.Count; i++)
-                            {
-                                var cell = worksheet.Cell(1, i + 1);
-                                cell.Value = headers[i];
-                                cell.Style.Font.Bold = true;
-                                cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
-                            }
-
-                            // Write data rows
-                            int row = 2;
+                            // Build data rows
+                            var rows = new List<IReadOnlyList<object?>>();
                             foreach (var result in results)
                             {
-                                worksheet.Cell(row, 1).Value = result.Seed;
-                                worksheet.Cell(row, 2).Value = result.TotalScore;
-
-                                // Write tally scores
+                                var row = new List<object?> { result.Seed, result.TotalScore };
                                 if (result.Scores != null)
                                 {
-                                    for (int i = 0; i < result.Scores.Length; i++)
-                                    {
-                                        worksheet.Cell(row, i + 3).Value = result.Scores[i];
-                                    }
+                                    row.AddRange(result.Scores.Cast<object?>());
                                 }
-                                row++;
+                                rows.Add(row);
                             }
 
-                            // Auto-fit columns for readability
-                            worksheet.ColumnsUsed().AdjustToContents();
-
-                            // Save workbook
-                            workbook.SaveAs(filePath);
+                            await excelExporter.ExportAsync(
+                                filePath,
+                                "Search Results",
+                                headers,
+                                rows
+                            );
                             DebugLogger.Log(
                                 "ResultsTab",
                                 $"Exported {results.Count()} results to Excel: {filePath}"
@@ -227,12 +219,13 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         }
 
                         // Create and show the pop-out window
+#if !BROWSER
                         var popOutWindow = new Windows.DataGridResultsWindow(
                             searchInstance,
                             vm.LoadedConfig?.Name
                         );
                         popOutWindow.Show();
-
+#endif
                         DebugLogger.Log(
                             "ResultsTab",
                             $"Popped out results to separate window for search: {vm.CurrentSearchId}"
@@ -247,6 +240,14 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     }
                 };
             }
+        }
+
+        public void ForceRefreshResults(
+            System.Collections.Generic.IEnumerable<Models.SearchResult> results
+        )
+        {
+            var grid = this.FindControl<SortableResultsGrid>("ResultsGrid");
+            grid?.ForceRefreshResults(results);
         }
     }
 }

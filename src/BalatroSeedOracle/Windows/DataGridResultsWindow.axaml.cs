@@ -24,14 +24,16 @@ using AvaloniaEdit.TextMate;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.Export;
 using DuckDB.NET.Data;
+using Microsoft.Extensions.DependencyInjection;
 using TextMateSharp.Grammars;
 
 namespace BalatroSeedOracle.Windows
 {
     public partial class DataGridResultsWindow : Window
     {
-        private readonly SearchInstance? _searchInstance;
+        private readonly ISearchInstance? _searchInstance;
         private readonly string? _filterName;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
@@ -55,7 +57,7 @@ namespace BalatroSeedOracle.Windows
             InitializeComponent();
         }
 
-        public DataGridResultsWindow(SearchInstance searchInstance, string? filterName = null)
+        public DataGridResultsWindow(ISearchInstance searchInstance, string? filterName = null)
         {
             _searchInstance = searchInstance;
             _filterName = filterName;
@@ -609,8 +611,13 @@ LIMIT 50;",
 
             try
             {
-                using var workbook = new ClosedXML.Excel.XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("Search Results");
+                // Use platform-specific IExcelExporter
+                var excelExporter = App.GetService<IExcelExporter>();
+                if (excelExporter == null || !excelExporter.IsAvailable)
+                {
+                    UpdateStatus("Excel export not available");
+                    return;
+                }
 
                 // Headers
                 var headers = new List<string> { "Rank", "Seed", "Score" };
@@ -619,30 +626,21 @@ LIMIT 50;",
                         ?? new List<string>()
                 );
 
-                for (int i = 0; i < headers.Count; i++)
-                {
-                    worksheet.Cell(1, i + 1).Value = headers[i];
-                }
-
-                // Data
-                int row = 2;
+                // Build data rows
+                var rows = new List<IReadOnlyList<object?>>();
                 foreach (var item in _filteredResults)
                 {
-                    worksheet.Cell(row, 1).Value = item.Rank;
-                    worksheet.Cell(row, 2).Value = item.Seed;
-                    worksheet.Cell(row, 3).Value = item.TotalScore;
-
-                    for (int i = 0; i < item.TallyScores.Count; i++)
-                    {
-                        worksheet.Cell(row, i + 4).Value = item.TallyScores[i];
-                    }
-                    row++;
+                    var row = new List<object?> { item.Rank, item.Seed, item.TotalScore };
+                    row.AddRange(item.TallyScores.Cast<object?>());
+                    rows.Add(row);
                 }
 
-                // Auto-fit columns
-                worksheet.ColumnsUsed().AdjustToContents();
-
-                workbook.SaveAs(file.Path.LocalPath);
+                await excelExporter.ExportAsync(
+                    file.Path.LocalPath,
+                    "Search Results",
+                    headers,
+                    rows
+                );
                 UpdateStatus($"Exported {_filteredResults.Count} rows to Excel");
             }
             catch (Exception ex)

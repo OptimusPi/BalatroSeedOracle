@@ -46,7 +46,10 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return ConvertJsonElement<T>(firstValue.Current);
     }
 
-    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(string sql, Func<IDuckDBDataReader, T> mapper)
+    public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(
+        string sql,
+        Func<IDuckDBDataReader, T> mapper
+    )
     {
         var json = await QueryAsync(_connectionId, sql);
         var rows = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
@@ -72,13 +75,17 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
     public Task CopyFromFileAsync(string filePath, string tableName, string options = "")
     {
         // Browser doesn't have file system access - this is a no-op or could use virtual file system
-        throw new NotSupportedException("File system access not available in browser. Use alternative data loading methods.");
+        throw new NotSupportedException(
+            "File system access not available in browser. Use alternative data loading methods."
+        );
     }
 
     public Task CopyToFileAsync(string tableName, string filePath, string format = "csv")
     {
         // Browser doesn't have file system access - could export to download
-        throw new NotSupportedException("File system access not available in browser. Use ExportToCSV for data export.");
+        throw new NotSupportedException(
+            "File system access not available in browser. Use ExportToCSV for data export."
+        );
     }
 
     public async Task<long> GetRowCountAsync(string tableName)
@@ -93,13 +100,17 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return ExecuteNonQueryAsync(createTableSql);
     }
 
-    public async Task<List<string>> GetAllSeedsAsync(string tableName, string seedColumnName, string? orderBy = null)
+    public async Task<List<string>> GetAllSeedsAsync(
+        string tableName,
+        string seedColumnName,
+        string? orderBy = null
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var query = $"SELECT {seedColumnName} FROM {tableName}";
         if (!string.IsNullOrEmpty(orderBy))
             query += $" {orderBy}";
-        
+
         var results = await ExecuteReaderAsync<string>(query, reader => reader.GetString(0));
         return results.ToList();
     }
@@ -129,7 +140,8 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         int? minScore = null,
         string? deck = null,
         string? stake = null,
-        int limit = 1000)
+        int limit = 1000
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         // Build query - this is infrastructure layer, not business logic
@@ -140,71 +152,97 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
             conditions.Add($"deck = '{deck}'");
         if (!string.IsNullOrEmpty(stake) && stake != "White")
             conditions.Add($"stake = '{stake}'");
-        
+
         var whereClause = conditions.Count > 0 ? " WHERE " + string.Join(" AND ", conditions) : "";
-        var query = $"SELECT * FROM {tableName}{whereClause} ORDER BY score DESC, seed ASC LIMIT {limit}";
-        
+        var query =
+            $"SELECT * FROM {tableName}{whereClause} ORDER BY score DESC, seed ASC LIMIT {limit}";
+
         // Execute and convert to ResultWithTallies
-        var rows = await ExecuteReaderAsync<Dictionary<string, object>>(query, reader =>
-        {
-            var row = new Dictionary<string, object>();
-            for (int i = 0; i < reader.FieldCount; i++)
+        var rows = await ExecuteReaderAsync<Dictionary<string, object>>(
+            query,
+            reader =>
             {
-                row[reader.GetName(i)] = reader.IsDBNull(i) ? null! : reader.GetValue(i);
+                var row = new Dictionary<string, object>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    row[reader.GetName(i)] = reader.IsDBNull(i) ? null! : reader.GetValue(i);
+                }
+                return row;
             }
-            return row;
-        });
-        
+        );
+
         // Convert to ResultWithTallies format
         var results = new List<Models.ResultWithTallies>();
         foreach (var row in rows)
         {
             var seed = row.TryGetValue("seed", out var s) ? s?.ToString() ?? "" : "";
             var score = row.TryGetValue("score", out var sc) ? Convert.ToInt32(sc) : 0;
-            var tallies = row.Where(kvp => kvp.Key != "seed" && kvp.Key != "score" && kvp.Value != null)
+            var tallies = row.Where(kvp =>
+                    kvp.Key != "seed" && kvp.Key != "score" && kvp.Value != null
+                )
                 .Select(kvp => Convert.ToInt32(kvp.Value))
                 .ToList();
-            
-            results.Add(new Models.ResultWithTallies
-            {
-                Seed = seed,
-                Score = score,
-                Tallies = tallies
-            });
+
+            results.Add(
+                new Models.ResultWithTallies
+                {
+                    Seed = seed,
+                    Score = score,
+                    Tallies = tallies,
+                }
+            );
         }
-        
+
         return results;
     }
 
-    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(string tableName, string idColumn, int id)
+    public async Task<Dictionary<string, object?>?> LoadRowByIdAsync(
+        string tableName,
+        string idColumn,
+        int id
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var query = $"SELECT * FROM {tableName} WHERE {idColumn} = {id} LIMIT 1";
-        var results = await ExecuteReaderAsync<Dictionary<string, object?>>(query, reader =>
-        {
-            var row = new Dictionary<string, object?>();
-            for (int i = 0; i < reader.FieldCount; i++)
+        var results = await ExecuteReaderAsync<Dictionary<string, object?>>(
+            query,
+            reader =>
             {
-                row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                var row = new Dictionary<string, object?>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                }
+                return row;
             }
-            return row;
-        });
+        );
         return results.FirstOrDefault();
     }
 
-    public async Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn)
+    public async Task UpsertRowAsync(
+        string tableName,
+        Dictionary<string, object?> values,
+        string keyColumn
+    )
     {
         // Browser: Use SQL (Motely helpers not available in browser)
         var columns = string.Join(", ", values.Keys);
-        var valuePlaceholders = string.Join(", ", values.Select(kvp => 
-            kvp.Value == null ? "NULL" : 
-            kvp.Value is string ? $"'{kvp.Value.ToString()!.Replace("'", "''")}'" :
-            kvp.Value.ToString()));
-        var updates = string.Join(", ", values.Keys.Where(k => k != keyColumn).Select(k => 
-            $"{k} = excluded.{k}"));
-        
-        var sql = $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) " +
-                  $"ON CONFLICT ({keyColumn}) DO UPDATE SET {updates}";
+        var valuePlaceholders = string.Join(
+            ", ",
+            values.Select(kvp =>
+                kvp.Value == null ? "NULL"
+                : kvp.Value is string ? $"'{kvp.Value.ToString()!.Replace("'", "''")}'"
+                : kvp.Value.ToString()
+            )
+        );
+        var updates = string.Join(
+            ", ",
+            values.Keys.Where(k => k != keyColumn).Select(k => $"{k} = excluded.{k}")
+        );
+
+        var sql =
+            $"INSERT INTO {tableName} ({columns}) VALUES ({valuePlaceholders}) "
+            + $"ON CONFLICT ({keyColumn}) DO UPDATE SET {updates}";
         await ExecuteNonQueryAsync(sql);
     }
 
@@ -215,14 +253,16 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _ = CloseConnectionAsync(_connectionId);
         _disposed = true;
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         await CloseConnectionAsync(_connectionId);
         _disposed = true;
     }
@@ -255,7 +295,11 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
     private static partial Task CloseConnectionAsync(int connId);
 
     [JSImport("DuckDB.createAppender", "globalThis")]
-    private static partial Task<int> CreateAppenderInternalAsync(int connId, string schema, string table);
+    private static partial Task<int> CreateAppenderInternalAsync(
+        int connId,
+        string schema,
+        string table
+    );
 
     [JSImport("DuckDB.exportToCSV", "globalThis")]
     private static partial Task<string> ExportToCSVInternalAsync(int connId, string tableName);
@@ -290,7 +334,8 @@ public class BrowserDuckDBDataReader : IDuckDBDataReader
         throw new ArgumentException($"Column '{name}' not found");
     }
 
-    public bool IsDBNull(int ordinal) => _row[_columnNames[ordinal]].ValueKind == JsonValueKind.Null;
+    public bool IsDBNull(int ordinal) =>
+        _row[_columnNames[ordinal]].ValueKind == JsonValueKind.Null;
 
     public string GetString(int ordinal) => _row[_columnNames[ordinal]].GetString() ?? string.Empty;
 
@@ -312,7 +357,7 @@ public class BrowserDuckDBDataReader : IDuckDBDataReader
             JsonValueKind.True => true,
             JsonValueKind.False => false,
             JsonValueKind.Null => DBNull.Value,
-            _ => element.ToString()
+            _ => element.ToString(),
         };
     }
 }
