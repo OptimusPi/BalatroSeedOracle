@@ -17,7 +17,7 @@ namespace BalatroSeedOracle.Services
         private readonly UserProfileService _userProfileService;
         private readonly Views.MainWindow? _mainWindow;
         private readonly Views.BalatroMainMenu? _mainMenu;
-        private ISearchInstance? _activeSearch;
+        private ActiveSearchContext? _activeSearch;
         private bool _isTransitionActive = false;
 
         public SearchTransitionManager(
@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Services
         /// <summary>
         /// Starts monitoring a search and driving shader transitions based on progress
         /// </summary>
-        public void StartSearchTransition(ISearchInstance searchInstance)
+        public void StartSearchTransition(ActiveSearchContext searchInstance)
         {
             // Check if search transitions are enabled
             var settings = _userProfileService.GetProfile().VisualizerSettings;

@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class FrequencyDebugWidgetViewModel : BaseWidgetViewModel
     {
         private Control? _ownerControl;
-        private SoundFlowAudioManager? _audioManager;
+        private IAudioManager? _audioManager;
         private CancellationTokenSource? _updateCancellation;
         private Task? _updateTask;
 
@@ -159,7 +159,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Find BalatroMainMenu to get audio manager
             var mainMenu = ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu?.ViewModel?.AudioManager is SoundFlowAudioManager soundFlow)
+            if (mainMenu?.ViewModel?.AudioManager is IAudioManager soundFlow)
             {
                 _audioManager = soundFlow;
                 StartFrequencyUpdates();

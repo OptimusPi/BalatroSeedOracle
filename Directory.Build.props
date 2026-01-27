@@ -38,4 +38,10 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <!-- Android SDK Settings -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0-android'))">
+    <AcceptAndroidSDKLicenses>true</AcceptAndroidSDKLicenses>
+    <AndroidSdkDirectory>$(LOCALAPPDATA)\Android\android-sdk</AndroidSdkDirectory>
+  </PropertyGroup>
 </Project>

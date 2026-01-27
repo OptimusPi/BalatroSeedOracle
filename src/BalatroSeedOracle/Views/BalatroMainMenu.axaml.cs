@@ -2017,8 +2017,7 @@ namespace BalatroSeedOracle.Views
                 var platformServices = ServiceHelper.GetService<IPlatformServices>();
                 if (platformServices?.SupportsResultsGrid == true)
                 {
-#if !BROWSER
-                    // Create SearchWidget with proper ViewModel
+                    // Create SearchWidget with proper ViewModel (works on all platforms)
                     var spriteService = Services.SpriteService.Instance;
                     var notificationService = ServiceHelper.GetService<NotificationService>();
                     var viewModel = new SearchWidgetViewModel(
@@ -2046,7 +2045,6 @@ namespace BalatroSeedOracle.Views
                     // Use the new window manager instead of desktop canvas
                     var widgetManager = Services.WidgetWindowManager.Instance;
                     widgetManager.CreateWidget(viewModel);
-#endif
                 }
 
                 DebugLogger.Log(
@@ -2075,8 +2073,7 @@ namespace BalatroSeedOracle.Views
 
             try
             {
-#if !BROWSER
-                // Find the widget in the window manager
+                // Find the widget in the window manager (works on all platforms)
                 var widgetManager = Services.WidgetWindowManager.Instance;
                 var activeWidgets = widgetManager.GetActiveWidgets();
 
@@ -2099,7 +2096,6 @@ namespace BalatroSeedOracle.Views
                         $"No SearchWidget window found for searchId: {searchId}"
                     );
                 }
-#endif
             }
             catch (Exception ex)
             {

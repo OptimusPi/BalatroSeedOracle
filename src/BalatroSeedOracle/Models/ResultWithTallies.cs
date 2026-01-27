@@ -4,7 +4,7 @@ namespace BalatroSeedOracle.Models;
 
 /// <summary>
 /// Represents a search result with seed, score, and tallies.
-/// Shared model for both desktop and browser builds (Motely.DuckDB.ResultWithTallies is #if !BROWSER)
+/// Shared model for all platforms - used by IDuckDBConnection implementations
 /// </summary>
 public class ResultWithTallies
 {

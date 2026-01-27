@@ -39,7 +39,7 @@ public class Program
                 >();
 
                 // Desktop-only services
-                services.AddSingleton<IAudioManager, SoundFlowAudioManager>();
+                services.AddSingleton<IAudioManager, DesktopAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
                 services.AddSingleton<IExcelExporter, ClosedXmlExcelExporter>();
 

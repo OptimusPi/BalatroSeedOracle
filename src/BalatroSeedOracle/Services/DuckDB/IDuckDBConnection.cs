@@ -100,4 +100,12 @@ public interface IDuckDBConnection : IAsyncDisposable, IDisposable
     /// Upsert a row (INSERT OR REPLACE) - uses Motely's helpers internally
     /// </summary>
     Task UpsertRowAsync(string tableName, Dictionary<string, object?> values, string keyColumn);
+
+    /// <summary>
+    /// Execute arbitrary SQL and return results as a list of dictionaries (for SQL editor)
+    /// Each dictionary represents a row with column names as keys
+    /// </summary>
+    Task<(List<string> Columns, List<Dictionary<string, object?>> Rows)> ExecuteSqlAsync(
+        string sql
+    );
 }

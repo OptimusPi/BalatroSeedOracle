@@ -951,7 +951,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Set volume of a specific audio track (only works with SoundFlowAudioManager)
+        /// Set volume of a specific audio track (only works with IAudioManager)
         /// </summary>
         public void SetTrackVolume(string trackName, float volume)
         {

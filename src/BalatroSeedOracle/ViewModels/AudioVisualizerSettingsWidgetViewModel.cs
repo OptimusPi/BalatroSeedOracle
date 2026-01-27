@@ -26,14 +26,14 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly AudioVisualizerSettingsModalViewModel _settingsViewModel;
         private readonly UserProfileService _userProfileService;
-        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly IAudioManager? _audioManager;
         private readonly TransitionService? _transitionService;
         private Control? _ownerControl;
         private bool _isApplyingManualTransition = false;
 
         public AudioVisualizerSettingsWidgetViewModel(
             UserProfileService userProfileService,
-            SoundFlowAudioManager? soundFlowAudioManager = null,
+            IAudioManager? IAudioManager = null,
             TransitionService? transitionService = null,
             WidgetPositionService? widgetPositionService = null
         )
@@ -42,7 +42,7 @@ namespace BalatroSeedOracle.ViewModels
             // Inject UserProfileService via DI
             _userProfileService =
                 userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
-            _soundFlowAudioManager = soundFlowAudioManager;
+            _audioManager = IAudioManager;
             _transitionService = transitionService;
 
             // Create the underlying settings ViewModel (handles presets, themes, etc.)
@@ -220,7 +220,7 @@ namespace BalatroSeedOracle.ViewModels
                 var duration = TimeSpan.FromSeconds(2.0);
                 var start = DateTime.UtcNow;
                 var s = mixA ?? mixB;
-                if (_soundFlowAudioManager == null)
+                if (_audioManager == null)
                     return;
 
                 // Blend visuals using TransitionService over the same duration
@@ -255,55 +255,55 @@ namespace BalatroSeedOracle.ViewModels
                     float t = (float)(elapsed.TotalMilliseconds / duration.TotalMilliseconds);
                     float p = 1f - (1f - t) * (1f - t);
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Drums1",
                         (float)(
                             ((s.Drums1.Volume + (mixB.Drums1.Volume - s.Drums1.Volume) * p)) / 100.0
                         )
                     );
                     var d1PanUi = (s.Drums1.Pan + (mixB.Drums1.Pan - s.Drums1.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Drums1",
                         (float)Math.Clamp((d1PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Drums2",
                         (float)(
                             ((s.Drums2.Volume + (mixB.Drums2.Volume - s.Drums2.Volume) * p)) / 100.0
                         )
                     );
                     var d2PanUi = (s.Drums2.Pan + (mixB.Drums2.Pan - s.Drums2.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Drums2",
                         (float)Math.Clamp((d2PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Bass1",
                         (float)(
                             ((s.Bass1.Volume + (mixB.Bass1.Volume - s.Bass1.Volume) * p)) / 100.0
                         )
                     );
                     var b1PanUi = (s.Bass1.Pan + (mixB.Bass1.Pan - s.Bass1.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Bass1",
                         (float)Math.Clamp((b1PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Bass2",
                         (float)(
                             ((s.Bass2.Volume + (mixB.Bass2.Volume - s.Bass2.Volume) * p)) / 100.0
                         )
                     );
                     var b2PanUi = (s.Bass2.Pan + (mixB.Bass2.Pan - s.Bass2.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Bass2",
                         (float)Math.Clamp((b2PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Chords1",
                         (float)(
                             ((s.Chords1.Volume + (mixB.Chords1.Volume - s.Chords1.Volume) * p))
@@ -311,12 +311,12 @@ namespace BalatroSeedOracle.ViewModels
                         )
                     );
                     var c1PanUi = (s.Chords1.Pan + (mixB.Chords1.Pan - s.Chords1.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Chords1",
                         (float)Math.Clamp((c1PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Chords2",
                         (float)(
                             ((s.Chords2.Volume + (mixB.Chords2.Volume - s.Chords2.Volume) * p))
@@ -324,12 +324,12 @@ namespace BalatroSeedOracle.ViewModels
                         )
                     );
                     var c2PanUi = (s.Chords2.Pan + (mixB.Chords2.Pan - s.Chords2.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Chords2",
                         (float)Math.Clamp((c2PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Melody1",
                         (float)(
                             ((s.Melody1.Volume + (mixB.Melody1.Volume - s.Melody1.Volume) * p))
@@ -337,12 +337,12 @@ namespace BalatroSeedOracle.ViewModels
                         )
                     );
                     var m1PanUi = (s.Melody1.Pan + (mixB.Melody1.Pan - s.Melody1.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Melody1",
                         (float)Math.Clamp((m1PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
 
-                    _soundFlowAudioManager.SetTrackVolume(
+                    _audioManager.SetTrackVolume(
                         "Melody2",
                         (float)(
                             ((s.Melody2.Volume + (mixB.Melody2.Volume - s.Melody2.Volume) * p))
@@ -350,7 +350,7 @@ namespace BalatroSeedOracle.ViewModels
                         )
                     );
                     var m2PanUi = (s.Melody2.Pan + (mixB.Melody2.Pan - s.Melody2.Pan) * p);
-                    _soundFlowAudioManager.SetTrackPan(
+                    _audioManager.SetTrackPan(
                         "Melody2",
                         (float)Math.Clamp((m2PanUi + 100.0) / 200.0, 0.0, 1.0)
                     );
@@ -358,14 +358,14 @@ namespace BalatroSeedOracle.ViewModels
                     await Task.Delay(16);
                 }
 
-                _soundFlowAudioManager.SetTrackMuted("Drums1", mixB.Drums1.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Drums2", mixB.Drums2.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Bass1", mixB.Bass1.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Bass2", mixB.Bass2.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Chords1", mixB.Chords1.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Chords2", mixB.Chords2.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Melody1", mixB.Melody1.Muted);
-                _soundFlowAudioManager.SetTrackMuted("Melody2", mixB.Melody2.Muted);
+                _audioManager.SetTrackMuted("Drums1", mixB.Drums1.Muted);
+                _audioManager.SetTrackMuted("Drums2", mixB.Drums2.Muted);
+                _audioManager.SetTrackMuted("Bass1", mixB.Bass1.Muted);
+                _audioManager.SetTrackMuted("Bass2", mixB.Bass2.Muted);
+                _audioManager.SetTrackMuted("Chords1", mixB.Chords1.Muted);
+                _audioManager.SetTrackMuted("Chords2", mixB.Chords2.Muted);
+                _audioManager.SetTrackMuted("Melody1", mixB.Melody1.Muted);
+                _audioManager.SetTrackMuted("Melody2", mixB.Melody2.Muted);
             }
             catch (Exception ex)
             {
@@ -1649,81 +1649,81 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ApplyMixerToEngine(MixerSettings settings)
         {
-            if (_soundFlowAudioManager == null)
+            if (_audioManager == null)
                 return;
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Drums1",
                 (float)(settings.Drums1.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Drums1",
                 (float)Math.Clamp((settings.Drums1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Drums1", settings.Drums1.Muted);
+            _audioManager.SetTrackMuted("Drums1", settings.Drums1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Drums2",
                 (float)(settings.Drums2.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Drums2",
                 (float)Math.Clamp((settings.Drums2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Drums2", settings.Drums2.Muted);
+            _audioManager.SetTrackMuted("Drums2", settings.Drums2.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Bass1", (float)(settings.Bass1.Volume / 100.0));
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackVolume("Bass1", (float)(settings.Bass1.Volume / 100.0));
+            _audioManager.SetTrackPan(
                 "Bass1",
                 (float)Math.Clamp((settings.Bass1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Bass1", settings.Bass1.Muted);
+            _audioManager.SetTrackMuted("Bass1", settings.Bass1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume("Bass2", (float)(settings.Bass2.Volume / 100.0));
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackVolume("Bass2", (float)(settings.Bass2.Volume / 100.0));
+            _audioManager.SetTrackPan(
                 "Bass2",
                 (float)Math.Clamp((settings.Bass2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Bass2", settings.Bass2.Muted);
+            _audioManager.SetTrackMuted("Bass2", settings.Bass2.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Chords1",
                 (float)(settings.Chords1.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Chords1",
                 (float)Math.Clamp((settings.Chords1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Chords1", settings.Chords1.Muted);
+            _audioManager.SetTrackMuted("Chords1", settings.Chords1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Chords2",
                 (float)(settings.Chords2.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Chords2",
                 (float)Math.Clamp((settings.Chords2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Chords2", settings.Chords2.Muted);
+            _audioManager.SetTrackMuted("Chords2", settings.Chords2.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Melody1",
                 (float)(settings.Melody1.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Melody1",
                 (float)Math.Clamp((settings.Melody1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Melody1", settings.Melody1.Muted);
+            _audioManager.SetTrackMuted("Melody1", settings.Melody1.Muted);
 
-            _soundFlowAudioManager.SetTrackVolume(
+            _audioManager.SetTrackVolume(
                 "Melody2",
                 (float)(settings.Melody2.Volume / 100.0)
             );
-            _soundFlowAudioManager.SetTrackPan(
+            _audioManager.SetTrackPan(
                 "Melody2",
                 (float)Math.Clamp((settings.Melody2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
-            _soundFlowAudioManager.SetTrackMuted("Melody2", settings.Melody2.Muted);
+            _audioManager.SetTrackMuted("Melody2", settings.Melody2.Muted);
         }
 
         private async Task<string?> ShowNameDialogAsync(

@@ -33,11 +33,8 @@ internal sealed partial class Program
             // Excel export (stub - not implemented for browser yet)
             services.AddSingleton<IExcelExporter, BrowserExcelExporter>();
 
-            // Browser audio using Web Audio API (full implementation in SoundFlowAudioManager)
-            // SoundFlowAudioManager has browser implementation in #else block
-            // TODO: Fix SoundFlowAudioManager JS interop issues for .NET 10.0
-            // services.AddSingleton<IAudioManager>(sp => BalatroSeedOracle.Services.SoundFlowAudioManager.Instance);
-            // services.AddSingleton<BalatroSeedOracle.Services.SoundEffectsService>();
+            // Browser audio using Web Audio API
+            services.AddSingleton<IAudioManager, BrowserAudioManager>();
         };
 
         return BuildAvaloniaApp().StartBrowserAppAsync("out");

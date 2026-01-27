@@ -4,7 +4,7 @@ using Android.OS;
 using Avalonia;
 using Avalonia.Android;
 using BalatroSeedOracle;
-using BalatroSeedOracle.Desktop.Services;
+using BalatroSeedOracle.Android.Services;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Export;
@@ -31,20 +31,15 @@ public class MainActivity : AvaloniaMainActivity<App>
 
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
-        // Register Android services - Android has file system access like Desktop
+        // Register Android-specific services following Avalonia cross-platform pattern
         PlatformServices.RegisterServices = services =>
         {
-            // Use Desktop implementations (Android has file system access like Desktop)
-            services.AddSingleton<IAppDataStore, DesktopAppDataStore>();
-            services.AddSingleton<IDuckDBService, DesktopDuckDBService>();
-            services.AddSingleton<IPlatformServices, DesktopPlatformServices>();
-
-            // Audio (Android supports audio via SoundFlow)
-            services.AddSingleton<IAudioManager, SoundFlowAudioManager>();
-            services.AddSingleton<SoundEffectsService>();
-
-            // Excel export
-            services.AddSingleton<IExcelExporter, ClosedXmlExcelExporter>();
+            // Android-specific implementations (in Android/Services folder)
+            services.AddSingleton<IAppDataStore, AndroidAppDataStore>();
+            services.AddSingleton<IDuckDBService, AndroidDuckDBService>();
+            services.AddSingleton<IPlatformServices, AndroidPlatformServices>();
+            services.AddSingleton<IAudioManager, AndroidAudioManager>();
+            services.AddSingleton<IExcelExporter, AndroidExcelExporter>();
         };
 
         return base.CustomizeAppBuilder(builder);

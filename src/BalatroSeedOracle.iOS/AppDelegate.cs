@@ -75,7 +75,7 @@ internal sealed class iOSDuckDBConnection : IDuckDBConnection
         Func<IDuckDBDataReader, T> mapper
     ) =>
         System.Threading.Tasks.Task.FromResult<System.Collections.Generic.IEnumerable<T>>(
-            System.Array.Empty<T>()
+            Array.Empty<T>()
         );
 
     public System.Threading.Tasks.Task<IDuckDBAppender> CreateAppenderAsync(
@@ -141,6 +141,20 @@ internal sealed class iOSDuckDBConnection : IDuckDBConnection
         System.Collections.Generic.Dictionary<string, object?> values,
         string keyColumn
     ) => System.Threading.Tasks.Task.CompletedTask;
+
+    public System.Threading.Tasks.Task<(
+        System.Collections.Generic.List<string> Columns,
+        System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object?>> Rows
+    )> ExecuteSqlAsync(string sql) =>
+        System.Threading.Tasks.Task.FromResult(
+            (
+                new System.Collections.Generic.List<string>(),
+                new System.Collections.Generic.List<System.Collections.Generic.Dictionary<
+                    string,
+                    object?
+                >>()
+            )
+        );
 }
 
 internal sealed class iOSDuckDBAppender : IDuckDBAppender
@@ -218,10 +232,33 @@ internal sealed class iOSExcelExporter : IExcelExporter
 internal sealed class iOSAudioManager : IAudioManager
 {
     public float MasterVolume { get; set; } = 1.0f;
+    public bool IsPlaying => false;
+    public float Bass1Intensity => 0;
+    public float Bass2Intensity => 0;
+    public float Drums1Intensity => 0;
+    public float Drums2Intensity => 0;
+    public float Chords1Intensity => 0;
+    public float Chords2Intensity => 0;
+    public float Melody1Intensity => 0;
+    public float Melody2Intensity => 0;
+    public float BassIntensity => 0;
+    public float DrumsIntensity => 0;
+    public float ChordsIntensity => 0;
+    public float MelodyIntensity => 0;
 
     public void SetTrackVolume(string trackName, float volume) { }
 
-    public void PlaySfx(string name, float volume) { }
+    public void SetTrackPan(string trackName, float pan) { }
+
+    public void SetTrackMuted(string trackName, bool muted) { }
+
+    public void Pause() { }
+
+    public void Resume() { }
+
+    public void PlaySfx(string name, float volume = 1.0f) { }
+
+    public FrequencyBands GetFrequencyBands(string trackName) => default;
 
     public event System.Action<float, float, float, float>? AudioAnalysisUpdated;
 }

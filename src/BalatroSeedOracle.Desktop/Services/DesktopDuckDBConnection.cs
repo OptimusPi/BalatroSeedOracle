@@ -245,6 +245,39 @@ public class DesktopDuckDBConnection : IDuckDBConnection
         await ExecuteNonQueryAsync(sql);
     }
 
+    public async Task<(
+        List<string> Columns,
+        List<Dictionary<string, object?>> Rows
+    )> ExecuteSqlAsync(string sql)
+    {
+        EnsureOpen();
+        var columns = new List<string>();
+        var rows = new List<Dictionary<string, object?>>();
+
+        await using var cmd = _connection.CreateCommand();
+        cmd.CommandText = sql;
+        await using var reader = await cmd.ExecuteReaderAsync();
+
+        // Get column names
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            columns.Add(reader.GetName(i));
+        }
+
+        // Read all rows
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                row[columns[i]] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+            }
+            rows.Add(row);
+        }
+
+        return (columns, rows);
+    }
+
     public void Dispose()
     {
         if (_disposed)

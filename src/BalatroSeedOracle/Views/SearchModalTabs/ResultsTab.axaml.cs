@@ -218,14 +218,12 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             return;
                         }
 
-                        // Create and show the pop-out window
-#if !BROWSER
+                        // Create and show the pop-out window (works on all platforms)
                         var popOutWindow = new Windows.DataGridResultsWindow(
                             searchInstance,
                             vm.LoadedConfig?.Name
                         );
                         popOutWindow.Show();
-#endif
                         DebugLogger.Log(
                             "ResultsTab",
                             $"Popped out results to separate window for search: {vm.CurrentSearchId}"

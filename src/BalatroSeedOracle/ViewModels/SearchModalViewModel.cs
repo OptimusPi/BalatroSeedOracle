@@ -40,7 +40,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
 
-        private ISearchInstance? _searchInstance;
+        private ActiveSearchContext? _searchContext;
         private string _currentSearchId = string.Empty;
 
         public Views.BalatroMainMenu? MainMenu { get; set; }
@@ -167,7 +167,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isDbListVisible = false;
 
         public bool CanMinimizeToDesktopVisible =>
-            _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
+            _searchContext != null && !string.IsNullOrEmpty(_currentSearchId);
 
         // WordList index properties for SpinnerControl binding
         [ObservableProperty]
@@ -335,7 +335,7 @@ namespace BalatroSeedOracle.ViewModels
         public string SearchStatus => IsSearching ? "Searching..." : "Ready";
         public double SearchProgress => LatestProgress?.PercentComplete ?? 0.0;
         public string ProgressText => LatestProgress?.ToString() ?? "No search active";
-        public int ResultsCount => _searchInstance?.ResultCount ?? SearchResults.Count;
+        public int ResultsCount => _searchContext?.ResultCount ?? SearchResults.Count;
 
         public string CurrentSearchId => _currentSearchId;
 
@@ -442,15 +442,15 @@ namespace BalatroSeedOracle.ViewModels
                     searchCriteria,
                     LoadedConfig
                 );
-                _searchInstance = searchInstance;
+                _searchContext = searchInstance;
                 AddConsoleMessage($"Search instance created successfully!");
 
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
-                _currentSearchId = _searchInstance.SearchId;
+                _currentSearchId = _searchContext.SearchId;
 
                 // Subscribe to SearchInstance events directly
-                _searchInstance.SearchCompleted += OnSearchCompleted;
-                _searchInstance.ProgressUpdated += OnProgressUpdated;
+                _searchContext.SearchCompleted += OnSearchCompleted;
+                _searchContext.ProgressUpdated += OnProgressUpdated;
 
                 // CRITICAL FIX: Add immediate feedback that search is starting
                 AddConsoleMessage($"Search started with ID: {_currentSearchId}");
@@ -485,7 +485,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchInstance != null)
+                if (_searchContext != null)
                 {
                     // CRITICAL: Different behavior based on Continue checkbox state
                     bool shouldSaveState = ContinueFromLast;
@@ -498,7 +498,7 @@ namespace BalatroSeedOracle.ViewModels
 
                         // The SearchInstance already saves state periodically in OnProgressUpdated
                         // We just need to stop gracefully without clearing the database
-                        _searchInstance.StopSearch();
+                        _searchContext.StopSearch();
                     }
                     else
                     {
@@ -510,7 +510,7 @@ namespace BalatroSeedOracle.ViewModels
                         );
 
                         // Stop without saving
-                        _searchInstance.StopSearch();
+                        _searchContext.StopSearch();
                     }
 
                     // FINAL LOAD: Load any remaining results before disposing the instance
@@ -518,13 +518,13 @@ namespace BalatroSeedOracle.ViewModels
                     await LoadExistingResults();
 
                     // Unsubscribe from events
-                    _searchInstance.SearchStarted -= OnSearchStarted;
-                    _searchInstance.SearchCompleted -= OnSearchCompleted;
-                    _searchInstance.ProgressUpdated -= OnProgressUpdated;
+                    _searchContext.SearchStarted -= OnSearchStarted;
+                    _searchContext.SearchCompleted -= OnSearchCompleted;
+                    _searchContext.ProgressUpdated -= OnProgressUpdated;
 
                     // Dispose and clear the instance
-                    _searchInstance.Dispose();
-                    _searchInstance = null;
+                    _searchContext.Dispose();
+                    _searchContext = null;
 
                     var actionText = shouldSaveState ? "paused" : "stopped";
                     AddConsoleMessage($"Search {actionText} by user.");
@@ -555,7 +555,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchInstance == null || string.IsNullOrEmpty(_currentSearchId))
+                if (_searchContext == null || string.IsNullOrEmpty(_currentSearchId))
                 {
                     DebugLogger.LogError(
                         "SearchModalViewModel",
@@ -592,7 +592,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanMinimizeToDesktop()
         {
             // Can minimize if a search is running or paused
-            return _searchInstance != null && !string.IsNullOrEmpty(_currentSearchId);
+            return _searchContext != null && !string.IsNullOrEmpty(_currentSearchId);
         }
 
         [RelayCommand]
@@ -1215,12 +1215,12 @@ namespace BalatroSeedOracle.ViewModels
 
         public void Dispose()
         {
-            if (_searchInstance != null)
+            if (_searchContext != null)
             {
-                _searchInstance.SearchStarted -= OnSearchStarted;
-                _searchInstance.SearchCompleted -= OnSearchCompleted;
-                _searchInstance.ProgressUpdated -= OnProgressUpdated;
-                _searchInstance.Dispose();
+                _searchContext.SearchStarted -= OnSearchStarted;
+                _searchContext.SearchCompleted -= OnSearchCompleted;
+                _searchContext.ProgressUpdated -= OnProgressUpdated;
+                _searchContext.Dispose();
             }
             // CircularConsoleBuffer doesn't need disposal
         }
@@ -1228,9 +1228,9 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
         private void PauseSearch()
         {
-            if (_searchInstance != null && IsSearching)
+            if (_searchContext != null && IsSearching)
             {
-                _searchInstance.PauseSearch();
+                _searchContext.PauseSearch();
             }
         }
 
@@ -1292,31 +1292,31 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 _currentSearchId = searchId;
-                _searchInstance = _searchManager.GetSearch(searchId);
+                _searchContext = _searchManager.GetSearch(searchId);
 
-                if (_searchInstance != null)
+                if (_searchContext != null)
                 {
                     // Subscribe to search events for live updates
-                    _searchInstance.SearchStarted += OnSearchStarted;
-                    _searchInstance.SearchCompleted += OnSearchCompleted;
-                    _searchInstance.ProgressUpdated += OnProgressUpdated;
+                    _searchContext.SearchStarted += OnSearchStarted;
+                    _searchContext.SearchCompleted += OnSearchCompleted;
+                    _searchContext.ProgressUpdated += OnProgressUpdated;
 
                     // CRITICAL FIX: Set CurrentFilterPath from search instance's ConfigPath
                     // This ensures state save/resume features work after reconnecting
-                    if (!string.IsNullOrEmpty(_searchInstance.ConfigPath))
+                    if (!string.IsNullOrEmpty(_searchContext.ConfigPath))
                     {
-                        CurrentFilterPath = _searchInstance.ConfigPath;
+                        CurrentFilterPath = _searchContext.ConfigPath;
                         DebugLogger.Log(
                             "SearchModalViewModel",
                             $"✅ CurrentFilterPath restored from search instance: {CurrentFilterPath}"
                         );
 
                         // Also load the config to restore LoadedConfig, deck/stake, etc.
-                        await LoadConfigFromPathAsync(_searchInstance.ConfigPath);
+                        await LoadConfigFromPathAsync(_searchContext.ConfigPath);
                     }
 
                     // CRITICAL: Update UI state from existing search
-                    IsSearching = _searchInstance?.IsRunning ?? false;
+                    IsSearching = _searchContext?.IsRunning ?? false;
 
                     // CRITICAL: Load existing results to show current progress
                     await LoadExistingResults();
@@ -1329,7 +1329,7 @@ namespace BalatroSeedOracle.ViewModels
 
                     DebugLogger.Log(
                         "SearchModalViewModel",
-                        $"Successfully reconnected to search: {searchId}, Running: {_searchInstance?.IsRunning ?? false}, Results: {SearchResults.Count}"
+                        $"Successfully reconnected to search: {searchId}, Running: {_searchContext?.IsRunning ?? false}, Results: {SearchResults.Count}"
                     );
 
                     OnPropertyChanged(nameof(CanMinimizeToDesktopVisible));
@@ -1356,7 +1356,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task LoadExistingResults()
         {
-            if (_searchInstance == null)
+            if (_searchContext == null)
                 return;
 
             _isLoadingResults = true;
@@ -1365,13 +1365,13 @@ namespace BalatroSeedOracle.ViewModels
                 SearchResults.Clear();
 
                 // Load results from the search instance using async API
-                var existingResults = await _searchInstance.GetResultsPageAsync(0, 1000);
+                var existingResults = await _searchContext.GetResultsPageAsync(0, 1000);
                 if (existingResults != null)
                 {
                     // Inject tally labels from SearchInstance column names (seed, score, then tallies)
                     var labels =
-                        _searchInstance.ColumnNames.Count > 2
-                            ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                        _searchContext.ColumnNames.Count > 2
+                            ? _searchContext.ColumnNames.Skip(2).ToArray()
                             : Array.Empty<string>();
 
                     DebugLogger.Log(
@@ -1398,7 +1398,7 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             try
                             {
-#if !BROWSER
+                                // Force grid refresh (works on all platforms)
                                 var resultsTab = TabItems.FirstOrDefault(t =>
                                     t.Header == "RESULTS"
                                 );
@@ -1413,7 +1413,6 @@ namespace BalatroSeedOracle.ViewModels
                                         "Forced grid refresh after loading results"
                                     );
                                 }
-#endif
                             }
                             catch (Exception gridEx)
                             {
@@ -1450,16 +1449,16 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void RefreshSearchStats()
         {
-            if (_searchInstance == null)
+            if (_searchContext == null)
                 return;
 
             try
             {
                 // Get LIVE stats from the running SearchInstance
-                LastKnownResultCount = _searchInstance.ResultCount;
+                LastKnownResultCount = _searchContext.ResultCount;
 
                 // Update search state
-                IsSearching = _searchInstance.IsRunning;
+                IsSearching = _searchContext.IsRunning;
 
                 // Trigger ALL UI property updates for live stats
                 OnPropertyChanged(nameof(SearchStatus));
@@ -1492,7 +1491,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void StartStatsRefreshTimer()
         {
-            if (_searchInstance == null || !IsSearching)
+            if (_searchContext == null || !IsSearching)
                 return;
 
             // Cancel existing timer if running
@@ -1507,14 +1506,14 @@ namespace BalatroSeedOracle.ViewModels
         {
             while (
                 !cancellationToken.IsCancellationRequested
-                && _searchInstance?.IsRunning == true
+                && _searchContext?.IsRunning == true
                 && IsSearching
             )
             {
                 try
                 {
                     // Update result count from live search
-                    var liveResultCount = _searchInstance.ResultCount;
+                    var liveResultCount = _searchContext.ResultCount;
                     if (liveResultCount != LastKnownResultCount)
                     {
                         LastKnownResultCount = liveResultCount;
@@ -1698,8 +1697,8 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (
                     canCheckResults
-                    && _searchInstance != null
-                    && _searchInstance.HasNewResultsSinceLastQuery
+                    && _searchContext != null
+                    && _searchContext.HasNewResultsSinceLastQuery
                     && !_isLoadingResults
                 )
                 {
@@ -1745,25 +1744,25 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchInstance == null)
+                if (_searchContext == null)
                     return;
 
                 var existingCount = SearchResults.Count;
 
                 // Query DuckDB for new results (runs on background thread)
-                var newResults = await _searchInstance
+                var newResults = await _searchContext
                     .GetResultsPageAsync(existingCount, 100)
                     .ConfigureAwait(false);
 
                 // Acknowledge that we've queried - resets invalidation flag
-                _searchInstance.AcknowledgeResultsQueried();
+                _searchContext.AcknowledgeResultsQueried();
 
                 if (newResults != null && newResults.Count > 0)
                 {
                     // Inject tally labels from SearchInstance column names (seed, score, then tallies)
                     var labels =
-                        _searchInstance.ColumnNames.Count > 2
-                            ? _searchInstance.ColumnNames.Skip(2).ToArray()
+                        _searchContext.ColumnNames.Count > 2
+                            ? _searchContext.ColumnNames.Skip(2).ToArray()
                             : Array.Empty<string>();
 
                     // Add results on UI thread
@@ -1860,10 +1859,10 @@ namespace BalatroSeedOracle.ViewModels
                 SearchSpeed = FormatSeedSpeed(seedsPerSecond);
 
                 // Use the search instance for additional stats if available
-                if (_searchInstance != null)
+                if (_searchContext != null)
                 {
                     SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
-                    TimeElapsed = _searchInstance.SearchDuration.ToString(@"hh\:mm\:ss");
+                    TimeElapsed = _searchContext.SearchDuration.ToString(@"hh\:mm\:ss");
 
                     // CRITICAL FIX: Use EstimatedTimeRemaining from SearchProgress (calculated in SearchInstance)
                     // This ensures consistent ETA calculation across all layers
@@ -1970,9 +1969,8 @@ namespace BalatroSeedOracle.ViewModels
 
             if (_platformServices.SupportsResultsGrid)
             {
-#if !BROWSER
+                // ResultsTab works on all platforms now
                 ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
-#endif
             }
 
             // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead

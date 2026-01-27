@@ -23,7 +23,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class AudioMixerWidgetViewModel : BaseWidgetViewModel
     {
         private Control? _ownerControl;
-        private SoundFlowAudioManager? _audioManager;
+        private IAudioManager? _audioManager;
 
         private static readonly string MixPresetsPath = Path.Combine(
             AppContext.BaseDirectory,
@@ -113,7 +113,7 @@ namespace BalatroSeedOracle.ViewModels
 
             // Find BalatroMainMenu to get audio manager
             var mainMenu = ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu?.ViewModel?.AudioManager is SoundFlowAudioManager soundFlow)
+            if (mainMenu?.ViewModel?.AudioManager is IAudioManager soundFlow)
             {
                 _audioManager = soundFlow;
                 ApplyAllTracksToAudioManager();
@@ -146,7 +146,7 @@ namespace BalatroSeedOracle.ViewModels
                 effectiveVolume = 0f; // Mute non-solo tracks when solo is active
             }
 
-            // Apply to audio manager (you'll need to implement this in SoundFlowAudioManager)
+            // Apply to audio manager (you'll need to implement this in IAudioManager)
             // _audioManager.SetTrackVolume(track.TrackId, effectiveVolume);
             // _audioManager.SetTrackPan(track.TrackId, track.Pan);
 

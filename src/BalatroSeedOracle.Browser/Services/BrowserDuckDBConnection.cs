@@ -251,6 +251,47 @@ public partial class BrowserDuckDBConnection : IDuckDBConnection
         return await ExportToCSVInternalAsync(_connectionId, tableName);
     }
 
+    public async Task<(
+        List<string> Columns,
+        List<Dictionary<string, object?>> Rows
+    )> ExecuteSqlAsync(string sql)
+    {
+        var json = await QueryAsync(_connectionId, sql);
+        var jsonRows = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
+
+        var columns = new List<string>();
+        var rows = new List<Dictionary<string, object?>>();
+
+        if (jsonRows == null || jsonRows.Count == 0)
+            return (columns, rows);
+
+        // Get column names from first row
+        columns.AddRange(jsonRows[0].Keys);
+
+        // Convert all rows
+        foreach (var jsonRow in jsonRows)
+        {
+            var row = new Dictionary<string, object?>();
+            foreach (var kvp in jsonRow)
+            {
+                row[kvp.Key] = kvp.Value.ValueKind switch
+                {
+                    JsonValueKind.String => kvp.Value.GetString(),
+                    JsonValueKind.Number => kvp.Value.TryGetInt64(out var l)
+                        ? l
+                        : kvp.Value.GetDouble(),
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    _ => kvp.Value.ToString(),
+                };
+            }
+            rows.Add(row);
+        }
+
+        return (columns, rows);
+    }
+
     public void Dispose()
     {
         if (_disposed)

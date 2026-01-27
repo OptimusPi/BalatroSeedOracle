@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class SearchWidgetViewModel : BaseWidgetViewModel, IDisposable
     {
         private bool _disposed;
-        private readonly ISearchInstance _searchInstance;
+        private readonly ActiveSearchContext _searchInstance;
         private readonly SpriteService _spriteService;
         private CancellationTokenSource? _saveDebounceToken;
 
@@ -45,7 +45,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly NotificationService? _notificationService;
 
         public SearchWidgetViewModel(
-            ISearchInstance searchInstance,
+            ActiveSearchContext searchInstance,
             SpriteService spriteService,
             WidgetPositionService? widgetPositionService = null,
             NotificationService? notificationService = null

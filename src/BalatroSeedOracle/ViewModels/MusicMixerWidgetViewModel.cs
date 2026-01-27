@@ -21,7 +21,7 @@ namespace BalatroSeedOracle.ViewModels
     public partial class MusicMixerWidgetViewModel : BaseWidgetViewModel
     {
         private readonly UserProfileService _userProfileService;
-        private readonly SoundFlowAudioManager? _soundFlowAudioManager;
+        private readonly IAudioManager? _audioManager;
         private static readonly string MIXER_SETTINGS_DIR = AppPaths.MixerSettingsDir;
 
         private static readonly string MIXER_SETTINGS_FILE = System.IO.Path.Combine(
@@ -34,14 +34,14 @@ namespace BalatroSeedOracle.ViewModels
 
         public MusicMixerWidgetViewModel(
             UserProfileService userProfileService,
-            SoundFlowAudioManager? soundFlowAudioManager = null,
+            IAudioManager? audioManager = null,
             WidgetPositionService? widgetPositionService = null
         )
             : base(widgetPositionService)
         {
             _userProfileService =
                 userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
-            _soundFlowAudioManager = soundFlowAudioManager;
+            _audioManager = audioManager;
 
             // Configure widget appearance and position - fourth position (90px spacing)
             WidgetTitle = "Music Mixer";
@@ -362,16 +362,16 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackVolume(string trackName, float volume)
         {
-            if (_soundFlowAudioManager == null)
+            if (_audioManager == null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
-                    "SoundFlowAudioManager service not found!"
+                    "IAudioManager service not found!"
                 );
                 return;
             }
 
-            _soundFlowAudioManager.SetTrackVolume(trackName, volume);
+            _audioManager.SetTrackVolume(trackName, volume);
             DebugLogger.Log("MusicMixerWidgetViewModel", $"{trackName} volume → {volume:P0}");
         }
 
@@ -380,16 +380,16 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackPan(string trackName, float pan)
         {
-            if (_soundFlowAudioManager == null)
+            if (_audioManager == null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
-                    "SoundFlowAudioManager service not found!"
+                    "IAudioManager service not found!"
                 );
                 return;
             }
 
-            _soundFlowAudioManager.SetTrackPan(trackName, pan);
+            _audioManager.SetTrackPan(trackName, pan);
             DebugLogger.Log("MusicMixerWidgetViewModel", $"{trackName} pan → {pan:F2}");
         }
 

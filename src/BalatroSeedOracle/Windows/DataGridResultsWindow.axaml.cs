@@ -1,4 +1,3 @@
-#if !BROWSER
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,8 +23,8 @@ using AvaloniaEdit.TextMate;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Export;
-using DuckDB.NET.Data;
 using Microsoft.Extensions.DependencyInjection;
 using TextMateSharp.Grammars;
 
@@ -33,7 +32,7 @@ namespace BalatroSeedOracle.Windows
 {
     public partial class DataGridResultsWindow : Window
     {
-        private readonly ISearchInstance? _searchInstance;
+        private readonly ActiveSearchContext? _searchInstance;
         private readonly string? _filterName;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
@@ -57,7 +56,7 @@ namespace BalatroSeedOracle.Windows
             InitializeComponent();
         }
 
-        public DataGridResultsWindow(ISearchInstance searchInstance, string? filterName = null)
+        public DataGridResultsWindow(ActiveSearchContext searchInstance, string? filterName = null)
         {
             _searchInstance = searchInstance;
             _filterName = filterName;
@@ -402,35 +401,46 @@ LIMIT 100;";
                 UpdateQueryStatus("Executing query...");
                 var stopwatch = Stopwatch.StartNew();
 
-                // Get the database path from SearchInstance
-                var dbPath = _searchInstance.DatabasePath;
-
-                using (
-                    var connection = new DuckDB.NET.Data.DuckDBConnection($"DataSource={dbPath}")
-                )
+                // Use IDuckDBService from DI for cross-platform SQL execution
+                var duckDbService = ServiceHelper.GetService<IDuckDBService>();
+                if (duckDbService == null)
                 {
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = sql;
-                        using (var reader = command.ExecuteReader())
-                        {
-                            var dataTable = new DataTable();
-                            dataTable.Load(reader);
-
-                            stopwatch.Stop();
-
-                            // Display results in the query results grid
-                            await Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                _queryResultsGrid.ItemsSource = dataTable.DefaultView;
-                                UpdateQueryStatus(
-                                    $"Query completed: {dataTable.Rows.Count} rows, {stopwatch.ElapsedMilliseconds}ms"
-                                );
-                            });
-                        }
-                    }
+                    UpdateQueryStatus("Error: DuckDB service not available");
+                    return;
                 }
+
+                var dbPath = _searchInstance.DatabasePath;
+                await using var connection = await duckDbService.OpenConnectionAsync(dbPath);
+                var (columns, rows) = await connection.ExecuteSqlAsync(sql);
+
+                stopwatch.Stop();
+
+                // Convert to DataTable for DataGrid binding
+                var dataTable = new DataTable();
+                foreach (var col in columns)
+                {
+                    dataTable.Columns.Add(col);
+                }
+                foreach (var row in rows)
+                {
+                    var dataRow = dataTable.NewRow();
+                    foreach (var col in columns)
+                    {
+                        dataRow[col] = row.TryGetValue(col, out var val)
+                            ? val ?? DBNull.Value
+                            : DBNull.Value;
+                    }
+                    dataTable.Rows.Add(dataRow);
+                }
+
+                // Display results in the query results grid
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _queryResultsGrid.ItemsSource = dataTable.DefaultView;
+                    UpdateQueryStatus(
+                        $"Query completed: {dataTable.Rows.Count} rows, {stopwatch.ElapsedMilliseconds}ms"
+                    );
+                });
             }
             catch (Exception ex)
             {
@@ -865,4 +875,3 @@ LIMIT 50;",
         public List<int> TallyScores { get; set; } = new();
     }
 }
-#endif

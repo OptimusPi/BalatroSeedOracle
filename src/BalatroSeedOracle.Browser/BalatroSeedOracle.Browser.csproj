@@ -49,19 +49,6 @@
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile
-      Include="..\BalatroSeedOracle\Services\SoundFlowAudioManager.cs"
-      Link="Services\SoundFlowAudioManager.cs"
-    />
-  </ItemGroup>
-
-  <!-- Exclude problematic files from Browser build -->
-  <ItemGroup>
-    <!-- Exclude SoundFlowAudioManager due to JS interop issues -->
-    <Compile Remove="..\BalatroSeedOracle\Services\SoundFlowAudioManager.cs" />
-  </ItemGroup>
-
   <!-- Shared property for Motely BSO destination - use source wwwroot -->
   <PropertyGroup>
     <MotelyBSODir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\</MotelyBSODir>

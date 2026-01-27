@@ -29,6 +29,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
-    <ProjectReference Include="..\BalatroSeedOracle.Desktop\BalatroSeedOracle.Desktop.csproj" />
   </ItemGroup>
 </Project>
