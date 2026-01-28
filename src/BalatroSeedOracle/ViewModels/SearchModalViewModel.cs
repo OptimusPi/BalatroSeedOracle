@@ -115,6 +115,38 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private int _selectedStakeIndex = 0;
 
+        // Deck/Stake display properties for SettingsTab (MVVM bindings)
+        public Avalonia.Media.IImage? DeckImage
+        {
+            get
+            {
+                var deckName = DeckDisplayValues[SelectedDeckIndex];
+                return Services.SpriteService.Instance.GetDeckImage(deckName);
+            }
+        }
+
+        public Avalonia.Media.IImage? StakeOverlayImage
+        {
+            get
+            {
+                var stakeName = BalatroData.Stakes.Values.ElementAt(SelectedStakeIndex);
+                return Services.SpriteService.Instance.GetStakeImage(stakeName);
+            }
+        }
+
+        public string DeckDescription
+        {
+            get
+            {
+                var deckName = DeckDisplayValues[SelectedDeckIndex];
+                if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
+                {
+                    return description;
+                }
+                return "";
+            }
+        }
+
         // Generate deck display values from BalatroData to ensure order matches
         public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
 
@@ -631,6 +663,8 @@ namespace BalatroSeedOracle.ViewModels
             if (value >= 0 && value < DeckDisplayValues.Length)
             {
                 DeckSelection = DeckDisplayValues[value].Replace(" Deck", "");
+                OnPropertyChanged(nameof(DeckImage));
+                OnPropertyChanged(nameof(DeckDescription));
             }
         }
 
@@ -639,6 +673,7 @@ namespace BalatroSeedOracle.ViewModels
             if (value >= 0 && value < StakeDisplayValues.Length)
             {
                 StakeSelection = StakeDisplayValues[value];
+                OnPropertyChanged(nameof(StakeOverlayImage));
             }
         }
 
@@ -2176,7 +2211,6 @@ namespace BalatroSeedOracle.ViewModels
 
         /// <summary>
         /// Applies shader parameters to BalatroMainMenu's shader background.
-        /// Uses reflection to access private _shaderBackground field.
         /// Called when ActiveSearchTransition is set and search progress updates.
         /// </summary>
         private void ApplyShaderParametersToMainMenu(
@@ -2186,17 +2220,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                // Access private _shaderBackground field via reflection
-                var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
-                    "_shaderBackground",
-                    System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Instance
-                );
-
-                if (
-                    shaderBackgroundField?.GetValue(mainMenu)
-                    is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground
-                )
+                if (mainMenu.ShaderBackground is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground)
                 {
                     // Apply all shader parameters
                     shaderBackground.SetTime(parameters.TimeSpeed);
