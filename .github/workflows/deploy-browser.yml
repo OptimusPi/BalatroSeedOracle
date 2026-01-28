@@ -78,16 +78,33 @@ jobs:
 
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
-          echo "Deploying to staging environment"
-          # Add your staging deployment commands here
-          # Example: Upload to Azure Blob Storage, S3, etc.
+          if ("${{ secrets.VERCEL_TOKEN }}" -ne "") {
+            Write-Host "Deploying to Vercel (staging)"
+            npm install -g vercel
+            vercel deploy --token $env:VERCEL_TOKEN --prod
+          } else {
+            Write-Host "Vercel credentials not configured, skipping Vercel deployment"
+          }
 
       - name: Deploy to Production
         if: github.event.inputs.environment == 'production'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
-          echo "Deploying to production environment"
-          # Add your production deployment commands here
+          if ("${{ secrets.CLOUDFLARE_API_TOKEN }}" -ne "") {
+            Write-Host "Deploying to Cloudflare Pages (production)"
+            npm install -g wrangler
+            wrangler pages deploy publish --project-name balatro-seed-oracle
+          } else {
+            Write-Host "Cloudflare credentials not configured, skipping Cloudflare deployment"
+          }
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
