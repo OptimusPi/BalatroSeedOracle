@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab">
+             x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab"
+             x:DataType="vm:SearchModalViewModel"
+             x:CompileBindings="True">
 
     <UserControl.Styles>
 
@@ -324,7 +326,7 @@
                     <ScrollViewer Grid.Row="0"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Auto">
-                        <TextBox Name="ConsoleTextBox"
+                        <TextBox Name="ConsoleOutput"
                                  Text="{Binding ConsoleText}"
                                  Classes="terminal"
                                  IsReadOnly="True"
@@ -378,7 +380,7 @@
 
                             <!-- Edit Filter button - Opens filter designer with current filter -->
                             <Button Name="EditFilterButton"
-                                    Content="{Binding EditFilterButtonText}"
+                                    Content="EDIT FILTER"
                                     Classes="btn-orange"
                                     IsEnabled="{Binding !IsSearching}"
                                     Command="{Binding EditFilterCommand}"

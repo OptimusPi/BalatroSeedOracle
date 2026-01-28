@@ -783,6 +783,12 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         [RelayCommand]
+        private void EditFilter()
+        {
+            _editFilterRequestedAction?.Invoke(CurrentFilterPath);
+        }
+
+        [RelayCommand]
         private void Close()
         {
             DebugLogger.Log("SearchModalViewModel", "Closing modal");
