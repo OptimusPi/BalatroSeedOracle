@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:models="using:BalatroSeedOracle.Models"
-             x:Class="BalatroSeedOracle.Components.FilterItemCarousel">
+             x:Class="BalatroSeedOracle.Components.FilterItemCarousel"
+             x:CompileBindings="True">
 
     <!-- Horizontal carousel for FilterItems - clean and simple -->
     <ScrollViewer HorizontalScrollBarVisibility="Auto"

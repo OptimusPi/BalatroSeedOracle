@@ -2,13 +2,13 @@
   "version": "1.0",
   "projects": [
     {
-      "name": "BalatroSeedOracle",
-      "path": "src/BalatroSeedOracle.csproj",
+      "name": "BalatroSeedOracle.Desktop",
+      "path": "src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj",
       "targetFramework": "net10.0",
       "outputType": "Exe",
       "isExecutable": true,
-      "previewAssembly": "src/bin/Debug/net10.0/BalatroSeedOracle.dll",
-      "designAssembly": "src/bin/Debug/net10.0/BalatroSeedOracle.dll"
+      "previewAssembly": "src/BalatroSeedOracle.Desktop/bin/Debug/net10.0/BalatroSeedOracle.Desktop.dll",
+      "designAssembly": "src/BalatroSeedOracle/bin/Debug/net10.0/BalatroSeedOracle.dll"
     }
   ]
 }

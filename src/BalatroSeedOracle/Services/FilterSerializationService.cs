@@ -144,21 +144,17 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Deserializes JSON string to MotelyJsonConfig with hardened options.
-        /// Allows comments and trailing commas; case-insensitive property names.
+        /// Deserializes JSON string to MotelyJsonConfig using AOT-compatible source generator.
         /// </summary>
         public MotelyJsonConfig? DeserializeConfig(string json)
         {
             try
             {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                };
-
-                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                // AOT-compatible: Use Motely's source-generated serializer context
+                var config = JsonSerializer.Deserialize(
+                    json,
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                );
                 if (config == null)
                 {
                     DebugLogger.LogError(
@@ -278,7 +274,7 @@ namespace BalatroSeedOracle.Services
             // Handle stickers if configured
             if (config.Stickers?.Count > 0)
             {
-                filterItem.Stickers = config.Stickers;
+                filterItem.Stickers = config.Stickers.ToArray();
             }
 
             // Handle playing card specific properties
@@ -425,7 +421,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // Stickers
-            if (item.Stickers?.Count > 0)
+            if (item.Stickers != null && item.Stickers.Length > 0)
             {
                 writer.WriteStartArray("stickers");
                 foreach (var sticker in item.Stickers)

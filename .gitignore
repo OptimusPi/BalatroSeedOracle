@@ -58,11 +58,12 @@ nunit-*.xml
 *.local.json
 /node_modules
 /.trae
-
-external/*
 avalonia.license
 avalonia.license.local
 *.license.local
 .env.local
+
+/external/Balatro
 /WordLists
-/JamlFilters
+/external/JamlGenie
+/JamlFilters/JsonItemFilters

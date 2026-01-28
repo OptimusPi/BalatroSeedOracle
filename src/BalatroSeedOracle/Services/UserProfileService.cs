@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Storage;
 
@@ -66,7 +67,11 @@ namespace BalatroSeedOracle.Services
                 var json = await _store.ReadTextAsync(_profileKey).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
-                    var profile = JsonSerializer.Deserialize<UserProfile>(json);
+                    // AOT-compatible: Use BSO's source-generated serializer context
+                    var profile = JsonSerializer.Deserialize(
+                        json,
+                        BsoJsonSerializerContext.Default.UserProfile
+                    );
                     if (profile != null)
                     {
                         _currentProfile = profile;
@@ -226,7 +231,11 @@ namespace BalatroSeedOracle.Services
                     var json = File.ReadAllText(profilePath);
                     if (!string.IsNullOrWhiteSpace(json))
                     {
-                        var profile = JsonSerializer.Deserialize<UserProfile>(json);
+                        // AOT-compatible: Use BSO's source-generated serializer context
+                        var profile = JsonSerializer.Deserialize(
+                            json,
+                            BsoJsonSerializerContext.Default.UserProfile
+                        );
                         if (profile != null)
                         {
                             DebugLogger.Log(
@@ -316,9 +325,10 @@ namespace BalatroSeedOracle.Services
                     profileSnapshot = _currentProfile;
                 }
 
+                // AOT-compatible: Use BSO's source-generated serializer context
                 var json = JsonSerializer.Serialize(
                     profileSnapshot,
-                    new JsonSerializerOptions { WriteIndented = true }
+                    BsoJsonSerializerContext.Default.UserProfile
                 );
                 await _store.WriteTextAsync(_profileKey, json).ConfigureAwait(false);
                 ThrottledLogSaveSuccess();
@@ -344,9 +354,10 @@ namespace BalatroSeedOracle.Services
                     profileSnapshot = _currentProfile;
                 }
 
+                // AOT-compatible: Use BSO's source-generated serializer context
                 var json = JsonSerializer.Serialize(
                     profileSnapshot,
-                    new JsonSerializerOptions { WriteIndented = true }
+                    BsoJsonSerializerContext.Default.UserProfile
                 );
                 // CRITICAL: FlushProfile is called from synchronous contexts (disposal, shutdown)
                 // Use synchronous file I/O on desktop, async on browser

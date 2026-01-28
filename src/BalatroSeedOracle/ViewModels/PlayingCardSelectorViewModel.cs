@@ -254,8 +254,9 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for an individual playing card
     /// </summary>
-    public class PlayingCardViewModel : BaseViewModel
+    public partial class PlayingCardViewModel : ObservableObject
     {
+        [ObservableProperty]
         private bool _isSelected;
 
         public PlayingCardViewModel(string rank, string suit, string suitSymbol, string colorHex)
@@ -267,33 +268,18 @@ namespace BalatroSeedOracle.ViewModels
             CardKey = $"{rank}_{suit}";
         }
 
-        #region Properties
-
         public string Rank { get; }
         public string Suit { get; }
         public string SuitSymbol { get; }
         public string SuitColorHex { get; }
         public string CardKey { get; }
 
-        public bool IsSelected
+        partial void OnIsSelectedChanged(bool value)
         {
-            get => _isSelected;
-            set
-            {
-                if (SetProperty(ref _isSelected, value))
-                {
-                    IsSelectedChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
+            IsSelectedChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        #endregion
-
-        #region Events
-
         public event EventHandler? IsSelectedChanged;
-
-        #endregion
     }
 
     /// <summary>

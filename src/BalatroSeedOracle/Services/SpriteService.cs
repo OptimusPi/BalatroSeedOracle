@@ -16,7 +16,7 @@ using SkiaSharp;
 
 namespace BalatroSeedOracle.Services
 {
-    public class SpriteService
+    public partial class SpriteService
     {
         private static SpriteService _instance = null!;
         public static SpriteService Instance => _instance ??= new SpriteService();
@@ -863,7 +863,11 @@ namespace BalatroSeedOracle.Services
                 var trimmed = json.TrimStart();
                 if (trimmed.StartsWith("["))
                 {
-                    var positionsList = JsonSerializer.Deserialize<List<SpritePosition>>(json);
+                    // AOT-compatible: Use nested source-generated serializer context
+                    var positionsList = JsonSerializer.Deserialize(
+                        json,
+                        SpriteJsonContext.Default.ListSpritePosition
+                    );
                     foreach (var pos in positionsList ?? new List<SpritePosition>())
                     {
                         if (pos?.Name != null)
@@ -2338,7 +2342,11 @@ namespace BalatroSeedOracle.Services
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
-                var metadata = JsonSerializer.Deserialize<StickersMetadataJson>(json);
+                // AOT-compatible: Use nested source-generated serializer context
+                var metadata = JsonSerializer.Deserialize(
+                    json,
+                    SpriteJsonContext.Default.StickersMetadataJson
+                );
                 if (metadata == null)
                 {
                     return null;
@@ -2372,7 +2380,8 @@ namespace BalatroSeedOracle.Services
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
-                var metadata = JsonSerializer.Deserialize<BossMetadataJson>(json);
+                // AOT-compatible: Use nested source-generated serializer context
+                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.BossMetadataJson);
                 if (metadata == null)
                 {
                     return null;
@@ -2408,7 +2417,8 @@ namespace BalatroSeedOracle.Services
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
-                var metadata = JsonSerializer.Deserialize<PlayingCardMetadataJson>(json);
+                // AOT-compatible: Use nested source-generated serializer context
+                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.PlayingCardMetadataJson);
                 if (metadata?.Sprites == null)
                 {
                     return new();
@@ -2452,7 +2462,8 @@ namespace BalatroSeedOracle.Services
                 using var reader = new StreamReader(stream);
                 string json = reader.ReadToEnd();
 
-                var metadata = JsonSerializer.Deserialize<EnhancersMetadataJson>(json);
+                // AOT-compatible: Use nested source-generated serializer context
+                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.EnhancersMetadataJson);
                 if (metadata == null)
                 {
                     return null;
@@ -2595,6 +2606,24 @@ namespace BalatroSeedOracle.Services
 
             [JsonPropertyName("stakeStickers")]
             public Dictionary<string, EnhancerSprite>? StakeStickers { get; set; }
+        }
+
+        /// <summary>
+        /// AOT-compatible JSON serializer context for SpriteService's internal types.
+        /// These types are private sealed and cannot be exposed to BsoJsonSerializerContext.
+        /// </summary>
+        [JsonSourceGenerationOptions(
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        )]
+        [JsonSerializable(typeof(StickersMetadataJson))]
+        [JsonSerializable(typeof(BossMetadataJson))]
+        [JsonSerializable(typeof(PlayingCardMetadataJson))]
+        [JsonSerializable(typeof(EnhancersMetadataJson))]
+        [JsonSerializable(typeof(List<SpritePosition>))]
+        private partial class SpriteJsonContext : JsonSerializerContext
+        {
         }
     }
 

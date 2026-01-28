@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Views.Modals.FiltersModal">
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModal"
+             x:DataType="vm:FiltersModalViewModel"
+             x:CompileBindings="True">
 
     <!-- Layout: header tabs on top, content area below -->
     <Grid>

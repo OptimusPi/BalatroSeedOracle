@@ -3,19 +3,46 @@
     <TargetFramework>net10.0-browser</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
-    <!-- WASM Optimization Settings -->
-    <WasmEnableSIMD>true</WasmEnableSIMD>
-    <WasmEnableThreads>true</WasmEnableThreads>
+    
+    <!-- WASM AOT Optimization Settings -->
     <RunAOTCompilation>true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <TrimMode>link</TrimMode>
+    
+    <!-- WASM Performance Features -->
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+    <WasmEnableThreads>true</WasmEnableThreads>
+    
+    <!-- Memory Configuration -->
     <!-- Max heap: 512MB = 536870912 bytes (must be multiple of 16384) -->
     <EmccMaximumHeapSize>536870912</EmccMaximumHeapSize>
+    
+    <!-- Globalization: Use invariant mode for smaller bundle -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    
+    <!-- JSON Serialization: Disable reflection for AOT -->
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    
+    <!-- Disable unnecessary features for smaller bundle -->
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableStackTraceInException>false</EnableStackTraceInException>
+    
+    <!-- Build Configuration -->
     <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
-    <!-- Sharded ICU: loads locale data on-demand instead of bundling all 27MB -->
+    
+    <!-- ICU Data: Sharded mode loads locale data on-demand instead of bundling all 27MB -->
     <WasmIcuDataMode>Sharded</WasmIcuDataMode>
+    
     <!-- Disable source-generated JS interop for .NET 10.0 compatibility -->
     <EnableJavaScriptInteropGeneration>false</EnableJavaScriptInteropGeneration>
   </PropertyGroup>
+
+  <!-- AOT Trimming Configuration -->
+  <ItemGroup>
+    <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
+  </ItemGroup>
 
   <Target Name="DeployWasmOutput" AfterTargets="Publish">
     <ItemGroup>

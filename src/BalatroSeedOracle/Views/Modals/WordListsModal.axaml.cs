@@ -1,25 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Views.Modals
 {
+    /// <summary>
+    /// Word lists modal - manages seed keyword lists.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// File I/O logic kept in code-behind (platform-specific).
+    /// </summary>
     public partial class WordListsModal : UserControl
     {
-        private ComboBox? _fileSelector;
-        private TextBox? _textEditor;
-        private TextBlock? _statusText;
-        private Button? _saveButton;
-
         private string _wordListsPath = Path.Combine(
             AppContext.BaseDirectory,
             "..",
@@ -33,38 +29,17 @@ namespace BalatroSeedOracle.Views.Modals
         public WordListsModal()
         {
             InitializeComponent();
+            
+            // Wire up events using direct x:Name field access
+            FileSelector.SelectionChanged += OnFileSelectionChanged;
+            TextEditor.TextChanged += (s, e) =>
+            {
+                _hasUnsavedChanges = true;
+                UpdateStatus("Modified - click Save to persist changes");
+            };
+            
             EnsureDirectoryExists();
             LoadFileList();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            _fileSelector = this.FindControl<ComboBox>("FileSelector");
-            _textEditor = this.FindControl<TextBox>("TextEditor");
-            _statusText = this.FindControl<TextBlock>("StatusText");
-            _saveButton = this.FindControl<Button>("SaveButton");
-
-            if (_fileSelector != null)
-            {
-                _fileSelector.SelectionChanged += OnFileSelectionChanged;
-            }
-
-            if (_textEditor != null)
-            {
-                _textEditor.TextChanged += (s, e) =>
-                {
-                    _hasUnsavedChanges = true;
-                    UpdateStatus("Modified - click Save to persist changes");
-                };
-            }
-
-            // Load the first file by default
-            if (_fileSelector != null && _fileSelector.Items.Count > 0)
-            {
-                _fileSelector.SelectedIndex = 0;
-            }
         }
 
         private void EnsureDirectoryExists()
@@ -113,10 +88,7 @@ tag"
 
         private void LoadFileList()
         {
-            if (_fileSelector == null)
-                return;
-
-            _fileSelector.Items.Clear();
+            FileSelector.Items.Clear();
 
             var files = Directory
                 .GetFiles(_wordListsPath, "*.db")
@@ -125,12 +97,12 @@ tag"
 
             foreach (var file in files)
             {
-                _fileSelector.Items.Add(new ComboBoxItem { Content = file });
+                FileSelector.Items.Add(new ComboBoxItem { Content = file });
             }
 
-            if (_fileSelector.Items.Count > 0)
+            if (FileSelector.Items.Count > 0)
             {
-                _fileSelector.SelectedIndex = 0;
+                FileSelector.SelectedIndex = 0;
             }
         }
 
@@ -138,14 +110,10 @@ tag"
         {
             try
             {
-                if (
-                    _fileSelector?.SelectedItem is ComboBoxItem item
-                    && item.Content is string fileName
-                )
+                if (FileSelector.SelectedItem is ComboBoxItem item && item.Content is string fileName)
                 {
                     if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
-                        // Ask to save changes
                         var result = await ShowSavePrompt();
                         if (result)
                         {
@@ -158,10 +126,7 @@ tag"
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "WordListsModal",
-                    $"Error in OnFileSelectionChanged: {ex.Message}"
-                );
+                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
                 UpdateStatus($"Error loading file: {ex.Message}");
             }
         }
@@ -171,26 +136,25 @@ tag"
             try
             {
                 var filePath = Path.Combine(_wordListsPath, fileName);
-                if (File.Exists(filePath) && _textEditor != null)
+                if (File.Exists(filePath))
                 {
                     var fileInfo = new FileInfo(filePath);
 
-                    // Check file size - if over 1MB, just load first 10k lines without counting total
                     if (fileInfo.Length > 1_000_000) // 1MB
                     {
                         var lines = File.ReadLines(filePath).Take(10000).ToList();
-                        _textEditor.Text =
+                        TextEditor.Text =
                             string.Join("\n", lines)
                             + $"\n\n... (showing first {lines.Count:N0} lines only)\n"
                             + $"Large file ({fileInfo.Length / 1024:N0} KB) - read-only preview.\n"
                             + $"Use external text editor to view/edit full file.";
-                        _textEditor.IsReadOnly = true;
-                        UpdateStatus($"⚠ Large file - showing preview only (read-only)");
+                        TextEditor.IsReadOnly = true;
+                        UpdateStatus($"Large file - showing preview only (read-only)");
                     }
                     else
                     {
-                        _textEditor.Text = File.ReadAllText(filePath);
-                        _textEditor.IsReadOnly = false;
+                        TextEditor.Text = File.ReadAllText(filePath);
+                        TextEditor.IsReadOnly = false;
                         UpdateStatus($"Loaded: {fileName}");
                     }
 
@@ -211,25 +175,16 @@ tag"
 
             try
             {
-                File.WriteAllText(
-                    newFilePath,
-                    "# New word list\n# One word or phrase per line\n\n"
-                );
+                File.WriteAllText(newFilePath, "# New word list\n# One word or phrase per line\n\n");
                 LoadFileList();
 
                 // Select the new file
-                if (_fileSelector != null)
+                for (int i = 0; i < FileSelector.Items.Count; i++)
                 {
-                    for (int i = 0; i < _fileSelector.Items.Count; i++)
+                    if (FileSelector.Items[i] is ComboBoxItem item && item.Content?.ToString() == newFileName)
                     {
-                        if (
-                            _fileSelector.Items[i] is ComboBoxItem item
-                            && item.Content?.ToString() == newFileName
-                        )
-                        {
-                            _fileSelector.SelectedIndex = i;
-                            break;
-                        }
+                        FileSelector.SelectedIndex = i;
+                        break;
                     }
                 }
 
@@ -253,10 +208,9 @@ tag"
                 }
 
                 var clipboardText = await topLevel.Clipboard.TryGetTextAsync();
-                if (!string.IsNullOrEmpty(clipboardText) && _textEditor != null)
+                if (!string.IsNullOrEmpty(clipboardText))
                 {
-                    // Replace entire content with clipboard text
-                    _textEditor.Text = clipboardText;
+                    TextEditor.Text = clipboardText;
                     _hasUnsavedChanges = true;
                     UpdateStatus("Pasted from clipboard - click Save to persist");
                 }
@@ -278,13 +232,13 @@ tag"
 
         private void SaveCurrentFile()
         {
-            if (string.IsNullOrEmpty(_currentFile) || _textEditor == null)
+            if (string.IsNullOrEmpty(_currentFile))
                 return;
 
             try
             {
                 var filePath = Path.Combine(_wordListsPath, _currentFile);
-                File.WriteAllText(filePath, _textEditor.Text);
+                File.WriteAllText(filePath, TextEditor.Text);
                 _hasUnsavedChanges = false;
                 UpdateStatus($"Saved: {_currentFile}");
             }
@@ -296,16 +250,11 @@ tag"
 
         private void UpdateStatus(string message)
         {
-            if (_statusText != null)
-            {
-                _statusText.Text = message;
-            }
+            StatusText.Text = message;
         }
 
         private Task<bool> ShowSavePrompt()
         {
-            // For now, just return false (don't save)
-            // In a real app, you'd show a dialog
             return Task.FromResult(false);
         }
     }

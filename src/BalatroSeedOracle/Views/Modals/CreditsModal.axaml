@@ -1,7 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Views.Modals.CreditsModal">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.CreditsModal"
+             x:DataType="vm:CreditsModalViewModel"
+             x:CompileBindings="True">
     <UserControl.Styles>
         <Style Selector="TextBlock#CreditLink:pointerover">
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>

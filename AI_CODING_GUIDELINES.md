@@ -70,7 +70,10 @@ Console.WriteLine("Debug message"); // BANNED
 
 ## Platform Compatibility
 - Code supports Desktop, Browser, Android, iOS
-- Use `#if BROWSER` and `#if !BROWSER` for platform-specific code
+- **NEVER** use `#if BROWSER` / `#if !BROWSER` conditional compilation
+- Use **dependency injection** and **platform abstractions** instead
+- Create interfaces in shared code, implementations in platform-specific projects
+- Use Avalonia's `IStorageProvider` for cross-platform file access
 - Desktop is the primary target for releases
 
 ## Avalonia UI Framework - AI Agent Reference
@@ -140,13 +143,38 @@ private void ExecuteSearch()
 
 #### 4. Platform-Specific Code
 ```csharp
+// ❌ WRONG - Never use conditional compilation
 #if BROWSER
-    // Browser-specific implementation
     await _store.WriteTextAsync(key, value);
 #else
-    // Desktop implementation
     await File.WriteAllTextAsync(path, content);
 #endif
+
+// ✅ CORRECT - Use dependency injection with platform abstractions
+public interface IFileService
+{
+    Task WriteAsync(string path, string content);
+}
+
+// Desktop implementation (in Desktop project)
+public class DesktopFileService : IFileService
+{
+    public Task WriteAsync(string path, string content) 
+        => File.WriteAllTextAsync(path, content);
+}
+
+// Browser implementation (in Browser project)  
+public class BrowserFileService : IFileService
+{
+    public Task WriteAsync(string path, string content)
+        => _store.WriteTextAsync(path, content);
+}
+
+// Usage - inject IFileService, platform registers correct implementation
+public class MyViewModel(IFileService fileService)
+{
+    await fileService.WriteAsync(path, content); // Works on all platforms
+}
 ```
 
 #### 5. Styling and Theming
@@ -176,7 +204,7 @@ Background = DynamicResource.Parse("SystemControlBackgroundAltHighBrush");
 2. **Use data binding** - Avoid direct UI manipulation
 3. **Implement INotifyPropertyChanged** - Use ViewModelBase
 4. **Use commands** - Not event handlers
-5. **Platform awareness** - Use conditional compilation
+5. **Platform awareness** - Use DI abstractions, NOT conditional compilation
 
 #### When Modifying Existing UI:
 1. **Study similar components** - Find existing patterns
@@ -202,22 +230,5 @@ Background = DynamicResource.Parse("SystemControlBackgroundAltHighBrush");
 - **Platform debugging** - Test Browser vs Desktop separately
 - **Binding errors** - Check Output window for binding issues
 
-## Emergency Release Notes
-This project was made AI-compatible on 2026-01-01 to fix critical logging violations that were preventing AI agents from working correctly.
-
-### Fixed Issues:
-- DebugLogger hard-coded enabled flags set to false
-- Removed forced debug enable in Program.cs
-- Replaced all Console.WriteLine calls with DebugLogger
-- Added these AI coding guidelines
-
-### For Future AI Agents:
-1. **Always use DebugLogger** - never Console.WriteLine for debug
-2. **Follow these patterns** - they're proven to work
-3. **Keep it simple** - complexity breaks AI agents
-4. **Test changes** - compilation errors block progress
-
 ---
-Created: 2026-01-01
-Purpose: Make Balatro Seed Oracle compatible with AI coding agents
-Status: AI READY ✅
+Last Updated: 2026-01-27

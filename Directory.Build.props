@@ -16,14 +16,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- Avalonia License Key Configuration -->
-  <PropertyGroup>
-    <!-- License key from environment variable -->
-    <!-- Set AVALONIA_LICENSE_KEY environment variable or configure in avalonia.license.local -->
-    <!-- DO NOT commit license keys to source control -->
-    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' != ''"
-      >$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey
-    >
+  <!-- Avalonia License Key - reads from avalonia.license file (gitignored) -->
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license')">
+    <AvaloniaUILicenseKey>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())</AvaloniaUILicenseKey>
   </PropertyGroup>
 
   <!-- Code Quality Settings -->

@@ -540,7 +540,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Apply additional properties from itemConfig
                 if (itemConfig.Stickers != null && itemConfig.Stickers.Count > 0)
                 {
-                    clause.Stickers = new List<string>(itemConfig.Stickers);
+                    clause.Stickers = itemConfig.Stickers.ToArray();
                 }
                 if (!string.IsNullOrEmpty(itemConfig.Seal) && itemConfig.Seal != "none")
                 {
@@ -612,7 +612,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply additional properties from FilterItem
             if (item.Stickers != null && item.Stickers.Count > 0)
             {
-                fallbackClause.Stickers = new List<string>(item.Stickers);
+                fallbackClause.Stickers = item.Stickers.ToArray();
             }
             if (!string.IsNullOrEmpty(item.Seal) && item.Seal != "none")
             {

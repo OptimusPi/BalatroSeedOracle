@@ -7,17 +7,15 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Controls
 {
+    /// <summary>
+    /// Tag editor control with autocomplete.
+    /// Uses StyledProperty for external binding, direct x:Name field access (no FindControl).
+    /// </summary>
     public partial class TagEditor : UserControl
     {
-        private WrapPanel? _tagContainer;
-        private AutoCompleteBox? _tagInput;
-
         // Predefined tags for autocomplete
         private readonly HashSet<string> _availableTags = new HashSet<string>
         {
@@ -52,8 +50,7 @@ namespace BalatroSeedOracle.Controls
             "#Cryptid",
         };
 
-        private readonly ObservableCollection<string> _currentTags =
-            new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _currentTags = new();
 
         public static readonly StyledProperty<List<string>> TagsProperty =
             AvaloniaProperty.Register<TagEditor, List<string>>(nameof(Tags), new List<string>());
@@ -68,24 +65,14 @@ namespace BalatroSeedOracle.Controls
         {
             InitializeComponent();
 
-            _tagContainer = this.FindControl<WrapPanel>("TagContainer");
-            _tagInput = this.FindControl<AutoCompleteBox>("TagInput");
-
-            if (_tagInput != null)
-            {
-                _tagInput.ItemsSource = _availableTags.OrderBy(t => t);
-            }
+            // Direct x:Name field access - no FindControl!
+            TagInput.ItemsSource = _availableTags.OrderBy(t => t);
 
             // Watch for tag changes
             _currentTags.CollectionChanged += (s, e) =>
             {
                 Tags = _currentTags.ToList();
             };
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -103,13 +90,10 @@ namespace BalatroSeedOracle.Controls
             _currentTags.Clear();
 
             // Clear existing tag chips except the input
-            if (_tagContainer != null)
+            var toRemove = TagContainer.Children.Where(c => c != TagInput).ToList();
+            foreach (var child in toRemove)
             {
-                var toRemove = _tagContainer.Children.Where(c => c != _tagInput).ToList();
-                foreach (var child in toRemove)
-                {
-                    _tagContainer.Children.Remove(child);
-                }
+                TagContainer.Children.Remove(child);
             }
 
             // Add tag chips
@@ -122,16 +106,10 @@ namespace BalatroSeedOracle.Controls
 
         private void AddTagChip(string tag)
         {
-            if (_tagContainer == null || _tagInput == null)
-                return;
-
             // Create tag chip
             var chip = new Border { Classes = { "tag-chip" } };
-
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
-
             var tagText = new TextBlock { Text = tag, Classes = { "tag-text" } };
-
             var removeButton = new Button
             {
                 Content = "×",
@@ -146,8 +124,8 @@ namespace BalatroSeedOracle.Controls
             chip.Child = panel;
 
             // Insert before the input box
-            var inputIndex = _tagContainer.Children.IndexOf(_tagInput);
-            _tagContainer.Children.Insert(inputIndex, chip);
+            var inputIndex = TagContainer.Children.IndexOf(TagInput);
+            TagContainer.Children.Insert(inputIndex, chip);
         }
 
         private void OnRemoveTag(object? sender, RoutedEventArgs e)
@@ -157,21 +135,21 @@ namespace BalatroSeedOracle.Controls
                 _currentTags.Remove(tag);
 
                 // Remove the chip
-                if (button.Parent?.Parent is Border chip && _tagContainer != null)
+                if (button.Parent?.Parent is Border chip)
                 {
-                    _tagContainer.Children.Remove(chip);
+                    TagContainer.Children.Remove(chip);
                 }
             }
         }
 
         private void OnTagInputKeyDown(object? sender, KeyEventArgs e)
         {
-            if (_tagInput == null || string.IsNullOrWhiteSpace(_tagInput.Text))
+            if (string.IsNullOrWhiteSpace(TagInput.Text))
                 return;
 
             if (e.Key == Key.Enter || e.Key == Key.Tab)
             {
-                var newTag = _tagInput.Text.Trim();
+                var newTag = TagInput.Text.Trim();
 
                 // Ensure tag starts with #
                 if (!newTag.StartsWith("#"))
@@ -183,23 +161,19 @@ namespace BalatroSeedOracle.Controls
                 if (!_currentTags.Contains(newTag))
                 {
                     _availableTags.Add(newTag);
-                    if (_tagInput.ItemsSource is IEnumerable<string>)
-                    {
-                        _tagInput.ItemsSource = _availableTags.OrderBy(t => t);
-                    }
+                    TagInput.ItemsSource = _availableTags.OrderBy(t => t);
 
                     // Add the tag
                     _currentTags.Add(newTag);
                     AddTagChip(newTag);
 
                     // Clear input
-                    _tagInput.Text = "";
-                    _tagInput.SelectedItem = null;
+                    TagInput.Text = "";
+                    TagInput.SelectedItem = null;
                 }
                 else
                 {
-                    // Tag already exists, just clear
-                    _tagInput.Text = "";
+                    TagInput.Text = "";
                 }
 
                 e.Handled = true;
@@ -209,15 +183,15 @@ namespace BalatroSeedOracle.Controls
         private void OnDropDownOpened(object? sender, EventArgs e)
         {
             // Ensure dropdown shows even with empty text
-            if (_tagInput != null && string.IsNullOrEmpty(_tagInput.Text))
+            if (string.IsNullOrEmpty(TagInput.Text))
             {
-                _tagInput.ItemsSource = _availableTags.OrderBy(t => t);
+                TagInput.ItemsSource = _availableTags.OrderBy(t => t);
             }
         }
 
         private void OnTagSelected(object? sender, SelectionChangedEventArgs e)
         {
-            if (_tagInput?.SelectedItem is string selectedTag && !string.IsNullOrEmpty(selectedTag))
+            if (TagInput.SelectedItem is string selectedTag && !string.IsNullOrEmpty(selectedTag))
             {
                 if (!_currentTags.Contains(selectedTag))
                 {
@@ -225,9 +199,8 @@ namespace BalatroSeedOracle.Controls
                     AddTagChip(selectedTag);
                 }
 
-                // Clear input
-                _tagInput.Text = "";
-                _tagInput.SelectedItem = null;
+                TagInput.Text = "";
+                TagInput.SelectedItem = null;
             }
         }
     }

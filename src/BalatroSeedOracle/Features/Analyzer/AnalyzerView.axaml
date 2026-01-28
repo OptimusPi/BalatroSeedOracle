@@ -6,7 +6,8 @@
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
-             x:DataType="vm:AnalyzerViewModel">
+             x:DataType="vm:AnalyzerViewModel"
+             x:CompileBindings="True">
 
     <UserControl.Resources>
         <conv:ItemTypeToSpriteConverter x:Key="ItemTypeToSprite"/>

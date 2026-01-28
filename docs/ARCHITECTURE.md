@@ -96,15 +96,30 @@ public interface IExcelExporter
 
 All platforms support **Ahead-of-Time (AOT) compilation** for optimal performance:
 
-### Desktop AOT
+### BalatroSeedOracle Desktop AOT
 - Enabled via `<PublishAot>true</PublishAot>` in `BalatroSeedOracle.Desktop.csproj`
 - Native binary output with no JIT overhead
 - Faster startup and reduced memory usage
 
-### Browser AOT
+### BalatroSeedOracle Browser AOT
 - Enabled via `<RunAOTCompilation>true</RunAOTCompilation>` in `BalatroSeedOracle.Browser.csproj`
 - Requires `<PublishTrimmed>true</PublishTrimmed>` for WASM
 - Pre-compiled WebAssembly modules for faster execution
+
+### Motely AOT Configuration
+
+**Motely Core Library** (`external/Motely/Motely/Motely.csproj`):
+- **Desktop**: `<PublishAot>true</PublishAot>` enabled for `net10.0` target framework
+- **Browser**: `<RunAOTCompilation>true</RunAOTCompilation>` and `<PublishTrimmed>true</PublishTrimmed>` enabled for `net10.0-browser` target framework
+- AOT infrastructure includes:
+  - `MotelyJsonSerializerContext` - AOT-compatible JSON serialization
+  - `MotelyYamlStaticContext` - AOT-compatible YAML serialization
+  - AOT-safe property access patterns in `JamlTypeAsKeyConverter`
+
+**Motely CLI** (`external/Motely/Motely.CLI/Motely.CLI.csproj`):
+- `<PublishAot>true</PublishAot>` enabled for native compilation
+- Use `dotnet publish -c Release -p:SelfContained=true` to build AOT binary
+- Run published executable: `.\Motely.CLI\bin\Release\net10.0\publish\MotelyCLI.exe`
 
 ### AOT-Compatible Patterns
 

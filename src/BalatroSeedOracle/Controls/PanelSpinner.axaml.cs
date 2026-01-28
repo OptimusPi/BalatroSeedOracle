@@ -1,29 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Controls;
 
+/// <summary>
+/// Panel spinner control for deck/stake selection.
+/// Uses direct x:Name field access (no FindControl anti-pattern).
+/// </summary>
 public partial class PanelSpinner : UserControl
 {
-    private Button? _prevButton;
-    private Button? _nextButton;
-    private TextBlock? _titleText;
-    private TextBlock? _descriptionText;
-    private Image? _spriteImage;
-    private Image? _overlayImage;
-    private StackPanel? _dotsPanel;
-
     private int _currentIndex = 0;
     private List<PanelItem> _items = new();
 
@@ -92,37 +84,20 @@ public partial class PanelSpinner : UserControl
     public PanelSpinner()
     {
         InitializeComponent();
-    }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-
-        _prevButton = this.FindControl<Button>("PrevButton");
-        _nextButton = this.FindControl<Button>("NextButton");
-        _titleText = this.FindControl<TextBlock>("TitleText");
-        _descriptionText = this.FindControl<TextBlock>("DescriptionText");
-        _spriteImage = this.FindControl<Image>("SpriteImage");
-        _overlayImage = this.FindControl<Image>("OverlayImage");
-        _dotsPanel = this.FindControl<StackPanel>("DotsPanel");
-
-        // Wire up ShowArrows property to button visibility
+        // Wire up ShowArrows property to button visibility (using direct x:Name fields)
         this.PropertyChanged += (s, e) =>
         {
             if (e.Property == ShowArrowsProperty)
             {
-                if (_prevButton != null)
-                    _prevButton.IsVisible = ShowArrows;
-                if (_nextButton != null)
-                    _nextButton.IsVisible = ShowArrows;
+                PrevButton.IsVisible = ShowArrows;
+                NextButton.IsVisible = ShowArrows;
             }
         };
 
         // Set initial visibility
-        if (_prevButton != null)
-            _prevButton.IsVisible = ShowArrows;
-        if (_nextButton != null)
-            _nextButton.IsVisible = ShowArrows;
+        PrevButton.IsVisible = ShowArrows;
+        NextButton.IsVisible = ShowArrows;
     }
 
     private void OnPrevClick(object? sender, RoutedEventArgs e)
@@ -172,58 +147,45 @@ public partial class PanelSpinner : UserControl
 
         var item = _items[_currentIndex];
 
-        if (_titleText != null)
-            _titleText.Text = item.Title;
-
-        if (_descriptionText != null)
-            _descriptionText.Text = item.Description;
+        TitleText.Text = item.Title;
+        DescriptionText.Text = item.Description;
 
         // Check if we should show a custom control or an image
-        if (_spriteImage != null)
+        if (item.GetImage != null)
         {
-            // Simple path: just set the image directly
-            if (item.GetImage != null)
+            var image = item.GetImage();
+            SpriteImage.Source = image;
+        }
+        else if (item.GetControl != null && item.Value == "__CREATE_NEW__")
+        {
+            // Custom control path (for filter modal)
+            var viewbox = SpriteImage.Parent as Viewbox;
+            if (viewbox?.Parent is Grid grid)
             {
-                var image = item.GetImage();
-                _spriteImage.Source = image;
-            }
-            else if (item.GetControl != null && item.Value == "__CREATE_NEW__")
-            {
-                // Custom control path (for filter modal)
-                var viewbox = _spriteImage.Parent as Viewbox;
-                if (viewbox?.Parent is Grid grid)
+                var customControl = item.GetControl();
+                if (customControl != null)
                 {
-                    var customControl = item.GetControl();
-                    if (customControl != null)
-                    {
-                        viewbox.IsVisible = false;
-                        Grid.SetRow(customControl, 1);
-                        grid.Children.Add(customControl);
-                    }
+                    viewbox.IsVisible = false;
+                    Grid.SetRow(customControl, 1);
+                    grid.Children.Add(customControl);
                 }
             }
-            else
-            {
-                DebugLogger.LogError("PanelSpinner", $"GetImage is NULL for item: {item.Title}");
-                _spriteImage.Source = null;
-            }
+        }
+        else
+        {
+            DebugLogger.LogError("PanelSpinner", $"GetImage is NULL for item: {item.Title}");
+            SpriteImage.Source = null;
         }
 
         // Update button states - with circular navigation, buttons are always enabled if we have items
-        if (_prevButton != null)
-            _prevButton.IsEnabled = _items.Count > 1;
-
-        if (_nextButton != null)
-            _nextButton.IsEnabled = _items.Count > 1;
+        PrevButton.IsEnabled = _items.Count > 1;
+        NextButton.IsEnabled = _items.Count > 1;
     }
 
     private void UpdateDots()
     {
-        if (_dotsPanel == null)
-            return;
-
         // Clear existing dots
-        _dotsPanel.Children.Clear();
+        DotsPanel.Children.Clear();
 
         // If more than 8 items, show page counter instead of dots
         if (_items.Count > 8)
@@ -238,12 +200,12 @@ public partial class PanelSpinner : UserControl
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             };
-            _dotsPanel.Children.Add(pageIndicator);
+            DotsPanel.Children.Add(pageIndicator);
         }
         else
         {
             // Show dots for 8 or fewer items
-            _dotsPanel.Spacing = 4;
+            DotsPanel.Spacing = 4;
 
             for (int i = 0; i < _items.Count; i++)
             {
@@ -255,7 +217,7 @@ public partial class PanelSpinner : UserControl
                     dot.Classes.Add("active");
                 }
 
-                _dotsPanel.Children.Add(dot);
+                DotsPanel.Children.Add(dot);
             }
         }
     }

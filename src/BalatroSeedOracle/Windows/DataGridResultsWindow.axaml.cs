@@ -129,8 +129,8 @@ namespace BalatroSeedOracle.Windows
                 ExportCsvMenuItem.Click += async (s, e) => await ExportToCsvAsync();
             if (ExportJsonMenuItem != null)
                 ExportJsonMenuItem.Click += async (s, e) => await ExportToJsonAsync();
-            if (ExportExcelMenuItem != null)
-                ExportExcelMenuItem.Click += async (s, e) => await ExportToExcelAsync();
+            if (ExportParquetMenuItem != null)
+                ExportParquetMenuItem.Click += async (s, e) => await ExportToParquetAsync();
             if (ExportWordlistMenuItem != null)
                 ExportWordlistMenuItem.Click += async (s, e) => await ExportToWordlistAsync();
             if (CopyToClipboardMenuItem != null)
@@ -557,7 +557,7 @@ LIMIT 50;",
             }
         }
 
-        private async Task ExportToExcelAsync()
+        private async Task ExportToParquetAsync()
         {
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel == null)
@@ -566,11 +566,11 @@ LIMIT 50;",
             var file = await topLevel.StorageProvider.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {
-                    Title = "Export to Excel",
-                    DefaultExtension = "xlsx",
+                    Title = "Export to Parquet",
+                    DefaultExtension = "parquet",
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("Excel Files") { Patterns = new[] { "*.xlsx" } },
+                        new FilePickerFileType("Parquet Files") { Patterns = new[] { "*.parquet" } },
                     },
                 }
             );
@@ -580,11 +580,11 @@ LIMIT 50;",
 
             try
             {
-                // Use platform-specific IExcelExporter
-                var excelExporter = App.GetService<IExcelExporter>();
-                if (excelExporter == null || !excelExporter.IsAvailable)
+                // Use platform-specific IParquetExporter
+                var parquetExporter = App.GetService<IParquetExporter>();
+                if (parquetExporter == null || !parquetExporter.IsAvailable)
                 {
-                    UpdateStatus("Excel export not available");
+                    UpdateStatus("Parquet export not available");
                     return;
                 }
 
@@ -604,17 +604,16 @@ LIMIT 50;",
                     rows.Add(row);
                 }
 
-                await excelExporter.ExportAsync(
+                await parquetExporter.ExportAsync(
                     file.Path.LocalPath,
-                    "Search Results",
                     headers,
                     rows
                 );
-                UpdateStatus($"Exported {_filteredResults.Count} rows to Excel");
+                UpdateStatus($"Exported {_filteredResults.Count} rows to Parquet");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("DataGridResultsWindow", $"Export to Excel failed: {ex}");
+                DebugLogger.LogError("DataGridResultsWindow", $"Export to Parquet failed: {ex}");
                 UpdateStatus($"Export failed: {ex.Message}");
             }
         }

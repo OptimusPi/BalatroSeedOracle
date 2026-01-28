@@ -2,38 +2,44 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <!-- Set to false for Native AOT compatibility (required before Avalonia 12.0) -->
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\BalatroSeedOracle\BalatroSeedOracle.ico</ApplicationIcon>
     <AssemblyName>BalatroSeedOracle.Desktop</AssemblyName>
   </PropertyGroup>
 
-  <!-- Optimizations for smaller published bundle size -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <DebuggerSupport>false</DebuggerSupport>
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-    <EventSourceSupport>false</EventSourceSupport>
-    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
-  </PropertyGroup>
+  <!-- AOT Configuration - Optimized for Speed -->
   <PropertyGroup>
     <PublishAot>true</PublishAot>
     <TrimMode>link</TrimMode>
     <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <InvariantGlobalization>true</InvariantGlobalization>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <DebuggerSupport>false</DebuggerSupport>
     <EnableStackTraceInException>false</EnableStackTraceInException>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
     <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
     <IlcDisableReflection>true</IlcDisableReflection>
   </PropertyGroup>
+
+  <!-- Release-specific optimizations -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+  </PropertyGroup>
+
+  <!-- AOT Trimming Configuration -->
+  <ItemGroup>
+    <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
@@ -45,15 +51,12 @@
   <ItemGroup>
     <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="SoundFlow" />
-    <PackageReference Include="ClosedXML" />
+    <!-- Parquet export via DuckDB - no separate Parquet.Net needed -->
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
-    <!-- Motely.API for hosting the search API server - compiled as library for BSO -->
-    <ProjectReference
-      Include="..\..\external\Motely\Motely.API\Motely.API.csproj"
-      AdditionalProperties="BSO_LIBRARY=true"
-    />
+    <!-- Motely.API for hosting the search API server -->
+    <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" />
   </ItemGroup>
 </Project>

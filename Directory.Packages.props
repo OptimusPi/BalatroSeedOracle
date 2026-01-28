@@ -36,7 +36,7 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     <PackageVersion Include="System.IO.Packaging" Version="10.0.0" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
-    <PackageVersion Include="ClosedXML" Version="0.105.0" />
+    <PackageVersion Include="Parquet.Net" Version="4.11.0" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.0.4" />
     <PackageVersion Include="Avalonia.Controls.TreeDataGrid" Version="11.3.0" />
     <PackageVersion Include="Avalonia.Controls.Markdown" Version="11.3.4" />

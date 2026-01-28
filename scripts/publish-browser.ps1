@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path "$PSScriptRoot\.."
 $project = Join-Path $repoRoot "src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj"
-$publishDir = Join-Path $repoRoot "src/BalatroSeedOracle.Browser/bin/$Configuration/net10.0-browser/publish"
+$publishDir = Join-Path $repoRoot "src/BalatroSeedOracle.Browser/bin/$Configuration/net10.0-browser/publish/wwwroot"
 $destination = Join-Path $repoRoot "external/Motely/wwwroot/BSO"
 
 Write-Host "Publishing $project ($Configuration)..."

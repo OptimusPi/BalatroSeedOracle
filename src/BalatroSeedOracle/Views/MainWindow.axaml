@@ -5,6 +5,7 @@
         xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
         Title="Balatro Seed Oracle"
         Width="1582"
         Height="830"
@@ -34,8 +35,8 @@
         <Border BorderBrush="{StaticResource BrightSilver}" 
                 BorderThickness="0,0,0,2">
             <Grid RowDefinitions="*,Auto">
-                <!-- Main content -->
-                <ContentControl Grid.Row="0" x:Name="MainMenuHost" />
+                <!-- Main content - bound via compiled bindings -->
+                <ContentControl Grid.Row="0" Content="{Binding MainMenu}" />
 
                 <!-- Attribution line (hidden in Vibe Out Mode) -->
                 <Border Grid.Row="1"

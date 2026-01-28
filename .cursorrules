@@ -1,205 +1,355 @@
 # Balatro Seed Oracle - Cursor AI Rules
 
 ## Project Overview
-Balatro Seed Oracle is a cross-platform Avalonia UI application for searching Balatro game seeds. Built with .NET 10, uses MVVM pattern, supports Desktop/Browser/Android/iOS.
+Cross-platform Avalonia UI seed searcher for Balatro. .NET 10, MVVM, AOT-ready.
 
-## Critical Rules
+## Platforms (Avalonia UI - NOT MAUI/Xamarin)
+| Platform | Project | Target | Status |
+|----------|---------|--------|--------|
+| Windows/macOS/Linux | `.Desktop` | `net10.0` | ✅ Primary |
+| Browser (WASM) | `.Browser` | `net10.0-browser` | ✅ Active |
+| Android | `.Android` | `net10.0-android` | 📋 Scaffold |
+| iOS | `.iOS` | `net10.0-ios` | 📋 Scaffold |
 
-### 1. Logging - NEVER BREAK
-- **ONLY** use `DebugLogger.Log()`, `DebugLogger.LogError()`, `DebugLogger.LogImportant()`
-- **NEVER** use `Console.WriteLine()` for debug messages
-- Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
+---
 
-### 2. Async/Await Patterns
-- Methods returning `Task` without `await` should return `Task.CompletedTask`
-- Remove `async` keyword if no `await` is used
-- Use `ConfigureAwait(false)` for library code
+## ⚠️ CRITICAL RULES - NEVER BREAK
 
-### 3. Platform-Specific Code
-- Use `#if BROWSER` / `#if !BROWSER` for platform differences
-- Desktop is primary target, Browser is secondary
-- Test both platforms when making UI changes
+### 1. Logging
+```csharp
+// ✅ CORRECT - Always use DebugLogger
+DebugLogger.Log("Component", "message");
+DebugLogger.LogError("Component", "error message");
+DebugLogger.LogImportant("Component", "important message");
 
-## Architecture Patterns
+// ❌ WRONG - Never use Console
+Console.WriteLine("anything");  // FORBIDDEN
+```
+Location: `src/BalatroSeedOracle/Helpers/DebugLogger.cs`
+
+### 2. ViewModels - Use CommunityToolkit.Mvvm
+```csharp
+// ✅ CORRECT
+public partial class MyViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string _myProperty = "";
+    
+    [RelayCommand]
+    private void DoSomething() { }
+}
+
+// ❌ WRONG - Do not use BaseViewModel (deprecated)
+public class MyViewModel : BaseViewModel { }
+```
+
+### 3. Compiled Bindings (AOT-Critical)
+```xml
+<!-- ✅ CORRECT - Both attributes required -->
+<UserControl x:CompileBindings="True"
+             x:DataType="vm:MyViewModel">
+    <TextBlock Text="{Binding Name}"/>
+</UserControl>
+
+<!-- ❌ WRONG - CompileBindings without DataType = runtime crash -->
+<UserControl x:CompileBindings="True">
+    <TextBlock Text="{Binding Name}"/>  <!-- 💥 AVLN2000 error -->
+</UserControl>
+
+<!-- ⚠️ EXCEPTION - Controls binding to own StyledProperties -->
+<!-- Some controls (spinners, custom controls) should NOT use x:CompileBindings -->
+```
+
+### 4. Platform Code - DI Abstractions Only
+```
+src/BalatroSeedOracle/           → Shared (interfaces, ViewModels, Views)
+src/BalatroSeedOracle.Desktop/   → Desktop implementations
+src/BalatroSeedOracle.Browser/   → Browser implementations (JS interop)
+src/BalatroSeedOracle.Android/   → Android implementations
+src/BalatroSeedOracle.iOS/       → iOS implementations
+```
+
+```csharp
+// ✅ CORRECT - Define interface in shared, implement per-platform
+public interface IAudioManager { Task PlayAsync(string sound); }
+
+// Desktop/Services/DesktopAudioManager.cs
+public class DesktopAudioManager : IAudioManager { /* NAudio/etc */ }
+
+// Browser/Services/BrowserAudioManager.cs  
+public class BrowserAudioManager : IAudioManager { /* JS interop */ }
+
+// ❌ WRONG - Conditional compilation
+#if BROWSER  // NEVER DO THIS
+    // browser code
+#endif
+```
+
+### 5. No FindControl - Use x:Name or Bindings
+```csharp
+// ❌ WRONG - Service locator anti-pattern
+var button = this.FindControl<Button>("MyButton");
+button.Content = "Hello";
+
+// ✅ CORRECT - Direct field access via x:Name
+// In XAML: <Button x:Name="MyButton"/>
+// In code-behind: MyButton.Content = "Hello";  // Field auto-generated
+
+// ✅ BEST - Use bindings
+// <Button Content="{Binding ButtonText}"/>
+```
+
+### 6. UI Thread Updates
+```csharp
+// ✅ CORRECT - Use Dispatcher for UI updates from background threads
+await Dispatcher.UIThread.InvokeAsync(() => 
+{
+    MyProperty = newValue;
+});
+
+// ❌ WRONG - Direct property update from background thread
+Task.Run(() => MyProperty = value);  // May crash
+```
+
+### 7. Async Patterns
+```csharp
+// ✅ CORRECT
+public async Task DoWorkAsync()
+{
+    await SomeOperationAsync().ConfigureAwait(false);
+}
+
+public Task DoNothingAsync() => Task.CompletedTask;  // No async keyword
+
+// ❌ WRONG
+public async Task DoNothingAsync() { }  // Warning: no await
+```
+
+---
+
+## Architecture
 
 ### MVVM Structure
-- **ViewModels**: `src/BalatroSeedOracle/ViewModels/` - Inherit from `ObservableObject` (CommunityToolkit.Mvvm)
-- **Views**: `src/BalatroSeedOracle/Views/` - Avalonia XAML files (.axaml)
-- **Components**: `src/BalatroSeedOracle/Components/` - Reusable UI controls
-- **Services**: `src/BalatroSeedOracle/Services/` - Business logic, registered in `App.axaml.cs`
-
-### Key Services
-- `SearchManager` - Seed searching operations
-- `FilterService` - Filter CRUD operations
-- `SpriteService` - Game asset management
-- `UserProfileService` - User settings
-- `FilterCacheService` - Filter caching
+```
+ViewModels/     → ObservableObject derivatives, [ObservableProperty], [RelayCommand]
+Views/          → .axaml files with x:CompileBindings + x:DataType
+Components/     → Reusable UI controls
+Controls/       → Custom Avalonia controls with StyledProperties
+Services/       → Business logic, injected via DI
+Models/         → Data classes
+Helpers/        → Static utilities (DebugLogger, AppPaths)
+```
 
 ### Dependency Injection
-- Services registered in `App.axaml.cs` using `IServiceCollection`
-- Use constructor injection in ViewModels/Services
-- Access via `App.GetService<T>()` or `ServiceHelper.GetService<T>()`
+```csharp
+// Platform Program.cs registers platform-specific services
+PlatformServices.RegisterServices = services =>
+{
+    services.AddSingleton<IAppDataStore, DesktopAppDataStore>();
+    services.AddSingleton<IAudioManager, DesktopAudioManager>();
+    services.AddSingleton<IDuckDBService, DesktopDuckDBService>();
+};
 
-## Code Style
+// Shared App.axaml.cs registers shared services
+var services = new ServiceCollection();
+services.AddSingleton<SearchManager>();
+services.AddSingleton<FilterService>();
+services.AddSingleton<SpriteService>();
+PlatformServices.RegisterServices?.Invoke(services);
+```
 
-### Naming Conventions
-- ViewModels: `*ViewModel` suffix
-- Services: `*Service` suffix
-- Controls: `*Control` suffix
-- Commands: `*Command` property
-- Private fields: `_camelCase`
-- Properties: `PascalCase`
+### Key Interfaces
+| Interface | Desktop | Browser | Purpose |
+|-----------|---------|---------|---------|
+| `IAppDataStore` | File system | IndexedDB | Persistent storage |
+| `IAudioManager` | NAudio/SoundFlow | Web Audio API | Sound playback |
+| `IDuckDBService` | DuckDB.NET | In-memory | Seed database |
+| `IPlatformServices` | System.IO | JS interop | Platform utils |
 
-### File Organization
-- One class per file
-- Namespace matches folder structure
-- XAML code-behind in `.axaml.cs` files
+---
 
-### Nullable Reference Types
-- Use `is null` / `is not null` instead of `== null` / `!= null`
-- Use null-forgiving operator `!` sparingly
-- Prefer null-conditional `?.` operator
+## WebAssembly (Browser) 
+
+### Setup Requirements
+```bash
+# Install workloads FIRST
+dotnet workload install wasm-tools wasm-experimental
+
+# Build
+dotnet publish src/BalatroSeedOracle.Browser -c Release
+
+# Output location (CRITICAL - use this path everywhere)
+src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish/wwwroot/
+```
+
+### Limitations
+- ❌ No `System.IO.File` - use `IAppDataStore` or `IStorageProvider`
+- ❌ No native DuckDB - use in-memory implementation
+- ❌ Threading requires COOP/COEP headers
+- ✅ Use `[JSImport]`/`[JSExport]` for JS interop
+
+### File Access Pattern
+```csharp
+// ✅ CORRECT - Use Avalonia's IStorageProvider
+var provider = TopLevel.GetTopLevel(this)?.StorageProvider;
+var file = await provider.OpenFilePickerAsync(new FilePickerOpenOptions());
+
+// ❌ WRONG - Won't work in browser
+File.ReadAllText("path");
+```
+
+---
+
+## AOT & Trimming
+
+### TrimmerRoots.xml
+Preserve types from aggressive trimming:
+```xml
+<linker>
+  <assembly fullname="BalatroSeedOracle">
+    <type fullname="BalatroSeedOracle.ViewModels*" preserve="all"/>
+    <type fullname="BalatroSeedOracle.Models*" preserve="all"/>
+    <type fullname="BalatroSeedOracle.Services*" preserve="all"/>
+  </assembly>
+</linker>
+```
+
+### AOT Compatibility
+- ✅ Use source generators (`[ObservableProperty]`, `[RelayCommand]`)
+- ✅ Use compiled bindings (`x:CompileBindings="True"`)
+- ❌ Avoid reflection-based serialization without source generators
+- ❌ Avoid `dynamic` keyword
+
+---
+
+## Build Commands
+
+```bash
+# Desktop (Windows AOT)
+dotnet publish src/BalatroSeedOracle.Desktop -c Release -r win-x64
+
+# Desktop (macOS ARM)
+dotnet publish src/BalatroSeedOracle.Desktop -c Release -r osx-arm64
+
+# Browser WASM
+dotnet publish src/BalatroSeedOracle.Browser -c Release
+
+# Run Desktop (dev)
+dotnet run --project src/BalatroSeedOracle.Desktop
+
+# Run Browser (dev)
+dotnet run --project src/BalatroSeedOracle.Browser
+```
+
+---
+
+## CI/CD & Deployment
+
+### GitHub Secrets Required
+```
+AVALONIA_LICENSE_KEY    → Avalonia UI license (set via env var, NEVER commit)
+VERCEL_TOKEN            → Vercel deployment token
+CLOUDFLARE_API_TOKEN    → Cloudflare Pages token
+CLOUDFLARE_ACCOUNT_ID   → Cloudflare account ID
+```
+
+### Workflow Files
+| File | Purpose |
+|------|---------|
+| `build-browser.yml` | Build & artifact WASM |
+| `deploy-browser.yml` | Deploy to Vercel/Cloudflare |
+| `release-*.yml` | Platform releases |
+
+### WASM Deploy Path
+Always deploy from: `src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish/wwwroot/`
+
+---
 
 ## Domain Knowledge
 
 ### JAML (Joker Ante Markup Language)
-- YAML-based filter format for Balatro seeds
-- Uses YAML anchors (`&anchor`) and aliases (`*anchor`) for templates
-- Supports `Antes` inheritance from parent `And`/`Or` clauses
+YAML-based seed filter format.
 - Schema: `jaml.schema.json`
-- Examples: `JamlFilters/*.jaml`
+- Supports anchors (`&name`) and aliases (`*name`)
+- Location: `JamlFilters/` directory
+
+```yaml
+# Example JAML filter
+filter:
+  name: "Early Legendary"
+  ante: 1
+  jokers:
+    - &legendary_joker
+      rarity: Legendary
+      source: [Shop, Buffoon]
+```
 
 ### Motely Search Engine
 - Submodule: `external/Motely/`
-- High-performance seed search using SIMD
-- Supports JAML and JSON filters
-- CLI available in `external/Motely/Motely.TUI/`
+- High-performance SIMD seed search
+- DuckDB integration for result storage
 
-### Balatro Game Concepts
-- **Jokers**: Cards that modify gameplay (e.g., Blueprint, Brainstorm, OopsAll6s)
-- **Antes**: Rounds 1-8 (sometimes 1-12)
-- **Tags**: Small Blind/Big Blind modifiers (e.g., NegativeTag)
-- **Vouchers**: Shop upgrades
-- **Bosses**: End-of-ante challenges
-
-## Common Tasks
-
-### Adding a New Feature
-1. Create ViewModel in `ViewModels/` (inherit `ObservableObject`)
-2. Create View in `Views/` or Component in `Components/`
-3. Register services in `App.axaml.cs` if needed
-4. Use `DebugLogger` for all logging
-5. Follow existing MVVM patterns
-
-### Fixing Bugs
-1. Use `DebugLogger.LogError()` to trace issues
-2. Check similar implementations using grep
-3. Test on both Desktop and Browser if UI-related
-4. Check for null reference warnings
-
-### UI Changes
-1. Follow Avalonia patterns in existing components
-2. Use data binding (`{Binding PropertyName}`)
-3. Use commands, not event handlers
-4. Test responsive design
-
-### JAML Editor Changes
-- Location: `src/BalatroSeedOracle/Components/FilterTabs/JamlEditorTab.*`
-- Uses AvaloniaEdit for syntax highlighting
-- Helper services: `JamlErrorMarkerService`, `JamlHoverTooltipService`, `JamlCodeSnippetService`
-- Schema validation via `jaml.schema.json`
-
-## Important Files
-
-### Entry Points
-- `src/Program.cs` - Main entry point (Desktop)
-- `src/BalatroSeedOracle.Desktop/Program.cs` - Desktop-specific entry
-- `src/BalatroSeedOracle/App.axaml.cs` - Application setup, service registration
-
-### Core Services
-- `src/BalatroSeedOracle/Services/SearchInstance.cs` - Search execution
-- `src/BalatroSeedOracle/Services/FilterService.cs` - Filter management
-- `src/BalatroSeedOracle/Helpers/DebugLogger.cs` - **CRITICAL: Use this for all logging**
-
-### Key ViewModels
-- `FiltersModalViewModel.cs` - Filter creation/editing
-- `SearchModalViewModel.cs` - Search interface
-- `AnalyzerViewModel.cs` - Seed analysis
-
-## Testing & Debugging
-
-### Build Configurations
-- **Release**: Optimized, fast searches (default for users)
-- **Debug**: Slower, includes debug symbols (for development)
-
-### VS Code Tasks
-- `Ctrl+Shift+B` - Run Desktop (Release) - **Default task**
-- `F5` - Debug with selected configuration
-- See `.vscode/tasks.json` for all tasks
-
-### Common Issues
-- **Compilation errors**: Check for missing `using` statements
-- **Null reference warnings**: Use null-conditional operators
-- **Platform-specific**: Check `#if BROWSER` directives
-
-## Release Checklist
-
-### Pre-Release
-- [ ] All compilation errors fixed
-- [ ] No critical TODOs remaining
-- [ ] Test on Desktop (Release build)
-- [ ] Test Browser build if applicable
-- [ ] Check for memory leaks
-- [ ] Verify logging doesn't spam console
-
-### Code Quality
-- [ ] Async methods properly await or return Task.CompletedTask
-- [ ] No `Console.WriteLine` in production code
-- [ ] Nullable reference types handled correctly
-- [ ] Platform-specific code properly guarded
-
-## AI Agent Best Practices
-
-### Before Making Changes
-1. **Read existing similar code** - Use grep to find patterns
-2. **Check AI_CODING_GUIDELINES.md** - Project-specific rules
-3. **Understand the domain** - JAML, Motely, Balatro concepts
-4. **Check for existing implementations** - Don't reinvent
-
-### When Writing Code
-1. **Follow existing patterns** - Consistency is key
-2. **Use DebugLogger** - Never Console.WriteLine
-3. **Add comments** - Explain complex logic
-4. **Keep it simple** - Complexity breaks AI agents
-
-### After Making Changes
-1. **Test compilation** - `dotnet build`
-2. **Check linter warnings** - Fix nullability issues
-3. **Verify logging** - Use DebugLogger correctly
-4. **Test functionality** - Run the app if UI changes
-
-## Project-Specific Notes
-
-### JAML Template System
-- Uses YAML anchors/aliases (native YAML 1.2)
-- Parser supports it automatically (Motely)
-- Antes inheritance: Parent `And`/`Or` clauses propagate `Antes` to children
-- See `REVISED_FOR_AVALONIA_AGENT_JAML_FINAL3.md` for details
-
-### Search Performance
-- Release builds use SIMD optimizations
-- Browser builds support WebAssembly SIMD
-- Threads optional (requires COOP/COEP headers)
-
-### File Locations
-- Filters: `JamlFilters/*.jaml`
-- Presets: `Presets/`, `MixerPresets/`, `VisualizerPresets/`
-- User data: `User/userprofile.json`
-- External: `external/Motely/` (git submodule)
+### Balatro Concepts
+| Term | Description |
+|------|-------------|
+| Joker | Cards that modify scoring/gameplay |
+| Ante | Round (1-8, sometimes 1-12) |
+| Blind | Boss at end of ante |
+| Tag | Modifier (Skip, Negative, etc.) |
+| Voucher | Shop upgrade |
+| Edition | Foil, Holographic, Polychrome, Negative |
 
 ---
 
-**Last Updated**: 2025-01-XX
-**Status**: Production Ready
-**Primary Target**: Desktop (Windows/Linux/macOS)
-**Secondary Target**: Browser (WebAssembly)
+## Code Style
+
+### Naming
+- ViewModels: `*ViewModel`
+- Services: `*Service`
+- Platform: `Desktop*`, `Browser*`, `Android*`, `iOS*`
+- Commands: `*Command`
+- Private fields: `_camelCase`
+
+### Nullability
+```csharp
+// ✅ CORRECT
+if (value is null) { }
+if (value is not null) { }
+var result = obj?.Property ?? defaultValue;
+
+// ❌ WRONG
+if (value == null) { }
+```
+
+---
+
+## Common Errors & Fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `AVLN2000` | Missing `x:DataType` with compiled bindings | Add `x:DataType="vm:YourViewModel"` |
+| `AVLN2100` | Binding to non-existent property | Check property exists and is public |
+| `CS8602` | Null dereference | Add null checks or use `?.` |
+| `libSkiaSharp not found` | Missing WASM workload | `dotnet workload install wasm-tools` |
+| Blank screen (WASM) | Initialization error | Check browser console, verify DI registration |
+
+---
+
+## File Locations
+
+### Entry Points
+- `src/BalatroSeedOracle.Desktop/Program.cs` → Desktop
+- `src/BalatroSeedOracle.Browser/Program.cs` → Browser
+- `src/BalatroSeedOracle/App.axaml.cs` → Shared initialization
+
+### Config Files
+- `Directory.Build.props` → Shared MSBuild properties
+- `Directory.Packages.props` → Central package versions
+- `TrimmerRoots.xml` → AOT preservation
+- `vercel.json` → Vercel deployment config
+- `wrangler.toml` → Cloudflare Pages config
+
+---
+
+**Avalonia Docs**: https://docs.avaloniaui.net/
+**Last Updated**: 2026-01-28

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Services
@@ -68,7 +69,8 @@ namespace BalatroSeedOracle.Services
                 if (File.Exists(_dataPath))
                 {
                     var json = File.ReadAllText(_dataPath);
-                    var list = JsonSerializer.Deserialize<List<DaylatroDailyScores>>(json) ?? new();
+                    // AOT-compatible: Use source-generated serializer context
+                    var list = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.ListDaylatroDailyScores) ?? new();
                     _cache.Clear();
                     foreach (var d in list)
                     {
@@ -92,10 +94,8 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var list = _cache.Values.OrderByDescending(d => d.DateUtc).ToList();
-                var json = JsonSerializer.Serialize(
-                    list,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
+                // AOT-compatible: Use source-generated serializer context
+                var json = JsonSerializer.Serialize(list, BsoJsonSerializerContext.Default.ListDaylatroDailyScores);
                 File.WriteAllText(_dataPath, json);
             }
             catch (Exception ex)
@@ -120,7 +120,8 @@ namespace BalatroSeedOracle.Services
                 if (File.Exists(_submissionsPath))
                 {
                     var json = File.ReadAllText(_submissionsPath);
-                    var dates = JsonSerializer.Deserialize<Dictionary<string, DateTime>>(json);
+                    // AOT-compatible: Use source-generated serializer context
+                    var dates = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.DictionaryStringDateTime);
                     if (dates != null)
                     {
                         _lastSubmissionDates.Clear();
@@ -144,10 +145,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var json = JsonSerializer.Serialize(
-                    _lastSubmissionDates,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
+                // AOT-compatible: Use source-generated serializer context
+                var json = JsonSerializer.Serialize(_lastSubmissionDates, BsoJsonSerializerContext.Default.DictionaryStringDateTime);
                 File.WriteAllText(_submissionsPath, json);
             }
             catch (Exception ex)

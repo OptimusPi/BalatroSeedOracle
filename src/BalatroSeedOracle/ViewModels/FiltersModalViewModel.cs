@@ -1291,7 +1291,7 @@ namespace BalatroSeedOracle.ViewModels
             // Add stickers if configured
             if (itemConfig.Stickers?.Any() == true)
             {
-                clause.Stickers = itemConfig.Stickers;
+                clause.Stickers = itemConfig.Stickers.ToArray();
             }
 
             // Handle playing card specific properties
@@ -1434,7 +1434,7 @@ namespace BalatroSeedOracle.ViewModels
             // Add stickers if configured
             if (filterItem.Stickers?.Any() == true)
             {
-                clause.Stickers = filterItem.Stickers;
+                clause.Stickers = filterItem.Stickers.ToArray();
             }
 
             // Handle playing card specific properties

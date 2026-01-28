@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Helpers
@@ -11,13 +11,6 @@ namespace BalatroSeedOracle.Helpers
     public static class MixerHelper
     {
         private static readonly string MixerDirectory = AppPaths.MixerPresetsDir;
-
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
 
         static MixerHelper() { }
 
@@ -33,7 +26,8 @@ namespace BalatroSeedOracle.Helpers
 
                 var safeName = NormalizeName(name);
                 var path = Path.Combine(MixerDirectory, safeName + ".json");
-                var json = JsonSerializer.Serialize(settings, JsonOptions);
+                // AOT-compatible: Use source-generated serializer context
+                var json = JsonSerializer.Serialize(settings, BsoJsonSerializerContext.Default.MixerSettings);
                 File.WriteAllText(path, json);
                 DebugLogger.Log("MixerHelper", $"Saved mixer '{name}' → {path}");
                 return true;
@@ -57,7 +51,8 @@ namespace BalatroSeedOracle.Helpers
                     return null;
                 }
                 var json = File.ReadAllText(path);
-                var settings = JsonSerializer.Deserialize<MixerSettings>(json, JsonOptions);
+                // AOT-compatible: Use source-generated serializer context
+                var settings = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.MixerSettings);
                 return settings;
             }
             catch (Exception ex)

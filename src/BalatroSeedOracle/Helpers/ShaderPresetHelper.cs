@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using BalatroSeedOracle.Extensions;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Helpers
@@ -24,7 +25,8 @@ namespace BalatroSeedOracle.Helpers
             try
             {
                 var json = File.ReadAllText(path);
-                var cfg = JsonSerializer.Deserialize<ShaderParametersConfig>(json);
+                // AOT-compatible: Use source-generated serializer context
+                var cfg = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.ShaderParametersConfig);
                 if (cfg == null)
                     return defaults;
                 return cfg.ToShaderParameters(defaults);

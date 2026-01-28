@@ -91,9 +91,12 @@ private void Save() { ... }
 
 ### 4. Platform-Specific Code
 
-- Use `IPlatformServices` instead of `#if` directives
-- Check platform capabilities at runtime
-- Keep platform-specific code minimal
+- **NEVER** use `#if BROWSER` / `#if !BROWSER` conditional compilation
+- Use **dependency injection** with platform abstractions instead
+- Use Avalonia's `IStorageProvider` for cross-platform file access
+- Create interfaces in shared code, register platform implementations via DI
+- Check platform capabilities at runtime where needed
+- Keep platform-specific code in platform-specific projects (Desktop/Browser)
 
 ## Code Quality
 

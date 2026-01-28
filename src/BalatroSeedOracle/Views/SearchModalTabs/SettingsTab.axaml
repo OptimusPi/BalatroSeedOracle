@@ -4,7 +4,8 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
-             x:DataType="vm:SearchModalViewModel">
+             x:DataType="vm:SearchModalViewModel"
+             x:CompileBindings="True">
 
     <!-- Preferred Deck Tab - Two-Column Layout (copied from FilterSelectionModal) -->
     <Grid Margin="20" ColumnDefinitions="*,15,*">
@@ -35,11 +36,11 @@
                              VerticalAlignment="Center"
                              Margin="0,0,15,0">
                         <Grid Width="400" Height="200">
-                            <Image Name="DeckImage"
+                            <Image Source="{Binding DeckImage}"
                                    Width="400"
                                    Height="200"
                                    Stretch="Uniform"/>
-                            <Image Name="StakeOverlayImage"
+                            <Image Source="{Binding StakeOverlayImage}"
                                    Width="400"
                                    Height="200"
                                    Stretch="Uniform"
@@ -49,18 +50,15 @@
 
                     <!-- Deck name and description -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
-                        <TextBlock Name="DeckNameText"
-                                   Text="{Binding DeckSelection}"
+                        <TextBlock Text="{Binding DeckSelection}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="18"
-                                   
                                    Foreground="{StaticResource Black}"/>
-                        <TextBlock Name="DeckDescriptionText"
+                        <TextBlock Text="{Binding DeckDescription}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="12"
                                    Foreground="{StaticResource ColorDarkGrey}"
-                                   TextWrapping="Wrap"
-                                   Text="Loading..."/>
+                                   TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
             </Grid>

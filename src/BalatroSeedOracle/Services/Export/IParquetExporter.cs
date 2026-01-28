@@ -4,26 +4,24 @@ using System.Threading.Tasks;
 namespace BalatroSeedOracle.Services.Export;
 
 /// <summary>
-/// Platform abstraction for Excel export functionality.
-/// Desktop uses ClosedXML, Browser uses JS interop (SheetJS or similar).
+/// Platform abstraction for Parquet export functionality.
+/// Desktop uses Parquet.Net, Browser uses JS interop or DuckDB-WASM.
 /// </summary>
-public interface IExcelExporter
+public interface IParquetExporter
 {
     /// <summary>
-    /// Whether Excel export is available on this platform
+    /// Whether Parquet export is available on this platform
     /// </summary>
     bool IsAvailable { get; }
 
     /// <summary>
-    /// Export data to an Excel file
+    /// Export data to a Parquet file
     /// </summary>
-    /// <param name="filePath">Path to save the Excel file</param>
-    /// <param name="sheetName">Name of the worksheet</param>
+    /// <param name="filePath">Path to save the Parquet file</param>
     /// <param name="headers">Column headers</param>
     /// <param name="rows">Data rows (each row is a list of cell values)</param>
     Task ExportAsync(
         string filePath,
-        string sheetName,
         IReadOnlyList<string> headers,
         IReadOnlyList<IReadOnlyList<object?>> rows
     );

@@ -1,7 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Controls.MaximizeButton">
+             x:Class="BalatroSeedOracle.Controls.MaximizeButton"
+             x:CompileBindings="True">
     
     <UserControl.Styles>
         <Style Selector="Button.maximize-btn">

@@ -31,7 +31,7 @@ internal sealed partial class Program
             services.AddSingleton<IApiHostService, BrowserApiHostService>();
 
             // Excel export (stub - not implemented for browser yet)
-            services.AddSingleton<IExcelExporter, BrowserExcelExporter>();
+            services.AddSingleton<IParquetExporter, BrowserParquetExporter>();
 
             // Browser audio using Web Audio API
             services.AddSingleton<IAudioManager, BrowserAudioManager>();

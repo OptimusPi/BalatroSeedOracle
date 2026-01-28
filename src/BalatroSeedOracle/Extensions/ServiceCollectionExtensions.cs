@@ -57,7 +57,11 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<ClauseConversionService>();
 
             // ViewModels
-            services.AddTransient<MainWindowViewModel>();
+            services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
+                sp.GetRequiredService<UserProfileService>(),
+                sp.GetRequiredService<SearchManager>(),
+                sp.GetRequiredService<Views.BalatroMainMenu>()
+            ));
             services.AddTransient<BalatroMainMenuViewModel>(sp => new BalatroMainMenuViewModel(
                 sp.GetRequiredService<UserProfileService>(),
                 sp.GetService<IApiHostService>(),
@@ -72,7 +76,10 @@ namespace BalatroSeedOracle.Extensions
             // - ISingleViewApplicationLifetime.MainView (browser/mobile)
             // - Services that need to talk to the active menu (SearchTransitionManager)
             services.AddSingleton<Views.BalatroMainMenu>();
-            services.AddSingleton<Views.MainWindow>();
+            services.AddSingleton<Views.MainWindow>(sp => new Views.MainWindow(
+                sp.GetRequiredService<MainWindowViewModel>(),
+                sp.GetRequiredService<Views.BalatroMainMenu>()
+            ));
             services.AddSingleton<FiltersModalViewModel>(sp => new FiltersModalViewModel(
                 sp.GetRequiredService<IConfigurationService>(),
                 sp.GetRequiredService<IFilterService>(),

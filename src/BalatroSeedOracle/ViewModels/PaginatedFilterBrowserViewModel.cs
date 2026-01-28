@@ -450,7 +450,7 @@ namespace BalatroSeedOracle.ViewModels
                 Suit = clause.Suit,
                 Score = scoreOverride ?? clause.Score,
                 Label = clause.Label,
-                Stickers = clause.Stickers,
+                Stickers = clause.Stickers != null ? new List<string>(clause.Stickers) : null,
             };
 
             switch (itemType)

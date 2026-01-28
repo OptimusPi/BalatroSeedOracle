@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Controls
@@ -23,8 +24,8 @@ namespace BalatroSeedOracle.Controls
         private Canvas? _jokerCanvas;
         private ItemsControl? _tagsControl;
 
-        public static readonly StyledProperty<FavoritesService.JokerSet?> JokerSetProperty =
-            AvaloniaProperty.Register<JokerSetDisplay, FavoritesService.JokerSet?>(
+        public static readonly StyledProperty<JokerSet?> JokerSetProperty =
+            AvaloniaProperty.Register<JokerSetDisplay, JokerSet?>(
                 nameof(JokerSet)
             );
 
@@ -33,7 +34,7 @@ namespace BalatroSeedOracle.Controls
             RoutedEventArgs
         >(nameof(Click), RoutingStrategies.Bubble);
 
-        public FavoritesService.JokerSet? JokerSet
+        public JokerSet? JokerSet
         {
             get => GetValue(JokerSetProperty);
             set => SetValue(JokerSetProperty, value);
@@ -68,14 +69,14 @@ namespace BalatroSeedOracle.Controls
 
             if (
                 change.Property == JokerSetProperty
-                && change.NewValue is FavoritesService.JokerSet set
+                && change.NewValue is JokerSet set
             )
             {
                 LoadJokerSet(set);
             }
         }
 
-        private void LoadJokerSet(FavoritesService.JokerSet set)
+        private void LoadJokerSet(JokerSet set)
         {
             if (_setNameText != null)
                 _setNameText.Text = set.Name;

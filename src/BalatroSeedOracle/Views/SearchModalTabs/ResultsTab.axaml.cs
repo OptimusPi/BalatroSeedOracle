@@ -40,7 +40,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     $"OnAttachedToVisualTree: Grid found with {vm.SearchResults.Count} search results available for binding"
                 );
 
-                // CRITICAL FIX: Export to EXCEL with ClosedXML for proper data handling
+                // Export to CSV, Parquet, or DuckDB
                 grid.ExportAllRequested += async (s, results) =>
                 {
                     try
@@ -66,19 +66,23 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         var file = await topLevel.StorageProvider.SaveFilePickerAsync(
                             new Avalonia.Platform.Storage.FilePickerSaveOptions
                             {
-                                Title = "Export Search Results to Excel",
-                                DefaultExtension = "xlsx",
+                                Title = "Export Search Results",
+                                DefaultExtension = "parquet",
                                 SuggestedFileName =
-                                    $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                                    $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.parquet",
                                 FileTypeChoices = new[]
                                 {
-                                    new Avalonia.Platform.Storage.FilePickerFileType("Excel Files")
+                                    new Avalonia.Platform.Storage.FilePickerFileType("Parquet Files")
                                     {
-                                        Patterns = new[] { "*.xlsx" },
+                                        Patterns = new[] { "*.parquet" },
                                     },
                                     new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
                                     {
                                         Patterns = new[] { "*.csv" },
+                                    },
+                                    new Avalonia.Platform.Storage.FilePickerFileType("DuckDB Files")
+                                    {
+                                        Patterns = new[] { "*.db" },
                                     },
                                 },
                             }
@@ -95,15 +99,15 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
                         // Check file extension to determine export format
                         var filePath = file.Path.LocalPath;
-                        if (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                        if (filePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
                         {
-                            // EXCEL EXPORT using platform-specific IExcelExporter
-                            var excelExporter = App.GetService<IExcelExporter>();
-                            if (excelExporter == null || !excelExporter.IsAvailable)
+                            // PARQUET EXPORT using platform-specific IParquetExporter
+                            var parquetExporter = App.GetService<IParquetExporter>();
+                            if (parquetExporter == null || !parquetExporter.IsAvailable)
                             {
                                 DebugLogger.Log(
                                     "ResultsTab",
-                                    "Excel export not available on this platform"
+                                    "Parquet export not available on this platform"
                                 );
                                 return;
                             }
@@ -124,15 +128,14 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                                 rows.Add(row);
                             }
 
-                            await excelExporter.ExportAsync(
+                            await parquetExporter.ExportAsync(
                                 filePath,
-                                "Search Results",
                                 headers,
                                 rows
                             );
                             DebugLogger.Log(
                                 "ResultsTab",
-                                $"Exported {results.Count()} results to Excel: {filePath}"
+                                $"Exported {results.Count()} results to Parquet: {filePath}"
                             );
                         }
                         else

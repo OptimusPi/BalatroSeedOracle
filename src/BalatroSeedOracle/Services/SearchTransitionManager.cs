@@ -197,22 +197,13 @@ namespace BalatroSeedOracle.Services
         }
 
         /// <summary>
-        /// Applies shader parameters to BalatroMainMenu using reflection
+        /// Applies shader parameters to BalatroMainMenu
         /// </summary>
         private void ApplyToMainMenu(Views.BalatroMainMenu mainMenu, ShaderParameters parameters)
         {
             try
             {
-                var shaderBackgroundField = typeof(Views.BalatroMainMenu).GetField(
-                    "_shaderBackground",
-                    System.Reflection.BindingFlags.NonPublic
-                        | System.Reflection.BindingFlags.Instance
-                );
-
-                if (
-                    shaderBackgroundField?.GetValue(mainMenu)
-                    is Controls.BalatroShaderBackground shaderBackground
-                )
+                if (mainMenu.ShaderBackground is Controls.BalatroShaderBackground shaderBackground)
                 {
                     shaderBackground.SetTime(parameters.TimeSpeed);
                     shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);

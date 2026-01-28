@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 
 namespace BalatroSeedOracle.Services
 {
@@ -15,28 +16,6 @@ namespace BalatroSeedOracle.Services
 
         private readonly string _favoritesPath;
         private FavoritesData _data = new FavoritesData();
-
-        public class FavoritesData
-        {
-            public List<string> FavoriteItems { get; set; } = new List<string>();
-            public List<JokerSet> CommonSets { get; set; } = new List<JokerSet>();
-        }
-
-        public class JokerSet
-        {
-            public string Name { get; set; } = "";
-            public string Description { get; set; } = "";
-            public List<string> Items { get; set; } = new List<string>(); // Can be jokers, tarots, etc
-            public List<string> Tags { get; set; } = new List<string>();
-
-            // New structure to remember which zone each item belongs to
-            public List<string> MustItems { get; set; } = new List<string>();
-            public List<string> ShouldItems { get; set; } = new List<string>();
-            public List<string> MustNotItems { get; set; } = new List<string>();
-
-            // Check if favorite has zone-specific item assignments
-            public bool HasZoneInfo => MustItems.Any() || ShouldItems.Any() || MustNotItems.Any();
-        }
 
         private FavoritesService()
         {
@@ -60,7 +39,8 @@ namespace BalatroSeedOracle.Services
                 if (File.Exists(_favoritesPath))
                 {
                     var json = File.ReadAllText(_favoritesPath);
-                    _data = JsonSerializer.Deserialize<FavoritesData>(json) ?? new FavoritesData();
+                    // AOT-compatible: Use source-generated serializer context
+                    _data = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.FavoritesData) ?? new FavoritesData();
                 }
                 else
                 {
@@ -187,10 +167,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var json = JsonSerializer.Serialize(
-                    _data,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
+                // AOT-compatible: Use source-generated serializer context
+                var json = JsonSerializer.Serialize(_data, BsoJsonSerializerContext.Default.FavoritesData);
                 await File.WriteAllTextAsync(_favoritesPath, json);
                 DebugLogger.Log("FavoritesService", "Favorites saved successfully");
             }

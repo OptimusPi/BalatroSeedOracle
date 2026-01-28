@@ -79,7 +79,7 @@ namespace BalatroSeedOracle.Services
             }
 
             // Add stickers if specified
-            if (clause.Stickers?.Count > 0)
+            if (clause.Stickers != null && clause.Stickers.Length > 0)
             {
                 displayParts.Add($"[{string.Join(", ", clause.Stickers)}]");
             }
@@ -185,7 +185,7 @@ namespace BalatroSeedOracle.Services
             // Add stickers if specified
             if (config.Stickers?.Count > 0)
             {
-                clause.Stickers = config.Stickers;
+                clause.Stickers = config.Stickers.ToArray();
             }
 
             // Add sources for applicable item types

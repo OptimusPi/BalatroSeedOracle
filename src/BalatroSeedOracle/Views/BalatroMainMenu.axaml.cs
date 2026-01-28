@@ -32,6 +32,11 @@ namespace BalatroSeedOracle.Views
         private Control? _background;
         private BalatroShaderBackground? _shaderBackground;
 
+        /// <summary>
+        /// Public accessor for the shader background control (for transition effects)
+        /// </summary>
+        public BalatroShaderBackground? ShaderBackground => _shaderBackground;
+
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;

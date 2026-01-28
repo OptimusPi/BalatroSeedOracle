@@ -1,6 +1,6 @@
 # Motely API Routes Reference
 
-**Base URL**: `http://localhost:5000` (or your configured port)
+**Base URL**: `http://localhost:3141` (or your configured port)
 
 ## Core Endpoints
 
@@ -177,7 +177,7 @@ Array of objects with dynamic columns based on the filter. Common columns includ
 
 ### Start a search
 ```javascript
-const response = await fetch('http://localhost:5000/search', {
+const response = await fetch('http://localhost:3141/search', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -192,19 +192,19 @@ const { searchId } = await response.json();
 
 ### Check search status
 ```javascript
-const response = await fetch(`http://localhost:5000/search/${searchId}`);
+const response = await fetch(`http://localhost:3141/search/${searchId}`);
 const { status, results, progressPercent } = await response.json();
 ```
 
 ### Get all filters
 ```javascript
-const response = await fetch('http://localhost:5000/filters');
+const response = await fetch('http://localhost:3141/filters');
 const filters = await response.json();
 ```
 
 ### Analyze a seed
 ```javascript
-const response = await fetch('http://localhost:5000/analyze?seed=MO4E11BR&deck=Ghost&stake=Red');
+const response = await fetch('http://localhost:3141/analyze?seed=MO4E11BR&deck=Ghost&stake=Red');
 const analysis = await response.text(); // Returns plain text
 ```
 

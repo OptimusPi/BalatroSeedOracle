@@ -41,7 +41,7 @@ public class Program
                 // Desktop-only services
                 services.AddSingleton<IAudioManager, DesktopAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
-                services.AddSingleton<IExcelExporter, ClosedXmlExcelExporter>();
+                services.AddSingleton<IParquetExporter, ParquetExporter>();
 
                 // API host
                 services.AddSingleton<IApiHostService, DesktopApiHostService>();

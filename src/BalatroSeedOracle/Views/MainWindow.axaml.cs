@@ -20,6 +20,12 @@ public partial class MainWindow : Window
 
     public BalatroMainMenu? MainMenu => _mainMenu;
 
+    // Parameterless constructor required for XAML loading
+    public MainWindow()
+    {
+        InitializeComponent();
+    }
+
     public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu)
     {
         InitializeComponent();
@@ -32,26 +38,18 @@ public partial class MainWindow : Window
             BuyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
 
-        // Host the DI-created main menu instance (no FindControl service-locator anti-pattern)
+        // Host the DI-created main menu instance
         _mainMenu = mainMenu;
-        if (MainMenuHost is not null)
-        {
-            MainMenuHost.Content = mainMenu;
-        }
-        else
-        {
-            DebugLogger.LogError(
-                "MainWindow",
-                "MainMenuHost not found - cannot attach BalatroMainMenu"
-            );
-        }
+        
+        // MainMenu is bound via compiled bindings in XAML: Content="{Binding MainMenu}"
+        // No code-behind assignment needed - MVVM pattern!
 
-        // Sync IsVibeOutMode from MainMenu to MainWindow
-        if (_mainMenu?.ViewModel is not null && ViewModel is not null)
+        // Sync IsVibeOutMode from MainMenu to MainWindow if (_mainMenu?.ViewModel is not null && ViewModel is not null)
+       
         {
             _mainMenu.ViewModel.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode))
+                if (e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode) && ViewModel is not null)
                 {
                     ViewModel.IsVibeOutMode = _mainMenu.ViewModel.IsVibeOutMode;
                 }

@@ -37,7 +37,6 @@ namespace BalatroSeedOracle.ViewModels
 
         // Debounced save state
         private CancellationTokenSource? _saveCancellation;
-        private Task? _saveTask;
         private const int SAVE_DEBOUNCE_MS = 250;
 
         private static readonly string MetadataDirectory = Path.Combine(

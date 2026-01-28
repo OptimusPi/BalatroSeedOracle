@@ -1,6 +1,1 @@
-# Avalonia License Key - DO NOT COMMIT
-# Copy this file to avalonia.license.local and add your license key
-# OR set the AVALONIA_LICENSE_KEY environment variable
-
-# Example:
-# avln_on_key:v1:YOUR_LICENSE_KEY_HERE
+avln_on_key:v1:YOUR_LICENSE_KEY_HERE

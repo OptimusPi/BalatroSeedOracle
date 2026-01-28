@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balatro Seed Search Tools - All Ways to Search for Balatro Seeds</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ff4c40 0%, #0093ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      color: #b9c2d2;
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    
+    /* LOCAL ONLY Section */
+    .local-section {
+      background: rgba(255, 76, 64, 0.1);
+      border: 2px solid #ff4c40;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+    .local-section h2 {
+      color: #ff4c40;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .local-section .badge {
+      background: #ff4c40;
+      color: #fff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    /* Main Section */
+    .main-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+    .main-section h2 {
+      color: #0093ff;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Links Grid */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .link-card {
+      background: rgba(58, 80, 85, 0.6);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: #fff;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: block;
+    }
+    .link-card:hover {
+      background: rgba(74, 96, 101, 0.8);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+      border-color: #0093ff;
+    }
+    .link-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .link-title {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      color: #0093ff;
+      font-weight: 600;
+    }
+    .link-desc {
+      color: #b9c2d2;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    
+    /* API Links */
+    .api-links {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .api-links h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #0093ff;
+    }
+    .api-link {
+      display: inline-block;
+      margin: 0.5rem 1rem 0.5rem 0;
+      padding: 0.6rem 1.2rem;
+      background: rgba(30, 43, 45, 0.8);
+      border-radius: 6px;
+      color: #0093ff;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid rgba(0, 147, 255, 0.3);
+    }
+    .api-link:hover {
+      background: rgba(42, 58, 61, 0.9);
+      border-color: #0093ff;
+      transform: translateY(-2px);
+    }
+    
+    /* External Links */
+    .external-links {
+      margin-top: 2rem;
+    }
+    .external-links h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #0093ff;
+    }
+    .external-link {
+      display: inline-block;
+      margin: 0.5rem 1rem 0.5rem 0;
+      padding: 0.6rem 1.2rem;
+      background: rgba(30, 43, 45, 0.8);
+      border-radius: 6px;
+      color: #ff4c40;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid rgba(255, 76, 64, 0.3);
+    }
+    .external-link:hover {
+      background: rgba(42, 58, 61, 0.9);
+      border-color: #ff4c40;
+      transform: translateY(-2px);
+    }
+    
+    /* Attribution Banner */
+    .attribution-banner {
+      background: rgba(0, 0, 0, 0.4);
+      border-top: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      margin-top: 3rem;
+      text-align: center;
+      border-radius: 12px 12px 0 0;
+    }
+    .attribution-banner p {
+      color: #b9c2d2;
+      margin-bottom: 1rem;
+      line-height: 1.8;
+    }
+    .attribution-banner a {
+      color: #0093ff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .attribution-banner a:hover {
+      color: #ff4c40;
+      text-decoration: underline;
+    }
+    .attribution-banner .heart {
+      color: #ff4c40;
+    }
+    .attribution-item {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border-left: 3px solid #0093ff;
+    }
+    .attribution-item strong {
+      color: #0093ff;
+    }
+    
+    /* Health Status */
+    .health-status {
+      background: rgba(58, 80, 85, 0.6);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .health-status.loading {
+      color: #b9c2d2;
+    }
+    .health-status.online {
+      color: #429f79;
+      border-color: #429f79;
+    }
+    .health-status.offline {
+      color: #ff4c40;
+      border-color: #ff4c40;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .links-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔍 Balatro Seed Search Tools</h1>
+      <p class="subtitle">All Ways to Search for Balatro Seeds</p>
+    </header>
+    
+    <!-- LOCAL ONLY Section -->
+    <section class="local-section">
+      <h2>
+        <span class="badge">LOCAL ONLY</span>
+        Local Development Tools
+      </h2>
+      <p style="color: #b9c2d2; margin-bottom: 1.5rem;">
+        These tools are only available when running the Motely.API server locally.
+      </p>
+      
+      <div class="links-grid">
+        <a href="/JAML/" class="link-card">
+          <div class="link-icon">📝</div>
+          <div class="link-title">JAML WebUI</div>
+          <div class="link-desc">Commander control for orchestrating JAML filters and live seed searches. Full-featured filter editor and search interface.</div>
+        </a>
+        
+        <a href="/BSO/" class="link-card">
+          <div class="link-icon">🌐</div>
+          <div class="link-title">BSO Browser</div>
+          <div class="link-desc">The Avalonia UI app built to ALL platforms - BalatroSeedOracle.Browser project. Peak enlightenment with WebAssembly achieved!</div>
+        </a>
+      </div>
+      
+      <div class="api-links">
+        <h3>API Documentation & Endpoints</h3>
+        <a href="/swagger/v1/swagger.json" class="api-link" target="_blank">OpenAPI JSON Schema</a>
+        <a href="/api/docs" class="api-link" target="_blank">Scalar API Documentation</a>
+        <a href="/api/search" class="api-link" target="_blank">Search API</a>
+        <a href="/api/wordlists" class="api-link" target="_blank">WordLists API</a>
+        <a href="/hubs/search" class="api-link" target="_blank">SignalR Hub</a>
+        <a href="/health" class="api-link" target="_blank">Health Check</a>
+      </div>
+    </section>
+    
+    <!-- Main Section - External Tools & Resources -->
+    <section class="main-section">
+      <h2>🌍 Community Tools & Resources</h2>
+      
+      <div class="links-grid">
+        <a href="https://miaklwalker.github.io/Blueprint/" class="link-card" target="_blank">
+          <div class="link-icon">🔮</div>
+          <div class="link-title">Blueprint</div>
+          <div class="link-desc">Online Balatro Seed Analyzer - lets you check nearly every facet of a seed. Created by miaklwalker.</div>
+        </a>
+        
+        <a href="https://weejoker.app" class="link-card" target="_blank">
+          <div class="link-icon">🃏</div>
+          <div class="link-title">WeeJoker</div>
+          <div class="link-desc">Balatro seed search and analysis tool.</div>
+        </a>
+        
+        <a href="https://erraticdeck.app" class="link-card" target="_blank">
+          <div class="link-icon">🎴</div>
+          <div class="link-title">ErraticDeck</div>
+          <div class="link-desc">Balatro deck analysis and seed tools.</div>
+        </a>
+      </div>
+      
+      <div class="external-links">
+        <h3>GitHub Repositories</h3>
+        <a href="https://github.com/miaklwalker/Blueprint" class="external-link" target="_blank">Blueprint GitHub</a>
+        <a href="https://github.com/tacodiva/motely" class="external-link" target="_blank">Motely (Original)</a>
+        <a href="https://github.com/tacodiva" class="external-link" target="_blank">tacodiva GitHub</a>
+      </div>
+    </section>
+    
+    <!-- Health Status -->
+    <div id="healthStatus" class="health-status loading">
+      Checking API status...
+    </div>
+    
+    <!-- Attribution Banner -->
+    <footer class="attribution-banner">
+      <p>
+        <strong>Not affiliated with LocalThunk or PlayStack.</strong> 
+        <a href="https://playbalatro.com/">BUY Balatro</a> 
+        Created with <span class="heart">❤️</span> for the Balatro community.
+      </p>
+      
+      <div class="attribution-item">
+        <p>
+          <strong>Blueprint Online Balatro Seed Analyzer</strong> iframe embed, used with permission, by miaklwalker<br>
+          <a href="https://miaklwalker.github.io/Blueprint/" target="_blank">https://miaklwalker.github.io/Blueprint/</a> | 
+          <a href="https://github.com/miaklwalker/Blueprint" target="_blank">GitHub</a>
+        </p>
+      </div>
+      
+      <div class="attribution-item">
+        <p>
+          The original <strong>Motely</strong> - a fast CPU SIMD seed searcher for Balatro in C# is by tacodiva<br>
+          <a href="https://github.com/tacodiva/motely" target="_blank">https://github.com/tacodiva/motely</a> | 
+          <a href="https://github.com/tacodiva" target="_blank">tacodiva GitHub</a>
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    async function checkHealth() {
+      const statusEl = document.getElementById('healthStatus');
+      try {
+        const res = await fetch('/health');
+        if (res.ok) {
+          statusEl.textContent = '✅ API Online - All systems operational';
+          statusEl.className = 'health-status online';
+        } else {
+          throw new Error('Health check failed');
+        }
+      } catch (e) {
+        statusEl.textContent = '❌ API Offline - Make sure Motely.API is running on port 3141';
+        statusEl.className = 'health-status offline';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 30000); // Check every 30 seconds
+  </script>
+</body>
+</html>

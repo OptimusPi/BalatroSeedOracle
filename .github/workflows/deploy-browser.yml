@@ -2,8 +2,7 @@ name: Deploy Browser Version
 
 on:
   push:
-    branches: [main, develop]
-    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
+    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -17,109 +16,62 @@ on:
 
 env:
   DOTNET_VERSION: "10.0.x"
-  BROWSER_PUBLISH_DIR: src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish
+  PUBLISH_DIR: src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/publish/wwwroot
 
 jobs:
-  build-and-deploy:
-    runs-on: windows-latest
-
+  deploy:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache NuGet Dependencies
+      - name: Cache NuGet Packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          restore-keys: ${{ runner.os }}-nuget-
 
-      - name: Restore Dependencies
-        run: dotnet restore
-
-      - name: Build Browser Version
-        run: dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release --no-restore -p:PublishTrimmed=true -p:TrimMode=link -p:PublishSingleFile=false -p:CompressionEnabled=true
-
-      - name: Optimize for Production
+      - name: Restore & Publish
         run: |
-          $publishDir = "${env:BROWSER_PUBLISH_DIR}"
-          # Remove debug files
-          Remove-Item $publishDir/**/*.pdb -Recurse -Force
-          # Remove source maps for production
-          Remove-Item $publishDir/**/*.map -Recurse -Force -ErrorAction SilentlyContinue
-          # Remove unnecessary locales
-          Remove-Item $publishDir/_framework/_locales -Recurse -Force -ErrorAction SilentlyContinue
-          # Remove duplicate compressed files (brotli already compressed)
-          Remove-Item $publishDir/**/*.gz -Recurse -Force -ErrorAction SilentlyContinue
-          # Optimize WASM size
-          Compress-Archive -Path $publishDir/*.wasm -DestinationPath temp.zip -Force
-          Expand-Archive -Path temp.zip -DestinationPath publish/browser/optimized -Force
-          Remove-Item $publishDir/*.wasm -Force
-          Move-Item publish/browser/optimized/*.wasm $publishDir/ -Force
-          Remove-Item publish/browser/optimized -Recurse -Force
-          Remove-Item temp.zip
+          dotnet restore
+          dotnet publish src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj -c Release
 
-      - name: Generate Build Info
-        run: |
-          $publishDir = "${{ env.BROWSER_PUBLISH_DIR }}"
-          $buildInfo = @{
-            commit = "${{ github.sha }}"
-            branch = "${{ github.ref_name }}"
-            buildTime = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ")
-            version = "${{ github.ref_type == 'tag' && github.ref_name || 'dev-' + github.sha.Substring(0, 8) }}"
-          }
-          $buildInfo | ConvertTo-Json | Out-File -FilePath "$publishDir/build-info.json"
-
-      - name: Deploy to Staging
-        if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        run: |
-          if ("${{ secrets.VERCEL_TOKEN }}" -ne "") {
-            Write-Host "Deploying to Vercel (staging)"
-            npm install -g vercel
-            vercel deploy --token $env:VERCEL_TOKEN --prod
-          } else {
-            Write-Host "Vercel credentials not configured, skipping Vercel deployment"
-          }
-
-      - name: Deploy to Production
-        if: github.event.inputs.environment == 'production'
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-        run: |
-          if ("${{ secrets.CLOUDFLARE_API_TOKEN }}" -ne "") {
-            Write-Host "Deploying to Cloudflare Pages (production)"
-            npm install -g wrangler
-            wrangler pages deploy publish --project-name balatro-seed-oracle
-          } else {
-            Write-Host "Cloudflare credentials not configured, skipping Cloudflare deployment"
-          }
-
-      - name: Upload Build Artifacts
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: browser-build-${{ github.ref_name }}
-          path: ${{ env.BROWSER_PUBLISH_DIR }}/
+          path: ${{ env.PUBLISH_DIR }}
           retention-days: 30
 
-      - name: Create Deployment Package
+      - name: Deploy to Vercel (Staging)
+        if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          cd src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser
-          7z a -tzip ../../../../../BalatroSeedOracle-Browser-${{ github.ref_name }}.zip publish/*
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "Deploying to Vercel..."
+            npx vercel deploy ${{ env.PUBLISH_DIR }} --token=$VERCEL_TOKEN --prod
+          else
+            echo "VERCEL_TOKEN not configured, skipping Vercel deployment"
+          fi
 
-      - name: Upload Deployment Package
-        uses: actions/upload-artifact@v4
-        with:
-          name: browser-deploy-${{ github.ref_name }}
-          path: BalatroSeedOracle-Browser-${{ github.ref_name }}.zip
+      - name: Deploy to Cloudflare Pages (Production)
+        if: github.event.inputs.environment == 'production'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Deploying to Cloudflare Pages..."
+            npx wrangler pages deploy ${{ env.PUBLISH_DIR }} --project-name=balatro-seed-oracle
+          else
+            echo "CLOUDFLARE_API_TOKEN not configured, skipping Cloudflare deployment"
+          fi

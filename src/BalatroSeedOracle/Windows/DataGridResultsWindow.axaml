@@ -6,6 +6,7 @@
         xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="BalatroSeedOracle.Windows.DataGridResultsWindow"
+        x:CompileBindings="True"
         Title="Results"
         Width="1200"
         Height="800"
@@ -37,7 +38,7 @@
                         <MenuFlyout>
                             <MenuItem x:Name="ExportCsvMenuItem" Header="Export as CSV"/>
                             <MenuItem x:Name="ExportJsonMenuItem" Header="Export as JSON"/>
-                            <MenuItem x:Name="ExportExcelMenuItem" Header="Export as Excel"/>
+                            <MenuItem x:Name="ExportParquetMenuItem" Header="Export as Parquet"/>
                             <MenuItem x:Name="ExportWordlistMenuItem" Header="Export as Wordlist (.txt)"/>
                             <Separator/>
                             <MenuItem x:Name="CopyToClipboardMenuItem" Header="Copy to Clipboard"/>

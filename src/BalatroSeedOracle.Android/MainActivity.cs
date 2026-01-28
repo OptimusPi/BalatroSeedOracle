@@ -6,7 +6,6 @@ using Avalonia.Android;
 using BalatroSeedOracle;
 using BalatroSeedOracle.Android.Services;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.DuckDB;
 using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,10 +35,9 @@ public class MainActivity : AvaloniaMainActivity<App>
         {
             // Android-specific implementations (in Android/Services folder)
             services.AddSingleton<IAppDataStore, AndroidAppDataStore>();
-            services.AddSingleton<IDuckDBService, AndroidDuckDBService>();
             services.AddSingleton<IPlatformServices, AndroidPlatformServices>();
             services.AddSingleton<IAudioManager, AndroidAudioManager>();
-            services.AddSingleton<IExcelExporter, AndroidExcelExporter>();
+            services.AddSingleton<IParquetExporter, AndroidParquetExporter>();
         };
 
         return base.CustomizeAppBuilder(builder);

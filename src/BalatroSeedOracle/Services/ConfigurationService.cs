@@ -9,6 +9,8 @@ using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.Logging;
 using Motely.Filters;
 
+// AOT-compatible JSON serialization - use source generators instead of reflection
+
 namespace BalatroSeedOracle.Services
 {
     public interface IConfigurationService
@@ -134,16 +136,10 @@ namespace BalatroSeedOracle.Services
 
                     if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                     {
-                        // Hardened options (match FilterSerializationService)
-                        var options = new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true,
-                            ReadCommentHandling = JsonCommentHandling.Skip,
-                            AllowTrailingCommas = true,
-                        };
-                        var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        // AOT-compatible: Use Motely's source-generated serializer context
+                        var config = JsonSerializer.Deserialize(
                             json,
-                            options
+                            MotelyJsonSerializerContext.Default.MotelyJsonConfig
                         );
                         return config as T;
                     }

@@ -1,0 +1,44 @@
+name: luck4
+description: verifying some dungmot fertilizer seed sourcews is all
+author: pifreak & their pal Cursor AI
+deck: Anaglyph
+stake: White
+
+Must:
+  - soulJoker: Perkeo
+    antes: [1,2,3,4,5,6,7,8]
+Should:
+  - SoulJoker: Perkeo
+    score: 10
+  
+# Define the OopsAll6s cluster pattern ONCE (YAML anchor - the "pointer trick"!)
+oops_cluster: &oops_cluster
+  - joker: OopsAll6s
+    ShopSlots: [2,3,4]
+    score: 100
+  - joker: OopsAll6s
+    ShopSlots: [4,5,6]
+    score: 100
+  - joker: OopsAll6s
+    ShopSlots: [6,7,8]
+    score: 100
+
+# Ante 2 - Score based on NegativeTag Skip Reward + Desired jokers in the up-top shop jokers in a cluster
+# Children inherit Antes from parent And clause automatically!
+  - And:
+    Antes: [2]
+    Mode: Max
+    Score: 100
+    clauses:  
+    - smallblindtag: NegativeTag  # Inherits Antes: [2] from parent
+    - Or: *oops_cluster  # Each joker inherits Antes: [2] from parent
+
+# Ante 3 - Score based on NegativeTag Skip Reward + Desired jokers in the up-top shop jokers in a cluster
+# Children inherit Antes from parent And clause automatically!
+  - And:
+    Antes: [3]
+    Mode: Sum
+    Score: 100
+    clauses:  
+    - smallblindtag: NegativeTag  # Inherits Antes: [3] from parent
+    - Or: *oops_cluster  # Each joker inherits Antes: [3] from parent
