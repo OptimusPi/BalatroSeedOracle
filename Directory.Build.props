@@ -18,13 +18,11 @@
 
   <!-- Avalonia License Key Configuration -->
   <PropertyGroup>
-    <!-- License key from environment variable or avalonia.license.local file -->
+    <!-- License key from environment variable -->
     <!-- Set AVALONIA_LICENSE_KEY environment variable or configure in avalonia.license.local -->
+    <!-- DO NOT commit license keys to source control -->
     <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' != ''"
       >$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey
-    >
-    <AvaloniaUILicenseKey Condition="'$(AVALONIA_LICENSE_KEY)' == ''"
-      >avln_on_key:v1:10e441a673ba4e5a9583c6af9509c8fe</AvaloniaUILicenseKey
     >
   </PropertyGroup>
 

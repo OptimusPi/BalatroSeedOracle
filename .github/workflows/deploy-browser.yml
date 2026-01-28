@@ -67,6 +67,7 @@ jobs:
 
       - name: Generate Build Info
         run: |
+          $publishDir = "${{ env.BROWSER_PUBLISH_DIR }}"
           $buildInfo = @{
             commit = "${{ github.sha }}"
             branch = "${{ github.ref_name }}"
@@ -97,8 +98,8 @@ jobs:
 
       - name: Create Deployment Package
         run: |
-          cd ${{ env.BROWSER_PUBLISH_DIR }}
-          7z a -tzip ../../BalatroSeedOracle-Browser-${{ github.ref_name }}.zip *
+          cd src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser
+          7z a -tzip ../../../../../BalatroSeedOracle-Browser-${{ github.ref_name }}.zip publish/*
 
       - name: Upload Deployment Package
         uses: actions/upload-artifact@v4
