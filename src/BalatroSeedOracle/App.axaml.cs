@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
@@ -18,6 +19,11 @@ public partial class App : Application
     private ServiceProvider? _serviceProvider;
 
     public IServiceProvider Services => _serviceProvider!;
+
+    /// <summary>
+    /// Platform-specific initialization callback. Set by Desktop/Browser projects for custom setup.
+    /// </summary>
+    public static Action? PlatformSpecificInitialization { get; set; }
 
     public override void Initialize()
     {
@@ -84,6 +90,9 @@ public partial class App : Application
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
 
+                // Platform-specific initialization (set by Desktop project)
+                PlatformSpecificInitialization?.Invoke();
+
                 DebugLogger.Log("App", "Application initialization complete");
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
@@ -94,9 +103,9 @@ public partial class App : Application
                 // Set up UI thread exception handler
                 Dispatcher.UIThread.UnhandledException += OnUIThreadException;
 
-                // For Browser/Mobile, we use BalatroMainMenu directly as the main view
+                // For Browser/Mobile, wrap main view in ErrorBoundary (template-driven, per Avalonia best practices)
                 var mainMenu = _serviceProvider!.GetRequiredService<Views.BalatroMainMenu>();
-                singleViewPlatform.MainView = mainMenu;
+                singleViewPlatform.MainView = new ErrorBoundary { Content = mainMenu };
 
                 // Pre-load sprites asynchronously (without the complex shader transition)
                 _ = PreloadSpritesWithoutTransition();

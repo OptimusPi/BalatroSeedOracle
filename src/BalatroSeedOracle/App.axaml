@@ -206,6 +206,9 @@
             </Style.Resources>
         </Style>
 
+        <!-- ErrorBoundary default template (control + styles in Controls/ErrorBoundaryStyles.axaml) -->
+        <StyleInclude Source="avares://BalatroSeedOracle/Controls/ErrorBoundaryStyles.axaml" />
+
         <!-- =============================================
              DEFAULT BUTTON STYLES - Applied automatically
              NO CLASSES NEEDED! All buttons are beautiful by default

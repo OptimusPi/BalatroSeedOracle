@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:BalatroSeedOracle.Views"
         xmlns:vm="using:BalatroSeedOracle.ViewModels"
+        xmlns:controls="using:BalatroSeedOracle.Controls"
         xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -35,8 +36,8 @@
         <Border BorderBrush="{StaticResource BrightSilver}" 
                 BorderThickness="0,0,0,2">
             <Grid RowDefinitions="*,Auto">
-                <!-- Main content - bound via compiled bindings -->
-                <ContentControl Grid.Row="0" Content="{Binding MainMenu}" />
+                <!-- Main content wrapped in ErrorBoundary (template-driven control per Avalonia best practices) -->
+                <controls:ErrorBoundary Grid.Row="0" Content="{Binding MainMenu}" />
 
                 <!-- Attribution line (hidden in Vibe Out Mode) -->
                 <Border Grid.Row="1"
