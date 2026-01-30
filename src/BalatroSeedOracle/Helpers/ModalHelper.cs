@@ -59,7 +59,6 @@ namespace BalatroSeedOracle.Helpers
             bool enableAnalyze = false
         )
         {
-            var modal = new FilterSelectionModal();
             var vm = new FilterSelectionModalViewModel(
                 enableSearch,
                 enableEdit,
@@ -67,7 +66,9 @@ namespace BalatroSeedOracle.Helpers
                 enableDelete,
                 enableAnalyze
             );
-            modal.DataContext = vm;
+            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+            var modal = new FilterSelectionModal(vm, configurationService, filterService);
 
             var result = await modal.ShowDialog(menu.GetWindow());
             return vm.Result;
@@ -80,8 +81,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            // Always show the original drag-and-drop FiltersModal
-            var filtersContent = new Views.Modals.FiltersModal();
+            var filtersContent = new Views.Modals.FiltersModal(menu.ViewModel.FiltersModalViewModel);
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
 
@@ -96,7 +96,7 @@ namespace BalatroSeedOracle.Helpers
             Motely.Filters.MotelyJsonConfig config
         )
         {
-            var filtersContent = new Views.Modals.FiltersModal();
+            var filtersContent = new Views.Modals.FiltersModal(menu.ViewModel.FiltersModalViewModel);
 
             // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
             _ = LoadFilterForEditingAsync(filtersContent, config);
@@ -141,7 +141,8 @@ namespace BalatroSeedOracle.Helpers
         {
             try
             {
-                var searchContent = new SearchModal();
+                // Creator gets ViewModel from menu.ViewModel (injected), passes to View (per SCRUTINY_MVVM_XPLAT.md §3.2)
+                var searchContent = new SearchModal(menu.ViewModel.SearchModalViewModel);
 
                 // Handle modal close
                 searchContent.CloseRequested += (sender, e) => menu.HideModalContent();
@@ -207,7 +208,9 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
         {
-            var ToolView = new ToolsModal();
+            var userProfile = ServiceHelper.GetRequiredService<UserProfileService>();
+            var apiHost = ServiceHelper.GetService<IApiHostService>();
+            var ToolView = new ToolsModal(userProfile, apiHost);
             return menu.ShowModal("MORE", ToolView);
         }
 
@@ -218,7 +221,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModal(this Views.BalatroMainMenu menu)
         {
-            var searchModal = new SearchModal();
+            var searchModal = new SearchModal(menu.ViewModel.SearchModalViewModel);
 
             // DON'T auto-navigate for fresh launches - let user select filter first
 
@@ -256,7 +259,7 @@ namespace BalatroSeedOracle.Helpers
             string? configPath = null
         )
         {
-            var searchModal = new SearchModal();
+            var searchModal = new SearchModal(menu.ViewModel.SearchModalViewModel);
 
             // Remove the desktop widget that opened this modal
             menu.RemoveSearchDesktopIcon(searchId);
@@ -301,7 +304,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowCreditsModal(this Views.BalatroMainMenu menu)
         {
-            var creditsView = new CreditsModal();
+            var creditsView = new CreditsModal(menu.ViewModel.CreditsModalViewModel);
             return menu.ShowModal("CREDITS", creditsView);
         }
 

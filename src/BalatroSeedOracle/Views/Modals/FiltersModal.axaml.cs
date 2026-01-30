@@ -12,55 +12,24 @@ namespace BalatroSeedOracle.Views.Modals
     {
         public FiltersModalViewModel? ViewModel => DataContext as FiltersModalViewModel;
 
+        /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public FiltersModal()
+            : this(throwForDesignTimeOnly: true)
         {
+        }
+
+        private FiltersModal(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException("Do not use FiltersModal(). Use new FiltersModal(menu.ViewModel.FiltersModalViewModel).");
             InitializeComponent();
+        }
 
-            // Create ViewModel directly for now - avoid DI complexity
-            try
-            {
-                var configService = ServiceHelper.GetService<IConfigurationService>();
-                var filterService = ServiceHelper.GetService<IFilterService>();
-
-                if (configService is null || filterService is null)
-                {
-                    throw new InvalidOperationException(
-                        "Required services not available (IConfigurationService/IFilterService)"
-                    );
-                }
-
-                var platformServices = App.GetService<IPlatformServices>();
-                var notificationService = App.GetService<NotificationService>();
-                var viewModel = new FiltersModalViewModel(
-                    configService,
-                    filterService,
-                    platformServices!,
-                    notificationService
-                );
-                DataContext = viewModel;
-
-                // Initialize tabs synchronously so they're ready when UI renders
-                viewModel.InitializeTabs();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FiltersModal", $"Failed to initialize: {ex.Message}");
-                DebugLogger.LogError("FiltersModal", $"Exception type: {ex.GetType().FullName}");
-                DebugLogger.LogError("FiltersModal", $"Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    DebugLogger.LogError(
-                        "FiltersModal",
-                        $"Inner exception: {ex.InnerException.Message}"
-                    );
-                    DebugLogger.LogError(
-                        "FiltersModal",
-                        $"Inner stack trace: {ex.InnerException.StackTrace}"
-                    );
-                }
-                // Create a minimal fallback
-                DataContext = null;
-            }
+        public FiltersModal(FiltersModalViewModel viewModel)
+        {
+            DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            InitializeComponent();
+            viewModel.InitializeTabs();
         }
 
         /// <summary>

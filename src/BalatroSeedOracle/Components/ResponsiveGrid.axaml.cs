@@ -9,9 +9,12 @@ using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Components
 {
+    /// <summary>
+    /// Responsive grid that adjusts columns based on width breakpoints.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class ResponsiveGrid : UserControl
     {
-        private Grid _mainGrid;
         private readonly List<Control> _children = new();
 
         // Breakpoint definitions
@@ -35,18 +38,12 @@ namespace BalatroSeedOracle.Components
         public ResponsiveGrid()
         {
             InitializeComponent();
-            _mainGrid = this.FindControl<Grid>("MainGrid")!;
 
             // Listen for size changes
             this.SizeChanged += OnSizeChanged;
 
             // Set initial breakpoint
             UpdateBreakpoint(LargeBreakpoint);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         public void AddChild(Control child)
@@ -64,7 +61,7 @@ namespace BalatroSeedOracle.Components
         public void ClearChildren()
         {
             _children.Clear();
-            _mainGrid.Children.Clear();
+            MainGrid.Children.Clear();
         }
 
         private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -102,8 +99,8 @@ namespace BalatroSeedOracle.Components
 
         private void ArrangeChildren()
         {
-            _mainGrid.Children.Clear();
-            _mainGrid.RowDefinitions.Clear();
+            MainGrid.Children.Clear();
+            MainGrid.RowDefinitions.Clear();
 
             if (_children.Count == 0)
                 return;
@@ -114,7 +111,7 @@ namespace BalatroSeedOracle.Components
             // Create row definitions
             for (int i = 0; i < totalRows; i++)
             {
-                _mainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             }
 
             // Update column definitions based on breakpoint
@@ -130,7 +127,7 @@ namespace BalatroSeedOracle.Components
                 Grid.SetRow(child, row);
                 Grid.SetColumn(child, col);
 
-                _mainGrid.Children.Add(child);
+                MainGrid.Children.Add(child);
             }
         }
 
@@ -151,11 +148,11 @@ namespace BalatroSeedOracle.Components
 
         private void UpdateColumnDefinitions(int columnCount)
         {
-            _mainGrid.ColumnDefinitions.Clear();
+            MainGrid.ColumnDefinitions.Clear();
 
             for (int i = 0; i < columnCount; i++)
             {
-                _mainGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                MainGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             }
         }
     }

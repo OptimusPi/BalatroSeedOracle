@@ -1,9 +1,10 @@
 using System;
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Components;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
 
-namespace BalatroSeedOracle.Components
+namespace BalatroSeedOracle.Desktop.Components.Widgets
 {
     /// <summary>
     /// AudioVisualizerSettingsWidget - A movable, minimizable widget for audio visualizer settings

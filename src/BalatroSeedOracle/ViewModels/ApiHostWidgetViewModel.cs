@@ -23,11 +23,11 @@ public enum ServerStatus
 
 /// <summary>
 /// ViewModel for the API Host Widget - hosts the Motely API server within BSO.
-/// Uses IApiHostService for platform abstraction (Desktop vs Browser).
+/// Uses IApiHostService for platform abstraction. Service is null on unsupported platforms (e.g., Browser).
 /// </summary>
 public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
 {
-    private readonly IApiHostService _apiHostService;
+    private readonly IApiHostService? _apiHostService;
 
     [ObservableProperty]
     private bool _isServerRunning;
@@ -51,7 +51,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     private bool _isSupported = true;
 
     public ApiHostWidgetViewModel(
-        IApiHostService apiHostService,
+        IApiHostService? apiHostService = null,
         WidgetPositionService? positionService = null
     )
         : base(positionService)
@@ -62,18 +62,22 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
         WidgetIcon = "ServerNetwork";
         IsMinimized = true;
 
-        IsSupported = _apiHostService.IsSupported;
+        // Service null = platform doesn't support API hosting
+        IsSupported = _apiHostService?.IsSupported ?? false;
 
         if (!IsSupported)
         {
             CurrentStatus = ServerStatus.Unsupported;
             ServerStatusText = "N/A (Browser)";
-            LogMessage("API hosting not available in browser. Use Desktop version.");
+            LogMessage("API hosting not available on this platform. Use Desktop version.");
         }
 
-        // Subscribe to service events
-        _apiHostService.LogMessage += OnServiceLogMessage;
-        _apiHostService.StatusChanged += OnServiceStatusChanged;
+        // Subscribe to service events (only if service exists)
+        if (_apiHostService != null)
+        {
+            _apiHostService.LogMessage += OnServiceLogMessage;
+            _apiHostService.StatusChanged += OnServiceStatusChanged;
+        }
     }
 
     private void OnServiceLogMessage(string message)
@@ -88,14 +92,14 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
             IsServerRunning = isRunning;
             CurrentStatus = isRunning ? ServerStatus.Running : ServerStatus.Stopped;
             ServerStatusText = isRunning ? "Running" : "Stopped";
-            ServerUrl = _apiHostService.ServerUrl;
+            ServerUrl = _apiHostService?.ServerUrl ?? "";
         });
     }
 
     [RelayCommand]
     private async Task StartServerAsync()
     {
-        if (!IsSupported || IsServerRunning)
+        if (!IsSupported || IsServerRunning || _apiHostService == null)
             return;
 
         try
@@ -119,7 +123,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private async Task StopServerAsync()
     {
-        if (!IsSupported || !IsServerRunning)
+        if (!IsSupported || !IsServerRunning || _apiHostService == null)
             return;
 
         try
@@ -211,8 +215,11 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
 
     public async Task CleanupAsync()
     {
-        _apiHostService.LogMessage -= OnServiceLogMessage;
-        _apiHostService.StatusChanged -= OnServiceStatusChanged;
+        if (_apiHostService != null)
+        {
+            _apiHostService.LogMessage -= OnServiceLogMessage;
+            _apiHostService.StatusChanged -= OnServiceStatusChanged;
+        }
 
         if (IsServerRunning)
         {

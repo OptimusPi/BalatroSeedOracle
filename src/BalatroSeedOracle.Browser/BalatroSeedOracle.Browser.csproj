@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!-- WASM stack: AOT compilation + SIMD + threads. Keep code AOT/trim-safe (no reflection on app types). -->
   <PropertyGroup>
     <TargetFramework>net10.0-browser</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
     
-    <!-- WASM AOT Optimization Settings -->
+    <!-- WASM AOT compilation -->
     <RunAOTCompilation>true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <TrimMode>link</TrimMode>
     
-    <!-- WASM Performance Features -->
+    <!-- WASM performance: SIMD + threads (both supported in modern browsers) -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <WasmEnableThreads>true</WasmEnableThreads>
     
@@ -35,8 +36,8 @@
     <!-- ICU Data: Sharded mode loads locale data on-demand instead of bundling all 27MB -->
     <WasmIcuDataMode>Sharded</WasmIcuDataMode>
     
-    <!-- Disable source-generated JS interop for .NET 10.0 compatibility -->
-    <EnableJavaScriptInteropGeneration>false</EnableJavaScriptInteropGeneration>
+    <!-- Enable source-generated JS interop so [JSImport] partial methods get implementations -->
+    <EnableJavaScriptInteropGeneration>true</EnableJavaScriptInteropGeneration>
   </PropertyGroup>
 
   <!-- AOT Trimming Configuration -->
@@ -44,28 +45,22 @@
     <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
   </ItemGroup>
 
+  <!-- Copy contents of publish/wwwroot into API wwwroot/BSO/ (flat: BSO/index.html, BSO/_framework/, no BSO/wwwroot/) -->
   <Target Name="DeployWasmOutput" AfterTargets="Publish">
+    <PropertyGroup>
+      <_WasmSourceDir>$(PublishDir)wwwroot</_WasmSourceDir>
+    </PropertyGroup>
     <ItemGroup>
-      <!-- Copy everything from the generated publish folder (default bin/.../publish output) -->
-      <WasmFiles Include="$(PublishDir)**\*" />
+      <WasmFiles Include="$(_WasmSourceDir)\**\*" />
     </ItemGroup>
-    <Message
-      Text="Deploying WASM files from $(PublishDir) to external/Motely/wwwroot/BSO"
-      Importance="high"
-    />
+    <Message Text="Deploying WASM from $(_WasmSourceDir) to API wwwroot/BSO" Importance="high" />
     <Copy
       SourceFiles="@(WasmFiles)"
       DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\wwwroot\BSO\%(RecursiveDir)"
       SkipUnchangedFiles="false"
     />
-    <Message
-      Text="Deployment complete. Files copied to: $(MSBuildThisFileDirectory)..\..\external\Motely\wwwroot\BSO\"
-      Importance="high"
-    />
+    <Message Text="Deployment complete: external/Motely/wwwroot/BSO" Importance="high" />
   </Target>
-  <PropertyGroup Condition="'$(EnableWasmThreads)'=='true'">
-    <WasmEnableThreads>true</WasmEnableThreads>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
@@ -76,8 +71,4 @@
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
   </ItemGroup>
 
-  <!-- Shared property for Motely BSO destination - use source wwwroot -->
-  <PropertyGroup>
-    <MotelyBSODir>$(MSBuildThisFileDirectory)..\..\external\Motely\Motely.API\wwwroot\BSO\</MotelyBSODir>
-  </PropertyGroup>
 </Project>

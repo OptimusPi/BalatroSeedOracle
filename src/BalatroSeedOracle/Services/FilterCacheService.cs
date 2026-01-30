@@ -53,6 +53,11 @@ namespace BalatroSeedOracle.Services
         void InvalidateFilter(string filterId);
 
         /// <summary>
+        /// Async invalidation for browser; use from sync InvalidateFilter to avoid blocking.
+        /// </summary>
+        Task InvalidateFilterAsync(string filterId);
+
+        /// <summary>
         /// Removes a filter from the cache.
         /// Call this after deleting a filter from disk.
         /// </summary>
@@ -149,8 +154,11 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                var filterFiles = Directory
-                    .GetFiles(filtersDir, "*.json")
+                // Load both .json and .jaml filter files
+                var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
+                var jamlFiles = Directory.GetFiles(filtersDir, "*.jaml");
+                var filterFiles = jsonFiles
+                    .Concat(jamlFiles)
                     .Where(f =>
                     {
                         var fileName = Path.GetFileName(f);
@@ -211,8 +219,10 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
+                // Load both .json and .jaml filter files
                 var filterFiles = (await _store.ListKeysAsync("Filters/").ConfigureAwait(false))
-                    .Where(k => k.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    .Where(k => k.EndsWith(".json", StringComparison.OrdinalIgnoreCase) 
+                             || k.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
                     .Where(k =>
                     {
                         var fileName = Path.GetFileName(k);
@@ -283,20 +293,41 @@ namespace BalatroSeedOracle.Services
             {
                 MotelyJsonConfig? config = null;
 
-                var json = await _store
+                var content = await _store
                     .ReadTextAsync(filePath.Replace('\\', '/'))
                     .ConfigureAwait(false);
-                if (string.IsNullOrWhiteSpace(json))
+                if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                var options = new JsonSerializerOptions
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                
+                if (extension == ".jaml")
                 {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                };
+                    // Load JAML content
+                    if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var jamlConfig, out var jamlError))
+                    {
+                        config = jamlConfig;
+                    }
+                    else
+                    {
+                        DebugLogger.LogError(
+                            "FilterCacheService",
+                            $"Failed to parse JAML filter {filterId}: {jamlError}"
+                        );
+                        return null;
+                    }
+                }
+                else
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true,
+                    };
 
-                config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                    config = JsonSerializer.Deserialize<MotelyJsonConfig>(content, options);
+                }
 
                 if (config == null)
                     return null;
@@ -307,7 +338,7 @@ namespace BalatroSeedOracle.Services
                     Config = config,
                     FilePath = filePath,
                     LastModified = DateTime.UtcNow, // Browser doesn't have file timestamps
-                    FileSizeBytes = json.Length,
+                    FileSizeBytes = content.Length,
                 };
             }
             catch (Exception ex)
@@ -382,56 +413,79 @@ namespace BalatroSeedOracle.Services
             if (string.IsNullOrWhiteSpace(filterId))
                 return;
 
+            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            if (isBrowser)
+            {
+                _ = InvalidateFilterAsync(filterId);
+                return;
+            }
+
             _cacheLock.EnterWriteLock();
             try
             {
-                var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
-                string filePath;
-                bool exists;
-
-                if (isBrowser)
+                var filtersDir = Helpers.AppPaths.FiltersDir;
+                var filePath = Path.Combine(filtersDir, $"{filterId}.json");
+                if (!File.Exists(filePath))
                 {
-                    filePath = $"Filters/{filterId}.json";
-                    // Browser: Check existence asynchronously, but we're in sync method
-                    // Use cached result if available, otherwise assume exists and let async load handle it
-                    var existsTask = _store.ExistsAsync(filePath);
-                    exists = existsTask.IsCompleted ? existsTask.Result : true; // Optimistic check
-                }
-                else
-                {
-                    var filtersDir = Helpers.AppPaths.FiltersDir;
-                    filePath = Path.Combine(filtersDir, $"{filterId}.json");
-                    exists = File.Exists(filePath);
-                }
-
-                if (!exists)
-                {
-                    // File was deleted, remove from cache
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.Log(
-                        "FilterCacheService",
-                        $"Removed deleted filter from cache: {filterId}"
-                    );
+                    DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
                     return;
                 }
 
-                // Reload
                 var cachedFilter = LoadFilterFromDisk(filePath, filterId);
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log(
-                        "FilterCacheService",
-                        $"Invalidated and reloaded filter: {filterId}"
-                    );
+                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError(
-                        "FilterCacheService",
-                        $"Failed to reload filter: {filterId}"
-                    );
+                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
+                }
+            }
+            finally
+            {
+                _cacheLock.ExitWriteLock();
+            }
+        }
+
+        public async Task InvalidateFilterAsync(string filterId)
+        {
+            if (string.IsNullOrWhiteSpace(filterId))
+                return;
+
+            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            if (!isBrowser)
+            {
+                InvalidateFilter(filterId);
+                return;
+            }
+
+            var filePath = $"Filters/{filterId}.json";
+            var exists = await _store.ExistsAsync(filePath).ConfigureAwait(false);
+            if (!exists)
+            {
+                _cacheLock.EnterWriteLock();
+                try { _cache.TryRemove(filterId, out _); }
+                finally { _cacheLock.ExitWriteLock(); }
+                DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
+                return;
+            }
+
+            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId).ConfigureAwait(false);
+            _cacheLock.EnterWriteLock();
+            try
+            {
+                if (cachedFilter != null)
+                {
+                    _cache[filterId] = cachedFilter;
+                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
+                }
+                else
+                {
+                    _cache.TryRemove(filterId, out _);
+                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
                 }
             }
             finally
@@ -491,32 +545,8 @@ namespace BalatroSeedOracle.Services
 
                 if (isBrowser)
                 {
-                    // Browser: Load asynchronously - this method should be async
-                    // For now, use synchronous fallback with best effort
-                    var jsonTask = _store.ReadTextAsync(filePath.Replace('\\', '/'));
-                    string? json;
-                    if (jsonTask.IsCompleted)
-                    {
-                        json = jsonTask.Result;
-                    }
-                    else
-                    {
-                        // Not completed - return null and let async version handle it
-                        return null;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(json))
-                        return null;
-
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                        ReadCommentHandling = JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true,
-                    };
-                    config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
-                    lastModifiedUtc = DateTime.UtcNow;
-                    sizeBytes = json.Length;
+                    // Sync LoadFilterFromDisk is not used on browser (InvalidateFilter uses InvalidateFilterAsync).
+                    return null;
                 }
                 else
                 {
@@ -524,23 +554,44 @@ namespace BalatroSeedOracle.Services
                     if (!fileInfo.Exists)
                         return null;
 
-                    // Try Motely's loader first (handles edge cases better)
-                    if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var motelyConfig))
+                    var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                    
+                    if (extension == ".jaml")
                     {
-                        config = motelyConfig;
+                        // Load JAML file using JamlConfigLoader
+                        if (Motely.JamlConfigLoader.TryLoadFromJaml(filePath, out var jamlConfig, out var jamlError))
+                        {
+                            config = jamlConfig;
+                        }
+                        else
+                        {
+                            DebugLogger.LogError(
+                                "FilterCacheService",
+                                $"Failed to parse JAML filter {filterId}: {jamlError}"
+                            );
+                            return null;
+                        }
                     }
                     else
                     {
-                        // Fallback to manual parsing with hardened options
-                        var json = File.ReadAllText(filePath);
-                        var options = new JsonSerializerOptions
+                        // Try Motely's loader first (handles edge cases better)
+                        if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var motelyConfig))
                         {
-                            PropertyNameCaseInsensitive = true,
-                            ReadCommentHandling = JsonCommentHandling.Skip,
-                            AllowTrailingCommas = true,
-                        };
+                            config = motelyConfig;
+                        }
+                        else
+                        {
+                            // Fallback to manual parsing with hardened options
+                            var json = File.ReadAllText(filePath);
+                            var options = new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                ReadCommentHandling = JsonCommentHandling.Skip,
+                                AllowTrailingCommas = true,
+                            };
 
-                        config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                            config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                        }
                     }
 
                     lastModifiedUtc = fileInfo.LastWriteTimeUtc;

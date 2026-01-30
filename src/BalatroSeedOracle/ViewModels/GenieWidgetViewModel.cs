@@ -13,14 +13,16 @@ namespace BalatroSeedOracle.ViewModels
     /// <summary>
     /// ViewModel for GenieWidget - RAG-powered AI filter generation
     /// Uses Cloudflare Workers AI with Vectorize RAG for intelligent JAML generation
-    /// Falls back to local Host API (/genie endpoint) for keyword-based generation
+    /// Falls back to local Host API (/genie endpoint) for keyword-based generation.
+    /// When the API is running (via Api Host widget or externally), uses that URL for /genie.
     /// </summary>
     public partial class GenieWidgetViewModel : BaseWidgetViewModel
     {
         private static readonly HttpClient _httpClient = new();
-        private const string LOCAL_GENIE_API = "http://localhost:3141/genie";
+        private const string DefaultLocalGenieApi = "http://localhost:3141/genie";
         private const string CLOUD_GENIE_API = "https://jamlgenie.optimuspi.workers.dev";
         private readonly SearchManager _searchManager;
+        private readonly IApiHostService? _apiHostService;
 
         [ObservableProperty]
         private string _userPrompt = string.Empty;
@@ -60,11 +62,13 @@ namespace BalatroSeedOracle.ViewModels
 
         public GenieWidgetViewModel(
             SearchManager searchManager,
-            WidgetPositionService? widgetPositionService = null
+            WidgetPositionService? widgetPositionService = null,
+            IApiHostService? apiHostService = null
         )
             : base(widgetPositionService)
         {
             _searchManager = searchManager;
+            _apiHostService = apiHostService;
             WidgetTitle = "Filter Genie";
             WidgetIcon = "Creation";
             IsMinimized = true;
@@ -72,6 +76,16 @@ namespace BalatroSeedOracle.ViewModels
             // Set fixed position for Genie widget - first position
             PositionX = 20;
             PositionY = 80;
+        }
+
+        /// <summary>
+        /// URL for local /genie fallback. Uses running API host URL when available.
+        /// </summary>
+        private string GetLocalGenieUrl()
+        {
+            if (_apiHostService != null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl))
+                return _apiHostService.ServerUrl.TrimEnd('/') + "/genie";
+            return DefaultLocalGenieApi;
         }
 
         // ToggleMinimize is inherited from BaseWidgetViewModel
@@ -124,14 +138,15 @@ namespace BalatroSeedOracle.ViewModels
                     DebugLogger.Log("GenieWidget", $"Cloud API error: {cloudEx.Message}");
                 }
 
-                // Fall back to local Host API if cloud failed
+                // Fall back to local Host API if cloud failed (uses running API URL when available)
                 if (string.IsNullOrWhiteSpace(jamlResult))
                 {
                     try
                     {
                         _httpClient.Timeout = TimeSpan.FromSeconds(5);
                         SetStatus("Trying local genie...", "#6B46C1");
-                        var localResponse = await _httpClient.PostAsync(LOCAL_GENIE_API, content);
+                        var localGenieUrl = GetLocalGenieUrl();
+                        var localResponse = await _httpClient.PostAsync(localGenieUrl, content);
 
                         if (localResponse.IsSuccessStatusCode)
                         {

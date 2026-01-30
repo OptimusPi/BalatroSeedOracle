@@ -100,7 +100,10 @@ namespace BalatroSeedOracle.Services
 
                     // Invalidate cache for this filter
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
-                    _filterCacheService?.InvalidateFilter(filterId);
+                    if (isBrowser && _filterCacheService != null)
+                        await _filterCacheService.InvalidateFilterAsync(filterId).ConfigureAwait(false);
+                    else
+                        _filterCacheService?.InvalidateFilter(filterId);
 
                     return true;
                 }
@@ -230,11 +233,9 @@ namespace BalatroSeedOracle.Services
                 // and the actual async operations will handle the real check
                 try
                 {
-                    // Try to get result synchronously with timeout
                     var task = _store.ExistsAsync(filePath.Replace('\\', '/'));
                     if (task.IsCompleted)
-                        return task.Result;
-                    // If not completed, return false and let caller use async method
+                        return task.GetAwaiter().GetResult();
                     return false;
                 }
                 catch

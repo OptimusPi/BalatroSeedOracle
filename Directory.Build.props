@@ -1,8 +1,5 @@
 <Project>
-  <!-- Centralized Package Versioning -->
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
+  <!-- Centralized package versions are in Directory.Packages.props (MSBuild convention) -->
 
   <!-- Shared Assembly Metadata -->
   <PropertyGroup>
@@ -16,10 +13,15 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- Avalonia License Key - reads from avalonia.license file (gitignored) -->
-  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)avalonia.license')">
-    <AvaloniaUILicenseKey>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())</AvaloniaUILicenseKey>
+  <!-- Avalonia License Key - from PARCEL_LICENSE env var OR avalonia.license file -->
+  <PropertyGroup>
+    <_AvaloniaLicenseFile>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())</_AvaloniaLicenseFile>
+    <_AvaloniaLicenseKey Condition="'$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
+    <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
   </PropertyGroup>
+  <ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''">
+    <AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" />
+  </ItemGroup>
 
   <!-- Code Quality Settings -->
   <PropertyGroup>

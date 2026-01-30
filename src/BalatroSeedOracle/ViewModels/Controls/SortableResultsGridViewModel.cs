@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -77,6 +79,16 @@ namespace BalatroSeedOracle.ViewModels.Controls
         // Column visibility
         [ObservableProperty]
         private Dictionary<string, bool> _columnVisibility = new();
+
+        // TreeDataGrid source - MVVM binding for the grid
+        private FlatTreeDataGridSource<SearchResult>? _gridSource;
+        private string[]? _currentLabels;
+
+        public FlatTreeDataGridSource<SearchResult>? GridSource
+        {
+            get => _gridSource;
+            private set => SetProperty(ref _gridSource, value);
+        }
 
         // Commands
         public IAsyncRelayCommand<string> CopySeedCommand { get; }
@@ -331,6 +343,9 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     DisplayedResults.Add(result);
                 }
 
+                // Rebuild grid source if labels changed
+                RebuildGridSourceIfNeeded();
+
                 UpdateStatsText();
 
                 DebugLogger.Log(
@@ -338,6 +353,79 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     $"Refreshed: {TotalResultCount} total, showing {DisplayedResults.Count}"
                 );
             });
+        }
+
+        /// <summary>
+        /// Rebuild TreeDataGrid source when labels change (dynamic tally columns).
+        /// </summary>
+        private void RebuildGridSourceIfNeeded()
+        {
+            // Get labels from first result
+            var firstResult = DisplayedResults.FirstOrDefault();
+            var newLabels = firstResult?.Labels;
+
+            // Check if labels changed
+            bool labelsChanged = !LabelsEqual(_currentLabels, newLabels);
+
+            if (labelsChanged || GridSource == null)
+            {
+                _currentLabels = newLabels;
+                RebuildGridSource();
+            }
+            // Note: FlatTreeDataGridSource wraps DisplayedResults which is ObservableCollection,
+            // so it automatically updates when the collection changes.
+        }
+
+        private static bool LabelsEqual(string[]? a, string[]? b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+            if (a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i]) return false;
+            }
+            return true;
+        }
+
+        private void RebuildGridSource()
+        {
+            var source = new FlatTreeDataGridSource<SearchResult>(DisplayedResults);
+
+            // Fixed columns: Seed and TotalScore
+            source.Columns.Add(new TextColumn<SearchResult, string>(
+                "SEED",
+                x => x.Seed,
+                width: new GridLength(120)));
+
+            source.Columns.Add(new TextColumn<SearchResult, int>(
+                "SCORE",
+                x => x.TotalScore,
+                width: new GridLength(80)));
+
+            // Dynamic tally columns from Labels
+            if (_currentLabels != null)
+            {
+                for (int i = 0; i < _currentLabels.Length; i++)
+                {
+                    var index = i; // Capture for closure
+                    var label = _currentLabels[i];
+
+                    source.Columns.Add(new TextColumn<SearchResult, string>(
+                        label.ToUpperInvariant(),
+                        x => (x.Scores != null && index < x.Scores.Length)
+                            ? x.Scores[index].ToString()
+                            : "-",
+                        width: new GridLength(70)));
+                }
+            }
+
+            GridSource = source;
+
+            DebugLogger.Log(
+                "SortableResultsGridVM",
+                $"Rebuilt grid source with {source.Columns.Count} columns ({_currentLabels?.Length ?? 0} tally columns)"
+            );
         }
 
         partial void OnSelectedSortIndexChanged(int value)

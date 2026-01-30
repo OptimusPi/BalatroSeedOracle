@@ -8,6 +8,10 @@ using IconPacks.Avalonia.Material;
 
 namespace BalatroSeedOracle.Controls
 {
+    /// <summary>
+    /// Maximize/restore button for windows.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class MaximizeButton : UserControl
     {
         private Window? _parentWindow;
@@ -74,25 +78,22 @@ namespace BalatroSeedOracle.Controls
             if (_parentWindow == null)
                 return;
 
-            var iconBlock = this.FindControl<PackIconMaterial>("IconBlock")!;
-            var labelBlock = this.FindControl<TextBlock>("LabelBlock")!;
-            var maximizeBtn = this.FindControl<Button>("MaximizeBtn")!;
-
+            // Direct x:Name field access - no FindControl!
             _isMaximized = _parentWindow.WindowState == WindowState.Maximized;
 
             if (_isMaximized)
             {
                 // Show restore icon and tooltip
-                iconBlock.Kind = PackIconMaterialKind.WindowRestore;
-                ToolTip.SetTip(maximizeBtn, "Restore Window");
-                labelBlock.Text = "";
+                IconBlock.Kind = PackIconMaterialKind.WindowRestore;
+                ToolTip.SetTip(MaximizeBtn, "Restore Window");
+                LabelBlock.Text = "";
             }
             else
             {
                 // Show maximize icon and tooltip
-                iconBlock.Kind = PackIconMaterialKind.Fullscreen;
-                ToolTip.SetTip(maximizeBtn, "Maximize Window");
-                labelBlock.Text = "";
+                IconBlock.Kind = PackIconMaterialKind.Fullscreen;
+                ToolTip.SetTip(MaximizeBtn, "Maximize Window");
+                LabelBlock.Text = "";
             }
 
             // Fire event for any listeners
@@ -120,15 +121,14 @@ namespace BalatroSeedOracle.Controls
         /// </summary>
         public void ShowLabel(bool show)
         {
-            var labelBlock = this.FindControl<TextBlock>("LabelBlock")!;
-
+            // Direct x:Name field access - no FindControl!
             if (show)
             {
-                labelBlock.Text = _isMaximized ? "RESTORE" : "MAXIMIZE";
+                LabelBlock.Text = _isMaximized ? "RESTORE" : "MAXIMIZE";
             }
             else
             {
-                labelBlock.Text = "";
+                LabelBlock.Text = "";
             }
         }
     }

@@ -14,6 +14,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
+    /// <summary>
+    /// Results tab for search modal.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class ResultsTab : UserControl
     {
         public ResultsTab()
@@ -22,15 +26,10 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             this.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
         private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            var grid = this.FindControl<SortableResultsGrid>("ResultsGrid");
-            if (DataContext is SearchModalViewModel vm && grid != null)
+            // Direct x:Name field access - no FindControl!
+            if (DataContext is SearchModalViewModel vm && ResultsGrid != null)
             {
                 // The ItemsSource binding is handled via XAML - no need to set explicitly
                 // This allows the proper binding flow: SearchResults -> grid.ItemsSource -> grid.ViewModel.DisplayedResults
@@ -41,7 +40,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 );
 
                 // Export to CSV, Parquet, or DuckDB
-                grid.ExportAllRequested += async (s, results) =>
+                ResultsGrid.ExportAllRequested += async (s, results) =>
                 {
                     try
                     {
@@ -62,6 +61,32 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                             return;
                         }
 
+                        // Build file type choices - database export only on Desktop
+                        var dbExporter = App.GetService<IResultsDatabaseExporter>();
+                        var fileTypeChoices = new List<Avalonia.Platform.Storage.FilePickerFileType>
+                        {
+                            new Avalonia.Platform.Storage.FilePickerFileType("Parquet Files")
+                            {
+                                Patterns = new[] { "*.parquet" },
+                            },
+                            new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
+                            {
+                                Patterns = new[] { "*.csv" },
+                            },
+                        };
+                        // Add database formats only when IResultsDatabaseExporter is available (Desktop)
+                        if (dbExporter != null && dbExporter.IsAvailable)
+                        {
+                            fileTypeChoices.Add(new Avalonia.Platform.Storage.FilePickerFileType("Search Results (.db)")
+                            {
+                                Patterns = new[] { "*.db" },
+                            });
+                            fileTypeChoices.Add(new Avalonia.Platform.Storage.FilePickerFileType("Search Results Lake (.ducklake)")
+                            {
+                                Patterns = new[] { "*.ducklake" },
+                            });
+                        }
+
                         // Show save file dialog
                         var file = await topLevel.StorageProvider.SaveFilePickerAsync(
                             new Avalonia.Platform.Storage.FilePickerSaveOptions
@@ -70,21 +95,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                                 DefaultExtension = "parquet",
                                 SuggestedFileName =
                                     $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.parquet",
-                                FileTypeChoices = new[]
-                                {
-                                    new Avalonia.Platform.Storage.FilePickerFileType("Parquet Files")
-                                    {
-                                        Patterns = new[] { "*.parquet" },
-                                    },
-                                    new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
-                                    {
-                                        Patterns = new[] { "*.csv" },
-                                    },
-                                    new Avalonia.Platform.Storage.FilePickerFileType("DuckDB Files")
-                                    {
-                                        Patterns = new[] { "*.db" },
-                                    },
-                                },
+                                FileTypeChoices = fileTypeChoices,
                             }
                         );
 
@@ -138,6 +149,30 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                                 $"Exported {results.Count()} results to Parquet: {filePath}"
                             );
                         }
+                        else if (filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
+                                 filePath.EndsWith(".ducklake", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // DATABASE EXPORT (.db or .ducklake) via IResultsDatabaseExporter (Motely.DB)
+                            if (dbExporter == null || !dbExporter.IsAvailable)
+                            {
+                                DebugLogger.Log(
+                                    "ResultsTab",
+                                    "Database export not available on this platform"
+                                );
+                                return;
+                            }
+
+                            await dbExporter.ExportToAsync(
+                                filePath,
+                                results.ToList(),
+                                labels.ToList()
+                            );
+                            var ext = System.IO.Path.GetExtension(filePath);
+                            DebugLogger.Log(
+                                "ResultsTab",
+                                $"Exported {results.Count()} results to {ext}: {filePath}"
+                            );
+                        }
                         else
                         {
                             // CSV EXPORT as fallback
@@ -176,7 +211,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 };
 
                 // Wire up add-to-favorites
-                grid.AddToFavoritesRequested += (s, result) =>
+                ResultsGrid.AddToFavoritesRequested += (s, result) =>
                 {
                     if (!string.IsNullOrWhiteSpace(result?.Seed))
                     {
@@ -184,19 +219,20 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     }
                 };
 
-                // Wire up analyze request to open Analyze modal with seed
-                grid.AnalyzeRequested += (s, result) =>
+                // Wire up analyze request to open Analyze modal with seed (ViewModel provides VM via DI factory, no ServiceHelper)
+                ResultsGrid.AnalyzeRequested += (s, result) =>
                 {
                     if (!string.IsNullOrWhiteSpace(result?.Seed) && vm.MainMenu != null)
                     {
-                        var analyzeModal = new AnalyzeModal();
+                        var analyzeVm = vm.CreateAnalyzeModalViewModel();
+                        var analyzeModal = new AnalyzeModal(analyzeVm);
                         analyzeModal.SetSeedAndAnalyze(result.Seed);
                         vm.MainMenu.ShowModal("SEED ANALYZER", analyzeModal);
                     }
                 };
 
                 // Wire up pop-out to separate window
-                grid.PopOutRequested += (s, e) =>
+                ResultsGrid.PopOutRequested += (s, e) =>
                 {
                     try
                     {
@@ -247,8 +283,8 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             System.Collections.Generic.IEnumerable<Models.SearchResult> results
         )
         {
-            var grid = this.FindControl<SortableResultsGrid>("ResultsGrid");
-            grid?.ForceRefreshResults(results);
+            // Direct x:Name field access - no FindControl!
+            ResultsGrid?.ForceRefreshResults(results);
         }
     }
 }

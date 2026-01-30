@@ -61,6 +61,9 @@ public class AndroidPlatformServices : IPlatformServices
     public bool SupportsAudio => false;
     public bool SupportsAnalyzer => false;
     public bool SupportsResultsGrid => true;
+    public bool SupportsAudioWidgets => false;
+    public bool SupportsApiHostWidget => false;
+    public bool SupportsTransitionDesigner => false;
 
     public string GetTempDirectory() => Path.GetTempPath();
 

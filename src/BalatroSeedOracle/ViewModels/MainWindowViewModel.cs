@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -27,18 +26,13 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _isVibeOutMode = false;
 
-        [ObservableProperty]
-        private BalatroMainMenu? _mainMenu;
-
         public MainWindowViewModel(
             UserProfileService userProfileService,
-            SearchManager searchManager,
-            BalatroMainMenu mainMenu
+            SearchManager searchManager
         )
         {
             _userProfileService = userProfileService;
             _searchManager = searchManager;
-            MainMenu = mainMenu;
 
             _ = InitializeWindowAsync();
         }

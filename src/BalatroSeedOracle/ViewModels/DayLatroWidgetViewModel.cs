@@ -33,8 +33,15 @@ namespace BalatroSeedOracle.ViewModels
         private DispatcherTimer? _autoRefreshTimer;
         private CancellationTokenSource? _loadingCancellation;
         private DateTime _lastCheckedDate;
+        private Func<AnalyzeModalViewModel>? _analyzeModalFactory;
 
         #endregion
+
+        /// <summary>Set by parent (BalatroMainMenu) so widget can create analyze modal VM without ServiceHelper.</summary>
+        public void SetAnalyzeModalFactory(Func<AnalyzeModalViewModel> factory) => _analyzeModalFactory = factory;
+
+        /// <summary>Creates an AnalyzeModalViewModel when factory was set by parent; otherwise returns null.</summary>
+        public AnalyzeModalViewModel? CreateAnalyzeModalViewModel() => _analyzeModalFactory?.Invoke();
 
         #region Observable Properties
 
@@ -83,7 +90,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (SetProperty(ref _scoreInput, value))
                 {
-                    ((RelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
+                    ((AsyncRelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -100,7 +107,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (SetProperty(ref _initialsInput, value))
                 {
-                    ((RelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
+                    ((AsyncRelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -117,7 +124,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (SetProperty(ref _anteInput, value))
                 {
-                    ((RelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
+                    ((AsyncRelayCommand)SubmitScoreCommand).NotifyCanExecuteChanged();
                 }
             }
         }
@@ -209,7 +216,7 @@ namespace BalatroSeedOracle.ViewModels
             PositionY = 260;
 
             // Initialize commands
-            SubmitScoreCommand = new RelayCommand(OnSubmitScore, CanSubmitScore);
+            SubmitScoreCommand = new AsyncRelayCommand(OnSubmitScoreAsync, CanSubmitScore);
             CopySeedCommand = new AsyncRelayCommand(OnCopySeedAsync);
             RefreshScoresCommand = new AsyncRelayCommand(OnRefreshScoresAsync);
             AnalyzeSeedCommand = new RelayCommand(OnAnalyzeSeed);
@@ -438,7 +445,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Submit score to Daylatro
         /// </summary>
-        private async void OnSubmitScore()
+        private async Task OnSubmitScoreAsync()
         {
             try
             {

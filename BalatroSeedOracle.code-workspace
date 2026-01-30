@@ -55,6 +55,9 @@
       "**/*.db": true,
       "**/*.db-wal": true,
       "**/SearchResults/**": true,
+      "**/SeedSources/**": true,
+      "**/Seeds/**": true,
+      "**/Filters/**": true,
       "**/WordLists/**": true,
       "**/runtimes/**": true,
       "**/fr-FR/**": true,
@@ -86,6 +89,9 @@
       "**/*.db": true,
       "**/*.db-wal": true,
       "**/SearchResults/**": true,
+      "**/SeedSources/**": true,
+      "**/Seeds/**": true,
+      "**/Filters/**": true,
       "**/WordLists/**": true,
       "**/runtimes/**": true,
       "**/fr-FR/**": true,
@@ -117,9 +123,12 @@
       "**/*.db": true,
       "**/*.db-wal": true,
       "**/SearchResults/**": true,
+      "**/SeedSources/**": true,
+      "**/Seeds/**": true,
+      "**/Filters/**": true,
       "**/WordLists/**": true
     },
-    "search.maxResults": 1000,
+    "search.maxResults": 1000
   }
 }
 

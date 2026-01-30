@@ -3,10 +3,12 @@ using Avalonia.Controls;
 
 namespace BalatroSeedOracle.Views.SearchModalTabs
 {
+    /// <summary>
+    /// Search tab for filter search modal.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class SearchTab : UserControl
     {
-        private TextBox? _consoleOutput;
-
         public SearchTab()
         {
             InitializeComponent();
@@ -36,16 +38,14 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
             // CRITICAL FIX: Auto-scroll console to bottom when ConsoleText updates
             if (e.PropertyName == "ConsoleText")
             {
-                // Lazy-load console reference
-                _consoleOutput ??= this.FindControl<TextBox>("ConsoleOutput");
-
-                if (_consoleOutput != null)
+                // Direct x:Name field access - no FindControl!
+                if (ConsoleOutput != null)
                 {
                     // Scroll to end after UI renders the new text
                     Avalonia.Threading.Dispatcher.UIThread.Post(
                         () =>
                         {
-                            _consoleOutput.CaretIndex = int.MaxValue;
+                            ConsoleOutput.CaretIndex = int.MaxValue;
                         },
                         Avalonia.Threading.DispatcherPriority.Background
                     );

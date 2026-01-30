@@ -6,7 +6,7 @@
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Components.AudioMixerWidget"
+             x:Class="BalatroSeedOracle.Desktop.Components.Widgets.AudioMixerWidget"
              x:DataType="vm:AudioMixerWidgetViewModel"
              x:CompileBindings="True"
              Panel.ZIndex="{Binding WidgetZIndex}">

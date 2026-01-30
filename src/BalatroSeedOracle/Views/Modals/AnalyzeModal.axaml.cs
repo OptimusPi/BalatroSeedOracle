@@ -18,13 +18,22 @@ namespace BalatroSeedOracle.Views.Modals
         private AnalyzeModalViewModel? ViewModel => DataContext as AnalyzeModalViewModel;
         private DeckAndStakeSelector? _deckAndStakeSelector;
 
+        /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public AnalyzeModal()
+            : this(throwForDesignTimeOnly: true)
         {
-            // Initialize ViewModel with required services FIRST (consistency with other modals)
-            var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
-            var userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
-            DataContext = new AnalyzeModalViewModel(spriteService, userProfileService);
+        }
 
+        private AnalyzeModal(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException("Do not use AnalyzeModal(). Creator must pass AnalyzeModalViewModel.");
+            InitializeComponent();
+        }
+
+        public AnalyzeModal(AnalyzeModalViewModel viewModel)
+        {
+            DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             InitializeComponent();
         }
 

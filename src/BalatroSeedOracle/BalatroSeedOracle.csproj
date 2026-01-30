@@ -11,11 +11,12 @@
     <AvaloniaUILicenseKey Include="$(AvaloniaUILicenseKey)" />
   </ItemGroup>
 
+  <!-- AvaloniaResource: all Assets (including .ogg) for avares:// in browser; Desktop also uses copied .ogg on disk -->
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\**\*.ogg" />
+    <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="m6x11plusplus.otf" />
   </ItemGroup>
-  <!-- Copy Audio and Sprite files to output directory -->
+  <!-- Copy Audio and Sprite files to output directory (Desktop loads from disk; browser uses avares via AssetLoader) -->
   <ItemGroup>
     <None Update="Assets\Audio\*.ogg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

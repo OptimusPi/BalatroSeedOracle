@@ -24,19 +24,35 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class FilterSelectionModal : UserControl
     {
+        private readonly IConfigurationService? _configurationService;
+        private readonly IFilterService? _filterService;
+
         public FilterSelectionModalViewModel? ViewModel =>
             DataContext as FilterSelectionModalViewModel;
 
         public event EventHandler? CloseRequested;
 
+        /// <summary>Parameterless ctor for XAML DataTemplate only (DataContext set by binding to FilterSelectionModalViewModel). Services resolved lazily in ImportFilterFile.</summary>
         public FilterSelectionModal()
         {
+            _configurationService = null;
+            _filterService = null;
             InitializeComponent();
-
-            // Subscribe to DataContext changes to wire up the ViewModel event
             this.DataContextChanged += OnDataContextChanged;
+            this.Loaded += OnLoaded;
+        }
 
-            // Wire up deck/stake images when loaded
+        /// <summary>Constructor injection: creator passes ViewModel and services (no ServiceHelper in View).</summary>
+        public FilterSelectionModal(
+            FilterSelectionModalViewModel viewModel,
+            IConfigurationService configurationService,
+            IFilterService filterService)
+        {
+            _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+            _filterService = filterService ?? throw new ArgumentNullException(nameof(filterService));
+            DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            InitializeComponent();
+            this.DataContextChanged += OnDataContextChanged;
             this.Loaded += OnLoaded;
         }
 
@@ -538,16 +554,13 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Parsed config: {config.Name}. Saving...");
 
-                var configurationService =
-                    ServiceHelper.GetRequiredService<IConfigurationService>();
-                var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-
+                var configurationService = _configurationService ?? ServiceHelper.GetRequiredService<IConfigurationService>();
+                var filterService = _filterService ?? ServiceHelper.GetRequiredService<IFilterService>();
                 var baseName = !string.IsNullOrWhiteSpace(config.Name)
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);
                 var destKey = filterService.GenerateFilterFileName(baseName);
 
-                // Remove ConfigureAwait(false) here too
                 var saved = await configurationService.SaveFilterAsync(destKey, config);
                 if (!saved)
                 {

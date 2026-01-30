@@ -102,7 +102,9 @@ namespace BalatroSeedOracle.Components
                 var platformServices = ServiceHelper.GetService<IPlatformServices>();
                 if (platformServices?.SupportsAnalyzer == true)
                 {
-                    var analyzeModal = new AnalyzeModal();
+                    var analyzeVm = ViewModel?.CreateAnalyzeModalViewModel();
+                    if (analyzeVm == null) return;
+                    var analyzeModal = new AnalyzeModal(analyzeVm);
                     analyzeModal.SetSeedAndAnalyze(seed);
 
                     var stdModal = new StandardModal("ANALYZE");

@@ -74,7 +74,8 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
             var sfxBaseUrl = "/Assets/Audio/SFX/";
             foreach (var sfxName in _sfxNames)
                 await LoadSfxJS(sfxName, $"{sfxBaseUrl}{sfxName}.ogg");
-            SetMasterVolumeJS(0f);
+            // Sync current master volume to JS (ViewModel may have set it before we were ready; don't overwrite with 0)
+            SetMasterVolumeJS(_masterVolume);
             _cancellationTokenSource = new CancellationTokenSource();
             _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
             _isInitialized = true;

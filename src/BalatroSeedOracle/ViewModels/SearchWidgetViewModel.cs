@@ -71,7 +71,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (e.PropertyName == nameof(PositionX) || e.PropertyName == nameof(PositionY))
                 {
-                    DebouncedSavePosition();
+                    _ = DebouncedSavePositionAsync();
                 }
                 else if (e.PropertyName == nameof(IsMinimized))
                 {
@@ -217,25 +217,21 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? SearchModalOpenRequested;
 
         /// <summary>
-        /// Debounced save for position changes (1 second delay)
+        /// Debounced save for position changes (1 second delay).
         /// </summary>
-        private async void DebouncedSavePosition()
+        private async Task DebouncedSavePositionAsync()
         {
-            // Cancel previous debounce
             _saveDebounceToken?.Cancel();
             _saveDebounceToken = new CancellationTokenSource();
 
             try
             {
-                // Wait 1 second
-                await Task.Delay(1000, _saveDebounceToken.Token);
-
-                // Save to UserProfile
+                await Task.Delay(1000, _saveDebounceToken.Token).ConfigureAwait(false);
                 SaveWidgetState();
             }
             catch (TaskCanceledException)
             {
-                // Debounce was canceled, do nothing
+                // Debounce was canceled
             }
         }
 

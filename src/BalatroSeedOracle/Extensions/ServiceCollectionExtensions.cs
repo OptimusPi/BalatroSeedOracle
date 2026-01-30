@@ -59,15 +59,19 @@ namespace BalatroSeedOracle.Extensions
             // ViewModels
             services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
                 sp.GetRequiredService<UserProfileService>(),
-                sp.GetRequiredService<SearchManager>(),
-                sp.GetRequiredService<Views.BalatroMainMenu>()
+                sp.GetRequiredService<SearchManager>()
             ));
             services.AddTransient<BalatroMainMenuViewModel>(sp => new BalatroMainMenuViewModel(
                 sp.GetRequiredService<UserProfileService>(),
+                sp.GetRequiredService<SearchModalViewModel>(),
+                sp.GetRequiredService<FiltersModalViewModel>(),
+                sp.GetRequiredService<CreditsModalViewModel>(),
+                sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
                 sp.GetService<IApiHostService>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
-                sp.GetService<WidgetPositionService>()
+                sp.GetService<WidgetPositionService>(),
+                sp.GetService<IPlatformServices>()
             ));
 
             // Views
@@ -75,11 +79,17 @@ namespace BalatroSeedOracle.Extensions
             // - MainWindow (desktop)
             // - ISingleViewApplicationLifetime.MainView (browser/mobile)
             // - Services that need to talk to the active menu (SearchTransitionManager)
-            services.AddSingleton<Views.BalatroMainMenu>();
+            // View receives ViewModel via constructor (MVVM + DI per docs/ARCHITECTURE.md)
+            services.AddSingleton<Views.BalatroMainMenu>(sp => new Views.BalatroMainMenu(
+                sp.GetRequiredService<BalatroMainMenuViewModel>()
+            ));
             services.AddSingleton<Views.MainWindow>(sp => new Views.MainWindow(
                 sp.GetRequiredService<MainWindowViewModel>(),
-                sp.GetRequiredService<Views.BalatroMainMenu>()
+                sp.GetRequiredService<Views.BalatroMainMenu>(),
+                sp.GetService<NotificationService>()
             ));
+            // Factory for AnalyzeModalViewModel so Views/ViewModels get it via injection, not ServiceHelper
+            services.AddSingleton<Func<AnalyzeModalViewModel>>(sp => () => sp.GetRequiredService<AnalyzeModalViewModel>());
             services.AddSingleton<FiltersModalViewModel>(sp => new FiltersModalViewModel(
                 sp.GetRequiredService<IConfigurationService>(),
                 sp.GetRequiredService<IFilterService>(),
@@ -87,8 +97,15 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<NotificationService>()
             ));
             services.AddSingleton<SearchModalViewModel>();
+            services.AddTransient<Views.Modals.SearchModal>(sp => new Views.Modals.SearchModal(
+                sp.GetRequiredService<SearchModalViewModel>()
+            ));
 
-            // Note: AnalyzeModalViewModel and AnalyzerViewModel are registered by Desktop Program.cs only
+            services.AddTransient<AnalyzeModalViewModel>(sp => new AnalyzeModalViewModel(
+                sp.GetRequiredService<SpriteService>(),
+                sp.GetRequiredService<UserProfileService>()
+            ));
+            // Note: AnalyzerViewModel is registered by Desktop Program.cs only
             // Note: AudioVisualizerSettingsWidgetViewModel and MusicMixerWidgetViewModel are desktop-only and registered by Desktop Program.cs
             services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<TransitionDesignerWidgetViewModel>(

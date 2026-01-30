@@ -198,8 +198,11 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var filterFiles = Directory
-                    .GetFiles(filtersDir, "*.json")
+                // Load both .json and .jaml filter files
+                var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
+                var jamlFiles = Directory.GetFiles(filtersDir, "*.jaml");
+                var filterFiles = jsonFiles
+                    .Concat(jamlFiles)
                     .Where(f => Path.GetFileName(f) != "_UNSAVED_CREATION.json") // Skip temp files
                     .OrderByDescending(File.GetLastWriteTime)
                     .ToList();
@@ -290,17 +293,36 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                var options = new JsonSerializerOptions
+                Motely.Filters.MotelyJsonConfig? config = null;
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                
+                if (extension == ".jaml")
                 {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                };
+                    // Load JAML file
+                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(content, out config, out var jamlError))
+                    {
+                        DebugLogger.LogError(
+                            "PaginatedFilterBrowserViewModel",
+                            $"Failed to parse JAML {filePath}: {jamlError}"
+                        );
+                        return null;
+                    }
+                }
+                else
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        AllowTrailingCommas = true,
+                    };
 
-                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                    content,
-                    options
-                );
+                    config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        content,
+                        options
+                    );
+                }
+                
                 if (config == null || string.IsNullOrEmpty(config.Name))
                     return null;
 

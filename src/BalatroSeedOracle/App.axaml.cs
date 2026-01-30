@@ -85,7 +85,7 @@ public partial class App : Application
                 Dispatcher.UIThread.UnhandledException += OnUIThreadException;
 
                 // Show loading window and pre-load sprites before showing main window
-                ShowLoadingWindowAndPreloadSprites(desktop);
+                _ = ShowLoadingWindowAndPreloadSpritesAsync(desktop);
 
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
@@ -237,7 +237,7 @@ public partial class App : Application
         }
     }
 
-    private async void ShowLoadingWindowAndPreloadSprites(
+    private async System.Threading.Tasks.Task ShowLoadingWindowAndPreloadSpritesAsync(
         IClassicDesktopStyleApplicationLifetime desktop
     )
     {

@@ -3,6 +3,6 @@
              x:Class="BalatroSeedOracle.Components.ResponsiveGrid"
              x:CompileBindings="True">
     
-    <Grid Name="MainGrid" Background="Transparent" />
+    <Grid x:Name="MainGrid" Background="Transparent" />
     
 </UserControl>

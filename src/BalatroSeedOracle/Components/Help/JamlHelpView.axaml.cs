@@ -6,20 +6,16 @@ using BalatroSeedOracle.Helpers;
 
 namespace BalatroSeedOracle.Components.Help
 {
+    /// <summary>
+    /// JAML help view displaying markdown content.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class JamlHelpView : UserControl
     {
-        private Markdown? _markdownViewer;
-
         public JamlHelpView()
         {
             InitializeComponent();
             LoadJamlHelp();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-            _markdownViewer = this.FindControl<Avalonia.Controls.Markdown>("MarkdownViewer");
         }
 
         private void LoadJamlHelp()
@@ -28,11 +24,10 @@ namespace BalatroSeedOracle.Components.Help
             {
                 // Load JAML help markdown
                 var helpContent = GetJamlHelpMarkdown();
-                if (_markdownViewer != null && !string.IsNullOrEmpty(helpContent))
+                // Direct x:Name field access - MarkdownViewer is a TextBlock in AXAML
+                if (MarkdownViewer != null && !string.IsNullOrEmpty(helpContent))
                 {
-                    // Use reflection to set Markdown property (type is in Avalonia.Controls.Markdown namespace)
-                    var markdownProp = _markdownViewer.GetType().GetProperty("Markdown");
-                    markdownProp?.SetValue(_markdownViewer, helpContent);
+                    MarkdownViewer.Text = helpContent;
                 }
             }
             catch (Exception ex)

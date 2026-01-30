@@ -27,6 +27,9 @@ public class Program
             // Enable debug logging
             DebugLogger.SetDebugEnabled(true);
 
+            // Initialize Desktop-specific app features
+            DesktopAppInitializer.Initialize();
+
             // Register Desktop-specific services
             PlatformServices.RegisterServices = services =>
             {
@@ -42,6 +45,7 @@ public class Program
                 services.AddSingleton<IAudioManager, DesktopAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
                 services.AddSingleton<IParquetExporter, ParquetExporter>();
+                services.AddSingleton<IResultsDatabaseExporter, ResultsDatabaseExporter>();
 
                 // API host
                 services.AddSingleton<IApiHostService, DesktopApiHostService>();

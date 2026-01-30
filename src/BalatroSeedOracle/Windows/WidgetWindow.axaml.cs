@@ -39,6 +39,8 @@ namespace BalatroSeedOracle.Windows
 
         public WidgetWindow()
         {
+            InitializeComponent();
+            
             // Set up window properties
             if (
                 Application.Current?.ApplicationLifetime
@@ -60,13 +62,8 @@ namespace BalatroSeedOracle.Windows
             PositionChanged += OnPositionChanged;
             Resized += OnResized;
 
-            // Initialize snap indicator
+            // Initialize snap indicator (uses direct x:Name field access)
             UpdateSnapIndicator();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnDataContextChanged(EventArgs e)
@@ -244,27 +241,24 @@ namespace BalatroSeedOracle.Windows
 
         private void UpdateSnapIndicator()
         {
-            var indicator = this.FindControl<Border>("SnapIndicator");
-            if (indicator != null)
-            {
-                indicator.IsVisible = _isSnapped;
+            // Direct x:Name field access - no FindControl!
+            SnapIndicator.IsVisible = _isSnapped;
 
-                // Update indicator position based on snap edge
-                if (_isSnapped)
+            // Update indicator position based on snap edge
+            if (_isSnapped)
+            {
+                SnapIndicator.Margin = _snapEdge switch
                 {
-                    indicator.Margin = _snapEdge switch
-                    {
-                        SnapEdge.Top => new Thickness(0, -20, 0, 0),
-                        SnapEdge.Bottom => new Thickness(0, 0, 0, -20),
-                        SnapEdge.Left => new Thickness(-20, 0, 0, 0),
-                        SnapEdge.Right => new Thickness(0, 0, -20, 0),
-                        SnapEdge.TopLeft => new Thickness(-20, -20, 0, 0),
-                        SnapEdge.TopRight => new Thickness(0, -20, -20, 0),
-                        SnapEdge.BottomLeft => new Thickness(-20, 0, 0, -20),
-                        SnapEdge.BottomRight => new Thickness(0, 0, -20, -20),
-                        _ => new Thickness(0, -20, 0, 0),
-                    };
-                }
+                    SnapEdge.Top => new Thickness(0, -20, 0, 0),
+                    SnapEdge.Bottom => new Thickness(0, 0, 0, -20),
+                    SnapEdge.Left => new Thickness(-20, 0, 0, 0),
+                    SnapEdge.Right => new Thickness(0, 0, -20, 0),
+                    SnapEdge.TopLeft => new Thickness(-20, -20, 0, 0),
+                    SnapEdge.TopRight => new Thickness(0, -20, -20, 0),
+                    SnapEdge.BottomLeft => new Thickness(-20, 0, 0, -20),
+                    SnapEdge.BottomRight => new Thickness(0, 0, -20, -20),
+                    _ => new Thickness(0, -20, 0, 0),
+                };
             }
         }
 

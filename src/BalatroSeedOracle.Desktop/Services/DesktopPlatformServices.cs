@@ -16,6 +16,9 @@ namespace BalatroSeedOracle.Desktop.Services
         public bool SupportsAudio => true;
         public bool SupportsAnalyzer => true;
         public bool SupportsResultsGrid => true;
+        public bool SupportsAudioWidgets => true;
+        public bool SupportsApiHostWidget => true;
+        public bool SupportsTransitionDesigner => true;
 
         public string GetTempDirectory()
         {

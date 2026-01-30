@@ -17,7 +17,8 @@ namespace BalatroSeedOracle.Components
         {
             var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
             var positionService = ServiceHelper.GetService<WidgetPositionService>();
-            ViewModel = new GenieWidgetViewModel(searchManager, positionService);
+            var apiHostService = ServiceHelper.GetService<IApiHostService>();
+            ViewModel = new GenieWidgetViewModel(searchManager, positionService, apiHostService);
             DataContext = ViewModel;
 
             InitializeComponent();

@@ -7,9 +7,12 @@ using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Windows
 {
+    /// <summary>
+    /// Analyzer window for seed analysis.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class AnalyzerWindow : Window
     {
-        private AnalyzerView? _analyzerView;
         private readonly AnalyzerViewModel _viewModel;
 
         public AnalyzerWindow()
@@ -19,13 +22,13 @@ namespace BalatroSeedOracle.Windows
         {
             _viewModel = viewModel;
             InitializeComponent();
-            _analyzerView = this.FindControl<AnalyzerView>("AnalyzerViewContent");
 
             DataContext = _viewModel;
 
-            if (_analyzerView != null)
+            // Direct x:Name field access - no FindControl!
+            if (AnalyzerViewContent != null)
             {
-                _analyzerView.DataContext = _viewModel;
+                AnalyzerViewContent.DataContext = _viewModel;
             }
         }
 
@@ -42,11 +45,6 @@ namespace BalatroSeedOracle.Windows
             // Set multiple seeds for navigation
             _viewModel.SetSeeds(seeds);
             Title = $"Balatro Seed Analyzer - {_viewModel.TotalResults} seeds";
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         /// <summary>

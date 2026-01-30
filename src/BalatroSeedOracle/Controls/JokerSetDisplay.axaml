@@ -47,17 +47,17 @@
             
             <!-- Set Name -->
             <TextBlock Grid.Row="0" 
-                       Name="SetNameText"
+                       x:Name="SetNameText"
                        Classes="set-name"/>
             
             <!-- Set Description -->
             <TextBlock Grid.Row="1" 
-                       Name="SetDescriptionText"
+                       x:Name="SetDescriptionText"
                        Classes="set-description"/>
             
             <!-- Overlapping Joker Cards -->
             <Canvas Grid.Row="2" 
-                    Name="JokerCanvas"
+                    x:Name="JokerCanvas"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Width="150"
@@ -66,7 +66,7 @@
             
             <!-- Tags -->
             <ItemsControl Grid.Row="3"
-                         Name="TagsControl"
+                         x:Name="TagsControl"
                          HorizontalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

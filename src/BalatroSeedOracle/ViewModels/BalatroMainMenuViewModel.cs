@@ -21,9 +21,11 @@ namespace BalatroSeedOracle.ViewModels
     public partial class BalatroMainMenuViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
+        private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IApiHostService? _apiHostService;
+        private readonly IPlatformServices? _platformServices;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         /// <summary>
@@ -92,6 +94,25 @@ namespace BalatroSeedOracle.ViewModels
         [NotifyCanExecuteChangedFor(nameof(ToolCommand))]
         private bool _isModalVisible = false;
 
+        /// <summary>
+        /// The currently active modal content (ViewModel-driven)
+        /// </summary>
+        [ObservableProperty]
+        private object? _activeModal;
+
+        partial void OnIsModalVisibleChanged(bool value)
+        {
+            if (!value)
+            {
+                ActiveModal = null;
+            }
+            else
+            {
+                // Close widget dock when modal opens
+                IsWidgetDockVisible = false;
+            }
+        }
+
         partial void OnIsSearchWidgetsVisibleChanged(bool value)
         {
             SearchWidgetsIcon = value
@@ -115,15 +136,6 @@ namespace BalatroSeedOracle.ViewModels
             ToggleAllWidgetsIcon = allVisible
                 ? PackIconMaterialKind.Widgets
                 : PackIconMaterialKind.WidgetsOutline;
-        }
-
-        partial void OnIsModalVisibleChanged(bool value)
-        {
-            // Close widget dock when modal opens
-            if (value)
-            {
-                IsWidgetDockVisible = false;
-            }
         }
 
         [ObservableProperty]
@@ -186,19 +198,44 @@ namespace BalatroSeedOracle.ViewModels
 
         private double _previousVolume = 70;
 
+        /// <summary>
+        /// Singleton SearchModalViewModel - injected, used by ModalHelper to create SearchModal.
+        /// </summary>
+        public SearchModalViewModel SearchModalViewModel { get; }
+
+        /// <summary>
+        /// Singleton FiltersModalViewModel - injected, used by ModalHelper to create FiltersModal.
+        /// </summary>
+        public FiltersModalViewModel FiltersModalViewModel { get; }
+
+        /// <summary>
+        /// CreditsModalViewModel - injected, used by ModalHelper to create CreditsModal (creator passes VM to View).
+        /// </summary>
+        public CreditsModalViewModel CreditsModalViewModel { get; }
+
         public BalatroMainMenuViewModel(
             UserProfileService userProfileService,
+            SearchModalViewModel searchModalViewModel,
+            FiltersModalViewModel filtersModalViewModel,
+            CreditsModalViewModel creditsModalViewModel,
+            Func<AnalyzeModalViewModel> analyzeModalFactory,
             IApiHostService? apiHostService = null,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
-            WidgetPositionService? widgetPositionService = null
+            WidgetPositionService? widgetPositionService = null,
+            IPlatformServices? platformServices = null
         )
         {
             // Store injected services
             _userProfileService = userProfileService;
+            _analyzeModalFactory = analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            SearchModalViewModel = searchModalViewModel;
+            FiltersModalViewModel = filtersModalViewModel;
+            CreditsModalViewModel = creditsModalViewModel;
             _apiHostService = apiHostService;
             _audioManager = audioManager;
             _eventFXService = eventFXService;
+            _platformServices = platformServices;
 
             // Create child widget ViewModels (owned by parent, bound via XAML)
             if (_apiHostService != null)
@@ -212,6 +249,12 @@ namespace BalatroSeedOracle.ViewModels
             // Load settings
             LoadSettings();
         }
+
+        /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by View to show analyze modal.</summary>
+        public AnalyzeModalViewModel CreateAnalyzeModalViewModel() => _analyzeModalFactory();
+
+        /// <summary>Exposed so parent View can pass factory to child widgets (e.g. DayLatroWidget) that cannot get it from DI.</summary>
+        public Func<AnalyzeModalViewModel> AnalyzeModalFactory => _analyzeModalFactory;
 
         partial void OnIsMusicMixerWidgetVisibleChanged(bool value)
         {
@@ -319,12 +362,49 @@ namespace BalatroSeedOracle.ViewModels
             _eventFXService?.TriggerEvent(EventFXType.SearchLaunchModal);
             try
             {
+                var filterSelectionVM = new FilterSelectionModalViewModel(
+                    enableSearch: true,
+                    enableEdit: true,
+                    enableCopy: false,
+                    enableDelete: false,
+                    enableAnalyze: false
+                );
+
+                filterSelectionVM.ModalCloseRequested += (s, e) =>
+                {
+                    var result = filterSelectionVM.Result;
+                    if (result.Cancelled)
+                    {
+                        HideModal();
+                        return;
+                    }
+
+                    if (result.Action == FilterAction.Search && !string.IsNullOrEmpty(result.FilterId))
+                    {
+                        // Transition to SearchModal
+                        var searchVM = ServiceHelper.GetRequiredService<SearchModalViewModel>();
+                        searchVM.MainMenu = null; // We'll handle navigation via ActiveModal
+                        
+                        // Load filter and show
+                        var filtersDir = AppPaths.FiltersDir;
+                        var configPath = Path.Combine(filtersDir, result.FilterId + ".jaml");
+                        if (!File.Exists(configPath))
+                            configPath = Path.Combine(filtersDir, result.FilterId + ".json");
+
+                        _ = searchVM.LoadFilterAsync(configPath);
+                        ActiveModal = searchVM;
+                        MainTitle = "🎰 SEED SEARCH";
+                    }
+                };
+
+                ActiveModal = filterSelectionVM;
                 IsModalVisible = true;
-                ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Search));
+                MainTitle = "🔍 SELECT FILTER";
             }
             catch (Exception ex)
             {
                 IsModalVisible = false;
+                ActiveModal = null;
                 DebugLogger.LogError(
                     "BalatroMainMenuViewModel",
                     $"Failed to open search modal: {ex}"
@@ -336,6 +416,37 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private bool CanOpenModal() => !IsModalVisible;
+
+        /// <summary>
+        /// Resolves the filter config file path for a filter ID (.jaml first, then .json).
+        /// MVVM: path resolution and file checks belong in ViewModel, not View.
+        /// </summary>
+        public async Task<string?> GetFilterConfigPathAsync(string filterId)
+        {
+            if (string.IsNullOrWhiteSpace(filterId))
+                return null;
+
+            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            if (isBrowser)
+            {
+                var jamlPath = $"Filters/{filterId}.jaml";
+                var jsonPath = $"Filters/{filterId}.json";
+                if (await _platformServices!.FileExistsAsync(jamlPath).ConfigureAwait(false))
+                    return jamlPath;
+                if (await _platformServices.FileExistsAsync(jsonPath).ConfigureAwait(false))
+                    return jsonPath;
+                return null;
+            }
+
+            var filtersDir = AppPaths.FiltersDir;
+            var jamlFull = Path.Combine(filtersDir, filterId + ".jaml");
+            var jsonFull = Path.Combine(filtersDir, filterId + ".json");
+            if (File.Exists(jamlFull))
+                return jamlFull;
+            if (File.Exists(jsonFull))
+                return jsonFull;
+            return null;
+        }
 
         [RelayCommand(CanExecute = nameof(CanOpenModal))]
         private void Editor()
@@ -700,12 +811,13 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load feature toggles - these control which widgets are enabled (exist)
+                // Combine user preferences with platform capabilities
                 var toggles = profile.FeatureToggles;
-                IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
-                IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
-                IsTransitionDesignerWidgetEnabled = toggles?.ShowTransitionDesigner ?? false;
+                IsMusicMixerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowMusicMixer ?? false);
+                IsVisualizerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowVisualizer ?? false);
+                IsTransitionDesignerWidgetEnabled = (_platformServices?.SupportsTransitionDesigner ?? true) && (toggles?.ShowTransitionDesigner ?? false);
                 IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-                IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
+                IsHostApiWidgetEnabled = (_platformServices?.SupportsApiHostWidget ?? true) && (toggles?.ShowHostServer ?? false);
                 IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
 
                 // Initialize visibility to match enabled state
@@ -742,11 +854,12 @@ namespace BalatroSeedOracle.ViewModels
             var toggles = profile.FeatureToggles;
 
             // Update enabled state (source of truth)
-            IsMusicMixerWidgetEnabled = toggles?.ShowMusicMixer ?? false;
-            IsVisualizerWidgetEnabled = toggles?.ShowVisualizer ?? false;
-            IsTransitionDesignerWidgetEnabled = toggles?.ShowTransitionDesigner ?? false;
+            // Combine user preferences with platform capabilities
+            IsMusicMixerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowMusicMixer ?? false);
+            IsVisualizerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowVisualizer ?? false);
+            IsTransitionDesignerWidgetEnabled = (_platformServices?.SupportsTransitionDesigner ?? true) && (toggles?.ShowTransitionDesigner ?? false);
             IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-            IsHostApiWidgetEnabled = toggles?.ShowHostServer ?? false;
+            IsHostApiWidgetEnabled = (_platformServices?.SupportsApiHostWidget ?? true) && (toggles?.ShowHostServer ?? false);
             IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
 
             // If a widget is disabled, hide it. If enabled, keep current visibility.

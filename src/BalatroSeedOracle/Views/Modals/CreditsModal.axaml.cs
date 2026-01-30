@@ -11,12 +11,23 @@ namespace BalatroSeedOracle.Views.Modals
 {
     public partial class CreditsModal : UserControl
     {
+        /// <summary>Parameterless constructor for Avalonia XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public CreditsModal()
+            : this(throwForDesignTimeOnly: true)
         {
-            InitializeComponent();
-            DataContext = ServiceHelper.GetRequiredService<CreditsModalViewModel>();
+        }
 
-            // Set up event handler for link clicks
+        private CreditsModal(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException("Do not use CreditsModal(). Use new CreditsModal(viewModel) with ViewModel from creator (e.g. menu.ViewModel.CreditsModalViewModel).");
+            InitializeComponent();
+        }
+
+        public CreditsModal(CreditsModalViewModel viewModel)
+        {
+            DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            InitializeComponent();
             this.AddHandler(PointerPressedEvent, OnLinkClick, handledEventsToo: true);
         }
 

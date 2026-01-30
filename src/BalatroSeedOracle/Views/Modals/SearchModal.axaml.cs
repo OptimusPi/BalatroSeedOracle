@@ -17,19 +17,29 @@ namespace BalatroSeedOracle.Views.Modals
 
         public event EventHandler? CloseRequested;
 
+        /// <summary>
+        /// Parameterless constructor for Avalonia XAML compiler only. Throws at runtime.
+        /// Use <see cref="SearchModal(SearchModalViewModel)"/> - creator passes injected ViewModel.
+        /// </summary>
         public SearchModal()
+            : this(throwForDesignTimeOnly: true)
         {
-            var searchManager = ServiceHelper.GetRequiredService<SearchManager>();
-            var userProfileService = ServiceHelper.GetRequiredService<UserProfileService>();
-            var appDataStore =
-                ServiceHelper.GetRequiredService<BalatroSeedOracle.Services.Storage.IAppDataStore>();
-            var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-            ViewModel = new SearchModalViewModel(
-                searchManager,
-                userProfileService,
-                appDataStore,
-                platformServices
-            );
+        }
+
+        private SearchModal(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException(
+                    "Do not use SearchModal(). Creator must pass ViewModel: new SearchModal(viewModel).");
+            ViewModel = null!;
+            DataContext = null;
+            InitializeComponent();
+            WireUpComponentEvents();
+        }
+
+        public SearchModal(SearchModalViewModel viewModel)
+        {
+            ViewModel = viewModel;
             DataContext = ViewModel;
 
             ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);

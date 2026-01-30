@@ -21,10 +21,12 @@ Always enable compiled bindings for better performance:
 - Use `[ObservableProperty]` for properties
 - Use `[RelayCommand]` for commands
 - Keep business logic in ViewModels
+- Receive all dependencies via **constructor injection** (no `ServiceHelper` / service locator in constructors)
 
 ### Views
 
 - Thin Views: Minimal code-behind
+- Receive ViewModel via **constructor parameter** (creator gets ViewModel from DI and passes it). Never use `ServiceHelper.GetService` or `GetRequiredService` in a View constructor
 - Use data binding instead of event handlers
 - Use commands, not click events
 - Direct field access via `x:Name` instead of `FindControl`

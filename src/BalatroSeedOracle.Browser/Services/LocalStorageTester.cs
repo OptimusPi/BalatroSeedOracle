@@ -1,4 +1,3 @@
-#if BROWSER
 using System;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
@@ -92,4 +91,3 @@ namespace BalatroSeedOracle.Services.Storage
         private static partial void RemoveLocalStorageItem(string key);
     }
 }
-#endif

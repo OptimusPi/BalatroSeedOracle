@@ -27,11 +27,13 @@ internal sealed partial class Program
                 return new BrowserPlatformServices(store);
             });
 
-            // API host
-            services.AddSingleton<IApiHostService, BrowserApiHostService>();
+            // IApiHostService: NOT registered - API hosting not supported in browser
+            // Consumers must handle null service (Avalonia best practice: no stub implementations)
 
             // Excel export (stub - not implemented for browser yet)
             services.AddSingleton<IParquetExporter, BrowserParquetExporter>();
+            // Database export (.db / .ducklake) available on Desktop only
+            services.AddSingleton<IResultsDatabaseExporter, BrowserResultsDatabaseExporter>();
 
             // Browser audio using Web Audio API
             services.AddSingleton<IAudioManager, BrowserAudioManager>();

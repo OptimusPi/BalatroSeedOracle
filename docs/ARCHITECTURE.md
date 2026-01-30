@@ -27,14 +27,13 @@ Platform-specific services are registered in each platform's entry point:
 - `FileSystemDuckDBService`
 - `FileSystemPlatformServices`
 
-### Platform Projects: Overrides Only
+### Platform Projects: Overrides Only (the "folder thing")
 
-Platform head projects (`.Browser`, `.Android`, `.iOS`) should contain **ONLY**:
-- Entry point code (`Program.cs`, `MainActivity.cs`, `AppDelegate.cs`)
-- Service registration via `PlatformServices.RegisterServices`
-- Platform-specific overrides when necessary
+Platform head projects (`.Desktop`, `.Browser`, `.Android`, `.iOS`) are **folders**: code in a platform project is **not included** when building another platform. Use that instead of shared interfaces for platform-only behavior.
 
-**DO NOT** duplicate service implementations in platform projects.
+- **Desktop/** contains desktop-only code (e.g. desktop widget setup). Browser build does not compile or include it. No need for a shared "provider" interface — just put the code in the Desktop folder.
+- Platform projects should contain **ONLY**: entry point, service registration via `PlatformServices.RegisterServices`, and platform-specific overrides.
+- **DO NOT** duplicate service implementations; **DO NOT** add shared interfaces (e.g. "IDesktopWidgetProvider") when the same result is achieved by having the code only in the compatible platform folder.
 
 ## MVVM Architecture
 
@@ -55,8 +54,25 @@ Platform head projects (`.Browser`, `.Android`, `.iOS`) should contain **ONLY**:
 ### Dependency Injection
 
 - Services registered in `App.axaml.cs` via `ServiceCollectionExtensions`
-- ViewModels receive services via constructor injection
-- Access services via `App.GetService<T>()` or `ServiceHelper.GetService<T>()`
+- **ViewModels** receive all dependencies via **constructor injection**
+- **Views** receive their ViewModel via **constructor injection** (the creator resolves the ViewModel from DI and passes it). Never use `ServiceHelper.GetService` or `GetRequiredService` inside a View or ViewModel **constructor**
+- Use `ServiceHelper.GetService<T>()` only for one-off resolution outside constructors (e.g. in a method when no injected dependency exists). Prefer constructor injection everywhere
+
+### MVVM & XPLAT organization (proper structure)
+
+- **Core project** (`BalatroSeedOracle`): Shared business logic, ViewModels, shared Views, services, and `IPlatformServices`. Referenced by all platform heads. No `#if` for platform; use interfaces + DI.
+- **Platform projects** (`.Desktop`, `.Browser`, `.Android`, `.iOS`): Entry point, `PlatformServices.RegisterServices`, and **platform-only** Views/ViewModels/services. Code in a platform project is not compiled for other platforms (the "folder thing").
+- **Who creates Views/ViewModels:** The composition root (App + DI) creates the main window and main menu and injects their ViewModels. Modals and dialogs should be created the same way: resolve View + ViewModel from DI (or a small factory that uses DI), then assign `DataContext`/content. Do not use `new ModalView()` and then `ServiceHelper` in the View constructor to build the ViewModel.
+- **Thin Views:** Views only display and forward input; they do not resolve services in constructors. Prefer a modal host or factory that resolves modal View + ViewModel from DI so the host (e.g. main menu) stays agnostic of construction details.
+
+**MVVM checklist (new / refactored code):**
+
+- [ ] ViewModels: all dependencies via **constructor injection**; no `ServiceHelper`/`App.GetService` in constructors.
+- [ ] Views: ViewModel (or content) **injected by creator** or resolved from DI by the caller; no `ServiceHelper` in View constructors.
+- [ ] Modals: resolve modal View + ViewModel from DI (e.g. `GetRequiredService<CreditsModal>()`); no `new ModalView()` + ServiceHelper inside the View.
+- [ ] Prefer one resolution path: use `ServiceHelper` in shared code; avoid mixing `App.GetService` and `ServiceHelper` for the same purpose.
+
+For a detailed scrutiny of current gaps and migration steps, see **docs/SCRUTINY_MVVM_XPLAT.md**.
 
 ## Cross-Platform Considerations
 
@@ -94,6 +110,8 @@ public interface IExcelExporter
 
 ## AOT Compilation
 
+**Required stack (already configured):** AOT, WASM SIMD, and DuckDB-WASM are in use. Do not assume they don't work; do not reinvent. See `docs/SCRUTINY_MVVM_XPLAT.md` §0 and [Avalonia Web Assembly](https://docs.avaloniaui.net/docs/guides/platforms/how-to-use-web-assembly).
+
 All platforms support **Ahead-of-Time (AOT) compilation** for optimal performance:
 
 ### BalatroSeedOracle Desktop AOT
@@ -101,10 +119,11 @@ All platforms support **Ahead-of-Time (AOT) compilation** for optimal performanc
 - Native binary output with no JIT overhead
 - Faster startup and reduced memory usage
 
-### BalatroSeedOracle Browser AOT
-- Enabled via `<RunAOTCompilation>true</RunAOTCompilation>` in `BalatroSeedOracle.Browser.csproj`
-- Requires `<PublishTrimmed>true</PublishTrimmed>` for WASM
-- Pre-compiled WebAssembly modules for faster execution
+### BalatroSeedOracle Browser AOT + WASM SIMD + DuckDB-WASM
+- AOT: `<RunAOTCompilation>true</RunAOTCompilation>` in `BalatroSeedOracle.Browser.csproj`; requires `<PublishTrimmed>true</PublishTrimmed>` for WASM
+- WASM SIMD: `<WasmEnableSIMD>true</WasmEnableSIMD>` (and optionally `<WasmEnableThreads>true</WasmEnableThreads>`)
+- DuckDB in browser: `wwwroot/js/duckdb-interop.js` + `duckdb-wasm/` (DuckDB-WASM bundle); Desktop/Android use `DuckDB.NET.Data.Full`
+- Pre-compiled WebAssembly modules; do not remove or replace this stack
 
 ### Motely AOT Configuration
 
@@ -173,7 +192,8 @@ propertyInfo.SetValue(obj, value);
 ## Best Practices
 
 1. **No `#if` Directives**: Use `IPlatformServices` pattern instead
-2. **No Legacy Code**: Remove all backward compatibility code
-3. **No Migration Logic**: Rebuild data rather than migrating
-4. **Shared Code**: Keep common implementations in main project
-5. **Platform Overrides**: Only in platform head projects when absolutely necessary
+2. **No Service Locator in Constructors**: Views and ViewModels receive dependencies via constructor injection only. The creator (DI or composition root) resolves from the container and passes in. Never call `ServiceHelper.GetService` or `GetRequiredService` inside a constructor
+3. **No Legacy Code**: Remove all backward compatibility code
+4. **No Migration Logic**: Rebuild data rather than migrating
+5. **Shared Code**: Keep common implementations in main project
+6. **Platform Overrides**: Only in platform head projects when absolutely necessary

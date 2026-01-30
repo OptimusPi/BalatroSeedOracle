@@ -7,7 +7,7 @@
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Components.AudioVisualizerSettingsWidget"
+             x:Class="BalatroSeedOracle.Desktop.Components.Widgets.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True"
              Panel.ZIndex="{Binding WidgetZIndex}">

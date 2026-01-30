@@ -26,7 +26,7 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu)
+    public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu, NotificationService? notificationService = null)
     {
         InitializeComponent();
 
@@ -38,14 +38,13 @@ public partial class MainWindow : Window
             BuyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
 
-        // Host the DI-created main menu instance
+        // Host the DI-created main menu instance (View composes content; ViewModel does not hold View reference)
         _mainMenu = mainMenu;
-        
-        // MainMenu is bound via compiled bindings in XAML: Content="{Binding MainMenu}"
-        // No code-behind assignment needed - MVVM pattern!
+        if (MainContentHost != null)
+            MainContentHost.Content = _mainMenu;
 
-        // Sync IsVibeOutMode from MainMenu to MainWindow if (_mainMenu?.ViewModel is not null && ViewModel is not null)
-       
+        // Sync IsVibeOutMode from MainMenu to MainWindow
+        if (_mainMenu?.ViewModel is not null && ViewModel is not null)
         {
             _mainMenu.ViewModel.PropertyChanged += (s, e) =>
             {
@@ -56,17 +55,10 @@ public partial class MainWindow : Window
             };
         }
 
-        // Initialize notification service
-        var notificationService = ServiceHelper.GetService<Services.NotificationService>();
         if (notificationService != null)
-        {
             notificationService.Initialize(this);
-        }
 
-        // Handle window closing
         Closing += OnWindowClosing;
-
-        // Handle window resize to reposition widgets
         SizeChanged += OnWindowSizeChanged;
     }
 

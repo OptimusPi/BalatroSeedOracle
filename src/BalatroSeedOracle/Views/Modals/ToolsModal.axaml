@@ -69,6 +69,57 @@
                            IsHitTestVisible="False"/>
             </Button>
 
+            <!-- My Website (WebView) -->
+            <Button Name="MyWebsiteButton"
+                   Click="OnMyWebsiteClick"
+                   Classes="btn-blue"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <material:PackIconMaterial Kind="Web" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="My Website"
+                               FontSize="20"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Balatro-inspired site (WebView) -->
+            <Button Name="BalatroSiteButton"
+                   Click="OnBalatroSiteClick"
+                   Classes="btn-blue"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <material:PackIconMaterial Kind="Web" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="Balatro"
+                               FontSize="20"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Web App – BSO in WebView (use web app instead of re-creating) -->
+            <Button Name="WebAppButton"
+                   Click="OnWebAppClick"
+                   Classes="btn-blue"
+                   MinWidth="250"
+                   MinHeight="60"
+                   HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <material:PackIconMaterial Kind="Application" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="Web App"
+                               FontSize="20"
+                               FontFamily="{StaticResource BalatroFont}"
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
             <!-- Audio Visualizer Settings Button -->
             <Button Name="AudioVisualizerSettingsButton"
                    Click="OnAudioVisualizerSettingsClick"

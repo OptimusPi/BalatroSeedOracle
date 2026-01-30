@@ -25,13 +25,13 @@
         </Style>
     </UserControl.Styles>
     
-    <Button Name="MaximizeBtn" 
+    <Button x:Name="MaximizeBtn" 
             Classes="maximize-btn"
             ToolTip.Tip="Maximize Window"
             Click="MaximizeBtn_Click">
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <icons:PackIconMaterial Name="IconBlock" Kind="Fullscreen" Width="18" Height="18" VerticalAlignment="Center"/>
-            <TextBlock Name="LabelBlock" Text="" FontSize="12" VerticalAlignment="Center"/>
+            <icons:PackIconMaterial x:Name="IconBlock" Kind="Fullscreen" Width="18" Height="18" VerticalAlignment="Center"/>
+            <TextBlock x:Name="LabelBlock" Text="" FontSize="12" VerticalAlignment="Center"/>
         </StackPanel>
     </Button>
 </UserControl>

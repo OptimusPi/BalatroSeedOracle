@@ -49,14 +49,12 @@
 
   <!-- Desktop-only packages (native dependencies that don't work in browser) -->
   <ItemGroup>
-    <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="SoundFlow" />
-    <!-- Parquet export via DuckDB - no separate Parquet.Net needed -->
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
-    <!-- Motely.API for hosting the search API server -->
     <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" />
+    <ProjectReference Include="..\..\external\Motely\Motely.DB\Motely.DB.csproj" />
   </ItemGroup>
 </Project>

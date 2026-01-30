@@ -1,7 +1,8 @@
 using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Components;
 using BalatroSeedOracle.ViewModels;
 
-namespace BalatroSeedOracle.Components;
+namespace BalatroSeedOracle.Desktop.Components.Widgets;
 
 /// <summary>
 /// ApiHostWidget - Hosts the Motely API server within BSO

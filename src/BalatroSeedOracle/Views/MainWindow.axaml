@@ -37,7 +37,7 @@
                 BorderThickness="0,0,0,2">
             <Grid RowDefinitions="*,Auto">
                 <!-- Main content wrapped in ErrorBoundary (template-driven control per Avalonia best practices) -->
-                <controls:ErrorBoundary Grid.Row="0" Content="{Binding MainMenu}" />
+                <controls:ErrorBoundary x:Name="MainContentHost" Grid.Row="0" />
 
                 <!-- Attribution line (hidden in Vibe Out Mode) -->
                 <Border Grid.Row="1"

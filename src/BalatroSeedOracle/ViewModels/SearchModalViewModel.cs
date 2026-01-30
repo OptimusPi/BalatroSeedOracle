@@ -39,6 +39,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly UserProfileService _userProfileService;
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
+        private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
 
         private ActiveSearchContext? _searchContext;
         private string _currentSearchId = string.Empty;
@@ -289,13 +290,15 @@ namespace BalatroSeedOracle.ViewModels
             SearchManager searchManager,
             UserProfileService userProfileService,
             BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore,
-            IPlatformServices platformServices
+            IPlatformServices platformServices,
+            Func<AnalyzeModalViewModel> analyzeModalFactory
         )
         {
             _searchManager = searchManager;
             _userProfileService = userProfileService;
             _appDataStore = appDataStore;
             _platformServices = platformServices;
+            _analyzeModalFactory = analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -319,6 +322,9 @@ namespace BalatroSeedOracle.ViewModels
 
             // Events will be subscribed to individual SearchInstance when created
         }
+
+        /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by ResultsTab to show analyze modal.</summary>
+        public AnalyzeModalViewModel CreateAnalyzeModalViewModel() => _analyzeModalFactory();
 
         partial void OnSelectedTabIndexChanged(int value)
         {
@@ -1566,13 +1572,31 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var json =
+                var content =
                     await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        json
-                    );
+                Motely.Filters.MotelyJsonConfig? config = null;
+                var extension = Path.GetExtension(configPath).ToLowerInvariant();
+                if (extension == ".jaml")
+                {
+                    if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var jamlConfig, out var jamlError))
+                        config = jamlConfig;
+                    else
+                    {
+                        DebugLogger.LogError(
+                            "SearchModalViewModel",
+                            $"JAML parse error: {jamlError ?? "Unknown"}"
+                        );
+                        return;
+                    }
+                }
+                else
+                {
+                    config =
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                            content
+                        );
+                }
 
                 if (config != null)
                 {

@@ -11,7 +11,7 @@
     <!-- ZIndex: Minimized=1, Expanded=100 (expanded widgets always on top!) -->
     <Grid>
         <!-- Minimized State -->
-        <Grid Name="MinimizedView"
+        <Grid x:Name="MinimizedView"
               IsVisible="{Binding IsMinimized}">
             <Button Classes="widget-icon widget-header"
                     Width="100" Height="100"
@@ -38,7 +38,7 @@
         </Grid>
 
         <!-- Expanded State -->
-        <Border Name="ExpandedView"
+        <Border x:Name="ExpandedView"
                 ZIndex="10"
                 Classes="widget-container"
                 Background="{StaticResource ModalGrey}"
@@ -92,7 +92,7 @@
                 <!-- Content Area (scrollable) -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
                     <Border Classes="widget-content light" Padding="15">
-                        <ContentPresenter Name="PART_ContentPresenter"/>
+                        <ContentPresenter x:Name="PART_ContentPresenter"/>
                     </Border>
                 </ScrollViewer>
             </Grid>

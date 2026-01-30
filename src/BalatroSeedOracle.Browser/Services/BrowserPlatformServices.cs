@@ -24,6 +24,9 @@ namespace BalatroSeedOracle.Browser.Services
         public bool SupportsAudio => true; // Web Audio API fully supported
         public bool SupportsAnalyzer => false; // Analyzer requires native DuckDB extensions
         public bool SupportsResultsGrid => true; // Avalonia DataGrid works perfectly in browser
+        public bool SupportsAudioWidgets => false; // Desktop-only widgets require full audio engine
+        public bool SupportsApiHostWidget => false; // API hosting only works on desktop
+        public bool SupportsTransitionDesigner => false; // Transition Designer is desktop-only
 
         public string GetTempDirectory()
         {

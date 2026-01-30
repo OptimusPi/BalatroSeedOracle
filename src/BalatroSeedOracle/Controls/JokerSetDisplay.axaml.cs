@@ -7,7 +7,6 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Constants;
@@ -17,13 +16,12 @@ using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Controls
 {
+    /// <summary>
+    /// Displays a joker set with overlapping card images.
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
+    /// </summary>
     public partial class JokerSetDisplay : UserControl
     {
-        private TextBlock? _setNameText;
-        private TextBlock? _setDescriptionText;
-        private Canvas? _jokerCanvas;
-        private ItemsControl? _tagsControl;
-
         public static readonly StyledProperty<JokerSet?> JokerSetProperty =
             AvaloniaProperty.Register<JokerSetDisplay, JokerSet?>(
                 nameof(JokerSet)
@@ -49,18 +47,7 @@ namespace BalatroSeedOracle.Controls
         public JokerSetDisplay()
         {
             InitializeComponent();
-
-            _setNameText = this.FindControl<TextBlock>("SetNameText");
-            _setDescriptionText = this.FindControl<TextBlock>("SetDescriptionText");
-            _jokerCanvas = this.FindControl<Canvas>("JokerCanvas");
-            _tagsControl = this.FindControl<ItemsControl>("TagsControl");
-
             this.PointerPressed += OnPointerPressed;
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -78,25 +65,17 @@ namespace BalatroSeedOracle.Controls
 
         private void LoadJokerSet(JokerSet set)
         {
-            if (_setNameText != null)
-                _setNameText.Text = set.Name;
-
-            if (_setDescriptionText != null)
-                _setDescriptionText.Text = set.Description;
-
-            if (_tagsControl != null)
-                _tagsControl.ItemsSource = set.Tags;
-
-            if (_jokerCanvas != null)
-            {
-                _jokerCanvas.Children.Clear();
-                DisplayOverlappingJokers(set.Items);
-            }
+            // Direct x:Name field access - no FindControl!
+            SetNameText.Text = set.Name;
+            SetDescriptionText.Text = set.Description;
+            TagsControl.ItemsSource = set.Tags;
+            JokerCanvas.Children.Clear();
+            DisplayOverlappingJokers(set.Items);
         }
 
         private void DisplayOverlappingJokers(List<string> items)
         {
-            if (_jokerCanvas == null || items.Count == 0)
+            if (items.Count == 0)
                 return;
 
             var spriteService = SpriteService.Instance;
@@ -106,8 +85,8 @@ namespace BalatroSeedOracle.Controls
 
             // Calculate starting position to center the cards
             double totalWidth = cardWidth + (items.Count - 1) * (cardWidth - overlap);
-            double startX = (_jokerCanvas.Width - totalWidth) / 2;
-            double startY = (_jokerCanvas.Height - cardHeight) / 2;
+            double startX = (JokerCanvas.Width - totalWidth) / 2;
+            double startY = (JokerCanvas.Height - cardHeight) / 2;
 
             for (int i = 0; i < items.Count && i < 5; i++) // Max 5 cards to fit
             {
@@ -167,9 +146,9 @@ namespace BalatroSeedOracle.Controls
                             },
                         },
                     };
-                    _jokerCanvas.Children.Add(shadowBorder);
+                    JokerCanvas.Children.Add(shadowBorder);
 
-                    _jokerCanvas.Children.Add(imageControl);
+                    JokerCanvas.Children.Add(imageControl);
                 }
             }
         }

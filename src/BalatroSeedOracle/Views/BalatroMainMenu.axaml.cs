@@ -37,6 +37,12 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public BalatroShaderBackground? ShaderBackground => _shaderBackground;
 
+        /// <summary>
+        /// Public accessor for the desktop widget canvas (x:Name="DesktopCanvas").
+        /// Used by Desktop project to add platform-specific widgets; shared code uses direct field.
+        /// </summary>
+        public Grid? DesktopCanvasHost => DesktopCanvas;
+
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
@@ -51,8 +57,26 @@ namespace BalatroSeedOracle.Views
 
         public Action<UserControl>? RequestContentSwap { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor required by Avalonia XAML compiler (AVLN3000).
+        /// Must not be used at runtime. Resolve BalatroMainMenu from DI (constructor injection).
+        /// </summary>
         public BalatroMainMenu()
-            : this(ServiceHelper.GetRequiredService<BalatroMainMenuViewModel>()) { }
+            : this(throwForDesignTimeOnly: true)
+        {
+        }
+
+        private BalatroMainMenu(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException(
+                    "Do not instantiate BalatroMainMenu() with no args. Resolve from DI: GetRequiredService<BalatroMainMenu>() (ViewModel is injected by the container).");
+            ViewModel = null!;
+            DataContext = null;
+            InitializeComponent();
+            WireViewModelEvents();
+            this.Loaded += OnLoaded;
+        }
 
         public BalatroMainMenu(BalatroMainMenuViewModel viewModel)
         {
@@ -104,6 +128,8 @@ namespace BalatroSeedOracle.Views
 
         private void WireViewModelEvents()
         {
+            // ModalRequested and HideModalRequested are no longer needed for MVVM-driven modals
+            // but we keep them for legacy code-behind modals if any remain
             ViewModel.ModalRequested += OnModalRequested;
             ViewModel.HideModalRequested += (s, e) => HideModalContent();
 
@@ -201,7 +227,6 @@ namespace BalatroSeedOracle.Views
             _previousModalContent = null;
             _previousModalTitle = null;
 
-            var filterSelectionModal = new FilterSelectionModal();
             var filterSelectionVM = new FilterSelectionModalViewModel(
                 enableSearch: true,
                 enableEdit: true,
@@ -209,7 +234,9 @@ namespace BalatroSeedOracle.Views
                 enableDelete: false,
                 enableAnalyze: false
             );
-            filterSelectionModal.DataContext = filterSelectionVM;
+            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM, configurationService, filterService);
 
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
@@ -233,91 +260,24 @@ namespace BalatroSeedOracle.Views
                 switch (result.Action)
                 {
                     case Models.FilterAction.Search:
-                        if (result.FilterId != null)
+                        if (result.FilterId != null && ViewModel != null)
                         {
                             _previousModalContent = filterSelectionModal;
                             _previousModalTitle = "🔍 SELECT FILTER";
 
-                            var filtersDir = AppPaths.FiltersDir;
-                            // Try .jaml first, then .json as fallback
-                            var configPath = System.IO.Path.Combine(
-                                filtersDir,
-                                result.FilterId + ".jaml"
-                            );
-
-                            if (!System.IO.File.Exists(configPath))
-                            {
-                                configPath = System.IO.Path.Combine(
-                                    filtersDir,
-                                    result.FilterId + ".json"
-                                );
-                            }
-
                             try
                             {
-                                var platformServices =
-                                    ServiceHelper.GetRequiredService<IPlatformServices>();
-                                var json =
-                                    await platformServices.ReadTextFromPathAsync(configPath)
-                                    ?? "{}";
-
-                                // Parse based on file extension
-                                Motely.Filters.MotelyJsonConfig? config;
-                                if (
-                                    configPath.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase)
-                                )
+                                var configPath = await ViewModel.GetFilterConfigPathAsync(result.FilterId);
+                                if (configPath != null)
                                 {
-                                    if (
-                                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
-                                            json,
-                                            out config,
-                                            out var parseError
-                                        )
-                                        || (object?)config == null
-                                    )
-                                    {
-                                        throw new InvalidOperationException(
-                                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
-                                        );
-                                    }
-                                }
-                                else
-                                {
-                                    config =
-                                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                            json,
-                                            new System.Text.Json.JsonSerializerOptions
-                                            {
-                                                PropertyNameCaseInsensitive = true,
-                                                ReadCommentHandling = System
-                                                    .Text
-                                                    .Json
-                                                    .JsonCommentHandling
-                                                    .Skip,
-                                                AllowTrailingCommas = true,
-                                            }
-                                        )
-                                        ?? new Motely.Filters.MotelyJsonConfig();
-                                    if (config == null)
-                                    {
-                                        throw new InvalidOperationException(
-                                            "Failed to deserialize JSON filter"
-                                        );
-                                    }
-                                }
-
-                                if (config != null && !string.IsNullOrEmpty(config.Name))
-                                {
-                                    SetTitle($"🔍 {config.Name}");
+                                    HideModalContent();
+                                    this.ShowSearchModal(configPath);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                // Reset modal state on error
                                 if (ViewModel != null)
-                                {
                                     ViewModel.IsModalVisible = false;
-                                }
                                 HideModalContent();
 
                                 Helpers.DebugLogger.LogError(
@@ -350,8 +310,6 @@ namespace BalatroSeedOracle.Views
                                 ShowModalContent(errorControl, "❌ ERROR");
                                 return;
                             }
-
-                            _ = ShowSearchModalWithFilterAsync(configPath);
                         }
                         break;
 
@@ -375,7 +333,7 @@ namespace BalatroSeedOracle.Views
         {
             try
             {
-                var searchContent = new SearchModal();
+                var searchContent = new Modals.SearchModal(ViewModel.SearchModalViewModel);
                 searchContent.ViewModel.MainMenu = this;
 
                 if (!string.IsNullOrEmpty(configPath))
@@ -457,7 +415,6 @@ namespace BalatroSeedOracle.Views
         public void ShowFiltersModal()
         {
             // Create FilterSelectionModal with Edit/Copy/Delete actions enabled
-            var filterSelectionModal = new FilterSelectionModal();
             var filterSelectionVM = new FilterSelectionModalViewModel(
                 enableSearch: false,
                 enableEdit: true,
@@ -465,7 +422,9 @@ namespace BalatroSeedOracle.Views
                 enableDelete: true,
                 enableAnalyze: false
             );
-            filterSelectionModal.DataContext = filterSelectionVM;
+            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
+            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM, configurationService, filterService);
 
             // Handle modal close event
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
@@ -633,7 +592,7 @@ namespace BalatroSeedOracle.Views
                 }
 
                 // Back to the REAL FiltersModal with visual item shelf and card display!
-                var filtersModal = new Modals.FiltersModal();
+                var filtersModal = new Modals.FiltersModal(ViewModel.FiltersModalViewModel);
 
                 // Check if initialization succeeded
                 if (filtersModal.ViewModel == null)
@@ -1013,7 +972,7 @@ namespace BalatroSeedOracle.Views
                 _previousModalTitle = "SETTINGS";
             }
 
-            var creditsModal = new Modals.CreditsModal();
+            var creditsModal = ServiceHelper.GetRequiredService<Modals.CreditsModal>();
             var modal = new StandardModal("CREDITS");
             modal.SetContent(creditsModal);
             modal.BackClicked += (s, e) =>
@@ -1132,7 +1091,9 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OpenAnalyzer(string? filterId)
         {
-            var analyzeModal = new AnalyzeModal();
+            var analyzeVm = ViewModel?.CreateAnalyzeModalViewModel()
+                ?? throw new InvalidOperationException("BalatroMainMenu requires ViewModel with CreateAnalyzeModalViewModel.");
+            var analyzeModal = new AnalyzeModal(analyzeVm);
             var modal = new StandardModal("ANALYZE");
             modal.SetContent(analyzeModal);
             modal.BackClicked += (s, ev) => HideModalContent();
@@ -1165,6 +1126,10 @@ namespace BalatroSeedOracle.Views
 
             // Request focus so keyboard events work (F11, ESC)
             this.Focus();
+
+            // Pass analyze modal factory to DayLatroWidget so it can show analyze modal without ServiceHelper
+            if (DayLatroWidget?.ViewModel is DayLatroWidgetViewModel dwvm && ViewModel != null)
+                dwvm.SetAnalyzeModalFactory(ViewModel.AnalyzeModalFactory);
         }
 
         /// <summary>
@@ -1962,7 +1927,7 @@ namespace BalatroSeedOracle.Views
                     $"ShowSearchModalForInstanceAsync called - SearchId: {searchId}, ConfigPath: {configPath}"
                 );
 
-                var searchContent = new SearchModal();
+                var searchContent = new Modals.SearchModal(ViewModel.SearchModalViewModel);
                 // Set the MainMenu reference so CREATE NEW FILTER button works
                 searchContent.ViewModel.MainMenu = this;
                 await searchContent.ViewModel.ConnectToExistingSearch(searchId);

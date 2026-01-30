@@ -5,7 +5,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Components.TransitionDesignerWidget"
+             x:Class="BalatroSeedOracle.Desktop.Components.Widgets.TransitionDesignerWidget"
              x:DataType="vm:TransitionDesignerWidgetViewModel"
              x:CompileBindings="True"
              Panel.ZIndex="{Binding WidgetZIndex}">

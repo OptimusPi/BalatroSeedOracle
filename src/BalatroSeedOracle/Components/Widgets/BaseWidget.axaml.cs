@@ -9,9 +9,10 @@ using BalatroSeedOracle.ViewModels;
 namespace BalatroSeedOracle.Components
 {
     /// <summary>
-    /// BaseWidget - Shared draggable widget component with minimize/maximize/close buttons
+    /// BaseWidget - Shared draggable widget component with minimize/maximize/close buttons.
     /// ALL widgets should inherit from or use this component for consistency!
-    /// Usage: <BaseWidget><StackPanel>...content...</StackPanel></BaseWidget>
+    /// Usage: &lt;BaseWidget&gt;&lt;StackPanel&gt;...content...&lt;/StackPanel&gt;&lt;/BaseWidget&gt;
+    /// Uses direct x:Name field access (no FindControl anti-pattern).
     /// </summary>
     public partial class BaseWidget : ContentControl
     {
@@ -34,19 +35,14 @@ namespace BalatroSeedOracle.Components
                 }
 
                 // Wire up ContentPresenter to display our Content property
-                var contentPresenter = this.FindControl<ContentPresenter>("PART_ContentPresenter");
-                if (contentPresenter != null && this.Content != null)
+                // Direct x:Name field access - no FindControl!
+                if (PART_ContentPresenter != null && this.Content != null)
                 {
-                    contentPresenter.Content = this.Content;
+                    PART_ContentPresenter.Content = this.Content;
                     // Clear the ContentControl's content to avoid duplicate rendering
                     // (ContentPresenter will handle the display)
                 }
             };
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         #region Drag Functionality (Header Only!)
@@ -82,10 +78,10 @@ namespace BalatroSeedOracle.Components
             _dragStartScreenPoint = e.GetPosition(null);
 
             // Store original margin before drag starts
-            var expandedView = this.FindControl<Border>("ExpandedView");
-            _originalMargin = expandedView?.Margin ?? new Thickness(0);
+            // Direct x:Name field access - no FindControl!
+            _originalMargin = ExpandedView?.Margin ?? new Thickness(0);
 
-            e.Pointer.Capture(this.FindControl<Border>("ExpandedView"));
+            e.Pointer.Capture(ExpandedView);
             e.Handled = true;
         }
 
@@ -109,15 +105,14 @@ namespace BalatroSeedOracle.Components
             );
 
             // Update actual margin for visual feedback with simple clamping to parent bounds
-            var expandedView = this.FindControl<Border>("ExpandedView");
-
-            if (expandedView != null)
+            // Direct x:Name field access - no FindControl!
+            if (ExpandedView != null)
             {
-                var parentVisual = expandedView.Parent as Visual;
+                var parentVisual = ExpandedView.Parent as Visual;
                 if (parentVisual != null)
                 {
                     var parentBounds = parentVisual.Bounds;
-                    var selfBounds = expandedView.Bounds;
+                    var selfBounds = ExpandedView.Bounds;
 
                     // Fallbacks if bounds aren't available yet
                     var maxX =
@@ -134,7 +129,7 @@ namespace BalatroSeedOracle.Components
                     newMargin = new Thickness(clampedLeft, clampedTop, 0, 0);
                 }
 
-                expandedView.Margin = newMargin;
+                ExpandedView.Margin = newMargin;
             }
 
             // Also update ViewModel position if it exists
@@ -156,17 +151,17 @@ namespace BalatroSeedOracle.Components
 
                 // SNAP TO GRID when drag ends!
                 const double gridSize = 20.0; // Match the starting X position
-                var expandedView = this.FindControl<Border>("ExpandedView");
-                if (expandedView != null)
+                // Direct x:Name field access - no FindControl!
+                if (ExpandedView != null)
                 {
-                    var currentMargin = expandedView.Margin;
+                    var currentMargin = ExpandedView.Margin;
 
                     // Snap to nearest grid position
                     var snappedX = Math.Round(currentMargin.Left / gridSize) * gridSize;
                     var snappedY = Math.Round(currentMargin.Top / gridSize) * gridSize;
 
                     var snappedMargin = new Thickness(snappedX, snappedY, 0, 0);
-                    expandedView.Margin = snappedMargin;
+                    ExpandedView.Margin = snappedMargin;
 
                     // Update ViewModel with snapped position
                     if (DataContext is BaseWidgetViewModel vm)

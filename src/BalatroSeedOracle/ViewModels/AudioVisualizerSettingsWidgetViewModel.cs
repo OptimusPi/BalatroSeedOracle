@@ -1260,7 +1260,7 @@ namespace BalatroSeedOracle.ViewModels
                 return;
 
             // Apply manual transition when slider moves
-            ApplyManualTransition(value / 100.0); // Convert 0-100 to 0-1
+            _ = ApplyManualTransitionAsync(value / 100.0); // Convert 0-100 to 0-1
         }
 
         partial void OnEnableSearchTransitionChanged(bool value)
@@ -1909,7 +1909,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Applies manual transition between Preset A and Preset B at given progress
         /// </summary>
         /// <param name="progress">0.0 = Preset A, 1.0 = Preset B</param>
-        private async void ApplyManualTransition(double progress)
+        private async System.Threading.Tasks.Task ApplyManualTransitionAsync(double progress)
         {
             // Prevent recursive calls
             if (_isApplyingManualTransition)

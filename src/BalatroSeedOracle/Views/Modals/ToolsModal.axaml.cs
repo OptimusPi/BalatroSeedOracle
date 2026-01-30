@@ -11,16 +11,34 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using Motely.Filters;
 
+
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class ToolsModal : UserControl
     {
         private readonly UserProfileService? _userProfileService;
+        private readonly IApiHostService? _apiHostService;
 
+        /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass dependencies.</summary>
         public ToolsModal()
+            : this(throwForDesignTimeOnly: true)
         {
+        }
+
+        private ToolsModal(bool throwForDesignTimeOnly)
+        {
+            if (throwForDesignTimeOnly)
+                throw new InvalidOperationException("Do not use ToolsModal(). Creator must pass (UserProfileService, IApiHostService).");
+            _userProfileService = null;
+            _apiHostService = null;
             InitializeComponent();
-            _userProfileService = ServiceHelper.GetService<UserProfileService>();
+        }
+
+        public ToolsModal(UserProfileService? userProfileService, IApiHostService? apiHostService)
+        {
+            _userProfileService = userProfileService;
+            _apiHostService = apiHostService;
+            InitializeComponent();
         }
 
         private void InitializeComponent()
@@ -232,6 +250,62 @@ namespace BalatroSeedOracle.Views.Modals
             else
             {
                 DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
+            }
+        }
+
+        /// <summary>
+        /// URLs for WebView tools (Avalonia Accelerate). Replace with your site and Balatro-inspired site.
+        /// </summary>
+        private static readonly Uri MyWebsiteUri = new("https://optimuspi.workers.dev/", UriKind.Absolute);
+        private static readonly Uri BalatroSiteUri = new("https://optimuspi.workers.dev/", UriKind.Absolute);
+
+        /// <summary>
+        /// Fallback URL for Web App when API is not running (BSO WASM deployed elsewhere).
+        /// </summary>
+        private static readonly Uri WebAppFallbackUri = new("http://localhost:3141/BSO/", UriKind.Absolute);
+
+        private void OnMyWebsiteClick(object? sender, RoutedEventArgs e)
+        {
+            OpenWebViewDialog("My Website", MyWebsiteUri);
+        }
+
+        private void OnBalatroSiteClick(object? sender, RoutedEventArgs e)
+        {
+            OpenWebViewDialog("Balatro", BalatroSiteUri);
+        }
+
+        private void OnWebAppClick(object? sender, RoutedEventArgs e)
+        {
+            // Use web app in WebView instead of re-creating: prefer running API (BSO at /BSO), else fallback
+            var url = _apiHostService != null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl)
+                ? new Uri(new Uri(_apiHostService.ServerUrl.TrimEnd('/')), "BSO/")
+                : WebAppFallbackUri;
+            OpenWebViewDialog("Web App", url);
+        }
+
+        private void OpenWebViewDialog(string title, Uri source)
+        {
+            try
+            {
+                // Avalonia Accelerate WebView - NativeWebDialog (namespace from Avalonia.Controls.WebView package)
+                var dialogType = Type.GetType("Avalonia.Controls.WebView.NativeWebDialog, Avalonia.Controls.WebView")
+                    ?? Type.GetType("NativeWebDialog, Avalonia.Controls.WebView");
+                if (dialogType == null)
+                {
+                    DebugLogger.LogError("ToolsModal", "NativeWebDialog type not found. Is Avalonia.Controls.WebView referenced?");
+                    return;
+                }
+                var dialog = Activator.CreateInstance(dialogType);
+                if (dialog == null)
+                    return;
+                dialogType.GetProperty("Title")?.SetValue(dialog, title);
+                dialogType.GetProperty("CanUserResize")?.SetValue(dialog, true);
+                dialogType.GetProperty("Source")?.SetValue(dialog, source);
+                dialogType.GetMethod("Show")?.Invoke(dialog, null);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ToolsModal", $"WebView failed: {ex.Message}");
             }
         }
 
