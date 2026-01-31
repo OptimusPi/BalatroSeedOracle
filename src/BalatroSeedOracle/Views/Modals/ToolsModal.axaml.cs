@@ -48,11 +48,13 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnImportFilesClick(object? sender, RoutedEventArgs e)
         {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel == null)
-                return;
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel == null)
+                    return;
 
-            var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+                var files = await topLevel.StorageProvider.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Import Filter Configuration",
@@ -213,6 +215,11 @@ namespace BalatroSeedOracle.Views.Modals
                     DebugLogger.LogError("ToolsModal", $"Failed to import files: {ex.Message}");
                 }
             }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ToolsModal", $"OnImportFilesClick: {ex.Message}");
+            }
         }
 
         private void OnWordListsClick(object? sender, RoutedEventArgs e)
@@ -334,15 +341,17 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnNukeEverythingClick(object? sender, RoutedEventArgs e)
         {
-            var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu == null)
+            try
             {
-                DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
-                return;
-            }
+                var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                if (mainMenu == null)
+                {
+                    DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
+                    return;
+                }
 
-            // Use MessageBox for confirmation
-            var confirmed = await ModalHelper.ShowConfirmationAsync(
+                // Use MessageBox for confirmation
+                var confirmed = await ModalHelper.ShowConfirmationAsync(
                 "⚠️ CONFIRM NUKE ⚠️",
                 "This will DELETE ALL:\n\n• All filter files in JsonFilters/ and JamlFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!"
             );
@@ -436,6 +445,11 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 DebugLogger.LogError("NukeEverything", $"Nuke operation failed: {ex.Message}");
                 await ModalHelper.ShowErrorAsync("ERROR", $"Nuke operation failed:\n{ex.Message}");
+            }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("ToolsModal", $"OnNukeEverythingClick: {ex.Message}");
             }
         }
     }

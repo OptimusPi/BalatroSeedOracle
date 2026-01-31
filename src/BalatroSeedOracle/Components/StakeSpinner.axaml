@@ -1,8 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Components.StakeSpinner"
-             x:CompileBindings="True">
+             x:Class="BalatroSeedOracle.Components.StakeSpinner">
 
     <!-- Styles to match DeckSpinner sizing but smaller height for chips -->
     <UserControl.Styles>

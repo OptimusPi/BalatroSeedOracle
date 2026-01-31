@@ -5,6 +5,7 @@ using BalatroSeedOracle.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Motely.API;
+using Motely.Executors;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
@@ -38,9 +39,9 @@ public class DesktopApiHostService : IApiHostService
             _cts = new CancellationTokenSource();
             _server = MotelyApiHost.CreateHost(args);
 
-            // Set thread budget - use fully qualified name to avoid ambiguity
+            // Set thread budget for MultiSearchManager
             var threadCount = Environment.ProcessorCount;
-            Motely.API.SearchManager.Instance.SetThreadBudget(threadCount);
+            MultiSearchManager.Instance.SetTotalThreads(threadCount);
             Log($"Thread budget: {threadCount}");
 
             IsRunning = true;
@@ -85,10 +86,10 @@ public class DesktopApiHostService : IApiHostService
 
         Log("Stopping server...");
 
-        // Stop all searches first - use fully qualified name
+        // Stop all searches first
         try
         {
-            await Motely.API.SearchManager.Instance.StopAllSearchesAsync();
+            MultiSearchManager.Instance.StopAll();
             Log("Stopped all active searches");
         }
         catch (Exception ex)

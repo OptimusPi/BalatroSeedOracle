@@ -47,7 +47,7 @@ public partial class App : Application
 
             // Get platform services for platform-specific initialization
             var platformServices = _serviceProvider.GetService<Services.IPlatformServices>();
-            if (platformServices != null)
+            if (platformServices is not null)
             {
                 // Initialize DebugLogger with platform services (removes need for #if directives)
                 Helpers.DebugLogger.Initialize(platformServices);
@@ -133,8 +133,7 @@ public partial class App : Application
         try
         {
             await Task.Delay(1000); // Wait for JS to initialize
-            // LocalStorageTester is browser-only, excluded from shared project
-            // Test is handled by BrowserPlatformServices initialization
+            // LocalStorage interop test is handled by BrowserPlatformServices initialization
             DebugLogger.Log("App", "LocalStorage interop test handled by platform services");
         }
         catch (Exception ex)

@@ -79,24 +79,31 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnFilterDrop(object? sender, DragEventArgs e)
         {
-            var files = e.Data.GetFiles();
-            if (files == null)
-                return;
-
-            foreach (var file in files)
+            try
             {
-                if (file is not IStorageFile storageFile)
-                    continue;
+                var files = e.Data.GetFiles();
+                if (files == null)
+                    return;
 
-                var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
-                if (ext == ".jaml" || ext == ".json")
+                foreach (var file in files)
                 {
-                    await ImportFilterFile(storageFile);
-                    break; // Only import first valid file
-                }
-            }
+                    if (file is not IStorageFile storageFile)
+                        continue;
 
-            e.Handled = true;
+                    var ext = Path.GetExtension(storageFile.Name).ToLowerInvariant();
+                    if (ext == ".jaml" || ext == ".json")
+                    {
+                        await ImportFilterFile(storageFile);
+                        break; // Only import first valid file
+                    }
+                }
+
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("FilterSelectionModal", $"OnFilterDrop: {ex.Message}");
+            }
         }
 
         private void LoadDeckAndStake(string deckName, string stakeName)
@@ -160,17 +167,21 @@ namespace BalatroSeedOracle.Views.Modals
 
         private async void OnDeleteConfirmationRequested(object? sender, string filterName)
         {
-            // Get the parent window
-            var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
-
-            if (parentWindow == null)
+            try
             {
-                throw new InvalidOperationException(
-                    "FilterSelectionModal must be shown from a Window context!"
-                );
-            }
+                // Get the parent window
+                var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
 
-            // Create styled confirmation dialog
+                if (parentWindow == null)
+                {
+                    DebugLogger.LogError(
+                        "FilterSelectionModal",
+                        "FilterSelectionModal must be shown from a Window context."
+                    );
+                    return;
+                }
+
+                // Create styled confirmation dialog
             var dialog = new Window
             {
                 Width = 450,
@@ -321,11 +332,19 @@ namespace BalatroSeedOracle.Views.Modals
             mainBorder.Child = mainGrid;
             dialog.Content = mainBorder;
 
-            await dialog.ShowDialog(parentWindow);
+                await dialog.ShowDialog(parentWindow);
 
-            if (result == true && ViewModel != null)
+                if (result == true && ViewModel != null)
+                {
+                    await ViewModel.ConfirmDeleteAsync();
+                }
+            }
+            catch (Exception ex)
             {
-                await ViewModel.ConfirmDeleteAsync();
+                DebugLogger.LogError(
+                    "FilterSelectionModal",
+                    $"OnDeleteConfirmationRequested: {ex.Message}"
+                );
             }
         }
 

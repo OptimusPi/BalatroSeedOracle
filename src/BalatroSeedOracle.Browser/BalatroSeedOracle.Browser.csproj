@@ -38,12 +38,37 @@
     
     <!-- Enable source-generated JS interop so [JSImport] partial methods get implementations -->
     <EnableJavaScriptInteropGeneration>true</EnableJavaScriptInteropGeneration>
+    
+    <!-- Suppress CA1416 warnings - browser-specific APIs are only called in browser builds -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <!-- AOT Trimming Configuration -->
   <ItemGroup>
     <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
   </ItemGroup>
+
+  <!-- Inject build timestamp into index.html before publish -->
+  <Target Name="InjectBuildTimestamp" BeforeTargets="Publish">
+    <PropertyGroup>
+      <_SourceIndexHtml>$(MSBuildThisFileDirectory)wwwroot\index.html</_SourceIndexHtml>
+      <!-- Format: BUILD JAN 31 10:26am Central -->
+      <_Month>$([System.DateTime]::Now.ToString("MMM"))</_Month>
+      <_Day>$([System.DateTime]::Now.ToString("dd"))</_Day>
+      <_Hour12>$([System.DateTime]::Now.ToString("hh"))</_Hour12>
+      <_Minute>$([System.DateTime]::Now.ToString("mm"))</_Minute>
+      <_AmPm>$([System.DateTime]::Now.ToString("tt"))</_AmPm>
+      <_BuildTimestamp>BUILD $(_Month) $(_Day) $(_Hour12):$(_Minute)$(_AmPm) Central</_BuildTimestamp>
+    </PropertyGroup>
+    <ReadLinesFromFile File="$(_SourceIndexHtml)">
+      <Output TaskParameter="Lines" ItemName="IndexHtmlLines" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <IndexHtmlLinesReplaced Include="@(IndexHtmlLines->Replace('BUILD_TIMESTAMP_PLACEHOLDER', '$(_BuildTimestamp)'))" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_SourceIndexHtml)" Lines="@(IndexHtmlLinesReplaced)" Overwrite="true" />
+    <Message Text="Injected build timestamp: $(_BuildTimestamp)" Importance="high" />
+  </Target>
 
   <!-- Copy contents of publish/wwwroot into API wwwroot/BSO/ (flat: BSO/index.html, BSO/_framework/, no BSO/wwwroot/) -->
   <Target Name="DeployWasmOutput" AfterTargets="Publish">

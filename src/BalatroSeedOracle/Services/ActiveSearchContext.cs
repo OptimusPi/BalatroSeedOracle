@@ -82,7 +82,7 @@ public sealed class ActiveSearchContext : IDisposable
     /// <summary>
     /// Get a page of results - Motely handles the query
     /// </summary>
-    public Task<List<SearchResult>> GetResultsPageAsync(int offset, int count)
+    public async Task<List<SearchResult>> GetResultsPageAsync(int offset, int count)
     {
         try
         {
@@ -94,19 +94,19 @@ public sealed class ActiveSearchContext : IDisposable
                 Scores = r.Tallies?.ToArray() ?? Array.Empty<int>()
             }).ToList();
             
-            return Task.FromResult(results);
+            return await Task.FromResult(results);
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("ActiveSearchContext", $"GetResultsPageAsync failed: {ex.Message}");
-            return Task.FromResult(new List<SearchResult>());
+            return await Task.FromResult(new List<SearchResult>());
         }
     }
 
     /// <summary>
     /// Get top results - Motely handles the query
     /// </summary>
-    public Task<List<SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit)
+    public async Task<List<SearchResult>> GetTopResultsAsync(string orderBy, bool ascending, int limit)
     {
         try
         {
@@ -120,16 +120,16 @@ public sealed class ActiveSearchContext : IDisposable
                 Scores = r.Tallies?.ToArray() ?? Array.Empty<int>()
             }).ToList();
             
-            return Task.FromResult(results);
+            return await Task.FromResult(results);
         }
         catch (Exception ex)
         {
             DebugLogger.LogError("ActiveSearchContext", $"GetTopResultsAsync failed: {ex.Message}");
-            return Task.FromResult(new List<SearchResult>());
+            return await Task.FromResult(new List<SearchResult>());
         }
     }
 
-    public Task<int> GetResultCountAsync() => Task.FromResult(ResultCount);
+    public async Task<int> GetResultCountAsync() => await Task.FromResult(ResultCount);
 
     // === Control - delegate to Motely ===
     
@@ -146,11 +146,13 @@ public sealed class ActiveSearchContext : IDisposable
     public event EventHandler<SearchResultEventArgs>? SearchStarted;
     public event EventHandler<SearchResultEventArgs>? SearchCompleted;
     public event EventHandler<SearchProgress>? ProgressUpdated;
+    public event EventHandler<SearchResult>? ResultFound; // Real-time result streaming (like Motely.WASM POC)
 
     // Internal methods to raise events (called by SearchManager or polling)
     internal void RaiseSearchStarted() => SearchStarted?.Invoke(this, new SearchResultEventArgs());
     internal void RaiseSearchCompleted() => SearchCompleted?.Invoke(this, new SearchResultEventArgs());
     internal void RaiseProgressUpdated(SearchProgress progress) => ProgressUpdated?.Invoke(this, progress);
+    internal void RaiseResultFound(SearchResult result) => ResultFound?.Invoke(this, result);
 
     public void Dispose()
     {

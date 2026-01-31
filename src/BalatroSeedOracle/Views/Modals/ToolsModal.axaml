@@ -2,8 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Views.Modals.ToolsModal"
-             x:CompileBindings="True">
+             x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
     
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel HorizontalAlignment="Center" Margin="20" Spacing="20">

@@ -1,0 +1,103 @@
+# Publish motely-wasm NPM package from monorepo (Motely.WASM lives in submodule).
+# C# source stays in external/Motely; this workflow builds and publishes to npm.
+#
+# Setup:
+#   1. Create npm account at https://www.npmjs.com (if needed).
+#   2. Create an Automation (or Classic) token at https://www.npmjs.com/settings/YOUR_USER/tokens.
+#   3. In this repo: Settings → Secrets and variables → Actions → New repository secret:
+#      Name: NPM_TOKEN   Value: <your npm token>
+#
+# Publish:
+#   - Option A: Push a tag motely-wasm-v1.0.0 (version becomes 1.0.0).
+#   - Option B: Run "Publish Motely WASM to npm" workflow manually (uses version in package.json).
+
+name: Publish Motely WASM to npm
+
+on:
+  push:
+    tags:
+      - 'motely-wasm-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override npm package version (e.g., 1.0.1). Empty = use package.json version.'
+        required: false
+        type: string
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '18.x'  # Matches package.json engines requirement (>=18)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Set package version from tag
+        if: startsWith(github.ref, 'refs/tags/motely-wasm-v')
+        id: tag_version
+        run: |
+          V="${GITHUB_REF#refs/tags/motely-wasm-v}"
+          echo "version=$V" >> $GITHUB_OUTPUT
+
+      - name: Set package version (manual / override)
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        id: manual_version
+        run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Build Motely.WASM
+        working-directory: external/Motely/Motely.WASM
+        run: |
+          # Use version from tag or manual input if set
+          if [ -n "${{ steps.tag_version.outputs.version }}" ]; then
+            npm version "${{ steps.tag_version.outputs.version }}" --no-git-tag-version --allow-same-version
+          fi
+          if [ -n "${{ steps.manual_version.outputs.version }}" ]; then
+            npm version "${{ steps.manual_version.outputs.version }}" --no-git-tag-version --allow-same-version
+          fi
+          npm install
+          npm run build
+
+      - name: Verify build output
+        working-directory: external/Motely/Motely.WASM
+        run: |
+          if [ ! -f dist/app-bundle/main.js ]; then
+            echo "::error::main.js not found in dist/app-bundle/"
+            exit 1
+          fi
+          if [ ! -d dist/app-bundle/_framework ]; then
+            echo "::error::_framework/ directory not found"
+            exit 1
+          fi
+          WASM_COUNT=$(find dist/app-bundle/_framework -name "*.wasm" | wc -l)
+          echo "✅ Build verification passed"
+          echo "Found $WASM_COUNT WASM files"
+
+      - name: Test npm package structure
+        working-directory: external/Motely/Motely.WASM
+        run: |
+          npm pack --dry-run
+          echo "✅ Package structure verified"
+
+      - name: Publish to npm
+        working-directory: external/Motely/Motely.WASM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish --access public

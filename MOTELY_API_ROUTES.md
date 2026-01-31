@@ -47,7 +47,6 @@
       "filterId": "string",      // Filter filename (without .jaml)
       "deck": "string",          // Optional, default: "Red"
       "stake": "string",         // Optional, default: "White"
-      "seedCount": number,       // Optional, number of seeds to search
       "startBatch": number,      // Optional, batch number to start from
       "cutoff": number,          // Optional, result limit
       "seedSource": "string"     // Optional, seed source key

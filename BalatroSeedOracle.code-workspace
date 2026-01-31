@@ -127,8 +127,7 @@
       "**/Seeds/**": true,
       "**/Filters/**": true,
       "**/WordLists/**": true
-    },
-    "search.maxResults": 1000
+    }
   }
 }
 

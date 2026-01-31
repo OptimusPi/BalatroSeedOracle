@@ -607,7 +607,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Loads a specific filter config for editing (called from other modals)
         /// </summary>
         /// <param name="config">The filter config to load</param>
-        public Task LoadFilterForEditing(MotelyJsonConfig config)
+        public async Task LoadFilterForEditing(MotelyJsonConfig config)
         {
             try
             {
@@ -649,7 +649,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
             }
 
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         [RelayCommand]
@@ -1134,7 +1134,7 @@ namespace BalatroSeedOracle.ViewModels
                         config.Must.Add(clause);
                         BsoLogger.Log(
                             "FiltersModalViewModel",
-                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses != null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
                         );
                     }
                     else
@@ -2197,7 +2197,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Convert ItemConfig to FilterItem for Visual Builder
         /// </summary>
-        private Task<Models.FilterItem?> ConvertItemConfigToFilterItem(ItemConfig itemConfig)
+        private async Task<Models.FilterItem?> ConvertItemConfigToFilterItem(ItemConfig itemConfig)
         {
             try
             {
@@ -2236,7 +2236,7 @@ namespace BalatroSeedOracle.ViewModels
                     },
                 };
 
-                return Task.FromResult<Models.FilterItem?>(filterItem);
+                return await Task.FromResult<Models.FilterItem?>(filterItem);
             }
             catch (Exception ex)
             {
@@ -2244,7 +2244,7 @@ namespace BalatroSeedOracle.ViewModels
                     "FiltersModalViewModel",
                     $"Error converting ItemConfig to FilterItem: {ex.Message}"
                 );
-                return Task.FromResult<Models.FilterItem?>(null);
+                return await Task.FromResult<Models.FilterItem?>(null);
             }
         }
 

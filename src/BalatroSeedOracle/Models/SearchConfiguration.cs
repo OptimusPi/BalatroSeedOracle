@@ -12,7 +12,6 @@ namespace BalatroSeedOracle.Models
         public string Stake { get; set; } = "White";
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
         public int BatchSize { get; set; } = 3;
-        public int MaxResults { get; set; } = 1000;
         public int TimeoutSeconds { get; set; } = 300;
         public int MinScore { get; set; } = 0;
         public ulong StartBatch { get; set; } = 0;

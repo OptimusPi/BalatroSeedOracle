@@ -93,26 +93,33 @@ namespace BalatroSeedOracle.Components
 
         private async void OnCardPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            // Find the card that was clicked
-            var point = e.GetCurrentPoint(this);
-            if (!point.Properties.IsLeftButtonPressed)
-                return;
-
-            // Walk up the visual tree to find the Border container
-            var source = e.Source as Visual;
-            while (source != null)
+            try
             {
-                if (source is Border border && border.DataContext is FilterItem item)
-                {
-                    // Start drag operation for this individual card
-                    var data = new DataObject();
-                    data.Set(FilterItemFormatId, item);
-
-                    await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
-                    e.Handled = true;
+                // Find the card that was clicked
+                var point = e.GetCurrentPoint(this);
+                if (!point.Properties.IsLeftButtonPressed)
                     return;
+
+                // Walk up the visual tree to find the Border container
+                var source = e.Source as Visual;
+                while (source != null)
+                {
+                    if (source is Border border && border.DataContext is FilterItem item)
+                    {
+                        // Start drag operation for this individual card
+                        var data = new DataObject();
+                        data.Set(FilterItemFormatId, item);
+
+                        await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+                        e.Handled = true;
+                        return;
+                    }
+                    source = source.GetVisualParent();
                 }
-                source = source.GetVisualParent();
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.LogError("FilterOperatorControl", $"OnCardPointerPressed: {ex.Message}");
             }
         }
 

@@ -28,7 +28,7 @@ namespace BalatroSeedOracle.Services
         private void LoadFavorites()
         {
             var platformServices = ServiceHelper.GetService<IPlatformServices>();
-            if (platformServices == null || !platformServices.SupportsFileSystem)
+            if (platformServices is null || !platformServices.SupportsFileSystem)
             {
                 // Browser: Skip file loading, use empty data
                 _data = new FavoritesData();
@@ -159,23 +159,28 @@ namespace BalatroSeedOracle.Services
                         Tags = new List<string> { "#Gold", "#Economy", "#Scaling", "#Tarot" },
                     },
                 };
-                _ = SaveFavorites();
+                SaveFavorites();
             }
         }
 
-        public async Task SaveFavorites()
+        /// <summary>
+        /// Save favorites to disk. Fire-and-forget - handles errors internally.
+        /// </summary>
+        public void SaveFavorites()
         {
-            try
+            Task.Run(async () =>
             {
-                // AOT-compatible: Use source-generated serializer context
-                var json = JsonSerializer.Serialize(_data, BsoJsonSerializerContext.Default.FavoritesData);
-                await File.WriteAllTextAsync(_favoritesPath, json);
-                DebugLogger.Log("FavoritesService", "Favorites saved successfully");
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("FavoritesService", $"Failed to save favorites: {ex.Message}");
-            }
+                try
+                {
+                    var json = JsonSerializer.Serialize(_data, BsoJsonSerializerContext.Default.FavoritesData);
+                    await File.WriteAllTextAsync(_favoritesPath, json);
+                    DebugLogger.Log("FavoritesService", "Favorites saved successfully");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("FavoritesService", $"Failed to save favorites: {ex.Message}");
+                }
+            });
         }
 
         public List<string> GetFavoriteItems()
@@ -186,7 +191,7 @@ namespace BalatroSeedOracle.Services
         public void SetFavoriteItems(List<string> items)
         {
             _data.FavoriteItems = new List<string>(items);
-            _ = SaveFavorites(); // Fire and forget
+            SaveFavorites();
         }
 
         public void AddFavoriteItem(string item)
@@ -194,7 +199,7 @@ namespace BalatroSeedOracle.Services
             if (!_data.FavoriteItems.Contains(item))
             {
                 _data.FavoriteItems.Add(item);
-                _ = SaveFavorites();
+                SaveFavorites();
             }
         }
 
@@ -202,7 +207,7 @@ namespace BalatroSeedOracle.Services
         {
             if (_data.FavoriteItems.Remove(item))
             {
-                _ = SaveFavorites();
+                SaveFavorites();
             }
         }
 
@@ -214,13 +219,13 @@ namespace BalatroSeedOracle.Services
         public void AddCustomSet(JokerSet set)
         {
             _data.CommonSets.Add(set);
-            _ = SaveFavorites();
+            SaveFavorites();
         }
 
         public void RemoveSet(string setName)
         {
             _data.CommonSets.RemoveAll(s => s.Name == setName);
-            _ = SaveFavorites();
+            SaveFavorites();
         }
     }
 }

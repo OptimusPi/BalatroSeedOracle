@@ -2347,8 +2347,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "MUST Previous page clicked");
+                vm.MustPrevCommand?.Execute(null);
             }
         }
 
@@ -2356,8 +2355,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "MUST Next page clicked");
+                vm.MustNextCommand?.Execute(null);
             }
         }
 
@@ -2366,8 +2364,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "SHOULD Previous page clicked");
+                vm.ShouldPrevCommand?.Execute(null);
             }
         }
 
@@ -2375,8 +2372,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "SHOULD Next page clicked");
+                vm.ShouldNextCommand?.Execute(null);
             }
         }
 
@@ -2385,8 +2381,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "BANNED Previous page clicked");
+                vm.BannedPrevCommand?.Execute(null);
             }
         }
 
@@ -2394,8 +2389,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         {
             if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
             {
-                // TODO: Implement pagination logic in ViewModel
-                DebugLogger.Log("VisualBuilderTab", "BANNED Next page clicked");
+                vm.BannedNextCommand?.Execute(null);
             }
         }
 

@@ -172,23 +172,21 @@ public sealed partial class BrowserLocalStorageAppDataStore : IAppDataStore
         }
     }
 
-    // Try using wrapper functions for localStorage properties
-    [JSImport("window.BSO.testLocalStorage")]
-    private static partial string TestLocalStorage();
-
-    [JSImport("window.BSO.getLocalStorageItem")]
+    // JS interop imports for localStorage wrapper functions
+    // Using globalThis per Microsoft guidance for global scope access
+    [JSImport("globalThis.BSO.getLocalStorageItem")]
     private static partial string? GetItem(string key);
 
-    [JSImport("window.BSO.setLocalStorageItem")]
+    [JSImport("globalThis.BSO.setLocalStorageItem")]
     private static partial void SetItem(string key, string value);
 
-    [JSImport("window.BSO.removeLocalStorageItem")]
+    [JSImport("globalThis.BSO.removeLocalStorageItem")]
     private static partial void RemoveItem(string key);
 
-    [JSImport("window.BSO.getLocalStorageLength")]
+    [JSImport("globalThis.BSO.getLocalStorageLength")]
     private static partial int GetLocalStorageLength();
 
-    [JSImport("window.BSO.getLocalStorageKey")]
+    [JSImport("globalThis.BSO.getLocalStorageKey")]
     private static partial string? GetLocalStorageKey(int index);
 
     public ValueTask<bool> FileExistsAsync(string path)

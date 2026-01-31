@@ -6,14 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="stylesheet" href="./app.css" />
-    <!-- Import map for DuckDB-WASM dependencies -->
-    <script type="importmap">
-    {
-        "imports": {
-            "apache-arrow": "https://cdn.jsdelivr.net/npm/apache-arrow@17.0.0/+esm"
-        }
-    }
-    </script>
     <style>
         .loading-container {
             display: flex;
@@ -129,12 +121,38 @@
         <div class="loading-status" id="loading-status">Initializing...</div>
 
         <div class="error-display" id="error-display">
-            <div class="error-title">BANANA BANANA</div>
+            <div class="error-title">BUILD_TIMESTAMP_PLACEHOLDER</div>
             <div id="error-message"></div>
         </div>
     </div>
 </div>
 <script>
+// Check for untrustworthy origin (IP address) that will break COOP/COEP headers
+(function() {
+    const hostname = window.location.hostname;
+    const isIPAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const isHTTPS = window.location.protocol === 'https:';
+    
+    if (isIPAddress && !isHTTPS) {
+        const errorMsg = `❌ UNTRUSTWORTHY ORIGIN DETECTED\n\n` +
+            `You are accessing via IP address (${hostname}), which browsers do NOT trust for COOP/COEP headers.\n\n` +
+            `✅ SOLUTION: Use localhost instead:\n` +
+            `   http://localhost:${window.location.port}${window.location.pathname}\n\n` +
+            `The SharedArrayBuffer error will persist until you use localhost or HTTPS.`;
+        
+        console.error(errorMsg);
+        
+        // Show error immediately
+        const errorDisplay = document.getElementById('error-display');
+        const errorMessage = document.getElementById('error-message');
+        if (errorDisplay && errorMessage) {
+            errorDisplay.classList.add('visible');
+            errorMessage.textContent = errorMsg;
+        }
+    }
+})();
+
 // Loading state management
 window.LoadingState = {
     progress: 0,

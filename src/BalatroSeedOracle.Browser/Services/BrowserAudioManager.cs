@@ -163,36 +163,39 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
         DisposeJS();
     }
 
-    [JSImport("WebAudioManager.initialize", "js/webaudio-interop.js")]
+    // JS interop imports for Web Audio API
+    // Using globalThis.WebAudioManager since the JS module sets window.WebAudioManager globally
+    // Per Microsoft guidance: when JS doesn't export from module, use global scope in [JSImport]
+    [JSImport("globalThis.WebAudioManager.initialize")]
     private static partial Task InitializeWebAudioJS();
 
-    [JSImport("WebAudioManager.loadTrack", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.loadTrack")]
     private static partial Task LoadTrackJS(string trackName, string audioUrl, bool loop);
 
-    [JSImport("WebAudioManager.loadSfx", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.loadSfx")]
     private static partial Task LoadSfxJS(string sfxName, string audioUrl);
 
-    [JSImport("WebAudioManager.setTrackVolume", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.setTrackVolume")]
     private static partial bool SetTrackVolumeJS(string trackName, float volume);
 
-    [JSImport("WebAudioManager.setMasterVolume", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.setMasterVolume")]
     private static partial bool SetMasterVolumeJS(float volume);
 
-    [JSImport("WebAudioManager.setTrackMuted", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.setTrackMuted")]
     private static partial bool SetTrackMutedJS(string trackName, bool muted);
 
-    [JSImport("WebAudioManager.pause", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.pause")]
     private static partial bool PauseJS();
 
-    [JSImport("WebAudioManager.resume", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.resume")]
     private static partial Task ResumeJS();
 
-    [JSImport("WebAudioManager.playSfx", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.playSfx")]
     private static partial bool PlaySfxJS(string sfxName, float volume);
 
-    [JSImport("WebAudioManager.getFrequencyBands", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.getFrequencyBands")]
     private static partial JSObject GetFrequencyBandsJS(string trackName);
 
-    [JSImport("WebAudioManager.dispose", "js/webaudio-interop.js")]
+    [JSImport("globalThis.WebAudioManager.dispose")]
     private static partial void DisposeJS();
 }

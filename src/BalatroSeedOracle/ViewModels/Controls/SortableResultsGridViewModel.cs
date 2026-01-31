@@ -413,7 +413,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
                     source.Columns.Add(new TextColumn<SearchResult, string>(
                         label.ToUpperInvariant(),
-                        x => (x.Scores is not null && index < x.Scores.Length)
+                        x => (x.Scores != null && index < x.Scores.Length)
                             ? x.Scores[index].ToString()
                             : "-",
                         width: new GridLength(70)));
@@ -521,10 +521,13 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 $"Best: {highestScore} • Avg: {averageScore:F1} • Count: {TotalResultCount}{showingText}";
         }
 
-        private Task CopySeedAsync(string? seed)
+        private async Task CopySeedAsync(string? seed)
         {
             if (string.IsNullOrWhiteSpace(seed))
-                return Task.CompletedTask;
+            {
+                await Task.CompletedTask;
+                return;
+            }
 
             try
             {
@@ -534,7 +537,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             {
                 DebugLogger.LogError("SortableResultsGridVM", $"Copy failed: {ex.Message}");
             }
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         private void ExportAll()

@@ -486,6 +486,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Subscribe to SearchInstance events directly
                 _searchContext.SearchCompleted += OnSearchCompleted;
                 _searchContext.ProgressUpdated += OnProgressUpdated;
+                _searchContext.ResultFound += OnResultFound; // Real-time result streaming (like Motely.WASM POC)
 
                 // CRITICAL FIX: Add immediate feedback that search is starting
                 AddConsoleMessage($"Search started with ID: {_currentSearchId}");
@@ -556,6 +557,7 @@ namespace BalatroSeedOracle.ViewModels
                     _searchContext.SearchStarted -= OnSearchStarted;
                     _searchContext.SearchCompleted -= OnSearchCompleted;
                     _searchContext.ProgressUpdated -= OnProgressUpdated;
+                    _searchContext.ResultFound -= OnResultFound;
 
                     // Dispose and clear the instance
                     _searchContext.Dispose();
@@ -1026,7 +1028,8 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsSearching = false;
 
-                // CRITICAL FIX: Load results from DuckDB into ObservableCollection
+                // CRITICAL FIX: Load any remaining results from DuckDB into ObservableCollection
+                // (Real-time results are already added via OnResultFound, but load any missed ones)
                 await LoadExistingResults();
 
                 AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
@@ -1035,6 +1038,22 @@ namespace BalatroSeedOracle.ViewModels
                     "SearchModalViewModel",
                     $"Search completed with {ResultsCount} results"
                 );
+            });
+        }
+
+        /// <summary>
+        /// Handle real-time result streaming (like Motely.WASM POC).
+        /// Results are pushed as they're found, not just after completion.
+        /// </summary>
+        private void OnResultFound(object? sender, Models.SearchResult result)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                // Add result to collection (UI will update automatically via ObservableCollection)
+                SearchResults.Add(result);
+                
+                // Update panel text with current count
+                PanelText = $"Found {SearchResults.Count} seeds so far...";
             });
         }
 
@@ -1232,6 +1251,7 @@ namespace BalatroSeedOracle.ViewModels
                 _searchContext.SearchStarted -= OnSearchStarted;
                 _searchContext.SearchCompleted -= OnSearchCompleted;
                 _searchContext.ProgressUpdated -= OnProgressUpdated;
+                _searchContext.ResultFound -= OnResultFound;
                 _searchContext.Dispose();
             }
             // CircularConsoleBuffer doesn't need disposal
@@ -1312,6 +1332,7 @@ namespace BalatroSeedOracle.ViewModels
                     _searchContext.SearchStarted += OnSearchStarted;
                     _searchContext.SearchCompleted += OnSearchCompleted;
                     _searchContext.ProgressUpdated += OnProgressUpdated;
+                    _searchContext.ResultFound += OnResultFound;
 
                     // CRITICAL FIX: Set CurrentFilterPath from search instance's ConfigPath
                     // This ensures state save/resume features work after reconnecting

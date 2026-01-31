@@ -53,7 +53,7 @@ namespace BalatroSeedOracle.Services
                     $"SaveFilterAsync called with path: {filePath}"
                 );
 
-                var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
                 DebugLogger.Log(
                     "ConfigurationService",
                     isBrowser
@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.Services
 
                     // Invalidate cache for this filter
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
-                    if (isBrowser && _filterCacheService != null)
+                    if (isBrowser && _filterCacheService is not null)
                         await _filterCacheService.InvalidateFilterAsync(filterId).ConfigureAwait(false);
                     else
                         _filterCacheService?.InvalidateFilter(filterId);
@@ -127,7 +127,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+                var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
 
                 if (isBrowser)
                 {
@@ -157,10 +157,10 @@ namespace BalatroSeedOracle.Services
                     // For MotelyJsonConfig, try cache first for better performance
                     if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                     {
-                        if (_filterCacheService != null)
+                        if (_filterCacheService is not null)
                         {
                             var cached = _filterCacheService.GetFilterByPath(filePath);
-                            if (cached != null)
+                            if (cached is not null)
                             {
                                 return cached as T;
                             }
@@ -196,7 +196,7 @@ namespace BalatroSeedOracle.Services
         public string GetTempFilterPath()
         {
             // Use AppPaths which handles both dev and installed scenarios correctly
-            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
             if (isBrowser)
             {
                 return "Filters/_UNSAVED_CREATION.json";
@@ -211,7 +211,7 @@ namespace BalatroSeedOracle.Services
         public string GetFiltersDirectory()
         {
             // Use AppPaths which handles both dev and installed scenarios correctly
-            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
             if (isBrowser)
             {
                 return "Filters";
@@ -224,13 +224,11 @@ namespace BalatroSeedOracle.Services
 
         public bool FileExists(string filePath)
         {
-            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
             if (isBrowser)
             {
-                // Synchronous check for browser - use cached result if available
-                // For browser, we can't block, so we return false and let async methods handle it
-                // This is acceptable because FileExists is typically used for quick checks
-                // and the actual async operations will handle the real check
+                // Synchronous check for browser - use result only when already completed to avoid blocking.
+                // We never block: if the task is not completed we return false; callers should use async APIs when available.
                 try
                 {
                     var task = _store.ExistsAsync(filePath.Replace('\\', '/'));

@@ -1,7 +1,11 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using BalatroSeedOracle.Desktop.Views;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using Motely.DB;
+using Motely.Executors;
 
 namespace BalatroSeedOracle.Desktop;
 
@@ -41,6 +45,13 @@ public static class DesktopAppInitializer
                     {
                         mainWindow.InitializeDesktopWidgets();
                         DebugLogger.Log("App", "Desktop widgets initialized successfully");
+
+                        // Initialize search library and restore active searches (with error logging)
+                        InitializeSearchLibraryAsync().ContinueWith(t =>
+                        {
+                            if (t.IsFaulted && t.Exception != null)
+                                DebugLogger.LogError("App", $"Search library init failed: {t.Exception.InnerException?.Message}");
+                        }, TaskContinuationOptions.OnlyOnFaulted);
                     }
                     catch (Exception ex)
                     {
@@ -53,5 +64,51 @@ public static class DesktopAppInitializer
                 }
             }
         };
+    }
+
+    /// <summary>
+    /// Initialize SequentialLibrary and restore active searches.
+    /// </summary>
+    private static async Task InitializeSearchLibraryAsync()
+    {
+        try
+        {
+            // Initialize the library root for DuckLake catalogs
+            var seedsPath = AppPaths.SearchResultsDir;
+            SequentialLibrary.SetLibraryRoot(seedsPath);
+            GenericLibrary.SetLibraryRoot(seedsPath);
+            DebugLogger.Log("App", $"Search libraries initialized at: {seedsPath}");
+
+            // Set thread budget for MultiSearchManager
+            MultiSearchManager.Instance.SetTotalThreads(Environment.ProcessorCount);
+            DebugLogger.Log("App", $"Thread budget set to: {Environment.ProcessorCount}");
+
+            // Restore active searches from the database
+            var searchManager = App.GetService<SearchManager>();
+            if (searchManager != null)
+            {
+                var jamlFiltersDir = AppPaths.FiltersDir;
+                var restoredSearches = await searchManager.RestoreActiveSearchesAsync(jamlFiltersDir);
+                
+                if (restoredSearches.Count > 0)
+                {
+                    DebugLogger.Log("App", $"Found {restoredSearches.Count} searches to restore");
+                    
+                    // For now, just log that we found them
+                    // The user can manually resume through the UI
+                    foreach (var search in restoredSearches)
+                    {
+                        DebugLogger.Log("App", $"  - {search.FilterName} ({search.Deck}/{search.Stake}) @ seed {search.LastSeed}");
+                    }
+                    
+                    // TODO: Auto-create SearchWidget for each restored search
+                    // This requires access to the MainMenu's WidgetDock
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("App", $"Failed to initialize search library: {ex.Message}");
+        }
     }
 }

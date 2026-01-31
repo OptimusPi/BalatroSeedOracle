@@ -6,7 +6,6 @@
         xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="BalatroSeedOracle.Windows.DataGridResultsWindow"
-        x:CompileBindings="True"
         Title="Results"
         Width="1200"
         Height="800"

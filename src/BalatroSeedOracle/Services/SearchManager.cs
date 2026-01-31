@@ -72,6 +72,26 @@ public sealed class SearchManager : IDisposable
 
         DebugLogger.Log("SearchManager", $"Storage mode: {(useInMemoryStorage ? "In-Memory (Browser)" : "Database (Desktop)")}");
 
+        // Wrap in ActiveSearchContext FIRST so we can set up ResultCallback
+        // We'll create a placeholder that will be updated after context creation
+        ActiveSearchContext? contextRef = null;
+
+        // Set up ResultCallback for real-time result streaming (like Motely.WASM POC)
+        // This pushes results to UI as they're found, not just after completion
+        searchParams.ResultCallback = result =>
+        {
+            // Convert Motely result to BSO SearchResult and raise event
+            var searchResult = new Models.SearchResult
+            {
+                Seed = result.Seed,
+                TotalScore = result.Score,
+                Scores = result.TallyColumns?.ToArray() ?? Array.Empty<int>()
+            };
+            
+            // Raise event on context (will be set before Start() is called)
+            contextRef?.RaiseResultFound(searchResult);
+        };
+
         // JUST CALL MOTELY. That's it.
         // Motely owns everything: SearchId, FilterId, database, queries.
         var motelyContext = MotelySearchOrchestrator.LaunchWithContext(
@@ -83,6 +103,7 @@ public sealed class SearchManager : IDisposable
 
         // Wrap in ActiveSearchContext for UI binding
         var context = new ActiveSearchContext(motelyContext, config);
+        contextRef = context; // Assign to closure variable
         _activeSearches[context.SearchId] = context;
 
         return context;
@@ -175,7 +196,7 @@ public sealed class SearchManager : IDisposable
                 try
                 {
                     var meta = MultiSearchManager.Instance.GetPersistedMeta(searchId);
-                    if (meta == null)
+                    if (meta is null)
                     {
                         DebugLogger.Log("SearchManager", $"No metadata for search: {searchId}");
                         continue;
@@ -191,7 +212,7 @@ public sealed class SearchManager : IDisposable
                         continue;
                     }
 
-                    if (!JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out var error) || config == null)
+                    if (!JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out var error) || config is null)
                     {
                         DebugLogger.LogError("SearchManager", $"Failed to load JAML: {error}");
                         SequentialLibrary.Instance.SetSearchActive(searchId, false);
