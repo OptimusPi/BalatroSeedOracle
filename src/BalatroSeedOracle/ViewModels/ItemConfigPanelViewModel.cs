@@ -179,7 +179,7 @@ namespace BalatroSeedOracle.ViewModels
             Suit = item.Suit;
 
             // Initialize stickers
-            if (item.Stickers != null)
+            if (item.Stickers is not null)
             {
                 IsEternal = item.Stickers.Contains("eternal");
                 IsPerishable = item.Stickers.Contains("perishable");
@@ -187,7 +187,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load antes configuration
-            if (item.Antes != null && item.Antes.Length > 0)
+            if (item.Antes is not null && item.Antes.Length > 0)
             {
                 AllAntesSelected = false;
                 Ante1Selected = item.Antes.Contains(1);
@@ -201,7 +201,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load shop slots configuration
-            if (item.ShopSlots != null && item.ShopSlots.Length > 0)
+            if (item.ShopSlots is not null && item.ShopSlots.Length > 0)
             {
                 AllShopSlotsSelected = false;
                 ShopSlot1Selected = item.ShopSlots.Contains(1);
@@ -211,7 +211,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load pack positions configuration
-            if (item.PackPositions != null && item.PackPositions.Length > 0)
+            if (item.PackPositions is not null && item.PackPositions.Length > 0)
             {
                 AllPackPositionsSelected = false;
                 PackPos1Selected = item.PackPositions.Contains(1);
@@ -222,7 +222,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load sources configuration according to JAML schema
-            if (item.Sources != null && item.Sources.Length > 0)
+            if (item.Sources is not null && item.Sources.Length > 0)
             {
                 SourceShop = item.Sources.Contains("shop");
                 SourcePack = item.Sources.Contains("pack");
@@ -239,8 +239,8 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load nested logic conditions
-            EnableAndGroup = item.AndConditions != null && item.AndConditions.Length > 0;
-            EnableOrGroup = item.OrConditions != null && item.OrConditions.Length > 0;
+            EnableAndGroup = item.AndConditions is not null && item.AndConditions.Length > 0;
+            EnableOrGroup = item.OrConditions is not null && item.OrConditions.Length > 0;
         }
 
         partial void OnAllAntesSelectedChanged(bool value)
@@ -284,7 +284,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnItemNameChanged(string value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.DisplayName = value;
             }
@@ -292,7 +292,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnLabelChanged(string? value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Label = value;
             }
@@ -300,7 +300,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnScoreChanged(int value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Score = value;
             }
@@ -308,7 +308,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnMinCountChanged(int value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.MinCount = value;
             }
@@ -316,7 +316,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnEditionChanged(string value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Edition = value == "None" ? null : value;
                 UpdatePreviewImage();
@@ -325,7 +325,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSealChanged(string value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Seal = value == "None" ? null : value;
                 UpdatePreviewImage();
@@ -334,7 +334,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnEnhancementChanged(string value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Enhancement = value == "None" ? null : value;
                 UpdatePreviewImage();
@@ -343,7 +343,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnRankChanged(string? value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Rank = value;
                 UpdatePreviewImage();
@@ -352,7 +352,7 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSuitChanged(string? value)
         {
-            if (_item != null)
+            if (_item is not null)
             {
                 _item.Suit = value;
                 UpdatePreviewImage();
@@ -361,7 +361,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdatePreviewImage()
         {
-            if (_item == null)
+            if (_item is null)
                 return;
 
             if (_item.Category == "Playing Cards" || _item.ItemType == "StandardCard")
@@ -403,7 +403,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateStickers()
         {
-            if (_item == null)
+            if (_item is null)
                 return;
             var stickers = new System.Collections.Generic.List<string>();
             if (IsEternal)

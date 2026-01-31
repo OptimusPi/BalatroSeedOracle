@@ -912,15 +912,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Find the Validate Filter tab and refresh its data
-                var validateTab = TabItems.FirstOrDefault(t =>
-                    t.Content is Components.FilterTabs.ValidateFilterTab
-                );
-                if (
-                    validateTab?.Content
-                        is Components.FilterTabs.ValidateFilterTab validateFilterTab
-                    && validateFilterTab.DataContext
-                        is FilterTabs.ValidateFilterTabViewModel validateVm
-                )
+                if (TabItems.FirstOrDefault(t => t.Content is Components.FilterTabs.ValidateFilterTab)?.Content
+                    is Components.FilterTabs.ValidateFilterTab validateFilterTab
+                    && validateFilterTab.DataContext is FilterTabs.ValidateFilterTabViewModel validateVm)
                 {
                     validateVm.PreFillFilterData();
                     await validateVm.RefreshClauseDisplay();
@@ -1365,7 +1359,7 @@ namespace BalatroSeedOracle.ViewModels
                         $"  Converting child: {child.Name} (Type={child.Type})"
                     );
                     var childClause = ConvertFilterItemToClause(child);
-                    if (childClause != null)
+                    if (childClause is not null)
                     {
                         operatorClause.Clauses.Add(childClause);
                         BsoLogger.Log(

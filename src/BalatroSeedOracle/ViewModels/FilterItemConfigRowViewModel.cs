@@ -187,7 +187,7 @@ namespace BalatroSeedOracle.ViewModels
         private void LoadConfigFromItem()
         {
             // Load Antes
-            if (_item.Antes != null)
+            if (_item.Antes is not null)
             {
                 Ante1 = _item.Antes.Contains(1);
                 Ante2 = _item.Antes.Contains(2);
@@ -200,7 +200,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load Shop Slots
-            if (_item.ShopSlots != null)
+            if (_item.ShopSlots is not null)
             {
                 Slot1 = _item.ShopSlots.Contains(1);
                 Slot2 = _item.ShopSlots.Contains(2);
@@ -209,7 +209,7 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             // Load Pack Positions
-            if (_item.PackPositions != null)
+            if (_item.PackPositions is not null)
             {
                 Pack1 = _item.PackPositions.Contains(1);
                 Pack2 = _item.PackPositions.Contains(2);

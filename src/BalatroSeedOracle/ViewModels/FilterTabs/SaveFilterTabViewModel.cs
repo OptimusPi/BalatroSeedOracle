@@ -347,7 +347,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             try
             {
                 var config = BuildConfigFromCurrentState();
-                if (config == null || string.IsNullOrWhiteSpace(config.Name))
+                if (config is null || string.IsNullOrWhiteSpace(config.Name))
                 {
                     UpdateStatus("Please enter a filter name before exporting", true);
                     return;
@@ -361,7 +361,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
 
                 var topLevel = TopLevelHelper.GetTopLevel();
-                if (topLevel?.StorageProvider == null)
+                if (topLevel?.StorageProvider is null)
                 {
                     UpdateStatus("Export not available (no StorageProvider)", true);
                     return;
@@ -385,7 +385,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     }
                 );
 
-                if (file == null)
+                if (file is null)
                 {
                     UpdateStatus("Export cancelled", true);
                     return;
@@ -455,7 +455,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var child in operatorItem.Children)
                 {
                     var childClause = ConvertFilterItemToClause(child, itemConfigs);
-                    if (childClause != null)
+                    if (childClause is not null)
                     {
                         operatorClause.Clauses.Add(childClause);
                     }
@@ -538,7 +538,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Apply additional properties from itemConfig
-                if (itemConfig.Stickers != null && itemConfig.Stickers.Count > 0)
+                if (itemConfig.Stickers is not null && itemConfig.Stickers.Count > 0)
                 {
                     clause.Stickers = itemConfig.Stickers.ToArray();
                 }
@@ -610,7 +610,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Apply additional properties from FilterItem
-            if (item.Stickers != null && item.Stickers.Count > 0)
+            if (item.Stickers is not null && item.Stickers.Count > 0)
             {
                 fallbackClause.Stickers = item.Stickers.ToArray();
             }
@@ -672,13 +672,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Deck = deckName,
                     Stake = stakeName,
                     MinScore = 0,
-                    MaxResults = 10, // Find up to 10 matching seeds
                 };
 
                 // Start search via SearchManager and wait for results
                 var searchManager =
                     ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
-                if (searchManager == null)
+                if (searchManager is null)
                 {
                     IsTestRunning = false;
                     ShowTestError = true;
@@ -707,7 +706,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                     // Find seed with highest TotalScore
                     string? verifiedSeed = null;
-                    if (results.Results != null && results.Results.Count > 0)
+                    if (results.Results is not null && results.Results.Count > 0)
                     {
                         var bestResult = results
                             .Results.OrderByDescending(r => r.TotalScore)
@@ -719,7 +718,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                             $"Selected seed {FoundSeed} with TotalScore {bestResult.TotalScore}"
                         );
                     }
-                    else if (results.Seeds != null && results.Seeds.Count > 0)
+                    else if (results.Seeds is not null && results.Seeds.Count > 0)
                     {
                         // Fallback to first seed if Results not available
                         verifiedSeed = results.Seeds[0];

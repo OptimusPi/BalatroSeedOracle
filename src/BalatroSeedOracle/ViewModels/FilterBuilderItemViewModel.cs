@@ -47,7 +47,7 @@ namespace BalatroSeedOracle.ViewModels
         public ObservableCollection<FilterBuilderItemViewModel>? ChildViewModels { get; set; }
 
         // Check if this is an operator clause
-        public bool IsOperatorClause => Config.OperatorType != null;
+        public bool IsOperatorClause => Config.OperatorType is not null;
         public string? OperatorType => Config.OperatorType;
 
         public FilterBuilderItemViewModel(ItemConfig config)
@@ -58,7 +58,7 @@ namespace BalatroSeedOracle.ViewModels
             LoadImages();
 
             // Wrap children if this is an OR/AND operator
-            if (config.Children != null && config.Children.Count > 0)
+            if (config.Children is not null && config.Children.Count > 0)
             {
                 ChildViewModels = new ObservableCollection<FilterBuilderItemViewModel>(
                     config.Children.Select(child => new FilterBuilderItemViewModel(child))
@@ -86,7 +86,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SyncChildrenToConfig()
         {
-            if (ChildViewModels != null)
+            if (ChildViewModels is not null)
             {
                 Config.Children = ChildViewModels.Select(vm => vm.Config).ToList();
             }

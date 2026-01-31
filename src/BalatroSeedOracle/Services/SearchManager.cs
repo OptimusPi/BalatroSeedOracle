@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Models;
 using Motely;
+using Motely.DB;
 using Motely.Executors;
 using Motely.Filters;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
@@ -115,15 +117,6 @@ public sealed class SearchManager : IDisposable
     }
 
     /// <summary>
-    /// Start a new search (async version for compatibility)
-    /// </summary>
-    public Task<ActiveSearchContext> StartSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
-    {
-        var context = StartSearch(criteria, config);
-        return Task.FromResult(context);
-    }
-
-    /// <summary>
     /// Get or restore a search by ID
     /// </summary>
     public ActiveSearchContext? GetOrRestoreSearch(string searchId)
@@ -131,6 +124,144 @@ public sealed class SearchManager : IDisposable
         // For now, just return the active search if it exists
         // Future: could implement persistence/restoration
         return GetSearch(searchId);
+    }
+
+    /// <summary>
+    /// Initialize the SequentialLibrary for search persistence.
+    /// Call this at app startup (Desktop only).
+    /// </summary>
+    public void InitializeLibrary(string seedsPath)
+    {
+        if (!_platformServices.SupportsFileSystem)
+        {
+            DebugLogger.Log("SearchManager", "Skipping library initialization (browser)");
+            return;
+        }
+
+        try
+        {
+            SequentialLibrary.SetLibraryRoot(seedsPath);
+            DebugLogger.Log("SearchManager", $"SequentialLibrary initialized at: {seedsPath}");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SearchManager", $"Failed to initialize library: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Restore active searches from the SequentialLibrary.
+    /// Returns metadata for searches that need UI widgets created.
+    /// Call this at app startup after InitializeLibrary.
+    /// </summary>
+    public async Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
+    {
+        var restored = new List<RestoredSearchInfo>();
+
+        if (!_platformServices.SupportsFileSystem)
+        {
+            DebugLogger.Log("SearchManager", "Skipping search restoration (browser)");
+            return restored;
+        }
+
+        try
+        {
+            // Get all search IDs marked as active
+            var activeIds = await MultiSearchManager.Instance.RestoreActiveSearchesAsync();
+            DebugLogger.Log("SearchManager", $"Found {activeIds.Count} active searches to restore");
+
+            foreach (var searchId in activeIds)
+            {
+                try
+                {
+                    var meta = MultiSearchManager.Instance.GetPersistedMeta(searchId);
+                    if (meta == null)
+                    {
+                        DebugLogger.Log("SearchManager", $"No metadata for search: {searchId}");
+                        continue;
+                    }
+
+                    // Try to load the JAML config
+                    var jamlPath = Path.Combine(jamlFiltersDir, $"{meta.JamlFilter}.jaml");
+                    if (!File.Exists(jamlPath))
+                    {
+                        DebugLogger.Log("SearchManager", $"JAML not found: {jamlPath}");
+                        // Mark as inactive since we can't restore
+                        SequentialLibrary.Instance.SetSearchActive(searchId, false);
+                        continue;
+                    }
+
+                    if (!JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out var error) || config == null)
+                    {
+                        DebugLogger.LogError("SearchManager", $"Failed to load JAML: {error}");
+                        SequentialLibrary.Instance.SetSearchActive(searchId, false);
+                        continue;
+                    }
+
+                    // Apply deck/stake from metadata
+                    config.Deck = meta.Deck;
+                    config.Stake = meta.Stake;
+
+                    restored.Add(new RestoredSearchInfo
+                    {
+                        SearchId = searchId,
+                        FilterName = meta.JamlFilter ?? "Unknown",
+                        Deck = meta.Deck ?? "Red",
+                        Stake = meta.Stake ?? "White",
+                        LastSeed = meta.LastSeed,
+                        TotalSeedsProcessed = meta.TotalSeedsProcessed,
+                        TotalMatches = meta.TotalMatches,
+                        Config = config,
+                    });
+
+                    DebugLogger.Log("SearchManager", $"Prepared restoration for: {searchId}");
+                }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("SearchManager", $"Error restoring search {searchId}: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SearchManager", $"Error during search restoration: {ex.Message}");
+        }
+
+        return restored;
+    }
+
+    /// <summary>
+    /// Resume a restored search. Call this after UI is ready.
+    /// </summary>
+    public ActiveSearchContext? ResumeSearch(RestoredSearchInfo info, int threads)
+    {
+        try
+        {
+            var criteria = new SearchCriteria
+            {
+                ThreadCount = threads,
+                BatchSize = 1000,
+                Deck = info.Deck,
+                Stake = info.Stake,
+            };
+
+            // Calculate StartBatch from LastSeed if available
+            if (!string.IsNullOrEmpty(info.LastSeed))
+            {
+                // Use SeedMath to convert seed to batch index
+                // BatchSize in SearchCriteria is seed digits (1-7), default 3
+                criteria.StartBatch = (ulong)Motely.SeedMath.SeedToBatchIndex(info.LastSeed, criteria.BatchSize) + 1;
+            }
+
+            var context = StartSearch(criteria, info.Config);
+            DebugLogger.Log("SearchManager", $"Resumed search: {info.SearchId}");
+            return context;
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SearchManager", $"Failed to resume search {info.SearchId}: {ex.Message}");
+            return null;
+        }
     }
 
     /// <summary>
@@ -210,7 +341,7 @@ public sealed class SearchManager : IDisposable
             }
             
             // Get results
-            var results = await context.GetResultsPageAsync(0, criteria.MaxResults > 0 ? criteria.MaxResults : 1000);
+            var results = await context.GetResultsPageAsync(0, 1000);
             var elapsed = DateTime.UtcNow - startTime;
             
             // Clean up
@@ -252,4 +383,19 @@ public sealed class SearchManager : IDisposable
 
         StopAllSearches();
     }
+}
+
+/// <summary>
+/// Information about a restored search that needs UI widgets created.
+/// </summary>
+public class RestoredSearchInfo
+{
+    public string SearchId { get; set; } = "";
+    public string FilterName { get; set; } = "";
+    public string Deck { get; set; } = "Red";
+    public string Stake { get; set; } = "White";
+    public string? LastSeed { get; set; }
+    public long TotalSeedsProcessed { get; set; }
+    public long TotalMatches { get; set; }
+    public MotelyJsonConfig Config { get; set; } = null!;
 }

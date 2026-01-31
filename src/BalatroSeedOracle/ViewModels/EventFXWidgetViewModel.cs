@@ -110,7 +110,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
             {
                 var json = File.ReadAllText(configPath);
                 var config = JsonSerializer.Deserialize<EventFXConfig>(json);
-                if (config != null)
+                if (config is not null)
                 {
                     SelectedTransitionPreset = config.TransitionPreset ?? "(none)";
                     SelectedDuration = config.Duration ?? "2s";
@@ -137,7 +137,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
             return;
         }
 
-        if (_transitionService == null)
+        if (_transitionService is null)
         {
             DebugLogger.LogError("EventFXWidget", "TransitionService not available");
             return;

@@ -162,7 +162,7 @@ namespace BalatroSeedOracle.ViewModels
         public void SelectFilter(FilterListItem filter)
         {
             // Clear previous selection
-            if (SelectedFilter != null)
+            if (SelectedFilter is not null)
             {
                 SelectedFilter.IsSelected = false;
             }
@@ -191,7 +191,7 @@ namespace BalatroSeedOracle.ViewModels
             if (ShowSelectButton)
             {
                 SelectButtonText =
-                    SelectedFilter != null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+                    SelectedFilter is not null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
             }
             else
             {
@@ -209,7 +209,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var config = _filterCacheService.GetFilterByPath(filterPath);
-                if (config == null)
+                if (config is null)
                 {
                     DebugLogger.Log(
                         "FilterListViewModel",
@@ -218,21 +218,21 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                if (config.Must != null && config.Must.Count > 0)
+                if (config.Must is not null && config.Must.Count > 0)
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_have' tab");
                     SelectTab("must_have");
                     return;
                 }
 
-                if (config.Should != null && config.Should.Count > 0)
+                if (config.Should is not null && config.Should.Count > 0)
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'should_have' tab");
                     SelectTab("should_have");
                     return;
                 }
 
-                if (config.MustNot != null && config.MustNot.Count > 0)
+                if (config.MustNot is not null && config.MustNot.Count > 0)
                 {
                     DebugLogger.Log("FilterListViewModel", "Auto-selecting 'must_not_have' tab");
                     SelectTab("must_not_have");
@@ -299,7 +299,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 SelectedFilterDescription = "";
                 var config = _filterCacheService.GetFilterByPath(filterPath);
-                if (config == null)
+                if (config is null)
                 {
                     DebugLogger.LogError("FilterListViewModel", "Filter not found in cache");
                     return;
@@ -329,7 +329,7 @@ namespace BalatroSeedOracle.ViewModels
                 var spriteService = ServiceHelper.GetService<SpriteService>();
 
                 // Load Must Have items
-                if (config.Must != null && config.Must.Count > 0)
+                if (config.Must is not null && config.Must.Count > 0)
                 {
                     LoadItemsFromConfig(config.Must, MustHaveItems, spriteService);
                     HasMustHaveItems = MustHaveItems.Count > 0;
@@ -348,7 +348,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load Should Have items
-                if (config.Should != null && config.Should.Count > 0)
+                if (config.Should is not null && config.Should.Count > 0)
                 {
                     LoadItemsFromConfig(config.Should, ShouldHaveItems, spriteService);
                     HasShouldHaveItems = ShouldHaveItems.Count > 0;
@@ -367,7 +367,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Load Must Not Have items
-                if (config.MustNot != null && config.MustNot.Count > 0)
+                if (config.MustNot is not null && config.MustNot.Count > 0)
                 {
                     LoadItemsFromConfig(config.MustNot, MustNotHaveItems, spriteService);
                     HasMustNotHaveItems = MustNotHaveItems.Count > 0;
@@ -405,7 +405,7 @@ namespace BalatroSeedOracle.ViewModels
             SpriteService? spriteService
         )
         {
-            if (items == null || items.Count == 0 || spriteService == null)
+            if (items is null || items.Count == 0 || spriteService is null)
                 return;
 
             foreach (var item in items)
@@ -415,7 +415,7 @@ namespace BalatroSeedOracle.ViewModels
                     continue;
 
                 var sprite = GetItemSprite(itemName, spriteService);
-                if (sprite != null)
+                if (sprite is not null)
                 {
                     collection.Add(
                         new FilterItemViewModel { ItemName = itemName, ItemImage = sprite }
@@ -491,7 +491,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var config = _filterCacheService.GetFilterByPath(filterPath);
-                if (config == null)
+                if (config is null)
                 {
                     DebugLogger.Log("FilterListViewModel", "Filter not found in cache");
                     FilterItems.Clear();
@@ -510,7 +510,7 @@ namespace BalatroSeedOracle.ViewModels
                     _ => null,
                 };
 
-                if (items != null && items.Count > 0)
+                if (items is not null && items.Count > 0)
                 {
                     var spriteService = ServiceHelper.GetService<SpriteService>();
                     LoadItemsFromConfig(items, FilterItems, spriteService);
@@ -523,7 +523,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                var filename = filterPath != null ? Path.GetFileName(filterPath) : "unknown";
+                var filename = filterPath is not null ? Path.GetFileName(filterPath) : "unknown";
                 DebugLogger.LogError(
                     "FilterListViewModel",
                     $"Error loading filter items from '{filename}': {ex.Message}"
@@ -542,15 +542,15 @@ namespace BalatroSeedOracle.ViewModels
             IImage? sprite = null;
 
             sprite = spriteService.GetJokerImage(spriteName);
-            if (sprite == null)
+            if (sprite is null)
                 sprite = spriteService.GetTarotImage(spriteName);
-            if (sprite == null)
+            if (sprite is null)
                 sprite = spriteService.GetItemImage(spriteName, "Planet");
-            if (sprite == null)
+            if (sprite is null)
                 sprite = spriteService.GetSpectralImage(spriteName);
-            if (sprite == null)
+            if (sprite is null)
                 sprite = spriteService.GetVoucherImage(spriteName);
-            if (sprite == null)
+            if (sprite is null)
                 sprite = spriteService.GetTagImage(spriteName);
 
             return sprite;

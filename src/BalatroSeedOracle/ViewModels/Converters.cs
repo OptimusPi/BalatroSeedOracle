@@ -27,7 +27,7 @@ namespace BalatroSeedOracle.ViewModels
             if (value is ContentPresenter contentPresenter)
             {
                 var itemsControl = ItemsControl.ItemsControlFromItemContainer(contentPresenter);
-                if (itemsControl != null)
+                if (itemsControl is not null)
                 {
                     return itemsControl.IndexFromContainer(contentPresenter).ToString();
                 }
@@ -55,7 +55,7 @@ namespace BalatroSeedOracle.ViewModels
             CultureInfo culture
         )
         {
-            if (value == null || parameter == null)
+            if (value is null || parameter is null)
                 return false;
 
             return value.ToString() == parameter.ToString();
@@ -69,7 +69,7 @@ namespace BalatroSeedOracle.ViewModels
         )
         {
             // When RadioButton is checked (true), return the parameter as the string value
-            if (value is bool isChecked && isChecked && parameter != null)
+            if (value is bool isChecked && isChecked && parameter is not null)
             {
                 return parameter.ToString();
             }
@@ -88,7 +88,7 @@ namespace BalatroSeedOracle.ViewModels
             CultureInfo culture
         )
         {
-            if (value == null || parameter == null)
+            if (value is null || parameter is null)
                 return true;
 
             return value.ToString() != parameter.ToString();

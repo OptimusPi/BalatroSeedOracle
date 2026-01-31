@@ -130,7 +130,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             PopOutCommand = new RelayCommand(() => PopOutRequested?.Invoke(this, EventArgs.Empty));
             AnalyzeCommand = new RelayCommand<SearchResult>(result =>
             {
-                if (result != null)
+                if (result is not null)
                     AnalyzeRequested?.Invoke(this, result);
             });
             CopySelectedCommand = new RelayCommand(CopySelected, () => HasSelection);
@@ -267,11 +267,11 @@ namespace BalatroSeedOracle.ViewModels.Controls
                         r.Seed.ToLowerInvariant().Contains(filterLower)
                         || r.TotalScore.ToString().Contains(filterLower)
                         || (
-                            r.Scores != null
+                            r.Scores is not null
                             && r.Scores.Any(s => s.ToString().Contains(filterLower))
                         )
                         || (
-                            r.Labels != null
+                            r.Labels is not null
                             && r.Labels.Any(l => l.ToLowerInvariant().Contains(filterLower))
                         )
                     );
@@ -305,12 +305,12 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
                         query = SortDescending
                             ? filtered.OrderByDescending(r =>
-                                (r.Scores != null && scoreIndex < r.Scores.Length)
+                                (r.Scores is not null && scoreIndex < r.Scores.Length)
                                     ? r.Scores[scoreIndex]
                                     : 0
                             )
                             : filtered.OrderBy(r =>
-                                (r.Scores != null && scoreIndex < r.Scores.Length)
+                                (r.Scores is not null && scoreIndex < r.Scores.Length)
                                     ? r.Scores[scoreIndex]
                                     : 0
                             );
@@ -367,7 +367,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
             // Check if labels changed
             bool labelsChanged = !LabelsEqual(_currentLabels, newLabels);
 
-            if (labelsChanged || GridSource == null)
+            if (labelsChanged || GridSource is null)
             {
                 _currentLabels = newLabels;
                 RebuildGridSource();
@@ -378,8 +378,8 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
         private static bool LabelsEqual(string[]? a, string[]? b)
         {
-            if (a == null && b == null) return true;
-            if (a == null || b == null) return false;
+            if (a is null && b is null) return true;
+            if (a is null || b is null) return false;
             if (a.Length != b.Length) return false;
             for (int i = 0; i < a.Length; i++)
             {
@@ -404,7 +404,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
                 width: new GridLength(80)));
 
             // Dynamic tally columns from Labels
-            if (_currentLabels != null)
+            if (_currentLabels is not null)
             {
                 for (int i = 0; i < _currentLabels.Length; i++)
                 {
@@ -413,7 +413,7 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
                     source.Columns.Add(new TextColumn<SearchResult, string>(
                         label.ToUpperInvariant(),
-                        x => (x.Scores != null && index < x.Scores.Length)
+                        x => (x.Scores is not null && index < x.Scores.Length)
                             ? x.Scores[index].ToString()
                             : "-",
                         width: new GridLength(70)));

@@ -582,7 +582,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ScheduleSettingsSave()
         {
-            if (_settingsSaveDebounce == null)
+            if (_settingsSaveDebounce is null)
             {
                 _settingsSaveDebounce = new System.Timers.Timer(SettingsSaveDebounceMs)
                 {
@@ -791,7 +791,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void LoadPreset(VisualizerPreset? preset)
         {
-            if (preset == null)
+            if (preset is null)
             {
                 DebugLogger.Log("AudioVisualizerSettingsModalViewModel", "Cannot load null preset");
                 return;
@@ -838,7 +838,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void DeletePreset(VisualizerPreset? preset)
         {
-            if (preset == null)
+            if (preset is null)
             {
                 DebugLogger.Log(
                     "AudioVisualizerSettingsModalViewModel",
@@ -984,7 +984,7 @@ namespace BalatroSeedOracle.ViewModels
                     ? desktop.MainWindow
                     : null;
 
-                if (owner != null)
+                if (owner is not null)
                 {
                     await dialog.ShowDialog(owner);
                 }

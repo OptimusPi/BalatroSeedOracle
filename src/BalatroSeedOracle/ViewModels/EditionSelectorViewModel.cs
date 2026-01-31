@@ -140,7 +140,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateDisplay()
         {
-            if (SelectedEdition == null)
+            if (SelectedEdition is null)
             {
                 Description = "Unknown edition";
                 IsPreviewVisible = false;
@@ -224,7 +224,7 @@ namespace BalatroSeedOracle.ViewModels
         public void SetSelectedEdition(string edition)
         {
             var editionOption = Editions.FirstOrDefault(e => e.Tag == edition);
-            if (editionOption != null)
+            if (editionOption is not null)
             {
                 SelectedEdition = editionOption;
             }

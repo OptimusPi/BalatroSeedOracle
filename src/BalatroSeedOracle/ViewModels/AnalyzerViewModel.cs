@@ -176,7 +176,7 @@ public partial class AnalyzerViewModel : ObservableObject
     [RelayCommand]
     private void ScrollDownAnte()
     {
-        if (CurrentAnalysis != null && CurrentAnteIndex < CurrentAnalysis.Antes.Count - 1)
+        if (CurrentAnalysis is not null && CurrentAnteIndex < CurrentAnalysis.Antes.Count - 1)
         {
             CurrentAnteIndex++;
         }
@@ -282,7 +282,7 @@ public partial class AnalyzerViewModel : ObservableObject
     public MotelyAnteAnalysis? GetCurrentAnte()
     {
         if (
-            CurrentAnalysis == null
+            CurrentAnalysis is null
             || CurrentAnteIndex < 0
             || CurrentAnteIndex >= CurrentAnalysis.Antes.Count
         )
@@ -314,7 +314,7 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null)
+            if (ante is null)
                 return [];
 
             return ante
@@ -328,7 +328,7 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null)
+            if (ante is null)
                 return [];
 
             var items = new ObservableCollection<ShopItemViewModel>();
@@ -353,7 +353,7 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null)
+            if (ante is null)
                 return [];
             return ante.ShopQueue.ToList();
         }
@@ -364,7 +364,7 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null)
+            if (ante is null)
                 return [];
 
             var packs = new ObservableCollection<PackViewModel>();
@@ -410,7 +410,7 @@ public partial class AnalyzerViewModel : ObservableObject
         get
         {
             var ante = GetCurrentAnte();
-            if (ante == null)
+            if (ante is null)
                 return [];
 
             return ante
@@ -426,7 +426,7 @@ public partial class AnalyzerViewModel : ObservableObject
     }
 
     public string AnteNavigationDisplay =>
-        CurrentAnalysis != null && CurrentAnalysis.Antes.Count > 0
+        CurrentAnalysis is not null && CurrentAnalysis.Antes.Count > 0
             ? $"ANTE {(GetCurrentAnte()?.Ante ?? 1)} of {CurrentAnalysis.Antes.Count}"
             : "ANTE 1 of 8";
 
@@ -471,7 +471,7 @@ public partial class AnalyzerViewModel : ObservableObject
 
     private void UpdateDisplayAnalysis()
     {
-        if (CurrentAnalysis == null)
+        if (CurrentAnalysis is null)
         {
             DisplayAnalysis = null;
             return;

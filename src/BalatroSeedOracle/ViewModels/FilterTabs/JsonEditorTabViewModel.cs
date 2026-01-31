@@ -59,7 +59,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             JsonContent = GetDefaultJsonContent();
 
             // Listen for filter name changes from parent to update display
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
                 {
@@ -89,11 +89,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (_parentViewModel?.VisualBuilderTab == null)
+                if (_parentViewModel?.VisualBuilderTab is null)
                     return;
 
                 var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
-                if (visualTab == null)
+                if (visualTab is null)
                     return;
 
                 var config = new MotelyJsonConfig
@@ -166,7 +166,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (_parentViewModel?.VisualBuilderTab == null)
+                if (_parentViewModel?.VisualBuilderTab is null)
                 {
                     ValidationStatus = "Visual builder not available";
                     ValidationStatusColor = Brushes.Red;
@@ -174,7 +174,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
-                if (visualTab == null)
+                if (visualTab is null)
                 {
                     ValidationStatus = "Visual builder not initialized";
                     ValidationStatusColor = Brushes.Red;
@@ -256,7 +256,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                if (_parentViewModel?.VisualBuilderTab == null)
+                if (_parentViewModel?.VisualBuilderTab is null)
                 {
                     ValidationStatus = "Visual builder not available";
                     ValidationStatusColor = Brushes.Red;
@@ -264,7 +264,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 var visualTab = _parentViewModel.VisualBuilderTab as VisualBuilderTabViewModel;
-                if (visualTab == null)
+                if (visualTab is null)
                 {
                     ValidationStatus = "Visual builder not initialized";
                     ValidationStatusColor = Brushes.Red;
@@ -277,7 +277,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     DeserializeOptions
                 );
 
-                if (config == null)
+                if (config is null)
                 {
                     ValidationStatus = "Failed to parse JSON";
                     ValidationStatusColor = Brushes.Red;
@@ -291,12 +291,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 int itemsAdded = 0;
 
                 // Apply Must items
-                if (config.Must != null)
+                if (config.Must is not null)
                 {
                     foreach (var clause in config.Must)
                     {
                         var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (item != null && !visualTab.SelectedMust.Any(x => x.Name == item.Name))
+                        if (item is not null && !visualTab.SelectedMust.Any(x => x.Name == item.Name))
                         {
                             visualTab.SelectedMust.Add(item);
                             itemsAdded++;
@@ -305,12 +305,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Apply Should items
-                if (config.Should != null)
+                if (config.Should is not null)
                 {
                     foreach (var clause in config.Should)
                     {
                         var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (item != null && !visualTab.SelectedShould.Any(x => x.Name == item.Name))
+                        if (item is not null && !visualTab.SelectedShould.Any(x => x.Name == item.Name))
                         {
                             visualTab.SelectedShould.Add(item);
                             itemsAdded++;
@@ -469,7 +469,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // If not found, create a new item (this handles custom items)
-            if (item == null)
+            if (item is null)
             {
                 var spriteService = SpriteService.Instance;
                 item = new Models.FilterItem

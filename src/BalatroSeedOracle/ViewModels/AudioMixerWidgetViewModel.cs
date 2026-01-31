@@ -97,7 +97,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Wire up property changes to update audio manager
                 track.PropertyChanged += (s, e) =>
                 {
-                    if (_audioManager != null && s is TrackMixViewModel t)
+                    if (_audioManager is not null && s is TrackMixViewModel t)
                     {
                         UpdateAudioManagerTrack(t);
                     }
@@ -128,7 +128,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateAudioManagerTrack(TrackMixViewModel track)
         {
-            if (_audioManager == null)
+            if (_audioManager is null)
                 return;
 
             // Check if any track is soloed
@@ -252,7 +252,7 @@ namespace BalatroSeedOracle.ViewModels
                 var json = await File.ReadAllTextAsync(filePath);
                 var preset = JsonSerializer.Deserialize<MusicMixPreset>(json, JsonOptions);
 
-                if (preset?.Tracks != null)
+                if (preset?.Tracks is not null)
                 {
                     foreach (var track in Tracks)
                     {

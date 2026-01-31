@@ -203,7 +203,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Show()
         {
-            if (WidgetWindow == null && WidgetContent != null)
+            if (WidgetWindow is null && WidgetContent is not null)
             {
                 var window = new Windows.WidgetWindow();
                 window.DataContext = this;
@@ -212,7 +212,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Set initial position using position service
                 var positionService =
                     Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
-                if (positionService != null)
+                if (positionService is not null)
                 {
                     var (x, y) = positionService.FindNextAvailablePosition(this, IsMinimized);
                     window.Position = new PixelPoint((int)x, (int)y);
@@ -221,7 +221,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 window.Show();
             }
-            else if (WidgetWindow != null)
+            else if (WidgetWindow is not null)
             {
                 WidgetWindow.WindowState = WindowState.Normal;
                 WidgetWindow.Show();
@@ -235,7 +235,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Hide()
         {
-            if (WidgetWindow != null)
+            if (WidgetWindow is not null)
             {
                 WidgetWindow.Hide();
             }
@@ -262,7 +262,7 @@ namespace BalatroSeedOracle.ViewModels
             positionService?.UnregisterWidget(this);
 
             // Close and cleanup window
-            if (WidgetWindow != null)
+            if (WidgetWindow is not null)
             {
                 WidgetWindow.Close();
                 WidgetWindow = null;
@@ -287,7 +287,7 @@ namespace BalatroSeedOracle.ViewModels
             _nextZIndexCounter++;
             OnPropertyChanged(nameof(WidgetZIndex));
 
-            if (WidgetWindow != null)
+            if (WidgetWindow is not null)
             {
                 WidgetWindow.Topmost = true;
                 WidgetWindow.Topmost = false; // Reset topmost after bringing to front

@@ -49,7 +49,7 @@ namespace BalatroSeedOracle.ViewModels
                 )
                 {
                     var clipboard = desktop.MainWindow?.Clipboard;
-                    if (clipboard != null)
+                    if (clipboard is not null)
                     {
                         await clipboard.SetTextAsync(seed);
                         DebugLogger.Log(
@@ -68,7 +68,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ViewDetails(SearchResultViewModel? result)
         {
-            if (result == null)
+            if (result is null)
                 return;
 
             DebugLogger.Log("SearchResultViewModel", $"View details for seed: {result.Seed}");

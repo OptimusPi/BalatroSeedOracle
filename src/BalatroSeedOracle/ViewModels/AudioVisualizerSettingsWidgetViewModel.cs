@@ -76,7 +76,7 @@ namespace BalatroSeedOracle.ViewModels
             // Wire up property change notifications from underlying ViewModel
             _settingsViewModel.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName != null)
+                if (e.PropertyName is not null)
                 {
                     OnPropertyChanged(e.PropertyName);
                 }
@@ -139,7 +139,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void RemoveFrequencyBreakpoint(FrequencyBreakpoint breakpoint)
         {
-            if (breakpoint != null)
+            if (breakpoint is not null)
             {
                 FrequencyBreakpoints.Remove(breakpoint);
                 DebugLogger.Log(
@@ -184,7 +184,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void RemoveMelodicBreakpoint(MelodicBreakpoint breakpoint)
         {
-            if (breakpoint != null)
+            if (breakpoint is not null)
             {
                 MelodicBreakpoints.Remove(breakpoint);
                 DebugLogger.Log(
@@ -210,7 +210,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(ManualTransitionMixBName))
                     return;
                 var mixB = MixerHelper.LoadMixer(ManualTransitionMixBName!);
-                if (mixB == null)
+                if (mixB is null)
                     return;
 
                 var mixA = !string.IsNullOrWhiteSpace(ManualTransitionMixAName)
@@ -220,12 +220,12 @@ namespace BalatroSeedOracle.ViewModels
                 var duration = TimeSpan.FromSeconds(2.0);
                 var start = DateTime.UtcNow;
                 var s = mixA ?? mixB;
-                if (_audioManager == null)
+                if (_audioManager is null)
                     return;
 
                 // Blend visuals using TransitionService over the same duration
                 if (
-                    _transitionService != null
+                    _transitionService is not null
                     && !string.IsNullOrWhiteSpace(ManualTransitionPresetA)
                     && !string.IsNullOrWhiteSpace(ManualTransitionPresetB)
                 )
@@ -378,10 +378,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ApplyShaderParameters(ShaderParameters p)
         {
-            if (_ownerControl == null)
+            if (_ownerControl is null)
                 return;
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu == null)
+            if (mainMenu is null)
                 return;
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -593,7 +593,7 @@ namespace BalatroSeedOracle.ViewModels
                                 }
                             );
 
-                        if (trigger != null && !string.IsNullOrEmpty(trigger.Name))
+                        if (trigger is not null && !string.IsNullOrEmpty(trigger.Name))
                         {
                             AvailableAudioTriggers.Add(trigger);
                         }
@@ -1148,11 +1148,11 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyShaderParameter(Action<BalatroMainMenu> applyAction)
         {
-            if (_ownerControl == null)
+            if (_ownerControl is null)
                 return;
 
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu != null)
+            if (mainMenu is not null)
             {
                 applyAction(mainMenu);
             }
@@ -1163,11 +1163,11 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyAllShaderParameters()
         {
-            if (_ownerControl == null)
+            if (_ownerControl is null)
                 return;
 
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu == null)
+            if (mainMenu is null)
                 return;
 
             // Apply all shader parameters
@@ -1266,7 +1266,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnEnableSearchTransitionChanged(bool value)
         {
             // Save to user profile when changed
-            if (_userProfileService != null)
+            if (_userProfileService is not null)
             {
                 _userProfileService.GetProfile().VisualizerSettings.EnableSearchTransition = value;
                 _userProfileService.SaveProfile();
@@ -1276,7 +1276,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSearchTransitionStartPresetNameChanged(string? value)
         {
             // Save to user profile when changed
-            if (_userProfileService != null)
+            if (_userProfileService is not null)
             {
                 _userProfileService
                     .GetProfile()
@@ -1288,7 +1288,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSearchTransitionEndPresetNameChanged(string? value)
         {
             // Save to user profile when changed
-            if (_userProfileService != null)
+            if (_userProfileService is not null)
             {
                 _userProfileService.GetProfile().VisualizerSettings.SearchTransitionEndPresetName =
                     value;
@@ -1385,7 +1385,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Open file dialog in the correct VisualizerPresets folder
             var window = GetMainWindow();
-            if (window == null)
+            if (window is null)
                 return;
 
             var presetsPath = AppPaths.VisualizerPresetsDir;
@@ -1418,7 +1418,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Show simple name input dialog instead of full file picker
             var window = GetMainWindow();
-            if (window == null)
+            if (window is null)
                 return;
 
             // Prompt for preset name
@@ -1463,7 +1463,7 @@ namespace BalatroSeedOracle.ViewModels
                     json
                 );
 
-                if (preset != null)
+                if (preset is not null)
                 {
                     // Apply all settings from preset
                     ThemeIndex = ClampThemeIndex(preset.ThemeIndex);
@@ -1478,7 +1478,7 @@ namespace BalatroSeedOracle.ViewModels
                     SearchCompleteTrigger = preset.SearchCompleteTrigger;
 
                     // Apply effect sources
-                    if (preset.CustomEffects != null)
+                    if (preset.CustomEffects is not null)
                     {
                         if (preset.CustomEffects.TryGetValue("ShadowFlicker", out int sf))
                             ShadowFlickerSource = sf;
@@ -1496,7 +1496,7 @@ namespace BalatroSeedOracle.ViewModels
 
                     // Load frequency breakpoints
                     FrequencyBreakpoints.Clear();
-                    if (preset.FrequencyBreakpoints != null)
+                    if (preset.FrequencyBreakpoints is not null)
                     {
                         foreach (var breakpoint in preset.FrequencyBreakpoints)
                         {
@@ -1510,7 +1510,7 @@ namespace BalatroSeedOracle.ViewModels
 
                     // Load melodic breakpoints
                     MelodicBreakpoints.Clear();
-                    if (preset.MelodicBreakpoints != null)
+                    if (preset.MelodicBreakpoints is not null)
                     {
                         foreach (var breakpoint in preset.MelodicBreakpoints)
                         {
@@ -1589,7 +1589,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private Window? GetMainWindow()
         {
-            if (_ownerControl != null)
+            if (_ownerControl is not null)
             {
                 return _ownerControl.FindAncestorOfType<Window>();
             }
@@ -1649,7 +1649,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void ApplyMixerToEngine(MixerSettings settings)
         {
-            if (_audioManager == null)
+            if (_audioManager is null)
                 return;
             _audioManager.SetTrackVolume(
                 "Drums1",
@@ -1811,7 +1811,7 @@ namespace BalatroSeedOracle.ViewModels
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
-                if (owner != null)
+                if (owner is not null)
                 {
                     await dialog.ShowDialog(owner);
                 }
@@ -1889,7 +1889,7 @@ namespace BalatroSeedOracle.ViewModels
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
-                if (owner != null)
+                if (owner is not null)
                 {
                     await dialog.ShowDialog(owner);
                 }
@@ -1954,7 +1954,7 @@ namespace BalatroSeedOracle.ViewModels
                     jsonB
                 );
 
-                if (presetA != null && presetB != null)
+                if (presetA is not null && presetB is not null)
                 {
                     // Simple interpolation of theme and colors for now
                     // Full shader parameter interpolation would go here
@@ -2039,10 +2039,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private void SyncFromShader()
         {
-            if (_ownerControl == null)
+            if (_ownerControl is null)
                 return;
             var mainMenu = _ownerControl.FindAncestorOfType<BalatroMainMenu>();
-            if (mainMenu == null)
+            if (mainMenu is null)
                 return;
             _syncingFromShader = true;
             TimeValue = mainMenu.GetTimeSpeed();

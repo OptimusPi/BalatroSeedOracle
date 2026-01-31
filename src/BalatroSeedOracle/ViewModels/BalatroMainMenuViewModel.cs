@@ -238,7 +238,7 @@ namespace BalatroSeedOracle.ViewModels
             _platformServices = platformServices;
 
             // Create child widget ViewModels (owned by parent, bound via XAML)
-            if (_apiHostService != null)
+            if (_apiHostService is not null)
             {
                 ApiHostWidgetViewModel = new ApiHostWidgetViewModel(
                     _apiHostService,
@@ -426,7 +426,7 @@ namespace BalatroSeedOracle.ViewModels
             if (string.IsNullOrWhiteSpace(filterId))
                 return null;
 
-            var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
+            var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
             if (isBrowser)
             {
                 var jamlPath = $"Filters/{filterId}.jaml";
@@ -908,7 +908,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void LoadAndApplyVisualizerSettings(BalatroShaderBackground? shader)
         {
-            if (shader == null)
+            if (shader is null)
                 return;
 
             try
@@ -916,7 +916,7 @@ namespace BalatroSeedOracle.ViewModels
                 var profile = _userProfileService.GetProfile();
                 var settings = profile.VisualizerSettings ?? new VisualizerSettings();
 
-                if (profile.VisualizerSettings == null)
+                if (profile.VisualizerSettings is null)
                 {
                     profile.VisualizerSettings = settings;
                     _userProfileService.SaveProfile(profile);
@@ -944,7 +944,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 // Per-track volume balancing for SoundFlow audio stems
-                if (_audioManager != null)
+                if (_audioManager is not null)
                 {
                     SetTrackVolume("Drums1", Math.Clamp(settings.Drums1Volume, 0f, 1f));
                     SetTrackVolume("Drums2", Math.Clamp(settings.Drums2Volume, 0f, 1f));
@@ -1049,7 +1049,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 float volumeFloat = (float)(volume / 100.0);
-                if (_audioManager != null)
+                if (_audioManager is not null)
                 {
                     _audioManager.MasterVolume = volumeFloat;
                 }
@@ -1088,7 +1088,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_audioManager != null)
+                if (_audioManager is not null)
                 {
                     _audioAnalysisHandler = (bass, mid, treble, peak) => {
                         // Audio reactivity handled by effect binding system

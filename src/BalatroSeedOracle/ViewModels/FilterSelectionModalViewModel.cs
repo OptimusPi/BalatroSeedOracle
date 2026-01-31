@@ -31,8 +31,8 @@ namespace BalatroSeedOracle.ViewModels
         private int _activeTabIndex = 0;
 
         // Details panel visibility
-        public bool ShowDetailsPanel => SelectedFilter != null;
-        public bool ShowPlaceholder => SelectedFilter == null;
+        public bool ShowDetailsPanel => SelectedFilter is not null;
+        public bool ShowPlaceholder => SelectedFilter is null;
 
         // Tab content visibility
         public bool ShowFilterTab => ActiveTabIndex == 0 && ShowDetailsPanel;
@@ -63,7 +63,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             get
             {
-                if (SelectedFilter == null)
+                if (SelectedFilter is null)
                     return "";
                 var deckName = SelectedFilter.DeckName;
                 if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
@@ -151,7 +151,7 @@ namespace BalatroSeedOracle.ViewModels
             OnPropertyChanged(nameof(ShowDeckTab));
 
             // Update deck/stake indices for DeckSpinner display
-            if (value != null)
+            if (value is not null)
             {
                 // Map deck name to index
                 var decks = new[]
@@ -212,7 +212,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             DebugLogger.Log("FilterSelectionModal", "🔵 Search() called");
 
-            if (SelectedFilter == null)
+            if (SelectedFilter is null)
             {
                 DebugLogger.Log("FilterSelectionModal", "❌ SelectedFilter is null");
                 return;
@@ -247,7 +247,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Edit()
         {
-            if (SelectedFilter == null)
+            if (SelectedFilter is null)
                 return;
 
             Result = new FilterSelectionResult
@@ -286,7 +286,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Copy()
         {
-            if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+            if (SelectedFilter is null || SelectedFilter.IsCreateNew)
                 return;
 
             Result = new FilterSelectionResult
@@ -302,7 +302,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Delete()
         {
-            if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+            if (SelectedFilter is null || SelectedFilter.IsCreateNew)
                 return;
 
             // Request confirmation from View (code-behind will show dialog)
@@ -317,7 +317,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (SelectedFilter == null || SelectedFilter.IsCreateNew)
+                if (SelectedFilter is null || SelectedFilter.IsCreateNew)
                     return;
 
                 var filterIdToDelete = SelectedFilter.FilterId;
@@ -398,7 +398,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Analyze()
         {
-            if (SelectedFilter == null)
+            if (SelectedFilter is null)
                 return;
 
             if (SelectedFilter.IsCreateNew)
@@ -443,7 +443,7 @@ namespace BalatroSeedOracle.ViewModels
         public bool TryGoBack()
         {
             // Priority 1: If viewing filter details, go back to initial page (placeholder)
-            if (SelectedFilter != null)
+            if (SelectedFilter is not null)
             {
                 // Clear selection to return to "Please select or create new" page
                 SelectedFilter = null;

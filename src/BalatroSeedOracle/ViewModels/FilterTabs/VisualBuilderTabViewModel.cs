@@ -161,7 +161,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             get => _parentViewModel?.FilterName ?? "New Filter";
             set
             {
-                if (_parentViewModel != null && _parentViewModel.FilterName != value)
+                if (_parentViewModel is not null && _parentViewModel.FilterName != value)
                 {
                     _parentViewModel.FilterName = value;
                     OnPropertyChanged(nameof(FilterName));
@@ -393,7 +393,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _parentViewModel = parentViewModel;
 
             // Subscribe to parent's property changes to update FilterName and edit mode
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
                 {
@@ -979,7 +979,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMust(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
             {
                 Helpers.DebugLogger.Log("AddToMust", "Item is null, returning");
                 return;
@@ -987,7 +987,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             Helpers.DebugLogger.Log(
                 "AddToMust",
-                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}"
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage is not null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}"
             );
 
             // Set IsInvertedFilter based on IsDebuffed state
@@ -1013,7 +1013,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var existingItem = SelectedMust[i];
                 Helpers.DebugLogger.Log(
                     "AddToMust",
-                    $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
+                    $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage is not null}, Display={existingItem.DisplayName})"
                 );
             }
 
@@ -1021,7 +1021,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(SelectedMust));
 
             // Sync with parent ViewModel if available
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
@@ -1063,7 +1063,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToShould(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
             {
                 Helpers.DebugLogger.Log("AddToShould", "Item is null, returning");
                 return;
@@ -1071,7 +1071,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             Helpers.DebugLogger.Log(
                 "AddToShould",
-                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}, DisplayName={item.DisplayName}"
+                $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage is not null}, DisplayName={item.DisplayName}"
             );
 
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
@@ -1088,7 +1088,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var existingItem = SelectedShould[i];
                 Helpers.DebugLogger.Log(
                     "AddToShould",
-                    $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage != null}, Display={existingItem.DisplayName})"
+                    $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage is not null}, Display={existingItem.DisplayName})"
                 );
             }
 
@@ -1096,7 +1096,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(SelectedShould));
 
             // Sync with parent ViewModel if available
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 // Special handling for operators
                 if (item is FilterOperatorItem operatorItem)
@@ -1138,13 +1138,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMust(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             SelectedMust.Remove(item);
 
             // Sync with parent ViewModel - remove from parent collections
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMust);
             }
@@ -1157,13 +1157,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromShould(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             SelectedShould.Remove(item);
 
             // Sync with parent ViewModel - remove from parent collections
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedShould);
             }
@@ -1176,7 +1176,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMustNot(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
             {
                 Helpers.DebugLogger.Log("AddToMustNot", "Item is null, returning");
                 return;
@@ -1202,7 +1202,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OnPropertyChanged(nameof(SelectedMustNot));
 
             // Sync with parent ViewModel if available
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 // Create item config for MUST NOT item
                 var itemKey = _parentViewModel.GenerateNextItemKey();
@@ -1224,13 +1224,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMustNot(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             SelectedMustNot.Remove(item);
 
             // Sync with parent ViewModel - remove from parent collections
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
             }
@@ -1243,7 +1243,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToOrTray(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             // Enter clause editing mode on first item
@@ -1258,7 +1258,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             OrTrayItems.Add(item);
 
             // Create ItemConfig and apply current edition/sticker/seal settings
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
                 var itemConfig = new ItemConfig
@@ -1279,7 +1279,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToAndTray(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             // Enter clause editing mode on first item
@@ -1294,7 +1294,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             AndTrayItems.Add(item);
 
             // Create ItemConfig and apply current edition/sticker/seal settings
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 var itemKey = _parentViewModel.GenerateNextItemKey();
                 var itemConfig = new ItemConfig
@@ -1315,7 +1315,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromOrTray(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             OrTrayItems.Remove(item);
@@ -1328,7 +1328,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromAndTray(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             AndTrayItems.Remove(item);
@@ -1362,7 +1362,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             };
 
             // Add each item in OR tray as a child
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 foreach (var item in OrTrayItems.ToList())
                 {
@@ -1371,7 +1371,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
                     );
 
-                    if (existingConfig.Value != null)
+                    if (existingConfig.Value is not null)
                     {
                         groupedConfig.Children.Add(existingConfig.Value);
                     }
@@ -1394,7 +1394,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedShould.Add(operatorItem);
 
             // Add grouped config to parent for persistence
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
                 _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
@@ -1437,7 +1437,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             };
 
             // Add each item in AND tray as a child
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 foreach (var item in AndTrayItems.ToList())
                 {
@@ -1446,7 +1446,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         kvp.Value.ItemName == item.Name && kvp.Value.ItemType == item.Type
                     );
 
-                    if (existingConfig.Value != null)
+                    if (existingConfig.Value is not null)
                     {
                         groupedConfig.Children.Add(existingConfig.Value);
                     }
@@ -1469,7 +1469,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedShould.Add(operatorItem);
 
             // Add grouped config to parent for persistence
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.ItemConfigs[groupedConfig.ItemKey] = groupedConfig;
                 _parentViewModel.SelectedShould.Add(groupedConfig.ItemKey);
@@ -1526,7 +1526,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             ObservableCollection<string> parentCollection
         )
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
                 return;
 
             // Find the item key in parent's ItemConfigs
@@ -1554,7 +1554,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
                 return;
 
             DebugLogger.Log(
@@ -1597,7 +1597,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _ => null,
             };
 
-            if (targetCollection != null)
+            if (targetCollection is not null)
             {
                 targetCollection.Add(itemKey);
             }
@@ -1726,12 +1726,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     AllJokers.Add(item);
                     DebugLogger.Log(
                         "VisualBuilderTab",
-                        $"Loaded legendary {legendaryName}: Image={item.ItemImage != null}, ItemKey={item.ItemKey}"
+                        $"Loaded legendary {legendaryName}: Image={item.ItemImage is not null}, ItemKey={item.ItemKey}"
                     );
                 }
 
                 // Load Regular Jokers from BalatroData
-                if (BalatroData.Jokers?.Keys != null)
+                if (BalatroData.Jokers?.Keys is not null)
                 {
                     foreach (var jokerName in BalatroData.Jokers.Keys)
                     {
@@ -1760,14 +1760,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         };
                         DebugLogger.Log(
                             "VisualBuilderTab",
-                            $"Created regular joker: {jokerName} - Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage != null}"
+                            $"Created regular joker: {jokerName} - Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage is not null}"
                         );
                         AllJokers.Add(item);
                     }
                 }
 
                 // Load Tags from BalatroData
-                if (BalatroData.Tags?.Keys != null)
+                if (BalatroData.Tags?.Keys is not null)
                 {
                     foreach (var tagName in BalatroData.Tags.Keys)
                     {
@@ -1784,7 +1784,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Vouchers from BalatroData
-                if (BalatroData.Vouchers?.Keys != null)
+                if (BalatroData.Vouchers?.Keys is not null)
                 {
                     // Custom display order: base vouchers in rows 1,3,5,7 and upgrades in rows 2,4,6,8
                     // Assuming 5 columns per row for grid layout
@@ -1869,7 +1869,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Tarots from BalatroData
-                if (BalatroData.TarotCards?.Keys != null)
+                if (BalatroData.TarotCards?.Keys is not null)
                 {
                     foreach (var tarotName in BalatroData.TarotCards.Keys)
                     {
@@ -1891,7 +1891,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Load Planets from BalatroData
                 try
                 {
-                    if (BalatroData.PlanetCards?.Keys != null)
+                    if (BalatroData.PlanetCards?.Keys is not null)
                     {
                         DebugLogger.Log(
                             "VisualBuilderTab",
@@ -1938,7 +1938,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load Spectrals from BalatroData
-                if (BalatroData.SpectralCards?.Keys != null)
+                if (BalatroData.SpectralCards?.Keys is not null)
                 {
                     foreach (var spectralName in BalatroData.SpectralCards.Keys)
                     {
@@ -1960,7 +1960,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Load Boss Blinds from BalatroData
                 try
                 {
-                    if (BalatroData.BossBlinds?.Keys != null)
+                    if (BalatroData.BossBlinds?.Keys is not null)
                     {
                         foreach (var bossName in BalatroData.BossBlinds.Keys)
                         {
@@ -2104,7 +2104,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     var joker = AllJokers.FirstOrDefault(j =>
                         j.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase)
                     );
-                    if (joker != null)
+                    if (joker is not null)
                     {
                         joker.IsFavorite = true;
                         DebugLogger.Log(
@@ -2362,7 +2362,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             ItemConfigs[itemKey] = config;
 
             // Sync with parent ViewModel if available
-            if (_parentViewModel != null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
+            if (_parentViewModel is not null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
             {
                 _parentViewModel.ItemConfigs[itemKey] = config;
             }
@@ -2382,7 +2382,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (itemIndex >= 0)
             {
                 sourceZone = "MUST";
-                if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMust.Count)
+                if (_parentViewModel is not null && itemIndex < _parentViewModel.SelectedMust.Count)
                 {
                     itemKeyToRemove = _parentViewModel.SelectedMust[itemIndex];
                 }
@@ -2396,7 +2396,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     sourceZone = "SHOULD";
                     if (
-                        _parentViewModel != null
+                        _parentViewModel is not null
                         && itemIndex < _parentViewModel.SelectedShould.Count
                     )
                     {
@@ -2407,7 +2407,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             }
 
             // Remove associated config and sync with parent
-            if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel != null)
+            if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel is not null)
             {
                 ItemConfigs.Remove(itemKeyToRemove);
                 _parentViewModel.ItemConfigs.Remove(itemKeyToRemove);
@@ -2595,7 +2595,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         private async Task PerformAutoSave()
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
             {
                 DebugLogger.Log("VisualBuilderTab", "Auto-save skipped: no parent ViewModel");
                 return;
@@ -2632,7 +2632,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var configService = ServiceHelper.GetService<IConfigurationService>();
                 var filterService = ServiceHelper.GetService<IFilterService>();
 
-                if (configService == null || filterService == null)
+                if (configService is null || filterService is null)
                 {
                     DebugLogger.LogError(
                         "VisualBuilderTab",
@@ -3064,7 +3064,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                     // Also update ItemConfig if it exists (for when item gets dropped to zones)
                     if (
-                        _parentViewModel != null
+                        _parentViewModel is not null
                         && _parentViewModel.ItemConfigs.TryGetValue(item.ItemKey, out var config)
                     )
                     {
@@ -3255,7 +3255,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// </summary>
         public void LoadFromParentCollections()
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
             {
                 DebugLogger.Log("VisualBuilderTab", "❌ Cannot load - parent view model is null!");
                 return;
@@ -3276,7 +3276,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                 {
                     var filterItem = CreateFilterItemFromConfig(config);
-                    if (filterItem != null)
+                    if (filterItem is not null)
                     {
                         SelectedMust.Add(filterItem);
                         DebugLogger.Log("VisualBuilderTab", $"Loaded MUST item: {filterItem.Name}");
@@ -3290,7 +3290,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (_parentViewModel.ItemConfigs.TryGetValue(itemKey, out var config))
                 {
                     var filterItem = CreateFilterItemFromConfig(config);
-                    if (filterItem != null)
+                    if (filterItem is not null)
                     {
                         SelectedShould.Add(filterItem);
                         DebugLogger.Log(

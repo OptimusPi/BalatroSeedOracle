@@ -174,7 +174,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void StartFrequencyUpdates()
         {
-            if (_audioManager == null || _updateTask != null)
+            if (_audioManager is null || _updateTask is not null)
                 return;
 
             _updateCancellation = new CancellationTokenSource();
@@ -188,7 +188,7 @@ namespace BalatroSeedOracle.ViewModels
                 try
                 {
                     // Check if audio manager is still available (prevents crash during shutdown)
-                    if (_audioManager == null)
+                    if (_audioManager is null)
                         break;
 
                     var trackName = _trackNames[SelectedTrackIndex];
@@ -246,7 +246,7 @@ namespace BalatroSeedOracle.ViewModels
                 catch (Exception ex)
                 {
                     // Audio manager was disposed during update - exit cleanly
-                    if (_audioManager == null)
+                    if (_audioManager is null)
                         break;
 
                     Helpers.DebugLogger.LogError(
@@ -337,7 +337,7 @@ namespace BalatroSeedOracle.ViewModels
                     var json = File.ReadAllText(filePath);
                     var metadata = JsonSerializer.Deserialize<TrackMetadata>(json, JsonOptions);
 
-                    if (metadata != null)
+                    if (metadata is not null)
                     {
                         // Cancel any pending saves before loading to avoid save loop
                         _saveCancellation?.Cancel();
@@ -479,7 +479,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Find the main window early to get resources
                 var mainWindow = _ownerControl?.FindAncestorOfType<Window>();
-                if (mainWindow == null)
+                if (mainWindow is null)
                 {
                     DebugLogger.LogError(
                         "FrequencyDebugWidget",

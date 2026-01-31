@@ -175,7 +175,7 @@ namespace BalatroSeedOracle.ViewModels
             ProgressText = $"{(int)progress.PercentComplete}%";
 
             // Show notification for completion
-            if (progress.PercentComplete >= 100.0 && _notificationService != null)
+            if (progress.PercentComplete >= 100.0 && _notificationService is not null)
             {
                 _notificationService.ShowSuccess(
                     "Search Complete",

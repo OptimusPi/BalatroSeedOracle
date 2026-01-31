@@ -362,7 +362,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackVolume(string trackName, float volume)
         {
-            if (_audioManager == null)
+            if (_audioManager is null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void ApplyTrackPan(string trackName, float pan)
         {
-            if (_audioManager == null)
+            if (_audioManager is null)
             {
                 DebugLogger.LogError(
                     "MusicMixerWidgetViewModel",
@@ -652,7 +652,7 @@ namespace BalatroSeedOracle.ViewModels
                 var json = File.ReadAllText(MIXER_SETTINGS_FILE);
                 var settings = JsonSerializer.Deserialize<MixerSettings>(json);
 
-                if (settings != null)
+                if (settings is not null)
                 {
                     // Load Drums1
                     Drums1Volume = settings.Drums1.Volume;
@@ -758,7 +758,7 @@ namespace BalatroSeedOracle.ViewModels
                     return;
 
                 var settings = MixerHelper.LoadMixer(selected);
-                if (settings != null)
+                if (settings is not null)
                 {
                     ApplyMixerSettings(settings);
                     DebugLogger.Log("MusicMixerWidgetViewModel", $"Loaded mix '{selected}'");
@@ -789,7 +789,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(selected))
                     return;
                 var target = MixerHelper.LoadMixer(selected);
-                if (target == null)
+                if (target is null)
                     return;
                 _ = AnimateToMixer(target, TimeSpan.FromSeconds(2.0));
             }
@@ -1089,7 +1089,7 @@ namespace BalatroSeedOracle.ViewModels
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
-                if (owner != null)
+                if (owner is not null)
                 {
                     await dialog.ShowDialog(owner);
                 }
@@ -1168,7 +1168,7 @@ namespace BalatroSeedOracle.ViewModels
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
-                if (owner != null)
+                if (owner is not null)
                 {
                     await dialog.ShowDialog(owner);
                 }

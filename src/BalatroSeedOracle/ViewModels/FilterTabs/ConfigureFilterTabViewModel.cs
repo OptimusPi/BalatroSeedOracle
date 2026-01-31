@@ -160,7 +160,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _parentViewModel = parentViewModel;
 
             // Subscribe to parent's property changes
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
                 {
@@ -329,7 +329,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
                         );
-                        if (baseVoucher != null)
+                        if (baseVoucher is not null)
                             organizedVouchers.Add(baseVoucher);
                     }
                     foreach (var (_, upgradeName) in firstSet)
@@ -337,7 +337,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
                         );
-                        if (upgradeVoucher != null)
+                        if (upgradeVoucher is not null)
                             organizedVouchers.Add(upgradeVoucher);
                     }
 
@@ -347,7 +347,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         var baseVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)
                         );
-                        if (baseVoucher != null)
+                        if (baseVoucher is not null)
                             organizedVouchers.Add(baseVoucher);
                     }
                     foreach (var (_, upgradeName) in secondSet)
@@ -355,7 +355,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         var upgradeVoucher = FilteredVouchers.FirstOrDefault(v =>
                             v.Name.Equals(upgradeName, StringComparison.OrdinalIgnoreCase)
                         );
-                        if (upgradeVoucher != null)
+                        if (upgradeVoucher is not null)
                             organizedVouchers.Add(upgradeVoucher);
                     }
 
@@ -442,12 +442,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMust(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             SelectedMust.Add(item);
 
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 if (item is FilterOperatorItem operatorItem)
                 {
@@ -473,12 +473,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void AddToMustNot(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
 
             SelectedMustNot.Add(item);
 
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 if (item is FilterOperatorItem operatorItem)
                 {
@@ -504,10 +504,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMust(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
             SelectedMust.Remove(item);
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMust);
             }
@@ -517,10 +517,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void RemoveFromMustNot(FilterItem? item)
         {
-            if (item == null)
+            if (item is null)
                 return;
             SelectedMustNot.Remove(item);
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 RemoveItemFromParent(item, _parentViewModel.SelectedMustNot);
             }
@@ -533,7 +533,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             ObservableCollection<string> parentCollection
         )
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
                 return;
 
             var itemKey = _parentViewModel
@@ -555,7 +555,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void SyncOperatorToParent(FilterOperatorItem operatorItem, string targetZone)
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
                 return;
 
             DebugLogger.Log(
@@ -589,7 +589,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 _ => null,
             };
 
-            if (targetCollection != null)
+            if (targetCollection is not null)
             {
                 targetCollection.Add(itemKey);
             }
@@ -662,7 +662,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 DebugLogger.Log("ConfigureFilterTab", $"Updated config for item: {itemKey}");
 
                 // Also update parent's ItemConfigs if available
-                if (_parentViewModel != null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
+                if (_parentViewModel is not null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
                 {
                     _parentViewModel.ItemConfigs[itemKey] = config;
                 }
@@ -765,7 +765,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load regular jokers
-                if (BalatroData.Jokers?.Keys != null)
+                if (BalatroData.Jokers?.Keys is not null)
                 {
                     foreach (var jokerName in BalatroData.Jokers.Keys)
                     {
@@ -796,7 +796,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load tags
-                if (BalatroData.Tags?.Keys != null)
+                if (BalatroData.Tags?.Keys is not null)
                 {
                     foreach (var tagName in BalatroData.Tags.Keys)
                     {
@@ -813,7 +813,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load vouchers
-                if (BalatroData.Vouchers?.Keys != null)
+                if (BalatroData.Vouchers?.Keys is not null)
                 {
                     foreach (var voucherName in BalatroData.Vouchers.Keys)
                     {
@@ -830,7 +830,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load tarots
-                if (BalatroData.TarotCards?.Keys != null)
+                if (BalatroData.TarotCards?.Keys is not null)
                 {
                     foreach (var tarotName in BalatroData.TarotCards.Keys)
                     {
@@ -849,7 +849,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load planets
-                if (BalatroData.PlanetCards?.Keys != null)
+                if (BalatroData.PlanetCards?.Keys is not null)
                 {
                     foreach (var planetName in BalatroData.PlanetCards.Keys)
                     {
@@ -868,7 +868,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load spectrals
-                if (BalatroData.SpectralCards?.Keys != null)
+                if (BalatroData.SpectralCards?.Keys is not null)
                 {
                     foreach (var spectralName in BalatroData.SpectralCards.Keys)
                     {
@@ -887,7 +887,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Load bosses
-                if (BalatroData.BossBlinds?.Keys != null)
+                if (BalatroData.BossBlinds?.Keys is not null)
                 {
                     foreach (var bossName in BalatroData.BossBlinds.Keys)
                     {
@@ -1045,7 +1045,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             if (itemIndex >= 0)
             {
                 sourceZone = "MUST";
-                if (_parentViewModel != null && itemIndex < _parentViewModel.SelectedMust.Count)
+                if (_parentViewModel is not null && itemIndex < _parentViewModel.SelectedMust.Count)
                 {
                     itemKeyToRemove = _parentViewModel.SelectedMust[itemIndex];
                 }
@@ -1058,7 +1058,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     sourceZone = "MUSTNOT";
                     if (
-                        _parentViewModel != null
+                        _parentViewModel is not null
                         && itemIndex < _parentViewModel.SelectedMustNot.Count
                     )
                     {
@@ -1068,7 +1068,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
             }
 
-            if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel != null)
+            if (!string.IsNullOrEmpty(itemKeyToRemove) && _parentViewModel is not null)
             {
                 ItemConfigs.Remove(itemKeyToRemove);
                 _parentViewModel.ItemConfigs.Remove(itemKeyToRemove);
@@ -1129,7 +1129,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private async Task PerformAutoSave()
         {
-            if (_parentViewModel == null)
+            if (_parentViewModel is null)
                 return;
 
             try
@@ -1155,7 +1155,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var config = _parentViewModel.BuildConfigFromCurrentState();
                 var configService = ServiceHelper.GetService<IConfigurationService>();
 
-                if (configService == null)
+                if (configService is null)
                     return;
 
                 var filePath = System.IO.Path.Combine(

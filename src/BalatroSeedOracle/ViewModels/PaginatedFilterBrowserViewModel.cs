@@ -40,7 +40,7 @@ namespace BalatroSeedOracle.ViewModels
         // Properties
         public ObservableCollection<FilterBrowserItemViewModel> CurrentPageFilters { get; } = new();
 
-        public bool HasSelectedFilter => SelectedFilter != null;
+        public bool HasSelectedFilter => SelectedFilter is not null;
 
         public string PageIndicatorText => $"Page {_currentPage + 1}/{TotalPages}";
         public string StatusText => $"Total {_allFilters.Count} filters";
@@ -69,7 +69,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private async Task SelectFilter(FilterBrowserItemViewModel? filterViewModel)
         {
-            if (filterViewModel?.FilterBrowserItem != null)
+            if (filterViewModel?.FilterBrowserItem is not null)
             {
                 // Handle CREATE NEW FILTER specially
                 if (filterViewModel.FilterBrowserItem.IsCreateNew)
@@ -78,7 +78,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         var tempPath = await CreateTempFilter();
                         var tempFilter = LoadFilterBrowserItem(tempPath);
-                        if (tempFilter != null)
+                        if (tempFilter is not null)
                         {
                             SelectedFilter = tempFilter;
                             FilterSelected?.Invoke(this, tempFilter);
@@ -164,7 +164,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Try to use the cache service first for performance
                 var filterCache = ServiceHelper.GetService<Services.IFilterCacheService>();
-                if (filterCache != null)
+                if (filterCache is not null)
                 {
                     DebugLogger.Log(
                         "PaginatedFilterBrowserViewModel",
@@ -175,7 +175,7 @@ namespace BalatroSeedOracle.ViewModels
                     foreach (var cached in cachedFilters)
                     {
                         var filterItem = ConvertCachedFilterToBrowserItem(cached);
-                        if (filterItem != null)
+                        if (filterItem is not null)
                         {
                             _allFilters.Add(filterItem);
                         }
@@ -210,7 +210,7 @@ namespace BalatroSeedOracle.ViewModels
                 foreach (var filePath in filterFiles)
                 {
                     var filterItem = LoadFilterBrowserItem(filePath);
-                    if (filterItem != null)
+                    if (filterItem is not null)
                     {
                         _allFilters.Add(filterItem);
                     }
@@ -238,7 +238,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var config = cachedFilter.Config;
-                if (config == null || string.IsNullOrEmpty(config.Name))
+                if (config is null || string.IsNullOrEmpty(config.Name))
                     return null;
 
                 var item = new FilterBrowserItem
@@ -256,19 +256,19 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Parse Must items
-                if (config.Must != null)
+                if (config.Must is not null)
                 {
                     item.Must = ParseItemCollections(config.Must);
                 }
 
                 // Parse Should items
-                if (config.Should != null)
+                if (config.Should is not null)
                 {
                     item.Should = ParseItemCollections(config.Should);
                 }
 
                 // Parse MustNot items
-                if (config.MustNot != null)
+                if (config.MustNot is not null)
                 {
                     item.MustNot = ParseItemCollections(config.MustNot);
                 }
@@ -323,7 +323,7 @@ namespace BalatroSeedOracle.ViewModels
                     );
                 }
                 
-                if (config == null || string.IsNullOrEmpty(config.Name))
+                if (config is null || string.IsNullOrEmpty(config.Name))
                     return null;
 
                 var item = new FilterBrowserItem
@@ -341,19 +341,19 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Parse Must items
-                if (config.Must != null)
+                if (config.Must is not null)
                 {
                     item.Must = ParseItemCollections(config.Must);
                 }
 
                 // Parse Should items
-                if (config.Should != null)
+                if (config.Should is not null)
                 {
                     item.Should = ParseItemCollections(config.Should);
                 }
 
                 // Parse MustNot items
-                if (config.MustNot != null)
+                if (config.MustNot is not null)
                 {
                     item.MustNot = ParseItemCollections(config.MustNot);
                 }
@@ -392,7 +392,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Handle multiple values
-                if (clause.Values != null)
+                if (clause.Values is not null)
                 {
                     foreach (var value in clause.Values)
                     {
@@ -401,7 +401,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // Recursively handle nested And/Or clauses
-                if (clause.Clauses != null && clause.Clauses.Count > 0)
+                if (clause.Clauses is not null && clause.Clauses.Count > 0)
                 {
                     var nestedCollections = ParseItemCollections(
                         clause.Clauses,
@@ -472,7 +472,7 @@ namespace BalatroSeedOracle.ViewModels
                 Suit = clause.Suit,
                 Score = scoreOverride ?? clause.Score,
                 Label = clause.Label,
-                Stickers = clause.Stickers != null ? new List<string>(clause.Stickers) : null,
+                Stickers = clause.Stickers is not null ? new List<string>(clause.Stickers) : null,
             };
 
             switch (itemType)

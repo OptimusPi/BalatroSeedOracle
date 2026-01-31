@@ -11,6 +11,7 @@ using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
+using MotelyJaml;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -114,8 +115,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                var deserializer = new StaticDeserializerBuilder(new MotelyJamlStaticContext())
+                    .WithNamingConvention(NullNamingConvention.Instance)
                     .IgnoreUnmatchedProperties()
                     .Build();
 
@@ -329,7 +330,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             PreviewItems.Clear();
             var spriteService = SpriteService.Instance;
 
-            if (config.Must != null)
+            if (config.Must is not null)
             {
                 foreach (var clause in config.Must)
                 {
@@ -342,7 +343,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     PreviewItems.Add(item);
                 }
             }
-            if (config.Should != null)
+            if (config.Should is not null)
             {
                 foreach (var clause in config.Should)
                 {
@@ -402,7 +403,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             JamlContent = GetDefaultJamlContent();
 
             // Listen for filter name changes from parent to update display
-            if (_parentViewModel != null)
+            if (_parentViewModel is not null)
             {
                 _parentViewModel.PropertyChanged += (s, e) =>
                 {
@@ -427,18 +428,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         [RelayCommand]
         private async Task SyncToVisual()
         {
-            if (HasError || string.IsNullOrWhiteSpace(JamlContent) || _parentViewModel == null)
+            if (HasError || string.IsNullOrWhiteSpace(JamlContent) || _parentViewModel is null)
                 return;
 
             try
             {
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                var deserializer = new StaticDeserializerBuilder(new MotelyJamlStaticContext())
+                    .WithNamingConvention(NullNamingConvention.Instance)
                     .IgnoreUnmatchedProperties()
                     .Build();
 
                 var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
-                if (config == null)
+                if (config is null)
                     return;
 
                 // Load the config into the parent state
@@ -505,7 +506,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     ? desktop.MainWindow
                     : null;
 
-                if (topLevel?.Clipboard != null)
+                if (topLevel?.Clipboard is not null)
                 {
                     await topLevel.Clipboard.SetTextAsync(JamlContent);
                     ValidationStatus = "✓ Copied to clipboard";
@@ -525,7 +526,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (_parentViewModel == null)
+                if (_parentViewModel is null)
                     return;
 
                 // Use the parent's BuildConfigFromCurrentState method - it handles everything properly!

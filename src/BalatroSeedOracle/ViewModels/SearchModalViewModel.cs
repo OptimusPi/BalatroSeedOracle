@@ -200,7 +200,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isDbListVisible = false;
 
         public bool CanMinimizeToDesktopVisible =>
-            _searchContext != null && !string.IsNullOrEmpty(_currentSearchId);
+            _searchContext is not null && !string.IsNullOrEmpty(_currentSearchId);
 
         // WordList index properties for SpinnerControl binding
         [ObservableProperty]
@@ -406,7 +406,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 AddConsoleMessage("Starting search...");
 
-                if (LoadedConfig == null)
+                if (LoadedConfig is null)
                 {
                     AddConsoleMessage(
                         "No filter configuration loaded. Please load a filter first."
@@ -476,10 +476,7 @@ namespace BalatroSeedOracle.ViewModels
                 AddConsoleMessage($"Batch size: {searchCriteria.BatchSize}");
 
                 AddConsoleMessage($"Creating search instance...");
-                var searchInstance = await _searchManager.StartSearchAsync(
-                    searchCriteria,
-                    LoadedConfig
-                );
+                var searchInstance = _searchManager.StartSearch(searchCriteria, LoadedConfig);
                 _searchContext = searchInstance;
                 AddConsoleMessage($"Search instance created successfully!");
 
@@ -515,7 +512,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private bool CanStartSearch()
         {
-            return !IsSearching && LoadedConfig != null;
+            return !IsSearching && LoadedConfig is not null;
         }
 
         [RelayCommand(CanExecute = nameof(CanStopSearch))]
@@ -523,7 +520,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchContext != null)
+                if (_searchContext is not null)
                 {
                     // CRITICAL: Different behavior based on Continue checkbox state
                     bool shouldSaveState = ContinueFromLast;
@@ -593,7 +590,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchContext == null || string.IsNullOrEmpty(_currentSearchId))
+                if (_searchContext is null || string.IsNullOrEmpty(_currentSearchId))
                 {
                     DebugLogger.LogError(
                         "SearchModalViewModel",
@@ -630,7 +627,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool CanMinimizeToDesktop()
         {
             // Can minimize if a search is running or paused
-            return _searchContext != null && !string.IsNullOrEmpty(_currentSearchId);
+            return _searchContext is not null && !string.IsNullOrEmpty(_currentSearchId);
         }
 
         [RelayCommand]
@@ -849,7 +846,7 @@ namespace BalatroSeedOracle.ViewModels
         public void OnNewFilterRequested()
         {
             DebugLogger.Log("SearchModalViewModel", "OnNewFilterRequested called");
-            if (_newFilterRequestedAction != null)
+            if (_newFilterRequestedAction is not null)
             {
                 DebugLogger.Log("SearchModalViewModel", "Invoking new filter requested callback");
                 _newFilterRequestedAction.Invoke();
@@ -972,10 +969,10 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var seeds = string.Join("\n", FilteredResults.Select(r => r.Seed));
-                if (!string.IsNullOrEmpty(seeds) && MainMenu != null)
+                if (!string.IsNullOrEmpty(seeds) && MainMenu is not null)
                 {
                     var clipboard = TopLevel.GetTopLevel(MainMenu)?.Clipboard;
-                    if (clipboard != null)
+                    if (clipboard is not null)
                     {
                         await clipboard.SetTextAsync(seeds);
                         AddConsoleMessage($"Copied {FilteredResults.Count} seeds to clipboard");
@@ -1091,7 +1088,7 @@ namespace BalatroSeedOracle.ViewModels
             );
             DebugLogger.LogImportant(
                 "SearchModalViewModel",
-                $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig != null ? LoadedConfig.Name : "NULL")}"
+                $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig is not null ? LoadedConfig.Name : "NULL")}"
             );
 
             if (string.IsNullOrEmpty(CurrentFilterPath))
@@ -1230,7 +1227,7 @@ namespace BalatroSeedOracle.ViewModels
 
         public void Dispose()
         {
-            if (_searchContext != null)
+            if (_searchContext is not null)
             {
                 _searchContext.SearchStarted -= OnSearchStarted;
                 _searchContext.SearchCompleted -= OnSearchCompleted;
@@ -1243,7 +1240,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand(CanExecute = nameof(CanPauseSearch))]
         private void PauseSearch()
         {
-            if (_searchContext != null && IsSearching)
+            if (_searchContext is not null && IsSearching)
             {
                 _searchContext.PauseSearch();
             }
@@ -1273,7 +1270,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     exportText += $"Seed: {result.Seed}\n";
                     exportText += $"Score: {result.TotalScore}\n";
-                    if (result.Scores != null && result.Scores.Length > 0)
+                    if (result.Scores is not null && result.Scores.Length > 0)
                     {
                         exportText += $"Scores: {string.Join(", ", result.Scores)}\n";
                     }
@@ -1309,7 +1306,7 @@ namespace BalatroSeedOracle.ViewModels
                 _currentSearchId = searchId;
                 _searchContext = _searchManager.GetSearch(searchId);
 
-                if (_searchContext != null)
+                if (_searchContext is not null)
                 {
                     // Subscribe to search events for live updates
                     _searchContext.SearchStarted += OnSearchStarted;
@@ -1371,7 +1368,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private async Task LoadExistingResults()
         {
-            if (_searchContext == null)
+            if (_searchContext is null)
                 return;
 
             _isLoadingResults = true;
@@ -1381,7 +1378,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load results from the search instance using async API
                 var existingResults = await _searchContext.GetResultsPageAsync(0, 1000);
-                if (existingResults != null)
+                if (existingResults is not null)
                 {
                     // Inject tally labels from SearchInstance column names (seed, score, then tallies)
                     var labels =
@@ -1464,7 +1461,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void RefreshSearchStats()
         {
-            if (_searchContext == null)
+            if (_searchContext is null)
                 return;
 
             try
@@ -1506,7 +1503,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void StartStatsRefreshTimer()
         {
-            if (_searchContext == null || !IsSearching)
+            if (_searchContext is null || !IsSearching)
                 return;
 
             // Cancel existing timer if running
@@ -1598,7 +1595,7 @@ namespace BalatroSeedOracle.ViewModels
                         );
                 }
 
-                if (config != null)
+                if (config is not null)
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
@@ -1645,7 +1642,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                var filename = configPath != null ? Path.GetFileName(configPath) : "unknown";
+                var filename = configPath is not null ? Path.GetFileName(configPath) : "unknown";
                 DebugLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load config from '{filename}': {ex.Message}"
@@ -1694,7 +1691,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 // OPTIONAL: Apply search transition if configured (progress-driven shader effects)
-                if (ActiveSearchTransition != null && MainMenu != null)
+                if (ActiveSearchTransition is not null && MainMenu is not null)
                 {
                     // Update transition progress (0-100% → 0.0-1.0)
                     ActiveSearchTransition.CurrentProgress = (float)(e.PercentComplete / 100.0);
@@ -1725,7 +1722,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (
                     canCheckResults
-                    && _searchContext != null
+                    && _searchContext is not null
                     && _searchContext.HasNewResultsSinceLastQuery
                     && !_isLoadingResults
                 )
@@ -1772,7 +1769,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_searchContext == null)
+                if (_searchContext is null)
                     return;
 
                 var existingCount = SearchResults.Count;
@@ -1785,7 +1782,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Acknowledge that we've queried - resets invalidation flag
                 _searchContext.AcknowledgeResultsQueried();
 
-                if (newResults != null && newResults.Count > 0)
+                if (newResults is not null && newResults.Count > 0)
                 {
                     // Inject tally labels from SearchInstance column names (seed, score, then tallies)
                     var labels =
@@ -1859,7 +1856,7 @@ namespace BalatroSeedOracle.ViewModels
                 SearchSpeed = FormatSeedSpeed(seedsPerSecond);
 
                 // Use the search instance for additional stats if available
-                if (_searchContext != null)
+                if (_searchContext is not null)
                 {
                     SeedsProcessed = FormatSeedsCount((long)e.SeedsSearched);
                     TimeElapsed = _searchContext.SearchDuration.ToString(@"hh\:mm\:ss");
@@ -2000,7 +1997,7 @@ namespace BalatroSeedOracle.ViewModels
                     var files = Directory
                         .GetFiles(wordListDir, "*.db")
                         .Select(Path.GetFileName)
-                        .Where(f => f != null)
+                        .Where(f => f is not null)
                         .Cast<string>()
                         .OrderBy(f => f);
 
@@ -2055,7 +2052,7 @@ namespace BalatroSeedOracle.ViewModels
                     var files = Directory
                         .GetFiles(searchResultsDir, "*.db")
                         .Select(Path.GetFileName)
-                        .Where(f => f != null)
+                        .Where(f => f is not null)
                         .Cast<string>()
                         .OrderBy(f => f);
 
@@ -2212,7 +2209,7 @@ namespace BalatroSeedOracle.ViewModels
                 var presets = Helpers.PresetHelper.LoadAllPresets();
                 var preset = presets.FirstOrDefault(p => p.Name == presetName);
 
-                if (preset != null)
+                if (preset is not null)
                 {
                     return preset.ToShaderParameters();
                 }

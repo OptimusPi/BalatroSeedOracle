@@ -155,7 +155,7 @@ namespace BalatroSeedOracle.ViewModels
             foreach (var anteNum in antes)
             {
                 var ante = Antes.FirstOrDefault(a => a.AnteNumber == anteNum);
-                if (ante != null)
+                if (ante is not null)
                 {
                     ante.IsSelected = true;
                 }

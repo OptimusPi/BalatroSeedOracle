@@ -108,7 +108,7 @@ namespace BalatroSeedOracle.ViewModels
                 return;
 
             var suitGroup = CardSuits.FirstOrDefault(g => g.Suit == suit);
-            if (suitGroup != null)
+            if (suitGroup is not null)
             {
                 foreach (var card in suitGroup.Cards)
                 {
@@ -126,7 +126,7 @@ namespace BalatroSeedOracle.ViewModels
             foreach (var suitGroup in CardSuits)
             {
                 var card = suitGroup.Cards.FirstOrDefault(c => c.Rank == rank);
-                if (card != null)
+                if (card is not null)
                 {
                     card.IsSelected = true;
                 }
@@ -164,7 +164,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void ToggleCard(PlayingCardViewModel? card)
         {
-            if (card != null)
+            if (card is not null)
             {
                 card.IsSelected = !card.IsSelected;
             }
@@ -240,7 +240,7 @@ namespace BalatroSeedOracle.ViewModels
                     var suitGroup = CardSuits.FirstOrDefault(g => g.Suit == suit);
                     var card = suitGroup?.Cards.FirstOrDefault(c => c.Rank == rank);
 
-                    if (card != null)
+                    if (card is not null)
                     {
                         card.IsSelected = true;
                     }

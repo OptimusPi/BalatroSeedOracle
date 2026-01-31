@@ -113,7 +113,7 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var profile = await _userProfileService.LoadUserProfileAsync();
-                if (profile != null)
+                if (profile is not null)
                 {
                     DebugLogger.Log("MainWindowViewModel", "User profile loaded successfully");
                 }

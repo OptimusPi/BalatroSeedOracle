@@ -101,7 +101,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void LoadAudioTriggerOptions()
         {
-            if (_triggerService == null)
+            if (_triggerService is null)
             {
                 AudioTriggerOptions = new ObservableCollection<string> { NoneOption };
                 return;
@@ -287,7 +287,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void StartAudioMonitoring()
         {
-            if (_audioUpdateTimer != null)
+            if (_audioUpdateTimer is not null)
                 return;
 
             _audioUpdateTimer = new System.Timers.Timer(16); // ~60 FPS
@@ -302,7 +302,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void StopAudioMonitoring()
         {
-            if (_audioUpdateTimer != null)
+            if (_audioUpdateTimer is not null)
             {
                 _audioUpdateTimer.Stop();
                 _audioUpdateTimer.Dispose();

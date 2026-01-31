@@ -83,7 +83,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private string GetLocalGenieUrl()
         {
-            if (_apiHostService != null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl))
+            if (_apiHostService is not null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl))
                 return _apiHostService.ServerUrl.TrimEnd('/') + "/genie";
             return DefaultLocalGenieApi;
         }
@@ -179,7 +179,7 @@ namespace BalatroSeedOracle.ViewModels
                         out var config,
                         out var parseError
                     )
-                    && config != null
+                    && config is not null
                 )
                 {
                     GeneratedFilterName = config.Name ?? "Generated Filter";
@@ -280,7 +280,7 @@ namespace BalatroSeedOracle.ViewModels
                         GeneratedJson
                     );
 
-                if (config == null)
+                if (config is null)
                 {
                     SetStatus("❌ Failed to parse filter config", "#EF4444");
                     return;
@@ -296,7 +296,7 @@ namespace BalatroSeedOracle.ViewModels
                 };
 
                 // Start the search
-                var searchInstance = await _searchManager.StartSearchAsync(criteria, config);
+                var searchInstance = _searchManager.StartSearch(criteria, config);
 
                 SetStatus($"🔍 Search started: {GeneratedFilterName}", "#22C55E");
             }

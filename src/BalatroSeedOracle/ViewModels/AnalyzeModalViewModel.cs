@@ -61,9 +61,9 @@ namespace BalatroSeedOracle.ViewModels
         public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
 
         public bool HasAnalysisResults =>
-            CurrentAnalysis != null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
+            CurrentAnalysis is not null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
         public string AnalysisHeader =>
-            CurrentAnalysis != null
+            CurrentAnalysis is not null
                 ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
                 : "";
 
@@ -215,7 +215,7 @@ namespace BalatroSeedOracle.ViewModels
                     }
 
                     // Attach ante collection to the current analysis for shared display component
-                    if (CurrentAnalysis != null)
+                    if (CurrentAnalysis is not null)
                     {
                         CurrentAnalysis.Antes = Antes;
                     }

@@ -73,7 +73,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
         }
 
         // Subscribe to service events (only if service exists)
-        if (_apiHostService != null)
+        if (_apiHostService is not null)
         {
             _apiHostService.LogMessage += OnServiceLogMessage;
             _apiHostService.StatusChanged += OnServiceStatusChanged;
@@ -99,7 +99,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private async Task StartServerAsync()
     {
-        if (!IsSupported || IsServerRunning || _apiHostService == null)
+        if (!IsSupported || IsServerRunning || _apiHostService is null)
             return;
 
         try
@@ -123,7 +123,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
     [RelayCommand]
     private async Task StopServerAsync()
     {
-        if (!IsSupported || !IsServerRunning || _apiHostService == null)
+        if (!IsSupported || !IsServerRunning || _apiHostService is null)
             return;
 
         try
@@ -215,7 +215,7 @@ public partial class ApiHostWidgetViewModel : BaseWidgetViewModel
 
     public async Task CleanupAsync()
     {
-        if (_apiHostService != null)
+        if (_apiHostService is not null)
         {
             _apiHostService.LogMessage -= OnServiceLogMessage;
             _apiHostService.StatusChanged -= OnServiceStatusChanged;
