@@ -73,7 +73,7 @@ namespace BalatroSeedOracle.Browser.Services
         {
             try
             {
-                System.Console.WriteLine(message);
+                Console.WriteLine(message);
             }
             catch
             {

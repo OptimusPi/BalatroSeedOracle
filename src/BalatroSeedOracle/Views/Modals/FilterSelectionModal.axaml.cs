@@ -170,7 +170,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Get the parent window
-                var parentWindow = Avalonia.Controls.TopLevel.GetTopLevel(this) as Window;
+                var parentWindow = TopLevel.GetTopLevel(this) as Window;
 
                 if (parentWindow == null)
                 {
@@ -189,7 +189,7 @@ namespace BalatroSeedOracle.Views.Modals
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 SystemDecorations = SystemDecorations.None,
-                Background = Avalonia.Media.Brushes.Transparent,
+                Background = Brushes.Transparent,
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
             };
 
@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.Views.Modals
                 Text = "⚠",
                 FontSize = 32,
                 Foreground = new Avalonia.Media.SolidColorBrush(
-                    Avalonia.Media.Color.Parse("#FF6B6B")
+                    Color.Parse("#FF6B6B")
                 ),
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, 0, 0, 0),
@@ -443,8 +443,7 @@ namespace BalatroSeedOracle.Views.Modals
                 // Check if StorageProvider supports file operations (important for browser)
                 if (!topLevel.StorageProvider.CanOpen)
                 {
-                    await MsBox
-                        .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                    await MessageBoxManager.GetMessageBoxStandard(
                             "Not Supported",
                             "File opening is not supported in this environment."
                         )
@@ -495,8 +494,7 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
 
                 // Show error message to user
-                await MsBox
-                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                await MessageBoxManager.GetMessageBoxStandard(
                         "Error",
                         $"Failed to open file picker: {ex.Message}"
                     )
@@ -615,8 +613,7 @@ namespace BalatroSeedOracle.Views.Modals
                 );
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
 
-                await MsBox
-                    .Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                await MessageBoxManager.GetMessageBoxStandard(
                         "Import Error",
                         $"Failed to import filter: {ex.Message}"
                     )

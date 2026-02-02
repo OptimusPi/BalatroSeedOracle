@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Parse the generated JSON into a MotelyJsonConfig
                 var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                         GeneratedJson
                     );
 

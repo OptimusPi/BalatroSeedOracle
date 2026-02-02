@@ -104,7 +104,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var filtersDir = AppPaths.FiltersDir;
 
-            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+            var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
             var emptyFilter = new Motely.Filters.MotelyJsonConfig
@@ -114,7 +114,7 @@ namespace BalatroSeedOracle.ViewModels
                 Author =
                     ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
                     ?? "Unknown",
-                DateCreated = System.DateTime.UtcNow,
+                DateCreated = DateTime.UtcNow,
                 Must =
                     new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 Should =
@@ -123,11 +123,11 @@ namespace BalatroSeedOracle.ViewModels
                     new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(
+            var json = JsonSerializer.Serialize(
                 emptyFilter,
                 new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
             );
-            await System.IO.File.WriteAllTextAsync(tempPath, json);
+            await File.WriteAllTextAsync(tempPath, json);
 
             return tempPath;
         }
@@ -551,7 +551,7 @@ namespace BalatroSeedOracle.ViewModels
         public void RefreshFilters()
         {
             // CRITICAL FIX: Rescan filesystem FIRST to remove deleted filters from cache
-            var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
+            var filterCache = ServiceHelper.GetService<IFilterCacheService>();
             filterCache?.RefreshCache();
 
             // THEN reload from refreshed cache
@@ -584,7 +584,7 @@ namespace BalatroSeedOracle.ViewModels
         public bool HasConsumables => Must.Consumables.Count > 0 || MustNot.Consumables.Count > 0;
         public bool HasVouchers => Must.Vouchers.Count > 0 || MustNot.Vouchers.Count > 0;
 
-        public string FilterId => System.IO.Path.GetFileNameWithoutExtension(FilePath);
+        public string FilterId => Path.GetFileNameWithoutExtension(FilePath);
         public string AuthorText => $"by {Author}";
         public string DateText => DateCreated.ToString("MMM dd, yyyy");
         public string StatsText =>

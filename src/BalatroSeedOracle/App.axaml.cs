@@ -50,10 +50,10 @@ public partial class App : Application
             if (platformServices is not null)
             {
                 // Initialize DebugLogger with platform services (removes need for #if directives)
-                Helpers.DebugLogger.Initialize(platformServices);
+                DebugLogger.Initialize(platformServices);
 
                 // Initialize AppPaths with platform services (removes need for #if directives)
-                Helpers.AppPaths.Initialize(platformServices);
+                AppPaths.Initialize(platformServices);
 
                 // Ensure required directories exist (platform-specific)
                 if (platformServices.SupportsFileSystem)
@@ -160,7 +160,7 @@ public partial class App : Application
             float t = (float)(elapsed.TotalMilliseconds / minIntro.TotalMilliseconds);
             float p = (1f - (1f - t) * (1f - t)) * 0.95f; // Scale to 95% max
             transitionService.SetProgress(p);
-            await System.Threading.Tasks.Task.Delay(16).ConfigureAwait(false);
+            await Task.Delay(16).ConfigureAwait(false);
         }
     }
 
@@ -272,7 +272,7 @@ public partial class App : Application
             mainWindow.Show();
 
             // Give UI a moment to render and initialize shader
-            await System.Threading.Tasks.Task.Delay(100);
+            await Task.Delay(100);
 
             // Get reference to BalatroMainMenu and its shader background
             var mainMenu = mainWindow.MainMenu;
@@ -289,8 +289,8 @@ public partial class App : Application
             // SMOOTH INTRO TRANSITION - Dark pixelated → Vibrant Balatro
             DebugLogger.LogImportant("App", "Starting SMOOTH intro transition (Dark → Normal)");
 
-            var introParams = Helpers.ShaderPresetHelper.Load("intro");
-            var normalParams = Helpers.ShaderPresetHelper.Load("normal");
+            var introParams = ShaderPresetHelper.Load("intro");
+            var normalParams = ShaderPresetHelper.Load("normal");
 
             // Apply intro state immediately
             ApplyShaderParametersToMainMenu(mainMenu, introParams);
@@ -377,7 +377,7 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
+            var spriteService = SpriteService.Instance;
             var introStart = DateTime.UtcNow;
             var minIntro = TimeSpan.FromSeconds(3.14);
 
@@ -417,7 +417,7 @@ public partial class App : Application
     {
         try
         {
-            var spriteService = BalatroSeedOracle.Services.SpriteService.Instance;
+            var spriteService = SpriteService.Instance;
             await spriteService.PreloadAllSpritesAsync(null);
             DebugLogger.Log("App", "Sprites pre-loaded (no transition)");
         }
@@ -485,7 +485,7 @@ public partial class App : Application
 
         // Register existing singleton services
         services.AddSingleton<BalatroSeedOracle.Services.SpriteService>(provider =>
-            BalatroSeedOracle.Services.SpriteService.Instance
+            SpriteService.Instance
         );
 
         // Register platform-specific services (set by Desktop/Browser Program.cs)

@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.Components
 
         // Expose ShowArrows property to forward to inner PanelSpinner
         public static readonly StyledProperty<bool> ShowArrowsProperty =
-            Avalonia.AvaloniaProperty.Register<DeckSpinner, bool>(
+            AvaloniaProperty.Register<DeckSpinner, bool>(
                 nameof(ShowArrows),
                 defaultValue: true
             );
@@ -29,7 +29,7 @@ namespace BalatroSeedOracle.Components
 
         // Bindable SelectedDeckIndex for MVVM
         public static readonly StyledProperty<int> SelectedDeckIndexProperty =
-            Avalonia.AvaloniaProperty.Register<DeckSpinner, int>(
+            AvaloniaProperty.Register<DeckSpinner, int>(
                 nameof(SelectedDeckIndex),
                 defaultValue: 0,
                 defaultBindingMode: Avalonia.Data.BindingMode.TwoWay
@@ -43,7 +43,7 @@ namespace BalatroSeedOracle.Components
 
         // Bindable StakeIndex for MVVM (updates overlay)
         public static readonly StyledProperty<int> StakeIndexProperty =
-            Avalonia.AvaloniaProperty.Register<DeckSpinner, int>(
+            AvaloniaProperty.Register<DeckSpinner, int>(
                 nameof(StakeIndex),
                 defaultValue: 0
             );

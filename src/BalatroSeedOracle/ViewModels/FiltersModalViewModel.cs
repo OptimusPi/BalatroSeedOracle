@@ -58,9 +58,6 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private MotelyJsonConfig? _loadedConfig;
 
-        // Track original filter criteria hash to detect MUST/SHOULD/MUSTNOT changes
-        private string? _originalCriteriaHash;
-
         // Track original metadata to preserve on save (prevent overwriting author/date)
         private DateTime? _originalDateCreated;
         private string? _originalAuthor;
@@ -97,11 +94,11 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
-        private Motely.MotelyDeck _selectedDeck = Motely.MotelyDeck.Red;
+        private Motely.MotelyDeck _selectedDeck = MotelyDeck.Red;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedStakeIndex))]
-        private Motely.MotelyStake _selectedStake = Motely.MotelyStake.White;
+        private Motely.MotelyStake _selectedStake = MotelyStake.White;
 
         // Tab visibility properties - proper MVVM pattern
         [ObservableProperty]
@@ -183,12 +180,9 @@ namespace BalatroSeedOracle.ViewModels
                 };
         }
 
-        // Deck/Stake display values for spinners
-        public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
-
-        // Generate stake display values from BalatroData (strip " Stake" suffix for display)
-        public string[] StakeDisplayValues { get; } =
-            BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
+        // Deck/Stake display values from Motely enums (single source of truth)
+        public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
+        public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
         // Deck/Stake index helpers
         public int SelectedDeckIndex
@@ -210,14 +204,14 @@ namespace BalatroSeedOracle.ViewModels
                 // Map enum to UI index (0-7)
                 return SelectedStake switch
                 {
-                    Motely.MotelyStake.White => 0,
-                    Motely.MotelyStake.Red => 1,
-                    Motely.MotelyStake.Green => 2,
-                    Motely.MotelyStake.Black => 3,
-                    Motely.MotelyStake.Blue => 4,
-                    Motely.MotelyStake.Purple => 5,
-                    Motely.MotelyStake.Orange => 6,
-                    Motely.MotelyStake.Gold => 7,
+                    MotelyStake.White => 0,
+                    MotelyStake.Red => 1,
+                    MotelyStake.Green => 2,
+                    MotelyStake.Black => 3,
+                    MotelyStake.Blue => 4,
+                    MotelyStake.Purple => 5,
+                    MotelyStake.Orange => 6,
+                    MotelyStake.Gold => 7,
                     _ => 0,
                 };
             }
@@ -226,15 +220,15 @@ namespace BalatroSeedOracle.ViewModels
                 // Map UI index (0-7) to enum
                 SelectedStake = value switch
                 {
-                    0 => Motely.MotelyStake.White,
-                    1 => Motely.MotelyStake.Red,
-                    2 => Motely.MotelyStake.Green,
-                    3 => Motely.MotelyStake.Black,
-                    4 => Motely.MotelyStake.Blue,
-                    5 => Motely.MotelyStake.Purple,
-                    6 => Motely.MotelyStake.Orange,
-                    7 => Motely.MotelyStake.Gold,
-                    _ => Motely.MotelyStake.White,
+                    0 => MotelyStake.White,
+                    1 => MotelyStake.Red,
+                    2 => MotelyStake.Green,
+                    3 => MotelyStake.Black,
+                    4 => MotelyStake.Blue,
+                    5 => MotelyStake.Purple,
+                    6 => MotelyStake.Orange,
+                    7 => MotelyStake.Gold,
+                    _ => MotelyStake.White,
                 };
             }
         }
@@ -320,27 +314,8 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                // Check if MUST/SHOULD/MUSTNOT criteria changed (not just metadata like name/description)
-                var currentHash = ComputeCriteriaHash();
-                var criteriaChanged =
-                    _originalCriteriaHash is null || currentHash != _originalCriteriaHash;
-
-                if (criteriaChanged)
-                {
-                    BsoLogger.LogImportant(
-                        "FiltersModalViewModel",
-                        $"🔄 Filter criteria changed - invalidating databases and dumping to fertilizer.txt"
-                    );
-                    // CRITICAL: Clean up databases BEFORE saving filter with changed criteria
-                    await CleanupFilterDatabases();
-                }
-                else
-                {
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        "📝 Only metadata changed (name/description/notes) - keeping databases intact"
-                    );
-                }
+                // Clean up result DBs for this filter before save (Motely.DB owns the work)
+                await CleanupFilterDatabases();
 
                 var config = BuildConfigFromCurrentState();
                 var success = await _configurationService.SaveFilterAsync(
@@ -351,7 +326,6 @@ namespace BalatroSeedOracle.ViewModels
                 if (success)
                 {
                     LoadedConfig = config;
-                    _originalCriteriaHash = currentHash; // Update hash for next save
                     BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
 
                     // Show notification
@@ -397,194 +371,27 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// CRITICAL: Clean up all DuckDB files and running searches for this filter
-        /// Must be called before saving an edited filter to prevent stale data
+        /// Stop running searches for this filter before save. Database file cleanup is handled elsewhere.
         /// </summary>
         private async Task CleanupFilterDatabases()
         {
             if (string.IsNullOrEmpty(CurrentFilterPath))
                 return;
-
             try
             {
-                // Get filter name from path for database cleanup
                 var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchResultsDir = AppPaths.SearchResultsDir;
-
-                BsoLogger.Log(
-                    "FiltersModalViewModel",
-                    $"🧹 Starting database cleanup for filter: {filterName}"
-                );
-
-                // STEP 1: Stop ALL running searches for this filter across all deck/stake combinations
                 var searchManager = ServiceHelper.GetService<SearchManager>();
                 if (searchManager is not null)
                 {
-                    var stoppedSearches = searchManager.StopSearchesForFilter(filterName);
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"🛑 Stopped {stoppedSearches} running searches for filter"
-                    );
+                    searchManager.StopSearchesForFilter(filterName);
+                    BsoLogger.Log("FiltersModalViewModel", $"Stopped searches for filter: {filterName}");
                 }
-
-                // STEP 2: Dump seeds to fertilizer.txt BEFORE deleting databases
-                if (Directory.Exists(searchResultsDir))
-                {
-                    var dbFiles = Directory.GetFiles(searchResultsDir, $"{filterName}_*.duckdb");
-
-                    // Dump all seeds from all database files to fertilizer.txt
-                    await DumpDatabasesToFertilizerAsync(dbFiles);
-
-                    var walFiles = Directory.GetFiles(
-                        searchResultsDir,
-                        $"{filterName}_*.duckdb.wal"
-                    );
-
-                    var deletedCount = 0;
-
-                    // Delete main database files
-                    foreach (var dbFile in dbFiles)
-                    {
-                        try
-                        {
-                            File.Delete(dbFile);
-                            deletedCount++;
-                            BsoLogger.Log(
-                                "FiltersModalViewModel",
-                                $"🗑️ Deleted: {Path.GetFileName(dbFile)}"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            BsoLogger.LogError(
-                                "FiltersModalViewModel",
-                                $"Failed to delete {dbFile}: {ex.Message}"
-                            );
-                        }
-                    }
-
-                    // Delete WAL files (write-ahead log)
-                    foreach (var walFile in walFiles)
-                    {
-                        try
-                        {
-                            File.Delete(walFile);
-                            deletedCount++;
-                            BsoLogger.Log(
-                                "FiltersModalViewModel",
-                                $"🗑️ Deleted: {Path.GetFileName(walFile)}"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            BsoLogger.LogError(
-                                "FiltersModalViewModel",
-                                $"Failed to delete {walFile}: {ex.Message}"
-                            );
-                        }
-                    }
-
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"🧹 Database cleanup complete - {deletedCount} files deleted"
-                    );
-                }
-
-                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Database cleanup failed: {ex.Message}"
-                );
+                BsoLogger.LogError("FiltersModalViewModel", $"Cleanup failed: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Dumps all seeds from multiple database files to WordLists/fertilizer.txt.
-        /// "Fertilizer" helps new "seeds" grow faster by providing a head start wordlist.
-        /// </summary>
-        private async Task DumpDatabasesToFertilizerAsync(string[] dbFiles)
-        {
-            // DuckDB-WASM works in browser, but file system access doesn't
-            // Browser can still dump to console/logs, just not to files
-            if (dbFiles is null || dbFiles.Length == 0)
-            {
-                BsoLogger.Log("FiltersModalViewModel", "No database files to dump");
-                return;
-            }
-
-            try
-            {
-                // Ensure WordLists directory exists
-                var wordListsDir = AppPaths.WordListsDir;
-
-                var fertilizerPath = Path.Combine(wordListsDir, "fertilizer.txt");
-                var allSeeds = new List<string>();
-
-                // Collect seeds from all database files
-                foreach (var dbFile in dbFiles)
-                {
-                    if (!File.Exists(dbFile))
-                        continue;
-
-                    try
-                    {
-                        using var connection = new DuckDB.NET.Data.DuckDBConnection(
-                            $"Data Source={dbFile}"
-                        );
-                        connection.Open();
-
-                        using var cmd = connection.CreateCommand();
-                        cmd.CommandText = "SELECT seed FROM results ORDER BY seed";
-
-                        using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
-                        while (await reader.ReadAsync().ConfigureAwait(false))
-                        {
-                            var seed = reader.GetString(0);
-                            if (!string.IsNullOrWhiteSpace(seed))
-                            {
-                                allSeeds.Add(seed);
-                            }
-                        }
-
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"🌱 Collected seeds from: {Path.GetFileName(dbFile)}"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        BsoLogger.LogError(
-                            "FiltersModalViewModel",
-                            $"Failed to dump seeds from {Path.GetFileName(dbFile)}: {ex.Message}"
-                        );
-                    }
-                }
-
-                if (allSeeds.Count == 0)
-                {
-                    BsoLogger.Log("FiltersModalViewModel", "No seeds found in databases");
-                    return;
-                }
-
-                // Append all seeds to fertilizer.txt
-                await File.AppendAllLinesAsync(fertilizerPath, allSeeds).ConfigureAwait(false);
-
-                BsoLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"🌱 Dumped {allSeeds.Count} seeds to fertilizer.txt (total file size: {new FileInfo(fertilizerPath).Length} bytes)"
-                );
-            }
-            catch (Exception ex)
-            {
-                BsoLogger.LogError(
-                    "FiltersModalViewModel",
-                    $"Failed to dump databases to fertilizer.txt: {ex.Message}"
-                );
-                // Don't throw - fertilizer dump is a nice-to-have, not critical
-            }
+            await Task.CompletedTask;
         }
 
         [RelayCommand]
@@ -662,7 +469,6 @@ namespace BalatroSeedOracle.ViewModels
                 LoadedConfig = null;
                 FilterName = "";
                 FilterDescription = "";
-                _originalCriteriaHash = null; // New filter has no original criteria
                 BsoLogger.Log("FiltersModalViewModel", "Created new filter");
             }
             catch (Exception ex)
@@ -1052,7 +858,7 @@ namespace BalatroSeedOracle.ViewModels
             // Initialize from BalatroData
             return new Dictionary<string, List<string>>
             {
-                ["Favorites"] = Services.FavoritesService.Instance.GetFavoriteItems(),
+                ["Favorites"] = FavoritesService.Instance.GetFavoriteItems(),
                 ["Jokers"] = new List<string>(BalatroData.Jokers.Keys),
                 ["Tarots"] = new List<string>(BalatroData.TarotCards.Keys),
                 ["Planets"] = new List<string>(BalatroData.PlanetCards.Keys),
@@ -1513,9 +1319,6 @@ namespace BalatroSeedOracle.ViewModels
 
             LoadedConfig = config;
 
-            // Capture criteria hash after loading
-            _originalCriteriaHash = ComputeCriteriaHash();
-
             // CRITICAL FIX: Sync Visual Builder tab collections from loaded data!
             // This populates the SelectedMust/Should/MustNot FilterItem collections
             if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
@@ -1526,63 +1329,6 @@ namespace BalatroSeedOracle.ViewModels
                     "Synced Visual Builder tab from loaded config"
                 );
             }
-        }
-
-        /// <summary>
-        /// Computes SHA256 hash of current MUST/SHOULD/MUSTNOT criteria.
-        /// Only considers filter logic, NOT metadata like name/description/notes.
-        /// Used to detect when filter criteria actually changed vs metadata-only edits.
-        /// </summary>
-        private string ComputeCriteriaHash()
-        {
-            var sb = new StringBuilder();
-
-            // MUST clauses
-            sb.Append("MUST:");
-            foreach (var itemKey in SelectedMust.OrderBy(k => k))
-            {
-                if (ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
-                    sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes is not null)
-                        sb.Append(string.Join(",", config.Antes));
-                    sb.Append("|");
-                }
-            }
-
-            // SHOULD clauses
-            sb.Append("SHOULD:");
-            foreach (var itemKey in SelectedShould.OrderBy(k => k))
-            {
-                if (ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
-                    sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes is not null)
-                        sb.Append(string.Join(",", config.Antes));
-                    sb.Append("|");
-                }
-            }
-
-            // MUSTNOT clauses
-            sb.Append("MUSTNOT:");
-            foreach (var itemKey in SelectedMustNot.OrderBy(k => k))
-            {
-                if (ItemConfigs.TryGetValue(itemKey, out var config))
-                {
-                    sb.Append($"{config.ItemType}|{config.ItemName}|{config.Score}|{config.Min}|");
-                    sb.Append($"{config.Edition}|{config.Label}|");
-                    if (config.Antes is not null)
-                        sb.Append(string.Join(",", config.Antes));
-                    sb.Append("|");
-                }
-            }
-
-            // Compute SHA256 hash
-            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-            var hash = SHA256.HashData(bytes);
-            return Convert.ToHexString(hash);
         }
 
         private ItemConfig ConvertClauseToItemConfig(
@@ -1791,7 +1537,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
-                    var json = await System.IO.File.ReadAllTextAsync(filterPath);
+                    var json = await File.ReadAllTextAsync(filterPath);
                     var config =
                         System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                             json
@@ -1879,18 +1625,18 @@ namespace BalatroSeedOracle.ViewModels
                 try
                 {
                     var directory =
-                        System.IO.Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
-                    var baseName = System.IO.Path.GetFileNameWithoutExtension(originalPath);
-                    var extension = System.IO.Path.GetExtension(originalPath);
+                        Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
+                    var baseName = Path.GetFileNameWithoutExtension(originalPath);
+                    var extension = Path.GetExtension(originalPath);
 
                     // Prefer "(copy)" suffix and append counter if needed
                     string candidateName = $"{baseName} (copy)";
-                    string newPath = System.IO.Path.Combine(directory, candidateName + extension);
+                    string newPath = Path.Combine(directory, candidateName + extension);
                     int counter = 2;
-                    while (System.IO.File.Exists(newPath))
+                    while (File.Exists(newPath))
                     {
                         candidateName = $"{baseName} (copy {counter})";
-                        newPath = System.IO.Path.Combine(directory, candidateName + extension);
+                        newPath = Path.Combine(directory, candidateName + extension);
                         counter++;
                     }
 
@@ -1898,7 +1644,7 @@ namespace BalatroSeedOracle.ViewModels
                     Motely.Filters.MotelyJsonConfig? config = null;
                     try
                     {
-                        var json = await System.IO.File.ReadAllTextAsync(originalPath);
+                        var json = await File.ReadAllTextAsync(originalPath);
                         config =
                             System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                                 json
@@ -1926,12 +1672,12 @@ namespace BalatroSeedOracle.ViewModels
                             ? candidateName
                             : $"{config.Name} (copy)";
                         var newJson = System.Text.Json.JsonSerializer.Serialize(config, options);
-                        await System.IO.File.WriteAllTextAsync(newPath, newJson);
+                        await File.WriteAllTextAsync(newPath, newJson);
                     }
                     else
                     {
                         // Fallback: simple file copy
-                        System.IO.File.Copy(originalPath, newPath, overwrite: false);
+                        File.Copy(originalPath, newPath, overwrite: false);
                     }
 
                     // Refresh list and load the new copy for editing
@@ -1939,7 +1685,7 @@ namespace BalatroSeedOracle.ViewModels
 
                     try
                     {
-                        var newJson = await System.IO.File.ReadAllTextAsync(newPath);
+                        var newJson = await File.ReadAllTextAsync(newPath);
                         var newConfig =
                             System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
                                 newJson
@@ -2031,9 +1777,9 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    if (System.IO.File.Exists(filterPath))
+                    if (File.Exists(filterPath))
                     {
-                        System.IO.File.Delete(filterPath);
+                        File.Delete(filterPath);
                         filterSelector.RefreshFilters();
                         BsoLogger.Log("FiltersModalViewModel", $"Deleted filter: {filterPath}");
                     }
@@ -2088,15 +1834,15 @@ namespace BalatroSeedOracle.ViewModels
         {
             var stake = index switch
             {
-                0 => Motely.MotelyStake.White,
-                1 => Motely.MotelyStake.Red,
-                2 => Motely.MotelyStake.Green,
-                3 => Motely.MotelyStake.Black,
-                4 => Motely.MotelyStake.Blue,
-                5 => Motely.MotelyStake.Purple,
-                6 => Motely.MotelyStake.Orange,
-                7 => Motely.MotelyStake.Gold,
-                _ => Motely.MotelyStake.White,
+                0 => MotelyStake.White,
+                1 => MotelyStake.Red,
+                2 => MotelyStake.Green,
+                3 => MotelyStake.Black,
+                4 => MotelyStake.Blue,
+                5 => MotelyStake.Purple,
+                6 => MotelyStake.Orange,
+                7 => MotelyStake.Gold,
+                _ => MotelyStake.White,
             };
             return stake.ToString().ToLower();
         }

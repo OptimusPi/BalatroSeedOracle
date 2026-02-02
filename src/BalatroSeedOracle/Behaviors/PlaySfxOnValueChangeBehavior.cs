@@ -77,7 +77,7 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnSliderPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == Slider.ValueProperty && _initialized)
+            if (e.Property == Avalonia.Controls.Primitives.RangeBase.ValueProperty && _initialized)
             {
                 if (e.NewValue is double newValue)
                 {

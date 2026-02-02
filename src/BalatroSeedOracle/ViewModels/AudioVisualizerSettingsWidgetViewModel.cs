@@ -1336,7 +1336,7 @@ namespace BalatroSeedOracle.ViewModels
                 AvailablePresetNames.Add("Default Balatro");
 
                 // Load user-created presets from disk
-                var presets = Helpers.PresetHelper.LoadAllPresets();
+                var presets = PresetHelper.LoadAllPresets();
                 foreach (var preset in presets)
                 {
                     if (!string.IsNullOrWhiteSpace(preset.Name))
@@ -1373,7 +1373,7 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 // Log the failure - user needs to know if preset list doesn't refresh
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "AudioVisualizerSettings",
                     $"❌ Failed to refresh shader preset list: {ex.Message}"
                 );
@@ -1625,7 +1625,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "AudioVisualizerSettings",
                     $"❌ Failed to activate intro preset '{value}': {ex.Message}"
                 );
@@ -1640,7 +1640,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "AudioVisualizerSettings",
                     $"❌ Failed to activate normal preset '{value}': {ex.Message}"
                 );
@@ -1807,7 +1807,7 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(textBox);
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
-                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                var owner = Application.Current?.ApplicationLifetime
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
@@ -1885,7 +1885,7 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(combo);
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
-                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                var owner = Application.Current?.ApplicationLifetime
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;

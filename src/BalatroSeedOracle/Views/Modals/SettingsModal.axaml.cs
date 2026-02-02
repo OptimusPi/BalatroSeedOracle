@@ -97,7 +97,7 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Use AppPaths for proper cross-platform user data directory
-                var filtersDir = Helpers.AppPaths.FiltersDir;
+                var filtersDir = AppPaths.FiltersDir;
 
                 // Open the directory in the default file manager
                 if (OperatingSystem.IsWindows())

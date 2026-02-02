@@ -111,7 +111,7 @@ namespace BalatroSeedOracle.Helpers
         {
             try
             {
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     if (filtersContent.ViewModel != null)
                     {
@@ -150,7 +150,7 @@ namespace BalatroSeedOracle.Helpers
                 // Handle desktop icon creation when modal closes with active search
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "ModalHelper",
                         $"Desktop icon requested for config: {cfgPath}"
                     );
@@ -176,7 +176,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "ModalHelper",
                     $"Failed to create SearchModal: {ex}"
                 );
@@ -230,7 +230,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 searchModal.ViewModel.CreateShortcutRequested += (sender, configPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "ModalHelper",
                         $"Desktop icon requested for config: {configPath}"
                     );
@@ -275,7 +275,7 @@ namespace BalatroSeedOracle.Helpers
                 // Handle desktop icon creation when modal closes with active search
                 searchModal.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    BalatroSeedOracle.Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "ModalHelper",
                         $"Desktop icon requested for search: {searchId}"
                     );
@@ -455,7 +455,7 @@ namespace BalatroSeedOracle.Helpers
                 Description = "Created with Filter Designer",
                 Author =
                     ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
-                DateCreated = System.DateTime.UtcNow,
+                DateCreated = DateTime.UtcNow,
                 Must =
                     new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
                 Should =
@@ -504,7 +504,7 @@ namespace BalatroSeedOracle.Helpers
                     config.Author =
                         ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
                         ?? "Unknown";
-                    config.DateCreated = System.DateTime.UtcNow;
+                    config.DateCreated = DateTime.UtcNow;
 
                     var filtersDir = AppPaths.FiltersDir;
                     var clonedPath = System.IO.Path.Combine(filtersDir, $"{config.Name}.json");
@@ -529,7 +529,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (System.Exception ex)
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "ModalHelper",
                     $"Failed to clone filter: {ex.Message}"
                 );
@@ -547,7 +547,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 await searchContent.ViewModel.LoadFilterAsync(configPath);
                 // AUTO-NAVIGATE: Take user to search tab AFTER filter loads!
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     searchContent.ViewModel.SelectedTabIndex = 1;
                 });

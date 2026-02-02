@@ -157,7 +157,7 @@ namespace BalatroSeedOracle.Behaviors
                 // Wait for delay
                 if (Delay > TimeSpan.Zero)
                 {
-                    await System.Threading.Tasks.Task.Delay(Delay);
+                    await Task.Delay(Delay);
                 }
 
                 // Determine which sprite to reveal:

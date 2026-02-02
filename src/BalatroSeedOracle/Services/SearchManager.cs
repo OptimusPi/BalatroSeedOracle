@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using Motely;
-using Motely.DB;
 using Motely.Executors;
 using Motely.Filters;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
@@ -149,7 +149,7 @@ public sealed class SearchManager : IDisposable
 
     /// <summary>
     /// Initialize the SequentialLibrary for search persistence.
-    /// Call this at app startup (Desktop only).
+    /// Call this at app startup (Desktop only). Motely.DB owns the implementation.
     /// </summary>
     public void InitializeLibrary(string seedsPath)
     {
@@ -161,8 +161,16 @@ public sealed class SearchManager : IDisposable
 
         try
         {
-            SequentialLibrary.SetLibraryRoot(seedsPath);
-            DebugLogger.Log("SearchManager", $"SequentialLibrary initialized at: {seedsPath}");
+            var initializer = ServiceHelper.GetService<ISequentialLibraryInitializer>();
+            if (initializer != null)
+            {
+                initializer.SetLibraryRoot(seedsPath);
+                DebugLogger.Log("SearchManager", $"SequentialLibrary initialized at: {seedsPath}");
+            }
+            else
+            {
+                DebugLogger.Log("SearchManager", "SequentialLibrary not available (browser build)");
+            }
         }
         catch (Exception ex)
         {
@@ -173,7 +181,7 @@ public sealed class SearchManager : IDisposable
     /// <summary>
     /// Restore active searches from the SequentialLibrary.
     /// Returns metadata for searches that need UI widgets created.
-    /// Call this at app startup after InitializeLibrary.
+    /// Call this at app startup after InitializeLibrary. Motely.DB owns the implementation.
     /// </summary>
     public async Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
     {
@@ -187,61 +195,15 @@ public sealed class SearchManager : IDisposable
 
         try
         {
-            // Get all search IDs marked as active
-            var activeIds = await MultiSearchManager.Instance.RestoreActiveSearchesAsync();
-            DebugLogger.Log("SearchManager", $"Found {activeIds.Count} active searches to restore");
-
-            foreach (var searchId in activeIds)
+            var provider = ServiceHelper.GetService<IRestoreActiveSearchesProvider>();
+            if (provider == null)
             {
-                try
-                {
-                    var meta = MultiSearchManager.Instance.GetPersistedMeta(searchId);
-                    if (meta is null)
-                    {
-                        DebugLogger.Log("SearchManager", $"No metadata for search: {searchId}");
-                        continue;
-                    }
-
-                    // Try to load the JAML config
-                    var jamlPath = Path.Combine(jamlFiltersDir, $"{meta.JamlFilter}.jaml");
-                    if (!File.Exists(jamlPath))
-                    {
-                        DebugLogger.Log("SearchManager", $"JAML not found: {jamlPath}");
-                        // Mark as inactive since we can't restore
-                        SequentialLibrary.Instance.SetSearchActive(searchId, false);
-                        continue;
-                    }
-
-                    if (!JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out var error) || config is null)
-                    {
-                        DebugLogger.LogError("SearchManager", $"Failed to load JAML: {error}");
-                        SequentialLibrary.Instance.SetSearchActive(searchId, false);
-                        continue;
-                    }
-
-                    // Apply deck/stake from metadata
-                    config.Deck = meta.Deck;
-                    config.Stake = meta.Stake;
-
-                    restored.Add(new RestoredSearchInfo
-                    {
-                        SearchId = searchId,
-                        FilterName = meta.JamlFilter ?? "Unknown",
-                        Deck = meta.Deck ?? "Red",
-                        Stake = meta.Stake ?? "White",
-                        LastSeed = meta.LastSeed,
-                        TotalSeedsProcessed = meta.TotalSeedsProcessed,
-                        TotalMatches = meta.TotalMatches,
-                        Config = config,
-                    });
-
-                    DebugLogger.Log("SearchManager", $"Prepared restoration for: {searchId}");
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("SearchManager", $"Error restoring search {searchId}: {ex.Message}");
-                }
+                DebugLogger.Log("SearchManager", "RestoreActiveSearchesProvider not available (browser build)");
+                return restored;
             }
+
+            restored = await provider.RestoreAsync(jamlFiltersDir).ConfigureAwait(false);
+            DebugLogger.Log("SearchManager", $"Found {restored.Count} active searches to restore");
         }
         catch (Exception ex)
         {
@@ -258,12 +220,15 @@ public sealed class SearchManager : IDisposable
     {
         try
         {
+            if (info.Config is null)
+                return null;
+
             var criteria = new SearchCriteria
             {
                 ThreadCount = threads,
                 BatchSize = 1000,
-                Deck = info.Deck,
-                Stake = info.Stake,
+                Deck = info.Deck ?? "Red",
+                Stake = info.Stake ?? "White",
             };
 
             // Calculate StartBatch from LastSeed if available
@@ -271,7 +236,7 @@ public sealed class SearchManager : IDisposable
             {
                 // Use SeedMath to convert seed to batch index
                 // BatchSize in SearchCriteria is seed digits (1-7), default 3
-                criteria.StartBatch = (ulong)Motely.SeedMath.SeedToBatchIndex(info.LastSeed, criteria.BatchSize) + 1;
+                criteria.StartBatch = (ulong)SeedMath.SeedToBatchIndex(info.LastSeed, criteria.BatchSize) + 1;
             }
 
             var context = StartSearch(criteria, info.Config);

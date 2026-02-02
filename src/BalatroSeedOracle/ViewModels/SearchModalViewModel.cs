@@ -16,7 +16,9 @@ using BalatroSeedOracle.Services;
 using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely;
 using Motely.Filters;
+using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -122,7 +124,7 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 var deckName = DeckDisplayValues[SelectedDeckIndex];
-                return Services.SpriteService.Instance.GetDeckImage(deckName);
+                return SpriteService.Instance.GetDeckImage(deckName);
             }
         }
 
@@ -131,7 +133,7 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 var stakeName = BalatroData.Stakes.Values.ElementAt(SelectedStakeIndex);
-                return Services.SpriteService.Instance.GetStakeImage(stakeName);
+                return SpriteService.Instance.GetStakeImage(stakeName);
             }
         }
 
@@ -140,7 +142,7 @@ namespace BalatroSeedOracle.ViewModels
             get
             {
                 var deckName = DeckDisplayValues[SelectedDeckIndex];
-                if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
+                if (BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
                 {
                     return description;
                 }
@@ -148,12 +150,9 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        // Generate deck display values from BalatroData to ensure order matches
-        public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
-
-        // Generate stake display values from BalatroData (strip " Stake" suffix for display)
-        public string[] StakeDisplayValues { get; } =
-            BalatroData.Stakes.Values.Select(v => v.Replace(" Stake", "")).ToArray();
+        // Deck/Stake display from Motely enums (no " Deck" / " Stake" suffix)
+        public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
+        public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
         [ObservableProperty]
         private string _selectedWordList = "None";
@@ -492,7 +491,7 @@ namespace BalatroSeedOracle.ViewModels
                 AddConsoleMessage($"Search started with ID: {_currentSearchId}");
                 AddConsoleMessage($"Monitoring progress updates...");
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"Search started with ID: {_currentSearchId}"
                 );
@@ -504,7 +503,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsSearching = false;
                 AddConsoleMessage($"Error starting search: {ex.Message}");
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Error starting search: {ex.Message}"
                 );
@@ -530,7 +529,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // PAUSE mode: Save current batch position to DuckDB
                         AddConsoleMessage("Pausing search and saving progress...");
-                        DebugLogger.Log("SearchModalViewModel", "Pausing search (saving state)");
+                        BsoLogger.Log("SearchModalViewModel", "Pausing search (saving state)");
 
                         // The SearchInstance already saves state periodically in OnProgressUpdated
                         // We just need to stop gracefully without clearing the database
@@ -540,7 +539,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // STOP mode: Don't save state, just stop
                         AddConsoleMessage("Stopping search (progress will NOT be saved)...");
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "SearchModalViewModel",
                             "Stopping search (NOT saving state)"
                         );
@@ -575,7 +574,7 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 AddConsoleMessage($"Error stopping search: {ex.Message}");
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Error stopping search: {ex.Message}"
                 );
@@ -594,7 +593,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (_searchContext is null || string.IsNullOrEmpty(_currentSearchId))
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "SearchModalViewModel",
                         "Cannot minimize - no active search instance"
                     );
@@ -603,7 +602,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 var filterName = LoadedConfig?.Name ?? "Unknown Filter";
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"Minimizing search to desktop: SearchID={_currentSearchId}, Filter={filterName}, ConfigPath={CurrentFilterPath}"
                 );
@@ -618,7 +617,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Error minimizing search: {ex.Message}"
                 );
@@ -641,7 +640,7 @@ namespace BalatroSeedOracle.ViewModels
             LastKnownResultCount = 0;
             LatestProgress = null;
             PanelText = "Tip: Results appear below. Use Export to save seeds.";
-            DebugLogger.Log("SearchModalViewModel", "Results cleared");
+            BsoLogger.Log("SearchModalViewModel", "Results cleared");
         }
 
         [RelayCommand]
@@ -652,13 +651,13 @@ namespace BalatroSeedOracle.ViewModels
                 // This would typically show a file dialog
                 // For now, we'll load from the temp location
                 AddConsoleMessage("Filter loading functionality needs UI implementation");
-                DebugLogger.Log("SearchModalViewModel", "Load filter requested");
+                BsoLogger.Log("SearchModalViewModel", "Load filter requested");
                 return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 AddConsoleMessage($"Error loading filter: {ex.Message}");
-                DebugLogger.LogError("SearchModalViewModel", $"Error loading filter: {ex.Message}");
+                BsoLogger.LogError("SearchModalViewModel", $"Error loading filter: {ex.Message}");
                 return Task.CompletedTask;
             }
         }
@@ -667,7 +666,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (value >= 0 && value < DeckDisplayValues.Length)
             {
-                DeckSelection = DeckDisplayValues[value].Replace(" Deck", "");
+                DeckSelection = DeckDisplayValues[value];
                 OnPropertyChanged(nameof(DeckImage));
                 OnPropertyChanged(nameof(DeckDescription));
             }
@@ -757,12 +756,12 @@ namespace BalatroSeedOracle.ViewModels
             {
                 await LoadConfigFromPathAsync(configPath);
                 PanelText =
-                    $"Filter loaded: {LoadedConfig?.Name ?? System.IO.Path.GetFileNameWithoutExtension(configPath)}";
+                    $"Filter loaded: {LoadedConfig?.Name ?? Path.GetFileNameWithoutExtension(configPath)}";
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Error loading filter from path: {ex.Message}"
                 );
@@ -774,7 +773,7 @@ namespace BalatroSeedOracle.ViewModels
             if (!string.IsNullOrEmpty(tabName))
             {
                 // CurrentActiveTab removed - using proper TabControl SelectedIndex binding
-                DebugLogger.Log("SearchModalViewModel", $"Switched to tab: {tabName}");
+                BsoLogger.Log("SearchModalViewModel", $"Switched to tab: {tabName}");
             }
         }
 
@@ -796,7 +795,7 @@ namespace BalatroSeedOracle.ViewModels
         [RelayCommand]
         private void Close()
         {
-            DebugLogger.Log("SearchModalViewModel", "Closing modal");
+            BsoLogger.Log("SearchModalViewModel", "Closing modal");
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
@@ -830,7 +829,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void SetNewFilterRequestedCallback(Action callback)
         {
-            DebugLogger.Log("SearchModalViewModel", "SetNewFilterRequestedCallback called");
+            BsoLogger.Log("SearchModalViewModel", "SetNewFilterRequestedCallback called");
             _newFilterRequestedAction = callback;
         }
 
@@ -847,15 +846,15 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public void OnNewFilterRequested()
         {
-            DebugLogger.Log("SearchModalViewModel", "OnNewFilterRequested called");
+            BsoLogger.Log("SearchModalViewModel", "OnNewFilterRequested called");
             if (_newFilterRequestedAction is not null)
             {
-                DebugLogger.Log("SearchModalViewModel", "Invoking new filter requested callback");
+                BsoLogger.Log("SearchModalViewModel", "Invoking new filter requested callback");
                 _newFilterRequestedAction.Invoke();
             }
             else
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     "New filter requested action is null!"
                 );
@@ -887,7 +886,7 @@ namespace BalatroSeedOracle.ViewModels
                     break;
             }
 
-            DebugLogger.Log("SearchModalViewModel", $"Switched to tab {tabIndex}");
+            BsoLogger.Log("SearchModalViewModel", $"Switched to tab {tabIndex}");
         }
 
         /// <summary>
@@ -931,14 +930,14 @@ namespace BalatroSeedOracle.ViewModels
             ConsoleText = "> Motely Search Console\n> Ready to search...\n";
             ConsoleOutput.Clear();
             _consoleBuffer.Clear();
-            DebugLogger.Log("SearchModalViewModel", "Console cleared");
+            BsoLogger.Log("SearchModalViewModel", "Console cleared");
         }
 
         [RelayCommand]
         private void RefreshResults()
         {
             FilterResults();
-            DebugLogger.Log("SearchModalViewModel", "Results refreshed");
+            BsoLogger.Log("SearchModalViewModel", "Results refreshed");
         }
 
         [RelayCommand]
@@ -950,7 +949,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 FilteredResults.Add(result);
             }
-            DebugLogger.Log("SearchModalViewModel", "Results sorted by seed");
+            BsoLogger.Log("SearchModalViewModel", "Results sorted by seed");
         }
 
         [RelayCommand]
@@ -962,7 +961,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 FilteredResults.Add(result);
             }
-            DebugLogger.Log("SearchModalViewModel", "Results sorted by score");
+            BsoLogger.Log("SearchModalViewModel", "Results sorted by score");
         }
 
         [RelayCommand]
@@ -978,7 +977,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         await clipboard.SetTextAsync(seeds);
                         AddConsoleMessage($"Copied {FilteredResults.Count} seeds to clipboard");
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "SearchModalViewModel",
                             $"Copied {FilteredResults.Count} seeds to clipboard"
                         );
@@ -987,7 +986,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Failed to copy seeds: {ex.Message}");
+                BsoLogger.LogError("SearchModalViewModel", $"Failed to copy seeds: {ex.Message}");
             }
         }
 
@@ -1034,7 +1033,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
                 PanelText = $"Search complete: {ResultsCount} seeds";
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"Search completed with {ResultsCount} results"
                 );
@@ -1070,14 +1069,14 @@ namespace BalatroSeedOracle.ViewModels
             if (string.IsNullOrEmpty(CurrentFilterPath))
                 return string.Empty;
 
-            var filterName = System.IO.Path.GetFileNameWithoutExtension(CurrentFilterPath);
+            var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
             var normalizedFilterName = filterName?.Replace(" ", "_") ?? "unknown";
 
             // Use the current deck/stake selection, defaulting to "Red" and "White"
             var deck =
                 string.IsNullOrEmpty(DeckSelection) || DeckSelection == "All Decks"
                     ? "Red"
-                    : DeckSelection.Replace(" Deck", "");
+                    : DeckSelection;
             var stake =
                 string.IsNullOrEmpty(StakeSelection) || StakeSelection == "All Stakes"
                     ? "White"
@@ -1096,23 +1095,23 @@ namespace BalatroSeedOracle.ViewModels
                 return string.Empty;
 
             var searchResultsDir = AppPaths.SearchResultsDir;
-            return System.IO.Path.Combine(searchResultsDir, $"{searchId}.db");
+            return Path.Combine(searchResultsDir, $"{searchId}.db");
         }
 
         private async Task<SearchCriteria> BuildSearchCriteriaAsync()
         {
-            DebugLogger.LogImportant(
+            BsoLogger.LogImportant(
                 "SearchModalViewModel",
                 $"🔍 BuildSearchCriteria - CurrentFilterPath value: '{CurrentFilterPath}'"
             );
-            DebugLogger.LogImportant(
+            BsoLogger.LogImportant(
                 "SearchModalViewModel",
                 $"🔍 BuildSearchCriteria - LoadedConfig: {(LoadedConfig is not null ? LoadedConfig.Name : "NULL")}"
             );
 
             if (string.IsNullOrEmpty(CurrentFilterPath))
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     "❌ CurrentFilterPath is NULL or EMPTY in BuildSearchCriteria!"
                 );
@@ -1121,7 +1120,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
             }
 
-            DebugLogger.Log(
+            BsoLogger.Log(
                 "SearchModalViewModel",
                 $"✅ Using CurrentFilterPath: {CurrentFilterPath}"
             );
@@ -1275,7 +1274,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (SearchResults.Count == 0)
                 {
-                    DebugLogger.Log("SearchModalViewModel", "No results to export");
+                    BsoLogger.Log("SearchModalViewModel", "No results to export");
                     return;
                 }
 
@@ -1299,17 +1298,17 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Save to file
                 var fileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-                var filePath = System.IO.Path.Combine(
+                var filePath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                     fileName
                 );
 
-                await System.IO.File.WriteAllTextAsync(filePath, exportText);
-                DebugLogger.Log("SearchModalViewModel", $"Results exported to: {filePath}");
+                await File.WriteAllTextAsync(filePath, exportText);
+                BsoLogger.Log("SearchModalViewModel", $"Results exported to: {filePath}");
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("SearchModalViewModel", $"Export failed: {ex.Message}");
+                BsoLogger.LogError("SearchModalViewModel", $"Export failed: {ex.Message}");
             }
         }
 
@@ -1339,7 +1338,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (!string.IsNullOrEmpty(_searchContext.ConfigPath))
                     {
                         CurrentFilterPath = _searchContext.ConfigPath;
-                        DebugLogger.Log(
+                        BsoLogger.Log(
                             "SearchModalViewModel",
                             $"✅ CurrentFilterPath restored from search instance: {CurrentFilterPath}"
                         );
@@ -1360,7 +1359,7 @@ namespace BalatroSeedOracle.ViewModels
                     // Switch to Results tab to show the reconnected search
                     SelectedTabIndex = 1; // Results tab (0=Search, 1=Results)
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Successfully reconnected to search: {searchId}, Running: {_searchContext?.IsRunning ?? false}, Results: {SearchResults.Count}"
                     );
@@ -1369,7 +1368,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "SearchModalViewModel",
                         $"Search instance not found: {searchId}"
                     );
@@ -1377,7 +1376,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to connect to existing search: {ex.Message}"
                 );
@@ -1407,7 +1406,7 @@ namespace BalatroSeedOracle.ViewModels
                             ? _searchContext.ColumnNames.Skip(2).ToArray()
                             : Array.Empty<string>();
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Loading {existingResults.Count} results with {labels.Length} tally columns"
                     );
@@ -1441,7 +1440,7 @@ namespace BalatroSeedOracle.ViewModels
                                 )
                                 {
                                     tab.ForceRefreshResults(SearchResults);
-                                    DebugLogger.Log(
+                                    BsoLogger.Log(
                                         "SearchModalViewModel",
                                         "Forced grid refresh after loading results"
                                     );
@@ -1449,7 +1448,7 @@ namespace BalatroSeedOracle.ViewModels
                             }
                             catch (Exception gridEx)
                             {
-                                DebugLogger.LogError(
+                                BsoLogger.LogError(
                                     "SearchModalViewModel",
                                     $"Failed to refresh grid: {gridEx.Message}"
                                 );
@@ -1458,14 +1457,14 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"Loaded {SearchResults.Count} existing results"
                 );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load existing results: {ex.Message}"
                 );
@@ -1499,7 +1498,7 @@ namespace BalatroSeedOracle.ViewModels
                 OnPropertyChanged(nameof(ProgressText));
                 OnPropertyChanged(nameof(ResultsCount));
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"🔄 RECONNECTED to search - Running: {IsSearching}, Results: {LastKnownResultCount}"
                 );
@@ -1509,7 +1508,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to refresh search stats: {ex.Message}"
                 );
@@ -1576,14 +1575,14 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                DebugLogger.LogImportant(
+                BsoLogger.LogImportant(
                     "SearchModalViewModel",
                     $"🔍 LoadConfigFromPathAsync called with: {configPath}"
                 );
 
                 if (!await _platformServices.FileExistsAsync(configPath))
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "SearchModalViewModel",
                         $"❌ Filter file not found: {configPath}"
                     );
@@ -1601,7 +1600,7 @@ namespace BalatroSeedOracle.ViewModels
                         config = jamlConfig;
                     else
                     {
-                        DebugLogger.LogError(
+                        BsoLogger.LogError(
                             "SearchModalViewModel",
                             $"JAML parse error: {jamlError ?? "Unknown"}"
                         );
@@ -1620,7 +1619,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     LoadedConfig = config;
                     CurrentFilterPath = configPath; // CRITICAL: Store the path for the search!
-                    DebugLogger.LogImportant(
+                    BsoLogger.LogImportant(
                         "SearchModalViewModel",
                         $"✅ CurrentFilterPath SET TO: {CurrentFilterPath}"
                     );
@@ -1631,7 +1630,7 @@ namespace BalatroSeedOracle.ViewModels
                         DeckSelection = config.Deck;
                         SelectedDeckIndex = Array.FindIndex(
                             DeckDisplayValues,
-                            d => d.Contains(config.Deck.Replace(" Deck", ""))
+                            d => string.Equals(d, config.Deck, StringComparison.OrdinalIgnoreCase)
                         );
                     }
 
@@ -1644,7 +1643,7 @@ namespace BalatroSeedOracle.ViewModels
                         );
                     }
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})"
                     );
@@ -1655,7 +1654,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.LogError(
+                    BsoLogger.LogError(
                         "SearchModalViewModel",
                         "Failed to deserialize filter config"
                     );
@@ -1664,7 +1663,7 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 var filename = configPath is not null ? Path.GetFileName(configPath) : "unknown";
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load config from '{filename}': {ex.Message}"
                 );
@@ -1677,7 +1676,7 @@ namespace BalatroSeedOracle.ViewModels
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 IsSearching = true;
-                DebugLogger.Log("SearchModalViewModel", "Search started");
+                BsoLogger.Log("SearchModalViewModel", "Search started");
                 // TODO AFTER pifreak configures the visualizer THEN we can make the search mode audio!
             });
         }
@@ -1728,7 +1727,7 @@ namespace BalatroSeedOracle.ViewModels
                         }
                         catch (Exception ex)
                         {
-                            DebugLogger.LogError(
+                            BsoLogger.LogError(
                                 "SearchModalViewModel",
                                 $"Failed to apply search transition: {ex.Message}"
                             );
@@ -1779,7 +1778,7 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 // Event handlers must catch all exceptions - async void can't be awaited
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Error in OnProgressUpdated: {ex.Message}"
                 );
@@ -1831,7 +1830,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load live results: {ex.Message}"
                 );
@@ -2035,14 +2034,14 @@ namespace BalatroSeedOracle.ViewModels
                         SelectedWordListIndex = 0;
                     }
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Loaded {AvailableWordLists.Count} word lists"
                     );
                 }
                 else
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"WordLists directory not found: {wordListDir}"
                     );
@@ -2050,7 +2049,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load wordlists: {ex.Message}"
                 );
@@ -2090,14 +2089,14 @@ namespace BalatroSeedOracle.ViewModels
                         SelectedDbListIndex = 0;
                     }
 
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Loaded {AvailableDbLists.Count} DB lists"
                     );
                 }
                 else
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"SearchResults directory not found: {searchResultsDir}"
                     );
@@ -2105,7 +2104,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load DB lists: {ex.Message}"
                 );
@@ -2174,7 +2173,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (!settings.EnableSearchTransition)
                 {
                     ActiveSearchTransition = null;
-                    DebugLogger.Log("SearchModalViewModel", "Search transitions disabled by user");
+                    BsoLogger.Log("SearchModalViewModel", "Search transitions disabled by user");
                     return;
                 }
 
@@ -2196,14 +2195,14 @@ namespace BalatroSeedOracle.ViewModels
                     CurrentProgress = 0f,
                 };
 
-                DebugLogger.Log(
+                BsoLogger.Log(
                     "SearchModalViewModel",
                     $"Search transition configured: Start='{settings.SearchTransitionStartPresetName ?? "Default Balatro"}', End='{settings.SearchTransitionEndPresetName ?? "Default Balatro"}'"
                 );
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to configure search transition: {ex.Message}"
                 );
@@ -2220,14 +2219,14 @@ namespace BalatroSeedOracle.ViewModels
             if (string.IsNullOrWhiteSpace(presetName) || presetName == "Default Balatro")
             {
                 return isDarkPreset
-                    ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
-                    : Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+                    ? VisualizerPresetExtensions.CreateDefaultIntroParameters()
+                    : VisualizerPresetExtensions.CreateDefaultNormalParameters();
             }
 
             // Try to load custom preset from disk
             try
             {
-                var presets = Helpers.PresetHelper.LoadAllPresets();
+                var presets = PresetHelper.LoadAllPresets();
                 var preset = presets.FirstOrDefault(p => p.Name == presetName);
 
                 if (preset is not null)
@@ -2236,24 +2235,24 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    DebugLogger.Log(
+                    BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Preset '{presetName}' not found, using defaults"
                     );
                     return isDarkPreset
-                        ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
-                        : Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+                        ? VisualizerPresetExtensions.CreateDefaultIntroParameters()
+                        : VisualizerPresetExtensions.CreateDefaultNormalParameters();
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to load preset '{presetName}': {ex.Message}"
                 );
                 return isDarkPreset
-                    ? Extensions.VisualizerPresetExtensions.CreateDefaultIntroParameters()
-                    : Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+                    ? VisualizerPresetExtensions.CreateDefaultIntroParameters()
+                    : VisualizerPresetExtensions.CreateDefaultNormalParameters();
             }
         }
 
@@ -2289,7 +2288,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
+                BsoLogger.LogError(
                     "SearchModalViewModel",
                     $"Failed to apply shader parameters: {ex.Message}"
                 );

@@ -24,7 +24,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IAudioManager? _audioManager;
         private static readonly string MIXER_SETTINGS_DIR = AppPaths.MixerSettingsDir;
 
-        private static readonly string MIXER_SETTINGS_FILE = System.IO.Path.Combine(
+        private static readonly string MIXER_SETTINGS_FILE = Path.Combine(
             MIXER_SETTINGS_DIR,
             "mixer_settings.json"
         );
@@ -1032,8 +1032,8 @@ namespace BalatroSeedOracle.ViewModels
                 };
                 var buttons = new StackPanel
                 {
-                    Orientation = Avalonia.Layout.Orientation.Horizontal,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
                     Spacing = 10,
                 };
 
@@ -1085,7 +1085,7 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
 
-                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                var owner = Application.Current?.ApplicationLifetime
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
@@ -1133,8 +1133,8 @@ namespace BalatroSeedOracle.ViewModels
                 };
                 var buttons = new StackPanel
                 {
-                    Orientation = Avalonia.Layout.Orientation.Horizontal,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
                     Spacing = 10,
                 };
                 var cancelBtn = new Button
@@ -1164,7 +1164,7 @@ namespace BalatroSeedOracle.ViewModels
                 panel.Children.Add(combo);
                 panel.Children.Add(buttons);
                 dialog.Content = panel;
-                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                var owner = Application.Current?.ApplicationLifetime
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;

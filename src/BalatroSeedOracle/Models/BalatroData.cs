@@ -459,7 +459,7 @@ namespace BalatroSeedOracle.Models
 
         static void InitializeCompatibilityCollections()
         {
-            BalatroSeedOracle.Helpers.DebugLogger.Log("Initializing compatibility collections...");
+            Helpers.DebugLogger.Log("Initializing compatibility collections...");
             // Initialize LegendaryJokers
             foreach (var joker in Enum.GetValues<MotelyJokerLegendary>())
             {

@@ -173,7 +173,7 @@ namespace BalatroSeedOracle.Services
                         if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                         {
                             if (
-                                Motely.Filters.MotelyJsonConfig.TryLoadFromJsonFile(
+                                MotelyJsonConfig.TryLoadFromJsonFile(
                                     filePath,
                                     out var config
                                 )
@@ -203,7 +203,7 @@ namespace BalatroSeedOracle.Services
             }
             else
             {
-                var filtersDir = Helpers.AppPaths.FiltersDir;
+                var filtersDir = AppPaths.FiltersDir;
                 return Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
             }
         }
@@ -218,7 +218,7 @@ namespace BalatroSeedOracle.Services
             }
             else
             {
-                return Helpers.AppPaths.FiltersDir;
+                return AppPaths.FiltersDir;
             }
         }
 

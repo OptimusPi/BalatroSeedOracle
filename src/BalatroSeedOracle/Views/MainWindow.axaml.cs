@@ -123,7 +123,7 @@ public partial class MainWindow : Window
 
             // First ensure any running search state is saved
             var userProfileService =
-                BalatroSeedOracle.Helpers.ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
+                ServiceHelper.GetService<BalatroSeedOracle.Services.UserProfileService>();
             if (userProfileService is not null)
             {
                 DebugLogger.LogImportant(

@@ -129,7 +129,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             get
             {
-                var sprites = Services.SpriteService.Instance;
+                var sprites = SpriteService.Instance;
                 var deckName = _parentViewModel.SelectedDeck.ToString();
                 var stakeName =
                     StakeDisplayValues.ElementAtOrDefault(SelectedStakeIndex) ?? "White";

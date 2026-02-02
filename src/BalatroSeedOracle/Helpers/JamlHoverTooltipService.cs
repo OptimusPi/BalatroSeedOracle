@@ -237,7 +237,7 @@ namespace BalatroSeedOracle.Helpers
                             {
                                 Foreground = Brushes.White,
                                 FontSize = 12,
-                                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                                TextWrapping = TextWrapping.Wrap,
                                 MaxWidth = 300,
                             },
                     },

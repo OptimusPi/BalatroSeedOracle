@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Services
 
         private FavoritesService()
         {
-            _favoritesPath = Path.Combine(Helpers.AppPaths.DataRootDir, "favorites.json");
+            _favoritesPath = Path.Combine(AppPaths.DataRootDir, "favorites.json");
 
             LoadFavorites();
             InitializeDefaultSets();

@@ -679,7 +679,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Just call sync version directly - it's fast enough
                 LoadGameData();
 
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     ApplyFilter();
                     IsLoading = false;
@@ -693,7 +693,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     $"❌ Error loading game data: {ex.Message}"
                 );
 
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
                 });
@@ -705,9 +705,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void LoadGameData()
         {
             // Identical to VisualBuilderTabViewModel - load all game items
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(LoadGameData);
+                Dispatcher.UIThread.Post(LoadGameData);
                 return;
             }
 
@@ -918,9 +918,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private void ApplyFilter()
         {
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(ApplyFilter);
+                Dispatcher.UIThread.Post(ApplyFilter);
                 return;
             }
 

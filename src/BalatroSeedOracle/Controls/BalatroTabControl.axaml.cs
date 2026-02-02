@@ -72,7 +72,7 @@ namespace BalatroSeedOracle.Controls
             AvaloniaPropertyChangedEventArgs e
         )
         {
-            if (e.Property == TabControl.SelectedIndexProperty)
+            if (e.Property == SelectingItemsControl.SelectedIndexProperty)
             {
                 UpdateTrianglePosition();
             }

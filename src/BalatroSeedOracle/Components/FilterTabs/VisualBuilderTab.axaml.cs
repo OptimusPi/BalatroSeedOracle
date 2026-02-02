@@ -1032,7 +1032,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         // Users must drag operator back to top shelf to edit it
                         var targetOperator = FindOperatorAtPosition(cursorPos, zoneName, vm);
 
-                        if (targetOperator != null && _draggedItem is not Models.FilterOperatorItem)
+                        if (targetOperator != null && _draggedItem is not FilterOperatorItem)
                         {
                             // IMPORTANT: Only allow drops into TOP SHELF unified operator
                             // Operators already in drop zones are READ-ONLY to prevent accidental "disappearing" items
@@ -1509,7 +1509,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Background =
                         darkBg
                         ?? new Avalonia.Media.SolidColorBrush(
-                            Avalonia.Media.Color.FromRgb(45, 54, 59)
+                            Color.FromRgb(45, 54, 59)
                         ),
                     Title = "Start Over?",
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
@@ -1523,14 +1523,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
                     FontSize = 16,
                     Foreground = white,
-                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center,
                 };
 
                 var buttonPanel = new StackPanel
                 {
-                    Orientation = Avalonia.Layout.Orientation.Horizontal,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
                     Spacing = 15,
                 };
 
@@ -1542,8 +1542,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     FontSize = 16,
                     Background = modalGrey,
                     Foreground = white,
-                    HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
                 };
 
                 var confirmButton = new Button
@@ -1554,8 +1554,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     FontSize = 16,
                     Background = red,
                     Foreground = white,
-                    HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
                 };
 
                 cancelButton.Click += (s, ev) => dialog.Close();
@@ -1588,7 +1588,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                 dialog.Content = panel;
 
-                var owner = Avalonia.Application.Current?.ApplicationLifetime
+                var owner = Application.Current?.ApplicationLifetime
                     is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                     ? desktop.MainWindow
                     : null;
@@ -1703,7 +1703,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Seal overlay (purple, gold, red, blue - for StandardCards)
                     if (!string.IsNullOrEmpty(item?.Seal) && item.Seal != "None")
                     {
-                        var sealImage = Services.SpriteService.Instance.GetSealImage(
+                        var sealImage = SpriteService.Instance.GetSealImage(
                             item.Seal.ToLowerInvariant()
                         );
                         if (sealImage != null)
@@ -1890,7 +1890,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 {
                     var fakePointerArgs = new PointerPressedEventArgs(
                         cardContent,
-                        new Avalonia.Input.Pointer(0, Avalonia.Input.PointerType.Mouse, true),
+                        new Avalonia.Input.Pointer(0, PointerType.Mouse, true),
                         _topLevel,
                         new Avalonia.Point(35, 47), // Center of the card
                         (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),

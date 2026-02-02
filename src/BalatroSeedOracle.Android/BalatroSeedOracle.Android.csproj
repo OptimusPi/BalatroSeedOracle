@@ -14,6 +14,8 @@
     <AndroidSdkDirectory>$(LOCALAPPDATA)\Android\android-sdk</AndroidSdkDirectory>
 
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <!-- Disable AOT for Release: Mono AOT hits arm64-codegen assertion (arm_is_disp19) when precompiling Motely.dll -->
+    <RunAOTCompilation Condition="'$(Configuration)' == 'Release'">false</RunAOTCompilation>
     <!-- Suppress 16KB page size warnings until libraries are updated -->
     <NoWarn>$(NoWarn);XA0141</NoWarn>
   </PropertyGroup>

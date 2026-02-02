@@ -47,11 +47,11 @@ namespace BalatroSeedOracle.Helpers
             var list = new System.Collections.Generic.List<string>();
             try
             {
-                if (!System.IO.Directory.Exists(Dir))
+                if (!Directory.Exists(Dir))
                     return list;
-                foreach (var f in System.IO.Directory.GetFiles(Dir, "*.json"))
+                foreach (var f in Directory.GetFiles(Dir, "*.json"))
                 {
-                    var name = System.IO.Path.GetFileNameWithoutExtension(f);
+                    var name = Path.GetFileNameWithoutExtension(f);
                     if (name.Equals("intro", System.StringComparison.OrdinalIgnoreCase))
                         continue;
                     if (name.Equals("normal", System.StringComparison.OrdinalIgnoreCase))
@@ -72,20 +72,20 @@ namespace BalatroSeedOracle.Helpers
 
         public static void Activate(string role, string name)
         {
-            var roleFile = System.IO.Path.Combine(Dir, role.ToLowerInvariant() + ".json");
+            var roleFile = Path.Combine(Dir, role.ToLowerInvariant() + ".json");
             if (
                 string.IsNullOrWhiteSpace(name)
                 || name.Equals("Default", System.StringComparison.OrdinalIgnoreCase)
             )
             {
-                if (System.IO.File.Exists(roleFile))
-                    System.IO.File.Delete(roleFile);
+                if (File.Exists(roleFile))
+                    File.Delete(roleFile);
                 return;
             }
-            var srcFile = System.IO.Path.Combine(Dir, name + ".json");
-            if (!System.IO.File.Exists(srcFile))
+            var srcFile = Path.Combine(Dir, name + ".json");
+            if (!File.Exists(srcFile))
                 return;
-            System.IO.File.Copy(srcFile, roleFile, true);
+            File.Copy(srcFile, roleFile, true);
         }
     }
 }

@@ -271,21 +271,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         // Button icon images
         public IImage? DebuffedIconImage =>
-            Services.SpriteService.Instance.GetEditionImage("debuffed");
+            SpriteService.Instance.GetEditionImage("debuffed");
         public IImage? NegativeEditionImage =>
             SelectedMainCategory == "StandardCard"
-                ? Services.SpriteService.Instance.GetEditionImage("negative") // Edition overlay for cards
-                : Services.SpriteService.Instance.GetJokerImage("Joker", edition: "negative"); // Negative joker sprite
+                ? SpriteService.Instance.GetEditionImage("negative") // Edition overlay for cards
+                : SpriteService.Instance.GetJokerImage("Joker", edition: "negative"); // Negative joker sprite
 
         // Base image for edition buttons - 10 of Spades for Standard Cards, joker for Jokers
         public IImage? EditionBaseImage =>
             SelectedMainCategory == "StandardCard"
                 ? TenOfSpadesImage
-                : Services.SpriteService.Instance.GetJokerImage("Joker");
+                : SpriteService.Instance.GetJokerImage("Joker");
 
         // 10 of Spades card image for seal/edition buttons
         public IImage? TenOfSpadesImage =>
-            Services.SpriteService.Instance.GetPlayingCardImage("Spades", "10");
+            SpriteService.Instance.GetPlayingCardImage("Spades", "10");
 
         // Preferred Deck/Stake selection for previews
         [ObservableProperty]
@@ -981,11 +981,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item is null)
             {
-                Helpers.DebugLogger.Log("AddToMust", "Item is null, returning");
+                DebugLogger.Log("AddToMust", "Item is null, returning");
                 return;
             }
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToMust",
                 $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage is not null}, DisplayName={item.DisplayName}, ItemType={item.GetType().Name}"
             );
@@ -1002,7 +1002,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMust.Add(item);
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToMust",
                 $"SelectedMust count after add: {SelectedMust.Count}"
             );
@@ -1011,7 +1011,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             for (int i = 0; i < SelectedMust.Count; i++)
             {
                 var existingItem = SelectedMust[i];
-                Helpers.DebugLogger.Log(
+                DebugLogger.Log(
                     "AddToMust",
                     $"  [{i}] {existingItem.Name} (Type={existingItem.GetType().Name}, Image={existingItem.ItemImage is not null}, Display={existingItem.DisplayName})"
                 );
@@ -1065,11 +1065,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item is null)
             {
-                Helpers.DebugLogger.Log("AddToShould", "Item is null, returning");
+                DebugLogger.Log("AddToShould", "Item is null, returning");
                 return;
             }
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToShould",
                 $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}, ItemImage={item.ItemImage is not null}, DisplayName={item.DisplayName}"
             );
@@ -1077,7 +1077,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedShould.Add(item);
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToShould",
                 $"SelectedShould count after add: {SelectedShould.Count}"
             );
@@ -1086,7 +1086,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             for (int i = 0; i < SelectedShould.Count; i++)
             {
                 var existingItem = SelectedShould[i];
-                Helpers.DebugLogger.Log(
+                DebugLogger.Log(
                     "AddToShould",
                     $"  [{i}] {existingItem.Name} (Image={existingItem.ItemImage is not null}, Display={existingItem.DisplayName})"
                 );
@@ -1178,11 +1178,11 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (item is null)
             {
-                Helpers.DebugLogger.Log("AddToMustNot", "Item is null, returning");
+                DebugLogger.Log("AddToMustNot", "Item is null, returning");
                 return;
             }
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToMustNot",
                 $"Adding item: Name={item.Name}, Type={item.Type}, Category={item.Category}"
             );
@@ -1193,7 +1193,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMustNot.Add(item);
 
-            Helpers.DebugLogger.Log(
+            DebugLogger.Log(
                 "AddToMustNot",
                 $"SelectedMustNot count after add: {SelectedMustNot.Count}"
             );
@@ -1630,7 +1630,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 LoadGameData();
 
                 // Apply filter and update loading state on UI thread
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     ApplyFilter();
                     IsLoading = false;
@@ -1645,7 +1645,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 );
 
                 // Even on error, clear loading state and show empty state
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsLoading = false;
                     // Set empty collections so UI doesn't crash
@@ -1660,9 +1660,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void LoadGameData()
         {
             // Ensure UI thread safety for collection initialization
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(LoadGameData);
+                Dispatcher.UIThread.Post(LoadGameData);
                 return;
             }
 
@@ -2217,9 +2217,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private void ApplyFilter()
         {
             // Ensure UI thread safety for all collection modifications
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(ApplyFilter);
+                Dispatcher.UIThread.Post(ApplyFilter);
                 return;
             }
 
@@ -2811,7 +2811,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     if (item.Type == "Joker" || item.Type == "SoulJoker")
                     {
                         var editionParam = edition == "None" ? null : edition.ToLowerInvariant();
-                        item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                        item.ItemImage = SpriteService.Instance.GetJokerImage(
                             item.Name,
                             edition: editionParam
                         );
@@ -2958,7 +2958,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                         };
 
                         // Reload card image with seal overlay
-                        item.ItemImage = Services.SpriteService.Instance.GetPlayingCardImage(
+                        item.ItemImage = SpriteService.Instance.GetPlayingCardImage(
                             suit,
                             rank,
                             enhancement: item.Enhancement,
@@ -3161,7 +3161,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     && (item.Type == "Joker" || item.Type == "SoulJoker")
                 )
                 {
-                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                    item.ItemImage = SpriteService.Instance.GetJokerImage(
                         item.Name,
                         edition: "negative"
                     );
@@ -3172,7 +3172,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // If edition is None but item was previously negative, reload regular sprite
                 if (item.Edition == "negative")
                 {
-                    item.ItemImage = Services.SpriteService.Instance.GetJokerImage(
+                    item.ItemImage = SpriteService.Instance.GetJokerImage(
                         item.Name,
                         edition: null
                     );
@@ -3320,7 +3320,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private FilterItem? CreateFilterItemFromConfig(ItemConfig config)
         {
-            var ss = Services.SpriteService.Instance;
+            var ss = SpriteService.Instance;
 
             // FIX: Use effective type that checks IsSoulJoker flag
             var effectiveType = config.IsSoulJoker ? "SoulJoker" : config.ItemType;

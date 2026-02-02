@@ -137,12 +137,12 @@ namespace BalatroSeedOracle.Views
             {
                 if (_shaderBackground != null)
                 {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(
+                    Dispatcher.UIThread.Post(
                         () =>
                         {
                             _shaderBackground.AnimationEnabled = isAnimating;
                         },
-                        Avalonia.Threading.DispatcherPriority.Render
+                        DispatcherPriority.Render
                     );
                 }
             };
@@ -165,7 +165,7 @@ namespace BalatroSeedOracle.Views
             var window = this.VisualRoot as Window;
             if (window != null)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(
+                Dispatcher.UIThread.Post(
                     () =>
                     {
                         if (enterFullscreen)
@@ -189,7 +189,7 @@ namespace BalatroSeedOracle.Views
                             }
                         }
                     },
-                    Avalonia.Threading.DispatcherPriority.Render
+                    DispatcherPriority.Render
                 );
             }
         }
@@ -280,7 +280,7 @@ namespace BalatroSeedOracle.Views
                                     ViewModel.IsModalVisible = false;
                                 HideModalContent();
 
-                                Helpers.DebugLogger.LogError(
+                                DebugLogger.LogError(
                                     "BalatroMainMenu",
                                     $"Failed to show search modal with filter: {ex.Message}"
                                 );
@@ -402,7 +402,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"Failed to show search modal with filter: {ex.Message}"
                 );
@@ -462,7 +462,7 @@ namespace BalatroSeedOracle.Views
                         else
                         {
                             // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                            Helpers.DebugLogger.Log(
+                            DebugLogger.Log(
                                 "BalatroMainMenu",
                                 "Create filter cancelled - staying in filter selection"
                             );
@@ -484,7 +484,7 @@ namespace BalatroSeedOracle.Views
                         {
                             // Get original filter name for default (using FilterService)
                             var filterService =
-                                Helpers.ServiceHelper.GetRequiredService<IFilterService>();
+                                ServiceHelper.GetRequiredService<IFilterService>();
                             var originalName = await filterService.GetFilterNameAsync(
                                 result.FilterId
                             );
@@ -509,7 +509,7 @@ namespace BalatroSeedOracle.Views
                             else
                             {
                                 // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                                Helpers.DebugLogger.Log(
+                                DebugLogger.Log(
                                     "BalatroMainMenu",
                                     "Copy filter cancelled - staying in filter selection"
                                 );
@@ -520,7 +520,7 @@ namespace BalatroSeedOracle.Views
                     case Models.FilterAction.Delete:
                         // NOTE: Delete is now handled entirely in FilterSelectionModalViewModel.ConfirmDelete()
                         // This case should never be reached since ConfirmDelete() doesn't invoke ModalCloseRequested anymore
-                        Helpers.DebugLogger.Log(
+                        DebugLogger.Log(
                             "BalatroMainMenu",
                             "Delete action reached ModalCloseRequested - this should not happen. Delete is handled in ViewModel."
                         );
@@ -545,7 +545,7 @@ namespace BalatroSeedOracle.Views
                     var filterName = await ShowFilterNameInputDialog();
                     if (string.IsNullOrEmpty(filterName))
                     {
-                        Helpers.DebugLogger.Log(
+                        DebugLogger.Log(
                             "BalatroMainMenu",
                             "Filter creation cancelled by user"
                         );
@@ -582,10 +582,10 @@ namespace BalatroSeedOracle.Views
                     );
                     System.IO.File.WriteAllText(
                         filterPath,
-                        Helpers.CompactJsonFormatter.Format(jsonContent)
+                        CompactJsonFormatter.Format(jsonContent)
                     );
 
-                    Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "BalatroMainMenu",
                         $"✅ Created new filter: {filterName} ({filterId}.json)"
                     );
@@ -597,7 +597,7 @@ namespace BalatroSeedOracle.Views
                 // Check if initialization succeeded
                 if (filtersModal.ViewModel == null)
                 {
-                    Helpers.DebugLogger.LogError(
+                    DebugLogger.LogError(
                         "BalatroMainMenu",
                         "FiltersModal initialization failed - ViewModel is null"
                     );
@@ -608,7 +608,7 @@ namespace BalatroSeedOracle.Views
                 // Wire up RequestClose callback so Finish & Close button works
                 filtersModal.ViewModel.RequestClose = () =>
                 {
-                    Helpers.DebugLogger.Log("BalatroMainMenu", "FiltersModal RequestClose invoked");
+                    DebugLogger.Log("BalatroMainMenu", "FiltersModal RequestClose invoked");
                     HideModalContent();
                 };
 
@@ -626,7 +626,7 @@ namespace BalatroSeedOracle.Views
 
                     filtersModal.ViewModel.CurrentFilterPath = filterPath;
 
-                    Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "BalatroMainMenu",
                         $"🔄 Loading filter for editing: {filterPath}"
                     );
@@ -635,7 +635,7 @@ namespace BalatroSeedOracle.Views
                         null
                     );
 
-                    Helpers.DebugLogger.Log(
+                    DebugLogger.Log(
                         "BalatroMainMenu",
                         $"✅ Filter loaded for editing: {filterId}"
                     );
@@ -644,7 +644,7 @@ namespace BalatroSeedOracle.Views
                 // Verify filter was loaded properly
                 if (string.IsNullOrEmpty(filterId))
                 {
-                    Helpers.DebugLogger.LogError(
+                    DebugLogger.LogError(
                         "BalatroMainMenu",
                         "Filter Designer opened without a valid filter! FilterId must be provided."
                     );
@@ -661,7 +661,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"ShowFiltersModalDirectAsync failed: {ex.Message}"
                 );
@@ -887,12 +887,12 @@ namespace BalatroSeedOracle.Views
 
                 await System.IO.File.WriteAllTextAsync(filterPath, json);
 
-                Helpers.DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
+                DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
                 return filterId;
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"Failed to create filter: {ex.Message}"
                 );
@@ -1201,7 +1201,7 @@ namespace BalatroSeedOracle.Views
                     }
 
                     // Create SearchWidget at saved position
-                    var spriteService = Services.SpriteService.Instance;
+                    var spriteService = SpriteService.Instance;
                     // SearchWidget is desktop-only - registered in Desktop Program.cs
                     DebugLogger.Log("BalatroMainMenu", "SearchWidget is desktop-only feature");
                     return;
@@ -1527,7 +1527,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"TransitionToNewModalAsync failed: {ex.Message}"
                 );
@@ -1612,7 +1612,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError(
+                DebugLogger.LogError(
                     "BalatroMainMenu",
                     $"ShowModalWithAnimationAsync failed: {ex.Message}"
                 );
@@ -1972,7 +1972,7 @@ namespace BalatroSeedOracle.Views
             try
             {
                 // Get search instance from service
-                var searchManager = Helpers.ServiceHelper.GetService<SearchManager>();
+                var searchManager = ServiceHelper.GetService<SearchManager>();
                 var searchInstance = searchManager?.GetSearch(searchId);
 
                 if (searchInstance == null)
@@ -1988,7 +1988,7 @@ namespace BalatroSeedOracle.Views
                 if (platformServices?.SupportsResultsGrid == true)
                 {
                     // Create SearchWidget with proper ViewModel (works on all platforms)
-                    var spriteService = Services.SpriteService.Instance;
+                    var spriteService = SpriteService.Instance;
                     var notificationService = ServiceHelper.GetService<NotificationService>();
                     var viewModel = new SearchWidgetViewModel(
                         searchInstance,
@@ -2013,7 +2013,7 @@ namespace BalatroSeedOracle.Views
                     viewModel.IsMinimized = true;
 
                     // Use the new window manager instead of desktop canvas
-                    var widgetManager = Services.WidgetWindowManager.Instance;
+                    var widgetManager = WidgetWindowManager.Instance;
                     widgetManager.CreateWidget(viewModel);
                 }
 
@@ -2044,7 +2044,7 @@ namespace BalatroSeedOracle.Views
             try
             {
                 // Find the widget in the window manager (works on all platforms)
-                var widgetManager = Services.WidgetWindowManager.Instance;
+                var widgetManager = WidgetWindowManager.Instance;
                 var activeWidgets = widgetManager.GetActiveWidgets();
 
                 var widgetToRemove = activeWidgets.FirstOrDefault(w =>

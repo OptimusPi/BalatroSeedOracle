@@ -1298,7 +1298,7 @@ namespace BalatroSeedOracle.Services
                 && y + spriteHeight <= jokerSheet.PixelSize.Height
             )
             {
-                BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
+                DebugLogger.LogImportant(
                     "GetJokerSoulImage",
                     $"🎴 SUCCESS - Creating soul image at ({x}, {y}) for {name}"
                 );
@@ -1308,7 +1308,7 @@ namespace BalatroSeedOracle.Services
                 );
             }
 
-            BalatroSeedOracle.Helpers.DebugLogger.LogImportant(
+            DebugLogger.LogImportant(
                 "GetJokerSoulImage",
                 $"🎴 FAILED - Invalid coordinates ({x}, {y}) for {name}"
             );
@@ -1473,8 +1473,8 @@ namespace BalatroSeedOracle.Services
                 var bitmap = new Avalonia.Media.Imaging.WriteableBitmap(
                     new Avalonia.PixelSize(1, 1),
                     new Avalonia.Vector(96, 96),
-                    Avalonia.Platform.PixelFormat.Bgra8888,
-                    Avalonia.Platform.AlphaFormat.Premul
+                    PixelFormat.Bgra8888,
+                    AlphaFormat.Premul
                 );
                 return bitmap;
             }

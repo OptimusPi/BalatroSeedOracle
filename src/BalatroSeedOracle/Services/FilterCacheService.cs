@@ -142,7 +142,7 @@ namespace BalatroSeedOracle.Services
                     return;
                 }
 
-                var filtersDir = Helpers.AppPaths.FiltersDir;
+                var filtersDir = AppPaths.FiltersDir;
                 if (!Directory.Exists(filtersDir))
                 {
                     DebugLogger.Log(
@@ -423,7 +423,7 @@ namespace BalatroSeedOracle.Services
             _cacheLock.EnterWriteLock();
             try
             {
-                var filtersDir = Helpers.AppPaths.FiltersDir;
+                var filtersDir = AppPaths.FiltersDir;
                 var filePath = Path.Combine(filtersDir, $"{filterId}.json");
                 if (!File.Exists(filePath))
                 {

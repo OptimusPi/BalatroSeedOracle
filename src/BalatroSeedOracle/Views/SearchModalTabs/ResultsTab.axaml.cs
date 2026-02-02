@@ -51,7 +51,7 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         }
 
                         // Get TopLevel for file picker
-                        var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(this);
+                        var topLevel = TopLevel.GetTopLevel(this);
                         if (topLevel == null)
                         {
                             DebugLogger.LogError(

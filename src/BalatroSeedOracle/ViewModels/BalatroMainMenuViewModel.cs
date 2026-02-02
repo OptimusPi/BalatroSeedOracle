@@ -605,7 +605,7 @@ namespace BalatroSeedOracle.ViewModels
             IsSearchWidgetsVisible = newState;
 
             // Show/hide search widgets via window manager
-            var widgetManager = Services.WidgetWindowManager.Instance;
+            var widgetManager = WidgetWindowManager.Instance;
             if (newState)
             {
                 widgetManager.ShowAllWidgets();
@@ -623,7 +623,7 @@ namespace BalatroSeedOracle.ViewModels
             IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
 
             // Show/hide all search widgets via window manager
-            var widgetManager = Services.WidgetWindowManager.Instance;
+            var widgetManager = WidgetWindowManager.Instance;
             if (IsSearchWidgetsVisible)
             {
                 widgetManager.ShowAllWidgets();
@@ -676,7 +676,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsSearchWidgetsVisible = false;
 
                 // Hide search widgets via window manager
-                var widgetManager = Services.WidgetWindowManager.Instance;
+                var widgetManager = WidgetWindowManager.Instance;
                 widgetManager.HideAllWidgets();
             }
             else
@@ -684,7 +684,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsSearchWidgetsVisible = true;
 
                 // Show search widgets via window manager
-                var widgetManager = Services.WidgetWindowManager.Instance;
+                var widgetManager = WidgetWindowManager.Instance;
                 widgetManager.ShowAllWidgets();
             }
 

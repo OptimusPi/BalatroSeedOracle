@@ -201,13 +201,13 @@ namespace BalatroSeedOracle.Views.Modals
             {
                 new DoubleTransition
                 {
-                    Property = Border.OpacityProperty,
+                    Property = OpacityProperty,
                     Duration = TimeSpan.FromMilliseconds(UIConstants.StandardAnimationDurationMs),
                     Easing = new CubicEaseOut(),
                 },
                 new ThicknessTransition
                 {
-                    Property = Border.MarginProperty,
+                    Property = MarginProperty,
                     Duration = TimeSpan.FromMilliseconds(UIConstants.SlowAnimationDurationMs),
                     Easing = new BackEaseOut(),
                 },

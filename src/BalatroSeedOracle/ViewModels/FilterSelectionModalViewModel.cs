@@ -66,7 +66,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (SelectedFilter is null)
                     return "";
                 var deckName = SelectedFilter.DeckName;
-                if (Models.BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
+                if (BalatroData.DeckDescriptions.TryGetValue(deckName, out var description))
                 {
                     return description;
                 }
@@ -330,7 +330,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Get FilterService to perform the deletion
                 var filterService =
-                    Helpers.ServiceHelper.GetRequiredService<Services.IFilterService>();
+                    ServiceHelper.GetRequiredService<Services.IFilterService>();
                 var filtersDir = AppPaths.FiltersDir;
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
 

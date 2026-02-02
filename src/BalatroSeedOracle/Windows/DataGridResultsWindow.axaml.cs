@@ -469,7 +469,7 @@ LIMIT 50;",
 
         private async Task ExportToCsvAsync()
         {
-            var topLevel = TopLevel.GetTopLevel(this);
+            var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
 
@@ -522,7 +522,7 @@ LIMIT 50;",
 
         private async Task ExportToJsonAsync()
         {
-            var topLevel = TopLevel.GetTopLevel(this);
+            var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
 
@@ -559,7 +559,7 @@ LIMIT 50;",
 
         private async Task ExportToParquetAsync()
         {
-            var topLevel = TopLevel.GetTopLevel(this);
+            var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
 
@@ -620,7 +620,7 @@ LIMIT 50;",
 
         private async Task ExportToWordlistAsync()
         {
-            var topLevel = TopLevel.GetTopLevel(this);
+            var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
 

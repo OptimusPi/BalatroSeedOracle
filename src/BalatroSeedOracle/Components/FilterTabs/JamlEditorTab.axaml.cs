@@ -208,10 +208,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Basic YAML validation
                 var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
                     .WithNamingConvention(
-                        YamlDotNet
-                            .Serialization
-                            .NamingConventions
-                            .CamelCaseNamingConvention
+
+                            CamelCaseNamingConvention
                             .Instance
                     )
                     .IgnoreUnmatchedProperties()

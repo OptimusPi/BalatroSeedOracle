@@ -15,6 +15,12 @@
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <WasmEnableThreads>true</WasmEnableThreads>
     
+    <!-- Exception handling for better error reporting -->
+    <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
+    
+    <!-- Required for SkiaSharp native interop -->
+    <WasmBuildNative>true</WasmBuildNative>
+    
     <!-- Memory Configuration -->
     <!-- Max heap: 512MB = 536870912 bytes (must be multiple of 16384) -->
     <EmccMaximumHeapSize>536870912</EmccMaximumHeapSize>
@@ -48,11 +54,10 @@
     <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
   </ItemGroup>
 
-  <!-- Inject build timestamp into index.html before publish -->
-  <Target Name="InjectBuildTimestamp" BeforeTargets="Publish">
+  <!-- Inject build timestamp into index.html in PUBLISH OUTPUT only (never mutate source) -->
+  <Target Name="InjectBuildTimestamp" AfterTargets="Publish" BeforeTargets="DeployWasmOutput">
     <PropertyGroup>
-      <_SourceIndexHtml>$(MSBuildThisFileDirectory)wwwroot\index.html</_SourceIndexHtml>
-      <!-- Format: BUILD JAN 31 10:26am Central -->
+      <_PublishIndexHtml>$(PublishDir)wwwroot\index.html</_PublishIndexHtml>
       <_Month>$([System.DateTime]::Now.ToString("MMM"))</_Month>
       <_Day>$([System.DateTime]::Now.ToString("dd"))</_Day>
       <_Hour12>$([System.DateTime]::Now.ToString("hh"))</_Hour12>
@@ -60,14 +65,14 @@
       <_AmPm>$([System.DateTime]::Now.ToString("tt"))</_AmPm>
       <_BuildTimestamp>BUILD $(_Month) $(_Day) $(_Hour12):$(_Minute)$(_AmPm) Central</_BuildTimestamp>
     </PropertyGroup>
-    <ReadLinesFromFile File="$(_SourceIndexHtml)">
+    <ReadLinesFromFile File="$(_PublishIndexHtml)">
       <Output TaskParameter="Lines" ItemName="IndexHtmlLines" />
     </ReadLinesFromFile>
     <ItemGroup>
       <IndexHtmlLinesReplaced Include="@(IndexHtmlLines->Replace('BUILD_TIMESTAMP_PLACEHOLDER', '$(_BuildTimestamp)'))" />
     </ItemGroup>
-    <WriteLinesToFile File="$(_SourceIndexHtml)" Lines="@(IndexHtmlLinesReplaced)" Overwrite="true" />
-    <Message Text="Injected build timestamp: $(_BuildTimestamp)" Importance="high" />
+    <WriteLinesToFile File="$(_PublishIndexHtml)" Lines="@(IndexHtmlLinesReplaced)" Overwrite="true" />
+    <Message Text="Injected build timestamp into publish output: $(_BuildTimestamp)" Importance="high" />
   </Target>
 
   <!-- Copy contents of publish/wwwroot into API wwwroot/BSO/ (flat: BSO/index.html, BSO/_framework/, no BSO/wwwroot/) -->

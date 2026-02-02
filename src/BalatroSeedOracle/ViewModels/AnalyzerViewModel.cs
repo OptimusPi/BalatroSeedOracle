@@ -38,19 +38,9 @@ public partial class AnalyzerViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedStakeIndex = 0;
 
-    // Display values for spinners
-    public string[] DeckDisplayValues { get; } = BalatroData.Decks.Values.ToArray();
-    public string[] StakeDisplayValues { get; } =
-    [
-        "White Stake",
-        "Red Stake",
-        "Green Stake",
-        "Black Stake",
-        "Blue Stake",
-        "Purple Stake",
-        "Orange Stake",
-        "Gold Stake",
-    ];
+    // Display values from Motely enums (no " Deck" / " Stake" suffix)
+    public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
+    public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
     [ObservableProperty]
     private MotelySeedAnalysis? _currentAnalysis;
@@ -99,25 +89,19 @@ public partial class AnalyzerViewModel : ObservableObject
 
     partial void OnSelectedDeckIndexChanged(int value)
     {
-        if (value >= 0 && value < DeckDisplayValues.Length)
+        if (value >= 0 && value < DeckDisplayValues.Length &&
+            Enum.TryParse<MotelyDeck>(DeckDisplayValues[value], out var deck))
         {
-            var deckName = DeckDisplayValues[value].Replace(" Deck", "");
-            if (Enum.TryParse<MotelyDeck>(deckName, out var deck))
-            {
-                SelectedDeck = deck;
-            }
+            SelectedDeck = deck;
         }
     }
 
     partial void OnSelectedStakeIndexChanged(int value)
     {
-        if (value >= 0 && value < StakeDisplayValues.Length)
+        if (value >= 0 && value < StakeDisplayValues.Length &&
+            Enum.TryParse<MotelyStake>(StakeDisplayValues[value], out var stake))
         {
-            var stakeName = StakeDisplayValues[value].Replace(" Stake", "");
-            if (Enum.TryParse<MotelyStake>(stakeName, out var stake))
-            {
-                SelectedStake = stake;
-            }
+            SelectedStake = stake;
         }
     }
 

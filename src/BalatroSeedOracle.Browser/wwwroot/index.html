@@ -1,351 +1,309 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Balatro Seed Oracle</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <link rel="stylesheet" href="./app.css" />
-    <style>
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #f0f0f0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #202020;
-        }
-        
-        .spinner-container {
-            position: relative;
-            width: 120px;
-            height: 180px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .spinner-img { 
-            width: 71px; 
-            height: 95px;
-            background: url('Jokers.png') no-repeat;
-            background-size: 710px auto; /* 10 columns * 71px */
-            image-rendering: pixelated;
-            animation: spin-faces 12s infinite step-end, magic-spin 2s infinite linear;
-            transform-style: preserve-3d;
-        }
-        
-        /* 
-           Magic Spin Animation (Simplified):
-           0% - 40%: Show Face (0 -> 45deg) - Clearly rotating
-           40% - 60%: Fast Flip (45 -> 315deg) - The Whip
-           60% - 100%: Show Face (315 -> 360deg) - Clearly rotating
-           
-           Swap Point:
-           270deg (Edge 2) happens inside the fast whip.
-           Range 45->315 (270deg span). Target 270.
-           (270-45)/270 = 0.833
-           40% + (20% * 0.833) = ~57%
-        */
-        @keyframes magic-spin { 
-            0% { transform: perspective(1000px) rotateY(0deg); } 
-            40% { transform: perspective(1000px) rotateY(45deg); } 
-            60% { transform: perspective(1000px) rotateY(315deg); } 
-            100% { transform: perspective(1000px) rotateY(360deg); } 
-        }
-
-        /* 
-           Coordinates for Faces (Row 9, y=855px):
-           Swap at 57% of 2s cycle = 9.5% global offset.
-        */
-        @keyframes spin-faces {
-            0%, 9.4% { background-position: 0px -855px; }          /* Jimbo */
-            9.5%, 26.0% { background-position: -497px -855px; }    /* Perkeo */
-            26.1%, 42.7% { background-position: -213px -855px; }   /* Canio */
-            42.8%, 59.4% { background-position: -284px -855px; }   /* Triboulet */
-            59.5%, 76.0% { background-position: -355px -855px; }   /* Yorick */
-            76.1%, 92.7% { background-position: -426px -855px; }   /* Chicot */
-            92.8%, 100% { background-position: 0px -855px; }       /* Jimbo */
-        }
-
-        .loading-status {
-            color: #888;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .loading-percent {
-            color: #e67e22;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .error-display {
-            display: none;
-            background: #ff0000;
-            color: white;
-            padding: 30px;
-            margin: 20px;
-            border-radius: 10px;
-            max-width: 800px;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            box-shadow: 0 0 30px rgba(255,0,0,0.5);
-            border: 3px solid #ff6666;
-        }
-        .error-display.visible {
-            display: block;
-        }
-        .error-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-family: sans-serif;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Balatro Seed Oracle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+<link rel="stylesheet" href="./app.css" />
+<style>
+.loading-container {
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+height: 100vh;
+color: #f0f0f0;
+font-family: 'Segoe UI', sans-serif;
+background-color: #202020;
+}
+.spinner-container {
+position: relative;
+width: 120px;
+height: 180px;
+display: flex;
+justify-content: center;
+align-items: center;
+margin-bottom: 20px;
+}
+.spinner-img {
+width: 71px;
+height: 95px;
+background: url('Jokers.png') no-repeat;
+background-size: 710px auto; /* 10 columns * 71px */
+image-rendering: pixelated;
+animation: spin-faces 12s infinite step-end, magic-spin 2s infinite linear;
+transform-style: preserve-3d;
+}
+/*
+Magic Spin Animation (Simplified):
+0% - 40%: Show Face (0 -> 45deg) - Clearly rotating
+40% - 60%: Fast Flip (45 -> 315deg) - The Whip
+60% - 100%: Show Face (315 -> 360deg) - Clearly rotating
+Swap Point:
+270deg (Edge 2) happens inside the fast whip.
+Range 45->315 (270deg span). Target 270.
+(270-45)/270 = 0.833
+40% + (20% * 0.833) = ~57%
+*/
+@keyframes magic-spin {
+0% { transform: perspective(1000px) rotateY(0deg); }
+40% { transform: perspective(1000px) rotateY(45deg); }
+60% { transform: perspective(1000px) rotateY(315deg); }
+100% { transform: perspective(1000px) rotateY(360deg); }
+}
+/*
+Coordinates for Faces (Row 9, y=855px):
+Swap at 57% of 2s cycle = 9.5% global offset.
+*/
+@keyframes spin-faces {
+0%, 9.4% { background-position: 0px -855px; }          /* Jimbo */
+9.5%, 26.0% { background-position: -497px -855px; }    /* Perkeo */
+26.1%, 42.7% { background-position: -213px -855px; }   /* Canio */
+42.8%, 59.4% { background-position: -284px -855px; }   /* Triboulet */
+59.5%, 76.0% { background-position: -355px -855px; }   /* Yorick */
+76.1%, 92.7% { background-position: -426px -855px; }   /* Chicot */
+92.8%, 100% { background-position: 0px -855px; }       /* Jimbo */
+}
+.loading-status {
+color: #888;
+font-size: 14px;
+margin-top: 10px;
+}
+.loading-percent {
+color: #e67e22;
+font-size: 18px;
+font-weight: bold;
+margin-top: 10px;
+}
+.error-display {
+display: none;
+background: #ff0000;
+color: white;
+padding: 30px;
+margin: 20px;
+border-radius: 10px;
+max-width: 800px;
+font-family: monospace;
+font-size: 14px;
+white-space: pre-wrap;
+word-break: break-all;
+box-shadow: 0 0 30px rgba(255,0,0,0.5);
+border: 3px solid #ff6666;
+}
+.error-display.visible {
+display: block;
+}
+.error-title {
+font-size: 24px;
+font-weight: bold;
+margin-bottom: 15px;
+font-family: sans-serif;
+}
+</style>
 </head>
 <body style="margin: 0; overflow: hidden; background-color: #202020;">
 <div id="out">
-    <div class="loading-container" id="loading-screen">
-        <h1 style="color: #9b59b6; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Balatro Seed Oracle</h1>
-        
-        <div class="spinner-container">
-            <div class="spinner-img"></div>
-        </div>
-
-        <div class="loading-percent" id="loading-percent">0%</div>
-        <div class="loading-status" id="loading-status">Initializing...</div>
-
-        <div class="error-display" id="error-display">
-            <div class="error-title">BUILD_TIMESTAMP_PLACEHOLDER</div>
-            <div id="error-message"></div>
-        </div>
-    </div>
+<div class="loading-container" id="loading-screen">
+<h1 style="color: #9b59b6; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Balatro Seed Oracle</h1>
+<div class="spinner-container">
+<div class="spinner-img"></div>
+</div>
+<div class="loading-percent" id="loading-percent">0%</div>
+<div class="loading-status" id="loading-status">Initializing...</div>
+<div class="error-display" id="error-display">
+<div class="error-title">BUILD_TIMESTAMP_PLACEHOLDER</div>
+<div id="error-message"></div>
+</div>
+</div>
 </div>
 <script>
 // Check for untrustworthy origin (IP address) that will break COOP/COEP headers
 (function() {
-    const hostname = window.location.hostname;
-    const isIPAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
-    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-    const isHTTPS = window.location.protocol === 'https:';
-    
-    if (isIPAddress && !isHTTPS) {
-        const errorMsg = `❌ UNTRUSTWORTHY ORIGIN DETECTED\n\n` +
-            `You are accessing via IP address (${hostname}), which browsers do NOT trust for COOP/COEP headers.\n\n` +
-            `✅ SOLUTION: Use localhost instead:\n` +
-            `   http://localhost:${window.location.port}${window.location.pathname}\n\n` +
-            `The SharedArrayBuffer error will persist until you use localhost or HTTPS.`;
-        
-        console.error(errorMsg);
-        
-        // Show error immediately
-        const errorDisplay = document.getElementById('error-display');
-        const errorMessage = document.getElementById('error-message');
-        if (errorDisplay && errorMessage) {
-            errorDisplay.classList.add('visible');
-            errorMessage.textContent = errorMsg;
-        }
-    }
+const hostname = window.location.hostname;
+const isIPAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+const isHTTPS = window.location.protocol === 'https:';
+if (isIPAddress && !isHTTPS) {
+const errorMsg = `❌ UNTRUSTWORTHY ORIGIN DETECTED\n\n` +
+`You are accessing via IP address (${hostname}), which browsers do NOT trust for COOP/COEP headers.\n\n` +
+`✅ SOLUTION: Use localhost instead:\n` +
+`   http://localhost:${window.location.port}${window.location.pathname}\n\n` +
+`The SharedArrayBuffer error will persist until you use localhost or HTTPS.`;
+console.error(errorMsg);
+// Show error immediately
+const errorDisplay = document.getElementById('error-display');
+const errorMessage = document.getElementById('error-message');
+if (errorDisplay && errorMessage) {
+errorDisplay.classList.add('visible');
+errorMessage.textContent = errorMsg;
+}
+}
 })();
-
 // Loading state management
 window.LoadingState = {
-    progress: 0,
-    status: 'Initializing...',
-
-    setProgress: function(percent, status) {
-        this.progress = Math.min(100, Math.max(0, percent));
-        if (status) this.status = status;
-
-        const pEl = document.getElementById('loading-percent');
-        const sEl = document.getElementById('loading-status');
-        if (pEl) pEl.textContent = Math.round(this.progress) + '%';
-        if (sEl) sEl.textContent = this.status;
-        console.log(`[LOADING] ${Math.round(this.progress)}% - ${this.status}`);
-    },
-
-    fail: function(error) {
-        const errorDisplay = document.getElementById('error-display');
-        const errorMessage = document.getElementById('error-message');
-
-        let errorText = '';
-        if (error instanceof Error) {
-            errorText = `${error.name}: ${error.message}\n\nStack:\n${error.stack || 'No stack trace'}`;
-        } else if (typeof error === 'string') {
-            errorText = error;
-        } else {
-            errorText = JSON.stringify(error, null, 2);
-        }
-
-        errorMessage.textContent = errorText;
-        errorDisplay.classList.add('visible');
-        document.getElementById('loading-status').textContent = 'FAILED';
-        document.getElementById('loading-status').style.color = '#ff0000';
-
-        console.error('[FATAL ERROR]', error);
-    }
+progress: 0,
+status: 'Initializing...',
+setProgress: function(percent, status) {
+this.progress = Math.min(100, Math.max(0, percent));
+if (status) this.status = status;
+const pEl = document.getElementById('loading-percent');
+const sEl = document.getElementById('loading-status');
+if (pEl) pEl.textContent = Math.round(this.progress) + '%';
+if (sEl) sEl.textContent = this.status;
+console.log(`[LOADING] ${Math.round(this.progress)}% - ${this.status}`);
+},
+fail: function(error) {
+const errorDisplay = document.getElementById('error-display');
+const errorMessage = document.getElementById('error-message');
+let errorText = '';
+if (error instanceof Error) {
+errorText = `${error.name}: ${error.message}\n\nStack:\n${error.stack || 'No stack trace'}`;
+} else if (typeof error === 'string') {
+errorText = error;
+} else {
+errorText = JSON.stringify(error, null, 2);
+}
+errorMessage.textContent = errorText;
+errorDisplay.classList.add('visible');
+document.getElementById('loading-status').textContent = 'FAILED';
+document.getElementById('loading-status').style.color = '#ff0000';
+console.error('[FATAL ERROR]', error);
+}
 };
-
 // Catch ALL errors
 window.addEventListener('error', (e) => {
-    console.error("Global error:", e.message, e.filename, e.lineno, e.colno, e.error);
-    window.LoadingState.fail(`${e.message}\n\nFile: ${e.filename}\nLine: ${e.lineno}:${e.colno}`);
+console.error("Global error:", e.message, e.filename, e.lineno, e.colno, e.error);
+window.LoadingState.fail(`${e.message}\n\nFile: ${e.filename}\nLine: ${e.lineno}:${e.colno}`);
 });
-
 window.addEventListener('unhandledrejection', (e) => {
-    console.error("Unhandled promise rejection:", e.reason);
-    window.LoadingState.fail(e.reason);
+console.error("Unhandled promise rejection:", e.reason);
+window.LoadingState.fail(e.reason);
 });
-
 // Start loading
 window.LoadingState.setProgress(5, 'Loading scripts...');
 </script>
-
 <!-- DuckDB-WASM interop module -->
 <script type="module">
-    import './js/duckdb-interop.js';
-    window.LoadingState.setProgress(15, 'DuckDB module loaded');
+import './js/duckdb-interop.js';
+window.LoadingState.setProgress(15, 'DuckDB module loaded');
 </script>
-
 <!-- Web Audio API interop module -->
 <script type="module">
-    import './js/webaudio-interop.js';
-    window.LoadingState.setProgress(16, 'Web Audio API module loaded');
+import './js/webaudio-interop.js';
+window.LoadingState.setProgress(16, 'Web Audio API module loaded');
 </script>
-
 <!-- BSO Browser Helper Functions - Must load before .NET runtime -->
 <script>
-    // Inline the helpers to ensure they're available before .NET starts
-    window.BSO = window.BSO || {};
-
-    // Test if localStorage is available
-    window.BSO.testLocalStorage = function() {
-        try {
-            localStorage.setItem('test', 'test');
-            var result = localStorage.getItem('test');
-            localStorage.removeItem('test');
-            return result === 'test' ? 'LocalStorage works' : 'LocalStorage failed';
-        } catch (e) {
-            return 'LocalStorage error: ' + e.message;
-        }
-    };
-
-    // Wrapper functions for localStorage
-    window.BSO.getLocalStorageItem = function(key) {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            console.error('Error getting localStorage item:', e);
-            return null;
-        }
-    };
-
-    window.BSO.setLocalStorageItem = function(key, value) {
-        try {
-            localStorage.setItem(key, value);
-        } catch (e) {
-            console.error('Error setting localStorage item:', e);
-            throw e;
-        }
-    };
-
-    window.BSO.removeLocalStorageItem = function(key) {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            console.error('Error removing localStorage item:', e);
-            throw e;
-        }
-    };
-
-    window.BSO.getLocalStorageLength = function() {
-        try {
-            return localStorage.length;
-        } catch (e) {
-            console.error('Error getting localStorage length:', e);
-            return 0;
-        }
-    };
-
-    window.BSO.getLocalStorageKey = function(index) {
-        try {
-            return localStorage.key(index);
-        } catch (e) {
-            console.error('Error getting localStorage key:', e);
-            return null;
-        }
-    };
-
-    window.BSO.getLocalStorageKeys = function() {
-        try {
-            var keys = [];
-            for (var i = 0; i < localStorage.length; i++) {
-                var key = localStorage.key(i);
-                if (key) keys.push(key);
-            }
-            return keys;
-        } catch (e) {
-            console.error('Error getting localStorage keys:', e);
-            return [];
-        }
-    };
-
-    console.log('BSO Browser helper functions loaded inline');
+// Inline the helpers to ensure they're available before .NET starts
+window.BSO = window.BSO || {};
+// Test if localStorage is available
+window.BSO.testLocalStorage = function() {
+try {
+localStorage.setItem('test', 'test');
+var result = localStorage.getItem('test');
+localStorage.removeItem('test');
+return result === 'test' ? 'LocalStorage works' : 'LocalStorage failed';
+} catch (e) {
+return 'LocalStorage error: ' + e.message;
+}
+};
+// Wrapper functions for localStorage
+window.BSO.getLocalStorageItem = function(key) {
+try {
+return localStorage.getItem(key);
+} catch (e) {
+console.error('Error getting localStorage item:', e);
+return null;
+}
+};
+window.BSO.setLocalStorageItem = function(key, value) {
+try {
+localStorage.setItem(key, value);
+} catch (e) {
+console.error('Error setting localStorage item:', e);
+throw e;
+}
+};
+window.BSO.removeLocalStorageItem = function(key) {
+try {
+localStorage.removeItem(key);
+} catch (e) {
+console.error('Error removing localStorage item:', e);
+throw e;
+}
+};
+window.BSO.getLocalStorageLength = function() {
+try {
+return localStorage.length;
+} catch (e) {
+console.error('Error getting localStorage length:', e);
+return 0;
+}
+};
+window.BSO.getLocalStorageKey = function(index) {
+try {
+return localStorage.key(index);
+} catch (e) {
+console.error('Error getting localStorage key:', e);
+return null;
+}
+};
+window.BSO.getLocalStorageKeys = function() {
+try {
+var keys = [];
+for (var i = 0; i < localStorage.length; i++) {
+var key = localStorage.key(i);
+if (key) keys.push(key);
+}
+return keys;
+} catch (e) {
+console.error('Error getting localStorage keys:', e);
+return [];
+}
+};
+console.log('BSO Browser helper functions loaded inline');
 </script>
-
 <!-- .NET WASM Bootstrap -->
 <script type="module">
-    window.LoadingState.setProgress(20, 'Loading .NET runtime...');
-
-    try {
-        // Import and configure dotnet
-        import('./_framework/dotnet.js').then(async ({ dotnet }) => {
-            window.LoadingState.setProgress(30, '.NET module imported');
-
-            try {
-                // Configure the runtime with progress callbacks
-                const runtime = await dotnet
-                    .withDiagnosticTracing(false)
-                    .withResourceLoader((type, name, defaultUri, integrity, behavior) => {
-                        // Track assembly loading progress
-                        if (type === 'assembly') {
-                            const currentProgress = window.LoadingState.progress;
-                            if (currentProgress < 96) {
-                                window.LoadingState.setProgress(currentProgress + 0.5, `Loading ${name}...`);
-                            }
-                        }
-                        return defaultUri;
-                    })
-                    .create();
-
-                window.LoadingState.setProgress(95, 'Starting Avalonia...');
-
-                await runtime.runMain();
-
-                window.LoadingState.setProgress(100, 'Ready!');
-                console.log('.NET runtime started successfully');
-
-                // Hide the loading screen to reveal the Avalonia app
-                const loadingScreen = document.getElementById('loading-screen');
-                if (loadingScreen) {
-                    loadingScreen.style.display = 'none';
-                }
-
-            } catch (runtimeError) {
-                window.LoadingState.fail(runtimeError);
-            }
-        }).catch(importError => {
-            window.LoadingState.fail(importError);
-        });
-
-    } catch (err) {
-        window.LoadingState.fail(err);
-    }
+window.LoadingState.setProgress(20, 'Loading .NET runtime...');
+try {
+// Import and configure dotnet
+import('./_framework/dotnet.js').then(async ({ dotnet }) => {
+window.LoadingState.setProgress(30, '.NET module imported');
+try {
+// Configure the runtime with progress callbacks
+const runtime = await dotnet
+.withDiagnosticTracing(false)
+.withResourceLoader((type, name, defaultUri, integrity, behavior) => {
+// Track assembly loading progress
+if (type === 'assembly') {
+const currentProgress = window.LoadingState.progress;
+if (currentProgress < 96) {
+window.LoadingState.setProgress(currentProgress + 0.5, `Loading ${name}...`);
+}
+}
+return defaultUri;
+})
+.create();
+window.LoadingState.setProgress(95, 'Starting Avalonia...');
+await runtime.runMain();
+window.LoadingState.setProgress(100, 'Ready!');
+console.log('.NET runtime started successfully');
+// Hide the loading screen to reveal the Avalonia app
+const loadingScreen = document.getElementById('loading-screen');
+if (loadingScreen) {
+loadingScreen.style.display = 'none';
+}
+} catch (runtimeError) {
+window.LoadingState.fail(runtimeError);
+}
+}).catch(importError => {
+window.LoadingState.fail(importError);
+});
+} catch (err) {
+window.LoadingState.fail(err);
+}
 </script>
 </body>
 </html>

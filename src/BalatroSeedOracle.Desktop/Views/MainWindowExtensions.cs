@@ -83,7 +83,7 @@ public static class MainWindowExtensions
             {
                 DataContext = viewModel.ApiHostWidgetViewModel,
                 ClipToBounds = false,
-                [Avalonia.Controls.Grid.ZIndexProperty] = viewModel.ApiHostWidgetViewModel.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = viewModel.ApiHostWidgetViewModel.WidgetZIndex,
             };
             
             BindVisibility(apiHostWidget, viewModel, nameof(BalatroMainMenuViewModel.IsHostApiWidgetVisible), () => viewModel.IsHostApiWidgetVisible);
@@ -99,7 +99,7 @@ public static class MainWindowExtensions
             {
                 DataContext = musicMixerVm,
                 ClipToBounds = false,
-                [Avalonia.Controls.Panel.ZIndexProperty] = musicMixerVm.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = musicMixerVm.WidgetZIndex,
             };
             
             BindVisibility(musicMixerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsMusicMixerWidgetVisible), () => viewModel.IsMusicMixerWidgetVisible);
@@ -115,7 +115,7 @@ public static class MainWindowExtensions
             {
                 DataContext = visualizerVm,
                 ClipToBounds = false,
-                [Avalonia.Controls.Panel.ZIndexProperty] = visualizerVm.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = visualizerVm.WidgetZIndex,
             };
             
             BindVisibility(visualizerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsVisualizerWidgetVisible), () => viewModel.IsVisualizerWidgetVisible);
@@ -131,7 +131,7 @@ public static class MainWindowExtensions
             {
                 DataContext = audioMixerVm,
                 ClipToBounds = false,
-                [Avalonia.Controls.Panel.ZIndexProperty] = audioMixerVm.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = audioMixerVm.WidgetZIndex,
             };
             
             desktopCanvas.Children.Add(audioMixerWidget);
@@ -146,7 +146,7 @@ public static class MainWindowExtensions
             {
                 DataContext = frequencyDebugVm,
                 ClipToBounds = false,
-                [Avalonia.Controls.Panel.ZIndexProperty] = frequencyDebugVm.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = frequencyDebugVm.WidgetZIndex,
             };
             
             desktopCanvas.Children.Add(frequencyDebugWidget);
@@ -161,7 +161,7 @@ public static class MainWindowExtensions
             {
                 DataContext = transitionDesignerVm,
                 ClipToBounds = false,
-                [Avalonia.Controls.Panel.ZIndexProperty] = transitionDesignerVm.WidgetZIndex,
+                [Avalonia.Visual.ZIndexProperty] = transitionDesignerVm.WidgetZIndex,
             };
             
             BindVisibility(transitionDesignerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsTransitionDesignerWidgetVisible), () => viewModel.IsTransitionDesignerWidgetVisible);

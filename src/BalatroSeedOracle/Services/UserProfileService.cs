@@ -225,7 +225,7 @@ namespace BalatroSeedOracle.Services
                 }
 
                 // Desktop: can use synchronous file I/O as fallback
-                var profilePath = Path.Combine(Helpers.AppPaths.UserDir, PROFILE_FILENAME);
+                var profilePath = Path.Combine(AppPaths.UserDir, PROFILE_FILENAME);
                 if (File.Exists(profilePath))
                 {
                     var json = File.ReadAllText(profilePath);
@@ -384,7 +384,7 @@ namespace BalatroSeedOracle.Services
                 else
                 {
                     // Desktop: use synchronous file I/O for flush
-                    var profilePath = Path.Combine(Helpers.AppPaths.UserDir, PROFILE_FILENAME);
+                    var profilePath = Path.Combine(AppPaths.UserDir, PROFILE_FILENAME);
                     File.WriteAllText(profilePath, json);
                     ThrottledLogSaveSuccess();
                 }

@@ -37,6 +37,15 @@ provider.Mappings[".wasm"] = "application/wasm";
 provider.Mappings[".json"] = "application/json";
 
 var app = builder.Build();
+
+// CRITICAL: COOP/COEP headers required for SharedArrayBuffer (multi-threading)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+    await next();
+});
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(contentRoot),
