@@ -1,0 +1,42 @@
+# From Mystery person (shared by shadow bulb). Requirements:
+# 1) Luchador
+# 2) Way to get 2 double tags without Anaglyph deck
+# 3) An ante (after having the above) with: any tag that's NOT Orbital and doesn't give a pack,
+#    + a tag that GIVES A PACK for the big blind
+# 4) Ability to one-shot the boss on that ante (no held-in-hand effects; high card play)
+# 5) Voucher tag or two in later antes; Overstock/Reroll Surplus appreciated
+
+name: Luchador Double Tag Build
+author: Motely Genie
+description: |
+  Luchador at ante 1. Two double-tag opportunities (no Anaglyph). An ante with non-Orbital
+  tag + pack-granting tag on big blind. One-shot boss (Hook/Ox/Wheel). Voucher tags later;
+  Overstock + Reroll Surplus preferred.
+
+must:
+  - boss: The Luchador
+    antes: [1]
+  - tags: [Investment, Negative, Voucher, Economy]
+    antes: [2, 3, 4, 5, 6, 7, 8]
+  - voucher: Overstock
+    antes: [3, 4, 5, 6, 7, 8]
+  - voucher: Reroll Surplus
+    antes: [4, 5, 6, 7, 8]
+  - tag: Small Blind
+    antes: [2]
+    sources:
+      shopSlots: [0, 1]
+      edition: Negative   # free + Negative from Small Blind tag
+  - Big Blind: Buffoon
+    antes: [2]
+    # Buffoon = tag that gives a pack (for the big blind one-shot run)
+
+should:
+  - boss: The Hook
+    score: 3   # one-shot
+  - boss: The Ox
+    score: 3
+  - boss: The Wheel
+    score: 3
+  - tag: Orbital
+    score: -5   # avoid Orbital
