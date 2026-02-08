@@ -2,6 +2,8 @@
 
 Search millions of Balatro seeds to find the perfect runs for your strategies.
 
+**Balatro Seed Oracle (BSO)** is an **Avalonia UI** application that compiles with **AOT to desktop and browser**. Seed searching is provided by **Motely (MotelyJAML)**, included as a git submodule (fork of [tacodiva/Motely](https://github.com/tacodiva/motely)). Motely now supports browser WASM with AOT, so the BSO browser build is unblocked.
+
 ## Docs
 
 - See `docs/INDEX.md` for the current documentation index and cleanup plan.
@@ -46,9 +48,7 @@ dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
 
 ## Initialize the git Submodule
 
-This repo uses git submodules to include the Motely search engine.
-The git submodule is my fork of tacodiva/Motely that includes the MotelyJson support!
-You need to initialize and update the submodule after cloning:
+This repo uses a git submodule for the **Motely (MotelyJAML)** search engine at `external/Motely` (fork of [tacodiva/Motely](https://github.com/tacodiva/motely), with MotelyJson and browser WASM support). You must initialize and update the submodule after cloning:
 
 ```bash
 git submodule update --init --recursive
@@ -204,10 +204,10 @@ In this example, even though `PlanetCard` has higher `score`, `mode: max` ignore
 
 ## File Structure
 
-- `src/` - Main application code
-- `external/Motely/` - High-performance search engine
-- `JsonFilters/` & `JamlFilters/` - Pre-made filter configurations
-- `SearchResults/` - Database files with search results
+- `src/` – Main Avalonia application code
+- `external/Motely/` – **Motely (MotelyJAML)** git submodule; high-performance seed search engine
+- `JamlFilters/` – Pre-made JAML filter configurations (repo root)
+- `SearchResults/` – Database files with search results
 
 ## Contributing
 
@@ -222,13 +222,13 @@ This is a community project. Contributions welcome:
 
 Built on:
 
-- **.NET 10 / C# 14** - Modern C# with high performance features
-- **Avalonia UI** - Cross-platform desktop framework (Desktop, Browser, Android, iOS)
-- **AOT Compilation** - Ahead-of-time compilation for all platforms
-- **DuckDB** - Fast analytical database for results (DuckDB.NET on Desktop, DuckDB-WASM in Browser)
-- **Motely** - Custom vectorized Balatro seed analysis engine
+- **.NET 10 / C# 14** – Modern C# with high performance features
+- **Avalonia UI** – Cross-platform UI with **AOT to desktop and browser** (and future mobile)
+- **AOT Compilation** – Ahead-of-time compilation for all platforms
+- **DuckDB** – Fast analytical database for results (DuckDB.NET on Desktop, DuckDB-WASM in Browser)
+- **Motely (MotelyJAML)** – Git submodule at `external/Motely`; vectorized Balatro seed search engine (JAML/JSON filters, CLI, browser WASM). Used by BSO for all seed searching. Motely’s browser WASM (AOT) support unblocks the BSO browser build.
 
-The search engine uses advanced vectorized operations (SIMD) to achieve high throughput when analyzing millions of seed combinations. Full AOT compatibility ensures optimal performance across all platforms.
+The search engine uses advanced vectorized operations (SIMD) to achieve high throughput when analyzing millions of seed combinations. Full AOT compatibility in both BSO and Motely ensures optimal performance across desktop and browser.
 
 ## Support
 
