@@ -68,3 +68,4 @@ avalonia.license.local
 /external/JamlGenie
 /JamlFilters/JsonItemFilters
 /external
+build.log
