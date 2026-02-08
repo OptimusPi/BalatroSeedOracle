@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
@@ -8,7 +9,7 @@
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
-             x:DataType="vm:FilterSelectorViewModel">
+             x:DataType="vm:FilterListViewModel">
 
     <UserControl.Resources>
         <conv:TruncateConverter x:Key="TruncateConv"/>
@@ -80,8 +81,8 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <!-- Button layout with number outside and check mark indicator (Balatro style) -->
+                            <DataTemplate x:DataType="models:FilterListItem" x:CompileBindings="False">
+                                <!-- Button layout: Command uses RelativeSource to parent DataContext (FilterListViewModel); compiled bindings infer Object -->
                                 <Grid Margin="0" HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="24"/>
@@ -423,7 +424,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
+                                                <DataTemplate x:DataType="vm:FilterItemViewModel">
                                                     <Border CornerRadius="4"
                                                             Background="{StaticResource White}"
                                                             BorderBrush="{StaticResource Black}"

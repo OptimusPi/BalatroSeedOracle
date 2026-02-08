@@ -561,6 +561,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         public string ItemName { get; set; } = "";
         public IImage? ItemImage { get; set; }
+        public IImage? DebuffedImage { get; set; }
     }
 
     public class FilterStat

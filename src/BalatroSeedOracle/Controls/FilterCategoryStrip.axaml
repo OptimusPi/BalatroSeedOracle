@@ -3,7 +3,9 @@
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             x:Class="BalatroSeedOracle.Controls.FilterCategoryStrip">
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Controls.FilterCategoryStrip"
+             x:DataType="controls:FilterCategoryStrip">
 
     <UserControl.Resources>
         <converters:ItemNameToSpriteConverter x:Key="ItemNameToSpriteConverter"/>
@@ -32,10 +34,10 @@
                     Height="100"
                     VerticalAlignment="Center"
                     Margin="0,0,8,0">
-                <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="12"
-                           Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center">
@@ -47,7 +49,7 @@
 
             <!-- Cards on MediumGrey background -->
             <ItemsControl Grid.Column="1"
-                          ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          ItemsSource="{Binding Items, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
                           ClipToBounds="False"
                           Margin="0,0,0,0">
                 <ItemsControl.ItemsPanel>

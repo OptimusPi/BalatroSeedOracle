@@ -202,6 +202,11 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private float _melodySatRangeMax = 1.0f;
 
+        /// <summary>
+        /// Raised when the user requests to close the modal (e.g. Close button). Host can subscribe and close the window.
+        /// </summary>
+        public event EventHandler? RequestClose;
+
         public AudioVisualizerSettingsModalViewModel()
         {
             _userProfileService =
@@ -213,6 +218,12 @@ namespace BalatroSeedOracle.ViewModels
 
             // Load existing presets
             LoadPresetsFromDisk();
+        }
+
+        [RelayCommand]
+        private void Close()
+        {
+            RequestClose?.Invoke(this, EventArgs.Empty);
         }
 
         #region Properties

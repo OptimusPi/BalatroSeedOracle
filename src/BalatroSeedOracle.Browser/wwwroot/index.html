@@ -171,22 +171,41 @@ document.getElementById('loading-status').style.color = '#ff0000';
 console.error('[FATAL ERROR]', error);
 }
 };
-// Catch ALL errors
+// Catch ALL errors (but skip non-fatal module resolution errors like apache-arrow)
 window.addEventListener('error', (e) => {
 console.error("Global error:", e.message, e.filename, e.lineno, e.colno, e.error);
+// Don't show FATAL error for non-critical module resolution failures
+if (e.message && e.message.includes('module specifier')) {
+  console.warn('Non-fatal module error (ignored):', e.message);
+  return;
+}
 window.LoadingState.fail(`${e.message}\n\nFile: ${e.filename}\nLine: ${e.lineno}:${e.colno}`);
 });
 window.addEventListener('unhandledrejection', (e) => {
 console.error("Unhandled promise rejection:", e.reason);
+// Don't show FATAL error for module/import rejections
+if (e.reason && e.reason.message && e.reason.message.includes('module specifier')) {
+  console.warn('Non-fatal module rejection (ignored):', e.reason.message);
+  return;
+}
 window.LoadingState.fail(e.reason);
 });
 // Start loading
 window.LoadingState.setProgress(5, 'Loading scripts...');
 </script>
-<!-- DuckDB-WASM interop module -->
+<!-- Import map: DuckDB-WASM uses bare specifier "apache-arrow" -->
+<script type="importmap">
+{"imports":{"apache-arrow":"https://esm.sh/apache-arrow@17"}}
+</script>
+<!-- DuckDB-WASM interop module (loaded gracefully - not required for core app) -->
 <script type="module">
-import './js/duckdb-interop.js';
-window.LoadingState.setProgress(15, 'DuckDB module loaded');
+try {
+  await import('./js/duckdb-interop.js');
+  window.LoadingState.setProgress(15, 'DuckDB module loaded');
+} catch (e) {
+  console.warn('DuckDB module unavailable (non-fatal):', e.message);
+  window.LoadingState.setProgress(15, 'DuckDB skipped (not available)');
+}
 </script>
 <!-- Web Audio API interop module -->
 <script type="module">

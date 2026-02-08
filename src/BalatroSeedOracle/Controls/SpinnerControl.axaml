@@ -1,7 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             x:Class="BalatroSeedOracle.Controls.SpinnerControl">
+             x:Class="BalatroSeedOracle.Controls.SpinnerControl"
+             x:DataType="controls:SpinnerControl">
     
     <UserControl.Resources>
         <converters:ShadowDirectionToMarginConverter x:Key="ShadowMarginConverter"/>
@@ -30,7 +32,7 @@
                         <Border Name="PART_Shadow"
                                 Background="{StaticResource HoverShadow}"
                                 CornerRadius="4"
-                                Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=button}"/>
+                                Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=button}"/>
                         <!-- Button -->
                         <Border Background="{TemplateBinding Background}"
                                 CornerRadius="4"
@@ -112,7 +114,7 @@
         <TextBlock Grid.Row="0"
                    x:Name="LabelText"
                    Classes="spinner-label"
-                   Text="{Binding Label, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                   Text="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}}"/>
         
         <!-- Spinner control -->
         <Grid Grid.Row="1">
@@ -138,7 +140,7 @@
                         CornerRadius="6"
                         HorizontalAlignment="Stretch"
                         Height="27"
-                        Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
+                        Margin="{Binding ShadowDirection, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}, Converter={StaticResource ShadowMarginConverter}, ConverterParameter=badge}"/>
                 <!-- Badge -->
                 <Button x:Name="ValueButton"
                         Classes="value-badge"
@@ -148,7 +150,7 @@
                         <!-- Display mode -->
                         <TextBlock x:Name="ValueText"
                                    Classes="value-text"
-                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}}"/>
                         <!-- Edit mode -->
                         <TextBox x:Name="ValueEdit"
                                  Classes="value-text"
@@ -156,7 +158,7 @@
                                  BorderThickness="0"
                                  Padding="0"
                                  TextAlignment="Center"
-                                 IsVisible="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 IsVisible="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}}"
                                  LostFocus="OnValueEditLostFocus"
                                  KeyDown="OnValueEditKeyDown"/>
                     </Grid>

@@ -37,6 +37,12 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         private bool _showDeleteButton = true;
 
+        /// <summary>
+        /// Y position for the selection triangle (Canvas.Top) in the filter list.
+        /// </summary>
+        [ObservableProperty]
+        private double _selectedItemTriangleY;
+
         // Properties
         public ObservableCollection<FilterBrowserItemViewModel> CurrentPageFilters { get; } = new();
 

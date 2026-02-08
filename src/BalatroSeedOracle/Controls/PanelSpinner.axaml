@@ -1,8 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Controls.PanelSpinner">
+             x:Class="BalatroSeedOracle.Controls.PanelSpinner"
+             x:DataType="controls:PanelSpinner">
     
     <UserControl.Styles>
         <!-- Arrow button style - Red navigation buttons -->
@@ -134,7 +136,7 @@
         <Button Grid.Column="0"
                 Name="PrevButton"
                 Classes="panel-arrow"
-                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=controls:PanelSpinner}}"
                 Click="OnPrevClick">
             <icons:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
@@ -200,7 +202,7 @@
         <Button Grid.Column="4"
                 Name="NextButton"
                 Classes="panel-arrow"
-                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=controls:PanelSpinner}}"
                 Click="OnNextClick">
             <icons:PackIconMaterial Kind="ChevronRight" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>

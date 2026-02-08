@@ -47,7 +47,15 @@ window.WebAudioManager = {
         try {
             // Fetch audio file
             const response = await fetch(audioUrl);
+            if (!response.ok) {
+                console.warn(`Audio file not found: ${audioUrl} (${response.status})`);
+                return false;
+            }
             const arrayBuffer = await response.arrayBuffer();
+            if (arrayBuffer.byteLength === 0) {
+                console.warn(`Audio file empty: ${audioUrl}`);
+                return false;
+            }
             const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
             // Create buffer source
@@ -98,7 +106,15 @@ window.WebAudioManager = {
 
         try {
             const response = await fetch(audioUrl);
+            if (!response.ok) {
+                console.warn(`SFX file not found: ${audioUrl} (${response.status})`);
+                return false;
+            }
             const arrayBuffer = await response.arrayBuffer();
+            if (arrayBuffer.byteLength === 0) {
+                console.warn(`SFX file empty: ${audioUrl}`);
+                return false;
+            }
             const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
             this.sfxTracks.set(sfxName, audioBuffer);

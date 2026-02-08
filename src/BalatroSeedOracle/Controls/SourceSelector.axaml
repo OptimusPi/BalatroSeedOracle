@@ -1,7 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             x:Class="BalatroSeedOracle.Controls.SourceSelector">
+             x:Class="BalatroSeedOracle.Controls.SourceSelector"
+             x:DataType="vm:SourceSelectorViewModel">
     
     <UserControl.Styles>
         <Style Selector="ComboBox">
@@ -51,7 +53,7 @@
                       SelectedItem="{Binding SelectedSource}"
                       HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="vm:SourceOptionViewModel">
                         <TextBlock Text="{Binding DisplayName}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

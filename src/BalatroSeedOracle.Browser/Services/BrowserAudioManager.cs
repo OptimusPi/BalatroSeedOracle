@@ -68,12 +68,31 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
         try
         {
             await InitializeWebAudioJS();
-            var audioBaseUrl = "/Assets/Audio/";
+            // Use relative paths so audio works when served under any base path (e.g. /BSO/)
+            var audioBaseUrl = "Assets/Audio/";
             foreach (var trackName in _trackNames)
-                await LoadTrackJS(trackName, $"{audioBaseUrl}{trackName}.ogg", true);
-            var sfxBaseUrl = "/Assets/Audio/SFX/";
+            {
+                try
+                {
+                    await LoadTrackJS(trackName, $"{audioBaseUrl}{trackName}.ogg", true);
+                }
+                catch (Exception trackEx)
+                {
+                    DebugLogger.LogError("BrowserAudioManager", $"Skipping track {trackName}: {trackEx.Message}");
+                }
+            }
+            var sfxBaseUrl = "Assets/Audio/SFX/";
             foreach (var sfxName in _sfxNames)
-                await LoadSfxJS(sfxName, $"{sfxBaseUrl}{sfxName}.ogg");
+            {
+                try
+                {
+                    await LoadSfxJS(sfxName, $"{sfxBaseUrl}{sfxName}.ogg");
+                }
+                catch (Exception sfxEx)
+                {
+                    DebugLogger.LogError("BrowserAudioManager", $"Skipping SFX {sfxName}: {sfxEx.Message}");
+                }
+            }
             // Sync current master volume to JS (ViewModel may have set it before we were ready; don't overwrite with 0)
             SetMasterVolumeJS(_masterVolume);
             _cancellationTokenSource = new CancellationTokenSource();
@@ -125,18 +144,31 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
 
     public FrequencyBands GetFrequencyBands(string trackName)
     {
-        var jsObj = GetFrequencyBandsJS(trackName);
-        if (jsObj == null)
+        // Don't call into JS if audio never initialized - avoids synchronous JS interop
+        // from background threads which triggers "Blocking the thread" warnings and can
+        // cause Mono assertion crashes on the Finalizer thread.
+        if (!_isInitialized)
             return new FrequencyBands();
-        return new FrequencyBands
+
+        try
         {
-            BassAvg = (float)jsObj.GetPropertyAsDouble("bassAvg"),
-            BassPeak = (float)jsObj.GetPropertyAsDouble("bassPeak"),
-            MidAvg = (float)jsObj.GetPropertyAsDouble("midAvg"),
-            MidPeak = (float)jsObj.GetPropertyAsDouble("midPeak"),
-            HighAvg = (float)jsObj.GetPropertyAsDouble("highAvg"),
-            HighPeak = (float)jsObj.GetPropertyAsDouble("highPeak"),
-        };
+            var jsObj = GetFrequencyBandsJS(trackName);
+            if (jsObj == null)
+                return new FrequencyBands();
+            return new FrequencyBands
+            {
+                BassAvg = (float)jsObj.GetPropertyAsDouble("bassAvg"),
+                BassPeak = (float)jsObj.GetPropertyAsDouble("bassPeak"),
+                MidAvg = (float)jsObj.GetPropertyAsDouble("midAvg"),
+                MidPeak = (float)jsObj.GetPropertyAsDouble("midPeak"),
+                HighAvg = (float)jsObj.GetPropertyAsDouble("highAvg"),
+                HighPeak = (float)jsObj.GetPropertyAsDouble("highPeak"),
+            };
+        }
+        catch
+        {
+            return new FrequencyBands();
+        }
     }
 
     public void SetTrackVolume(string trackName, float volume) =>

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,10 +22,28 @@ namespace BalatroSeedOracle.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ScoreFormatted))]
         [NotifyPropertyChangedFor(nameof(ScoreTooltip))]
+        [NotifyPropertyChangedFor(nameof(TotalScore))]
         private int score;
 
         [ObservableProperty]
         private string details = "";
+
+        /// <summary>
+        /// Total score (alias for Score for ResultItemView / compiled bindings).
+        /// </summary>
+        public int TotalScore { get => Score; set => Score = value; }
+
+        /// <summary>
+        /// Per-column tally scores for display.
+        /// </summary>
+        [ObservableProperty]
+        private IList<int> _scores = Array.Empty<int>();
+
+        /// <summary>
+        /// Background color for the result row.
+        /// </summary>
+        [ObservableProperty]
+        private IBrush? _backgroundColor;
 
         /// <summary>
         /// Formatted score display (with thousands separator)

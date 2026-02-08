@@ -124,6 +124,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         public string[] DeckDisplayValues => _parentViewModel.DeckDisplayValues;
         public string[] StakeDisplayValues => _parentViewModel.StakeDisplayValues;
 
+        /// <summary>
+        /// Current deck display string for binding (avoids indexer in compiled bindings).
+        /// </summary>
+        public string CurrentDeckDisplayValue =>
+            SelectedDeckIndex >= 0 && SelectedDeckIndex < DeckDisplayValues.Length
+                ? DeckDisplayValues[SelectedDeckIndex]
+                : "";
+
         // Deck/Stake preview image
         public Avalonia.Media.IImage? DeckStakePreviewImage
         {

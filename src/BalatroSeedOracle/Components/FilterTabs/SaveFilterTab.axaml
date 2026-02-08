@@ -13,7 +13,7 @@
             <Border Grid.Column="0" Background="{StaticResource DarkBackground}" BorderBrush="{StaticResource ModalBorder}" BorderThickness="2" CornerRadius="8" Padding="8" Margin="0,0,12,0">
                 <StackPanel>
                     <Image Source="{Binding DeckStakePreviewImage}" Width="90" Height="120" Stretch="Uniform"/>
-                    <TextBlock Text="{Binding DeckDisplayValues[SelectedDeckIndex]}" FontSize="12" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding CurrentDeckDisplayValue}" FontSize="12" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             <!-- Filter Name -->

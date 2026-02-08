@@ -3,11 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
+             xmlns:models="using:BalatroSeedOracle.Models"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="BalatroSeedOracle.Views.FilterTabs.FilterTabView">
+             x:Class="BalatroSeedOracle.Views.FilterTabs.FilterTabView"
+             x:DataType="vm:FilterTabViewModel">
   <ItemsControl ItemsSource="{Binding Items}">
     <ItemsControl.ItemTemplate>
-      <DataTemplate>
+      <DataTemplate x:DataType="models:FilterItem">
         <TextBlock Text="{Binding Name}" />
       </DataTemplate>
     </ItemsControl.ItemTemplate>

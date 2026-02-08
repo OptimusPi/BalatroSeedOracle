@@ -78,5 +78,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// Get margin for indentation based on nesting level
         /// </summary>
         public string IndentMargin => $"{NestingLevel * 20},0,0,0";
+
+        /// <summary>
+        /// Category string for icon sizing (CategoryToWidth/Height converters). Uses ClauseType for operator clauses.
+        /// </summary>
+        public string Category => ClauseType;
     }
 }

@@ -519,6 +519,7 @@ public partial class AnalyzerViewModel : ObservableObject
 public class ShopItemViewModel
 {
     public int Index { get; set; }
+    public string DisplayIndex => Index.ToString();
     public string ItemType { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
 }

@@ -36,6 +36,7 @@ namespace BalatroSeedOracle.Models
 
         public ObservableCollection<ShopItemModel> ShopItems { get; set; } = new();
         public bool HasShopItems => ShopItems.Count > 0;
+        public string ShopItemsCountText => HasShopItems ? $"{ShopItems.Count} item(s)" : "";
 
         public ObservableCollection<BoosterPackModel> BoosterPacks { get; set; } = new();
         public bool HasBoosterPacks => BoosterPacks.Count > 0;

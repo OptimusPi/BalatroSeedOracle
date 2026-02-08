@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Controls.EditionSelector">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Controls.EditionSelector"
+             x:DataType="vm:EditionSelectorViewModel">
     
     <UserControl.Styles>
         <Style Selector="ComboBox">
@@ -50,7 +52,7 @@
                       SelectedItem="{Binding SelectedEdition}"
                       HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="vm:EditionOptionViewModel">
                         <TextBlock Text="{Binding DisplayName}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>

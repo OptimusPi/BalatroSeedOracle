@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Components.DeckAndStakeSelector"
+             x:DataType="vm:DeckAndStakeSelectorViewModel">
 
     <StackPanel Spacing="24" HorizontalAlignment="Center">
         <!-- Deck Spinner (Balatro-style panel with title/description/dots) -->
