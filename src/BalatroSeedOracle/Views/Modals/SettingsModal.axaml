@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
+             x:DataType="vm:SettingsModalViewModel"
              MinWidth="600"
              MinHeight="550">
 
@@ -26,6 +28,24 @@
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                
+                <!-- Search Engine Selector -->
+                <Border Background="#20FFFFFF" CornerRadius="8" Padding="16" Width="320">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Search Engine" FontFamily="{StaticResource BalatroFont}" Foreground="{StaticResource Gold}" HorizontalAlignment="Center"/>
+                        <ComboBox SelectedIndex="{Binding SelectedSearchEngineIndex}" HorizontalAlignment="Stretch">
+                            <ComboBoxItem>Local (This Device)</ComboBoxItem>
+                            <ComboBoxItem>Public Cloud</ComboBoxItem>
+                            <ComboBoxItem>Custom Remote</ComboBoxItem>
+                        </ComboBox>
+                        
+                        <TextBox Text="{Binding CustomRemoteUrl}" 
+                                 Watermark="http://192.168.1.x:5000"
+                                 IsVisible="{Binding IsCustomUrlVisible}"
+                                 HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Border>
+
                 <Button Content="Word Lists"
                         Classes="btn-red"
                         Width="320"

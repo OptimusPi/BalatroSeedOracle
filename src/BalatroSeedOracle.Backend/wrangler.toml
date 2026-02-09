@@ -1,0 +1,19 @@
+name = "balatro-workstation-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# Reuse the existing D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "weejoker-scores"
+database_id = "efae89d7-55f9-4eb1-bdac-5d9dad0845a0"
+
+# Reuse the existing R2 Bucket for JAML Cartridges
+[[r2_buckets]]
+binding = "SEED_ASSETS"
+bucket_name = "seeds-1"
+
+[cors]
+origins = ["*"]
+methods = ["GET", "POST"]
+max_age = 86400

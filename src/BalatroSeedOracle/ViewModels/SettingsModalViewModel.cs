@@ -12,9 +12,20 @@ namespace BalatroSeedOracle.ViewModels
     public partial class SettingsModalViewModel : ObservableObject
     {
         private readonly UserProfileService _userProfileService;
+        private readonly SearchManager? _searchManager; // Nullable if service might fail
 
         [ObservableProperty]
         private int _visualizerTheme;
+        
+        // Search Engine Settings
+        [ObservableProperty]
+        private int _selectedSearchEngineIndex; // 0=Local, 1=Public, 2=Custom
+        
+        [ObservableProperty]
+        private string _customRemoteUrl = "http://localhost:5000";
+        
+        [ObservableProperty]
+        private bool _isCustomUrlVisible;
 
         // Feature toggles (default OFF)
         [ObservableProperty]
@@ -38,6 +49,35 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnVisualizerThemeChanged(int value)
         {
             SaveVisualizerTheme();
+        }
+
+        partial void OnSelectedSearchEngineIndexChanged(int value)
+        {
+            IsCustomUrlVisible = value == 2;
+            UpdateSearchEngine();
+        }
+
+        partial void OnCustomRemoteUrlChanged(string value)
+        {
+            if (SelectedSearchEngineIndex == 2)
+                UpdateSearchEngine();
+        }
+
+        private void UpdateSearchEngine()
+        {
+            switch (SelectedSearchEngineIndex)
+            {
+                case 0:
+                    _searchManager.SetEngine(_searchManager.LocalEngine);
+                    break;
+                case 1:
+                    _searchManager.SetRemoteUrl("https://api.motely.gg");
+                    break;
+                case 2:
+                    if (!string.IsNullOrWhiteSpace(CustomRemoteUrl))
+                        _searchManager.SetRemoteUrl(CustomRemoteUrl);
+                    break;
+            }
         }
 
         partial void OnShowMusicMixerWidgetChanged(bool value)
@@ -75,6 +115,14 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService =
                 App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
+            
+            // Allow null for previewer/design time, but log warning
+            _searchManager = App.GetService<SearchManager>();
+            if (_searchManager == null)
+            {
+                // In production this might be fatal, but for now we allow it
+                DebugLogger.Log("SettingsModalViewModel", "SearchManager not available");
+            }
 
             LoadSettings();
         }
@@ -94,6 +142,22 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
+            
+            // Load Engine Settings
+            if (_searchManager.ActiveEngine.IsLocal)
+            {
+                SelectedSearchEngineIndex = 0;
+            }
+            else if (_searchManager.ActiveEngine.Name.Contains("api.motely.gg"))
+            {
+                SelectedSearchEngineIndex = 1;
+            }
+            else
+            {
+                SelectedSearchEngineIndex = 2;
+                IsCustomUrlVisible = true;
+                // Ideally extract URL from ActiveEngine name if possible
+            }
 
             // Load feature toggles (default OFF if not in profile)
             ShowMusicMixerWidget = profile.FeatureToggles?.ShowMusicMixer ?? false;
