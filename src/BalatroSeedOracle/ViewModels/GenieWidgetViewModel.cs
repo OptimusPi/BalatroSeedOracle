@@ -83,7 +83,11 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private string GetLocalGenieUrl()
         {
-            if (_apiHostService is not null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl))
+            if (
+                _apiHostService is not null
+                && _apiHostService.IsRunning
+                && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl)
+            )
                 return _apiHostService.ServerUrl.TrimEnd('/') + "/genie";
             return DefaultLocalGenieApi;
         }
@@ -178,8 +182,7 @@ namespace BalatroSeedOracle.ViewModels
                         jamlResult!,
                         out var config,
                         out var parseError
-                    )
-                    && config is not null
+                    ) && config is not null
                 )
                 {
                     GeneratedFilterName = config.Name ?? "Generated Filter";
@@ -275,10 +278,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Parse the generated JSON into a MotelyJsonConfig
-                var config =
-                    JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        GeneratedJson
-                    );
+                var config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    GeneratedJson
+                );
 
                 if (config is null)
                 {

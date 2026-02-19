@@ -1,10 +1,10 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using BalatroSeedOracle.ViewModels;
-using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Helpers;
 using System;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
+using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Components
 {
@@ -17,14 +17,16 @@ namespace BalatroSeedOracle.Components
             // Initialize ViewModel
             ViewModel = new DailyRitualWidgetViewModel(
                 DaylatroHighScoreService.Instance,
-                App.GetService<UserProfileService>() 
+                App.GetService<UserProfileService>()
                     ?? throw new InvalidOperationException("UserProfileService not available"),
                 App.GetService<FilterConfigurationService>()
-                    ?? throw new InvalidOperationException("FilterConfigurationService not available")
+                    ?? throw new InvalidOperationException(
+                        "FilterConfigurationService not available"
+                    )
             );
 
             DataContext = ViewModel;
-            
+
             InitializeComponent();
 
             ViewModel.Initialize();

@@ -13,11 +13,15 @@ namespace BalatroSeedOracle.Controls;
 /// </summary>
 public class ErrorBoundary : ContentControl
 {
-    public static readonly StyledProperty<bool> HasErrorProperty =
-        AvaloniaProperty.Register<ErrorBoundary, bool>(nameof(HasError), defaultValue: false);
+    public static readonly StyledProperty<bool> HasErrorProperty = AvaloniaProperty.Register<
+        ErrorBoundary,
+        bool
+    >(nameof(HasError), defaultValue: false);
 
-    public static readonly StyledProperty<string> ErrorMessageProperty =
-        AvaloniaProperty.Register<ErrorBoundary, string>(nameof(ErrorMessage), defaultValue: "");
+    public static readonly StyledProperty<string> ErrorMessageProperty = AvaloniaProperty.Register<
+        ErrorBoundary,
+        string
+    >(nameof(ErrorMessage), defaultValue: "");
 
     private readonly RelayCommand _retryCommand;
 

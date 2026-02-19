@@ -119,7 +119,10 @@ namespace BalatroSeedOracle.Components
             }
             catch (Exception ex)
             {
-                Helpers.DebugLogger.LogError("FilterOperatorControl", $"OnCardPointerPressed: {ex.Message}");
+                Helpers.DebugLogger.LogError(
+                    "FilterOperatorControl",
+                    $"OnCardPointerPressed: {ex.Message}"
+                );
             }
         }
 

@@ -14,14 +14,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public FiltersModal()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private FiltersModal(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
-                throw new InvalidOperationException("Do not use FiltersModal(). Use new FiltersModal(menu.ViewModel.FiltersModalViewModel).");
+                throw new InvalidOperationException(
+                    "Do not use FiltersModal(). Use new FiltersModal(menu.ViewModel.FiltersModalViewModel)."
+                );
             InitializeComponent();
         }
 

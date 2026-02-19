@@ -31,7 +31,11 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Total score (alias for Score for ResultItemView / compiled bindings).
         /// </summary>
-        public int TotalScore { get => Score; set => Score = value; }
+        public int TotalScore
+        {
+            get => Score;
+            set => Score = value;
+        }
 
         /// <summary>
         /// Per-column tally scores for display.

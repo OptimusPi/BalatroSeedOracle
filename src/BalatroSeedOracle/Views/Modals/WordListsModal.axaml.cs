@@ -29,7 +29,7 @@ namespace BalatroSeedOracle.Views.Modals
         public WordListsModal()
         {
             InitializeComponent();
-            
+
             // Wire up events using direct x:Name field access
             FileSelector.SelectionChanged += OnFileSelectionChanged;
             TextEditor.TextChanged += (s, e) =>
@@ -37,7 +37,7 @@ namespace BalatroSeedOracle.Views.Modals
                 _hasUnsavedChanges = true;
                 UpdateStatus("Modified - click Save to persist changes");
             };
-            
+
             EnsureDirectoryExists();
             LoadFileList();
         }
@@ -110,7 +110,10 @@ tag"
         {
             try
             {
-                if (FileSelector.SelectedItem is ComboBoxItem item && item.Content is string fileName)
+                if (
+                    FileSelector.SelectedItem is ComboBoxItem item
+                    && item.Content is string fileName
+                )
                 {
                     if (_hasUnsavedChanges && !string.IsNullOrEmpty(_currentFile))
                     {
@@ -126,7 +129,10 @@ tag"
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("WordListsModal", $"Error in OnFileSelectionChanged: {ex.Message}");
+                DebugLogger.LogError(
+                    "WordListsModal",
+                    $"Error in OnFileSelectionChanged: {ex.Message}"
+                );
                 UpdateStatus($"Error loading file: {ex.Message}");
             }
         }
@@ -175,13 +181,19 @@ tag"
 
             try
             {
-                File.WriteAllText(newFilePath, "# New word list\n# One word or phrase per line\n\n");
+                File.WriteAllText(
+                    newFilePath,
+                    "# New word list\n# One word or phrase per line\n\n"
+                );
                 LoadFileList();
 
                 // Select the new file
                 for (int i = 0; i < FileSelector.Items.Count; i++)
                 {
-                    if (FileSelector.Items[i] is ComboBoxItem item && item.Content?.ToString() == newFileName)
+                    if (
+                        FileSelector.Items[i] is ComboBoxItem item
+                        && item.Content?.ToString() == newFileName
+                    )
                     {
                         FileSelector.SelectedIndex = i;
                         break;

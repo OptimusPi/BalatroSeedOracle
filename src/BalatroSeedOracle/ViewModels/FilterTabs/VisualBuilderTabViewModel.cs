@@ -270,8 +270,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string _selectedSeal = "None"; // None, Purple, Gold, Red, Blue (for StandardCards only)
 
         // Button icon images
-        public IImage? DebuffedIconImage =>
-            SpriteService.Instance.GetEditionImage("debuffed");
+        public IImage? DebuffedIconImage => SpriteService.Instance.GetEditionImage("debuffed");
         public IImage? NegativeEditionImage =>
             SelectedMainCategory == "StandardCard"
                 ? SpriteService.Instance.GetEditionImage("negative") // Edition overlay for cards
@@ -1002,10 +1001,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // ALLOW DUPLICATES: Same item can be added multiple times with different configs
             SelectedMust.Add(item);
 
-            DebugLogger.Log(
-                "AddToMust",
-                $"SelectedMust count after add: {SelectedMust.Count}"
-            );
+            DebugLogger.Log("AddToMust", $"SelectedMust count after add: {SelectedMust.Count}");
 
             // Log all items in collection for debugging
             for (int i = 0; i < SelectedMust.Count; i++)
@@ -3172,10 +3168,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // If edition is None but item was previously negative, reload regular sprite
                 if (item.Edition == "negative")
                 {
-                    item.ItemImage = SpriteService.Instance.GetJokerImage(
-                        item.Name,
-                        edition: null
-                    );
+                    item.ItemImage = SpriteService.Instance.GetJokerImage(item.Name, edition: null);
                 }
             }
 

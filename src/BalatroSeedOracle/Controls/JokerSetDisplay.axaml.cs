@@ -23,9 +23,7 @@ namespace BalatroSeedOracle.Controls
     public partial class JokerSetDisplay : UserControl
     {
         public static readonly StyledProperty<JokerSet?> JokerSetProperty =
-            AvaloniaProperty.Register<JokerSetDisplay, JokerSet?>(
-                nameof(JokerSet)
-            );
+            AvaloniaProperty.Register<JokerSetDisplay, JokerSet?>(nameof(JokerSet));
 
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent = RoutedEvent.Register<
             JokerSetDisplay,
@@ -54,10 +52,7 @@ namespace BalatroSeedOracle.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (
-                change.Property == JokerSetProperty
-                && change.NewValue is JokerSet set
-            )
+            if (change.Property == JokerSetProperty && change.NewValue is JokerSet set)
             {
                 LoadJokerSet(set);
             }

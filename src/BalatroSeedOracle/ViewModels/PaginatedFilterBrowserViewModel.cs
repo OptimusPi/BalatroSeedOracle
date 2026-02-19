@@ -301,11 +301,17 @@ namespace BalatroSeedOracle.ViewModels
 
                 Motely.Filters.MotelyJsonConfig? config = null;
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
-                
+
                 if (extension == ".jaml")
                 {
                     // Load JAML file
-                    if (!Motely.JamlConfigLoader.TryLoadFromJamlString(content, out config, out var jamlError))
+                    if (
+                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                            content,
+                            out config,
+                            out var jamlError
+                        )
+                    )
                     {
                         DebugLogger.LogError(
                             "PaginatedFilterBrowserViewModel",
@@ -328,7 +334,7 @@ namespace BalatroSeedOracle.ViewModels
                         options
                     );
                 }
-                
+
                 if (config is null || string.IsNullOrEmpty(config.Name))
                     return null;
 

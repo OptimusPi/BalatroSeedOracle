@@ -53,7 +53,8 @@ namespace BalatroSeedOracle.Services
                     $"SaveFilterAsync called with path: {filePath}"
                 );
 
-                var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
+                var isBrowser =
+                    _platformServices is not null && !_platformServices.SupportsFileSystem;
                 DebugLogger.Log(
                     "ConfigurationService",
                     isBrowser
@@ -101,7 +102,9 @@ namespace BalatroSeedOracle.Services
                     // Invalidate cache for this filter
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
                     if (isBrowser && _filterCacheService is not null)
-                        await _filterCacheService.InvalidateFilterAsync(filterId).ConfigureAwait(false);
+                        await _filterCacheService
+                            .InvalidateFilterAsync(filterId)
+                            .ConfigureAwait(false);
                     else
                         _filterCacheService?.InvalidateFilter(filterId);
 
@@ -127,7 +130,8 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var isBrowser = _platformServices is not null && !_platformServices.SupportsFileSystem;
+                var isBrowser =
+                    _platformServices is not null && !_platformServices.SupportsFileSystem;
 
                 if (isBrowser)
                 {
@@ -172,12 +176,7 @@ namespace BalatroSeedOracle.Services
                     {
                         if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
                         {
-                            if (
-                                MotelyJsonConfig.TryLoadFromJsonFile(
-                                    filePath,
-                                    out var config
-                                )
-                            )
+                            if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
                             {
                                 return config as T;
                             }

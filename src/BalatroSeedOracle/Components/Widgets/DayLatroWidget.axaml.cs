@@ -103,7 +103,8 @@ namespace BalatroSeedOracle.Components
                 if (platformServices?.SupportsAnalyzer == true)
                 {
                     var analyzeVm = ViewModel?.CreateAnalyzeModalViewModel();
-                    if (analyzeVm == null) return;
+                    if (analyzeVm == null)
+                        return;
                     var analyzeModal = new AnalyzeModal(analyzeVm);
                     analyzeModal.SetSeedAndAnalyze(seed);
 

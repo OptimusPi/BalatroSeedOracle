@@ -1651,20 +1651,14 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (_audioManager is null)
                 return;
-            _audioManager.SetTrackVolume(
-                "Drums1",
-                (float)(settings.Drums1.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Drums1", (float)(settings.Drums1.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Drums1",
                 (float)Math.Clamp((settings.Drums1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _audioManager.SetTrackMuted("Drums1", settings.Drums1.Muted);
 
-            _audioManager.SetTrackVolume(
-                "Drums2",
-                (float)(settings.Drums2.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Drums2", (float)(settings.Drums2.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Drums2",
                 (float)Math.Clamp((settings.Drums2.Pan + 100.0) / 200.0, 0.0, 1.0)
@@ -1685,40 +1679,28 @@ namespace BalatroSeedOracle.ViewModels
             );
             _audioManager.SetTrackMuted("Bass2", settings.Bass2.Muted);
 
-            _audioManager.SetTrackVolume(
-                "Chords1",
-                (float)(settings.Chords1.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Chords1", (float)(settings.Chords1.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Chords1",
                 (float)Math.Clamp((settings.Chords1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _audioManager.SetTrackMuted("Chords1", settings.Chords1.Muted);
 
-            _audioManager.SetTrackVolume(
-                "Chords2",
-                (float)(settings.Chords2.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Chords2", (float)(settings.Chords2.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Chords2",
                 (float)Math.Clamp((settings.Chords2.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _audioManager.SetTrackMuted("Chords2", settings.Chords2.Muted);
 
-            _audioManager.SetTrackVolume(
-                "Melody1",
-                (float)(settings.Melody1.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Melody1", (float)(settings.Melody1.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Melody1",
                 (float)Math.Clamp((settings.Melody1.Pan + 100.0) / 200.0, 0.0, 1.0)
             );
             _audioManager.SetTrackMuted("Melody1", settings.Melody1.Muted);
 
-            _audioManager.SetTrackVolume(
-                "Melody2",
-                (float)(settings.Melody2.Volume / 100.0)
-            );
+            _audioManager.SetTrackVolume("Melody2", (float)(settings.Melody2.Volume / 100.0));
             _audioManager.SetTrackPan(
                 "Melody2",
                 (float)Math.Clamp((settings.Melody2.Pan + 100.0) / 200.0, 0.0, 1.0)

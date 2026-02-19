@@ -90,7 +90,9 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<NotificationService>()
             ));
             // Factory for AnalyzeModalViewModel so Views/ViewModels get it via injection, not ServiceHelper
-            services.AddSingleton<Func<AnalyzeModalViewModel>>(sp => () => sp.GetRequiredService<AnalyzeModalViewModel>());
+            services.AddSingleton<Func<AnalyzeModalViewModel>>(sp =>
+                () => sp.GetRequiredService<AnalyzeModalViewModel>()
+            );
             services.AddSingleton<FiltersModalViewModel>(sp => new FiltersModalViewModel(
                 sp.GetRequiredService<IConfigurationService>(),
                 sp.GetRequiredService<IFilterService>(),

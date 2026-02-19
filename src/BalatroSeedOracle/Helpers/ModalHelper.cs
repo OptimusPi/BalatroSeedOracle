@@ -81,7 +81,9 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(this Views.BalatroMainMenu menu)
         {
-            var filtersContent = new Views.Modals.FiltersModal(menu.ViewModel.FiltersModalViewModel);
+            var filtersContent = new Views.Modals.FiltersModal(
+                menu.ViewModel.FiltersModalViewModel
+            );
             return menu.ShowModal("FILTER DESIGNER", filtersContent);
         }
 
@@ -96,7 +98,9 @@ namespace BalatroSeedOracle.Helpers
             Motely.Filters.MotelyJsonConfig config
         )
         {
-            var filtersContent = new Views.Modals.FiltersModal(menu.ViewModel.FiltersModalViewModel);
+            var filtersContent = new Views.Modals.FiltersModal(
+                menu.ViewModel.FiltersModalViewModel
+            );
 
             // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
             _ = LoadFilterForEditingAsync(filtersContent, config);
@@ -150,10 +154,7 @@ namespace BalatroSeedOracle.Helpers
                 // Handle desktop icon creation when modal closes with active search
                 searchContent.ViewModel.CreateShortcutRequested += (sender, cfgPath) =>
                 {
-                    DebugLogger.Log(
-                        "ModalHelper",
-                        $"Desktop icon requested for config: {cfgPath}"
-                    );
+                    DebugLogger.Log("ModalHelper", $"Desktop icon requested for config: {cfgPath}");
                     // Get the search ID from the modal
                     var searchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(searchId))
@@ -176,10 +177,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "ModalHelper",
-                    $"Failed to create SearchModal: {ex}"
-                );
+                DebugLogger.LogError("ModalHelper", $"Failed to create SearchModal: {ex}");
                 throw;
             }
         }
@@ -529,10 +527,7 @@ namespace BalatroSeedOracle.Helpers
             }
             catch (System.Exception ex)
             {
-                DebugLogger.LogError(
-                    "ModalHelper",
-                    $"Failed to clone filter: {ex.Message}"
-                );
+                DebugLogger.LogError("ModalHelper", $"Failed to clone filter: {ex.Message}");
             }
 
             return string.Empty;

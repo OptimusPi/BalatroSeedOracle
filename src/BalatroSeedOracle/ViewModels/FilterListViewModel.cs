@@ -190,8 +190,9 @@ namespace BalatroSeedOracle.ViewModels
         {
             if (ShowSelectButton)
             {
-                SelectButtonText =
-                    SelectedFilter is not null ? "USE THIS FILTER" : "SEARCH WITH THIS FILTER";
+                SelectButtonText = SelectedFilter is not null
+                    ? "USE THIS FILTER"
+                    : "SEARCH WITH THIS FILTER";
             }
             else
             {

@@ -38,7 +38,10 @@ public sealed class RestoreActiveSearchesProviderService : IRestoreActiveSearche
                         continue;
                     }
 
-                    if (!JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out _) || config is null)
+                    if (
+                        !JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out _)
+                        || config is null
+                    )
                     {
                         SequentialLibrary.Instance.SetSearchActive(searchId, false);
                         continue;
@@ -47,17 +50,19 @@ public sealed class RestoreActiveSearchesProviderService : IRestoreActiveSearche
                     config.Deck = meta.Deck;
                     config.Stake = meta.Stake;
 
-                    restored.Add(new RestoredSearchInfo
-                    {
-                        SearchId = searchId,
-                        FilterName = meta.JamlFilter ?? "Unknown",
-                        Deck = meta.Deck ?? "Red",
-                        Stake = meta.Stake ?? "White",
-                        LastSeed = meta.LastSeed,
-                        TotalSeedsProcessed = meta.TotalSeedsProcessed,
-                        TotalMatches = meta.TotalMatches,
-                        Config = config,
-                    });
+                    restored.Add(
+                        new RestoredSearchInfo
+                        {
+                            SearchId = searchId,
+                            FilterName = meta.JamlFilter ?? "Unknown",
+                            Deck = meta.Deck ?? "Red",
+                            Stake = meta.Stake ?? "White",
+                            LastSeed = meta.LastSeed,
+                            TotalSeedsProcessed = meta.TotalSeedsProcessed,
+                            TotalMatches = meta.TotalMatches,
+                            Config = config,
+                        }
+                    );
                 }
                 catch
                 {

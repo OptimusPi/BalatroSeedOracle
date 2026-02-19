@@ -78,7 +78,10 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
                 }
                 catch (Exception trackEx)
                 {
-                    DebugLogger.LogError("BrowserAudioManager", $"Skipping track {trackName}: {trackEx.Message}");
+                    DebugLogger.LogError(
+                        "BrowserAudioManager",
+                        $"Skipping track {trackName}: {trackEx.Message}"
+                    );
                 }
             }
             var sfxBaseUrl = "Assets/Audio/SFX/";
@@ -90,7 +93,10 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
                 }
                 catch (Exception sfxEx)
                 {
-                    DebugLogger.LogError("BrowserAudioManager", $"Skipping SFX {sfxName}: {sfxEx.Message}");
+                    DebugLogger.LogError(
+                        "BrowserAudioManager",
+                        $"Skipping SFX {sfxName}: {sfxEx.Message}"
+                    );
                 }
             }
             // Sync current master volume to JS (ViewModel may have set it before we were ready; don't overwrite with 0)

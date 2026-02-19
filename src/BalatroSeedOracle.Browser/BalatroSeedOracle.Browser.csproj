@@ -4,47 +4,48 @@
     <TargetFramework>net10.0-browser</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>BalatroSeedOracle.Browser</AssemblyName>
-    
+
     <!-- WASM AOT compilation -->
     <RunAOTCompilation>true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <TrimMode>link</TrimMode>
-    
-    <!-- WASM performance: SIMD + threads (both supported in modern browsers) -->
+    <TrimMode>full</TrimMode>
+
+    <!-- WASM performance: SIMD + threads + native exception handling -->
     <WasmEnableSIMD>true</WasmEnableSIMD>
     <WasmEnableThreads>true</WasmEnableThreads>
-    
-    <!-- Exception handling for better error reporting -->
     <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
-    
+
+    <!-- Binaryen wasm-opt optimizer + strip IL already compiled to native WASM -->
+    <WasmRunWasmOpt>true</WasmRunWasmOpt>
+    <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+
     <!-- Required for SkiaSharp native interop -->
     <WasmBuildNative>true</WasmBuildNative>
-    
-    <!-- Memory Configuration -->
-    <!-- Max heap: 512MB = 536870912 bytes (must be multiple of 16384) -->
-    <EmccMaximumHeapSize>536870912</EmccMaximumHeapSize>
-    
+
     <!-- Globalization: Use invariant mode for smaller bundle -->
     <InvariantGlobalization>true</InvariantGlobalization>
-    
+
     <!-- JSON Serialization: Disable reflection for AOT -->
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-    
-    <!-- Disable unnecessary features for smaller bundle -->
+
+    <!-- Runtime feature switches: eliminate dead code paths in trimmed build -->
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <DebuggerSupport>false</DebuggerSupport>
     <EnableStackTraceInException>false</EnableStackTraceInException>
-    
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+
     <!-- Build Configuration -->
     <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
-    
+
     <!-- ICU Data: Sharded mode loads locale data on-demand instead of bundling all 27MB -->
     <WasmIcuDataMode>Sharded</WasmIcuDataMode>
-    
+
     <!-- Enable source-generated JS interop so [JSImport] partial methods get implementations -->
     <EnableJavaScriptInteropGeneration>true</EnableJavaScriptInteropGeneration>
-    
+
     <!-- Suppress CA1416 warnings - browser-specific APIs are only called in browser builds -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
@@ -71,8 +72,15 @@
     <ItemGroup>
       <IndexHtmlLinesReplaced Include="@(IndexHtmlLines->Replace('BUILD_TIMESTAMP_PLACEHOLDER', '$(_BuildTimestamp)'))" />
     </ItemGroup>
-    <WriteLinesToFile File="$(_PublishIndexHtml)" Lines="@(IndexHtmlLinesReplaced)" Overwrite="true" />
-    <Message Text="Injected build timestamp into publish output: $(_BuildTimestamp)" Importance="high" />
+    <WriteLinesToFile
+      File="$(_PublishIndexHtml)"
+      Lines="@(IndexHtmlLinesReplaced)"
+      Overwrite="true"
+    />
+    <Message
+      Text="Injected build timestamp into publish output: $(_BuildTimestamp)"
+      Importance="high"
+    />
   </Target>
 
   <!-- Copy contents of publish/wwwroot into API wwwroot/BSO/ (flat: BSO/index.html, BSO/_framework/, no BSO/wwwroot/) -->
@@ -86,10 +94,10 @@
     <Message Text="Deploying WASM from $(_WasmSourceDir) to API wwwroot/BSO" Importance="high" />
     <Copy
       SourceFiles="@(WasmFiles)"
-      DestinationFolder="$(MSBuildThisFileDirectory)..\..\external\Motely\wwwroot\BSO\%(RecursiveDir)"
+      DestinationFolder="$(MSBuildThisFileDirectory)..\MotelyJAML\wwwroot\BSO\%(RecursiveDir)"
       SkipUnchangedFiles="false"
     />
-    <Message Text="Deployment complete: external/Motely/wwwroot/BSO" Importance="high" />
+    <Message Text="Deployment complete: src/MotelyJAML/wwwroot/BSO" Importance="high" />
   </Target>
 
   <ItemGroup>
@@ -100,5 +108,4 @@
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
   </ItemGroup>
-
 </Project>

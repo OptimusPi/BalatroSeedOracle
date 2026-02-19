@@ -77,14 +77,22 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                         // Add database formats only when IResultsDatabaseExporter is available (Desktop)
                         if (dbExporter != null && dbExporter.IsAvailable)
                         {
-                            fileTypeChoices.Add(new Avalonia.Platform.Storage.FilePickerFileType("Search Results (.db)")
-                            {
-                                Patterns = new[] { "*.db" },
-                            });
-                            fileTypeChoices.Add(new Avalonia.Platform.Storage.FilePickerFileType("Search Results Lake (.ducklake)")
-                            {
-                                Patterns = new[] { "*.ducklake" },
-                            });
+                            fileTypeChoices.Add(
+                                new Avalonia.Platform.Storage.FilePickerFileType(
+                                    "Search Results (.db)"
+                                )
+                                {
+                                    Patterns = new[] { "*.db" },
+                                }
+                            );
+                            fileTypeChoices.Add(
+                                new Avalonia.Platform.Storage.FilePickerFileType(
+                                    "Search Results Lake (.ducklake)"
+                                )
+                                {
+                                    Patterns = new[] { "*.ducklake" },
+                                }
+                            );
                         }
 
                         // Show save file dialog
@@ -139,18 +147,16 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                                 rows.Add(row);
                             }
 
-                            await parquetExporter.ExportAsync(
-                                filePath,
-                                headers,
-                                rows
-                            );
+                            await parquetExporter.ExportAsync(filePath, headers, rows);
                             DebugLogger.Log(
                                 "ResultsTab",
                                 $"Exported {results.Count()} results to Parquet: {filePath}"
                             );
                         }
-                        else if (filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
-                                 filePath.EndsWith(".ducklake", StringComparison.OrdinalIgnoreCase))
+                        else if (
+                            filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                            || filePath.EndsWith(".ducklake", StringComparison.OrdinalIgnoreCase)
+                        )
                         {
                             // DATABASE EXPORT (.db or .ducklake) via IResultsDatabaseExporter (Motely.DB)
                             if (dbExporter == null || !dbExporter.IsAvailable)

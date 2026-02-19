@@ -38,10 +38,12 @@ namespace BalatroSeedOracle.ViewModels
         #endregion
 
         /// <summary>Set by parent (BalatroMainMenu) so widget can create analyze modal VM without ServiceHelper.</summary>
-        public void SetAnalyzeModalFactory(Func<AnalyzeModalViewModel> factory) => _analyzeModalFactory = factory;
+        public void SetAnalyzeModalFactory(Func<AnalyzeModalViewModel> factory) =>
+            _analyzeModalFactory = factory;
 
         /// <summary>Creates an AnalyzeModalViewModel when factory was set by parent; otherwise returns null.</summary>
-        public AnalyzeModalViewModel? CreateAnalyzeModalViewModel() => _analyzeModalFactory?.Invoke();
+        public AnalyzeModalViewModel? CreateAnalyzeModalViewModel() =>
+            _analyzeModalFactory?.Invoke();
 
         #region Observable Properties
 

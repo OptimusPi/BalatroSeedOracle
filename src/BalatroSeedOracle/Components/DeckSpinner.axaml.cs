@@ -15,11 +15,10 @@ namespace BalatroSeedOracle.Components
         public event EventHandler<int>? DeckChanged;
 
         // Expose ShowArrows property to forward to inner PanelSpinner
-        public static readonly StyledProperty<bool> ShowArrowsProperty =
-            AvaloniaProperty.Register<DeckSpinner, bool>(
-                nameof(ShowArrows),
-                defaultValue: true
-            );
+        public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<
+            DeckSpinner,
+            bool
+        >(nameof(ShowArrows), defaultValue: true);
 
         public bool ShowArrows
         {
@@ -42,11 +41,10 @@ namespace BalatroSeedOracle.Components
         }
 
         // Bindable StakeIndex for MVVM (updates overlay)
-        public static readonly StyledProperty<int> StakeIndexProperty =
-            AvaloniaProperty.Register<DeckSpinner, int>(
-                nameof(StakeIndex),
-                defaultValue: 0
-            );
+        public static readonly StyledProperty<int> StakeIndexProperty = AvaloniaProperty.Register<
+            DeckSpinner,
+            int
+        >(nameof(StakeIndex), defaultValue: 0);
 
         public int StakeIndex
         {

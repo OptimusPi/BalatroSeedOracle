@@ -15,9 +15,11 @@ public sealed class BrowserResultsDatabaseExporter : IResultsDatabaseExporter
     public Task ExportToAsync(
         string path,
         IReadOnlyList<SearchResult> results,
-        IReadOnlyList<string> columnNames)
+        IReadOnlyList<string> columnNames
+    )
     {
         throw new System.NotImplementedException(
-            "Export to search results file (.db / .ducklake) is available on Desktop only. Use CSV export in the browser.");
+            "Export to search results file (.db / .ducklake) is available on Desktop only. Use CSV export in the browser."
+        );
     }
 }

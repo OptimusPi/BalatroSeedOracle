@@ -2,9 +2,9 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Motely.Filters;
-using Motely; // For SearchOptionsDto
 using BalatroSeedOracle.Helpers;
+using Motely; // For SearchOptionsDto
+using Motely.Filters;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger; // Resolve ambiguity
 
 namespace BalatroSeedOracle.Services.Engines
@@ -23,20 +23,19 @@ namespace BalatroSeedOracle.Services.Engines
             _httpClient = new HttpClient { BaseAddress = new Uri(_baseUrl) };
         }
 
-        public async Task<string> StartSearchAsync(MotelyJsonConfig config, SearchOptionsDto options)
+        public async Task<string> StartSearchAsync(
+            MotelyJsonConfig config,
+            SearchOptionsDto options
+        )
         {
-            try 
+            try
             {
                 // Map to API Request Model
-                var request = new 
-                {
-                    Config = config,
-                    Options = options
-                };
+                var request = new { Config = config, Options = options };
 
                 var response = await _httpClient.PostAsJsonAsync("/search", request);
                 response.EnsureSuccessStatusCode();
-                
+
                 var result = await response.Content.ReadFromJsonAsync<SearchStartResponse>();
                 return result?.SearchId ?? throw new Exception("No search ID returned");
             }
@@ -71,7 +70,7 @@ namespace BalatroSeedOracle.Services.Engines
                 return false;
             }
         }
-        
+
         private record SearchStartResponse(string SearchId);
     }
 }

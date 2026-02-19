@@ -46,8 +46,14 @@ public class Program
                 services.AddSingleton<SoundEffectsService>();
                 services.AddSingleton<IParquetExporter, ParquetExporter>();
                 services.AddSingleton<IResultsDatabaseExporter, ResultsDatabaseExporter>();
-                services.AddSingleton<ISequentialLibraryInitializer, SequentialLibraryInitializerService>();
-                services.AddSingleton<IRestoreActiveSearchesProvider, RestoreActiveSearchesProviderService>();
+                services.AddSingleton<
+                    ISequentialLibraryInitializer,
+                    SequentialLibraryInitializerService
+                >();
+                services.AddSingleton<
+                    IRestoreActiveSearchesProvider,
+                    RestoreActiveSearchesProviderService
+                >();
 
                 // API host
                 services.AddSingleton<IApiHostService, DesktopApiHostService>();

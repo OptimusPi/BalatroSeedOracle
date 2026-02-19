@@ -26,7 +26,10 @@ namespace BalatroSeedOracle.Helpers
             {
                 var json = File.ReadAllText(path);
                 // AOT-compatible: Use source-generated serializer context
-                var cfg = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.ShaderParametersConfig);
+                var cfg = JsonSerializer.Deserialize(
+                    json,
+                    BsoJsonSerializerContext.Default.ShaderParametersConfig
+                );
                 if (cfg == null)
                     return defaults;
                 return cfg.ToShaderParameters(defaults);

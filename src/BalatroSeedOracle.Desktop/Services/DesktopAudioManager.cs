@@ -29,7 +29,17 @@ public class DesktopAudioManager : IAudioManager, IDisposable
     private readonly Dictionary<string, SoundPlayer> _players = new();
     private readonly Dictionary<string, SpectrumAnalyzer> _analyzers = new();
     private readonly Dictionary<string, SoundPlayer> _sfxPlayers = new();
-    private readonly string[] _trackNames = { "Bass1", "Bass2", "Drums1", "Drums2", "Chords1", "Chords2", "Melody1", "Melody2" };
+    private readonly string[] _trackNames =
+    {
+        "Bass1",
+        "Bass2",
+        "Drums1",
+        "Drums2",
+        "Chords1",
+        "Chords2",
+        "Melody1",
+        "Melody2",
+    };
     private readonly string[] _sfxNames = { "highlight1", "paper1", "button" };
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _updateTask;
@@ -88,17 +98,24 @@ public class DesktopAudioManager : IAudioManager, IDisposable
     private void LoadTracks(AudioFormat format)
     {
         var audioDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio");
-        if (!Directory.Exists(audioDir)) return;
+        if (!Directory.Exists(audioDir))
+            return;
 
         foreach (var trackName in _trackNames)
         {
             var filePath = Path.Combine(audioDir, $"{trackName}.ogg");
-            if (!File.Exists(filePath)) continue;
+            if (!File.Exists(filePath))
+                continue;
             try
             {
                 var fileStream = File.OpenRead(filePath);
                 var dataProvider = new StreamDataProvider(_engine!, format, fileStream);
-                var player = new SoundPlayer(_engine!, format, dataProvider) { Name = trackName, Volume = 1.0f, IsLooping = true };
+                var player = new SoundPlayer(_engine!, format, dataProvider)
+                {
+                    Name = trackName,
+                    Volume = 1.0f,
+                    IsLooping = true,
+                };
                 var analyzer = new SpectrumAnalyzer(format, 2048, visualizer: null);
                 player.AddAnalyzer(analyzer);
                 _device!.MasterMixer.AddComponent(player);
@@ -113,17 +130,24 @@ public class DesktopAudioManager : IAudioManager, IDisposable
     private void LoadSoundEffects(AudioFormat format)
     {
         var sfxDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Audio", "SFX");
-        if (!Directory.Exists(sfxDir)) return;
+        if (!Directory.Exists(sfxDir))
+            return;
 
         foreach (var sfxName in _sfxNames)
         {
             var filePath = Path.Combine(sfxDir, $"{sfxName}.ogg");
-            if (!File.Exists(filePath)) continue;
+            if (!File.Exists(filePath))
+                continue;
             try
             {
                 var fileStream = File.OpenRead(filePath);
                 var dataProvider = new StreamDataProvider(_engine!, format, fileStream);
-                var player = new SoundPlayer(_engine!, format, dataProvider) { Name = sfxName, Volume = 1.0f, IsLooping = false };
+                var player = new SoundPlayer(_engine!, format, dataProvider)
+                {
+                    Name = sfxName,
+                    Volume = 1.0f,
+                    IsLooping = false,
+                };
                 _device!.MasterMixer.AddComponent(player);
                 _sfxPlayers[sfxName] = player;
             }
@@ -140,7 +164,10 @@ public class DesktopAudioManager : IAudioManager, IDisposable
                 UpdateTrackIntensities();
                 await Task.Delay(UPDATE_RATE_MS, _cancellationTokenSource.Token);
             }
-            catch (OperationCanceledException) { break; }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
             catch { }
         }
     }
@@ -155,27 +182,40 @@ public class DesktopAudioManager : IAudioManager, IDisposable
         Chords2Intensity = GetTrackIntensity("Chords2");
         Melody1Intensity = GetTrackIntensity("Melody1");
         Melody2Intensity = GetTrackIntensity("Melody2");
-        AudioAnalysisUpdated?.Invoke(BassIntensity, ChordsIntensity, MelodyIntensity, Math.Max(Math.Max(BassIntensity, ChordsIntensity), MelodyIntensity));
+        AudioAnalysisUpdated?.Invoke(
+            BassIntensity,
+            ChordsIntensity,
+            MelodyIntensity,
+            Math.Max(Math.Max(BassIntensity, ChordsIntensity), MelodyIntensity)
+        );
     }
 
     private float GetTrackIntensity(string trackName)
     {
-        if (!_analyzers.TryGetValue(trackName, out var analyzer)) return 0f;
+        if (!_analyzers.TryGetValue(trackName, out var analyzer))
+            return 0f;
         var fftData = analyzer.SpectrumData;
-        if (fftData.Length == 0) return 0f;
+        if (fftData.Length == 0)
+            return 0f;
         float sum = 0f;
-        foreach (var magnitude in fftData) sum += magnitude * magnitude;
+        foreach (var magnitude in fftData)
+            sum += magnitude * magnitude;
         return (float)Math.Sqrt(sum / fftData.Length);
     }
 
     public FrequencyBands GetFrequencyBands(string trackName)
     {
-        if (!_analyzers.TryGetValue(trackName, out var analyzer)) return new FrequencyBands();
+        if (!_analyzers.TryGetValue(trackName, out var analyzer))
+            return new FrequencyBands();
         var fftData = analyzer.SpectrumData;
-        if (fftData.Length == 0) return new FrequencyBands();
+        if (fftData.Length == 0)
+            return new FrequencyBands();
         const float sampleRate = 44100f;
         float hzPerBin = sampleRate / 2048f;
-        int bassStart = (int)(20f / hzPerBin), bassEnd = (int)(250f / hzPerBin), midEnd = (int)(2000f / hzPerBin), highEnd = Math.Min((int)(20000f / hzPerBin), fftData.Length - 1);
+        int bassStart = (int)(20f / hzPerBin),
+            bassEnd = (int)(250f / hzPerBin),
+            midEnd = (int)(2000f / hzPerBin),
+            highEnd = Math.Min((int)(20000f / hzPerBin), fftData.Length - 1);
         return new FrequencyBands
         {
             BassAvg = CalculateBandAverage(fftData, bassStart, bassEnd),
@@ -189,40 +229,89 @@ public class DesktopAudioManager : IAudioManager, IDisposable
 
     private float CalculateBandAverage(ReadOnlySpan<float> fftData, int startBin, int endBin)
     {
-        if (startBin >= endBin || startBin >= fftData.Length) return 0f;
+        if (startBin >= endBin || startBin >= fftData.Length)
+            return 0f;
         endBin = Math.Min(endBin, fftData.Length);
         float sum = 0f;
-        for (int i = startBin; i < endBin; i++) sum += fftData[i];
+        for (int i = startBin; i < endBin; i++)
+            sum += fftData[i];
         return sum / (endBin - startBin);
     }
 
     private float CalculateBandPeak(ReadOnlySpan<float> fftData, int startBin, int endBin)
     {
-        if (startBin >= endBin || startBin >= fftData.Length) return 0f;
+        if (startBin >= endBin || startBin >= fftData.Length)
+            return 0f;
         endBin = Math.Min(endBin, fftData.Length);
         float peak = 0f;
-        for (int i = startBin; i < endBin; i++) if (fftData[i] > peak) peak = fftData[i];
+        for (int i = startBin; i < endBin; i++)
+            if (fftData[i] > peak)
+                peak = fftData[i];
         return peak;
     }
 
-    public void SetTrackVolume(string trackName, float volume) { if (_players.TryGetValue(trackName, out var player)) player.Volume = Math.Clamp(volume, 0f, 1f); }
-    public void SetTrackPan(string trackName, float pan) { if (_players.TryGetValue(trackName, out var player)) player.Pan = Math.Clamp(pan, 0f, 1f); }
-    public void SetTrackMuted(string trackName, bool muted) { if (_players.TryGetValue(trackName, out var player)) player.Mute = muted; }
-    public void Pause() { foreach (var player in _players.Values) player.Pause(); }
-    public void Resume() { foreach (var player in _players.Values) player.Play(); }
-    public void PlaySfx(string name, float volume = 1.0f) { if (_sfxPlayers.TryGetValue(name, out var player)) { player.Volume = Math.Clamp(volume, 0f, 1f); player.Seek(TimeSpan.Zero); player.Play(); } }
+    public void SetTrackVolume(string trackName, float volume)
+    {
+        if (_players.TryGetValue(trackName, out var player))
+            player.Volume = Math.Clamp(volume, 0f, 1f);
+    }
+
+    public void SetTrackPan(string trackName, float pan)
+    {
+        if (_players.TryGetValue(trackName, out var player))
+            player.Pan = Math.Clamp(pan, 0f, 1f);
+    }
+
+    public void SetTrackMuted(string trackName, bool muted)
+    {
+        if (_players.TryGetValue(trackName, out var player))
+            player.Mute = muted;
+    }
+
+    public void Pause()
+    {
+        foreach (var player in _players.Values)
+            player.Pause();
+    }
+
+    public void Resume()
+    {
+        foreach (var player in _players.Values)
+            player.Play();
+    }
+
+    public void PlaySfx(string name, float volume = 1.0f)
+    {
+        if (_sfxPlayers.TryGetValue(name, out var player))
+        {
+            player.Volume = Math.Clamp(volume, 0f, 1f);
+            player.Seek(TimeSpan.Zero);
+            player.Play();
+        }
+    }
 
     public void Dispose()
     {
-        if (_isDisposed) return;
+        if (_isDisposed)
+            return;
         _isDisposed = true;
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        foreach (var player in _players.Values) { player.Stop(); player.Dispose(); }
-        _players.Clear(); _analyzers.Clear();
-        foreach (var player in _sfxPlayers.Values) { player.Stop(); player.Dispose(); }
+        foreach (var player in _players.Values)
+        {
+            player.Stop();
+            player.Dispose();
+        }
+        _players.Clear();
+        _analyzers.Clear();
+        foreach (var player in _sfxPlayers.Values)
+        {
+            player.Stop();
+            player.Dispose();
+        }
         _sfxPlayers.Clear();
-        _device?.Stop(); _device?.Dispose();
+        _device?.Stop();
+        _device?.Dispose();
         _engine?.Dispose();
     }
 }

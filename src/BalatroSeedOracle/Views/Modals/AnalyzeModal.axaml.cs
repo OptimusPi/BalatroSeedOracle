@@ -20,14 +20,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public AnalyzeModal()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private AnalyzeModal(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
-                throw new InvalidOperationException("Do not use AnalyzeModal(). Creator must pass AnalyzeModalViewModel.");
+                throw new InvalidOperationException(
+                    "Do not use AnalyzeModal(). Creator must pass AnalyzeModalViewModel."
+                );
             InitializeComponent();
         }
 

@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Motely.Filters;
+using BalatroSeedOracle.Services;
 using Motely; // For SearchOptionsDto
 using Motely.Executors; // For MotelySearchOrchestrator
-using BalatroSeedOracle.Services;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Services.Engines
 {
@@ -34,19 +34,19 @@ namespace BalatroSeedOracle.Services.Engines
                 StartBatch = (ulong)(options.StartBatch ?? 0),
                 EndBatch = (ulong)(options.EndBatch ?? 1000000),
                 // Map StartSeed to StartBatch if provided
-                SpecificSeed = options.SpecificSeed
+                SpecificSeed = options.SpecificSeed,
             };
 
             if (!string.IsNullOrEmpty(options.StartSeed))
             {
                 // SeedMath handles conversion
-                 parameters.StartBatch = (ulong)SeedMath.SeedToSearchIndex(options.StartSeed);
+                parameters.StartBatch = (ulong)SeedMath.SeedToSearchIndex(options.StartSeed);
             }
 
             // Launch the orchestrator synchronously (it runs on its own threads)
             _currentContext = MotelySearchOrchestrator.LaunchWithContext(
-                config, 
-                parameters, 
+                config,
+                parameters,
                 useInMemory
             );
 

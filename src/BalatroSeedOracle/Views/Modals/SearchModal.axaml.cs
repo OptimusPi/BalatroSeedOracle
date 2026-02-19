@@ -22,15 +22,14 @@ namespace BalatroSeedOracle.Views.Modals
         /// Use <see cref="SearchModal(SearchModalViewModel)"/> - creator passes injected ViewModel.
         /// </summary>
         public SearchModal()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private SearchModal(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
                 throw new InvalidOperationException(
-                    "Do not use SearchModal(). Creator must pass ViewModel: new SearchModal(viewModel).");
+                    "Do not use SearchModal(). Creator must pass ViewModel: new SearchModal(viewModel)."
+                );
             ViewModel = null!;
             DataContext = null;
             InitializeComponent();

@@ -4,11 +4,11 @@
       "path": ".",
       "name": "BalatroSeedOracle",
       "exclude": {
-        "**/external/**/bin/**": true,
-        "**/external/**/obj/**": true,
-        "**/external/**/publish/**": true,
-        "**/external/**/SearchResults/**": true,
-        "**/external/**/WordLists/**": true,
+        "**/src/MotelyJAML/**/bin/**": true,
+        "**/src/MotelyJAML/**/obj/**": true,
+        "**/src/MotelyJAML/**/publish/**": true,
+        "**/src/MotelyJAML/**/SearchResults/**": true,
+        "**/src/MotelyJAML/**/WordLists/**": true,
         "**/bin/**": true,
         "**/obj/**": true,
         "**/node_modules/**": true,
@@ -28,6 +28,9 @@
         "**/pt-PT/**": true,
         "**/zh-Hans/**": true
       }
+    },
+    {
+      "path": "src/MotelyJAML"
     }
   ],
   "settings": {
@@ -35,12 +38,6 @@
       "**/external/**/bin/**": true,
       "**/external/**/obj/**": true,
       "**/external/**/publish/**": true,
-      "**/external/**/SearchResults/**": true,
-      "**/external/**/WordLists/**": true,
-      "**/external/Motely/Motely.API/**": true,
-      "**/external/Motely/Motely.CLI/**": true,
-      "**/external/Motely/Motely.TUI/**": true,
-      "**/external/Motely/Motely.Tests/**": true,
       "**/bin/**": true,
       "**/obj/**": true,
       "**/node_modules/**": true,
@@ -66,15 +63,15 @@
       "**/zh-Hans/**": true
     },
     "files.watcherExclude": {
-      "**/external/**/bin/**": true,
-      "**/external/**/obj/**": true,
-      "**/external/**/publish/**": true,
-      "**/external/**/SearchResults/**": true,
-      "**/external/**/WordLists/**": true,
-      "**/external/Motely/Motely.API/**": true,
-      "**/external/Motely/Motely.CLI/**": true,
-      "**/external/Motely/Motely.TUI/**": true,
-      "**/external/Motely/Motely.Tests/**": true,
+      "**/src/MotelyJAML/**/bin/**": true,
+      "**/src/MotelyJAML/**/obj/**": true,
+      "**/src/MotelyJAML/**/publish/**": true,
+      "**/src/MotelyJAML/**/SearchResults/**": true,
+      "**/src/MotelyJAML/**/WordLists/**": true,
+      "**/src/MotelyJAML/Motely.API/**": true,
+      "**/src/MotelyJAML/Motely.CLI/**": true,
+      "**/src/MotelyJAML/Motely.TUI/**": true,
+      "**/src/MotelyJAML/Motely.Tests/**": true,
       "**/bin/**": true,
       "**/obj/**": true,
       "**/node_modules/**": true,
@@ -100,15 +97,15 @@
       "**/zh-Hans/**": true
     },
     "search.exclude": {
-      "**/external/**/bin/**": true,
-      "**/external/**/obj/**": true,
-      "**/external/**/publish/**": true,
-      "**/external/**/SearchResults/**": true,
-      "**/external/**/WordLists/**": true,
-      "**/external/Motely/Motely.API/**": true,
-      "**/external/Motely/Motely.CLI/**": true,
-      "**/external/Motely/Motely.TUI/**": true,
-      "**/external/Motely/Motely.Tests/**": true,
+      "**/src/MotelyJAML/**/bin/**": true,
+      "**/src/MotelyJAML/**/obj/**": true,
+      "**/src/MotelyJAML/**/publish/**": true,
+      "**/src/MotelyJAML/**/SearchResults/**": true,
+      "**/src/MotelyJAML/**/WordLists/**": true,
+      "**/src/MotelyJAML/Motely.API/**": true,
+      "**/src/MotelyJAML/Motely.CLI/**": true,
+      "**/src/MotelyJAML/Motely.TUI/**": true,
+      "**/src/MotelyJAML/Motely.Tests/**": true,
       "**/bin/**": true,
       "**/obj/**": true,
       "**/node_modules/**": true,
@@ -130,4 +127,3 @@
     }
   }
 }
-

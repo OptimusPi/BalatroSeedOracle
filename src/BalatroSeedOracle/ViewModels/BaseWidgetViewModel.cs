@@ -210,8 +210,7 @@ namespace BalatroSeedOracle.ViewModels
                 WidgetWindow = window;
 
                 // Set initial position using position service
-                var positionService =
-                    ServiceHelper.GetService<Services.WidgetPositionService>();
+                var positionService = ServiceHelper.GetService<Services.WidgetPositionService>();
                 if (positionService is not null)
                 {
                     var (x, y) = positionService.FindNextAvailablePosition(this, IsMinimized);
@@ -257,8 +256,7 @@ namespace BalatroSeedOracle.ViewModels
         private void CloseWidget()
         {
             // Unregister from position service
-            var positionService =
-                ServiceHelper.GetService<Services.WidgetPositionService>();
+            var positionService = ServiceHelper.GetService<Services.WidgetPositionService>();
             positionService?.UnregisterWidget(this);
 
             // Close and cleanup window

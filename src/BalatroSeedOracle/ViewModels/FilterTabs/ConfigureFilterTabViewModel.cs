@@ -662,7 +662,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 DebugLogger.Log("ConfigureFilterTab", $"Updated config for item: {itemKey}");
 
                 // Also update parent's ItemConfigs if available
-                if (_parentViewModel is not null && _parentViewModel.ItemConfigs.ContainsKey(itemKey))
+                if (
+                    _parentViewModel is not null
+                    && _parentViewModel.ItemConfigs.ContainsKey(itemKey)
+                )
                 {
                     _parentViewModel.ItemConfigs[itemKey] = config;
                 }

@@ -62,15 +62,14 @@ namespace BalatroSeedOracle.Views
         /// Must not be used at runtime. Resolve BalatroMainMenu from DI (constructor injection).
         /// </summary>
         public BalatroMainMenu()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private BalatroMainMenu(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
                 throw new InvalidOperationException(
-                    "Do not instantiate BalatroMainMenu() with no args. Resolve from DI: GetRequiredService<BalatroMainMenu>() (ViewModel is injected by the container).");
+                    "Do not instantiate BalatroMainMenu() with no args. Resolve from DI: GetRequiredService<BalatroMainMenu>() (ViewModel is injected by the container)."
+                );
             ViewModel = null!;
             DataContext = null;
             InitializeComponent();
@@ -236,7 +235,11 @@ namespace BalatroSeedOracle.Views
             );
             var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
             var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM, configurationService, filterService);
+            var filterSelectionModal = new FilterSelectionModal(
+                filterSelectionVM,
+                configurationService,
+                filterService
+            );
 
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
@@ -267,7 +270,9 @@ namespace BalatroSeedOracle.Views
 
                             try
                             {
-                                var configPath = await ViewModel.GetFilterConfigPathAsync(result.FilterId);
+                                var configPath = await ViewModel.GetFilterConfigPathAsync(
+                                    result.FilterId
+                                );
                                 if (configPath != null)
                                 {
                                     HideModalContent();
@@ -424,7 +429,11 @@ namespace BalatroSeedOracle.Views
             );
             var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
             var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-            var filterSelectionModal = new FilterSelectionModal(filterSelectionVM, configurationService, filterService);
+            var filterSelectionModal = new FilterSelectionModal(
+                filterSelectionVM,
+                configurationService,
+                filterService
+            );
 
             // Handle modal close event
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
@@ -483,8 +492,7 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null)
                         {
                             // Get original filter name for default (using FilterService)
-                            var filterService =
-                                ServiceHelper.GetRequiredService<IFilterService>();
+                            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
                             var originalName = await filterService.GetFilterNameAsync(
                                 result.FilterId
                             );
@@ -545,10 +553,7 @@ namespace BalatroSeedOracle.Views
                     var filterName = await ShowFilterNameInputDialog();
                     if (string.IsNullOrEmpty(filterName))
                     {
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            "Filter creation cancelled by user"
-                        );
+                        DebugLogger.Log("BalatroMainMenu", "Filter creation cancelled by user");
                         return; // User cancelled
                     }
 
@@ -635,10 +640,7 @@ namespace BalatroSeedOracle.Views
                         null
                     );
 
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Filter loaded for editing: {filterId}"
-                    );
+                    DebugLogger.Log("BalatroMainMenu", $"✅ Filter loaded for editing: {filterId}");
                 }
 
                 // Verify filter was loaded properly
@@ -892,10 +894,7 @@ namespace BalatroSeedOracle.Views
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to create filter: {ex.Message}"
-                );
+                DebugLogger.LogError("BalatroMainMenu", $"Failed to create filter: {ex.Message}");
                 return null;
             }
         }
@@ -1091,8 +1090,11 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OpenAnalyzer(string? filterId)
         {
-            var analyzeVm = ViewModel?.CreateAnalyzeModalViewModel()
-                ?? throw new InvalidOperationException("BalatroMainMenu requires ViewModel with CreateAnalyzeModalViewModel.");
+            var analyzeVm =
+                ViewModel?.CreateAnalyzeModalViewModel()
+                ?? throw new InvalidOperationException(
+                    "BalatroMainMenu requires ViewModel with CreateAnalyzeModalViewModel."
+                );
             var analyzeModal = new AnalyzeModal(analyzeVm);
             var modal = new StandardModal("ANALYZE");
             modal.SetContent(analyzeModal);

@@ -23,7 +23,13 @@ namespace BalatroSeedOracle.Helpers
                 var safe = Normalize(preset.Name);
                 var path = Path.Combine(Dir, safe + ".json");
                 // AOT-compatible: Use source-generated serializer context
-                File.WriteAllText(path, JsonSerializer.Serialize(preset, BsoJsonSerializerContext.Default.TransitionPreset));
+                File.WriteAllText(
+                    path,
+                    JsonSerializer.Serialize(
+                        preset,
+                        BsoJsonSerializerContext.Default.TransitionPreset
+                    )
+                );
                 DebugLogger.Log(
                     "TransitionPresetHelper",
                     $"Saved transition '{preset.Name}' → {path}"
@@ -46,7 +52,10 @@ namespace BalatroSeedOracle.Helpers
                 if (!File.Exists(path))
                     return null;
                 // AOT-compatible: Use source-generated serializer context
-                return JsonSerializer.Deserialize(File.ReadAllText(path), BsoJsonSerializerContext.Default.TransitionPreset);
+                return JsonSerializer.Deserialize(
+                    File.ReadAllText(path),
+                    BsoJsonSerializerContext.Default.TransitionPreset
+                );
             }
             catch (Exception ex)
             {

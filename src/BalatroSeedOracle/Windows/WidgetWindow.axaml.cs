@@ -40,7 +40,7 @@ namespace BalatroSeedOracle.Windows
         public WidgetWindow()
         {
             InitializeComponent();
-            
+
             // Set up window properties
             if (
                 Application.Current?.ApplicationLifetime

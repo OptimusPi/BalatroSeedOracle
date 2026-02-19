@@ -31,14 +31,12 @@ public static class DesktopAppInitializer
 
         _initialized = true;
 
-        // Set the platform-specific initialization callback
-        App.PlatformSpecificInitialization = () =>
+        // Set the platform-specific initialization callback (awaited from App after intro transition)
+        App.PlatformSpecificInitialization = async () =>
         {
             var app = Avalonia.Application.Current;
             if (app?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // No polling needed: ShowLoadingWindowAndPreloadSprites sets desktop.MainWindow synchronously
-                // (before any await), so it's available when PlatformSpecificInitialization runs.
                 if (desktop.MainWindow is BalatroSeedOracle.Views.MainWindow mainWindow)
                 {
                     try
@@ -46,16 +44,14 @@ public static class DesktopAppInitializer
                         mainWindow.InitializeDesktopWidgets();
                         DebugLogger.Log("App", "Desktop widgets initialized successfully");
 
-                        // Initialize search library and restore active searches (with error logging)
-                        InitializeSearchLibraryAsync().ContinueWith(t =>
-                        {
-                            if (t.IsFaulted && t.Exception != null)
-                                DebugLogger.LogError("App", $"Search library init failed: {t.Exception.InnerException?.Message}");
-                        }, TaskContinuationOptions.OnlyOnFaulted);
+                        await InitializeSearchLibraryAsync();
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("App", $"Failed to initialize desktop widgets: {ex.Message}");
+                        DebugLogger.LogError(
+                            "App",
+                            $"Failed to initialize desktop widgets: {ex.Message}"
+                        );
                     }
                 }
                 else
@@ -73,11 +69,7 @@ public static class DesktopAppInitializer
     {
         try
         {
-            // Initialize the library root for DuckLake catalogs
-            var seedsPath = AppPaths.SearchResultsDir;
-            SequentialLibrary.SetLibraryRoot(seedsPath);
-            GenericLibrary.SetLibraryRoot(seedsPath);
-            DebugLogger.Log("App", $"Search libraries initialized at: {seedsPath}");
+            MotelySearchOrchestrator.SetRepository(new MotelyRepository());
 
             // Set thread budget for MultiSearchManager
             MultiSearchManager.Instance.SetTotalThreads(Environment.ProcessorCount);
@@ -88,19 +80,24 @@ public static class DesktopAppInitializer
             if (searchManager != null)
             {
                 var jamlFiltersDir = AppPaths.FiltersDir;
-                var restoredSearches = await searchManager.RestoreActiveSearchesAsync(jamlFiltersDir);
-                
+                var restoredSearches = await searchManager.RestoreActiveSearchesAsync(
+                    jamlFiltersDir
+                );
+
                 if (restoredSearches.Count > 0)
                 {
                     DebugLogger.Log("App", $"Found {restoredSearches.Count} searches to restore");
-                    
+
                     // For now, just log that we found them
                     // The user can manually resume through the UI
                     foreach (var search in restoredSearches)
                     {
-                        DebugLogger.Log("App", $"  - {search.FilterName} ({search.Deck}/{search.Stake}) @ seed {search.LastSeed}");
+                        DebugLogger.Log(
+                            "App",
+                            $"  - {search.FilterName} ({search.Deck}/{search.Stake}) @ seed {search.LastSeed}"
+                        );
                     }
-                    
+
                     // TODO: Auto-create SearchWidget for each restored search
                     // This requires access to the MainMenu's WidgetDock
                 }

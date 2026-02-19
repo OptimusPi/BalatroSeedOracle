@@ -297,7 +297,8 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService = userProfileService;
             _appDataStore = appDataStore;
             _platformServices = platformServices;
-            _analyzeModalFactory = analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            _analyzeModalFactory =
+                analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -503,10 +504,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 IsSearching = false;
                 AddConsoleMessage($"Error starting search: {ex.Message}");
-                BsoLogger.LogError(
-                    "SearchModalViewModel",
-                    $"Error starting search: {ex.Message}"
-                );
+                BsoLogger.LogError("SearchModalViewModel", $"Error starting search: {ex.Message}");
             }
         }
 
@@ -539,10 +537,7 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // STOP mode: Don't save state, just stop
                         AddConsoleMessage("Stopping search (progress will NOT be saved)...");
-                        BsoLogger.Log(
-                            "SearchModalViewModel",
-                            "Stopping search (NOT saving state)"
-                        );
+                        BsoLogger.Log("SearchModalViewModel", "Stopping search (NOT saving state)");
 
                         // Stop without saving
                         _searchContext.StopSearch();
@@ -574,10 +569,7 @@ namespace BalatroSeedOracle.ViewModels
             catch (Exception ex)
             {
                 AddConsoleMessage($"Error stopping search: {ex.Message}");
-                BsoLogger.LogError(
-                    "SearchModalViewModel",
-                    $"Error stopping search: {ex.Message}"
-                );
+                BsoLogger.LogError("SearchModalViewModel", $"Error stopping search: {ex.Message}");
             }
         }
 
@@ -854,10 +846,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             else
             {
-                BsoLogger.LogError(
-                    "SearchModalViewModel",
-                    "New filter requested action is null!"
-                );
+                BsoLogger.LogError("SearchModalViewModel", "New filter requested action is null!");
             }
         }
 
@@ -1050,7 +1039,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 // Add result to collection (UI will update automatically via ObservableCollection)
                 SearchResults.Add(result);
-                
+
                 // Update panel text with current count
                 PanelText = $"Found {SearchResults.Count} seeds so far...";
             });
@@ -1145,7 +1134,9 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         // Let Motely handle continuation from its internal state
                         // Don't set StartBatch - Motely will auto-resume if it has saved progress
-                        AddConsoleMessage("Continue enabled - Motely will resume from last position if available.");
+                        AddConsoleMessage(
+                            "Continue enabled - Motely will resume from last position if available."
+                        );
                     }
                     else
                     {
@@ -1596,7 +1587,13 @@ namespace BalatroSeedOracle.ViewModels
                 var extension = Path.GetExtension(configPath).ToLowerInvariant();
                 if (extension == ".jaml")
                 {
-                    if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var jamlConfig, out var jamlError))
+                    if (
+                        Motely.JamlConfigLoader.TryLoadFromJamlString(
+                            content,
+                            out var jamlConfig,
+                            out var jamlError
+                        )
+                    )
                         config = jamlConfig;
                     else
                     {
@@ -1647,7 +1644,6 @@ namespace BalatroSeedOracle.ViewModels
                         "SearchModalViewModel",
                         $"Successfully loaded filter: {config.Name} (Deck: {config.Deck}, Stake: {config.Stake})"
                     );
-
 
                     // Switch to the Search tab so user can start searching
                     SelectedTabIndex = 1; // Search tab (Deck/Stake removed)
@@ -2267,7 +2263,10 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (mainMenu.ShaderBackground is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground)
+                if (
+                    mainMenu.ShaderBackground
+                    is BalatroSeedOracle.Controls.BalatroShaderBackground shaderBackground
+                )
                 {
                     // Apply all shader parameters
                     shaderBackground.SetTime(parameters.TimeSpeed);

@@ -55,7 +55,6 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
-    <!-- Avalonia Accelerate Components -->
     <PackageReference Include="Avalonia.Controls.TreeDataGrid" />
     <PackageReference Include="Avalonia.Controls.Markdown" />
     <PackageReference Include="Avalonia.Controls.WebView" />
@@ -71,27 +70,10 @@
     <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\external\Motely\Motely\Motely.csproj" />
-    <ProjectReference Include="..\..\external\Motely\Motely.Orchestration\Motely.Orchestration.csproj" />
-    <!-- Motely.API referenced from platform-specific projects (Desktop) that need it -->
+    <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />
+    <ProjectReference Include="..\MotelyJAML\Motely.Orchestration\Motely.Orchestration.csproj" />
   </ItemGroup>
-
-  <!-- AOT/Trimming: Preserve types that use reflection (per Avalonia docs) -->
   <ItemGroup>
     <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Explicitly exclude external folder from publish -->
-    <Content Remove="..\..\external\**\*" />
-    <Compile Remove="..\..\external\**\*" />
-    <None Remove="..\..\external\**\*" />
-    <EmbeddedResource Remove="..\..\external\**\*" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Exclude platform projects' obj folders from compilation -->
-    <Compile Remove="..\BalatroSeedOracle.Browser\obj\**\*" />
-    <Compile Remove="..\BalatroSeedOracle.Desktop\obj\**\*" />
-    <Compile Remove="..\BalatroSeedOracle.iOS\obj\**\*" />
-    <Compile Remove="..\BalatroSeedOracle.Android\obj\**\*" />
   </ItemGroup>
 </Project>

@@ -2381,7 +2381,10 @@ namespace BalatroSeedOracle.Services
                 string json = reader.ReadToEnd();
 
                 // AOT-compatible: Use nested source-generated serializer context
-                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.BossMetadataJson);
+                var metadata = JsonSerializer.Deserialize(
+                    json,
+                    SpriteJsonContext.Default.BossMetadataJson
+                );
                 if (metadata == null)
                 {
                     return null;
@@ -2418,7 +2421,10 @@ namespace BalatroSeedOracle.Services
                 string json = reader.ReadToEnd();
 
                 // AOT-compatible: Use nested source-generated serializer context
-                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.PlayingCardMetadataJson);
+                var metadata = JsonSerializer.Deserialize(
+                    json,
+                    SpriteJsonContext.Default.PlayingCardMetadataJson
+                );
                 if (metadata?.Sprites == null)
                 {
                     return new();
@@ -2463,7 +2469,10 @@ namespace BalatroSeedOracle.Services
                 string json = reader.ReadToEnd();
 
                 // AOT-compatible: Use nested source-generated serializer context
-                var metadata = JsonSerializer.Deserialize(json, SpriteJsonContext.Default.EnhancersMetadataJson);
+                var metadata = JsonSerializer.Deserialize(
+                    json,
+                    SpriteJsonContext.Default.EnhancersMetadataJson
+                );
                 if (metadata == null)
                 {
                     return null;
@@ -2622,9 +2631,7 @@ namespace BalatroSeedOracle.Services
         [JsonSerializable(typeof(PlayingCardMetadataJson))]
         [JsonSerializable(typeof(EnhancersMetadataJson))]
         [JsonSerializable(typeof(List<SpritePosition>))]
-        private partial class SpriteJsonContext : JsonSerializerContext
-        {
-        }
+        private partial class SpriteJsonContext : JsonSerializerContext { }
     }
 
     public class SpritePosition

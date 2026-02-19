@@ -40,7 +40,11 @@ namespace BalatroSeedOracle.Services
                 {
                     var json = File.ReadAllText(_favoritesPath);
                     // AOT-compatible: Use source-generated serializer context
-                    _data = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.FavoritesData) ?? new FavoritesData();
+                    _data =
+                        JsonSerializer.Deserialize(
+                            json,
+                            BsoJsonSerializerContext.Default.FavoritesData
+                        ) ?? new FavoritesData();
                 }
                 else
                 {
@@ -172,13 +176,19 @@ namespace BalatroSeedOracle.Services
             {
                 try
                 {
-                    var json = JsonSerializer.Serialize(_data, BsoJsonSerializerContext.Default.FavoritesData);
+                    var json = JsonSerializer.Serialize(
+                        _data,
+                        BsoJsonSerializerContext.Default.FavoritesData
+                    );
                     await File.WriteAllTextAsync(_favoritesPath, json);
                     DebugLogger.Log("FavoritesService", "Favorites saved successfully");
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError("FavoritesService", $"Failed to save favorites: {ex.Message}");
+                    DebugLogger.LogError(
+                        "FavoritesService",
+                        $"Failed to save favorites: {ex.Message}"
+                    );
                 }
             });
         }

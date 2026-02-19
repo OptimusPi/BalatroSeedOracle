@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Motely.Filters; // Restored
 using Motely; // For SearchOptionsDto
+using Motely.Filters; // Restored
 
 namespace BalatroSeedOracle.Services.Engines
 {
@@ -12,17 +12,17 @@ namespace BalatroSeedOracle.Services.Engines
     {
         string Name { get; }
         bool IsLocal { get; }
-        
+
         /// <summary>
         /// Starts a search with the given configuration.
         /// </summary>
         Task<string> StartSearchAsync(MotelyJsonConfig config, SearchOptionsDto options);
-        
+
         /// <summary>
         /// Stops a running search.
         /// </summary>
         Task StopSearchAsync(string searchId);
-        
+
         /// <summary>
         /// Checks if the engine is available/connected.
         /// </summary>

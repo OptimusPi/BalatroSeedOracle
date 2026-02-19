@@ -46,10 +46,14 @@ namespace BalatroSeedOracle.Views.Modals
         public FilterSelectionModal(
             FilterSelectionModalViewModel viewModel,
             IConfigurationService configurationService,
-            IFilterService filterService)
+            IFilterService filterService
+        )
         {
-            _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
-            _filterService = filterService ?? throw new ArgumentNullException(nameof(filterService));
+            _configurationService =
+                configurationService
+                ?? throw new ArgumentNullException(nameof(configurationService));
+            _filterService =
+                filterService ?? throw new ArgumentNullException(nameof(filterService));
             DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             InitializeComponent();
             this.DataContextChanged += OnDataContextChanged;
@@ -182,155 +186,153 @@ namespace BalatroSeedOracle.Views.Modals
                 }
 
                 // Create styled confirmation dialog
-            var dialog = new Window
-            {
-                Width = 450,
-                SizeToContent = SizeToContent.Height,
-                CanResize = false,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                SystemDecorations = SystemDecorations.None,
-                Background = Brushes.Transparent,
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
-            };
-
-            bool? result = null;
-
-            var yesButton = new Button
-            {
-                Content = "Yes",
-                Classes = { "btn-red" },
-                MinWidth = 120,
-                Height = 45,
-            };
-
-            var noButton = new Button
-            {
-                Content = "No",
-                Classes = { "btn-blue" },
-                MinWidth = 120,
-                Height = 45,
-            };
-
-            yesButton.Click += (s, ev) =>
-            {
-                result = true;
-                dialog.Close();
-            };
-
-            noButton.Click += (s, ev) =>
-            {
-                result = false;
-                dialog.Close();
-            };
-
-            // Main container
-            var mainBorder = new Border
-            {
-                Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
-                BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
-                BorderThickness = new Thickness(3),
-                CornerRadius = new CornerRadius(16),
-            };
-
-            var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
-
-            // Title bar
-            var titleBar = new Border
-            {
-                [Grid.RowProperty] = 0,
-                Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
-                CornerRadius = new CornerRadius(14, 14, 0, 0),
-                Padding = new Thickness(20, 12),
-            };
-
-            titleBar.Child = new TextBlock
-            {
-                Text = "Delete Filter?",
-                FontSize = 24,
-                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-
-            mainGrid.Children.Add(titleBar);
-
-            // Content area
-            var contentBorder = new Border
-            {
-                [Grid.RowProperty] = 1,
-                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                Padding = new Thickness(24),
-            };
-
-            var contentStack = new StackPanel { Spacing = 12 };
-
-            // Warning message with icon
-            var warningPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 12,
-                MaxWidth = 380, // Constrain width to prevent overflow
-            };
-
-            var warningIcon = new TextBlock
-            {
-                Text = "⚠",
-                FontSize = 32,
-                Foreground = new Avalonia.Media.SolidColorBrush(
-                    Color.Parse("#FF6B6B")
-                ),
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 0, 0, 0),
-            };
-
-            var messageText = new TextBlock
-            {
-                Text = $"Are you sure you want to delete '{filterName}'?",
-                FontSize = 14,
-                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
-                TextWrapping = TextWrapping.Wrap,
-                MaxWidth = 320, // Leave room for icon
-            };
-
-            warningPanel.Children.Add(warningIcon);
-            warningPanel.Children.Add(messageText);
-            contentStack.Children.Add(warningPanel);
-
-            contentStack.Children.Add(
-                new TextBlock
+                var dialog = new Window
                 {
-                    Text = "This cannot be undone.",
+                    Width = 450,
+                    SizeToContent = SizeToContent.Height,
+                    CanResize = false,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SystemDecorations = SystemDecorations.None,
+                    Background = Brushes.Transparent,
+                    TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
+                };
+
+                bool? result = null;
+
+                var yesButton = new Button
+                {
+                    Content = "Yes",
+                    Classes = { "btn-red" },
+                    MinWidth = 120,
+                    Height = 45,
+                };
+
+                var noButton = new Button
+                {
+                    Content = "No",
+                    Classes = { "btn-blue" },
+                    MinWidth = 120,
+                    Height = 45,
+                };
+
+                yesButton.Click += (s, ev) =>
+                {
+                    result = true;
+                    dialog.Close();
+                };
+
+                noButton.Click += (s, ev) =>
+                {
+                    result = false;
+                    dialog.Close();
+                };
+
+                // Main container
+                var mainBorder = new Border
+                {
+                    Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
+                    BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                    BorderThickness = new Thickness(3),
+                    CornerRadius = new CornerRadius(16),
+                };
+
+                var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
+
+                // Title bar
+                var titleBar = new Border
+                {
+                    [Grid.RowProperty] = 0,
+                    Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
+                    CornerRadius = new CornerRadius(14, 14, 0, 0),
+                    Padding = new Thickness(20, 12),
+                };
+
+                titleBar.Child = new TextBlock
+                {
+                    Text = "Delete Filter?",
+                    FontSize = 24,
+                    Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                };
+
+                mainGrid.Children.Add(titleBar);
+
+                // Content area
+                var contentBorder = new Border
+                {
+                    [Grid.RowProperty] = 1,
+                    Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                    Padding = new Thickness(24),
+                };
+
+                var contentStack = new StackPanel { Spacing = 12 };
+
+                // Warning message with icon
+                var warningPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 12,
+                    MaxWidth = 380, // Constrain width to prevent overflow
+                };
+
+                var warningIcon = new TextBlock
+                {
+                    Text = "⚠",
+                    FontSize = 32,
+                    Foreground = new Avalonia.Media.SolidColorBrush(Color.Parse("#FF6B6B")),
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(0, 0, 0, 0),
+                };
+
+                var messageText = new TextBlock
+                {
+                    Text = $"Are you sure you want to delete '{filterName}'?",
                     FontSize = 14,
-                    Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
-                    FontStyle = FontStyle.Italic,
-                }
-            );
+                    Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 320, // Leave room for icon
+                };
 
-            contentBorder.Child = contentStack;
-            mainGrid.Children.Add(contentBorder);
+                warningPanel.Children.Add(warningIcon);
+                warningPanel.Children.Add(messageText);
+                contentStack.Children.Add(warningPanel);
 
-            // Button area
-            var buttonBorder = new Border
-            {
-                [Grid.RowProperty] = 2,
-                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                CornerRadius = new CornerRadius(0, 0, 14, 14),
-                Padding = new Thickness(20, 12, 20, 20),
-            };
+                contentStack.Children.Add(
+                    new TextBlock
+                    {
+                        Text = "This cannot be undone.",
+                        FontSize = 14,
+                        Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
+                        FontStyle = FontStyle.Italic,
+                    }
+                );
 
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Spacing = 12,
-            };
-            buttonPanel.Children.Add(yesButton);
-            buttonPanel.Children.Add(noButton);
+                contentBorder.Child = contentStack;
+                mainGrid.Children.Add(contentBorder);
 
-            buttonBorder.Child = buttonPanel;
-            mainGrid.Children.Add(buttonBorder);
+                // Button area
+                var buttonBorder = new Border
+                {
+                    [Grid.RowProperty] = 2,
+                    Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
+                    CornerRadius = new CornerRadius(0, 0, 14, 14),
+                    Padding = new Thickness(20, 12, 20, 20),
+                };
 
-            mainBorder.Child = mainGrid;
-            dialog.Content = mainBorder;
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Spacing = 12,
+                };
+                buttonPanel.Children.Add(yesButton);
+                buttonPanel.Children.Add(noButton);
+
+                buttonBorder.Child = buttonPanel;
+                mainGrid.Children.Add(buttonBorder);
+
+                mainBorder.Child = mainGrid;
+                dialog.Content = mainBorder;
 
                 await dialog.ShowDialog(parentWindow);
 
@@ -443,7 +445,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Check if StorageProvider supports file operations (important for browser)
                 if (!topLevel.StorageProvider.CanOpen)
                 {
-                    await MessageBoxManager.GetMessageBoxStandard(
+                    await MessageBoxManager
+                        .GetMessageBoxStandard(
                             "Not Supported",
                             "File opening is not supported in this environment."
                         )
@@ -494,10 +497,8 @@ namespace BalatroSeedOracle.Views.Modals
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
 
                 // Show error message to user
-                await MessageBoxManager.GetMessageBoxStandard(
-                        "Error",
-                        $"Failed to open file picker: {ex.Message}"
-                    )
+                await MessageBoxManager
+                    .GetMessageBoxStandard("Error", $"Failed to open file picker: {ex.Message}")
                     .ShowAsync();
             }
         }
@@ -571,8 +572,11 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Parsed config: {config.Name}. Saving...");
 
-                var configurationService = _configurationService ?? ServiceHelper.GetRequiredService<IConfigurationService>();
-                var filterService = _filterService ?? ServiceHelper.GetRequiredService<IFilterService>();
+                var configurationService =
+                    _configurationService
+                    ?? ServiceHelper.GetRequiredService<IConfigurationService>();
+                var filterService =
+                    _filterService ?? ServiceHelper.GetRequiredService<IFilterService>();
                 var baseName = !string.IsNullOrWhiteSpace(config.Name)
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);
@@ -613,10 +617,8 @@ namespace BalatroSeedOracle.Views.Modals
                 );
                 DebugLogger.LogError("FilterSelectionModal", $"Stack trace: {ex.StackTrace}");
 
-                await MessageBoxManager.GetMessageBoxStandard(
-                        "Import Error",
-                        $"Failed to import filter: {ex.Message}"
-                    )
+                await MessageBoxManager
+                    .GetMessageBoxStandard("Import Error", $"Failed to import filter: {ex.Message}")
                     .ShowAsync();
             }
         }

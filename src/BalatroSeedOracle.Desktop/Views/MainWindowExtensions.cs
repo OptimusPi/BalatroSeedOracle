@@ -23,7 +23,8 @@ public static class MainWindowExtensions
         Control control,
         BalatroMainMenuViewModel vm,
         string propertyName,
-        Func<bool> getter)
+        Func<bool> getter
+    )
     {
         control.IsVisible = getter();
         vm.PropertyChanged += (_, e) =>
@@ -32,6 +33,7 @@ public static class MainWindowExtensions
                 control.IsVisible = getter();
         };
     }
+
     /// <summary>
     /// Initialize desktop-specific widgets for BalatroMainMenu.
     /// Should be called after MainWindow is created and shown.
@@ -85,8 +87,13 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = viewModel.ApiHostWidgetViewModel.WidgetZIndex,
             };
-            
-            BindVisibility(apiHostWidget, viewModel, nameof(BalatroMainMenuViewModel.IsHostApiWidgetVisible), () => viewModel.IsHostApiWidgetVisible);
+
+            BindVisibility(
+                apiHostWidget,
+                viewModel,
+                nameof(BalatroMainMenuViewModel.IsHostApiWidgetVisible),
+                () => viewModel.IsHostApiWidgetVisible
+            );
             desktopCanvas.Children.Add(apiHostWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added ApiHostWidget");
         }
@@ -101,8 +108,13 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = musicMixerVm.WidgetZIndex,
             };
-            
-            BindVisibility(musicMixerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsMusicMixerWidgetVisible), () => viewModel.IsMusicMixerWidgetVisible);
+
+            BindVisibility(
+                musicMixerWidget,
+                viewModel,
+                nameof(BalatroMainMenuViewModel.IsMusicMixerWidgetVisible),
+                () => viewModel.IsMusicMixerWidgetVisible
+            );
             desktopCanvas.Children.Add(musicMixerWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added MusicMixerWidget");
         }
@@ -117,8 +129,13 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = visualizerVm.WidgetZIndex,
             };
-            
-            BindVisibility(visualizerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsVisualizerWidgetVisible), () => viewModel.IsVisualizerWidgetVisible);
+
+            BindVisibility(
+                visualizerWidget,
+                viewModel,
+                nameof(BalatroMainMenuViewModel.IsVisualizerWidgetVisible),
+                () => viewModel.IsVisualizerWidgetVisible
+            );
             desktopCanvas.Children.Add(visualizerWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added AudioVisualizerSettingsWidget");
         }
@@ -133,7 +150,7 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = audioMixerVm.WidgetZIndex,
             };
-            
+
             desktopCanvas.Children.Add(audioMixerWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added AudioMixerWidget");
         }
@@ -148,7 +165,7 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = frequencyDebugVm.WidgetZIndex,
             };
-            
+
             desktopCanvas.Children.Add(frequencyDebugWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added FrequencyDebugWidget");
         }
@@ -163,8 +180,13 @@ public static class MainWindowExtensions
                 ClipToBounds = false,
                 [Avalonia.Visual.ZIndexProperty] = transitionDesignerVm.WidgetZIndex,
             };
-            
-            BindVisibility(transitionDesignerWidget, viewModel, nameof(BalatroMainMenuViewModel.IsTransitionDesignerWidgetVisible), () => viewModel.IsTransitionDesignerWidgetVisible);
+
+            BindVisibility(
+                transitionDesignerWidget,
+                viewModel,
+                nameof(BalatroMainMenuViewModel.IsTransitionDesignerWidgetVisible),
+                () => viewModel.IsTransitionDesignerWidgetVisible
+            );
             desktopCanvas.Children.Add(transitionDesignerWidget);
             DebugLogger.Log("DesktopWidgetInit", "Added TransitionDesignerWidget");
         }

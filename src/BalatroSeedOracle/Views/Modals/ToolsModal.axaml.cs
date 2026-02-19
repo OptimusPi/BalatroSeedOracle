@@ -11,7 +11,6 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using Motely.Filters;
 
-
 namespace BalatroSeedOracle.Views.Modals
 {
     public partial class ToolsModal : UserControl
@@ -21,14 +20,14 @@ namespace BalatroSeedOracle.Views.Modals
 
         /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass dependencies.</summary>
         public ToolsModal()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private ToolsModal(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
-                throw new InvalidOperationException("Do not use ToolsModal(). Creator must pass (UserProfileService, IApiHostService).");
+                throw new InvalidOperationException(
+                    "Do not use ToolsModal(). Creator must pass (UserProfileService, IApiHostService)."
+                );
             _userProfileService = null;
             _apiHostService = null;
             InitializeComponent();
@@ -55,166 +54,167 @@ namespace BalatroSeedOracle.Views.Modals
                     return;
 
                 var files = await topLevel.StorageProvider.OpenFilePickerAsync(
-                new FilePickerOpenOptions
-                {
-                    Title = "Import Filter Configuration",
-                    AllowMultiple = true,
-                    FileTypeFilter = new[]
+                    new FilePickerOpenOptions
                     {
-                        new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
-                        new FilePickerFileType("All Files") { Patterns = new[] { "*" } },
-                    },
-                }
-            );
-
-            if (files.Count > 0)
-            {
-                try
-                {
-                    var configurationService =
-                        ServiceHelper.GetRequiredService<IConfigurationService>();
-                    var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-                    var filterCache = ServiceHelper.GetService<IFilterCacheService>();
-
-                    int successCount = 0;
-                    int failCount = 0;
-
-                    foreach (var file in files)
-                    {
-                        try
+                        Title = "Import Filter Configuration",
+                        AllowMultiple = true,
+                        FileTypeFilter = new[]
                         {
-                            if (file is not IStorageFile storageFile)
-                                continue;
+                            new FilePickerFileType("JSON Files") { Patterns = new[] { "*.json" } },
+                            new FilePickerFileType("All Files") { Patterns = new[] { "*" } },
+                        },
+                    }
+                );
 
-                            var extension = Path.GetExtension(storageFile.Name).ToLowerInvariant();
-                            if (extension != ".json" && extension != ".jaml")
-                                continue;
+                if (files.Count > 0)
+                {
+                    try
+                    {
+                        var configurationService =
+                            ServiceHelper.GetRequiredService<IConfigurationService>();
+                        var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+                        var filterCache = ServiceHelper.GetService<IFilterCacheService>();
 
-                            string text;
-                            await using (var stream = await storageFile.OpenReadAsync())
-                            using (var reader = new StreamReader(stream))
+                        int successCount = 0;
+                        int failCount = 0;
+
+                        foreach (var file in files)
+                        {
+                            try
                             {
-                                text = await reader.ReadToEndAsync().ConfigureAwait(false);
-                            }
+                                if (file is not IStorageFile storageFile)
+                                    continue;
 
-                            MotelyJsonConfig? config;
-                            if (extension == ".jaml")
-                            {
-                                if (
-                                    !Motely.JamlConfigLoader.TryLoadFromJamlString(
-                                        text,
-                                        out config,
-                                        out var parseError
+                                var extension = Path.GetExtension(storageFile.Name)
+                                    .ToLowerInvariant();
+                                if (extension != ".json" && extension != ".jaml")
+                                    continue;
+
+                                string text;
+                                await using (var stream = await storageFile.OpenReadAsync())
+                                using (var reader = new StreamReader(stream))
+                                {
+                                    text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                                }
+
+                                MotelyJsonConfig? config;
+                                if (extension == ".jaml")
+                                {
+                                    if (
+                                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                                            text,
+                                            out config,
+                                            out var parseError
+                                        )
+                                        || config == null
                                     )
-                                    || config == null
-                                )
+                                    {
+                                        DebugLogger.LogError(
+                                            "ToolsModal",
+                                            $"Failed to parse JAML {storageFile.Name}: {parseError ?? "Unknown error"}"
+                                        );
+                                        failCount++;
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    config =
+                                        System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
+                                            text,
+                                            new System.Text.Json.JsonSerializerOptions
+                                            {
+                                                PropertyNameCaseInsensitive = true,
+                                                ReadCommentHandling = System
+                                                    .Text
+                                                    .Json
+                                                    .JsonCommentHandling
+                                                    .Skip,
+                                                AllowTrailingCommas = true,
+                                            }
+                                        );
+
+                                    if (config == null)
+                                    {
+                                        DebugLogger.LogError(
+                                            "ToolsModal",
+                                            $"Failed to parse JSON {storageFile.Name}"
+                                        );
+                                        failCount++;
+                                        continue;
+                                    }
+                                }
+
+                                var baseName = !string.IsNullOrWhiteSpace(config.Name)
+                                    ? config.Name
+                                    : Path.GetFileNameWithoutExtension(storageFile.Name);
+                                var destKey = filterService.GenerateFilterFileName(baseName);
+
+                                var saved = await configurationService
+                                    .SaveFilterAsync(destKey, config)
+                                    .ConfigureAwait(false);
+                                if (!saved)
                                 {
                                     DebugLogger.LogError(
                                         "ToolsModal",
-                                        $"Failed to parse JAML {storageFile.Name}: {parseError ?? "Unknown error"}"
+                                        $"Failed to save imported filter: {storageFile.Name}"
                                     );
                                     failCount++;
                                     continue;
                                 }
+
+                                // Ensure cache sees it immediately (SaveFilterAsync invalidates by id, but this is a safe refresh)
+                                filterCache?.Initialize();
+                                successCount++;
                             }
-                            else
-                            {
-                                config =
-                                    System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                                        text,
-                                        new System.Text.Json.JsonSerializerOptions
-                                        {
-                                            PropertyNameCaseInsensitive = true,
-                                            ReadCommentHandling = System
-                                                .Text
-                                                .Json
-                                                .JsonCommentHandling
-                                                .Skip,
-                                            AllowTrailingCommas = true,
-                                        }
-                                    );
-
-                                if (config == null)
-                                {
-                                    DebugLogger.LogError(
-                                        "ToolsModal",
-                                        $"Failed to parse JSON {storageFile.Name}"
-                                    );
-                                    failCount++;
-                                    continue;
-                                }
-                            }
-
-                            var baseName = !string.IsNullOrWhiteSpace(config.Name)
-                                ? config.Name
-                                : Path.GetFileNameWithoutExtension(storageFile.Name);
-                            var destKey = filterService.GenerateFilterFileName(baseName);
-
-                            var saved = await configurationService
-                                .SaveFilterAsync(destKey, config)
-                                .ConfigureAwait(false);
-                            if (!saved)
+                            catch (Exception ex)
                             {
                                 DebugLogger.LogError(
                                     "ToolsModal",
-                                    $"Failed to save imported filter: {storageFile.Name}"
+                                    $"Failed to import file {file.Name}: {ex.Message}"
                                 );
                                 failCount++;
-                                continue;
                             }
-
-                            // Ensure cache sees it immediately (SaveFilterAsync invalidates by id, but this is a safe refresh)
-                            filterCache?.Initialize();
-                            successCount++;
                         }
-                        catch (Exception ex)
+
+                        // Show result message
+                        var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
+                        if (mainMenu != null)
                         {
-                            DebugLogger.LogError(
-                                "ToolsModal",
-                                $"Failed to import file {file.Name}: {ex.Message}"
-                            );
-                            failCount++;
+                            var message =
+                                successCount > 0
+                                    ? $"Successfully imported {successCount} file(s)"
+                                        + (
+                                            failCount > 0
+                                                ? $"\n{failCount} file(s) failed to import"
+                                                : ""
+                                        )
+                                    : "Failed to import files";
+
+                            // Create a simple message modal
+                            var messageModal = new StandardModal("IMPORT COMPLETE");
+                            var messageText = new TextBlock
+                            {
+                                Text = message,
+                                FontSize = 16,
+                                Margin = new Avalonia.Thickness(20),
+                                TextAlignment = Avalonia.Media.TextAlignment.Center,
+                            };
+                            messageModal.SetContent(messageText);
+                            messageModal.BackClicked += (s, ev) =>
+                            {
+                                mainMenu.HideModalContent();
+                                // Re-show the tools modal
+                                mainMenu.ShowToolsModal();
+                            };
+                            mainMenu.ShowModalContent(messageModal, "IMPORT COMPLETE");
                         }
                     }
-
-                    // Show result message
-                    var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
-                    if (mainMenu != null)
+                    catch (Exception ex)
                     {
-                        var message =
-                            successCount > 0
-                                ? $"Successfully imported {successCount} file(s)"
-                                    + (
-                                        failCount > 0
-                                            ? $"\n{failCount} file(s) failed to import"
-                                            : ""
-                                    )
-                                : "Failed to import files";
-
-                        // Create a simple message modal
-                        var messageModal = new StandardModal("IMPORT COMPLETE");
-                        var messageText = new TextBlock
-                        {
-                            Text = message,
-                            FontSize = 16,
-                            Margin = new Avalonia.Thickness(20),
-                            TextAlignment = Avalonia.Media.TextAlignment.Center,
-                        };
-                        messageModal.SetContent(messageText);
-                        messageModal.BackClicked += (s, ev) =>
-                        {
-                            mainMenu.HideModalContent();
-                            // Re-show the tools modal
-                            mainMenu.ShowToolsModal();
-                        };
-                        mainMenu.ShowModalContent(messageModal, "IMPORT COMPLETE");
+                        DebugLogger.LogError("ToolsModal", $"Failed to import files: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError("ToolsModal", $"Failed to import files: {ex.Message}");
-                }
-            }
             }
             catch (Exception ex)
             {
@@ -263,13 +263,22 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>
         /// URLs for WebView tools (Avalonia Accelerate). Replace with your site and Balatro-inspired site.
         /// </summary>
-        private static readonly Uri MyWebsiteUri = new("https://optimuspi.workers.dev/", UriKind.Absolute);
-        private static readonly Uri BalatroSiteUri = new("https://optimuspi.workers.dev/", UriKind.Absolute);
+        private static readonly Uri MyWebsiteUri = new(
+            "https://optimuspi.workers.dev/",
+            UriKind.Absolute
+        );
+        private static readonly Uri BalatroSiteUri = new(
+            "https://optimuspi.workers.dev/",
+            UriKind.Absolute
+        );
 
         /// <summary>
         /// Fallback URL for Web App when API is not running (BSO WASM deployed elsewhere).
         /// </summary>
-        private static readonly Uri WebAppFallbackUri = new("http://localhost:3141/BSO/", UriKind.Absolute);
+        private static readonly Uri WebAppFallbackUri = new(
+            "http://localhost:3141/BSO/",
+            UriKind.Absolute
+        );
 
         private void OnMyWebsiteClick(object? sender, RoutedEventArgs e)
         {
@@ -284,9 +293,12 @@ namespace BalatroSeedOracle.Views.Modals
         private void OnWebAppClick(object? sender, RoutedEventArgs e)
         {
             // Use web app in WebView instead of re-creating: prefer running API (BSO at /BSO), else fallback
-            var url = _apiHostService != null && _apiHostService.IsRunning && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl)
-                ? new Uri(new Uri(_apiHostService.ServerUrl.TrimEnd('/')), "BSO/")
-                : WebAppFallbackUri;
+            var url =
+                _apiHostService != null
+                && _apiHostService.IsRunning
+                && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl)
+                    ? new Uri(new Uri(_apiHostService.ServerUrl.TrimEnd('/')), "BSO/")
+                    : WebAppFallbackUri;
             OpenWebViewDialog("Web App", url);
         }
 
@@ -295,11 +307,16 @@ namespace BalatroSeedOracle.Views.Modals
             try
             {
                 // Avalonia Accelerate WebView - NativeWebDialog (namespace from Avalonia.Controls.WebView package)
-                var dialogType = Type.GetType("Avalonia.Controls.WebView.NativeWebDialog, Avalonia.Controls.WebView")
-                    ?? Type.GetType("NativeWebDialog, Avalonia.Controls.WebView");
+                var dialogType =
+                    Type.GetType(
+                        "Avalonia.Controls.WebView.NativeWebDialog, Avalonia.Controls.WebView"
+                    ) ?? Type.GetType("NativeWebDialog, Avalonia.Controls.WebView");
                 if (dialogType == null)
                 {
-                    DebugLogger.LogError("ToolsModal", "NativeWebDialog type not found. Is Avalonia.Controls.WebView referenced?");
+                    DebugLogger.LogError(
+                        "ToolsModal",
+                        "NativeWebDialog type not found. Is Avalonia.Controls.WebView referenced?"
+                    );
                     return;
                 }
                 var dialog = Activator.CreateInstance(dialogType);
@@ -346,106 +363,112 @@ namespace BalatroSeedOracle.Views.Modals
                 var mainMenu = this.FindAncestorOfType<BalatroMainMenu>();
                 if (mainMenu == null)
                 {
-                    DebugLogger.LogError("ToolsModal", "Could not find BalatroMainMenu in visual tree");
+                    DebugLogger.LogError(
+                        "ToolsModal",
+                        "Could not find BalatroMainMenu in visual tree"
+                    );
                     return;
                 }
 
                 // Use MessageBox for confirmation
                 var confirmed = await ModalHelper.ShowConfirmationAsync(
-                "⚠️ CONFIRM NUKE ⚠️",
-                "This will DELETE ALL:\n\n• All filter files in JsonFilters/ and JamlFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!"
-            );
+                    "⚠️ CONFIRM NUKE ⚠️",
+                    "This will DELETE ALL:\n\n• All filter files in JsonFilters/ and JamlFilters/\n• All search results in SearchResults/\n\nThis action CANNOT be undone!"
+                );
 
-            if (!confirmed)
-                return;
+                if (!confirmed)
+                    return;
 
-            // Execute nuke operation
-            try
-            {
-                int deletedFilters = 0;
-                int deletedResults = 0;
-
-                // Delete all files in JsonFilters and JamlFilters
-                var filtersDir = AppPaths.FiltersDir;
-                if (Directory.Exists(filtersDir))
+                // Execute nuke operation
+                try
                 {
-                    var filterFiles = Directory.GetFiles(filtersDir, "*.json");
-                    foreach (var file in filterFiles)
+                    int deletedFilters = 0;
+                    int deletedResults = 0;
+
+                    // Delete all files in JsonFilters and JamlFilters
+                    var filtersDir = AppPaths.FiltersDir;
+                    if (Directory.Exists(filtersDir))
                     {
-                        try
+                        var filterFiles = Directory.GetFiles(filtersDir, "*.json");
+                        foreach (var file in filterFiles)
                         {
-                            File.Delete(file);
-                            deletedFilters++;
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                "NukeEverything",
-                                $"Failed to delete {file}: {ex.Message}"
-                            );
+                            try
+                            {
+                                File.Delete(file);
+                                deletedFilters++;
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
+                            }
                         }
                     }
-                }
 
-                // Delete all files in SearchResults
-                var resultsDir = AppPaths.SearchResultsDir;
-                if (Directory.Exists(resultsDir))
-                {
-                    var resultFiles = Directory.GetFiles(
-                        resultsDir,
-                        "*.*",
-                        SearchOption.AllDirectories
+                    // Delete all files in SearchResults
+                    var resultsDir = AppPaths.SearchResultsDir;
+                    if (Directory.Exists(resultsDir))
+                    {
+                        var resultFiles = Directory.GetFiles(
+                            resultsDir,
+                            "*.*",
+                            SearchOption.AllDirectories
+                        );
+                        foreach (var file in resultFiles)
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                deletedResults++;
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete {file}: {ex.Message}"
+                                );
+                            }
+                        }
+
+                        // Also delete subdirectories
+                        var subdirs = Directory.GetDirectories(resultsDir);
+                        foreach (var dir in subdirs)
+                        {
+                            try
+                            {
+                                Directory.Delete(dir, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError(
+                                    "NukeEverything",
+                                    $"Failed to delete directory {dir}: {ex.Message}"
+                                );
+                            }
+                        }
+                    }
+
+                    // Show results with MessageBox
+                    await ModalHelper.ShowSuccessAsync(
+                        "💥 NUKE COMPLETE 💥",
+                        $"Deleted:\n{deletedFilters} filter files\n{deletedResults} search result files\n\npifreak loves you!"
                     );
-                    foreach (var file in resultFiles)
-                    {
-                        try
-                        {
-                            File.Delete(file);
-                            deletedResults++;
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                "NukeEverything",
-                                $"Failed to delete {file}: {ex.Message}"
-                            );
-                        }
-                    }
 
-                    // Also delete subdirectories
-                    var subdirs = Directory.GetDirectories(resultsDir);
-                    foreach (var dir in subdirs)
-                    {
-                        try
-                        {
-                            Directory.Delete(dir, true);
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLogger.LogError(
-                                "NukeEverything",
-                                $"Failed to delete directory {dir}: {ex.Message}"
-                            );
-                        }
-                    }
+                    DebugLogger.Log(
+                        "NukeEverything",
+                        $"Nuked {deletedFilters} filters and {deletedResults} results"
+                    );
                 }
-
-                // Show results with MessageBox
-                await ModalHelper.ShowSuccessAsync(
-                    "💥 NUKE COMPLETE 💥",
-                    $"Deleted:\n{deletedFilters} filter files\n{deletedResults} search result files\n\npifreak loves you!"
-                );
-
-                DebugLogger.Log(
-                    "NukeEverything",
-                    $"Nuked {deletedFilters} filters and {deletedResults} results"
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError("NukeEverything", $"Nuke operation failed: {ex.Message}");
-                await ModalHelper.ShowErrorAsync("ERROR", $"Nuke operation failed:\n{ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("NukeEverything", $"Nuke operation failed: {ex.Message}");
+                    await ModalHelper.ShowErrorAsync(
+                        "ERROR",
+                        $"Nuke operation failed:\n{ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {

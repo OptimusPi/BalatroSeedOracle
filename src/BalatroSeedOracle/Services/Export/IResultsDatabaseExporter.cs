@@ -21,5 +21,9 @@ public interface IResultsDatabaseExporter
     /// <param name="path">File path ending in .db or .ducklake.</param>
     /// <param name="results">Search results to export.</param>
     /// <param name="columnNames">Names of tally/extra columns (e.g. from first result's Labels).</param>
-    Task ExportToAsync(string path, IReadOnlyList<SearchResult> results, IReadOnlyList<string> columnNames);
+    Task ExportToAsync(
+        string path,
+        IReadOnlyList<SearchResult> results,
+        IReadOnlyList<string> columnNames
+    );
 }

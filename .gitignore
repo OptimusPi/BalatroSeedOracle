@@ -70,3 +70,4 @@ avalonia.license.local
 /external
 build.log
 docs/BLUEPRINT_GITHUB_PAGES_FIX.md
+*.md

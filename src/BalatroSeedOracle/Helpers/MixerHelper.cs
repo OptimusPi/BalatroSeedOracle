@@ -27,7 +27,10 @@ namespace BalatroSeedOracle.Helpers
                 var safeName = NormalizeName(name);
                 var path = Path.Combine(MixerDirectory, safeName + ".json");
                 // AOT-compatible: Use source-generated serializer context
-                var json = JsonSerializer.Serialize(settings, BsoJsonSerializerContext.Default.MixerSettings);
+                var json = JsonSerializer.Serialize(
+                    settings,
+                    BsoJsonSerializerContext.Default.MixerSettings
+                );
                 File.WriteAllText(path, json);
                 DebugLogger.Log("MixerHelper", $"Saved mixer '{name}' → {path}");
                 return true;
@@ -52,7 +55,10 @@ namespace BalatroSeedOracle.Helpers
                 }
                 var json = File.ReadAllText(path);
                 // AOT-compatible: Use source-generated serializer context
-                var settings = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.MixerSettings);
+                var settings = JsonSerializer.Deserialize(
+                    json,
+                    BsoJsonSerializerContext.Default.MixerSettings
+                );
                 return settings;
             }
             catch (Exception ex)

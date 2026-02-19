@@ -20,6 +20,7 @@
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <DebuggerSupport>false</DebuggerSupport>
     <EnableStackTraceInException>false</EnableStackTraceInException>
+    <OptimizationPreference>Speed</OptimizationPreference>
     <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
     <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
     <IlcDisableReflection>true</IlcDisableReflection>
@@ -54,7 +55,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
-    <ProjectReference Include="..\..\external\Motely\Motely.API\Motely.API.csproj" />
-    <ProjectReference Include="..\..\external\Motely\Motely.DB\Motely.DB.csproj" />
+    <ProjectReference Include="..\MotelyJAML\Motely.API\Motely.API.csproj" />
+    <ProjectReference Include="..\MotelyJAML\Motely.DB.Desktop\Motely.DB.Desktop.csproj" />
   </ItemGroup>
 </Project>

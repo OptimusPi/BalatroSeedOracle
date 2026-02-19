@@ -13,14 +13,14 @@ namespace BalatroSeedOracle.Views.Modals
     {
         /// <summary>Parameterless constructor for Avalonia XAML loader only. Throws at runtime. Creator must pass ViewModel.</summary>
         public CreditsModal()
-            : this(throwForDesignTimeOnly: true)
-        {
-        }
+            : this(throwForDesignTimeOnly: true) { }
 
         private CreditsModal(bool throwForDesignTimeOnly)
         {
             if (throwForDesignTimeOnly)
-                throw new InvalidOperationException("Do not use CreditsModal(). Use new CreditsModal(viewModel) with ViewModel from creator (e.g. menu.ViewModel.CreditsModalViewModel).");
+                throw new InvalidOperationException(
+                    "Do not use CreditsModal(). Use new CreditsModal(viewModel) with ViewModel from creator (e.g. menu.ViewModel.CreditsModalViewModel)."
+                );
             InitializeComponent();
         }
 
@@ -49,10 +49,7 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.LogError(
-                        "CreditsModal",
-                        $"Error opening link: {ex.Message}"
-                    );
+                    DebugLogger.LogError("CreditsModal", $"Error opening link: {ex.Message}");
                 }
             }
         }

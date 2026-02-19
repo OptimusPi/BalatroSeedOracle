@@ -221,8 +221,10 @@ namespace BalatroSeedOracle.Services
             {
                 // Load both .json and .jaml filter files
                 var filterFiles = (await _store.ListKeysAsync("Filters/").ConfigureAwait(false))
-                    .Where(k => k.EndsWith(".json", StringComparison.OrdinalIgnoreCase) 
-                             || k.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase))
+                    .Where(k =>
+                        k.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                        || k.EndsWith(".jaml", StringComparison.OrdinalIgnoreCase)
+                    )
                     .Where(k =>
                     {
                         var fileName = Path.GetFileName(k);
@@ -300,11 +302,17 @@ namespace BalatroSeedOracle.Services
                     return null;
 
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
-                
+
                 if (extension == ".jaml")
                 {
                     // Load JAML content
-                    if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var jamlConfig, out var jamlError))
+                    if (
+                        Motely.JamlConfigLoader.TryLoadFromJamlString(
+                            content,
+                            out var jamlConfig,
+                            out var jamlError
+                        )
+                    )
                     {
                         config = jamlConfig;
                     }
@@ -428,7 +436,10 @@ namespace BalatroSeedOracle.Services
                 if (!File.Exists(filePath))
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Removed deleted filter from cache: {filterId}"
+                    );
                     return;
                 }
 
@@ -436,12 +447,18 @@ namespace BalatroSeedOracle.Services
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Invalidated and reloaded filter: {filterId}"
+                    );
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
+                    DebugLogger.LogError(
+                        "FilterCacheService",
+                        $"Failed to reload filter: {filterId}"
+                    );
                 }
             }
             finally
@@ -467,25 +484,41 @@ namespace BalatroSeedOracle.Services
             if (!exists)
             {
                 _cacheLock.EnterWriteLock();
-                try { _cache.TryRemove(filterId, out _); }
-                finally { _cacheLock.ExitWriteLock(); }
-                DebugLogger.Log("FilterCacheService", $"Removed deleted filter from cache: {filterId}");
+                try
+                {
+                    _cache.TryRemove(filterId, out _);
+                }
+                finally
+                {
+                    _cacheLock.ExitWriteLock();
+                }
+                DebugLogger.Log(
+                    "FilterCacheService",
+                    $"Removed deleted filter from cache: {filterId}"
+                );
                 return;
             }
 
-            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId).ConfigureAwait(false);
+            var cachedFilter = await LoadFilterFromDiskAsync(filePath, filterId)
+                .ConfigureAwait(false);
             _cacheLock.EnterWriteLock();
             try
             {
                 if (cachedFilter != null)
                 {
                     _cache[filterId] = cachedFilter;
-                    DebugLogger.Log("FilterCacheService", $"Invalidated and reloaded filter: {filterId}");
+                    DebugLogger.Log(
+                        "FilterCacheService",
+                        $"Invalidated and reloaded filter: {filterId}"
+                    );
                 }
                 else
                 {
                     _cache.TryRemove(filterId, out _);
-                    DebugLogger.LogError("FilterCacheService", $"Failed to reload filter: {filterId}");
+                    DebugLogger.LogError(
+                        "FilterCacheService",
+                        $"Failed to reload filter: {filterId}"
+                    );
                 }
             }
             finally
@@ -555,11 +588,17 @@ namespace BalatroSeedOracle.Services
                         return null;
 
                     var extension = Path.GetExtension(filePath).ToLowerInvariant();
-                    
+
                     if (extension == ".jaml")
                     {
                         // Load JAML file using JamlConfigLoader
-                        if (Motely.JamlConfigLoader.TryLoadFromJaml(filePath, out var jamlConfig, out var jamlError))
+                        if (
+                            Motely.JamlConfigLoader.TryLoadFromJaml(
+                                filePath,
+                                out var jamlConfig,
+                                out var jamlError
+                            )
+                        )
                         {
                             config = jamlConfig;
                         }

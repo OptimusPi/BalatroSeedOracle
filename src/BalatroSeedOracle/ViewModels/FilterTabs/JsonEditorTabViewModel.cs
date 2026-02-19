@@ -296,7 +296,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var clause in config.Must)
                     {
                         var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (item is not null && !visualTab.SelectedMust.Any(x => x.Name == item.Name))
+                        if (
+                            item is not null
+                            && !visualTab.SelectedMust.Any(x => x.Name == item.Name)
+                        )
                         {
                             visualTab.SelectedMust.Add(item);
                             itemsAdded++;
@@ -310,7 +313,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     foreach (var clause in config.Should)
                     {
                         var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
-                        if (item is not null && !visualTab.SelectedShould.Any(x => x.Name == item.Name))
+                        if (
+                            item is not null
+                            && !visualTab.SelectedShould.Any(x => x.Name == item.Name)
+                        )
                         {
                             visualTab.SelectedShould.Add(item);
                             itemsAdded++;

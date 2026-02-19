@@ -18,7 +18,8 @@ public partial class SortableResultsGrid : UserControl
 {
     public static readonly StyledProperty<ObservableCollection<SearchResult>?> ItemsSourceProperty =
         AvaloniaProperty.Register<SortableResultsGrid, ObservableCollection<SearchResult>?>(
-            nameof(ItemsSource));
+            nameof(ItemsSource)
+        );
 
     public ObservableCollection<SearchResult>? ItemsSource
     {
@@ -98,7 +99,7 @@ public partial class SortableResultsGrid : UserControl
             if (newCollection != null)
             {
                 newCollection.CollectionChanged += OnItemsSourceCollectionChanged;
-                
+
                 // Initial load
                 if (newCollection.Count > 0)
                 {

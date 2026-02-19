@@ -9,11 +9,11 @@ namespace BalatroSeedOracle.Json;
 /// <summary>
 /// AOT-compatible JSON serialization context for BalatroSeedOracle types.
 /// This enables Native AOT compilation by pre-generating serialization code at compile time.
-/// 
+///
 /// USAGE:
 /// - For deserialization: JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.UserProfile)
 /// - For serialization: JsonSerializer.Serialize(obj, BsoJsonSerializerContext.Default.UserProfile)
-/// 
+///
 /// For MotelyJsonConfig, use Motely's MotelyJsonSerializerContext instead:
 /// - JsonSerializer.Deserialize(json, MotelyJsonSerializerContext.Default.MotelyJsonConfig)
 /// </summary>
@@ -33,7 +33,6 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(AdvancedMusicSettings))]
 [JsonSerializable(typeof(FeatureToggles))]
 [JsonSerializable(typeof(HostApiSettings))]
-
 // Visualizer presets and audio
 [JsonSerializable(typeof(VisualizerPreset))]
 [JsonSerializable(typeof(AudioTriggerPoint))]
@@ -41,40 +40,32 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(MelodicBreakpoint))]
 [JsonSerializable(typeof(ParameterRange))]
 [JsonSerializable(typeof(EffectMapping))]
-
 // Music mixer
 [JsonSerializable(typeof(MixerSettings))]
 [JsonSerializable(typeof(TrackSettings))]
 [JsonSerializable(typeof(MusicMixPreset))]
 [JsonSerializable(typeof(TrackMixSettings))]
 [JsonSerializable(typeof(TrackMetadata))]
-
 // Transition presets
 [JsonSerializable(typeof(TransitionPreset))]
-
 // Daylatro high scores
 [JsonSerializable(typeof(DaylatroHighScore))]
 [JsonSerializable(typeof(DaylatroDailyScores))]
 [JsonSerializable(typeof(List<DaylatroDailyScores>))]
 [JsonSerializable(typeof(Dictionary<string, System.DateTime>))]
-
 // Sprite metadata (public types)
 [JsonSerializable(typeof(SpritePosition))]
 [JsonSerializable(typeof(Pos))]
 [JsonSerializable(typeof(List<SpritePosition>))]
-
 // Credits
 [JsonSerializable(typeof(Credit))]
 [JsonSerializable(typeof(Credit[]))]
-
 // Favorites data
 [JsonSerializable(typeof(FavoritesData))]
 [JsonSerializable(typeof(JokerSet))]
 [JsonSerializable(typeof(List<JokerSet>))]
-
 // Shader presets
 [JsonSerializable(typeof(ShaderParametersConfig))]
-
 // Generic collections used across the app
 [JsonSerializable(typeof(Dictionary<string, int>))]
 [JsonSerializable(typeof(Dictionary<string, float>))]
@@ -88,20 +79,15 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(List<SavedSearchWidget>))]
 [JsonSerializable(typeof(List<DaylatroHighScore>))]
 [JsonSerializable(typeof(List<string>))]
-
 // DataGrid export types
 [JsonSerializable(typeof(DataGridResultItem))]
 [JsonSerializable(typeof(List<DataGridResultItem>))]
-
 // EventFX config
 [JsonSerializable(typeof(EventFXConfig))]
-
 // Genie responses
 [JsonSerializable(typeof(CloudGenieResponse))]
 [JsonSerializable(typeof(LocalGenieResponse))]
-public partial class BsoJsonSerializerContext : JsonSerializerContext
-{
-}
+public partial class BsoJsonSerializerContext : JsonSerializerContext { }
 
 /// <summary>
 /// Favorites data container for the FavoritesService
@@ -126,7 +112,8 @@ public class JokerSet
     public List<string> MustNotItems { get; set; } = new List<string>();
 
     [JsonIgnore]
-    public bool HasZoneInfo => MustItems.Count > 0 || ShouldItems.Count > 0 || MustNotItems.Count > 0;
+    public bool HasZoneInfo =>
+        MustItems.Count > 0 || ShouldItems.Count > 0 || MustNotItems.Count > 0;
 }
 
 /// <summary>

@@ -16,14 +16,14 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         private int _visualizerTheme;
-        
+
         // Search Engine Settings
         [ObservableProperty]
         private int _selectedSearchEngineIndex; // 0=Local, 1=Public, 2=Custom
-        
+
         [ObservableProperty]
         private string _customRemoteUrl = "http://localhost:5000";
-        
+
         [ObservableProperty]
         private bool _isCustomUrlVisible;
 
@@ -115,7 +115,7 @@ namespace BalatroSeedOracle.ViewModels
             _userProfileService =
                 App.GetService<UserProfileService>()
                 ?? throw new InvalidOperationException("UserProfileService not available");
-            
+
             // Allow null for previewer/design time, but log warning
             _searchManager = App.GetService<SearchManager>();
             if (_searchManager == null)
@@ -142,7 +142,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             var profile = _userProfileService.GetProfile();
             VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
-            
+
             // Load Engine Settings
             if (_searchManager.ActiveEngine.IsLocal)
             {

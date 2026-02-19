@@ -249,10 +249,7 @@ namespace BalatroSeedOracle.ViewModels
                     if (_audioManager is null)
                         break;
 
-                    DebugLogger.LogError(
-                        "FrequencyDebugWidget",
-                        $"Update error: {ex.Message}"
-                    );
+                    DebugLogger.LogError("FrequencyDebugWidget", $"Update error: {ex.Message}");
                     await Task.Delay(100, cancellationToken);
                 }
             }

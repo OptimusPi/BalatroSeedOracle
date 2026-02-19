@@ -384,7 +384,10 @@ namespace BalatroSeedOracle.ViewModels
                 if (searchManager is not null)
                 {
                     searchManager.StopSearchesForFilter(filterName);
-                    BsoLogger.Log("FiltersModalViewModel", $"Stopped searches for filter: {filterName}");
+                    BsoLogger.Log(
+                        "FiltersModalViewModel",
+                        $"Stopped searches for filter: {filterName}"
+                    );
                 }
             }
             catch (Exception ex)
@@ -718,9 +721,14 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Find the Validate Filter tab and refresh its data
-                if (TabItems.FirstOrDefault(t => t.Content is Components.FilterTabs.ValidateFilterTab)?.Content
-                    is Components.FilterTabs.ValidateFilterTab validateFilterTab
-                    && validateFilterTab.DataContext is FilterTabs.ValidateFilterTabViewModel validateVm)
+                if (
+                    TabItems
+                        .FirstOrDefault(t => t.Content is Components.FilterTabs.ValidateFilterTab)
+                        ?.Content
+                        is Components.FilterTabs.ValidateFilterTab validateFilterTab
+                    && validateFilterTab.DataContext
+                        is FilterTabs.ValidateFilterTabViewModel validateVm
+                )
                 {
                     validateVm.PreFillFilterData();
                     await validateVm.RefreshClauseDisplay();
@@ -1624,8 +1632,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 try
                 {
-                    var directory =
-                        Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
+                    var directory = Path.GetDirectoryName(originalPath) ?? AppPaths.FiltersDir;
                     var baseName = Path.GetFileNameWithoutExtension(originalPath);
                     var extension = Path.GetExtension(originalPath);
 

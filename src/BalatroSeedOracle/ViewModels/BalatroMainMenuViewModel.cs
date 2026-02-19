@@ -228,7 +228,8 @@ namespace BalatroSeedOracle.ViewModels
         {
             // Store injected services
             _userProfileService = userProfileService;
-            _analyzeModalFactory = analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            _analyzeModalFactory =
+                analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
             CreditsModalViewModel = creditsModalViewModel;
@@ -379,12 +380,15 @@ namespace BalatroSeedOracle.ViewModels
                         return;
                     }
 
-                    if (result.Action == FilterAction.Search && !string.IsNullOrEmpty(result.FilterId))
+                    if (
+                        result.Action == FilterAction.Search
+                        && !string.IsNullOrEmpty(result.FilterId)
+                    )
                     {
                         // Transition to SearchModal
                         var searchVM = ServiceHelper.GetRequiredService<SearchModalViewModel>();
                         searchVM.MainMenu = null; // We'll handle navigation via ActiveModal
-                        
+
                         // Load filter and show
                         var filtersDir = AppPaths.FiltersDir;
                         var configPath = Path.Combine(filtersDir, result.FilterId + ".jaml");
@@ -813,11 +817,19 @@ namespace BalatroSeedOracle.ViewModels
                 // Load feature toggles - these control which widgets are enabled (exist)
                 // Combine user preferences with platform capabilities
                 var toggles = profile.FeatureToggles;
-                IsMusicMixerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowMusicMixer ?? false);
-                IsVisualizerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowVisualizer ?? false);
-                IsTransitionDesignerWidgetEnabled = (_platformServices?.SupportsTransitionDesigner ?? true) && (toggles?.ShowTransitionDesigner ?? false);
+                IsMusicMixerWidgetEnabled =
+                    (_platformServices?.SupportsAudioWidgets ?? true)
+                    && (toggles?.ShowMusicMixer ?? false);
+                IsVisualizerWidgetEnabled =
+                    (_platformServices?.SupportsAudioWidgets ?? true)
+                    && (toggles?.ShowVisualizer ?? false);
+                IsTransitionDesignerWidgetEnabled =
+                    (_platformServices?.SupportsTransitionDesigner ?? true)
+                    && (toggles?.ShowTransitionDesigner ?? false);
                 IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-                IsHostApiWidgetEnabled = (_platformServices?.SupportsApiHostWidget ?? true) && (toggles?.ShowHostServer ?? false);
+                IsHostApiWidgetEnabled =
+                    (_platformServices?.SupportsApiHostWidget ?? true)
+                    && (toggles?.ShowHostServer ?? false);
                 IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
 
                 // Initialize visibility to match enabled state
@@ -855,11 +867,19 @@ namespace BalatroSeedOracle.ViewModels
 
             // Update enabled state (source of truth)
             // Combine user preferences with platform capabilities
-            IsMusicMixerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowMusicMixer ?? false);
-            IsVisualizerWidgetEnabled = (_platformServices?.SupportsAudioWidgets ?? true) && (toggles?.ShowVisualizer ?? false);
-            IsTransitionDesignerWidgetEnabled = (_platformServices?.SupportsTransitionDesigner ?? true) && (toggles?.ShowTransitionDesigner ?? false);
+            IsMusicMixerWidgetEnabled =
+                (_platformServices?.SupportsAudioWidgets ?? true)
+                && (toggles?.ShowMusicMixer ?? false);
+            IsVisualizerWidgetEnabled =
+                (_platformServices?.SupportsAudioWidgets ?? true)
+                && (toggles?.ShowVisualizer ?? false);
+            IsTransitionDesignerWidgetEnabled =
+                (_platformServices?.SupportsTransitionDesigner ?? true)
+                && (toggles?.ShowTransitionDesigner ?? false);
             IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-            IsHostApiWidgetEnabled = (_platformServices?.SupportsApiHostWidget ?? true) && (toggles?.ShowHostServer ?? false);
+            IsHostApiWidgetEnabled =
+                (_platformServices?.SupportsApiHostWidget ?? true)
+                && (toggles?.ShowHostServer ?? false);
             IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
 
             // If a widget is disabled, hide it. If enabled, keep current visibility.

@@ -26,7 +26,11 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    public MainWindow(MainWindowViewModel viewModel, BalatroMainMenu mainMenu, NotificationService? notificationService = null)
+    public MainWindow(
+        MainWindowViewModel viewModel,
+        BalatroMainMenu mainMenu,
+        NotificationService? notificationService = null
+    )
     {
         InitializeComponent();
 
@@ -48,7 +52,10 @@ public partial class MainWindow : Window
         {
             _mainMenu.ViewModel.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode) && ViewModel is not null)
+                if (
+                    e.PropertyName == nameof(_mainMenu.ViewModel.IsVibeOutMode)
+                    && ViewModel is not null
+                )
                 {
                     ViewModel.IsVibeOutMode = _mainMenu.ViewModel.IsVibeOutMode;
                 }

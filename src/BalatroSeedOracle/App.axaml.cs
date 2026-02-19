@@ -23,7 +23,7 @@ public partial class App : Application
     /// <summary>
     /// Platform-specific initialization callback. Set by Desktop/Browser projects for custom setup.
     /// </summary>
-    public static Action? PlatformSpecificInitialization { get; set; }
+    public static Func<Task>? PlatformSpecificInitialization { get; set; }
 
     public override void Initialize()
     {
@@ -89,9 +89,6 @@ public partial class App : Application
 
                 // Handle app exit
                 desktop.ShutdownRequested += OnShutdownRequested;
-
-                // Platform-specific initialization (set by Desktop project)
-                PlatformSpecificInitialization?.Invoke();
 
                 DebugLogger.Log("App", "Application initialization complete");
             }
@@ -338,6 +335,12 @@ public partial class App : Application
             if (transitionService != null)
             {
                 transitionService.SetProgress(1.0f);
+            }
+
+            // Platform-specific initialization (Desktop: search library, etc.) — awaited, not fire-and-forget
+            if (PlatformSpecificInitialization != null)
+            {
+                await PlatformSpecificInitialization();
             }
 
             DebugLogger.LogImportant(

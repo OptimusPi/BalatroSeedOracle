@@ -378,12 +378,16 @@ namespace BalatroSeedOracle.ViewModels.Controls
 
         private static bool LabelsEqual(string[]? a, string[]? b)
         {
-            if (a is null && b is null) return true;
-            if (a is null || b is null) return false;
-            if (a.Length != b.Length) return false;
+            if (a is null && b is null)
+                return true;
+            if (a is null || b is null)
+                return false;
+            if (a.Length != b.Length)
+                return false;
             for (int i = 0; i < a.Length; i++)
             {
-                if (a[i] != b[i]) return false;
+                if (a[i] != b[i])
+                    return false;
             }
             return true;
         }
@@ -393,15 +397,21 @@ namespace BalatroSeedOracle.ViewModels.Controls
             var source = new FlatTreeDataGridSource<SearchResult>(DisplayedResults);
 
             // Fixed columns: Seed and TotalScore
-            source.Columns.Add(new TextColumn<SearchResult, string>(
-                "SEED",
-                x => x.Seed,
-                width: new GridLength(120)));
+            source.Columns.Add(
+                new TextColumn<SearchResult, string>(
+                    "SEED",
+                    x => x.Seed,
+                    width: new GridLength(120)
+                )
+            );
 
-            source.Columns.Add(new TextColumn<SearchResult, int>(
-                "SCORE",
-                x => x.TotalScore,
-                width: new GridLength(80)));
+            source.Columns.Add(
+                new TextColumn<SearchResult, int>(
+                    "SCORE",
+                    x => x.TotalScore,
+                    width: new GridLength(80)
+                )
+            );
 
             // Dynamic tally columns from Labels
             if (_currentLabels is not null)
@@ -411,12 +421,16 @@ namespace BalatroSeedOracle.ViewModels.Controls
                     var index = i; // Capture for closure
                     var label = _currentLabels[i];
 
-                    source.Columns.Add(new TextColumn<SearchResult, string>(
-                        label.ToUpperInvariant(),
-                        x => (x.Scores != null && index < x.Scores.Length)
-                            ? x.Scores[index].ToString()
-                            : "-",
-                        width: new GridLength(70)));
+                    source.Columns.Add(
+                        new TextColumn<SearchResult, string>(
+                            label.ToUpperInvariant(),
+                            x =>
+                                (x.Scores != null && index < x.Scores.Length)
+                                    ? x.Scores[index].ToString()
+                                    : "-",
+                            width: new GridLength(70)
+                        )
+                    );
                 }
             }
 

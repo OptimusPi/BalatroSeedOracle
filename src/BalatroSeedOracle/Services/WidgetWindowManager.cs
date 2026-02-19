@@ -22,8 +22,7 @@ namespace BalatroSeedOracle.Services
         private WidgetWindowManager()
         {
             _positionService =
-                ServiceHelper.GetService<WidgetPositionService>()
-                ?? new WidgetPositionService();
+                ServiceHelper.GetService<WidgetPositionService>() ?? new WidgetPositionService();
         }
 
         /// <summary>

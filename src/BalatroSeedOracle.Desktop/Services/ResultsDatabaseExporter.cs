@@ -18,7 +18,8 @@ public sealed class ResultsDatabaseExporter : IResultsDatabaseExporter
     public Task ExportToAsync(
         string path,
         IReadOnlyList<SearchResult> results,
-        IReadOnlyList<string> columnNames)
+        IReadOnlyList<string> columnNames
+    )
     {
         var rows = new List<(string seed, int score, IReadOnlyList<object?>? columnValues)>();
         foreach (var r in results)

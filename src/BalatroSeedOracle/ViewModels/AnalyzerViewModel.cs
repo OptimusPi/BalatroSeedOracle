@@ -89,8 +89,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
     partial void OnSelectedDeckIndexChanged(int value)
     {
-        if (value >= 0 && value < DeckDisplayValues.Length &&
-            Enum.TryParse<MotelyDeck>(DeckDisplayValues[value], out var deck))
+        if (
+            value >= 0
+            && value < DeckDisplayValues.Length
+            && Enum.TryParse<MotelyDeck>(DeckDisplayValues[value], out var deck)
+        )
         {
             SelectedDeck = deck;
         }
@@ -98,8 +101,11 @@ public partial class AnalyzerViewModel : ObservableObject
 
     partial void OnSelectedStakeIndexChanged(int value)
     {
-        if (value >= 0 && value < StakeDisplayValues.Length &&
-            Enum.TryParse<MotelyStake>(StakeDisplayValues[value], out var stake))
+        if (
+            value >= 0
+            && value < StakeDisplayValues.Length
+            && Enum.TryParse<MotelyStake>(StakeDisplayValues[value], out var stake)
+        )
         {
             SelectedStake = stake;
         }

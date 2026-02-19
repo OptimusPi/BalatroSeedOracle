@@ -399,7 +399,9 @@ LIMIT 100;";
             try
             {
                 // SQL Editor feature has been removed - database operations are now handled internally by Motely
-                UpdateQueryStatus("SQL Editor is no longer available. Database operations are now handled internally by Motely. Use the Results tab to view search results.");
+                UpdateQueryStatus(
+                    "SQL Editor is no longer available. Database operations are now handled internally by Motely. Use the Results tab to view search results."
+                );
             }
             catch (Exception ex)
             {
@@ -570,7 +572,10 @@ LIMIT 50;",
                     DefaultExtension = "parquet",
                     FileTypeChoices = new[]
                     {
-                        new FilePickerFileType("Parquet Files") { Patterns = new[] { "*.parquet" } },
+                        new FilePickerFileType("Parquet Files")
+                        {
+                            Patterns = new[] { "*.parquet" },
+                        },
                     },
                 }
             );
@@ -604,11 +609,7 @@ LIMIT 50;",
                     rows.Add(row);
                 }
 
-                await parquetExporter.ExportAsync(
-                    file.Path.LocalPath,
-                    headers,
-                    rows
-                );
+                await parquetExporter.ExportAsync(file.Path.LocalPath, headers, rows);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to Parquet");
             }
             catch (Exception ex)

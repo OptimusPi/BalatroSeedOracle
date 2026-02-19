@@ -1507,10 +1507,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     CanResize = false,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Background =
-                        darkBg
-                        ?? new Avalonia.Media.SolidColorBrush(
-                            Color.FromRgb(45, 54, 59)
-                        ),
+                        darkBg ?? new Avalonia.Media.SolidColorBrush(Color.FromRgb(45, 54, 59)),
                     Title = "Start Over?",
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
                     SystemDecorations = SystemDecorations.Full,

@@ -70,7 +70,11 @@ namespace BalatroSeedOracle.Services
                 {
                     var json = File.ReadAllText(_dataPath);
                     // AOT-compatible: Use source-generated serializer context
-                    var list = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.ListDaylatroDailyScores) ?? new();
+                    var list =
+                        JsonSerializer.Deserialize(
+                            json,
+                            BsoJsonSerializerContext.Default.ListDaylatroDailyScores
+                        ) ?? new();
                     _cache.Clear();
                     foreach (var d in list)
                     {
@@ -95,7 +99,10 @@ namespace BalatroSeedOracle.Services
             {
                 var list = _cache.Values.OrderByDescending(d => d.DateUtc).ToList();
                 // AOT-compatible: Use source-generated serializer context
-                var json = JsonSerializer.Serialize(list, BsoJsonSerializerContext.Default.ListDaylatroDailyScores);
+                var json = JsonSerializer.Serialize(
+                    list,
+                    BsoJsonSerializerContext.Default.ListDaylatroDailyScores
+                );
                 File.WriteAllText(_dataPath, json);
             }
             catch (Exception ex)
@@ -121,7 +128,10 @@ namespace BalatroSeedOracle.Services
                 {
                     var json = File.ReadAllText(_submissionsPath);
                     // AOT-compatible: Use source-generated serializer context
-                    var dates = JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.DictionaryStringDateTime);
+                    var dates = JsonSerializer.Deserialize(
+                        json,
+                        BsoJsonSerializerContext.Default.DictionaryStringDateTime
+                    );
                     if (dates != null)
                     {
                         _lastSubmissionDates.Clear();
@@ -146,7 +156,10 @@ namespace BalatroSeedOracle.Services
             try
             {
                 // AOT-compatible: Use source-generated serializer context
-                var json = JsonSerializer.Serialize(_lastSubmissionDates, BsoJsonSerializerContext.Default.DictionaryStringDateTime);
+                var json = JsonSerializer.Serialize(
+                    _lastSubmissionDates,
+                    BsoJsonSerializerContext.Default.DictionaryStringDateTime
+                );
                 File.WriteAllText(_submissionsPath, json);
             }
             catch (Exception ex)
