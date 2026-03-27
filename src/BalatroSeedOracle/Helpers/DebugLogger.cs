@@ -14,7 +14,7 @@ public static class DebugLogger
     private static IPlatformServices? _platformServices;
 
     /// <summary>
-    /// Initialize DebugLogger with platform services (called from App.axaml.cs)
+    /// Initialize DebugLogger with platform services (called from App.cs)
     /// </summary>
     public static void Initialize(IPlatformServices platformServices)
     {
