@@ -1,233 +1,136 @@
 using System;
 using System.IO;
-using Avalonia.Controls;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 
-namespace BalatroSeedOracle.Services
+namespace BalatroSeedOracle.Services;
+
+/// <summary>
+/// Manages shader transitions during seed searches.
+/// Reads user-configured presets and drives smooth 0-100% transitions.
+/// Decoupled from specific view types — uses an Action callback to apply shader params.
+/// </summary>
+public class SearchTransitionManager
 {
-    /// <summary>
-    /// Manages shader transitions during seed searches.
-    /// Reads user-configured presets and drives smooth 0-100% transitions.
-    /// </summary>
-    public class SearchTransitionManager
+    private readonly TransitionService _transitionService;
+    private readonly UserProfileService _userProfileService;
+    private Action<ShaderParameters>? _applyShaderCallback;
+    private ActiveSearchContext? _activeSearch;
+    private bool _isTransitionActive;
+
+    public SearchTransitionManager(
+        TransitionService transitionService,
+        UserProfileService userProfileService)
     {
-        private readonly TransitionService _transitionService;
-        private readonly UserProfileService _userProfileService;
-        private readonly Views.MainWindow? _mainWindow;
-        private readonly Views.BalatroMainMenu? _mainMenu;
-        private ActiveSearchContext? _activeSearch;
-        private bool _isTransitionActive = false;
+        _transitionService = transitionService;
+        _userProfileService = userProfileService;
+    }
 
-        public SearchTransitionManager(
-            TransitionService transitionService,
-            UserProfileService userProfileService,
-            Views.MainWindow? mainWindow = null,
-            Views.BalatroMainMenu? mainMenu = null
-        )
+    /// <summary>
+    /// Register a callback that applies shader parameters to the UI.
+    /// Called by the UI layer during initialization.
+    /// </summary>
+    public void SetShaderCallback(Action<ShaderParameters> callback)
+    {
+        _applyShaderCallback = callback;
+    }
+
+    public void StartSearchTransition(ActiveSearchContext searchInstance)
+    {
+        var settings = _userProfileService.GetProfile().VisualizerSettings;
+        if (!settings.EnableSearchTransition)
         {
-            _transitionService = transitionService;
-            _userProfileService = userProfileService;
-            _mainWindow = mainWindow;
-            _mainMenu = mainMenu;
+            DebugLogger.Log("SearchTransitionManager", "Search transitions disabled by user");
+            return;
         }
 
-        /// <summary>
-        /// Starts monitoring a search and driving shader transitions based on progress
-        /// </summary>
-        public void StartSearchTransition(ActiveSearchContext searchInstance)
-        {
-            // Check if search transitions are enabled
-            var settings = _userProfileService.GetProfile().VisualizerSettings;
-            if (!settings.EnableSearchTransition)
-            {
-                DebugLogger.Log("SearchTransitionManager", "Search transitions disabled by user");
-                return;
-            }
+        StopSearchTransition();
 
-            // Stop any existing transition
+        var startParams = LoadPresetParameters(settings.SearchTransitionStartPresetName);
+        var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName);
+
+        if (startParams == null || endParams == null)
+        {
+            DebugLogger.LogError("SearchTransitionManager", "Failed to load transition presets");
+            return;
+        }
+
+        _transitionService.StartTransition(startParams, endParams, ApplyShaderParameters);
+        _activeSearch = searchInstance;
+        _activeSearch.ProgressUpdated += OnSearchProgressUpdated;
+        _isTransitionActive = true;
+    }
+
+    public void StopSearchTransition()
+    {
+        if (_activeSearch != null)
+        {
+            _activeSearch.ProgressUpdated -= OnSearchProgressUpdated;
+            _activeSearch = null;
+        }
+
+        if (_isTransitionActive)
+        {
+            _transitionService.StopTransition();
+            _isTransitionActive = false;
+        }
+    }
+
+    private void OnSearchProgressUpdated(object? sender, SearchProgress progress)
+    {
+        if (!_isTransitionActive) return;
+
+        float normalizedProgress = (float)(progress.PercentComplete / 100.0);
+        _transitionService.SetProgress(normalizedProgress);
+
+        if (progress.IsComplete)
+        {
+            DebugLogger.LogImportant("SearchTransitionManager", "Search complete — transition finished");
             StopSearchTransition();
-
-            DebugLogger.LogImportant(
-                "SearchTransitionManager",
-                $"Starting search transition: {settings.SearchTransitionStartPresetName} → {settings.SearchTransitionEndPresetName}"
-            );
-
-            // Load start and end presets
-            var startParams = LoadPresetParameters(settings.SearchTransitionStartPresetName);
-            var endParams = LoadPresetParameters(settings.SearchTransitionEndPresetName);
-
-            if (startParams == null || endParams == null)
-            {
-                DebugLogger.LogError(
-                    "SearchTransitionManager",
-                    "Failed to load transition presets - aborting transition"
-                );
-                return;
-            }
-
-            // Start the transition
-            _transitionService.StartTransition(startParams, endParams, ApplyShaderParameters);
-
-            // Hook into search progress
-            _activeSearch = searchInstance;
-            _activeSearch.ProgressUpdated += OnSearchProgressUpdated;
-            _isTransitionActive = true;
         }
+    }
 
-        /// <summary>
-        /// Stops the current search transition
-        /// </summary>
-        public void StopSearchTransition()
+    private ShaderParameters? LoadPresetParameters(string? presetName)
+    {
+        if (string.IsNullOrWhiteSpace(presetName))
+            return null;
+
+        if (presetName == "Default Balatro")
+            return VisualizerPresetExtensions.CreateDefaultNormalParameters();
+
+        try
         {
-            if (_activeSearch != null)
+            var presetsPath = Path.Combine(AppContext.BaseDirectory, "Presets");
+            var presetFile = Path.Combine(presetsPath, $"{presetName}.json");
+
+            if (!File.Exists(presetFile))
             {
-                _activeSearch.ProgressUpdated -= OnSearchProgressUpdated;
-                _activeSearch = null;
-            }
-
-            if (_isTransitionActive)
-            {
-                _transitionService.StopTransition();
-                _isTransitionActive = false;
-            }
-        }
-
-        /// <summary>
-        /// Called when search progress updates - drives the shader transition
-        /// </summary>
-        private void OnSearchProgressUpdated(object? sender, SearchProgress progress)
-        {
-            if (!_isTransitionActive)
-                return;
-
-            // Convert progress (0-100%) to normalized value (0.0-1.0)
-            float normalizedProgress = (float)(progress.PercentComplete / 100.0);
-
-            // Drive the transition!
-            _transitionService.SetProgress(normalizedProgress);
-
-            if (progress.IsComplete)
-            {
-                DebugLogger.LogImportant(
-                    "SearchTransitionManager",
-                    "Search complete - transition finished!"
-                );
-                StopSearchTransition();
-            }
-        }
-
-        /// <summary>
-        /// Loads shader parameters from a preset name
-        /// </summary>
-        private ShaderParameters? LoadPresetParameters(string? presetName)
-        {
-            if (string.IsNullOrWhiteSpace(presetName))
-            {
-                DebugLogger.LogError("SearchTransitionManager", "Preset name is empty");
+                DebugLogger.LogError("SearchTransitionManager", $"Preset not found: {presetFile}");
                 return null;
             }
 
-            // Handle built-in presets (consolidated)
-            if (presetName == "Default Balatro")
-            {
-                return VisualizerPresetExtensions.CreateDefaultNormalParameters();
-            }
-
-            // Try to load from disk
-            try
-            {
-                var presetsPath = Path.Combine(AppContext.BaseDirectory, "Presets");
-                var presetFile = Path.Combine(presetsPath, $"{presetName}.json");
-
-                if (!File.Exists(presetFile))
-                {
-                    DebugLogger.LogError(
-                        "SearchTransitionManager",
-                        $"Preset file not found: {presetFile}"
-                    );
-                    return null;
-                }
-
-                var json = File.ReadAllText(presetFile);
-                var preset = System.Text.Json.JsonSerializer.Deserialize<VisualizerPreset>(json);
-
-                if (preset != null)
-                {
-                    // Convert VisualizerPreset to ShaderParameters
-                    // For now, just use defaults and log a warning
-                    DebugLogger.Log(
-                        "SearchTransitionManager",
-                        $"Loaded preset: {presetName} (using default conversion)"
-                    );
-                    return VisualizerPresetExtensions.ToShaderParameters(preset);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SearchTransitionManager",
-                    $"Failed to load preset {presetName}: {ex.Message}"
-                );
-            }
-
-            return null;
+            var json = File.ReadAllText(presetFile);
+            var preset = System.Text.Json.JsonSerializer.Deserialize<VisualizerPreset>(json);
+            if (preset != null)
+                return VisualizerPresetExtensions.ToShaderParameters(preset);
         }
-
-        /// <summary>
-        /// Applies shader parameters to the main menu's shader background
-        /// </summary>
-        private void ApplyShaderParameters(ShaderParameters parameters)
+        catch (Exception ex)
         {
-            try
-            {
-                if (_mainMenu != null)
-                {
-                    ApplyToMainMenu(_mainMenu, parameters);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SearchTransitionManager",
-                    $"Failed to apply shader parameters: {ex.Message}"
-                );
-            }
+            DebugLogger.LogError("SearchTransitionManager", $"Failed to load preset {presetName}: {ex.Message}");
         }
+        return null;
+    }
 
-        /// <summary>
-        /// Applies shader parameters to BalatroMainMenu
-        /// </summary>
-        private void ApplyToMainMenu(Views.BalatroMainMenu mainMenu, ShaderParameters parameters)
+    private void ApplyShaderParameters(ShaderParameters parameters)
+    {
+        try
         {
-            try
-            {
-                if (mainMenu.ShaderBackground is Controls.BalatroShaderBackground shaderBackground)
-                {
-                    shaderBackground.SetTime(parameters.TimeSpeed);
-                    shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
-                    shaderBackground.SetMainColor(parameters.MainColor);
-                    shaderBackground.SetAccentColor(parameters.AccentColor);
-                    shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
-                    shaderBackground.SetContrast(parameters.Contrast);
-                    shaderBackground.SetSpinAmount(parameters.SpinAmount);
-                    shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
-                    shaderBackground.SetZoomScale(parameters.ZoomScale);
-                    shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
-                    shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
-                    shaderBackground.SetPixelSize(parameters.PixelSize);
-                    shaderBackground.SetSpinEase(parameters.SpinEase);
-                    shaderBackground.SetLoopCount(parameters.LoopCount);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SearchTransitionManager",
-                    $"Failed to apply to main menu: {ex.Message}"
-                );
-            }
+            _applyShaderCallback?.Invoke(parameters);
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("SearchTransitionManager", $"Failed to apply shader: {ex.Message}");
         }
     }
 }
