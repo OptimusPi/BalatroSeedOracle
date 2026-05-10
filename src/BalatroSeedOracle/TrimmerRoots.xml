@@ -1,8 +1,9 @@
 <linker>
   <assembly fullname="BalatroSeedOracle">
-    <type fullname="BalatroSeedOracle.ViewModels*" preserve="all" />
+    <type fullname="BalatroSeedOracle.UI*" preserve="all" />
     <type fullname="BalatroSeedOracle.Models*" preserve="all" />
     <type fullname="BalatroSeedOracle.Services*" preserve="all" />
+    <type fullname="BalatroSeedOracle.Theme*" preserve="all" />
   </assembly>
   <assembly fullname="Motely">
     <type fullname="Motely.Filters*" preserve="all" />
