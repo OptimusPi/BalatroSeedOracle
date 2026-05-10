@@ -1,51 +1,51 @@
-&lt;Project&gt;
-  &lt;!-- Centralized package versions are in Directory.Packages.props (MSBuild convention) --&gt;
+<Project>
+  <!-- Centralized package versions are in Directory.Packages.props (MSBuild convention) -->
 
-  &lt;!-- Shared Assembly Metadata --&gt;
-  &lt;PropertyGroup&gt;
-    &lt;Product&gt;Balatro Seed Oracle&lt;/Product&gt;
-    &lt;Company&gt;OptimusPi&lt;/Company&gt;
-    &lt;Copyright&gt;Copyright 2025&lt;/Copyright&gt;
-    &lt;Version&gt;2.0.0&lt;/Version&gt;
-    &lt;FileVersion&gt;2.0.0&lt;/FileVersion&gt;
-    &lt;AssemblyVersion&gt;2.0.0&lt;/AssemblyVersion&gt;
-    &lt;!-- Don't generate assembly info - let projects handle it --&gt;
-    &lt;GenerateAssemblyInfo&gt;false&lt;/GenerateAssemblyInfo&gt;
-  &lt;/PropertyGroup&gt;
+  <!-- Shared Assembly Metadata -->
+  <PropertyGroup>
+    <Product>Balatro Seed Oracle</Product>
+    <Company>OptimusPi</Company>
+    <Copyright>Copyright 2025</Copyright>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <!-- Don't generate assembly info - let projects handle it -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
 
-  &lt;!-- Avalonia License Key - from PARCEL_LICENSE env var OR avalonia.license file --&gt;
-  &lt;PropertyGroup&gt;
-    &lt;_AvaloniaLicenseFile&gt;$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())&lt;/_AvaloniaLicenseFile&gt;
-    &lt;_AvaloniaLicenseKey Condition="'$(PARCEL_LICENSE)' != ''"&gt;$(PARCEL_LICENSE)&lt;/_AvaloniaLicenseKey&gt;
-    &lt;_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''"&gt;$(_AvaloniaLicenseFile)&lt;/_AvaloniaLicenseKey&gt;
-  &lt;/PropertyGroup&gt;
-  &lt;ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''"&gt;
-    &lt;AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" /&gt;
-  &lt;/ItemGroup&gt;
+  <!-- Avalonia License Key - from PARCEL_LICENSE env var OR avalonia.license file -->
+  <PropertyGroup>
+    <_AvaloniaLicenseFile>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)avalonia.license').Trim())</_AvaloniaLicenseFile>
+    <_AvaloniaLicenseKey Condition="'$(PARCEL_LICENSE)' != ''">$(PARCEL_LICENSE)</_AvaloniaLicenseKey>
+    <_AvaloniaLicenseKey Condition="'$(_AvaloniaLicenseKey)' == '' AND '$(_AvaloniaLicenseFile)' != ''">$(_AvaloniaLicenseFile)</_AvaloniaLicenseKey>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_AvaloniaLicenseKey)' != ''">
+    <AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" />
+  </ItemGroup>
 
-  &lt;!-- AOT-mandatory: compiled bindings everywhere.
+  <!-- AOT-mandatory: compiled bindings everywhere.
        Desktop sets IlcDisableReflection=true and Browser uses TrimMode=full,
        so any reflection-based binding would crash at runtime. Per Avalonia's
        Native AOT guidance, this prop must apply across all heads, not just
-       the shared library. --&gt;
-  &lt;PropertyGroup&gt;
-    &lt;AvaloniaUseCompiledBindingsByDefault&gt;true&lt;/AvaloniaUseCompiledBindingsByDefault&gt;
-  &lt;/PropertyGroup&gt;
+       the shared library. -->
+  <PropertyGroup>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
 
-  &lt;!-- Code Quality Settings --&gt;
-  &lt;PropertyGroup&gt;
-    &lt;Nullable&gt;enable&lt;/Nullable&gt;
-    &lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;
-    &lt;AnalysisMode&gt;Default&lt;/AnalysisMode&gt;
-    &lt;EnableNETAnalyzers&gt;true&lt;/EnableNETAnalyzers&gt;
-    &lt;EnforceCodeStyleInBuild&gt;true&lt;/EnforceCodeStyleInBuild&gt;
-    &lt;TreatWarningsAsErrors&gt;false&lt;/TreatWarningsAsErrors&gt;
-    &lt;WarningLevel&gt;4&lt;/WarningLevel&gt;
-  &lt;/PropertyGroup&gt;
+  <!-- Code Quality Settings -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AnalysisMode>Default</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
 
-  &lt;!-- Android SDK Settings --&gt;
-  &lt;PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0-android'))"&gt;
-    &lt;AcceptAndroidSDKLicenses&gt;true&lt;/AcceptAndroidSDKLicenses&gt;
-    &lt;AndroidSdkDirectory&gt;$(LOCALAPPDATA)\Android\android-sdk&lt;/AndroidSdkDirectory&gt;
-  &lt;/PropertyGroup&gt;
-&lt;/Project&gt;
+  <!-- Android SDK Settings -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0-android'))">
+    <AcceptAndroidSDKLicenses>true</AcceptAndroidSDKLicenses>
+    <AndroidSdkDirectory>$(LOCALAPPDATA)\Android\android-sdk</AndroidSdkDirectory>
+  </PropertyGroup>
+</Project>
