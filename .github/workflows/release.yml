@@ -1,9 +1,6 @@
 name: Complete Release Build
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 jobs:

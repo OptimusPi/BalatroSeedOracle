@@ -2,7 +2,6 @@
   <PropertyGroup>
     <!-- Shared library - single target (platform-specific code moved to head projects) -->
     <TargetFramework>net10.0</TargetFramework>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
   </PropertyGroup>
 

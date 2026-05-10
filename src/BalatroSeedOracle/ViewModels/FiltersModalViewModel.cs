@@ -184,6 +184,20 @@ namespace BalatroSeedOracle.ViewModels
         public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
         public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
+        // The stake-by-UI-index mapping is order-specific and uses lowercase JSON values
+        // (MotelyStake enum has gaps so we can't derive this from Enum.GetNames).
+        private static readonly string[] StakeNamesByIndex =
+        {
+            "white",
+            "red",
+            "green",
+            "black",
+            "blue",
+            "purple",
+            "orange",
+            "gold",
+        };
+
         // Deck/Stake index helpers
         public int SelectedDeckIndex
         {
@@ -901,7 +915,6 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            // Get author from UserProfileService
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             var author = userProfileService?.GetAuthorName() ?? "Unknown";
 
@@ -912,7 +925,6 @@ namespace BalatroSeedOracle.ViewModels
                 // Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
-                // Use enum ToString() for JSON serialization
                 Deck = SelectedDeck.ToString(),
                 Stake = SelectedStake.ToString().ToLower(),
                 Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
@@ -920,114 +932,101 @@ namespace BalatroSeedOracle.ViewModels
                 MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
-            // CRITICAL FIX: Read from VisualBuilderTab's collections if available
-            // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
+            var visualBuilder = VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel;
+
             BsoLogger.LogImportant(
                 "FiltersModalViewModel",
-                $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}"
+                $"🔍 BuildConfig: VisualBuilderTab={visualBuilder?.GetType().Name ?? "NULL"}"
             );
 
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+            if (visualBuilder is not null)
             {
                 BsoLogger.LogImportant(
                     "FiltersModalViewModel",
-                    $"✅ USING VisualBuilder PATH: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
+                    $"✅ USING VisualBuilder PATH: {visualBuilder.SelectedMust.Count} must, {visualBuilder.SelectedShould.Count} should"
                 );
 
-                // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
-                foreach (var filterItem in visualVm.SelectedMust)
-                {
-                    BsoLogger.LogImportant(
-                        "FiltersModalViewModel",
-                        $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
-                    );
-
-                    var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause is not null)
-                    {
-                        config.Must.Add(clause);
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
-                        );
-                    }
-                    else
-                    {
-                        BsoLogger.LogError(
-                            "FiltersModalViewModel",
-                            $"Failed to convert {filterItem.Name} to clause!"
-                        );
-                    }
-                }
+                AppendVisualClauses(visualBuilder.SelectedMust, config.Must);
+                AppendVisualClauses(visualBuilder.SelectedShould, config.Should);
+                AppendBannedItemsAsMustNot(visualBuilder.SelectedMust, config.MustNot);
             }
             else
             {
-                // Fallback to parent's key-based collections
-                foreach (var itemKey in SelectedMust)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.Must.Add(clause);
-                    }
-                }
-            }
-
-            // Build Should clauses
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm2)
-            {
-                foreach (var filterItem in visualVm2.SelectedShould)
-                {
-                    var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause is not null)
-                        config.Should.Add(clause);
-                }
-            }
-            else
-            {
-                foreach (var itemKey in SelectedShould)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.Should.Add(clause);
-                    }
-                }
-            }
-
-            // Build MustNot clauses - handle both BannedItems operator and direct MustNot
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm3)
-            {
-                // Check for BannedItems operator in Must collection
-                foreach (var item in visualVm3.SelectedMust)
-                {
-                    if (item is Models.FilterOperatorItem op && op.OperatorType == "BannedItems")
-                    {
-                        foreach (var child in op.Children)
-                        {
-                            var clause = ConvertFilterItemToClause(child);
-                            if (clause is not null)
-                                config.MustNot.Add(clause);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (var itemKey in SelectedMustNot)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.MustNot.Add(clause);
-                    }
-                }
+                AppendKeyedClauses(SelectedMust, config.Must);
+                AppendKeyedClauses(SelectedShould, config.Should);
+                AppendKeyedClauses(SelectedMustNot, config.MustNot);
             }
 
             return config;
+        }
+
+        // ConvertFilterItemToClause returns null for BannedItems operators by design,
+        // so they're skipped here and surfaced via AppendBannedItemsAsMustNot.
+        private void AppendVisualClauses(
+            IEnumerable<Models.FilterItem> source,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> target
+        )
+        {
+            foreach (var filterItem in source)
+            {
+                BsoLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"Processing item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
+                );
+
+                var clause = ConvertFilterItemToClause(filterItem);
+                if (clause is null)
+                {
+                    BsoLogger.LogError(
+                        "FiltersModalViewModel",
+                        $"Failed to convert {filterItem.Name} to clause!"
+                    );
+                    continue;
+                }
+
+                target.Add(clause);
+                BsoLogger.Log(
+                    "FiltersModalViewModel",
+                    $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                );
+            }
+        }
+
+        // BannedItems live inside the Must collection as a FilterOperatorItem wrapper;
+        // unwrap their children into MustNot to match the JSON config schema.
+        private void AppendBannedItemsAsMustNot(
+            IEnumerable<Models.FilterItem> source,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> mustNot
+        )
+        {
+            foreach (var item in source)
+            {
+                if (item is not Models.FilterOperatorItem op || op.OperatorType != "BannedItems")
+                    continue;
+
+                foreach (var child in op.Children)
+                {
+                    var clause = ConvertFilterItemToClause(child);
+                    if (clause is not null)
+                        mustNot.Add(clause);
+                }
+            }
+        }
+
+        private void AppendKeyedClauses(
+            IEnumerable<string> itemKeys,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> target
+        )
+        {
+            foreach (var itemKey in itemKeys)
+            {
+                if (!ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    continue;
+
+                var clause = ConvertItemConfigToClause(itemConfig);
+                if (clause is not null)
+                    target.Add(clause);
+            }
         }
 
         private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(
@@ -1289,41 +1288,9 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedStake = stake;
             }
 
-            // Load Must clauses
-            if (config.Must is not null)
-            {
-                foreach (var clause in config.Must)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedMust.Add(itemKey);
-                }
-            }
-
-            // Load Should clauses
-            if (config.Should is not null)
-            {
-                foreach (var clause in config.Should)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedShould.Add(itemKey);
-                }
-            }
-
-            // Load MustNot clauses
-            if (config.MustNot is not null)
-            {
-                foreach (var clause in config.MustNot)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedMustNot.Add(itemKey);
-                }
-            }
+            LoadClausesIntoSelection(config.Must, SelectedMust);
+            LoadClausesIntoSelection(config.Should, SelectedShould);
+            LoadClausesIntoSelection(config.MustNot, SelectedMustNot);
 
             LoadedConfig = config;
 
@@ -1336,6 +1303,24 @@ namespace BalatroSeedOracle.ViewModels
                     "FiltersModalViewModel",
                     "Synced Visual Builder tab from loaded config"
                 );
+            }
+        }
+
+        // Each clause is registered in ItemConfigs under a freshly generated key,
+        // and the key is appended to the appropriate selection collection.
+        private void LoadClausesIntoSelection(
+            IEnumerable<MotelyJsonConfig.MotelyJsonFilterClause>? clauses,
+            ObservableCollection<string> selection
+        )
+        {
+            if (clauses is null)
+                return;
+
+            foreach (var clause in clauses)
+            {
+                var itemKey = GenerateNextItemKey();
+                ItemConfigs[itemKey] = ConvertClauseToItemConfig(clause, itemKey);
+                selection.Add(itemKey);
             }
         }
 
@@ -1562,53 +1547,8 @@ namespace BalatroSeedOracle.ViewModels
                         await UpdateVisualBuilderFromItemConfigs();
                         ExpandDropZonesWithItems();
 
-                        // Update deck and stake selection indices
-                        if (!string.IsNullOrEmpty(config.Deck))
-                        {
-                            var deckIndex = Array.IndexOf(
-                                new[]
-                                {
-                                    "Red",
-                                    "Blue",
-                                    "Yellow",
-                                    "Green",
-                                    "Black",
-                                    "Magic",
-                                    "Nebula",
-                                    "Ghost",
-                                    "Abandoned",
-                                    "Checkered",
-                                    "Zodiac",
-                                    "Painted",
-                                    "Anaglyph",
-                                    "Plasma",
-                                    "Erratic",
-                                },
-                                config.Deck
-                            );
-                            if (deckIndex >= 0)
-                                SelectedDeckIndex = deckIndex;
-                        }
-
-                        if (!string.IsNullOrEmpty(config.Stake))
-                        {
-                            var stakeIndex = Array.IndexOf(
-                                new[]
-                                {
-                                    "white",
-                                    "red",
-                                    "green",
-                                    "black",
-                                    "blue",
-                                    "purple",
-                                    "orange",
-                                    "gold",
-                                },
-                                config.Stake.ToLower()
-                            );
-                            if (stakeIndex >= 0)
-                                SelectedStakeIndex = stakeIndex;
-                        }
+                        ApplyDeckFromConfig(config.Deck);
+                        ApplyStakeFromConfig(config.Stake);
 
                         // Switch to Visual Builder tab
                         SelectedTabIndex = 1;
@@ -1708,52 +1648,8 @@ namespace BalatroSeedOracle.ViewModels
                             ExpandDropZonesWithItems();
 
                             // Preserve deck/stake selections from the copy
-                            if (!string.IsNullOrEmpty(newConfig.Deck))
-                            {
-                                var deckIndex = Array.IndexOf(
-                                    new[]
-                                    {
-                                        "Red",
-                                        "Blue",
-                                        "Yellow",
-                                        "Green",
-                                        "Black",
-                                        "Magic",
-                                        "Nebula",
-                                        "Ghost",
-                                        "Abandoned",
-                                        "Checkered",
-                                        "Zodiac",
-                                        "Painted",
-                                        "Anaglyph",
-                                        "Plasma",
-                                        "Erratic",
-                                    },
-                                    newConfig.Deck
-                                );
-                                if (deckIndex >= 0)
-                                    SelectedDeckIndex = deckIndex;
-                            }
-
-                            if (!string.IsNullOrEmpty(newConfig.Stake))
-                            {
-                                var stakeIndex = Array.IndexOf(
-                                    new[]
-                                    {
-                                        "white",
-                                        "red",
-                                        "green",
-                                        "black",
-                                        "blue",
-                                        "purple",
-                                        "orange",
-                                        "gold",
-                                    },
-                                    newConfig.Stake.ToLower()
-                                );
-                                if (stakeIndex >= 0)
-                                    SelectedStakeIndex = stakeIndex;
-                            }
+                            ApplyDeckFromConfig(newConfig.Deck);
+                            ApplyStakeFromConfig(newConfig.Stake);
 
                             SelectedTabIndex = 1;
                             BsoLogger.Log(
@@ -1828,30 +1724,24 @@ namespace BalatroSeedOracle.ViewModels
             return filterSelector;
         }
 
-        // Convert index to deck name via enum
-        private string GetDeckName(int index)
+        // Lookup deck/stake name from a config blob and apply to the SelectedXIndex setter.
+        // Both no-op if the name is missing or unrecognised, leaving the previous selection intact.
+        private void ApplyDeckFromConfig(string? deckName)
         {
-            if (index >= 0 && index <= 14)
-                return ((Motely.MotelyDeck)index).ToString();
-            return "Red";
+            if (string.IsNullOrEmpty(deckName))
+                return;
+            var index = Array.IndexOf(DeckDisplayValues, deckName);
+            if (index >= 0)
+                SelectedDeckIndex = index;
         }
 
-        // Convert index to stake name via enum (handles gaps in enum values)
-        private string GetStakeName(int index)
+        private void ApplyStakeFromConfig(string? stakeName)
         {
-            var stake = index switch
-            {
-                0 => MotelyStake.White,
-                1 => MotelyStake.Red,
-                2 => MotelyStake.Green,
-                3 => MotelyStake.Black,
-                4 => MotelyStake.Blue,
-                5 => MotelyStake.Purple,
-                6 => MotelyStake.Orange,
-                7 => MotelyStake.Gold,
-                _ => MotelyStake.White,
-            };
-            return stake.ToString().ToLower();
+            if (string.IsNullOrEmpty(stakeName))
+                return;
+            var index = Array.IndexOf(StakeNamesByIndex, stakeName.ToLower());
+            if (index >= 0)
+                SelectedStakeIndex = index;
         }
 
         /// <summary>

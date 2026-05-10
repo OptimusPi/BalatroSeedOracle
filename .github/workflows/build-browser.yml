@@ -1,12 +1,6 @@
 name: Build Browser Only
 
 on:
-  push:
-    branches: [main, develop]
-    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
-  pull_request:
-    branches: [main]
-    paths: ["src/BalatroSeedOracle.Browser/**", "src/BalatroSeedOracle/**"]
   workflow_dispatch:
 
 jobs:
@@ -19,6 +13,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4

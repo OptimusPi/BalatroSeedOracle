@@ -71,3 +71,10 @@ avalonia.license.local
 build.log
 docs/BLUEPRINT_GITHUB_PAGES_FIX.md
 *.md
+
+# Build/publish logs and scratch txt — these have leaked into the repo
+# multiple times (publish_log.txt, publish_retry.txt, temp_duckdb_ops.txt,
+# build_output.txt). Stop the bleed at the gitignore level.
+publish*.txt
+build_output.txt
+temp_*.txt

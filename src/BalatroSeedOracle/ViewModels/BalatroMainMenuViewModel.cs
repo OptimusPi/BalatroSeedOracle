@@ -407,15 +407,8 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                IsModalVisible = false;
                 ActiveModal = null;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open search modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Search Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                HandleModalOpenError("search", "Search", ex);
             }
         }
 
@@ -464,14 +457,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open filters modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Designer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                HandleModalOpenError("filters", "Designer", ex);
             }
         }
 
@@ -487,14 +473,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open analyze modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Analyzer Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                HandleModalOpenError("analyze", "Analyzer", ex);
             }
         }
 
@@ -510,14 +489,7 @@ namespace BalatroSeedOracle.ViewModels
             }
             catch (Exception ex)
             {
-                IsModalVisible = false;
-                DebugLogger.LogError(
-                    "BalatroMainMenuViewModel",
-                    $"Failed to open settings modal: {ex}"
-                );
-                ShowErrorModal(
-                    $"Failed to open Settings Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
-                );
+                HandleModalOpenError("settings", "Settings", ex);
             }
         }
 
@@ -528,58 +500,40 @@ namespace BalatroSeedOracle.ViewModels
             // Settings now opens SettingsModal via ModalRequested event
         }
 
+        // Widget toggle commands all share the pattern:
+        //   "if disabled, no-op; otherwise play click sound and flip visibility".
+        // Each [RelayCommand] needs to be its own method so the source generator can
+        // produce a corresponding ICommand property — but the body is a one-liner now.
         [RelayCommand]
-        private void ToggleMusicMixerWidget()
-        {
-            if (!IsMusicMixerWidgetEnabled)
-                return; // Can't toggle if not enabled
-            PlayButtonClickSound();
-            IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible;
-        }
+        private void ToggleMusicMixerWidget() =>
+            ToggleWidget(IsMusicMixerWidgetEnabled, () => IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible);
 
         [RelayCommand]
-        private void ToggleVisualizerWidget()
-        {
-            if (!IsVisualizerWidgetEnabled)
-                return;
-            PlayButtonClickSound();
-            IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible;
-        }
+        private void ToggleVisualizerWidget() =>
+            ToggleWidget(IsVisualizerWidgetEnabled, () => IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible);
 
         [RelayCommand]
-        private void ToggleTransitionDesignerWidget()
-        {
-            if (!IsTransitionDesignerWidgetEnabled)
-                return;
-            PlayButtonClickSound();
-            IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible;
-        }
+        private void ToggleTransitionDesignerWidget() =>
+            ToggleWidget(IsTransitionDesignerWidgetEnabled, () => IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible);
 
         [RelayCommand]
-        private void ToggleFertilizerWidget()
-        {
-            if (!IsFertilizerWidgetEnabled)
-                return;
-            PlayButtonClickSound();
-            IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible;
-        }
+        private void ToggleFertilizerWidget() =>
+            ToggleWidget(IsFertilizerWidgetEnabled, () => IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible);
 
         [RelayCommand]
-        private void ToggleHostApiWidget()
-        {
-            if (!IsHostApiWidgetEnabled)
-                return;
-            PlayButtonClickSound();
-            IsHostApiWidgetVisible = !IsHostApiWidgetVisible;
-        }
+        private void ToggleHostApiWidget() =>
+            ToggleWidget(IsHostApiWidgetEnabled, () => IsHostApiWidgetVisible = !IsHostApiWidgetVisible);
 
         [RelayCommand]
-        private void ToggleEventFXWidget()
+        private void ToggleEventFXWidget() =>
+            ToggleWidget(IsEventFXWidgetEnabled, () => IsEventFXWidgetVisible = !IsEventFXWidgetVisible);
+
+        private void ToggleWidget(bool enabled, Action toggle)
         {
-            if (!IsEventFXWidgetEnabled)
+            if (!enabled)
                 return;
             PlayButtonClickSound();
-            IsEventFXWidgetVisible = !IsEventFXWidgetVisible;
+            toggle();
         }
 
         [RelayCommand]
@@ -787,6 +741,18 @@ namespace BalatroSeedOracle.ViewModels
             errorModal.SetContent(errorText);
             errorModal.BackClicked += (s, ev) => HideModal();
             ShowModal("ERROR", errorModal);
+        }
+
+        // Common error path for the modal-launching commands. logName is the
+        // lowercase name used in DebugLogger; displayName is the user-facing
+        // name shown in the error modal title text.
+        private void HandleModalOpenError(string logName, string displayName, Exception ex)
+        {
+            IsModalVisible = false;
+            DebugLogger.LogError("BalatroMainMenuViewModel", $"Failed to open {logName} modal: {ex}");
+            ShowErrorModal(
+                $"Failed to open {displayName} Modal:\n\n{ex.Message}\n\nPlease check the logs for details."
+            );
         }
 
         #endregion
@@ -1049,8 +1015,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<IAudioManager>();
-                audioManager?.PlaySfx("button", 1.0f);
+                _audioManager?.PlaySfx("button", 1.0f);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
+using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -42,6 +44,8 @@ namespace BalatroSeedOracle.ViewModels
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
+        private readonly IResultsDatabaseExporter? _resultsDatabaseExporter;
+        private readonly IParquetExporter? _parquetExporter;
 
         private ActiveSearchContext? _searchContext;
         private string _currentSearchId = string.Empty;
@@ -290,7 +294,9 @@ namespace BalatroSeedOracle.ViewModels
             UserProfileService userProfileService,
             BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore,
             IPlatformServices platformServices,
-            Func<AnalyzeModalViewModel> analyzeModalFactory
+            Func<AnalyzeModalViewModel> analyzeModalFactory,
+            IResultsDatabaseExporter? resultsDatabaseExporter = null,
+            IParquetExporter? parquetExporter = null
         )
         {
             _searchManager = searchManager;
@@ -299,6 +305,8 @@ namespace BalatroSeedOracle.ViewModels
             _platformServices = platformServices;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            _resultsDatabaseExporter = resultsDatabaseExporter;
+            _parquetExporter = parquetExporter;
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -326,6 +334,244 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by ResultsTab to show analyze modal.</summary>
         public AnalyzeModalViewModel CreateAnalyzeModalViewModel() => _analyzeModalFactory();
 
+        /// <summary>
+        /// Add a seed to the favorites store. Called from ResultsTab grid event.
+        /// </summary>
+        public void AddSeedToFavorites(string? seed)
+        {
+            if (!string.IsNullOrWhiteSpace(seed))
+            {
+                FavoritesService.Instance.AddFavoriteItem(seed);
+            }
+        }
+
+        /// <summary>
+        /// Open the analyze modal pre-loaded with the given seed. Called from ResultsTab grid event.
+        /// </summary>
+        public void OpenAnalyzeModalForSeed(string? seed)
+        {
+            if (string.IsNullOrWhiteSpace(seed) || MainMenu == null)
+            {
+                return;
+            }
+
+            var analyzeVm = CreateAnalyzeModalViewModel();
+            var analyzeModal = new AnalyzeModal(analyzeVm);
+            analyzeModal.SetSeedAndAnalyze(seed);
+            MainMenu.ShowModal("SEED ANALYZER", analyzeModal);
+        }
+
+        /// <summary>
+        /// Request the View to open the pop-out DataGridResultsWindow for the active search.
+        /// Window construction stays in the View; the VM only resolves the data + raises the event.
+        /// </summary>
+        public void RequestPopOutResults()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_currentSearchId))
+                {
+                    BsoLogger.LogError(
+                        "SearchModalViewModel",
+                        "Cannot pop out - no active search ID"
+                    );
+                    return;
+                }
+
+                var searchInstance = _searchManager.GetSearch(_currentSearchId);
+                if (searchInstance == null)
+                {
+                    BsoLogger.LogError(
+                        "SearchModalViewModel",
+                        $"Cannot pop out - search instance not found: {_currentSearchId}"
+                    );
+                    return;
+                }
+
+                ShowDataGridResultsRequested?.Invoke(this, (searchInstance, LoadedConfig?.Name));
+                BsoLogger.Log(
+                    "SearchModalViewModel",
+                    $"Requested pop-out window for search: {_currentSearchId}"
+                );
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Failed to pop out results: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Export the supplied search results to Parquet/CSV/DuckDB depending on the file extension
+        /// the user selects in the storage save dialog. Pure business logic moved out of code-behind.
+        /// </summary>
+        public async Task ExportSearchResultsAsync(
+            TopLevel? topLevel,
+            IEnumerable<Models.SearchResult>? results
+        )
+        {
+            try
+            {
+                if (results == null || !results.Any())
+                {
+                    BsoLogger.Log("SearchModalViewModel", "No results to export");
+                    return;
+                }
+
+                if (topLevel == null)
+                {
+                    BsoLogger.LogError(
+                        "SearchModalViewModel",
+                        "Could not get TopLevel for file picker"
+                    );
+                    return;
+                }
+
+                var fileTypeChoices =
+                    new List<Avalonia.Platform.Storage.FilePickerFileType>
+                    {
+                        new Avalonia.Platform.Storage.FilePickerFileType("Parquet Files")
+                        {
+                            Patterns = new[] { "*.parquet" },
+                        },
+                        new Avalonia.Platform.Storage.FilePickerFileType("CSV Files")
+                        {
+                            Patterns = new[] { "*.csv" },
+                        },
+                    };
+
+                if (_resultsDatabaseExporter != null && _resultsDatabaseExporter.IsAvailable)
+                {
+                    fileTypeChoices.Add(
+                        new Avalonia.Platform.Storage.FilePickerFileType("Search Results (.db)")
+                        {
+                            Patterns = new[] { "*.db" },
+                        }
+                    );
+                    fileTypeChoices.Add(
+                        new Avalonia.Platform.Storage.FilePickerFileType(
+                            "Search Results Lake (.ducklake)"
+                        )
+                        {
+                            Patterns = new[] { "*.ducklake" },
+                        }
+                    );
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+                    new Avalonia.Platform.Storage.FilePickerSaveOptions
+                    {
+                        Title = "Export Search Results",
+                        DefaultExtension = "parquet",
+                        SuggestedFileName =
+                            $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.parquet",
+                        FileTypeChoices = fileTypeChoices,
+                    }
+                );
+
+                if (file == null)
+                {
+                    BsoLogger.Log("SearchModalViewModel", "Export cancelled by user");
+                    return;
+                }
+
+                var first = results.First();
+                var labels = first?.Labels ?? Array.Empty<string>();
+                var filePath = file.Path.LocalPath;
+
+                if (filePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (_parquetExporter == null || !_parquetExporter.IsAvailable)
+                    {
+                        BsoLogger.Log(
+                            "SearchModalViewModel",
+                            "Parquet export not available on this platform"
+                        );
+                        return;
+                    }
+
+                    var headers = new List<string> { "SEED", "TOTALSCORE" };
+                    headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
+
+                    var rows = new List<IReadOnlyList<object?>>();
+                    foreach (var result in results)
+                    {
+                        var row = new List<object?> { result.Seed, result.TotalScore };
+                        if (result.Scores != null)
+                        {
+                            row.AddRange(result.Scores.Cast<object?>());
+                        }
+                        rows.Add(row);
+                    }
+
+                    await _parquetExporter.ExportAsync(filePath, headers, rows);
+                    BsoLogger.Log(
+                        "SearchModalViewModel",
+                        $"Exported {results.Count()} results to Parquet: {filePath}"
+                    );
+                }
+                else if (
+                    filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                    || filePath.EndsWith(".ducklake", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    if (_resultsDatabaseExporter == null || !_resultsDatabaseExporter.IsAvailable)
+                    {
+                        BsoLogger.Log(
+                            "SearchModalViewModel",
+                            "Database export not available on this platform"
+                        );
+                        return;
+                    }
+
+                    await _resultsDatabaseExporter.ExportToAsync(
+                        filePath,
+                        results.ToList(),
+                        labels.ToList()
+                    );
+                    var ext = System.IO.Path.GetExtension(filePath);
+                    BsoLogger.Log(
+                        "SearchModalViewModel",
+                        $"Exported {results.Count()} results to {ext}: {filePath}"
+                    );
+                }
+                else
+                {
+                    var header = "SEED,TOTALSCORE";
+                    if (labels.Length > 0)
+                    {
+                        header +=
+                            "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
+                    }
+
+                    var csv = new System.Text.StringBuilder();
+                    csv.AppendLine(header);
+
+                    foreach (var result in results)
+                    {
+                        var csvRow = $"{result.Seed},{result.TotalScore}";
+                        if (result.Scores != null && result.Scores.Length > 0)
+                        {
+                            csvRow += "," + string.Join(",", result.Scores);
+                        }
+                        csv.AppendLine(csvRow);
+                    }
+
+                    await System.IO.File.WriteAllTextAsync(filePath, csv.ToString());
+                    BsoLogger.Log(
+                        "SearchModalViewModel",
+                        $"Exported {results.Count()} results to CSV: {filePath}"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError("SearchModalViewModel", $"Export failed: {ex.Message}");
+            }
+        }
+
         partial void OnSelectedTabIndexChanged(int value)
         {
             OnPropertyChanged(nameof(CurrentTabContent));
@@ -343,10 +589,11 @@ namespace BalatroSeedOracle.ViewModels
             // Update button text when Continue checkbox changes
             OnPropertyChanged(nameof(CookButtonText));
 
-            // If user just enabled Continue while search is NOT running, load saved progress
+            // If user just enabled Continue while search is NOT running, reset progress.
+            // (Saved-progress restoration was removed when Motely took over DB ownership.)
             if (value && !IsSearching)
             {
-                LoadSavedProgressAsync().ConfigureAwait(false);
+                ProgressPercent = 0.0;
             }
         }
 
@@ -394,6 +641,12 @@ namespace BalatroSeedOracle.ViewModels
             string filterName
         )>? MinimizeToDesktopRequested;
         public event EventHandler<string>? CopyToClipboardRequested;
+
+        /// <summary>
+        /// Raised by ResultsTab pop-out: the View constructs and shows the DataGridResultsWindow
+        /// (window construction is a View concern; VM only supplies the data context).
+        /// </summary>
+        public event EventHandler<(ActiveSearchContext Search, string? FilterName)>? ShowDataGridResultsRequested;
 
         #endregion
 
@@ -1072,19 +1325,6 @@ namespace BalatroSeedOracle.ViewModels
                     : StakeSelection;
 
             return $"{normalizedFilterName}_{deck}_{stake}";
-        }
-
-        /// <summary>
-        /// Gets the database path for the current filter/deck/stake combination.
-        /// </summary>
-        private string GetDatabasePath()
-        {
-            var searchId = GetSearchId();
-            if (string.IsNullOrEmpty(searchId))
-                return string.Empty;
-
-            var searchResultsDir = AppPaths.SearchResultsDir;
-            return Path.Combine(searchResultsDir, $"{searchId}.db");
         }
 
         private async Task<SearchCriteria> BuildSearchCriteriaAsync()
@@ -2140,16 +2380,6 @@ namespace BalatroSeedOracle.ViewModels
             {
                 return $"{count:N0}";
             }
-        }
-
-        /// <summary>
-        /// Load saved search progress - feature has been removed
-        /// </summary>
-        private Task LoadSavedProgressAsync()
-        {
-            // Search state persistence has been removed - Motely now owns all database operations
-            ProgressPercent = 0.0;
-            return Task.CompletedTask;
         }
 
         #endregion
