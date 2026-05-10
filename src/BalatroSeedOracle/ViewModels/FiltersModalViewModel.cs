@@ -1274,41 +1274,9 @@ namespace BalatroSeedOracle.ViewModels
                 SelectedStake = stake;
             }
 
-            // Load Must clauses
-            if (config.Must is not null)
-            {
-                foreach (var clause in config.Must)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedMust.Add(itemKey);
-                }
-            }
-
-            // Load Should clauses
-            if (config.Should is not null)
-            {
-                foreach (var clause in config.Should)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedShould.Add(itemKey);
-                }
-            }
-
-            // Load MustNot clauses
-            if (config.MustNot is not null)
-            {
-                foreach (var clause in config.MustNot)
-                {
-                    var itemKey = GenerateNextItemKey();
-                    var itemConfig = ConvertClauseToItemConfig(clause, itemKey);
-                    ItemConfigs[itemKey] = itemConfig;
-                    SelectedMustNot.Add(itemKey);
-                }
-            }
+            LoadClausesIntoSelection(config.Must, SelectedMust);
+            LoadClausesIntoSelection(config.Should, SelectedShould);
+            LoadClausesIntoSelection(config.MustNot, SelectedMustNot);
 
             LoadedConfig = config;
 
@@ -1321,6 +1289,24 @@ namespace BalatroSeedOracle.ViewModels
                     "FiltersModalViewModel",
                     "Synced Visual Builder tab from loaded config"
                 );
+            }
+        }
+
+        // Each clause is registered in ItemConfigs under a freshly generated key,
+        // and the key is appended to the appropriate selection collection.
+        private void LoadClausesIntoSelection(
+            IEnumerable<MotelyJsonConfig.MotelyJsonFilterClause>? clauses,
+            ObservableCollection<string> selection
+        )
+        {
+            if (clauses is null)
+                return;
+
+            foreach (var clause in clauses)
+            {
+                var itemKey = GenerateNextItemKey();
+                ItemConfigs[itemKey] = ConvertClauseToItemConfig(clause, itemKey);
+                selection.Add(itemKey);
             }
         }
 
