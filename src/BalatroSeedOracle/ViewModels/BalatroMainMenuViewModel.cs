@@ -1015,8 +1015,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var audioManager = ServiceHelper.GetService<IAudioManager>();
-                audioManager?.PlaySfx("button", 1.0f);
+                _audioManager?.PlaySfx("button", 1.0f);
             }
             catch (Exception ex)
             {
