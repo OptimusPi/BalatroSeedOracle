@@ -1,0 +1,244 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:BalatroSeedOracle.Models"
+             xmlns:conv="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Features.Analyzer.SeedAnalysisDisplay"
+             x:DataType="models:SeedAnalysisModel">
+
+    <UserControl.Resources>
+        <conv:ShopItemSpriteConverter x:Key="ShopItemSpriteConverter"/>
+        <conv:BoosterPackSpriteConverter x:Key="BoosterPackSpriteConverter"/>
+        <conv:TagSpriteConverter x:Key="TagSpriteConverter"/>
+        <conv:BossSpriteConverter x:Key="BossSpriteConverter"/>
+        <conv:VoucherSpriteConverter x:Key="VoucherSpriteConverter"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,Auto, *">
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Seed, StringFormat='Seed: {0}'}"
+                   Classes="balatro-modal-title"
+                   Margin="0,0,0,6"/>
+        <TextBlock Grid.Row="1"
+                   Text="{Binding DeckStakeText}"
+                   Classes="info-display"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,12"/>
+
+        <!-- Ante Results -->
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding Antes}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:AnteAnalysisModel">
+                        <Border Classes="balatro-card" Margin="6">
+                            <StackPanel Spacing="8">
+                                <!-- Ante Title -->
+                                <TextBlock Text="{Binding AnteTitle}"
+                                           FontFamily="{StaticResource BalatroFont}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource White}"
+                                           HorizontalAlignment="Center"/>
+
+                                <!-- Boss & Voucher Row with Sprites -->
+                                <WrapPanel Orientation="Horizontal" Margin="0,8">
+                                    <!-- Boss -->
+                                    <Border Background="{StaticResource DarkGrey2}"
+                                            BorderThickness="0"
+                                            CornerRadius="6"
+                                            Padding="12"
+                                            Margin="4">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="BOSS"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextInactive}"
+                                                       HorizontalAlignment="Center"/>
+                                            <Image Source="{Binding Boss, Converter={StaticResource BossSpriteConverter}}"
+                                                   Width="68"
+                                                   Height="68"
+                                                   Stretch="Uniform"/>
+                                            <TextBlock Text="{Binding BossName}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="100"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Voucher -->
+                                    <Border Background="{StaticResource DarkGrey2}"
+                                            BorderThickness="0"
+                                            CornerRadius="6"
+                                            Padding="12"
+                                            Margin="4"
+                                            IsVisible="{Binding HasVoucher}">
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="VOUCHER"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextInactive}"
+                                                       HorizontalAlignment="Center"/>
+                                            <Image Source="{Binding Voucher, Converter={StaticResource VoucherSpriteConverter}}"
+                                                   Width="71"
+                                                   Height="95"
+                                                   Stretch="Uniform"/>
+                                            <TextBlock Text="{Binding VoucherName}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource White}"
+                                                       HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="100"/>
+                                        </StackPanel>
+                                    </Border>
+                                </WrapPanel>
+
+                                <!-- Skip Tags with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
+                                    <TextBlock Text="SKIP TAGS"
+                                               
+                                               FontSize="14"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <!-- Small Blind Tag -->
+                                        <Border Background="{StaticResource DarkGrey2}"
+                                                BorderThickness="0"
+                                                CornerRadius="20"
+                                                Padding="10,6"
+                                                Margin="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Image Source="{Binding SmallBlindTag, Converter={StaticResource TagSpriteConverter}}"
+                                                       Width="34"
+                                                       Height="34"
+                                                       Stretch="Uniform"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Small Blind"
+                                                               FontSize="9"
+                                                               Opacity="0.7"
+                                                               Foreground="{StaticResource VeryLightGrey}"/>
+                                                    <TextBlock Text="{Binding SmallBlindTag.TagName}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource White}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                        <!-- Big Blind Tag -->
+                                        <Border Background="{StaticResource DarkGrey2}"
+                                                BorderThickness="0"
+                                                CornerRadius="20"
+                                                Padding="10,6"
+                                                Margin="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Image Source="{Binding BigBlindTag, Converter={StaticResource TagSpriteConverter}}"
+                                                       Width="34"
+                                                       Height="34"
+                                                       Stretch="Uniform"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Big Blind"
+                                                               FontSize="9"
+                                                               Opacity="0.7"
+                                                               Foreground="{StaticResource VeryLightGrey}"/>
+                                                    <TextBlock Text="{Binding BigBlindTag.TagName}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource White}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <!-- Shop Queue with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
+                                    <TextBlock Text="SHOP QUEUE"
+                                               
+                                               FontSize="14"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <ItemsControl ItemsSource="{Binding ShopItems}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:ShopItemModel">
+                                                <Border Background="{StaticResource DarkGrey2}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="6"
+                                                        Width="80"
+                                                        Height="120"
+                                                        Margin="4">
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                        <!-- Item Sprite -->
+                                                        <Image Source="{Binding Converter={StaticResource ShopItemSpriteConverter}}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"/>
+                                                        <!-- Edition Badge -->
+                                                        <TextBlock Text="{Binding EditionName}"
+                                                                   FontSize="9"
+                                                                   HorizontalAlignment="Center"
+                                                                   Foreground="{Binding EditionColor}"
+                                                                   IsVisible="{Binding HasEdition}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Booster Packs with Sprites -->
+                                <StackPanel Spacing="8" Margin="0,8">
+                                    <TextBlock Text="BOOSTER PACKS"
+                                               
+                                               FontSize="14"
+                                               Foreground="{StaticResource TextInactive}"/>
+                                    <ItemsControl ItemsSource="{Binding BoosterPacks}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:BoosterPackModel">
+                                                <Border Background="{StaticResource DarkGrey2}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="6"
+                                                        MinWidth="90"
+                                                        MaxWidth="140"
+                                                        MinHeight="130"
+                                                        Margin="4"
+                                                        Padding="6">
+                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
+                                                        <!-- Pack Sprite -->
+                                                        <Image Source="{Binding Converter={StaticResource BoosterPackSpriteConverter}}"
+                                                               Width="71"
+                                                               Height="95"
+                                                               Stretch="Uniform"/>
+                                                        <!-- Pack Name -->
+                                                        <TextBlock Text="{Binding PackName}"
+                                                                   FontSize="10"
+                                                                   HorizontalAlignment="Center"
+                                                                   Foreground="{StaticResource White}"/>
+                                                        <!-- Pack Items -->
+                                                        <TextBlock Text="{Binding ItemsText}"
+                                                                   FontSize="8"
+                                                                   HorizontalAlignment="Center"
+                                                                   TextWrapping="Wrap"
+                                                                   MaxWidth="90"
+                                                                   Opacity="0.8"
+                                                                   Margin="0,2,0,0"
+                                                                   Foreground="{StaticResource VeryLightGrey}"
+                                                                   IsVisible="{Binding HasItems}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

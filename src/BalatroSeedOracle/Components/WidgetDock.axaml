@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+             xmlns:converters="using:BalatroSeedOracle.Converters"
+             x:Class="BalatroSeedOracle.Components.WidgetDock"
+             x:DataType="vm:BalatroMainMenuViewModel"
+             Background="Transparent">
+    
+    <Border Background="{StaticResource ModalGrey}"
+            BorderBrush="{StaticResource ModalBorder}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Padding="12,8"
+            BoxShadow="{StaticResource DeepBoxShadow}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <!-- Music Mixer Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsMusicMixerWidgetEnabled}"
+                    Background="{Binding IsMusicMixerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsMusicMixerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnMusicMixerClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="MusicNote" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="Mixer" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Visualizer Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsVisualizerWidgetEnabled}"
+                    Background="{Binding IsVisualizerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsVisualizerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnVisualizerClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="Palette" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="Visual" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Transition Designer Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsTransitionDesignerWidgetEnabled}"
+                    Background="{Binding IsTransitionDesignerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsTransitionDesignerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnTransitionDesignerClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="Movie" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="Trans" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Fertilizer Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsFertilizerWidgetEnabled}"
+                    Background="{Binding IsFertilizerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsFertilizerWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnFertilizerClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="Flower" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="Fert" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Host API Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsHostApiWidgetEnabled}"
+                    Background="{Binding IsHostApiWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsHostApiWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnHostApiClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="Server" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="API" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Event FX Widget Toggle -->
+            <Border Width="56" Height="56"
+                    IsVisible="{Binding IsEventFXWidgetEnabled}"
+                    Background="{Binding IsEventFXWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}}"
+                    BorderBrush="{Binding IsEventFXWidgetVisible, Converter={x:Static converters:BoolToBrushConverter.Instance}, ConverterParameter='Green'}"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Cursor="Hand"
+                    Classes="widget-dock-item"
+                    PointerPressed="OnEventFXClick">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                    <icons:PackIconMaterial Kind="AutoFix" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <TextBlock Text="FX" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

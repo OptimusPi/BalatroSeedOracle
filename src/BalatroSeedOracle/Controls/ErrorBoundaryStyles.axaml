@@ -1,0 +1,39 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:BalatroSeedOracle.Controls;assembly=BalatroSeedOracle">
+    <Style Selector="controls|ErrorBoundary">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="controls:ErrorBoundary">
+                <Grid>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      IsVisible="{Binding !HasError, RelativeSource={RelativeSource TemplatedParent}}"/>
+                    <Border Background="{StaticResource DarkBorder}"
+                            BorderBrush="{StaticResource Gold}"
+                            BorderThickness="2"
+                            CornerRadius="8"
+                            Padding="24,20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding HasError, RelativeSource={RelativeSource TemplatedParent}}">
+                        <StackPanel Spacing="12" MinWidth="320">
+                            <TextBlock Text="Something went wrong"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="18"
+                                       Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="{Binding ErrorMessage, RelativeSource={RelativeSource TemplatedParent}}"
+                                       FontFamily="{StaticResource BalatroFont}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource White}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="400"/>
+                            <Button Content="Retry"
+                                    Command="{Binding RetryCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

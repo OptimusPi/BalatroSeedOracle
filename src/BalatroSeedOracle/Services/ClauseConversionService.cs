@@ -4,7 +4,7 @@ using System.Linq;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-// ClauseRow is now a plain model (no ViewModel dependency)
+using BalatroSeedOracle.ViewModels.FilterTabs;
 using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
@@ -18,16 +18,16 @@ namespace BalatroSeedOracle.Services
         public ClauseConversionService() { }
 
         /// <summary>
-        /// Converts a MotelyJsonConfig.MotelyJsonFilterClause to a ClauseRow
+        /// Converts a MotelyJsonConfig.MotelyJsonFilterClause to a ClauseRowViewModel
         /// Used for displaying clauses in the Validate Filter tab
         /// </summary>
-        public ClauseRow ConvertToClauseViewModel(
+        public ClauseRowViewModel ConvertToClauseViewModel(
             MotelyJsonConfig.MotelyJsonFilterClause clause,
             string category,
             int nestingLevel = 0
         )
         {
-            var vm = new ClauseRow { NestingLevel = nestingLevel };
+            var vm = new ClauseRowViewModel { NestingLevel = nestingLevel };
 
             // Handle nested OR/AND clauses
             if (clause.Type?.ToLower() == "or" || clause.Type?.ToLower() == "and")

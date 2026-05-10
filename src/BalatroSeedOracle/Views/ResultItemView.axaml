@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:BalatroSeedOracle.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="BalatroSeedOracle.Views.ResultItemView">
+
+  <UserControl.DataTemplates>
+    <!-- Data Template for Search Result -->
+    <DataTemplate DataType="vm:SearchResultViewModel">
+      <Border Background="{Binding BackgroundColor}" 
+              Padding="8" 
+              Margin="2" 
+              CornerRadius="4"
+              Classes="result-item">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          
+          <TextBlock Grid.Column="0" 
+                     Text="{Binding Seed}" 
+                     FontWeight="Bold"
+                     Classes="seed-text" />
+          
+          <TextBlock Grid.Column="1" 
+                     Text="{Binding TotalScore}" 
+                     Classes="score-text" />
+          
+          <ItemsControl Grid.Column="2" 
+                        ItemsSource="{Binding Scores}" 
+                        Classes="tally-scores">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Background="LightGray" 
+                        Padding="4,2" 
+                        CornerRadius="2"
+                        Classes="score-badge">
+                  <TextBlock Text="{Binding}" 
+                             FontSize="10" 
+                             FontWeight="Bold" />
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </UserControl.DataTemplates>
+
+  <!-- Content will be bound to SearchResultViewModel -->
+</UserControl>

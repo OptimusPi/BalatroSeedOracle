@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
+             x:Class="BalatroSeedOracle.Components.Widgets.SearchWidget"
+             x:DataType="vm:SearchWidgetViewModel"
+             x:CompileBindings="True"
+             Panel.ZIndex="{Binding WidgetZIndex}">
+
+    <!-- Single container with drag behavior -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <i:Interaction.Behaviors>
+            <behaviors:DraggableWidgetBehavior X="{Binding PositionX, Mode=TwoWay}"
+                                               Y="{Binding PositionY, Mode=TwoWay}"
+                                               DragHandleClass="widget-header" />
+        </i:Interaction.Behaviors>
+
+        <!-- Minimized State - Compact Search Icon with Progress -->
+        <Button Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                Cursor="Hand"
+                Command="{Binding OpenSearchModalCommand}"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch">
+            <Button.Styles>
+                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>
+            </Button.Styles>
+            <i:Interaction.Behaviors>
+                <behaviors:BalatroCardSwayBehavior AmbientTilt="0.2" />
+            </i:Interaction.Behaviors>
+
+            <StackPanel Spacing="4">
+
+            <!-- Icon with Progress Bar Overlay -->
+            <Grid Width="64" Height="64">
+                <!-- Background Card -->
+                <Border Background="{StaticResource ModalGrey}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Classes="widget-header">
+
+                    <!-- Sprite Icon -->
+                    <Image Source="{Binding FilterIcon}"
+                           Width="48"
+                           Height="48"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,0,0,8"/>
+                </Border>
+
+                <!-- Progress Bar Overlay (Balatro red) -->
+                <Border VerticalAlignment="Bottom"
+                        Height="6"
+                        Margin="4,0,4,4"
+                        Background="{StaticResource DarkBackground}"
+                        BorderBrush="{StaticResource ModalBorder}"
+                        BorderThickness="1"
+                        CornerRadius="2">
+                    <Border Background="{StaticResource Red}"
+                            HorizontalAlignment="Left"
+                            Width="{Binding ProgressBarWidth}"
+                            CornerRadius="1"/>
+                </Border>
+
+                <!-- Progress Text on Hover -->
+                <Border IsVisible="{Binding IsHovered}"
+                        Background="#DD000000"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Center"
+                        CornerRadius="4"
+                        Padding="6,2"
+                        Margin="0,2,0,0">
+                    <TextBlock Text="{Binding ProgressText}"
+                               Foreground="{StaticResource Gold}"
+                               FontSize="12"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontWeight="Bold"/>
+                </Border>
+            </Grid>
+
+            <!-- Filter Name Label -->
+            <TextBlock Text="{Binding FilterName}"
+                       FontSize="14"
+                       Foreground="White"
+                       FontFamily="{StaticResource BalatroFont}"
+                       HorizontalAlignment="Center"
+                       MaxWidth="80"
+                       TextTrimming="CharacterEllipsis"
+                       TextAlignment="Center"/>
+            </StackPanel>
+        </Button>
+    </Grid>
+</UserControl>

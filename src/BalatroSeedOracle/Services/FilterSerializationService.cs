@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-// ViewModels removed — using Models directly
+using BalatroSeedOracle.ViewModels;
 using Motely.Filters;
 using ItemConfig = BalatroSeedOracle.Models.ItemConfig;
 

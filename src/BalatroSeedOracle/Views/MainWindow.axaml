@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:BalatroSeedOracle.Views"
+        xmlns:vm="using:BalatroSeedOracle.ViewModels"
+        xmlns:controls="using:BalatroSeedOracle.Controls"
+        xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
+        x:Class="BalatroSeedOracle.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
+        Title="Balatro Seed Oracle"
+        Width="1582"
+        Height="830"
+        DragDrop.AllowDrop="True">
+    
+    <Window.Styles>
+        <Style Selector="TextBlock.attribution">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource Border}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        
+        <Style Selector="TextBlock.attribution-link">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        
+        <Style Selector="TextBlock.attribution-link:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource Blue}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Window.Styles>
+    
+    <Panel>
+        <!-- Main window border with south edge highlight -->
+        <Border BorderBrush="{StaticResource BrightSilver}" 
+                BorderThickness="0,0,0,2">
+            <Grid RowDefinitions="*,Auto">
+                <!-- Main content wrapped in ErrorBoundary (template-driven control per Avalonia best practices) -->
+                <controls:ErrorBoundary x:Name="MainContentHost" Grid.Row="0" />
+
+                <!-- Attribution line (hidden in Vibe Out Mode) -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource DarkBackground}"
+                        Padding="4,3"
+                        IsVisible="{Binding !IsVibeOutMode}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="5">
+                    <TextBlock Classes="attribution"
+                               Text="Not affiliated with LocalThunk or Playstack • "/>
+                    <TextBlock x:Name="BuyBalatroLink"
+                               Classes="attribution-link"
+                               Text="Buy Balatro"/>
+                    <TextBlock Classes="attribution" Text=" • "/>
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Classes="attribution" Text="Created with"/>
+                        <icons:PackIconMaterial Kind="Heart" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
+                        <TextBlock Classes="attribution" Text="for the Balatro community"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+            </Grid>
+        </Border>
+
+        <AdornerLayer />
+    </Panel>
+    
+</Window>

@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:controls="using:BalatroSeedOracle.Controls"
+             x:Class="BalatroSeedOracle.Views.Modals.FiltersModal"
+             x:DataType="vm:FiltersModalViewModel"
+             x:CompileBindings="True">
+
+    <!-- Layout: header tabs on top, content area below -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Balatro-style tab control with automatic triangle positioning -->
+        <controls:BalatroTabControl Grid.Row="0"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,2"
+                                    SelectedIndex="{Binding SelectedTabIndex}">
+            <controls:BalatroTabControl.Items>
+                <TabItem Header="Build Filter"/>
+                <TabItem Header="Deck/Stake"/>
+                <TabItem Header="JAML Editor"/>
+                <TabItem Header="Validate Filter"/>
+            </controls:BalatroTabControl.Items>
+        </controls:BalatroTabControl>
+
+        <!-- Content area: let inner tabs provide their own dark panels (match SearchModal) -->
+        <Border Grid.Row="1"
+                Background="Transparent"
+                BorderThickness="0"
+                CornerRadius="0,0,12,12"
+                Padding="0"
+                Margin="0,4,0,0"
+                ClipToBounds="True">
+            <!-- Show the selected tab content directly -->
+            <ContentPresenter Content="{Binding CurrentTabContent}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"/>
+        </Border>
+
+        <!-- Popup Overlay -->
+        <Panel IsVisible="{Binding CurrentPopup, Converter={x:Static ObjectConverters.IsNotNull}}"
+               Background="{StaticResource ModalOverlay}"
+               ZIndex="100">
+            <ContentControl Content="{Binding CurrentPopup}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+        </Panel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="BalatroSeedOracle.Views.Modals.WidgetPickerModal"
+             MinWidth="320"
+             MinHeight="420">
+
+    <Grid Margin="16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="TOGGLE WIDGETS"
+                   FontFamily="{StaticResource BalatroFont}"
+                   FontSize="18"
+                   Foreground="{StaticResource Gold}"
+                   HorizontalAlignment="Center"/>
+
+        <StackPanel Grid.Row="2" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <Button x:Name="MusicMixerButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnMusicMixerClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Music Mixer"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="MusicMixerStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="VisualizerButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnVisualizerClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Visualizer Settings"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="VisualizerStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="TransitionDesignerButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnTransitionDesignerClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Transition Designer"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TransitionDesignerStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="FertilizerButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnFertilizerClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Fertilizer"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FertilizerStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="HostApiButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnHostApiClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Host API"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="HostApiStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="EventFXButton"
+                    Width="260"
+                    Height="40"
+                    Click="OnEventFXClick">
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <TextBlock Text="Event FX"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="EventFXStatus"
+                               FontFamily="{StaticResource BalatroFont}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Button>
+
+            <TextBlock Text="Click to toggle widget visibility"
+                       FontSize="10"
+                       Foreground="{StaticResource White}"
+                       Opacity="0.5"
+                       HorizontalAlignment="Center"
+                       Margin="0,6,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
