@@ -901,7 +901,6 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public Motely.Filters.MotelyJsonConfig BuildConfigFromCurrentState()
         {
-            // Get author from UserProfileService
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             var author = userProfileService?.GetAuthorName() ?? "Unknown";
 
@@ -912,7 +911,6 @@ namespace BalatroSeedOracle.ViewModels
                 // Preserve original DateCreated and Author when re-saving an existing filter
                 DateCreated = _originalDateCreated ?? DateTime.Now,
                 Author = _originalAuthor ?? author,
-                // Use enum ToString() for JSON serialization
                 Deck = SelectedDeck.ToString(),
                 Stake = SelectedStake.ToString().ToLower(),
                 Must = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
@@ -920,114 +918,101 @@ namespace BalatroSeedOracle.ViewModels
                 MustNot = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
-            // CRITICAL FIX: Read from VisualBuilderTab's collections if available
-            // The VisualBuilderTab has its own SelectedMust/Should/MustNot collections (FilterItem objects)
+            var visualBuilder = VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel;
+
             BsoLogger.LogImportant(
                 "FiltersModalViewModel",
-                $"🔍 BuildConfig: VisualBuilderTab={VisualBuilderTab?.GetType().Name ?? "NULL"}"
+                $"🔍 BuildConfig: VisualBuilderTab={visualBuilder?.GetType().Name ?? "NULL"}"
             );
 
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm)
+            if (visualBuilder is not null)
             {
                 BsoLogger.LogImportant(
                     "FiltersModalViewModel",
-                    $"✅ USING VisualBuilder PATH: {visualVm.SelectedMust.Count} must, {visualVm.SelectedShould.Count} should"
+                    $"✅ USING VisualBuilder PATH: {visualBuilder.SelectedMust.Count} must, {visualBuilder.SelectedShould.Count} should"
                 );
 
-                // Build Must clauses directly from FilterItem objects (including FilterOperatorItems)
-                foreach (var filterItem in visualVm.SelectedMust)
-                {
-                    BsoLogger.LogImportant(
-                        "FiltersModalViewModel",
-                        $"Processing MUST item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
-                    );
-
-                    var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause is not null)
-                    {
-                        config.Must.Add(clause);
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
-                        );
-                    }
-                    else
-                    {
-                        BsoLogger.LogError(
-                            "FiltersModalViewModel",
-                            $"Failed to convert {filterItem.Name} to clause!"
-                        );
-                    }
-                }
+                AppendVisualClauses(visualBuilder.SelectedMust, config.Must);
+                AppendVisualClauses(visualBuilder.SelectedShould, config.Should);
+                AppendBannedItemsAsMustNot(visualBuilder.SelectedMust, config.MustNot);
             }
             else
             {
-                // Fallback to parent's key-based collections
-                foreach (var itemKey in SelectedMust)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.Must.Add(clause);
-                    }
-                }
-            }
-
-            // Build Should clauses
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm2)
-            {
-                foreach (var filterItem in visualVm2.SelectedShould)
-                {
-                    var clause = ConvertFilterItemToClause(filterItem);
-                    if (clause is not null)
-                        config.Should.Add(clause);
-                }
-            }
-            else
-            {
-                foreach (var itemKey in SelectedShould)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.Should.Add(clause);
-                    }
-                }
-            }
-
-            // Build MustNot clauses - handle both BannedItems operator and direct MustNot
-            if (VisualBuilderTab is FilterTabs.VisualBuilderTabViewModel visualVm3)
-            {
-                // Check for BannedItems operator in Must collection
-                foreach (var item in visualVm3.SelectedMust)
-                {
-                    if (item is Models.FilterOperatorItem op && op.OperatorType == "BannedItems")
-                    {
-                        foreach (var child in op.Children)
-                        {
-                            var clause = ConvertFilterItemToClause(child);
-                            if (clause is not null)
-                                config.MustNot.Add(clause);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (var itemKey in SelectedMustNot)
-                {
-                    if (ItemConfigs.TryGetValue(itemKey, out var itemConfig))
-                    {
-                        var clause = ConvertItemConfigToClause(itemConfig);
-                        if (clause is not null)
-                            config.MustNot.Add(clause);
-                    }
-                }
+                AppendKeyedClauses(SelectedMust, config.Must);
+                AppendKeyedClauses(SelectedShould, config.Should);
+                AppendKeyedClauses(SelectedMustNot, config.MustNot);
             }
 
             return config;
+        }
+
+        // ConvertFilterItemToClause returns null for BannedItems operators by design,
+        // so they're skipped here and surfaced via AppendBannedItemsAsMustNot.
+        private void AppendVisualClauses(
+            IEnumerable<Models.FilterItem> source,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> target
+        )
+        {
+            foreach (var filterItem in source)
+            {
+                BsoLogger.LogImportant(
+                    "FiltersModalViewModel",
+                    $"Processing item: Name={filterItem.Name}, Type={filterItem.Type}, ActualType={filterItem.GetType().Name}"
+                );
+
+                var clause = ConvertFilterItemToClause(filterItem);
+                if (clause is null)
+                {
+                    BsoLogger.LogError(
+                        "FiltersModalViewModel",
+                        $"Failed to convert {filterItem.Name} to clause!"
+                    );
+                    continue;
+                }
+
+                target.Add(clause);
+                BsoLogger.Log(
+                    "FiltersModalViewModel",
+                    $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                );
+            }
+        }
+
+        // BannedItems live inside the Must collection as a FilterOperatorItem wrapper;
+        // unwrap their children into MustNot to match the JSON config schema.
+        private void AppendBannedItemsAsMustNot(
+            IEnumerable<Models.FilterItem> source,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> mustNot
+        )
+        {
+            foreach (var item in source)
+            {
+                if (item is not Models.FilterOperatorItem op || op.OperatorType != "BannedItems")
+                    continue;
+
+                foreach (var child in op.Children)
+                {
+                    var clause = ConvertFilterItemToClause(child);
+                    if (clause is not null)
+                        mustNot.Add(clause);
+                }
+            }
+        }
+
+        private void AppendKeyedClauses(
+            IEnumerable<string> itemKeys,
+            List<MotelyJsonConfig.MotelyJsonFilterClause> target
+        )
+        {
+            foreach (var itemKey in itemKeys)
+            {
+                if (!ItemConfigs.TryGetValue(itemKey, out var itemConfig))
+                    continue;
+
+                var clause = ConvertItemConfigToClause(itemConfig);
+                if (clause is not null)
+                    target.Add(clause);
+            }
         }
 
         private MotelyJsonConfig.MotelyJsonFilterClause? ConvertItemConfigToClause(
