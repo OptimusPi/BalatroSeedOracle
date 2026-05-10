@@ -1,7 +1,43 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Views.Modals.StandardModal">
-    
+             x:Class="BalatroSeedOracle.Views.Modals.StandardModal"
+             Classes.squeeze="{Binding Squeeze, RelativeSource={RelativeSource Mode=Self}}">
+
+    <UserControl.Styles>
+        <!-- Default sizing: fixed 1080x600. Selector matches when .squeeze class is absent. -->
+        <Style Selector="Grid.modal-size">
+            <Setter Property="Width" Value="1080"/>
+            <Setter Property="Height" Value="600"/>
+            <Setter Property="MaxWidth" Value="Infinity"/>
+            <Setter Property="MaxHeight" Value="Infinity"/>
+        </Style>
+        <!-- Squeeze sizing: auto with max constraints. Driven by Squeeze styled property. -->
+        <Style Selector="UserControl.squeeze Grid.modal-size">
+            <Setter Property="Width" Value="NaN"/>
+            <Setter Property="Height" Value="NaN"/>
+            <Setter Property="MaxWidth" Value="700"/>
+            <Setter Property="MaxHeight" Value="500"/>
+        </Style>
+
+        <!-- Modal slide-in. Avalonia Style.Animations runs once when the style first
+             matches the control (on Loaded), so we get the intro animation declaratively
+             without any code-behind. Final values come from the inline Border attrs. -->
+        <Style Selector="Border.modal-border">
+            <Style.Animations>
+                <Animation Duration="0:0:0.320" IterationCount="1" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0"/>
+                        <Setter Property="Margin" Value="0,-24,0,24"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="Margin" Value="0,0,0,0"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
     <!-- Full screen modal with Balatro-style overlay -->
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
@@ -17,21 +53,22 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
-            
-            <!-- Main modal container - Balatro style with subtle south edge -->
+
+            <!-- Main modal container - Balatro style with subtle south edge.
+                 Sizing is driven by .squeeze class via UserControl.Styles above. -->
             <Grid x:Name="ModalSizeGrid"
+                  Classes="modal-size"
                   Grid.Column="1" Grid.Row="1"
                   HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Width="1080"
-                  Height="600">
+                  VerticalAlignment="Center">
                 <!-- Silver south edge highlight (2px) -->
                 <Border CornerRadius="12"
                         Margin="0,2,0,0"
                         BorderThickness="0,0,0,2"
                         BorderBrush="#C0C0C0"/>
-                <!-- Main border with standard edge -->
+                <!-- Main border. Intro animation declared in Border.modal-border style above. -->
                 <Border x:Name="ModalBorder"
+                        Classes="modal-border"
                         Background="{StaticResource ModalGrey}"
                         CornerRadius="12"
                         BorderBrush="{StaticResource ModalBorder}"
@@ -40,31 +77,31 @@
                         ClipToBounds="True"
                         Padding="4,4,4,4">
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>    <!-- Content -->
-                        <RowDefinition Height="52"/> <!-- Footer fixed height (reduced from 60) -->
-                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>    <!-- Content -->
+                            <RowDefinition Height="52"/> <!-- Footer fixed height -->
+                        </Grid.RowDefinitions>
 
-                    <!-- Content area -->
-                    <ContentPresenter Grid.Row="0"
-                                      x:Name="ModalContent"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      Margin="0"/>
+                        <!-- Content area -->
+                        <ContentPresenter Grid.Row="0"
+                                          x:Name="ModalContent"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          Margin="0"/>
 
-                    <!-- Footer with back button - stretches full width -->
-                    <Button Grid.Row="1"
-                            x:Name="BackButton"
-                            Content="Back"
-                            Classes="back-button"
-                            HorizontalAlignment="Stretch"
-                            Height="36"
-                            Margin="16,2,16,6"/>
+                        <!-- Footer with back button - stretches full width -->
+                        <Button Grid.Row="1"
+                                x:Name="BackButton"
+                                Content="Back"
+                                Classes="back-button"
+                                HorizontalAlignment="Stretch"
+                                Height="36"
+                                Margin="16,2,16,6"/>
 
-                </Grid>
-            </Border>
-        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
 
