@@ -184,6 +184,20 @@ namespace BalatroSeedOracle.ViewModels
         public string[] DeckDisplayValues { get; } = Enum.GetNames(typeof(MotelyDeck));
         public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
+        // The stake-by-UI-index mapping is order-specific and uses lowercase JSON values
+        // (MotelyStake enum has gaps so we can't derive this from Enum.GetNames).
+        private static readonly string[] StakeNamesByIndex =
+        {
+            "white",
+            "red",
+            "green",
+            "black",
+            "blue",
+            "purple",
+            "orange",
+            "gold",
+        };
+
         // Deck/Stake index helpers
         public int SelectedDeckIndex
         {
@@ -1533,53 +1547,8 @@ namespace BalatroSeedOracle.ViewModels
                         await UpdateVisualBuilderFromItemConfigs();
                         ExpandDropZonesWithItems();
 
-                        // Update deck and stake selection indices
-                        if (!string.IsNullOrEmpty(config.Deck))
-                        {
-                            var deckIndex = Array.IndexOf(
-                                new[]
-                                {
-                                    "Red",
-                                    "Blue",
-                                    "Yellow",
-                                    "Green",
-                                    "Black",
-                                    "Magic",
-                                    "Nebula",
-                                    "Ghost",
-                                    "Abandoned",
-                                    "Checkered",
-                                    "Zodiac",
-                                    "Painted",
-                                    "Anaglyph",
-                                    "Plasma",
-                                    "Erratic",
-                                },
-                                config.Deck
-                            );
-                            if (deckIndex >= 0)
-                                SelectedDeckIndex = deckIndex;
-                        }
-
-                        if (!string.IsNullOrEmpty(config.Stake))
-                        {
-                            var stakeIndex = Array.IndexOf(
-                                new[]
-                                {
-                                    "white",
-                                    "red",
-                                    "green",
-                                    "black",
-                                    "blue",
-                                    "purple",
-                                    "orange",
-                                    "gold",
-                                },
-                                config.Stake.ToLower()
-                            );
-                            if (stakeIndex >= 0)
-                                SelectedStakeIndex = stakeIndex;
-                        }
+                        ApplyDeckFromConfig(config.Deck);
+                        ApplyStakeFromConfig(config.Stake);
 
                         // Switch to Visual Builder tab
                         SelectedTabIndex = 1;
@@ -1679,52 +1648,8 @@ namespace BalatroSeedOracle.ViewModels
                             ExpandDropZonesWithItems();
 
                             // Preserve deck/stake selections from the copy
-                            if (!string.IsNullOrEmpty(newConfig.Deck))
-                            {
-                                var deckIndex = Array.IndexOf(
-                                    new[]
-                                    {
-                                        "Red",
-                                        "Blue",
-                                        "Yellow",
-                                        "Green",
-                                        "Black",
-                                        "Magic",
-                                        "Nebula",
-                                        "Ghost",
-                                        "Abandoned",
-                                        "Checkered",
-                                        "Zodiac",
-                                        "Painted",
-                                        "Anaglyph",
-                                        "Plasma",
-                                        "Erratic",
-                                    },
-                                    newConfig.Deck
-                                );
-                                if (deckIndex >= 0)
-                                    SelectedDeckIndex = deckIndex;
-                            }
-
-                            if (!string.IsNullOrEmpty(newConfig.Stake))
-                            {
-                                var stakeIndex = Array.IndexOf(
-                                    new[]
-                                    {
-                                        "white",
-                                        "red",
-                                        "green",
-                                        "black",
-                                        "blue",
-                                        "purple",
-                                        "orange",
-                                        "gold",
-                                    },
-                                    newConfig.Stake.ToLower()
-                                );
-                                if (stakeIndex >= 0)
-                                    SelectedStakeIndex = stakeIndex;
-                            }
+                            ApplyDeckFromConfig(newConfig.Deck);
+                            ApplyStakeFromConfig(newConfig.Stake);
 
                             SelectedTabIndex = 1;
                             BsoLogger.Log(
@@ -1799,30 +1724,24 @@ namespace BalatroSeedOracle.ViewModels
             return filterSelector;
         }
 
-        // Convert index to deck name via enum
-        private string GetDeckName(int index)
+        // Lookup deck/stake name from a config blob and apply to the SelectedXIndex setter.
+        // Both no-op if the name is missing or unrecognised, leaving the previous selection intact.
+        private void ApplyDeckFromConfig(string? deckName)
         {
-            if (index >= 0 && index <= 14)
-                return ((Motely.MotelyDeck)index).ToString();
-            return "Red";
+            if (string.IsNullOrEmpty(deckName))
+                return;
+            var index = Array.IndexOf(DeckDisplayValues, deckName);
+            if (index >= 0)
+                SelectedDeckIndex = index;
         }
 
-        // Convert index to stake name via enum (handles gaps in enum values)
-        private string GetStakeName(int index)
+        private void ApplyStakeFromConfig(string? stakeName)
         {
-            var stake = index switch
-            {
-                0 => MotelyStake.White,
-                1 => MotelyStake.Red,
-                2 => MotelyStake.Green,
-                3 => MotelyStake.Black,
-                4 => MotelyStake.Blue,
-                5 => MotelyStake.Purple,
-                6 => MotelyStake.Orange,
-                7 => MotelyStake.Gold,
-                _ => MotelyStake.White,
-            };
-            return stake.ToString().ToLower();
+            if (string.IsNullOrEmpty(stakeName))
+                return;
+            var index = Array.IndexOf(StakeNamesByIndex, stakeName.ToLower());
+            if (index >= 0)
+                SelectedStakeIndex = index;
         }
 
         /// <summary>
