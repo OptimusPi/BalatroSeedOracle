@@ -14,15 +14,7 @@
 name: Publish Motely WASM to npm
 
 on:
-  push:
-    tags:
-      - 'motely-wasm-v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Override npm package version (e.g., 1.0.1). Empty = use package.json version.'
-        required: false
-        type: string
 
 env:
   DOTNET_VERSION: '10.0.x'
