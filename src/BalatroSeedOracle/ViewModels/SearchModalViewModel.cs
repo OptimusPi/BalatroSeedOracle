@@ -343,10 +343,11 @@ namespace BalatroSeedOracle.ViewModels
             // Update button text when Continue checkbox changes
             OnPropertyChanged(nameof(CookButtonText));
 
-            // If user just enabled Continue while search is NOT running, load saved progress
+            // If user just enabled Continue while search is NOT running, reset progress.
+            // (Saved-progress restoration was removed when Motely took over DB ownership.)
             if (value && !IsSearching)
             {
-                LoadSavedProgressAsync().ConfigureAwait(false);
+                ProgressPercent = 0.0;
             }
         }
 
@@ -1072,19 +1073,6 @@ namespace BalatroSeedOracle.ViewModels
                     : StakeSelection;
 
             return $"{normalizedFilterName}_{deck}_{stake}";
-        }
-
-        /// <summary>
-        /// Gets the database path for the current filter/deck/stake combination.
-        /// </summary>
-        private string GetDatabasePath()
-        {
-            var searchId = GetSearchId();
-            if (string.IsNullOrEmpty(searchId))
-                return string.Empty;
-
-            var searchResultsDir = AppPaths.SearchResultsDir;
-            return Path.Combine(searchResultsDir, $"{searchId}.db");
         }
 
         private async Task<SearchCriteria> BuildSearchCriteriaAsync()
@@ -2140,16 +2128,6 @@ namespace BalatroSeedOracle.ViewModels
             {
                 return $"{count:N0}";
             }
-        }
-
-        /// <summary>
-        /// Load saved search progress - feature has been removed
-        /// </summary>
-        private Task LoadSavedProgressAsync()
-        {
-            // Search state persistence has been removed - Motely now owns all database operations
-            ProgressPercent = 0.0;
-            return Task.CompletedTask;
         }
 
         #endregion
