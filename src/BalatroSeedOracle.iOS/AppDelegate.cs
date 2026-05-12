@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.iOS;
 using BalatroSeedOracle;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +24,6 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
 
             // iOS-specific implementations
             services.AddSingleton<IPlatformServices, iOSPlatformServices>();
-            services.AddSingleton<IParquetExporter, iOSParquetExporter>();
             services.AddSingleton<IAudioManager, iOSAudioManager>();
         };
 
@@ -64,18 +62,6 @@ internal sealed class iOSPlatformServices : IPlatformServices
     public void WriteLog(string message) { }
 
     public void WriteDebugLog(string message) { }
-}
-
-/// <summary>iOS Parquet exporter - stub</summary>
-internal sealed class iOSParquetExporter : IParquetExporter
-{
-    public bool IsAvailable => false; // TODO: Implement Parquet export for iOS
-
-    public System.Threading.Tasks.Task ExportAsync(
-        string filePath,
-        System.Collections.Generic.IReadOnlyList<string> headers,
-        System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<object?>> rows
-    ) => System.Threading.Tasks.Task.CompletedTask;
 }
 
 /// <summary>iOS Audio manager - stub</summary>

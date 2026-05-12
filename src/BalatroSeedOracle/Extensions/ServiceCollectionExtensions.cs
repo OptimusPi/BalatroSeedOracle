@@ -104,9 +104,7 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<UserProfileService>(),
                 sp.GetRequiredService<Services.Storage.IAppDataStore>(),
                 sp.GetRequiredService<IPlatformServices>(),
-                sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
-                sp.GetService<Services.Export.IResultsDatabaseExporter>(),
-                sp.GetService<Services.Export.IParquetExporter>()
+                sp.GetRequiredService<Func<AnalyzeModalViewModel>>()
             ));
             services.AddTransient<Views.Modals.SearchModal>(sp => new Views.Modals.SearchModal(
                 sp.GetRequiredService<SearchModalViewModel>()

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 
 namespace BalatroSeedOracle.Android.Services;
@@ -119,13 +118,3 @@ public class AndroidAudioManager : IAudioManager
     public event Action<float, float, float, float>? AudioAnalysisUpdated;
 }
 
-public class AndroidParquetExporter : IParquetExporter
-{
-    public bool IsAvailable => false; // TODO: Implement Parquet export for Android
-
-    public Task ExportAsync(
-        string filePath,
-        IReadOnlyList<string> headers,
-        IReadOnlyList<IReadOnlyList<object?>> rows
-    ) => Task.CompletedTask;
-}

@@ -160,6 +160,17 @@ public sealed class ActiveSearchContext : IDisposable
 
     public async Task<int> GetResultCountAsync() => await Task.FromResult(ResultCount);
 
+    /// <summary>
+    /// Export this search's results to a file. Format inferred from extension
+    /// (.parquet, .csv, .db, .duckdb, .ducklake). Motely owns the DB; we just hand it the output path.
+    /// </summary>
+    public void ExportTo(string outputPath)
+    {
+        if (_context == null)
+            throw new InvalidOperationException("Export is not supported for remote searches.");
+        _context.ExportTo(outputPath);
+    }
+
     // === Control - delegate to Motely ===
 
     public void Start() => _context?.Start();

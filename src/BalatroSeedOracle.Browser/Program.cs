@@ -4,8 +4,6 @@ using Avalonia.Browser;
 using BalatroSeedOracle;
 using BalatroSeedOracle.Browser.Services;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.DuckDB;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,11 +27,6 @@ internal sealed partial class Program
 
             // IApiHostService: NOT registered - API hosting not supported in browser
             // Consumers must handle null service (Avalonia best practice: no stub implementations)
-
-            // Excel export (stub - not implemented for browser yet)
-            services.AddSingleton<IParquetExporter, BrowserParquetExporter>();
-            // Database export (.db / .ducklake) available on Desktop only
-            services.AddSingleton<IResultsDatabaseExporter, BrowserResultsDatabaseExporter>();
 
             // Browser audio using Web Audio API
             services.AddSingleton<IAudioManager, BrowserAudioManager>();

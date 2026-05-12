@@ -14,7 +14,6 @@ using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -44,8 +43,6 @@ namespace BalatroSeedOracle.ViewModels
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
-        private readonly IResultsDatabaseExporter? _resultsDatabaseExporter;
-        private readonly IParquetExporter? _parquetExporter;
 
         private ActiveSearchContext? _searchContext;
         private string _currentSearchId = string.Empty;
@@ -294,9 +291,7 @@ namespace BalatroSeedOracle.ViewModels
             UserProfileService userProfileService,
             BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore,
             IPlatformServices platformServices,
-            Func<AnalyzeModalViewModel> analyzeModalFactory,
-            IResultsDatabaseExporter? resultsDatabaseExporter = null,
-            IParquetExporter? parquetExporter = null
+            Func<AnalyzeModalViewModel> analyzeModalFactory
         )
         {
             _searchManager = searchManager;
@@ -305,8 +300,6 @@ namespace BalatroSeedOracle.ViewModels
             _platformServices = platformServices;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
-            _resultsDatabaseExporter = resultsDatabaseExporter;
-            _parquetExporter = parquetExporter;
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -440,25 +433,17 @@ namespace BalatroSeedOracle.ViewModels
                         {
                             Patterns = new[] { "*.csv" },
                         },
-                    };
-
-                if (_resultsDatabaseExporter != null && _resultsDatabaseExporter.IsAvailable)
-                {
-                    fileTypeChoices.Add(
                         new Avalonia.Platform.Storage.FilePickerFileType("Search Results (.db)")
                         {
                             Patterns = new[] { "*.db" },
-                        }
-                    );
-                    fileTypeChoices.Add(
+                        },
                         new Avalonia.Platform.Storage.FilePickerFileType(
                             "Search Results Lake (.ducklake)"
                         )
                         {
                             Patterns = new[] { "*.ducklake" },
-                        }
-                    );
-                }
+                        },
+                    };
 
                 var file = await topLevel.StorageProvider.SaveFilePickerAsync(
                     new Avalonia.Platform.Storage.FilePickerSaveOptions
@@ -481,56 +466,20 @@ namespace BalatroSeedOracle.ViewModels
                 var labels = first?.Labels ?? Array.Empty<string>();
                 var filePath = file.Path.LocalPath;
 
-                if (filePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (_parquetExporter == null || !_parquetExporter.IsAvailable)
-                    {
-                        BsoLogger.Log(
-                            "SearchModalViewModel",
-                            "Parquet export not available on this platform"
-                        );
-                        return;
-                    }
-
-                    var headers = new List<string> { "SEED", "TOTALSCORE" };
-                    headers.AddRange(labels.Select(l => l.ToUpperInvariant()));
-
-                    var rows = new List<IReadOnlyList<object?>>();
-                    foreach (var result in results)
-                    {
-                        var row = new List<object?> { result.Seed, result.TotalScore };
-                        if (result.Scores != null)
-                        {
-                            row.AddRange(result.Scores.Cast<object?>());
-                        }
-                        rows.Add(row);
-                    }
-
-                    await _parquetExporter.ExportAsync(filePath, headers, rows);
-                    BsoLogger.Log(
-                        "SearchModalViewModel",
-                        $"Exported {results.Count()} results to Parquet: {filePath}"
-                    );
-                }
-                else if (
-                    filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                if (
+                    filePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase)
+                    || filePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase)
+                    || filePath.EndsWith(".duckdb", StringComparison.OrdinalIgnoreCase)
                     || filePath.EndsWith(".ducklake", StringComparison.OrdinalIgnoreCase)
                 )
                 {
-                    if (_resultsDatabaseExporter == null || !_resultsDatabaseExporter.IsAvailable)
+                    var ctx = _searchContext;
+                    if (ctx == null)
                     {
-                        BsoLogger.Log(
-                            "SearchModalViewModel",
-                            "Database export not available on this platform"
-                        );
+                        BsoLogger.Log("SearchModalViewModel", "No active search to export");
                         return;
                     }
-
-                    await _resultsDatabaseExporter.ExportToAsync(
-                        filePath,
-                        results.ToList(),
-                        labels.ToList()
-                    );
+                    ctx.ExportTo(filePath);
                     var ext = System.IO.Path.GetExtension(filePath);
                     BsoLogger.Log(
                         "SearchModalViewModel",

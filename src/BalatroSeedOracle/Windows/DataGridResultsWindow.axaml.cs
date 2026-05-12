@@ -23,8 +23,6 @@ using AvaloniaEdit.TextMate;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.DuckDB;
-using BalatroSeedOracle.Services.Export;
 using Microsoft.Extensions.DependencyInjection;
 using TextMateSharp.Grammars;
 
@@ -585,31 +583,12 @@ LIMIT 50;",
 
             try
             {
-                // Use platform-specific IParquetExporter
-                var parquetExporter = App.GetService<IParquetExporter>();
-                if (parquetExporter == null || !parquetExporter.IsAvailable)
+                if (_searchInstance == null)
                 {
-                    UpdateStatus("Parquet export not available");
+                    UpdateStatus("No active search to export");
                     return;
                 }
-
-                // Headers
-                var headers = new List<string> { "Rank", "Seed", "Score" };
-                headers.AddRange(
-                    _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
-                        ?? new List<string>()
-                );
-
-                // Build data rows
-                var rows = new List<IReadOnlyList<object?>>();
-                foreach (var item in _filteredResults)
-                {
-                    var row = new List<object?> { item.Rank, item.Seed, item.TotalScore };
-                    row.AddRange(item.TallyScores.Cast<object?>());
-                    rows.Add(row);
-                }
-
-                await parquetExporter.ExportAsync(file.Path.LocalPath, headers, rows);
+                _searchInstance.ExportTo(file.Path.LocalPath);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to Parquet");
             }
             catch (Exception ex)

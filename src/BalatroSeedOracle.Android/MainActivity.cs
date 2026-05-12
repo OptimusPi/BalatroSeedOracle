@@ -6,7 +6,6 @@ using Avalonia.Android;
 using BalatroSeedOracle;
 using BalatroSeedOracle.Android.Services;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +36,6 @@ public class MainActivity : AvaloniaMainActivity<App>
             services.AddSingleton<IAppDataStore, AndroidAppDataStore>();
             services.AddSingleton<IPlatformServices, AndroidPlatformServices>();
             services.AddSingleton<IAudioManager, AndroidAudioManager>();
-            services.AddSingleton<IParquetExporter, AndroidParquetExporter>();
         };
 
         return base.CustomizeAppBuilder(builder);

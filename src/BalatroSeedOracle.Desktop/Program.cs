@@ -6,8 +6,6 @@ using BalatroSeedOracle;
 using BalatroSeedOracle.Desktop.Services;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using BalatroSeedOracle.Services.DuckDB;
-using BalatroSeedOracle.Services.Export;
 using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,8 +42,6 @@ public class Program
                 // Desktop-only services
                 services.AddSingleton<IAudioManager, DesktopAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
-                services.AddSingleton<IParquetExporter, ParquetExporter>();
-                services.AddSingleton<IResultsDatabaseExporter, ResultsDatabaseExporter>();
                 services.AddSingleton<
                     ISequentialLibraryInitializer,
                     SequentialLibraryInitializerService
