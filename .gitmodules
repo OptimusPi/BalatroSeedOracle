@@ -1,3 +1,6 @@
 [submodule "MotelyJAML"]
 	path = src/MotelyJAML
 	url = https://github.com/OptimusPi/MotelyJAML.git
+[submodule "src/MotelyJAML"]
+	path = src/MotelyJAML
+	url = https://github.com/OptimusPi/MotelyJAML.git
