@@ -11,7 +11,6 @@ using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely.Filters;
-using MotelyJaml;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -115,7 +114,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new StaticDeserializerBuilder(new MotelyJamlStaticContext())
+                var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(NullNamingConvention.Instance)
                     .IgnoreUnmatchedProperties()
                     .Build();
@@ -433,7 +432,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new StaticDeserializerBuilder(new MotelyJamlStaticContext())
+                var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(NullNamingConvention.Instance)
                     .IgnoreUnmatchedProperties()
                     .Build();

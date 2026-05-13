@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Services
                 // Return raw config - the ViewModel will handle the "Pick Seed by Day" logic
                 // The JAML contains ALL seeds for the season.
                 // We need to parse JAML here. Since JamlConfigLoader might be available:
-                if (JamlConfigLoader.TryLoadFromJamlString(content, out var config, out _))
+                if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var config, out _))
                 {
                     return config;
                 }

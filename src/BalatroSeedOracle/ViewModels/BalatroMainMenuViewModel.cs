@@ -24,14 +24,8 @@ namespace BalatroSeedOracle.ViewModels
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
-        private readonly IApiHostService? _apiHostService;
         private readonly IPlatformServices? _platformServices;
         private Action<float, float, float, float>? _audioAnalysisHandler;
-
-        /// <summary>
-        /// ViewModel for the API Host widget - owned by parent, bound via XAML DataContext
-        /// </summary>
-        public ApiHostWidgetViewModel? ApiHostWidgetViewModel { get; }
 
         // Effect source tracking
         private int _shadowFlickerSource = 0;
@@ -219,7 +213,6 @@ namespace BalatroSeedOracle.ViewModels
             FiltersModalViewModel filtersModalViewModel,
             CreditsModalViewModel creditsModalViewModel,
             Func<AnalyzeModalViewModel> analyzeModalFactory,
-            IApiHostService? apiHostService = null,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
             WidgetPositionService? widgetPositionService = null,
@@ -233,19 +226,9 @@ namespace BalatroSeedOracle.ViewModels
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
             CreditsModalViewModel = creditsModalViewModel;
-            _apiHostService = apiHostService;
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;
-
-            // Create child widget ViewModels (owned by parent, bound via XAML)
-            if (_apiHostService is not null)
-            {
-                ApiHostWidgetViewModel = new ApiHostWidgetViewModel(
-                    _apiHostService,
-                    widgetPositionService
-                );
-            }
 
             // Load settings
             LoadSettings();

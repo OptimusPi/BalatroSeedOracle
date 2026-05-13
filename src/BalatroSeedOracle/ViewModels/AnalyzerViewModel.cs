@@ -345,7 +345,7 @@ public partial class AnalyzerViewModel : ObservableObject
             var ante = GetCurrentAnte();
             if (ante is null)
                 return [];
-            return ante.ShopQueue.ToList();
+            return ante.ShopQueue.Select(x => (MotelyItem)x).ToList();
         }
     }
 
@@ -408,7 +408,7 @@ public partial class AnalyzerViewModel : ObservableObject
                 {
                     Name = FormatUtils.FormatPackName(pack.Type),
                     Items = pack.Items.Select(item => FormatUtils.FormatItem(item)).ToList(),
-                    RawItems = pack.Items.ToList(),
+                    RawItems = pack.Items.Select(item => (MotelyItem)item).ToList(),
                     PackType = pack.Type.GetPackType(),
                 })
                 .ToList();

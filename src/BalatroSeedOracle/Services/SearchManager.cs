@@ -227,72 +227,22 @@ public sealed class SearchManager : IDisposable
     }
 
     /// <summary>
-    /// Initialize the SequentialLibrary for search persistence.
-    /// Call this at app startup (Desktop only). Motely.DB owns the implementation.
+    /// Library persistence was provided by Motely.DB, which has been removed.
+    /// No-op until JamlSearchBuilder-based persistence is wired up.
     /// </summary>
     public void InitializeLibrary(string seedsPath)
     {
-        if (!_platformServices.SupportsFileSystem)
-        {
-            DebugLogger.Log("SearchManager", "Skipping library initialization (browser)");
-            return;
-        }
-
-        try
-        {
-            var initializer = ServiceHelper.GetService<ISequentialLibraryInitializer>();
-            if (initializer != null)
-            {
-                initializer.SetLibraryRoot(seedsPath);
-                DebugLogger.Log("SearchManager", $"SequentialLibrary initialized at: {seedsPath}");
-            }
-            else
-            {
-                DebugLogger.Log("SearchManager", "SequentialLibrary not available (browser build)");
-            }
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SearchManager", $"Failed to initialize library: {ex.Message}");
-        }
+        DebugLogger.Log("SearchManager", $"InitializeLibrary({seedsPath}) — sequential library not wired in this build");
     }
 
     /// <summary>
-    /// Restore active searches from the SequentialLibrary.
-    /// Returns metadata for searches that need UI widgets created.
-    /// Call this at app startup after InitializeLibrary. Motely.DB owns the implementation.
+    /// Same story as <see cref="InitializeLibrary"/>: persistent active-search
+    /// restoration depended on Motely.DB and is parked until the new search
+    /// engine grows back a result sink BSO can read.
     /// </summary>
-    public async Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
+    public Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
     {
-        var restored = new List<RestoredSearchInfo>();
-
-        if (!_platformServices.SupportsFileSystem)
-        {
-            DebugLogger.Log("SearchManager", "Skipping search restoration (browser)");
-            return restored;
-        }
-
-        try
-        {
-            var provider = ServiceHelper.GetService<IRestoreActiveSearchesProvider>();
-            if (provider == null)
-            {
-                DebugLogger.Log(
-                    "SearchManager",
-                    "RestoreActiveSearchesProvider not available (browser build)"
-                );
-                return restored;
-            }
-
-            restored = await provider.RestoreAsync(jamlFiltersDir).ConfigureAwait(false);
-            DebugLogger.Log("SearchManager", $"Found {restored.Count} active searches to restore");
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SearchManager", $"Error during search restoration: {ex.Message}");
-        }
-
-        return restored;
+        return Task.FromResult(new List<RestoredSearchInfo>());
     }
 
     /// <summary>

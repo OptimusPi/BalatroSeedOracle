@@ -209,8 +209,7 @@ namespace BalatroSeedOracle.Helpers
         public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
         {
             var userProfile = ServiceHelper.GetRequiredService<UserProfileService>();
-            var apiHost = ServiceHelper.GetService<IApiHostService>();
-            var ToolView = new ToolsModal(userProfile, apiHost);
+            var ToolView = new ToolsModal(userProfile);
             return menu.ShowModal("MORE", ToolView);
         }
 
