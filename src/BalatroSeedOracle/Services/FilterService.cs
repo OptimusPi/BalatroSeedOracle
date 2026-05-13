@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Services.Storage;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
 {
@@ -214,27 +216,19 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                var filtersDir = _configurationService.GetFiltersDirectory();
-                var filterPath = Path.Combine(filtersDir, $"{filterId}.json");
+                var filterPath = Path.Combine(
+                    _configurationService.GetFiltersDirectory(),
+                    $"{filterId}.json"
+                );
+                if (!File.Exists(filterPath))
+                    return string.Empty;
 
-                if (File.Exists(filterPath))
-                {
-                    var json = await File.ReadAllTextAsync(filterPath);
-
-                    var deserializeOptions = new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true,
-                    };
-
-                    var config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                            json,
-                            deserializeOptions
-                        );
-                    return config?.Name ?? "";
-                }
+                var json = await File.ReadAllTextAsync(filterPath);
+                var config = JsonSerializer.Deserialize(
+                    json,
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                );
+                return config?.Name ?? "";
             }
             catch (Exception ex)
             {
@@ -242,9 +236,8 @@ namespace BalatroSeedOracle.Services
                     "FilterService",
                     $"Error reading filter name: {ex.Message}"
                 );
+                return string.Empty;
             }
-
-            return string.Empty;
         }
 
         public async Task<string> CloneFilterAsync(string filterId, string newName)
@@ -253,7 +246,6 @@ namespace BalatroSeedOracle.Services
             {
                 var filtersDir = _configurationService.GetFiltersDirectory();
                 var filterPath = Path.Combine(filtersDir, $"{filterId}.json");
-
                 if (!File.Exists(filterPath))
                 {
                     Helpers.DebugLogger.LogError(
@@ -264,59 +256,32 @@ namespace BalatroSeedOracle.Services
                 }
 
                 var json = await File.ReadAllTextAsync(filterPath);
+                var config = JsonSerializer.Deserialize(
+                    json,
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                );
+                if (config == null)
+                    return string.Empty;
 
-                // Use same deserialization options as MotelyJsonConfig.TryLoadFromJsonFile
-                var deserializeOptions = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true,
-                };
+                config.Name = newName;
+                config.DateCreated = DateTime.UtcNow;
+                config.Author =
+                    Helpers.ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
+                    ?? "Unknown";
 
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        json,
-                        deserializeOptions
-                    );
+                var newId = $"{newName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
+                var newPath = Path.Combine(filtersDir, $"{newId}.json");
+                var newJson = JsonSerializer.Serialize(
+                    config,
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                );
+                await File.WriteAllTextAsync(newPath, newJson);
 
-                if (config != null)
-                {
-                    config.Name = newName; // Use custom name
-                    config.DateCreated = DateTime.UtcNow;
-                    var userProfileService = Helpers.ServiceHelper.GetService<UserProfileService>();
-                    config.Author = userProfileService?.GetAuthorName() ?? "Unknown";
-
-                    // Generate clean ID from name
-                    var cleanName = newName.Replace(" ", "").ToLower();
-                    var newId = $"{cleanName}_{Guid.NewGuid():N}";
-                    var newPath = Path.Combine(filtersDir, $"{newId}.json");
-
-                    // Use camelCase serialization to maintain JSON format consistency
-                    var serializeOptions = new System.Text.Json.JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        DefaultIgnoreCondition = System
-                            .Text
-                            .Json
-                            .Serialization
-                            .JsonIgnoreCondition
-                            .WhenWritingNull,
-                    };
-
-                    var newJson = System.Text.Json.JsonSerializer.Serialize(
-                        config,
-                        serializeOptions
-                    );
-                    await File.WriteAllTextAsync(newPath, newJson);
-
-                    // Cache will auto-refresh on next access (file watcher)
-                    Helpers.DebugLogger.Log(
-                        "FilterService",
-                        $"Filter cloned: {filterId} -> {newId} (name: {newName})"
-                    );
-                    return newId;
-                }
+                Helpers.DebugLogger.Log(
+                    "FilterService",
+                    $"Filter cloned: {filterId} -> {newId} (name: {newName})"
+                );
+                return newId;
             }
             catch (Exception ex)
             {
@@ -324,9 +289,8 @@ namespace BalatroSeedOracle.Services
                     "FilterService",
                     $"Error cloning filter: {ex.Message}"
                 );
+                return string.Empty;
             }
-
-            return string.Empty;
         }
     }
 }

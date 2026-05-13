@@ -126,7 +126,6 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();
-            services.AddTransient<GenieWidgetViewModel>();
             services.AddTransient<FilterListViewModel>();
             services.AddTransient<PaginatedFilterBrowserViewModel>();
             services.AddTransient<FilterSelectionModalViewModel>();

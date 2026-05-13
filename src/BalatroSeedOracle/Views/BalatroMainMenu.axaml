@@ -91,11 +91,6 @@
     <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsHitTestVisible="False">
             <!-- Search Widgets will be added dynamically here -->
 
-            <!-- 🧞 GENIE WIDGET - AI-powered filter generation! -->
-            <components:GenieWidget x:Name="GenieWidget"
-                                   IsVisible="False"
-                                   ClipToBounds="False"/>
-
             <!-- ✨ EVENT FX WIDGET - Configure event animations -->
             <components:EventFXWidget x:Name="EventFXWidget"
                                       IsVisible="{Binding IsEventFXWidgetVisible}"

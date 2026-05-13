@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -10,6 +11,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
+using Motely.Filters;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -447,33 +449,21 @@ namespace BalatroSeedOracle.Helpers
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.MotelyJsonConfig
+            var emptyFilter = new MotelyJsonConfig
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
                 Author =
                     ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = DateTime.UtcNow,
-                Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
-                MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(
+            var json = JsonSerializer.Serialize(
                 emptyFilter,
-                new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = System
-                        .Text
-                        .Json
-                        .Serialization
-                        .JsonIgnoreCondition
-                        .WhenWritingNull,
-                }
+                MotelyJsonSerializerContext.Default.MotelyJsonConfig
             );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
 
@@ -490,35 +480,23 @@ namespace BalatroSeedOracle.Helpers
             try
             {
                 var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
-                var config =
-                    System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                        originalJson
-                    );
+                var config = JsonSerializer.Deserialize(
+                    originalJson,
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                );
 
                 if (config != null)
                 {
-                    // Update clone metadata
                     config.Name = $"{config.Name} (Copy)";
                     config.Author =
                         ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
                         ?? "Unknown";
                     config.DateCreated = DateTime.UtcNow;
 
-                    var filtersDir = AppPaths.FiltersDir;
-                    var clonedPath = System.IO.Path.Combine(filtersDir, $"{config.Name}.json");
-
-                    var json = System.Text.Json.JsonSerializer.Serialize(
+                    var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Name}.json");
+                    var json = JsonSerializer.Serialize(
                         config,
-                        new System.Text.Json.JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
-                        }
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
                     );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);
 

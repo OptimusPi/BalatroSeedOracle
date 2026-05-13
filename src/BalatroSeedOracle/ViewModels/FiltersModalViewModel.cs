@@ -1531,10 +1531,10 @@ namespace BalatroSeedOracle.ViewModels
                     BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
                     var json = await File.ReadAllTextAsync(filterPath);
-                    var config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                            json
-                        );
+                    var config = System.Text.Json.JsonSerializer.Deserialize(
+                        json,
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    );
 
                     if (config is not null)
                     {
@@ -1587,43 +1587,33 @@ namespace BalatroSeedOracle.ViewModels
                         counter++;
                     }
 
-                    // Read original config; if parse fails, still copy raw file
-                    Motely.Filters.MotelyJsonConfig? config = null;
+                    MotelyJsonConfig? config = null;
                     try
                     {
                         var json = await File.ReadAllTextAsync(originalPath);
-                        config =
-                            System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                json
-                            );
+                        config = System.Text.Json.JsonSerializer.Deserialize(
+                            json,
+                            MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        );
                     }
                     catch
                     {
-                        // Failed to load/parse filter - will remain null and be skipped below
+                        // Failed to parse — fall through to raw file copy below
                     }
 
                     if (config is not null)
                     {
-                        // Update the config name to reflect copy and write new file
-                        var options = new System.Text.Json.JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            DefaultIgnoreCondition = System
-                                .Text
-                                .Json
-                                .Serialization
-                                .JsonIgnoreCondition
-                                .WhenWritingNull,
-                        };
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
                             : $"{config.Name} (copy)";
-                        var newJson = System.Text.Json.JsonSerializer.Serialize(config, options);
+                        var newJson = System.Text.Json.JsonSerializer.Serialize(
+                            config,
+                            MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        );
                         await File.WriteAllTextAsync(newPath, newJson);
                     }
                     else
                     {
-                        // Fallback: simple file copy
                         File.Copy(originalPath, newPath, overwrite: false);
                     }
 
@@ -1633,10 +1623,10 @@ namespace BalatroSeedOracle.ViewModels
                     try
                     {
                         var newJson = await File.ReadAllTextAsync(newPath);
-                        var newConfig =
-                            System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                                newJson
-                            );
+                        var newConfig = System.Text.Json.JsonSerializer.Deserialize(
+                            newJson,
+                            MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        );
                         if (newConfig is not null)
                         {
                             LoadedConfig = newConfig;

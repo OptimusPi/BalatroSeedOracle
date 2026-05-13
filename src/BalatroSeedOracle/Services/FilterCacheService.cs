@@ -327,14 +327,10 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                        ReadCommentHandling = JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true,
-                    };
-
-                    config = JsonSerializer.Deserialize<MotelyJsonConfig>(content, options);
+                    config = JsonSerializer.Deserialize(
+                        content,
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    );
                 }
 
                 if (config == null)
@@ -613,23 +609,13 @@ namespace BalatroSeedOracle.Services
                     }
                     else
                     {
-                        // Try Motely's loader first (handles edge cases better)
-                        if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var motelyConfig))
+                        if (!MotelyJsonConfig.TryLoadFromJsonFile(filePath, out config))
                         {
-                            config = motelyConfig;
-                        }
-                        else
-                        {
-                            // Fallback to manual parsing with hardened options
-                            var json = File.ReadAllText(filePath);
-                            var options = new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true,
-                                ReadCommentHandling = JsonCommentHandling.Skip,
-                                AllowTrailingCommas = true,
-                            };
-
-                            config = JsonSerializer.Deserialize<MotelyJsonConfig>(json, options);
+                            DebugLogger.LogError(
+                                "FilterCacheService",
+                                $"Motely failed to load filter: {filePath}"
+                            );
+                            return null;
                         }
                     }
 

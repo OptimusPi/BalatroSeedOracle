@@ -84,9 +84,6 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(List<DataGridResultItem>))]
 // EventFX config
 [JsonSerializable(typeof(EventFXConfig))]
-// Genie responses
-[JsonSerializable(typeof(CloudGenieResponse))]
-[JsonSerializable(typeof(LocalGenieResponse))]
 public partial class BsoJsonSerializerContext : JsonSerializerContext { }
 
 /// <summary>
@@ -135,24 +132,6 @@ public class EventFXConfig
     public double Duration { get; set; } = 2.0;
     public string? AudioTriggerName { get; set; }
     public bool Enabled { get; set; } = true;
-}
-
-/// <summary>
-/// Response from cloud Genie API
-/// </summary>
-public class CloudGenieResponse
-{
-    public string? Filter { get; set; }
-    public string? Error { get; set; }
-}
-
-/// <summary>
-/// Response from local Genie API
-/// </summary>
-public class LocalGenieResponse
-{
-    public string? Content { get; set; }
-    public string? Error { get; set; }
 }
 
 /// <summary>

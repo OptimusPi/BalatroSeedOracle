@@ -21,6 +21,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.Views
 {
@@ -568,27 +569,23 @@ namespace BalatroSeedOracle.Views
                     filterId = sanitizedName;
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                    // Create default empty filter in NEW MotelyJsonConfig format
-                    var defaultFilter = new
+                    var defaultFilter = new MotelyJsonConfig
                     {
-                        name = filterName,
-                        description = "Created with visual filter builder",
-                        author = "pifreak",
-                        dateCreated = DateTime.UtcNow.ToString("O"),
-                        deck = "Red",
-                        stake = "White",
-                        must = new object[] { },
-                        should = new object[] { },
-                        mustNot = new object[] { },
+                        Name = filterName,
+                        Description = "Created with visual filter builder",
+                        Author = "pifreak",
+                        DateCreated = DateTime.UtcNow,
+                        Deck = "Red",
+                        Stake = "White",
+                        Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                     };
                     var jsonContent = System.Text.Json.JsonSerializer.Serialize(
                         defaultFilter,
-                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
                     );
-                    System.IO.File.WriteAllText(
-                        filterPath,
-                        CompactJsonFormatter.Format(jsonContent)
-                    );
+                    System.IO.File.WriteAllText(filterPath, jsonContent);
 
                     DebugLogger.Log(
                         "BalatroMainMenu",
@@ -868,23 +865,22 @@ namespace BalatroSeedOracle.Views
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                // Create minimal valid filter JSON in NEW MotelyJsonConfig format
-                var minimalFilter = new
+                var minimalFilter = new MotelyJsonConfig
                 {
-                    name = filterName,
-                    description = "Created with visual filter builder",
-                    author = "pifreak",
-                    dateCreated = DateTime.UtcNow.ToString("O"),
-                    deck = "Red",
-                    stake = "White",
-                    must = new object[] { },
-                    should = new object[] { },
-                    mustNot = new object[] { },
+                    Name = filterName,
+                    Description = "Created with visual filter builder",
+                    Author = "pifreak",
+                    DateCreated = DateTime.UtcNow,
+                    Deck = "Red",
+                    Stake = "White",
+                    Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
                 };
 
                 var json = System.Text.Json.JsonSerializer.Serialize(
                     minimalFilter,
-                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
                 );
 
                 await System.IO.File.WriteAllTextAsync(filterPath, json);

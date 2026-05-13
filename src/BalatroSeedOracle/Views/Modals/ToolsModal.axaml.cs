@@ -119,20 +119,10 @@ namespace BalatroSeedOracle.Views.Modals
                                 }
                                 else
                                 {
-                                    config =
-                                        System.Text.Json.JsonSerializer.Deserialize<MotelyJsonConfig>(
-                                            text,
-                                            new System.Text.Json.JsonSerializerOptions
-                                            {
-                                                PropertyNameCaseInsensitive = true,
-                                                ReadCommentHandling = System
-                                                    .Text
-                                                    .Json
-                                                    .JsonCommentHandling
-                                                    .Skip,
-                                                AllowTrailingCommas = true,
-                                            }
-                                        );
+                                    config = System.Text.Json.JsonSerializer.Deserialize(
+                                        text,
+                                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                                    );
 
                                     if (config == null)
                                     {
@@ -306,26 +296,13 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                // Avalonia Accelerate WebView - NativeWebDialog (namespace from Avalonia.Controls.WebView package)
-                var dialogType =
-                    Type.GetType(
-                        "Avalonia.Controls.WebView.NativeWebDialog, Avalonia.Controls.WebView"
-                    ) ?? Type.GetType("NativeWebDialog, Avalonia.Controls.WebView");
-                if (dialogType == null)
+                var dialog = new Avalonia.Controls.NativeWebDialog
                 {
-                    DebugLogger.LogError(
-                        "ToolsModal",
-                        "NativeWebDialog type not found. Is Avalonia.Controls.WebView referenced?"
-                    );
-                    return;
-                }
-                var dialog = Activator.CreateInstance(dialogType);
-                if (dialog == null)
-                    return;
-                dialogType.GetProperty("Title")?.SetValue(dialog, title);
-                dialogType.GetProperty("CanUserResize")?.SetValue(dialog, true);
-                dialogType.GetProperty("Source")?.SetValue(dialog, source);
-                dialogType.GetMethod("Show")?.Invoke(dialog, null);
+                    Title = title,
+                    CanUserResize = true,
+                    Source = source,
+                };
+                dialog.Show();
             }
             catch (Exception ex)
             {

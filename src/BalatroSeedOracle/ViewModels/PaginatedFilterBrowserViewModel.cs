@@ -11,6 +11,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -131,7 +132,7 @@ namespace BalatroSeedOracle.ViewModels
 
             var json = JsonSerializer.Serialize(
                 emptyFilter,
-                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }
+                MotelyJsonSerializerContext.Default.MotelyJsonConfig
             );
             await File.WriteAllTextAsync(tempPath, json);
 
@@ -322,16 +323,9 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                        ReadCommentHandling = JsonCommentHandling.Skip,
-                        AllowTrailingCommas = true,
-                    };
-
-                    config = JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                    config = JsonSerializer.Deserialize(
                         content,
-                        options
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
                     );
                 }
 

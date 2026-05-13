@@ -549,16 +549,10 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
-                            text,
-                            new System.Text.Json.JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true,
-                                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
-                                AllowTrailingCommas = true,
-                            }
-                        );
+                    config = System.Text.Json.JsonSerializer.Deserialize(
+                        text,
+                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    );
 
                     if (config == null)
                     {
