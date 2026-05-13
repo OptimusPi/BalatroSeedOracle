@@ -70,7 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MotelyJAML\Motely\Motely.csproj" />
-    <ProjectReference Include="..\MotelyJAML\Motely.Orchestration\Motely.Orchestration.csproj" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
