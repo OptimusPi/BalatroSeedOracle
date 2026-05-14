@@ -170,7 +170,7 @@ public sealed class SearchManager : IDisposable
             {
                 Seed = result.Seed,
                 TotalScore = result.Score,
-                Scores = result.TallyColumns?.ToArray() ?? Array.Empty<int>(),
+                Scores = result.Tallies?.ToArray() ?? Array.Empty<int>(),
             };
             contextRef?.RaiseResultFound(searchResult);
         };

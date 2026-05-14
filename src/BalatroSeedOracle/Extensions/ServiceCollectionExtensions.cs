@@ -37,6 +37,7 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<IAppDataStore>(),
                 sp.GetRequiredService<IPlatformServices>()
             ));
+            services.AddSingleton<FilterConfigurationService>();
             services.AddSingleton<SearchManager>();
 
             // Note: SoundFlowAudioManager and SoundEffectsService are registered by Desktop Program.cs only

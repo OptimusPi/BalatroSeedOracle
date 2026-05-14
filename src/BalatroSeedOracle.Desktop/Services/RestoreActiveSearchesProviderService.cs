@@ -39,7 +39,7 @@ public sealed class RestoreActiveSearchesProviderService : IRestoreActiveSearche
                     }
 
                     if (
-                        !JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out _)
+                        !Motely.JamlConfigLoader.TryLoadFromJaml(jamlPath, out var config, out _)
                         || config is null
                     )
                     {

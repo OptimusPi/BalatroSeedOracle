@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "BalatroSeedOracle",
+			"path": "../../.."
+		},
+		{
+			"name": "MotelyJAML",
+			"path": "../../../../JammySeedFinder/src/MotelyJAML"
+		}
+	],
+	"settings": {
+		"dotnet.defaultSolution": "BalatroSeedOracle.sln",
+		"omnisharp.enableEditorConfigSupport": true,
+		"dotnet.formatting.organizeImportsOnFormat": true
+	}
+}
