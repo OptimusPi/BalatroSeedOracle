@@ -3,20 +3,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using BalatroSeedOracle.Helpers; // For DebugLogger
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-using BalatroSeedOracle.Services.Engines; // Added this namespace
-using Motely; // For SearchOptionsDto
-using Motely.Executors; // For MotelySearchOrchestrator
+using BalatroSeedOracle.Services.Engines;
+using Motely;
 using Motely.Filters;
-using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger; // Resolve ambiguity
+using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.Services;
 
-/// <summary>
-/// Result of a quick validation search
-/// </summary>
 public class QuickSearchResult
 {
     public bool Success { get; set; }
@@ -27,14 +24,6 @@ public class QuickSearchResult
     public string? Error { get; set; }
 }
 
-/// <summary>
-/// Manages seed searches in BalatroSeedOracle.
-///
-/// This is a thin wrapper around Motely's search functionality.
-/// Motely owns all database operations - BSO just calls Motely.
-///
-/// ZERO database code here - all storage/queries are handled by Motely.
-/// </summary>
 public sealed class SearchManager : IDisposable
 {
     private readonly IPlatformServices _platformServices;
@@ -42,7 +31,6 @@ public sealed class SearchManager : IDisposable
     private readonly ConcurrentDictionary<string, ActiveSearchContext> _activeSearches = new();
     private bool _disposed;
 
-    // Engine Management
     private ISearchEngine _currentEngine;
     public ISearchEngine LocalEngine { get; }
     public ISearchEngine RemoteEngine { get; private set; }
@@ -51,12 +39,11 @@ public sealed class SearchManager : IDisposable
     public SearchManager(
         IPlatformServices platformServices,
         FilterConfigurationService filterService
-    ) // Added filterService
+    )
     {
         _platformServices = platformServices;
-        _filterService = filterService; // Stored but not used in this snippet
+        _filterService = filterService;
 
-        // Initialize Engines
         LocalEngine = new LocalSearchEngine(platformServices);
         RemoteEngine = new RemoteSearchEngine("https://api.motely.gg");
 
@@ -73,33 +60,18 @@ public sealed class SearchManager : IDisposable
     {
         RemoteEngine = new RemoteSearchEngine(url);
         if (_currentEngine is RemoteSearchEngine)
-        {
             _currentEngine = RemoteEngine;
-        }
     }
 
-    /// <summary>
-    /// Start a new search using the active engine.
-    /// </summary>
     public async Task<ActiveSearchContext> StartSearchAsync(
         SearchCriteria criteria,
         MotelyJsonConfig config
     )
     {
-        DebugLogger.Log(
-            "SearchManager",
-            $"Starting search via {_currentEngine.Name} for: {config.Name}"
-        );
+        DebugLogger.Log("SearchManager", $"Starting search via {_currentEngine.Name} for: {config.Name}");
 
-        // Update config with Deck/Stake if provided in criteria (since these are filter properties)
-        if (!string.IsNullOrEmpty(criteria.Deck))
-        {
-            config.Deck = criteria.Deck;
-        }
-        if (!string.IsNullOrEmpty(criteria.Stake))
-        {
-            config.Stake = criteria.Stake;
-        }
+        if (!string.IsNullOrEmpty(criteria.Deck)) config.Deck = criteria.Deck;
+        if (!string.IsNullOrEmpty(criteria.Stake)) config.Stake = criteria.Stake;
 
         var options = new SearchOptionsDto
         {
@@ -108,128 +80,97 @@ public sealed class SearchManager : IDisposable
             StartBatch = (long)criteria.StartBatch,
             EndBatch = (long)criteria.EndBatch,
             SpecificSeed = criteria.DebugSeed,
-            // EnableDebug is not in SearchOptionsDto, handled by engine logging
-            // Deck/Stake are in config, not options
         };
 
-        // Delegate to Engine
-        // Note: Engines return a SearchID string.
-        // We need to wrap this in an ActiveSearchContext to maintain API compatibility with the UI.
-        string searchId = await _currentEngine.StartSearchAsync(config, options);
-
-        // Create a wrapper context that proxies calls to the engine if needed
-        // For LocalEngine, it already launched the Orchestrator internally.
-        // For RemoteEngine, we need polling logic (omitted for brevity in this refactor step).
-
-        // HACK: For now, if it's local, we grab the orchestrator context via side-channel or assume
-        // LocalEngine returns a dummy ID and we rely on legacy behavior for local.
-
-        if (_currentEngine is LocalSearchEngine localEngine)
-        {
-            // LocalEngine implementation above was simplified.
-            // In reality, we should keep the legacy logic for Local until full migration.
-            // Reverting to legacy logic for Local to ensure stability:
+        if (_currentEngine is LocalSearchEngine)
             return StartSearchLegacy(criteria, config);
-        }
 
-        // Remote Context Placeholder - using new constructor
+        string searchId = await _currentEngine.StartSearchAsync(config, options);
         var context = new ActiveSearchContext(searchId, config);
         _activeSearches[searchId] = context;
         return context;
     }
 
-    // Legacy synchronous method kept for compatibility
     public ActiveSearchContext StartSearch(SearchCriteria criteria, MotelyJsonConfig config)
-    {
-        return StartSearchLegacy(criteria, config);
-    }
+        => StartSearchLegacy(criteria, config);
 
     private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, MotelyJsonConfig config)
     {
-        // ... (Original Implementation for Local Execution) ...
-        // Copy-pasting the original logic here for safety
-
-        var searchParams = new JsonSearchParams
+        if (!BsoDraftToJaml.TryToJamlConfig(config, out var jamlConfig, out var conversionError) || jamlConfig is null)
         {
-            Threads = criteria.ThreadCount,
-            BatchSize = criteria.BatchSize,
-            StartBatch = criteria.StartBatch,
-            EndBatch = criteria.EndBatch,
-            SpecificSeed = criteria.DebugSeed,
-            EnableDebug = criteria.EnableDebugOutput,
-            Deck = criteria.Deck,
-            Stake = criteria.Stake,
-        };
+            DebugLogger.LogError("SearchManager", $"Failed to convert editor draft to JAML: {conversionError}");
+            throw new InvalidOperationException($"Filter config could not be converted to JAML: {conversionError}");
+        }
 
-        var useInMemoryStorage = !_platformServices.SupportsFileSystem;
-        ActiveSearchContext? contextRef = null;
+        var settings = JamlSearchBuilder
+            .CreateSettings(jamlConfig)
+            .WithThreadCount(criteria.ThreadCount > 0 ? criteria.ThreadCount : Environment.ProcessorCount)
+            .WithBatchCharacterCount(criteria.BatchSize > 0 ? criteria.BatchSize : 3)
+            .WithStartBatchIndex((long)criteria.StartBatch)
+            .WithEndBatchIndex(criteria.EndBatch <= long.MaxValue ? (long)criteria.EndBatch : long.MaxValue)
+            .WithDeck(jamlConfig.Deck)
+            .WithStake(jamlConfig.Stake);
 
-        searchParams.ResultCallback = result =>
+        var searchId = Guid.NewGuid().ToString("N");
+        var bsoContext = new BsoSearchContext(searchId, config.Name ?? "filter");
+        var activeContext = new ActiveSearchContext(bsoContext, config);
+
+        settings.WithSeedMatchCallback(seed =>
         {
-            var searchResult = new Models.SearchResult
+            bsoContext.OnResult(seed, 0, null);
+            activeContext.RaiseResultFound(new SearchResult { Seed = seed, TotalScore = 0 });
+        });
+        settings.WithScoredResultCallback(tally =>
+        {
+            var tallies = tally.TallyValuesSpan.ToArray();
+            bsoContext.OnResult(tally.Seed, tally.Score, tallies);
+            activeContext.RaiseResultFound(new SearchResult
             {
-                Seed = result.Seed,
-                TotalScore = result.Score,
-                Scores = result.Tallies?.ToArray() ?? Array.Empty<int>(),
-            };
-            contextRef?.RaiseResultFound(searchResult);
-        };
+                Seed = tally.Seed,
+                TotalScore = tally.Score,
+                Scores = tallies,
+            });
+        });
+        settings.WithProgressCallback(progress =>
+        {
+            bsoContext.OnProgress(progress.SeedsSearched, progress.MatchingSeeds, 0);
+            activeContext.RaiseProgressUpdated(new SearchProgress
+            {
+                PercentComplete = progress.PercentComplete,
+                SeedsSearched = (ulong)progress.SeedsSearched,
+                SeedsPerMillisecond = progress.SeedsPerMillisecond,
+                ResultsFound = (int)progress.MatchingSeeds,
+                EstimatedTimeRemaining = progress.EstimatedTimeRemainingMilliseconds.HasValue
+                    ? TimeSpan.FromMilliseconds(progress.EstimatedTimeRemainingMilliseconds.Value)
+                    : null,
+            });
+        });
 
-        var motelyContext = MotelySearchOrchestrator.LaunchWithContext(
-            config,
-            searchParams,
-            useInMemoryStorage
-        );
+        var cts = new CancellationTokenSource();
+        var search = settings.Start(cts.Token);
+        bsoContext.Attach(search, cts);
 
-        var context = new ActiveSearchContext(motelyContext, config);
-        contextRef = context;
-        _activeSearches[context.SearchId] = context;
-
-        return context;
+        _activeSearches[searchId] = activeContext;
+        activeContext.RaiseSearchStarted();
+        return activeContext;
     }
 
-    /// <summary>
-    /// Get an existing search by ID
-    /// </summary>
     public ActiveSearchContext? GetSearch(string searchId)
     {
         _activeSearches.TryGetValue(searchId, out var context);
         return context;
     }
 
-    /// <summary>
-    /// Get all active searches
-    /// </summary>
-    public IEnumerable<ActiveSearchContext> GetAllSearches()
-    {
-        return _activeSearches.Values;
-    }
+    public IEnumerable<ActiveSearchContext> GetAllSearches() => _activeSearches.Values;
 
-    /// <summary>
-    /// Remove a search from tracking (after completion/cancellation)
-    /// </summary>
     public void RemoveSearch(string searchId)
     {
-        if (_activeSearches.TryRemove(searchId, out var context))
-        {
+        if (_activeSearches.TryRemove(searchId, out _))
             DebugLogger.Log("SearchManager", $"Removed search: {searchId}");
-        }
     }
 
-    /// <summary>
-    /// Get or restore a search by ID
-    /// </summary>
-    public ActiveSearchContext? GetOrRestoreSearch(string searchId)
-    {
-        // For now, just return the active search if it exists
-        // Future: could implement persistence/restoration
-        return GetSearch(searchId);
-    }
+    public ActiveSearchContext? GetOrRestoreSearch(string searchId) => GetSearch(searchId);
 
-    /// <summary>
-    /// Initialize the SequentialLibrary for search persistence.
-    /// Call this at app startup (Desktop only). Motely.DB owns the implementation.
-    /// </summary>
     public void InitializeLibrary(string seedsPath)
     {
         if (!_platformServices.SupportsFileSystem)
@@ -241,15 +182,7 @@ public sealed class SearchManager : IDisposable
         try
         {
             var initializer = ServiceHelper.GetService<ISequentialLibraryInitializer>();
-            if (initializer != null)
-            {
-                initializer.SetLibraryRoot(seedsPath);
-                DebugLogger.Log("SearchManager", $"SequentialLibrary initialized at: {seedsPath}");
-            }
-            else
-            {
-                DebugLogger.Log("SearchManager", "SequentialLibrary not available (browser build)");
-            }
+            initializer?.SetLibraryRoot(seedsPath);
         }
         catch (Exception ex)
         {
@@ -257,35 +190,16 @@ public sealed class SearchManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Restore active searches from the SequentialLibrary.
-    /// Returns metadata for searches that need UI widgets created.
-    /// Call this at app startup after InitializeLibrary. Motely.DB owns the implementation.
-    /// </summary>
     public async Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
     {
         var restored = new List<RestoredSearchInfo>();
-
-        if (!_platformServices.SupportsFileSystem)
-        {
-            DebugLogger.Log("SearchManager", "Skipping search restoration (browser)");
-            return restored;
-        }
+        if (!_platformServices.SupportsFileSystem) return restored;
 
         try
         {
             var provider = ServiceHelper.GetService<IRestoreActiveSearchesProvider>();
-            if (provider == null)
-            {
-                DebugLogger.Log(
-                    "SearchManager",
-                    "RestoreActiveSearchesProvider not available (browser build)"
-                );
-                return restored;
-            }
-
+            if (provider == null) return restored;
             restored = await provider.RestoreAsync(jamlFiltersDir).ConfigureAwait(false);
-            DebugLogger.Log("SearchManager", $"Found {restored.Count} active searches to restore");
         }
         catch (Exception ex)
         {
@@ -295,16 +209,11 @@ public sealed class SearchManager : IDisposable
         return restored;
     }
 
-    /// <summary>
-    /// Resume a restored search. Call this after UI is ready.
-    /// </summary>
     public ActiveSearchContext? ResumeSearch(RestoredSearchInfo info, int threads)
     {
         try
         {
-            if (info.Config is null)
-                return null;
-
+            if (info.Config is null) return null;
             var criteria = new SearchCriteria
             {
                 ThreadCount = threads,
@@ -312,62 +221,31 @@ public sealed class SearchManager : IDisposable
                 Deck = info.Deck ?? "Red",
                 Stake = info.Stake ?? "White",
             };
-
-            // Calculate StartBatch from LastSeed if available
             if (!string.IsNullOrEmpty(info.LastSeed))
-            {
-                // Use SeedMath to convert seed to batch index
-                // BatchSize in SearchCriteria is seed digits (1-7), default 3
-                criteria.StartBatch =
-                    (ulong)SeedMath.SeedToBatchIndex(info.LastSeed, criteria.BatchSize) + 1;
-            }
-
-            var context = StartSearch(criteria, info.Config);
-            DebugLogger.Log("SearchManager", $"Resumed search: {info.SearchId}");
-            return context;
+                criteria.StartBatch = (ulong)SeedMath.SeedToBatchIndex(info.LastSeed, criteria.BatchSize) + 1;
+            return StartSearch(criteria, info.Config);
         }
         catch (Exception ex)
         {
-            DebugLogger.LogError(
-                "SearchManager",
-                $"Failed to resume search {info.SearchId}: {ex.Message}"
-            );
+            DebugLogger.LogError("SearchManager", $"Failed to resume search {info.SearchId}: {ex.Message}");
             return null;
         }
     }
 
-    /// <summary>
-    /// Stop all active searches
-    /// </summary>
     public void StopAllSearches()
     {
         foreach (var context in _activeSearches.Values.ToList())
         {
-            try
-            {
-                context.Stop();
-                context.Dispose();
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "SearchManager",
-                    $"Error stopping search {context.SearchId}: {ex.Message}"
-                );
-            }
+            try { context.Stop(); context.Dispose(); }
+            catch (Exception ex) { DebugLogger.LogError("SearchManager", $"Error stopping search {context.SearchId}: {ex.Message}"); }
         }
         _activeSearches.Clear();
-        DebugLogger.Log("SearchManager", "All searches stopped");
     }
 
-    /// <summary>
-    /// Stop all searches for a specific filter
-    /// </summary>
-    /// <returns>Number of searches stopped</returns>
     public int StopSearchesForFilter(string filterId)
     {
-        var toRemove = _activeSearches
-            .Values.Where(c => c.FilterId == filterId || c.FilterName == filterId)
+        var toRemove = _activeSearches.Values
+            .Where(c => c.FilterId == filterId || c.FilterName == filterId)
             .Select(c => c.SearchId)
             .ToList();
 
@@ -375,64 +253,33 @@ public sealed class SearchManager : IDisposable
         {
             if (_activeSearches.TryRemove(searchId, out var context))
             {
-                try
-                {
-                    context.Stop();
-                    context.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    DebugLogger.LogError(
-                        "SearchManager",
-                        $"Error stopping search {searchId}: {ex.Message}"
-                    );
-                }
+                try { context.Stop(); context.Dispose(); } catch { }
             }
         }
-        DebugLogger.Log(
-            "SearchManager",
-            $"Stopped {toRemove.Count} searches for filter: {filterId}"
-        );
         return toRemove.Count;
     }
 
-    /// <summary>
-    /// Run a quick search for validation/testing purposes
-    /// </summary>
-    public async Task<QuickSearchResult> RunQuickSearchAsync(
-        SearchCriteria criteria,
-        MotelyJsonConfig config
-    )
+    public async Task<QuickSearchResult> RunQuickSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
     {
         var startTime = DateTime.UtcNow;
-
         try
         {
             var context = StartSearch(criteria, config);
-
-            // Start the search
             context.Start();
 
-            // Wait for completion or timeout (quick searches should be fast)
             var maxWait = TimeSpan.FromSeconds(30);
             var waited = TimeSpan.Zero;
             var pollInterval = TimeSpan.FromMilliseconds(100);
-
             while (context.IsRunning && waited < maxWait)
             {
                 await Task.Delay(pollInterval);
                 waited += pollInterval;
             }
 
-            // Get results
             var results = await context.GetResultsPageAsync(0, 1000);
             var elapsed = DateTime.UtcNow - startTime;
 
-            // Clean up
-            if (context.IsRunning)
-            {
-                context.Stop();
-            }
+            if (context.IsRunning) context.Stop();
             RemoveSearch(context.SearchId);
             context.Dispose();
 
@@ -462,17 +309,12 @@ public sealed class SearchManager : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
+        if (_disposed) return;
         _disposed = true;
-
         StopAllSearches();
     }
 }
 
-/// <summary>
-/// Information about a restored search that needs UI widgets created.
-/// </summary>
 public class RestoredSearchInfo
 {
     public string SearchId { get; set; } = "";
