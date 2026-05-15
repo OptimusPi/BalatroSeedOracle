@@ -96,7 +96,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (visualTab is null)
                     return;
 
-                var config = new MotelyJsonConfig
+                var config = new JamlRootDocument
                 {
                     Name = "Generated Filter",
                     Description = "Auto-generated from visual builder",
@@ -105,18 +105,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
                     config.Must.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
+                        new JamlClauseUnion
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -128,7 +128,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualTab.SelectedShould)
                 {
                     config.Should.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
+                        new JamlClauseUnion
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -181,7 +181,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                var config = new MotelyJsonConfig
+                var config = new JamlRootDocument
                 {
                     Name = "Generated Filter",
                     Description = "Generated from visual builder",
@@ -190,18 +190,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
                     config.Must.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
+                        new JamlClauseUnion
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -213,7 +213,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 foreach (var item in visualTab.SelectedShould)
                 {
                     config.Should.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
+                        new JamlClauseUnion
                         {
                             Type = item.Type,
                             Value = item.Name,
@@ -272,7 +272,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the JSON
-                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(
+                var config = JsonSerializer.Deserialize<JamlRootDocument>(
                     JsonContent,
                     DeserializeOptions
                 );

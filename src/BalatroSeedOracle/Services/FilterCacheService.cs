@@ -30,14 +30,14 @@ namespace BalatroSeedOracle.Services
         /// Returns null if filter not found or failed to parse.
         /// </summary>
         /// <param name="filterId">Filter ID (filename without .json extension)</param>
-        MotelyJsonConfig? GetFilter(string filterId);
+        JamlRootDocument? GetFilter(string filterId);
 
         /// <summary>
         /// Gets a cached filter configuration by full file path.
         /// Returns null if filter not found or failed to parse.
         /// </summary>
         /// <param name="filePath">Full path to filter file</param>
-        MotelyJsonConfig? GetFilterByPath(string filePath);
+        JamlRootDocument? GetFilterByPath(string filePath);
 
         /// <summary>
         /// Gets all cached filter configurations.
@@ -83,7 +83,7 @@ namespace BalatroSeedOracle.Services
     {
         public string FilterId { get; set; } = "";
         public string FilePath { get; set; } = "";
-        public MotelyJsonConfig Config { get; set; } = null!;
+        public JamlRootDocument Config { get; set; } = null!;
         public DateTime LastModified { get; set; }
         public long FileSizeBytes { get; set; }
 
@@ -293,7 +293,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                MotelyJsonConfig? config = null;
+                JamlRootDocument? config = null;
 
                 var content = await _store
                     .ReadTextAsync(filePath.Replace('\\', '/'))
@@ -329,7 +329,7 @@ namespace BalatroSeedOracle.Services
                 {
                     config = JsonSerializer.Deserialize(
                         content,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
                 }
 
@@ -355,7 +355,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public MotelyJsonConfig? GetFilter(string filterId)
+        public JamlRootDocument? GetFilter(string filterId)
         {
             if (string.IsNullOrWhiteSpace(filterId))
                 return null;
@@ -376,7 +376,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public MotelyJsonConfig? GetFilterByPath(string filePath)
+        public JamlRootDocument? GetFilterByPath(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
                 return null;
@@ -567,7 +567,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                MotelyJsonConfig? config = null;
+                JamlRootDocument? config = null;
                 DateTime lastModifiedUtc;
                 long sizeBytes;
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
@@ -609,7 +609,7 @@ namespace BalatroSeedOracle.Services
                     }
                     else
                     {
-                        if (!MotelyJsonConfig.TryLoadFromJsonFile(filePath, out config))
+                        if (!JamlRootDocument.TryLoadFromJsonFile(filePath, out config))
                         {
                             DebugLogger.LogError(
                                 "FilterCacheService",

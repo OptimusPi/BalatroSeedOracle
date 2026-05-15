@@ -401,7 +401,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private void LoadItemsFromConfig(
-            List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause> items,
+            List<Motely.Filters.JamlClauseUnion> items,
             ObservableCollection<FilterItemViewModel> collection,
             SpriteService? spriteService
         )
@@ -411,7 +411,7 @@ namespace BalatroSeedOracle.ViewModels
 
             foreach (var item in items)
             {
-                var itemName = item.Value ?? "";
+                var itemName = item.GetValueName();
                 if (string.IsNullOrEmpty(itemName))
                     continue;
 
@@ -503,7 +503,7 @@ namespace BalatroSeedOracle.ViewModels
                 FilterItems.Clear();
 
                 // Get the items list for the selected tab
-                List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>? items = tabType switch
+                List<Motely.Filters.JamlClauseUnion>? items = tabType switch
                 {
                     "must_have" => config.Must,
                     "should_have" => config.Should,

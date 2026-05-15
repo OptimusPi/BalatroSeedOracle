@@ -68,7 +68,7 @@ namespace BalatroSeedOracle.Services
                     EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
                 }
 
-                if (config is Motely.Filters.MotelyJsonConfig motelyConfig)
+                if (config is Motely.Filters.JamlRootDocument motelyConfig)
                 {
                     // Use FilterSerializationService for consistent, clean JSON output
                     // This omits null properties, empty arrays, and empty strings
@@ -141,12 +141,12 @@ namespace BalatroSeedOracle.Services
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
-                    if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
+                    if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
                     {
                         // AOT-compatible: Use Motely's source-generated serializer context
                         var config = JsonSerializer.Deserialize(
                             json,
-                            MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                            MotelyJsonSerializerContext.Default.JamlRootDocument
                         );
                         return config as T;
                     }
@@ -158,8 +158,8 @@ namespace BalatroSeedOracle.Services
                     if (!File.Exists(filePath))
                         return null;
 
-                    // For MotelyJsonConfig, try cache first for better performance
-                    if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
+                    // For JamlRootDocument, try cache first for better performance
+                    if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
                     {
                         if (_filterCacheService is not null)
                         {
@@ -174,9 +174,9 @@ namespace BalatroSeedOracle.Services
                     // Fallback to disk loading
                     return await Task.Run(() =>
                     {
-                        if (typeof(T) == typeof(Motely.Filters.MotelyJsonConfig))
+                        if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
                         {
-                            if (MotelyJsonConfig.TryLoadFromJsonFile(filePath, out var config))
+                            if (JamlRootDocument.TryLoadFromJsonFile(filePath, out var config))
                             {
                                 return config as T;
                             }

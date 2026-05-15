@@ -10,7 +10,7 @@ public static class JamlConfigLoader
 {
     public static bool TryLoadFromJaml(
         string filePath,
-        out MotelyJsonConfig? config,
+        out JamlRootDocument? config,
         out string? error)
     {
         config = null;
@@ -33,7 +33,7 @@ public static class JamlConfigLoader
 
     public static bool TryLoadFromJamlString(
         string content,
-        out MotelyJsonConfig? config,
+        out JamlRootDocument? config,
         out string? error)
     {
         config = null;
@@ -49,7 +49,7 @@ public static class JamlConfigLoader
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
-            config = deserializer.Deserialize<MotelyJsonConfig>(content);
+            config = deserializer.Deserialize<JamlRootDocument>(content);
             if (config == null)
             {
                 error = "JAML document was empty.";

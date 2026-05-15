@@ -18,7 +18,7 @@ namespace BalatroSeedOracle.Services.Engines
             _platformServices = platformServices;
         }
 
-        public Task<string> StartSearchAsync(MotelyJsonConfig config, SearchOptionsDto options)
+        public Task<string> StartSearchAsync(JamlRootDocument config, SearchOptionsDto options)
         {
             // SearchManager handles local launches directly via StartSearchLegacy.
             return Task.FromResult("local-job-1");

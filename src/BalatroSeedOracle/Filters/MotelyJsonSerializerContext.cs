@@ -12,11 +12,11 @@ namespace Motely.Filters;
     ReadCommentHandling = JsonCommentHandling.Skip,
     AllowTrailingCommas = true
 )]
-[JsonSerializable(typeof(MotelyJsonConfig))]
-[JsonSerializable(typeof(MotelyJsonConfig.MotelyJsonFilterClause))]
-[JsonSerializable(typeof(List<MotelyJsonConfig.MotelyJsonFilterClause>))]
-[JsonSerializable(typeof(SourcesConfig))]
-[JsonSerializable(typeof(MotelyFilterDefaults))]
+[JsonSerializable(typeof(JamlRootDocument))]
+[JsonSerializable(typeof(JamlClauseUnion))]
+[JsonSerializable(typeof(List<JamlClauseUnion>))]
+[JsonSerializable(typeof(JamlSources))]
+[JsonSerializable(typeof(JamlDefaults))]
 public partial class MotelyJsonSerializerContext : JsonSerializerContext
 {
 }

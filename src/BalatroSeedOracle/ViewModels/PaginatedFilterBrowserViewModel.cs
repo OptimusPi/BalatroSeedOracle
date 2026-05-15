@@ -114,7 +114,7 @@ namespace BalatroSeedOracle.ViewModels
             var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.MotelyJsonConfig
+            var emptyFilter = new Motely.Filters.JamlRootDocument
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
@@ -123,16 +123,16 @@ namespace BalatroSeedOracle.ViewModels
                     ?? "Unknown",
                 DateCreated = DateTime.UtcNow,
                 Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
                 Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
                 MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
             };
 
             var json = JsonSerializer.Serialize(
                 emptyFilter,
-                MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                MotelyJsonSerializerContext.Default.JamlRootDocument
             );
             await File.WriteAllTextAsync(tempPath, json);
 
@@ -300,7 +300,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                Motely.Filters.MotelyJsonConfig? config = null;
+                Motely.Filters.JamlRootDocument? config = null;
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
                 if (extension == ".jaml")
@@ -325,7 +325,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     config = JsonSerializer.Deserialize(
                         content,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
                 }
 
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause> clauses,
+            List<Motely.Filters.JamlClauseUnion> clauses,
             int? scoreOverride = null
         )
         {
@@ -457,7 +457,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause clause,
+            Motely.Filters.JamlClauseUnion clause,
             string itemValue,
             int? scoreOverride = null
         )

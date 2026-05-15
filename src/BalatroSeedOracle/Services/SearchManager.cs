@@ -65,7 +65,7 @@ public sealed class SearchManager : IDisposable
 
     public async Task<ActiveSearchContext> StartSearchAsync(
         SearchCriteria criteria,
-        MotelyJsonConfig config
+        JamlRootDocument config
     )
     {
         DebugLogger.Log("SearchManager", $"Starting search via {_currentEngine.Name} for: {config.Name}");
@@ -91,15 +91,16 @@ public sealed class SearchManager : IDisposable
         return context;
     }
 
-    public ActiveSearchContext StartSearch(SearchCriteria criteria, MotelyJsonConfig config)
+    public ActiveSearchContext StartSearch(SearchCriteria criteria, JamlRootDocument config)
         => StartSearchLegacy(criteria, config);
 
-    private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, MotelyJsonConfig config)
+    private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, JamlRootDocument config)
     {
-        if (!BsoDraftToJaml.TryToJamlConfig(config, out var jamlConfig, out var conversionError) || jamlConfig is null)
+        var yaml = JamlFormatter.Format(config);
+        if (!Motely.Filters.JamlConfigLoader.TryLoad(yaml, out var jamlConfig, out var conversionError) || jamlConfig is null)
         {
-            DebugLogger.LogError("SearchManager", $"Failed to convert editor draft to JAML: {conversionError}");
-            throw new InvalidOperationException($"Filter config could not be converted to JAML: {conversionError}");
+            DebugLogger.LogError("SearchManager", $"Failed to parse JAML: {conversionError}");
+            throw new InvalidOperationException($"Filter config could not be parsed as JAML: {conversionError}");
         }
 
         var settings = JamlSearchBuilder
@@ -259,7 +260,7 @@ public sealed class SearchManager : IDisposable
         return toRemove.Count;
     }
 
-    public async Task<QuickSearchResult> RunQuickSearchAsync(SearchCriteria criteria, MotelyJsonConfig config)
+    public async Task<QuickSearchResult> RunQuickSearchAsync(SearchCriteria criteria, JamlRootDocument config)
     {
         var startTime = DateTime.UtcNow;
         try
@@ -324,5 +325,5 @@ public class RestoredSearchInfo
     public string? LastSeed { get; set; }
     public long TotalSeedsProcessed { get; set; }
     public long TotalMatches { get; set; }
-    public MotelyJsonConfig Config { get; set; } = null!;
+    public JamlRootDocument Config { get; set; } = null!;
 }

@@ -425,7 +425,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Helper Methods
 
         // Uses shared FilterConfigurationService instead of duplicating massive logic
-        private MotelyJsonConfig BuildConfigFromCurrentState()
+        private JamlRootDocument BuildConfigFromCurrentState()
         {
             // Use the parent's robust implementation if possible
             var config = _parentViewModel.BuildConfigFromCurrentState();
@@ -440,7 +440,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// <summary>
         /// Converts a FilterItem (including FilterOperatorItem with nested children) to a MotleyJsonFilterClause
         /// </summary>
-        private MotelyJsonConfig.MotelyJsonFilterClause? ConvertFilterItemToClause(
+        private JamlClauseUnion? ConvertFilterItemToClause(
             Models.FilterItem item,
             Dictionary<string, Models.ItemConfig> itemConfigs
         )
@@ -448,10 +448,10 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Handle FilterOperatorItem specially - it has Children that need to be recursively converted
             if (item is Models.FilterOperatorItem operatorItem)
             {
-                var operatorClause = new MotelyJsonConfig.MotelyJsonFilterClause
+                var operatorClause = new JamlClauseUnion
                 {
                     Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
-                    Clauses = new List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    Clauses = new List<JamlClauseUnion>(),
                 };
 
                 DebugLogger.Log(
@@ -489,7 +489,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             {
                 // Use FilterConfigurationService to convert ItemConfig to clause
                 // We need to create a simple clause from the itemConfig
-                var clause = new MotelyJsonConfig.MotelyJsonFilterClause
+                var clause = new JamlClauseUnion
                 {
                     Type = "", // Will be set below based on ItemType
                     Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
@@ -565,7 +565,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
             );
 
-            var fallbackClause = new MotelyJsonConfig.MotelyJsonFilterClause
+            var fallbackClause = new JamlClauseUnion
             {
                 Type = "", // Will be set below based on item.Type
                 Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },

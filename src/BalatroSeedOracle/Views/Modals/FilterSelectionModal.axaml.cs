@@ -528,7 +528,7 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Read {text.Length} chars. Parsing...");
 
-                MotelyJsonConfig? config;
+                JamlRootDocument? config;
                 if (extension == ".jaml")
                 {
                     if (
@@ -551,7 +551,7 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     config = System.Text.Json.JsonSerializer.Deserialize(
                         text,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
 
                     if (config == null)

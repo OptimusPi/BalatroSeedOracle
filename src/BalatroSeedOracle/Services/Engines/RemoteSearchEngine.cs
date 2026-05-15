@@ -24,7 +24,7 @@ namespace BalatroSeedOracle.Services.Engines
         }
 
         public async Task<string> StartSearchAsync(
-            MotelyJsonConfig config,
+            JamlRootDocument config,
             SearchOptionsDto options
         )
         {
