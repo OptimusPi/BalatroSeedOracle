@@ -121,7 +121,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     .IgnoreUnmatchedProperties()
                     .Build();
 
-                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
+                var config = deserializer.Deserialize<JamlRootDocument>(JamlContent);
 
                 // Additional validation checks
                 ValidateSchema(config);
@@ -196,7 +196,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 1;
         }
 
-        private void ValidateSchema(MotelyJsonConfig config)
+        private void ValidateSchema(JamlRootDocument config)
         {
             // Validate deck enum
             if (!string.IsNullOrEmpty(config.Deck))
@@ -326,7 +326,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 0;
         }
 
-        private void UpdatePreview(MotelyJsonConfig config)
+        private void UpdatePreview(JamlRootDocument config)
         {
             PreviewItems.Clear();
             var spriteService = SpriteService.Instance;
@@ -360,25 +360,28 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private FilterItem CreateFilterItemFromClause(
-            MotelyJsonConfig.MotelyJsonFilterClause clause,
+            JamlClauseUnion clause,
             FilterItemStatus status,
             string category,
             SpriteService spriteService
         )
         {
+            var value = clause.GetValueName();
+            var typeName = clause.GetTypeName();
+            var displayName = string.IsNullOrEmpty(value) ? typeName : value;
             var item = new FilterItem
             {
-                Name = clause.Value ?? clause.Type ?? "Unknown",
-                DisplayName = clause.Value ?? clause.Type ?? "Unknown",
+                Name = displayName,
+                DisplayName = displayName,
                 Status = status,
                 Category = category,
-                Type = clause.Type ?? "Joker",
-                Value = clause.Value,
-                Edition = clause.Edition,
-                Seal = clause.Seal,
-                Enhancement = clause.Enhancement,
-                Stickers = clause.Stickers?.ToList(),
-                Score = clause.Score,
+                Type = string.IsNullOrEmpty(typeName) ? "Joker" : typeName,
+                Value = value,
+                Edition = clause.GetEditionString(),
+                Seal = clause.GetSealString(),
+                Enhancement = clause.GetEnhancementString(),
+                Stickers = clause.GetStickerStrings()?.ToList(),
+                Score = clause.Score ?? 1,
                 MinCount = clause.Min ?? 0,
             };
 
@@ -439,7 +442,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     .IgnoreUnmatchedProperties()
                     .Build();
 
-                var config = deserializer.Deserialize<MotelyJsonConfig>(JamlContent);
+                var config = deserializer.Deserialize<JamlRootDocument>(JamlContent);
                 if (config is null)
                     return;
 
@@ -584,7 +587,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         /// Convert config to JAML using the centralized JamlFormatter
         /// (Single source of truth in Motely.Filters.JamlFormatter)
         /// </summary>
-        private string ConvertConfigToJaml(MotelyJsonConfig config)
+        private string ConvertConfigToJaml(JamlRootDocument config)
         {
             try
             {

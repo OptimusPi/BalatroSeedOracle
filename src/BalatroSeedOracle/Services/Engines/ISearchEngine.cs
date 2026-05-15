@@ -16,7 +16,7 @@ namespace BalatroSeedOracle.Services.Engines
         /// <summary>
         /// Starts a search with the given configuration.
         /// </summary>
-        Task<string> StartSearchAsync(MotelyJsonConfig config, SearchOptionsDto options);
+        Task<string> StartSearchAsync(JamlRootDocument config, SearchOptionsDto options);
 
         /// <summary>
         /// Stops a running search.

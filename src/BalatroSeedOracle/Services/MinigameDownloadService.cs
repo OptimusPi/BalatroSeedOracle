@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<MotelyJsonConfig?> FetchGameConfigAsync(string gameId)
+        public async Task<JamlRootDocument?> FetchGameConfigAsync(string gameId)
         {
             // ONE JAML TO RULE THEM ALL
             // e.g. https://r2.weejoker.app/games/weejoker_season1.jaml

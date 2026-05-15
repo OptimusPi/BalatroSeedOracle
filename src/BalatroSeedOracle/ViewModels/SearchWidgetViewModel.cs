@@ -8,6 +8,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -94,32 +95,32 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var clause in config.Must)
                     {
+                        var clauseValue = clause.GetValueName();
+                        var clauseType = clause.GetTypeName();
                         if (
-                            !string.IsNullOrEmpty(clause.Value)
-                            && !string.IsNullOrEmpty(clause.Type)
+                            !string.IsNullOrEmpty(clauseValue)
+                            && !string.IsNullOrEmpty(clauseType)
                         )
                         {
-                            // Load sprite based on type
-                            FilterIcon = clause.Type.ToLowerInvariant() switch
+                            FilterIcon = clauseType.ToLowerInvariant() switch
                             {
-                                "joker" => _spriteService.GetJokerImage(clause.Value) as Bitmap,
-                                "tarot" => _spriteService.GetTarotImage(clause.Value) as Bitmap,
-                                "planet" => _spriteService.GetPlanetCardImage(clause.Value)
-                                    as Bitmap,
-                                "spectral" => _spriteService.GetSpectralImage(clause.Value)
-                                    as Bitmap,
-                                "voucher" => _spriteService.GetVoucherImage(clause.Value) as Bitmap,
-                                "tag" => _spriteService.GetTagImage(clause.Value) as Bitmap,
-                                "booster" => _spriteService.GetBoosterImage(clause.Value) as Bitmap,
-                                _ => _spriteService.GetItemImage(clause.Value, clause.Type)
-                                    as Bitmap,
+                                "joker" or "commonjoker" or "uncommonjoker" or "rarejoker" or "legendaryjoker"
+                                    => _spriteService.GetJokerImage(clauseValue) as Bitmap,
+                                "tarotcard" => _spriteService.GetTarotImage(clauseValue) as Bitmap,
+                                "planetcard" => _spriteService.GetPlanetCardImage(clauseValue) as Bitmap,
+                                "spectralcard" => _spriteService.GetSpectralImage(clauseValue) as Bitmap,
+                                "voucher" => _spriteService.GetVoucherImage(clauseValue) as Bitmap,
+                                "tag" or "smallblindtag" or "bigblindtag"
+                                    => _spriteService.GetTagImage(clauseValue) as Bitmap,
+                                "boss" => _spriteService.GetBossImage(clauseValue) as Bitmap,
+                                _ => _spriteService.GetItemImage(clauseValue, clauseType) as Bitmap,
                             };
 
                             if (FilterIcon is not null)
                             {
                                 DebugLogger.Log(
                                     "SearchWidgetViewModel",
-                                    $"Loaded icon for {clause.Type}:{clause.Value}"
+                                    $"Loaded icon for {clauseType}:{clauseValue}"
                                 );
                                 return;
                             }

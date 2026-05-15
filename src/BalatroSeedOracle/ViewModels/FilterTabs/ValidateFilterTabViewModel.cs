@@ -580,7 +580,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Description = FilterDescription;
 
                 // Store example seed if we have one
-                // NOTE: ExampleSeed property not yet available in MotelyJsonConfig.
+                // NOTE: ExampleSeed property not yet available in JamlRootDocument.
                 // This would require adding the property to the Motely core filter configuration.
                 if (!string.IsNullOrEmpty(ExampleSeedForPreview))
                 {
@@ -1126,7 +1126,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private MotelyJsonConfig BuildConfigFromCurrentState()
+        private JamlRootDocument BuildConfigFromCurrentState()
         {
             // MUST run on UI thread to access ObservableCollections
             return Dispatcher.UIThread.Invoke(() =>

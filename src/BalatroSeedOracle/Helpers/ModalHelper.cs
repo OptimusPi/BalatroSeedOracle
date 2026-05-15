@@ -97,7 +97,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.MotelyJsonConfig config
+            Motely.Filters.JamlRootDocument config
         )
         {
             var filtersContent = new Views.Modals.FiltersModal(
@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.Helpers
 
         private static async Task LoadFilterForEditingAsync(
             Views.Modals.FiltersModal filtersContent,
-            Motely.Filters.MotelyJsonConfig config
+            Motely.Filters.JamlRootDocument config
         )
         {
             try
@@ -188,11 +188,11 @@ namespace BalatroSeedOracle.Helpers
         /// Creates and shows a search modal with a config object (no temp files!)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
-        /// <param name="config">The MotelyJsonConfig object to search with</param>
+        /// <param name="config">The JamlRootDocument object to search with</param>
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.MotelyJsonConfig config
+            Motely.Filters.JamlRootDocument config
         )
         {
             // This method should not be used - filters must be saved first!
@@ -449,21 +449,21 @@ namespace BalatroSeedOracle.Helpers
             var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new MotelyJsonConfig
+            var emptyFilter = new JamlRootDocument
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
                 Author =
                     ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
-                DateCreated = DateTime.UtcNow,
-                Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                DateCreated = DateTime.UtcNow.ToString("o"),
+                Must = new System.Collections.Generic.List<JamlClauseUnion>(),
+                Should = new System.Collections.Generic.List<JamlClauseUnion>(),
+                MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
             };
 
             var json = JsonSerializer.Serialize(
                 emptyFilter,
-                MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                MotelyJsonSerializerContext.Default.JamlRootDocument
             );
             await System.IO.File.WriteAllTextAsync(tempPath, json);
 
@@ -482,7 +482,7 @@ namespace BalatroSeedOracle.Helpers
                 var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
                 var config = JsonSerializer.Deserialize(
                     originalJson,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
 
                 if (config != null)
@@ -491,12 +491,12 @@ namespace BalatroSeedOracle.Helpers
                     config.Author =
                         ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
                         ?? "Unknown";
-                    config.DateCreated = DateTime.UtcNow;
+                    config.DateCreated = DateTime.UtcNow.ToString("o");
 
                     var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Name}.json");
                     var json = JsonSerializer.Serialize(
                         config,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
                     await System.IO.File.WriteAllTextAsync(clonedPath, json);
 

@@ -128,7 +128,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.MotelyJsonConfig>(
+                    await _configurationService.LoadFilterAsync<Motely.Filters.JamlRootDocument>(
                         filePath
                     );
                 return config != null;
@@ -226,7 +226,7 @@ namespace BalatroSeedOracle.Services
                 var json = await File.ReadAllTextAsync(filterPath);
                 var config = JsonSerializer.Deserialize(
                     json,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
                 return config?.Name ?? "";
             }
@@ -258,13 +258,13 @@ namespace BalatroSeedOracle.Services
                 var json = await File.ReadAllTextAsync(filterPath);
                 var config = JsonSerializer.Deserialize(
                     json,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
                 if (config == null)
                     return string.Empty;
 
                 config.Name = newName;
-                config.DateCreated = DateTime.UtcNow;
+                config.DateCreated = DateTime.UtcNow.ToString("o");
                 config.Author =
                     Helpers.ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
                     ?? "Unknown";
@@ -273,7 +273,7 @@ namespace BalatroSeedOracle.Services
                 var newPath = Path.Combine(filtersDir, $"{newId}.json");
                 var newJson = JsonSerializer.Serialize(
                     config,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
                 await File.WriteAllTextAsync(newPath, newJson);
 

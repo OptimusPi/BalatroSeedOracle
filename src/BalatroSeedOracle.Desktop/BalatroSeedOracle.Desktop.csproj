@@ -55,6 +55,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BalatroSeedOracle\BalatroSeedOracle.csproj" />
-    <ProjectReference Include="..\MotelyJAML\Motely.API\Motely.API.csproj" />
   </ItemGroup>
 </Project>

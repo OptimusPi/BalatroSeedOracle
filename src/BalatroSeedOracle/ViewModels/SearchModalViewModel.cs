@@ -60,7 +60,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isSearching = false;
 
         [ObservableProperty]
-        private Motely.Filters.MotelyJsonConfig? _loadedConfig;
+        private Motely.Filters.JamlRootDocument? _loadedConfig;
 
         [ObservableProperty]
         private int _selectedTabIndex = 0;
@@ -1772,7 +1772,7 @@ namespace BalatroSeedOracle.ViewModels
                 var content =
                     await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
-                Motely.Filters.MotelyJsonConfig? config = null;
+                Motely.Filters.JamlRootDocument? config = null;
                 var extension = Path.GetExtension(configPath).ToLowerInvariant();
                 if (extension == ".jaml")
                 {
@@ -1796,7 +1796,7 @@ namespace BalatroSeedOracle.ViewModels
                 else
                 {
                     config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.MotelyJsonConfig>(
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.JamlRootDocument>(
                             content
                         );
                 }
