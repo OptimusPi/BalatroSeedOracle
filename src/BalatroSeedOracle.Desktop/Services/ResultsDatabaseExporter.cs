@@ -1,16 +1,12 @@
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Export;
-using Motely.DB;
 
 namespace BalatroSeedOracle.Desktop.Services;
 
-/// <summary>
-/// Desktop implementation of IResultsDatabaseExporter using Motely.DB.
-/// BSO does not reference DuckDB directly; all database export goes through Motely.
-/// </summary>
 public sealed class ResultsDatabaseExporter : IResultsDatabaseExporter
 {
     public bool IsAvailable => true;
@@ -21,15 +17,18 @@ public sealed class ResultsDatabaseExporter : IResultsDatabaseExporter
         IReadOnlyList<string> columnNames
     )
     {
-        var rows = new List<(string seed, int score, IReadOnlyList<object?>? columnValues)>();
+        using var w = new StreamWriter(path);
+        var header = new List<string> { "seed", "score" };
+        if (columnNames != null) header.AddRange(columnNames);
+        w.WriteLine(string.Join(",", header));
         foreach (var r in results)
         {
-            IReadOnlyList<object?>? vals = null;
-            if (r.Scores != null && r.Scores.Length > 0)
-                vals = r.Scores.Cast<object?>().ToArray();
-            rows.Add((r.Seed ?? "", r.TotalScore, vals));
+            var cells = new List<string> { r.Seed ?? "", r.TotalScore.ToString(CultureInfo.InvariantCulture) };
+            if (r.Scores != null)
+                foreach (var s in r.Scores)
+                    cells.Add(s.ToString(CultureInfo.InvariantCulture));
+            w.WriteLine(string.Join(",", cells));
         }
-        ResultsExportHelper.ExportResultsTo(path, columnNames ?? new List<string>(), rows);
         return Task.CompletedTask;
     }
 }
