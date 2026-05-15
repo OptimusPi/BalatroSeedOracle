@@ -176,10 +176,16 @@ namespace BalatroSeedOracle.Services
                     {
                         if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
                         {
-                            if (JamlRootDocument.TryLoadFromJsonFile(filePath, out var config))
+                            try
                             {
-                                return config as T;
+                                var json = System.IO.File.ReadAllText(filePath);
+                                var config = System.Text.Json.JsonSerializer.Deserialize(
+                                    json,
+                                    MotelyJsonSerializerContext.Default.JamlRootDocument
+                                );
+                                if (config != null) return config as T;
                             }
+                            catch { }
                         }
                         return null;
                     });

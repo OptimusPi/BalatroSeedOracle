@@ -126,7 +126,7 @@ namespace BalatroSeedOracle.Services
                     ShopItems = config.ShopSlots?.ToArray(),
                     BoosterPacks = config.PackSlots?.ToArray(),
                     Tags = config.SkipBlindTags,
-                    RequireMega = config.IsMegaArcana ? true : null,
+                    RequireMega = config.IsMegaArcana,
                 };
             }
 

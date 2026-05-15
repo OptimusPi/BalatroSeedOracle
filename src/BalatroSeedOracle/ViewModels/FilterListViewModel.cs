@@ -11,6 +11,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {

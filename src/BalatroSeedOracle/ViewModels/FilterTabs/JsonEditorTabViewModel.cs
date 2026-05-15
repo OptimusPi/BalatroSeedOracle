@@ -101,7 +101,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Name = "Generated Filter",
                     Description = "Auto-generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.UtcNow.ToString("o"),
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
@@ -115,25 +115,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(
-                        new JamlClauseUnion
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(
-                        new JamlClauseUnion
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
@@ -186,7 +174,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     Name = "Generated Filter",
                     Description = "Generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.UtcNow.ToString("o"),
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
@@ -200,25 +188,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(
-                        new JamlClauseUnion
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(
-                        new JamlClauseUnion
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
@@ -295,7 +271,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     foreach (var clause in config.Must)
                     {
-                        var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
+                        var item = FindOrCreateFilterItem(visualTab, clause.GetTypeName(), clause.GetValueName());
                         if (
                             item is not null
                             && !visualTab.SelectedMust.Any(x => x.Name == item.Name)
@@ -312,7 +288,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     foreach (var clause in config.Should)
                     {
-                        var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
+                        var item = FindOrCreateFilterItem(visualTab, clause.GetTypeName(), clause.GetValueName());
                         if (
                             item is not null
                             && !visualTab.SelectedShould.Any(x => x.Name == item.Name)

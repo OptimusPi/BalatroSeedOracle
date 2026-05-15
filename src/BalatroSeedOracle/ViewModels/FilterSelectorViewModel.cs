@@ -16,6 +16,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Motely.Filters;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -227,18 +228,18 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var item in config.Must.Take(4))
                     {
-                        if (!string.IsNullOrEmpty(item.Value))
+                        if (!string.IsNullOrEmpty(item.GetValueName()))
                         {
-                            previewItems.Add((item.Value, item.Type));
+                            previewItems.Add((item.GetValueName(), item.GetTypeName()));
                         }
                     }
                 }
 
                 foreach (var item in config.Should)
                 {
-                    if (!string.IsNullOrEmpty(item.Value))
+                    if (!string.IsNullOrEmpty(item.GetValueName()))
                     {
-                        previewItems.Add((item.Value, item.Type));
+                        previewItems.Add((item.GetValueName(), item.GetTypeName()));
                     }
                 }
 
@@ -348,9 +349,9 @@ namespace BalatroSeedOracle.ViewModels
                 if (config.Must is not null && config.Must.Count > 0)
                 {
                     var firstItem = config.Must[0];
-                    if (!string.IsNullOrEmpty(firstItem.Value))
+                    if (!string.IsNullOrEmpty(firstItem.GetValueName()))
                     {
-                        return GetItemImage(firstItem.Value, firstItem.Type);
+                        return GetItemImage(firstItem.GetValueName(), firstItem.GetTypeName());
                     }
                 }
                 return null;

@@ -264,7 +264,7 @@ namespace BalatroSeedOracle.Services
                     return string.Empty;
 
                 config.Name = newName;
-                config.DateCreated = DateTime.UtcNow;
+                config.DateCreated = DateTime.UtcNow.ToString("o");
                 config.Author =
                     Helpers.ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
                     ?? "Unknown";

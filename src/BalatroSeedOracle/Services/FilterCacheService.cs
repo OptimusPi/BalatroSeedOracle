@@ -609,11 +609,27 @@ namespace BalatroSeedOracle.Services
                     }
                     else
                     {
-                        if (!JamlRootDocument.TryLoadFromJsonFile(filePath, out config))
+                        try
+                        {
+                            var json = File.ReadAllText(filePath);
+                            config = System.Text.Json.JsonSerializer.Deserialize(
+                                json,
+                                MotelyJsonSerializerContext.Default.JamlRootDocument
+                            );
+                        }
+                        catch (Exception loadEx)
                         {
                             DebugLogger.LogError(
                                 "FilterCacheService",
-                                $"Motely failed to load filter: {filePath}"
+                                $"Failed to load filter {filePath}: {loadEx.Message}"
+                            );
+                            return null;
+                        }
+                        if (config is null)
+                        {
+                            DebugLogger.LogError(
+                                "FilterCacheService",
+                                $"Filter deserialized to null: {filePath}"
                             );
                             return null;
                         }

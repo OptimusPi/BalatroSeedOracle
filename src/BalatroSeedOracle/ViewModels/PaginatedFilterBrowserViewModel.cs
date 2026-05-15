@@ -121,7 +121,7 @@ namespace BalatroSeedOracle.ViewModels
                 Author =
                     ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
                     ?? "Unknown",
-                DateCreated = DateTime.UtcNow,
+                DateCreated = DateTime.UtcNow.ToString("o"),
                 Must =
                     new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
                 Should =
@@ -253,7 +253,7 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = config.DateCreated ?? cachedFilter.LastModified,
+                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc) ? dc : cachedFilter.LastModified,
                     FilePath = cachedFilter.FilePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
@@ -337,7 +337,7 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = config.DateCreated ?? File.GetLastWriteTime(filePath),
+                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc2) ? dc2 : File.GetLastWriteTime(filePath),
                     FilePath = filePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
@@ -388,25 +388,13 @@ namespace BalatroSeedOracle.ViewModels
 
             foreach (var clause in clauses)
             {
-                var itemType = clause.Type?.ToLowerInvariant() ?? "";
-                var itemValue = clause.Value;
+                var itemValue = clause.GetValueName();
 
-                // Handle single value
                 if (!string.IsNullOrEmpty(itemValue))
                 {
                     AddItemToCollection(collections, clause, itemValue, scoreOverride);
                 }
 
-                // Handle multiple values
-                if (clause.Values is not null)
-                {
-                    foreach (var value in clause.Values)
-                    {
-                        AddItemToCollection(collections, clause, value, scoreOverride);
-                    }
-                }
-
-                // Recursively handle nested And/Or clauses
                 if (clause.Clauses is not null && clause.Clauses.Count > 0)
                 {
                     var nestedCollections = ParseItemCollections(
@@ -462,23 +450,22 @@ namespace BalatroSeedOracle.ViewModels
             int? scoreOverride = null
         )
         {
-            var itemType = clause.Type?.ToLowerInvariant() ?? "";
+            var itemType = clause.GetTypeName().ToLowerInvariant();
 
-            // Create ItemConfig from clause data
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemValue,
-                ItemType = clause.Type ?? "",
+                ItemType = clause.GetTypeName(),
                 ItemName = itemValue,
                 Antes = clause.Antes?.ToList(),
-                Edition = clause.Edition ?? "none",
-                Seal = clause.Seal ?? "None",
-                Enhancement = clause.Enhancement ?? "None",
+                Edition = clause.GetEditionString() ?? "none",
+                Seal = clause.GetSealString() ?? "None",
+                Enhancement = clause.GetEnhancementString() ?? "None",
                 Rank = clause.Rank,
                 Suit = clause.Suit,
-                Score = scoreOverride ?? clause.Score,
+                Score = scoreOverride ?? clause.Score ?? 1,
                 Label = clause.Label,
-                Stickers = clause.Stickers is not null ? new List<string>(clause.Stickers) : null,
+                Stickers = clause.GetStickerStrings()?.ToList(),
             };
 
             switch (itemType)

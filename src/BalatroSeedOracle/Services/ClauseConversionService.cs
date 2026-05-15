@@ -9,18 +9,10 @@ using Motely.Filters;
 
 namespace BalatroSeedOracle.Services
 {
-    /// <summary>
-    /// Service responsible for converting between different filter clause representations.
-    /// Centralizes the conversion logic to avoid duplication across ViewModels.
-    /// </summary>
     public class ClauseConversionService
     {
         public ClauseConversionService() { }
 
-        /// <summary>
-        /// Converts a JamlClauseUnion to a ClauseRowViewModel
-        /// Used for displaying clauses in the Validate Filter tab
-        /// </summary>
         public ClauseRowViewModel ConvertToClauseViewModel(
             JamlClauseUnion clause,
             string category,
@@ -29,15 +21,15 @@ namespace BalatroSeedOracle.Services
         {
             var vm = new ClauseRowViewModel { NestingLevel = nestingLevel };
 
-            // Handle nested OR/AND clauses
-            if (clause.Type?.ToLower() == "or" || clause.Type?.ToLower() == "and")
+            var typeName = clause.GetTypeName();
+
+            if (typeName == "or" || typeName == "and")
             {
-                vm.ClauseType = clause.Type;
+                vm.ClauseType = typeName;
                 vm.DisplayText =
-                    $"{clause.Type.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
+                    $"{typeName.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
                 vm.IsExpanded = false;
 
-                // Process nested clauses
                 if (clause.Clauses != null)
                 {
                     foreach (var nestedClause in clause.Clauses)
@@ -56,50 +48,42 @@ namespace BalatroSeedOracle.Services
                 return vm;
             }
 
-            // Regular item clause
-            vm.ClauseType = clause.Type ?? "";
+            vm.ClauseType = typeName;
 
-            // Build display text
             var displayParts = new List<string>();
+            var value = clause.GetValueName();
 
-            // Add main value/values
-            if (!string.IsNullOrEmpty(clause.Value))
+            if (!string.IsNullOrEmpty(value))
             {
-                displayParts.Add(clause.Value);
-            }
-            else if (clause.Values?.Length > 0)
-            {
-                displayParts.Add(string.Join(", ", clause.Values));
+                displayParts.Add(value);
             }
 
-            // Add edition if specified
-            if (!string.IsNullOrEmpty(clause.Edition))
+            var edition = clause.GetEditionString();
+            if (!string.IsNullOrEmpty(edition))
             {
-                vm.EditionBadge = clause.Edition;
+                vm.EditionBadge = edition;
             }
 
-            // Add stickers if specified
             if (clause.Stickers != null && clause.Stickers.Length > 0)
             {
-                displayParts.Add($"[{string.Join(", ", clause.Stickers)}]");
+                displayParts.Add($"[{string.Join(", ", clause.Stickers.Select(s => s.ToString()))}]");
             }
 
-            // Add seal/enhancement for playing cards
-            if (!string.IsNullOrEmpty(clause.Seal))
+            var seal = clause.GetSealString();
+            if (!string.IsNullOrEmpty(seal))
             {
-                displayParts.Add($"Seal: {clause.Seal}");
+                displayParts.Add($"Seal: {seal}");
             }
-            if (!string.IsNullOrEmpty(clause.Enhancement))
+            var enhancement = clause.GetEnhancementString();
+            if (!string.IsNullOrEmpty(enhancement))
             {
-                displayParts.Add($"Enhanced: {clause.Enhancement}");
+                displayParts.Add($"Enhanced: {enhancement}");
             }
 
             vm.DisplayText = string.Join(" ", displayParts);
 
-            // Set icon path based on type and value
-            vm.IconPath = GetIconPath(clause.Type, clause.Value);
+            vm.IconPath = GetIconPath(typeName, value);
 
-            // Set ante range
             if (clause.Antes?.Length > 0)
             {
                 var min = clause.Antes.Min();
@@ -107,22 +91,15 @@ namespace BalatroSeedOracle.Services
                 vm.AnteRange = min == max ? $"Ante {min}" : $"Antes {min}-{max}";
             }
 
-            // Set min count
             vm.MinCount = clause.Min;
 
-            // Set score value (for Should clauses)
-            vm.ScoreValue = clause.Score;
+            vm.ScoreValue = clause.Score ?? 1;
 
-            // Set ItemKey for potential editing
-            vm.ItemKey = $"{category}:{clause.Value ?? clause.Type}";
+            vm.ItemKey = $"{category}:{(string.IsNullOrEmpty(value) ? typeName : value)}";
 
             return vm;
         }
 
-        /// <summary>
-        /// Converts a FilterItem to a JamlClauseUnion
-        /// Used when building filter configs from Visual Builder selections
-        /// </summary>
         public JamlClauseUnion? ConvertFilterItemToClause(
             FilterItem filterItem,
             ItemConfig config
@@ -131,30 +108,21 @@ namespace BalatroSeedOracle.Services
             if (filterItem == null)
                 return null;
 
-            // Handle FilterOperatorItem (OR/AND/BannedItems)
             if (filterItem is FilterOperatorItem operatorItem)
             {
-                // BannedItems should not be converted to a clause
-                // (caller should handle these by adding children to MustNot array)
                 if (operatorItem.OperatorType == "BannedItems")
                     return null;
 
-                // Create OR/AND clause with nested children
                 var operatorClause = new JamlClauseUnion
                 {
-                    Type = operatorItem.OperatorType switch
-                    {
-                        "OR" => "Or",
-                        "AND" => "And",
-                        _ => operatorItem.OperatorType, // Fallback
-                    },
                     Clauses = new List<JamlClauseUnion>(),
                 };
+                var op = operatorItem.OperatorType.ToLowerInvariant();
+                if (op == "or") operatorClause.Or = operatorClause.Clauses;
+                else operatorClause.And = operatorClause.Clauses;
 
-                // Recursively convert children
                 foreach (var child in operatorItem.Children)
                 {
-                    // Use empty config for children (they should have their own configs if needed)
                     var childConfig = new ItemConfig();
                     var childClause = ConvertFilterItemToClause(child, childConfig);
                     if (childClause != null)
@@ -166,63 +134,55 @@ namespace BalatroSeedOracle.Services
                 return operatorClause;
             }
 
-            // Regular item clause
             var clause = new JamlClauseUnion
             {
-                Type = MapCategoryToType(filterItem.Category, filterItem.Name),
-                Value = filterItem.Name,
                 Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                 Min = config.Min > 0 ? config.Min : null,
                 Score = config.Score,
             };
 
-            // Add edition if specified
+            clause.SetDiscriminator(MapCategoryToType(filterItem.Category, filterItem.Name), filterItem.Name);
+
             if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
             {
-                clause.Edition = config.Edition;
+                clause.SetEditionString(config.Edition);
             }
 
-            // Add stickers if specified
             if (config.Stickers?.Count > 0)
             {
-                clause.Stickers = config.Stickers.ToArray();
+                clause.SetStickerStrings(config.Stickers.ToArray());
             }
 
-            // Add sources for applicable item types
             if (IsSourceCapableCategory(filterItem.Category))
             {
                 if (HasValidSources(config))
                 {
                     clause.Sources = new JamlSources
                     {
-                        ShopSlots = config.ShopSlots?.ToArray(),
-                        PackSlots = config.PackSlots?.ToArray(),
-                        Tags = config.SkipBlindTags ? true : null,
-                        RequireMega = config.IsMegaArcana ? true : null,
+                        ShopItems = config.ShopSlots?.ToArray(),
+                        BoosterPacks = config.PackSlots?.ToArray(),
+                        Tags = config.SkipBlindTags,
+                        RequireMega = config.IsMegaArcana,
                     };
                 }
             }
 
-            // Handle playing card specific properties
             if (filterItem.Category.ToLower() == "playingcards")
             {
                 if (!string.IsNullOrEmpty(config.Seal) && config.Seal != "None")
-                    clause.Seal = config.Seal;
+                    clause.SetSealString(config.Seal);
                 if (!string.IsNullOrEmpty(config.Enhancement) && config.Enhancement != "None")
-                    clause.Enhancement = config.Enhancement;
+                    clause.SetEnhancementString(config.Enhancement);
             }
 
             return clause;
         }
-
-        #region Private Helper Methods
 
         private IImage? GetIconPath(string? type, string? value)
         {
             if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(value))
                 return null;
 
-            // Use SpriteService to get the actual sprite image
             var spriteService = SpriteService.Instance;
 
             try
@@ -230,13 +190,17 @@ namespace BalatroSeedOracle.Services
                 return type?.ToLower() switch
                 {
                     "joker" => spriteService.GetJokerImage(value),
+                    "legendaryjoker" => spriteService.GetJokerImage(value),
                     "souljoker" => spriteService.GetJokerImage(value),
                     "tarotcard" => spriteService.GetTarotImage(value),
                     "planetcard" => spriteService.GetPlanetCardImage(value),
                     "spectralcard" => spriteService.GetSpectralImage(value),
                     "voucher" => spriteService.GetVoucherImage(value),
-                    "playingcard" => null, // Playing cards need rank/suit, not handled here
+                    "standardcard" => null,
+                    "playingcard" => null,
                     "tag" => spriteService.GetTagImage(value),
+                    "smallblindtag" => spriteService.GetTagImage(value),
+                    "bigblindtag" => spriteService.GetTagImage(value),
                     "boss" => spriteService.GetBossImage(value),
                     _ => null,
                 };
@@ -251,47 +215,27 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        private string MapTypeToCategory(string type)
-        {
-            return type?.ToLower() switch
-            {
-                "joker" => "jokers",
-                "souljoker" => "souljokers",
-                "tarotcard" => "tarots",
-                "planetcard" => "planets",
-                "spectralcard" => "spectrals",
-                "playingcard" => "playingcards",
-                "voucher" => "vouchers",
-                "tag" => "tags",
-                "boss" => "bosses",
-                _ => throw new ArgumentException(),
-            };
-        }
-
         private string MapCategoryToType(string category, string itemName)
         {
             var lowerCategory = category?.ToLower();
             return lowerCategory switch
             {
-                "souljokers" => "SoulJoker",
-                "jokers" => "Joker",
-                "tarots" => "TarotCard",
-                "planets" => "PlanetCard",
-                "spectrals" => "SpectralCard",
-                "playingcards" => "PlayingCard",
-                "vouchers" => "Voucher",
-                "tags" => "Tag",
-                "bosses" => "Boss",
-                "other" => "PlayingCard", // Fallback for miscategorized items (usually standard cards)
+                "souljokers" => "legendaryJoker",
+                "jokers" => "joker",
+                "tarots" => "tarotCard",
+                "planets" => "planetCard",
+                "spectrals" => "spectralCard",
+                "playingcards" => "standardCard",
+                "vouchers" => "voucher",
+                "tags" => "tag",
+                "bosses" => "boss",
+                "other" => "standardCard",
                 "operator" => throw new InvalidOperationException(
                     $"FilterOperatorItem with category 'Operator' should be handled by early return in ConvertFilterItemToClause. "
-                        + $"If you see this error, a regular FilterItem was incorrectly created with Category='Operator'. "
                         + $"ItemName: '{itemName}'"
                 ),
                 _ => throw new ArgumentException(
-                    $"Unknown category '{category}' for item '{itemName}'. "
-                        + $"Valid categories: jokers, souljokers, tarots, planets, spectrals, playingcards, vouchers, tags, bosses, other. "
-                        + $"If this is a new item type, add it to MapCategoryToType switch expression."
+                    $"Unknown category '{category}' for item '{itemName}'."
                 ),
             };
         }
@@ -314,7 +258,5 @@ namespace BalatroSeedOracle.Services
                 || config.SkipBlindTags
                 || config.IsMegaArcana;
         }
-
-        #endregion
     }
 }

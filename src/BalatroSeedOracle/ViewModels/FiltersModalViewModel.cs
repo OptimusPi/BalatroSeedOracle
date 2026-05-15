@@ -59,7 +59,7 @@ namespace BalatroSeedOracle.ViewModels
         private JamlRootDocument? _loadedConfig;
 
         // Track original metadata to preserve on save (prevent overwriting author/date)
-        private DateTime? _originalDateCreated;
+        private string? _originalDateCreated;
         private string? _originalAuthor;
 
         [ObservableProperty]
@@ -584,7 +584,7 @@ namespace BalatroSeedOracle.ViewModels
                     MustHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.Value ?? "",
+                            Name = item.GetValueName(),
                             Status = FilterItemStatus.MustHave,
                         }
                     );
@@ -598,7 +598,7 @@ namespace BalatroSeedOracle.ViewModels
                     ShouldHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.Value ?? "",
+                            Name = item.GetValueName(),
                             Status = FilterItemStatus.ShouldHave,
                         }
                     );
@@ -612,7 +612,7 @@ namespace BalatroSeedOracle.ViewModels
                     MustNotHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.Value ?? "",
+                            Name = item.GetValueName(),
                             Status = FilterItemStatus.MustNotHave,
                         }
                     );
@@ -923,7 +923,7 @@ namespace BalatroSeedOracle.ViewModels
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
                 // Preserve original DateCreated and Author when re-saving an existing filter
-                DateCreated = _originalDateCreated ?? DateTime.Now,
+                DateCreated = _originalDateCreated ?? DateTime.UtcNow.ToString("o"),
                 Author = _originalAuthor ?? author,
                 Deck = SelectedDeck.ToString(),
                 Stake = SelectedStake.ToString().ToLower(),
@@ -987,7 +987,7 @@ namespace BalatroSeedOracle.ViewModels
                 target.Add(clause);
                 BsoLogger.Log(
                     "FiltersModalViewModel",
-                    $"Added clause: Type={clause.Type}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                    $"Added clause: Type={clause.GetTypeName()}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
                 );
             }
         }
@@ -1033,30 +1033,29 @@ namespace BalatroSeedOracle.ViewModels
             ItemConfig itemConfig
         )
         {
-            // Handle AND/OR clause types with Children
             if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
             {
                 var operatorClause = new JamlClauseUnion
                 {
-                    Type = itemConfig.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Score = itemConfig.Score,
                     Label = itemConfig.Label,
                     Clauses = new List<JamlClauseUnion>(),
                 };
 
-                // Add antes if configured
+                var op = itemConfig.OperatorType.ToLowerInvariant();
+                if (op == "or") operatorClause.Or = operatorClause.Clauses;
+                else operatorClause.And = operatorClause.Clauses;
+
                 if (itemConfig.Antes?.Any() == true)
                 {
                     operatorClause.Antes = itemConfig.Antes.ToArray();
                 }
 
-                // Add Mode for OR clauses (Max) or AND clauses (Sum/default)
                 if (!string.IsNullOrEmpty(itemConfig.Mode))
                 {
                     operatorClause.Mode = itemConfig.Mode;
                 }
 
-                // Recursively convert child items to clauses
                 if (itemConfig.Children?.Any() == true)
                 {
                     foreach (var child in itemConfig.Children)
@@ -1072,51 +1071,41 @@ namespace BalatroSeedOracle.ViewModels
                 return operatorClause;
             }
 
-            // Regular item (not a clause operator)
             var clause = new JamlClauseUnion
             {
-                Type = itemConfig.IsSoulJoker ? "SoulJoker" : itemConfig.ItemType,
-                Value = itemConfig.IsMultiValue ? null : itemConfig.ItemName,
-                Values = itemConfig.IsMultiValue ? itemConfig.Values?.ToArray() : null,
                 Score = itemConfig.Score,
                 Label = itemConfig.Label,
                 Min = itemConfig.Min,
             };
 
-            // Add antes if configured
+            var discriminator = !string.IsNullOrEmpty(itemConfig.TagType)
+                ? itemConfig.TagType
+                : (itemConfig.IsSoulJoker ? "legendaryJoker" : itemConfig.ItemType);
+            clause.SetDiscriminator(discriminator, itemConfig.IsMultiValue ? null : itemConfig.ItemName);
+
             if (itemConfig.Antes?.Any() == true)
             {
                 clause.Antes = itemConfig.Antes.ToArray();
             }
 
-            // Add edition if not default
             if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
             {
-                clause.Edition = itemConfig.Edition;
+                clause.SetEditionString(itemConfig.Edition);
             }
 
-            // Add stickers if configured
             if (itemConfig.Stickers?.Any() == true)
             {
-                clause.Stickers = itemConfig.Stickers.ToArray();
+                clause.SetStickerStrings(itemConfig.Stickers.ToArray());
             }
 
-            // Handle playing card specific properties
             if (itemConfig.ItemType == "PlayingCard")
             {
                 if (itemConfig.Seal != "None")
-                    clause.Seal = itemConfig.Seal;
+                    clause.SetSealString(itemConfig.Seal);
                 if (itemConfig.Enhancement != "None")
-                    clause.Enhancement = itemConfig.Enhancement;
+                    clause.SetEnhancementString(itemConfig.Enhancement);
             }
 
-            // Handle tag type
-            if (!string.IsNullOrEmpty(itemConfig.TagType))
-            {
-                clause.Type = itemConfig.TagType; // Override with specific tag type
-            }
-
-            // Handle sources if configured
             if (
                 itemConfig.ShopSlots?.Any() == true
                 || itemConfig.PackSlots?.Any() == true
@@ -1126,15 +1115,14 @@ namespace BalatroSeedOracle.ViewModels
             {
                 clause.Sources = new JamlSources
                 {
-                    ShopSlots = itemConfig.ShopSlots?.ToArray(),
-                    PackSlots = itemConfig.PackSlots?.ToArray(),
-                    Tags = itemConfig.SkipBlindTags ? true : null,
-                    RequireMega = itemConfig.IsMegaArcana ? true : null,
+                    ShopItems = itemConfig.ShopSlots?.ToArray(),
+                    BoosterPacks = itemConfig.PackSlots?.ToArray(),
+                    Tags = itemConfig.SkipBlindTags,
+                    RequireMega = itemConfig.IsMegaArcana,
                 };
             }
             else if (itemConfig.Sources is not null)
             {
-                // Fallback to direct sources object if set
                 clause.Sources = itemConfig.Sources as JamlSources;
             }
 
@@ -1159,12 +1147,13 @@ namespace BalatroSeedOracle.ViewModels
 
                 var operatorClause = new JamlClauseUnion
                 {
-                    Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Label = operatorItem.DisplayName,
                     Clauses = new List<JamlClauseUnion>(),
                 };
+                var op = operatorItem.OperatorType.ToLowerInvariant();
+                if (op == "or") operatorClause.Or = operatorClause.Clauses;
+                else operatorClause.And = operatorClause.Clauses;
 
-                // Recursively convert children
                 foreach (var child in operatorItem.Children)
                 {
                     BsoLogger.Log(
@@ -1177,7 +1166,7 @@ namespace BalatroSeedOracle.ViewModels
                         operatorClause.Clauses.Add(childClause);
                         BsoLogger.Log(
                             "FiltersModalViewModel",
-                            $"  ✓ Added child clause: Type={childClause.Type}, Value={childClause.Value}"
+                            $"  ✓ Added child clause: Type={childClause.GetTypeName()}, Value={childClause.GetValueName()}"
                         );
                     }
                     else
@@ -1216,44 +1205,37 @@ namespace BalatroSeedOracle.ViewModels
                 }
             }
 
-            var clause = new JamlClauseUnion
-            {
-                Type = filterItem.Type,
-                Value = clauseValue,
-            };
+            var clause = new JamlClauseUnion();
+            clause.SetDiscriminator(filterItem.Type, clauseValue);
 
-            // Add antes if configured
             if (filterItem.Antes?.Any() == true)
             {
                 clause.Antes = filterItem.Antes.ToArray();
             }
 
-            // Add edition if not default
             if (
                 !string.IsNullOrEmpty(filterItem.Edition)
                 && filterItem.Edition != "none"
                 && filterItem.Edition != "None"
             )
             {
-                clause.Edition = filterItem.Edition;
+                clause.SetEditionString(filterItem.Edition);
             }
 
-            // Add stickers if configured
             if (filterItem.Stickers?.Any() == true)
             {
-                clause.Stickers = filterItem.Stickers.ToArray();
+                clause.SetStickerStrings(filterItem.Stickers.ToArray());
             }
 
-            // Handle playing card specific properties
             if (filterItem.Type == "PlayingCard" || filterItem.Category == "PlayingCards")
             {
                 if (!string.IsNullOrEmpty(filterItem.Seal) && filterItem.Seal != "None")
-                    clause.Seal = filterItem.Seal;
+                    clause.SetSealString(filterItem.Seal);
                 if (
                     !string.IsNullOrEmpty(filterItem.Enhancement)
                     && filterItem.Enhancement != "None"
                 )
-                    clause.Enhancement = filterItem.Enhancement;
+                    clause.SetEnhancementString(filterItem.Enhancement);
             }
 
             return clause;
@@ -1329,9 +1311,8 @@ namespace BalatroSeedOracle.ViewModels
             string itemKey
         )
         {
-            var normalizedType = NormalizeItemType(clause.Type);
+            var normalizedType = NormalizeItemType(clause.GetTypeName());
 
-            // Handle AND/OR clause operators with Children
             if (
                 (
                     normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase)
@@ -1343,19 +1324,18 @@ namespace BalatroSeedOracle.ViewModels
                 var operatorConfig = new ItemConfig
                 {
                     ItemKey = itemKey,
-                    ItemType = "Operator", // CRITICAL FIX: Was "Clause", must be "Operator"!
+                    ItemType = "Operator",
                     ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
                     OperatorType =
                         normalizedType.Substring(0, 1).ToUpper()
-                        + normalizedType.Substring(1).ToLower(), // "And" or "Or"
+                        + normalizedType.Substring(1).ToLower(),
                     Mode = clause.Mode,
-                    Score = clause.Score,
+                    Score = clause.Score ?? 1,
                     Label = clause.Label,
                     Antes = clause.Antes?.ToList(),
                     Children = new List<ItemConfig>(),
                 };
 
-                // Recursively convert child clauses
                 int childIndex = 0;
                 foreach (var childClause in clause.Clauses)
                 {
@@ -1367,25 +1347,13 @@ namespace BalatroSeedOracle.ViewModels
                 return operatorConfig;
             }
 
-            // Regular item (not a clause operator)
-            // Convert "Any" back to wildcard name for round-trip
-            string itemName = clause.Value ?? clause.Values?.FirstOrDefault() ?? "";
+            string itemName = clause.GetValueName();
             if (
                 itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
                 && normalizedType == "SoulJoker"
             )
             {
-                // Reconstruct wildcard name based on edition
-                if (!string.IsNullOrEmpty(clause.Edition) && clause.Edition != "none")
-                {
-                    // Any Negative/Polychrome/etc SoulJoker → Wildcard_JokerLegendary (assumed Legendary if has edition)
-                    itemName = "Wildcard_JokerLegendary";
-                }
-                else
-                {
-                    // Any SoulJoker with no edition → generic wildcard
-                    itemName = "Wildcard_JokerLegendary"; // Default to legendary wildcard
-                }
+                itemName = "Wildcard_JokerLegendary";
             }
 
             var itemConfig = new ItemConfig
@@ -1393,27 +1361,19 @@ namespace BalatroSeedOracle.ViewModels
                 ItemKey = itemKey,
                 ItemType = normalizedType,
                 ItemName = itemName,
-                Score = clause.Score,
+                Score = clause.Score ?? 1,
                 Label = clause.Label,
                 Min = clause.Min,
-                Edition = clause.Edition ?? "none",
+                Edition = clause.GetEditionString() ?? "none",
                 Antes = clause.Antes?.ToList(),
                 Sources = clause.Sources,
-                Stickers = clause.Stickers?.ToList(),
+                Stickers = clause.GetStickerStrings()?.ToList(),
             };
 
-            // Handle special types
             if (normalizedType == "SoulJoker")
             {
-                itemConfig.ItemType = "Joker"; // Display as joker in UI
-                itemConfig.IsSoulJoker = true; // Mark as soul joker
-            }
-
-            // Handle multi-value clauses (values array)
-            if (clause.Values is not null && clause.Values.Length > 1)
-            {
-                itemConfig.IsMultiValue = true;
-                itemConfig.Values = clause.Values.ToList();
+                itemConfig.ItemType = "Joker";
+                itemConfig.IsSoulJoker = true;
             }
 
             return itemConfig;

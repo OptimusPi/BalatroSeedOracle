@@ -366,19 +366,22 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SpriteService spriteService
         )
         {
+            var value = clause.GetValueName();
+            var typeName = clause.GetTypeName();
+            var displayName = string.IsNullOrEmpty(value) ? typeName : value;
             var item = new FilterItem
             {
-                Name = clause.Value ?? clause.Type ?? "Unknown",
-                DisplayName = clause.Value ?? clause.Type ?? "Unknown",
+                Name = displayName,
+                DisplayName = displayName,
                 Status = status,
                 Category = category,
-                Type = clause.Type ?? "Joker",
-                Value = clause.Value,
-                Edition = clause.Edition,
-                Seal = clause.Seal,
-                Enhancement = clause.Enhancement,
-                Stickers = clause.Stickers?.ToList(),
-                Score = clause.Score,
+                Type = string.IsNullOrEmpty(typeName) ? "Joker" : typeName,
+                Value = value,
+                Edition = clause.GetEditionString(),
+                Seal = clause.GetSealString(),
+                Enhancement = clause.GetEnhancementString(),
+                Stickers = clause.GetStickerStrings()?.ToList(),
+                Score = clause.Score ?? 1,
                 MinCount = clause.Min ?? 0,
             };
 

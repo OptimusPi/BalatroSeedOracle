@@ -445,21 +445,21 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             Dictionary<string, Models.ItemConfig> itemConfigs
         )
         {
-            // Handle FilterOperatorItem specially - it has Children that need to be recursively converted
             if (item is Models.FilterOperatorItem operatorItem)
             {
                 var operatorClause = new JamlClauseUnion
                 {
-                    Type = operatorItem.OperatorType.ToLowerInvariant(), // "or" or "and"
                     Clauses = new List<JamlClauseUnion>(),
                 };
+                var op = operatorItem.OperatorType.ToLowerInvariant();
+                if (op == "or") operatorClause.Or = operatorClause.Clauses;
+                else operatorClause.And = operatorClause.Clauses;
 
                 DebugLogger.Log(
                     "SaveFilterTab",
                     $"Converting FilterOperatorItem: {operatorItem.OperatorType} with {operatorItem.Children.Count} children"
                 );
 
-                // Recursively convert all children
                 foreach (var child in operatorItem.Children)
                 {
                     var childClause = ConvertFilterItemToClause(child, itemConfigs);
@@ -484,82 +484,44 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 return operatorClause;
             }
 
-            // Normal FilterItem - TRY to look up in ItemConfigs first
             if (itemConfigs.TryGetValue(item.ItemKey, out var itemConfig))
             {
-                // Use FilterConfigurationService to convert ItemConfig to clause
-                // We need to create a simple clause from the itemConfig
                 var clause = new JamlClauseUnion
                 {
-                    Type = "", // Will be set below based on ItemType
                     Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
                     Min = itemConfig.Min,
                 };
 
-                // Map ItemType to Motely type
-                var normalizedType = itemConfig.ItemType.ToLower();
-                switch (normalizedType)
+                var discriminator = NormalizeItemTypeToDiscriminator(itemConfig.ItemType);
+                if (discriminator is null)
                 {
-                    case "joker":
-                        clause.Type = "Joker";
-                        clause.Value = itemConfig.ItemName;
-                        if (
-                            !string.IsNullOrEmpty(itemConfig.Edition)
-                            && itemConfig.Edition != "none"
-                        )
-                        {
-                            clause.Edition = itemConfig.Edition;
-                        }
-                        break;
+                    DebugLogger.Log(
+                        "SaveFilterTab",
+                        $"Unknown item type: {itemConfig.ItemType}"
+                    );
+                    return null;
+                }
+                clause.SetDiscriminator(discriminator, itemConfig.ItemName);
 
-                    case "souljoker":
-                        clause.Type = "SoulJoker";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "tarot":
-                        clause.Type = "TarotCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "voucher":
-                        clause.Type = "Voucher";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "planet":
-                        clause.Type = "PlanetCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    case "spectral":
-                        clause.Type = "SpectralCard";
-                        clause.Value = itemConfig.ItemName;
-                        break;
-
-                    default:
-                        DebugLogger.Log(
-                            "SaveFilterTab",
-                            $"Unknown item type: {itemConfig.ItemType}"
-                        );
-                        return null;
+                if (discriminator == "joker"
+                    && !string.IsNullOrEmpty(itemConfig.Edition)
+                    && itemConfig.Edition != "none")
+                {
+                    clause.SetEditionString(itemConfig.Edition);
                 }
 
-                // Apply additional properties from itemConfig
                 if (itemConfig.Stickers is not null && itemConfig.Stickers.Count > 0)
                 {
-                    clause.Stickers = itemConfig.Stickers.ToArray();
+                    clause.SetStickerStrings(itemConfig.Stickers.ToArray());
                 }
                 if (!string.IsNullOrEmpty(itemConfig.Seal) && itemConfig.Seal != "none")
                 {
-                    clause.Seal = itemConfig.Seal;
+                    clause.SetSealString(itemConfig.Seal);
                 }
 
                 return clause;
             }
 
-            // CRITICAL FIX: Fallback to creating clause from FilterItem properties directly
-            // This handles operator children that may not be in itemConfigs dictionary
             DebugLogger.Log(
                 "SaveFilterTab",
                 $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
@@ -567,72 +529,64 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             var fallbackClause = new JamlClauseUnion
             {
-                Type = "", // Will be set below based on item.Type
                 Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
             };
 
-            // Map Type from FilterItem directly
-            var normalizedItemType = item.Type.ToLower();
-            switch (normalizedItemType)
+            var fallbackDiscriminator = NormalizeItemTypeToDiscriminator(item.Type);
+            if (fallbackDiscriminator is null)
             {
-                case "joker":
-                    fallbackClause.Type = "Joker";
-                    fallbackClause.Value = item.Name;
-                    if (!string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
-                    {
-                        fallbackClause.Edition = item.Edition;
-                    }
-                    break;
-
-                case "souljoker":
-                    fallbackClause.Type = "SoulJoker";
-                    fallbackClause.Value = item.Name;
-                    break;
-
-                case "tarot":
-                    fallbackClause.Type = "TarotCard";
-                    fallbackClause.Value = item.Name;
-                    break;
-
-                case "voucher":
-                    fallbackClause.Type = "Voucher";
-                    fallbackClause.Value = item.Name;
-                    break;
-
-                case "planet":
-                    fallbackClause.Type = "PlanetCard";
-                    fallbackClause.Value = item.Name;
-                    break;
-
-                case "spectral":
-                    fallbackClause.Type = "SpectralCard";
-                    fallbackClause.Value = item.Name;
-                    break;
-
-                default:
-                    DebugLogger.LogError(
-                        "SaveFilterTab",
-                        $"Cannot convert FilterItem with unknown type: {item.Type}"
-                    );
-                    return null;
+                DebugLogger.LogError(
+                    "SaveFilterTab",
+                    $"Cannot convert FilterItem with unknown type: {item.Type}"
+                );
+                return null;
+            }
+            fallbackClause.SetDiscriminator(fallbackDiscriminator, item.Name);
+            if (fallbackDiscriminator == "joker"
+                && !string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
+            {
+                fallbackClause.SetEditionString(item.Edition);
             }
 
-            // Apply additional properties from FilterItem
             if (item.Stickers is not null && item.Stickers.Count > 0)
             {
-                fallbackClause.Stickers = item.Stickers.ToArray();
+                fallbackClause.SetStickerStrings(item.Stickers.ToArray());
             }
             if (!string.IsNullOrEmpty(item.Seal) && item.Seal != "none")
             {
-                fallbackClause.Seal = item.Seal;
+                fallbackClause.SetSealString(item.Seal);
             }
 
             DebugLogger.Log(
                 "SaveFilterTab",
-                $"Created fallback clause: Type={fallbackClause.Type}, Value={fallbackClause.Value}, Edition={fallbackClause.Edition ?? "none"}, Seal={fallbackClause.Seal ?? "none"}"
+                $"Created fallback clause: Type={fallbackClause.GetTypeName()}, Value={fallbackClause.GetValueName()}"
             );
 
             return fallbackClause;
+        }
+
+        private static string? NormalizeItemTypeToDiscriminator(string itemType)
+        {
+            return itemType?.ToLower() switch
+            {
+                "joker" => "joker",
+                "souljoker" => "legendaryJoker",
+                "legendaryjoker" => "legendaryJoker",
+                "tarot" => "tarotCard",
+                "tarotcard" => "tarotCard",
+                "voucher" => "voucher",
+                "planet" => "planetCard",
+                "planetcard" => "planetCard",
+                "spectral" => "spectralCard",
+                "spectralcard" => "spectralCard",
+                "playingcard" => "standardCard",
+                "standardcard" => "standardCard",
+                "tag" => "tag",
+                "smallblindtag" => "smallBlindTag",
+                "bigblindtag" => "bigBlindTag",
+                "boss" => "boss",
+                _ => null,
+            };
         }
 
         // Logic moved to shared FilterConfigurationService
@@ -736,7 +690,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     // Save verified seed to config and persist to file
                     if (!string.IsNullOrEmpty(verifiedSeed))
                     {
-                        config.VerifiedSeed = verifiedSeed;
+                        config.Seeds = new List<string> { verifiedSeed };
                         var filePath = _filterService.GenerateFilterFileName(
                             config.Name ?? "filter"
                         );
