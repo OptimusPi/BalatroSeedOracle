@@ -14,8 +14,8 @@ namespace BalatroSeedOracle.Json;
 /// - For deserialization: JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.UserProfile)
 /// - For serialization: JsonSerializer.Serialize(obj, BsoJsonSerializerContext.Default.UserProfile)
 ///
-/// For MotelyJsonConfig, use Motely's MotelyJsonSerializerContext instead:
-/// - JsonSerializer.Deserialize(json, MotelyJsonSerializerContext.Default.MotelyJsonConfig)
+/// For JamlRootDocument, use Motely's MotelyJsonSerializerContext instead:
+/// - JsonSerializer.Deserialize(json, MotelyJsonSerializerContext.Default.JamlRootDocument)
 /// </summary>
 [JsonSourceGenerationOptions(
     WriteIndented = true,

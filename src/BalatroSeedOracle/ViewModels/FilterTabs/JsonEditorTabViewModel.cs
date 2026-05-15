@@ -96,44 +96,32 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (visualTab is null)
                     return;
 
-                var config = new MotelyJsonConfig
+                var config = new JamlRootDocument
                 {
                     Name = "Generated Filter",
                     Description = "Auto-generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.UtcNow.ToString("o"),
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
@@ -181,44 +169,32 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                var config = new MotelyJsonConfig
+                var config = new JamlRootDocument
                 {
                     Name = "Generated Filter",
                     Description = "Generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.UtcNow.ToString("o"),
                     Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
                     Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
                     Must =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     Should =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                     MustNot =
-                        new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        new System.Collections.Generic.List<JamlClauseUnion>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    config.Must.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    config.Should.Add(
-                        new MotelyJsonConfig.MotelyJsonFilterClause
-                        {
-                            Type = item.Type,
-                            Value = item.Name,
-                        }
-                    );
+                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
@@ -272,7 +248,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the JSON
-                var config = JsonSerializer.Deserialize<MotelyJsonConfig>(
+                var config = JsonSerializer.Deserialize<JamlRootDocument>(
                     JsonContent,
                     DeserializeOptions
                 );
@@ -295,7 +271,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     foreach (var clause in config.Must)
                     {
-                        var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
+                        var item = FindOrCreateFilterItem(visualTab, clause.GetTypeName(), clause.GetValueName());
                         if (
                             item is not null
                             && !visualTab.SelectedMust.Any(x => x.Name == item.Name)
@@ -312,7 +288,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 {
                     foreach (var clause in config.Should)
                     {
-                        var item = FindOrCreateFilterItem(visualTab, clause.Type, clause.Value);
+                        var item = FindOrCreateFilterItem(visualTab, clause.GetTypeName(), clause.GetValueName());
                         if (
                             item is not null
                             && !visualTab.SelectedShould.Any(x => x.Name == item.Name)

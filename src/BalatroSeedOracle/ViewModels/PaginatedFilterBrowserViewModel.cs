@@ -114,25 +114,25 @@ namespace BalatroSeedOracle.ViewModels
             var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.MotelyJsonConfig
+            var emptyFilter = new Motely.Filters.JamlRootDocument
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
                 Author =
                     ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
                     ?? "Unknown",
-                DateCreated = DateTime.UtcNow,
+                DateCreated = DateTime.UtcNow.ToString("o"),
                 Must =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
                 Should =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
                 MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
             };
 
             var json = JsonSerializer.Serialize(
                 emptyFilter,
-                MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                MotelyJsonSerializerContext.Default.JamlRootDocument
             );
             await File.WriteAllTextAsync(tempPath, json);
 
@@ -253,7 +253,7 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = config.DateCreated ?? cachedFilter.LastModified,
+                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc) ? dc : cachedFilter.LastModified,
                     FilePath = cachedFilter.FilePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
@@ -300,7 +300,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                Motely.Filters.MotelyJsonConfig? config = null;
+                Motely.Filters.JamlRootDocument? config = null;
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
                 if (extension == ".jaml")
@@ -325,7 +325,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     config = JsonSerializer.Deserialize(
                         content,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
                 }
 
@@ -337,7 +337,7 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = config.DateCreated ?? File.GetLastWriteTime(filePath),
+                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc2) ? dc2 : File.GetLastWriteTime(filePath),
                     FilePath = filePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause> clauses,
+            List<Motely.Filters.JamlClauseUnion> clauses,
             int? scoreOverride = null
         )
         {
@@ -388,25 +388,13 @@ namespace BalatroSeedOracle.ViewModels
 
             foreach (var clause in clauses)
             {
-                var itemType = clause.Type?.ToLowerInvariant() ?? "";
-                var itemValue = clause.Value;
+                var itemValue = clause.GetValueName();
 
-                // Handle single value
                 if (!string.IsNullOrEmpty(itemValue))
                 {
                     AddItemToCollection(collections, clause, itemValue, scoreOverride);
                 }
 
-                // Handle multiple values
-                if (clause.Values is not null)
-                {
-                    foreach (var value in clause.Values)
-                    {
-                        AddItemToCollection(collections, clause, value, scoreOverride);
-                    }
-                }
-
-                // Recursively handle nested And/Or clauses
                 if (clause.Clauses is not null && clause.Clauses.Count > 0)
                 {
                     var nestedCollections = ParseItemCollections(
@@ -457,28 +445,27 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.MotelyJsonConfig.MotelyJsonFilterClause clause,
+            Motely.Filters.JamlClauseUnion clause,
             string itemValue,
             int? scoreOverride = null
         )
         {
-            var itemType = clause.Type?.ToLowerInvariant() ?? "";
+            var itemType = clause.GetTypeName().ToLowerInvariant();
 
-            // Create ItemConfig from clause data
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemValue,
-                ItemType = clause.Type ?? "",
+                ItemType = clause.GetTypeName(),
                 ItemName = itemValue,
                 Antes = clause.Antes?.ToList(),
-                Edition = clause.Edition ?? "none",
-                Seal = clause.Seal ?? "None",
-                Enhancement = clause.Enhancement ?? "None",
+                Edition = clause.GetEditionString() ?? "none",
+                Seal = clause.GetSealString() ?? "None",
+                Enhancement = clause.GetEnhancementString() ?? "None",
                 Rank = clause.Rank,
                 Suit = clause.Suit,
-                Score = scoreOverride ?? clause.Score,
+                Score = scoreOverride ?? clause.Score ?? 1,
                 Label = clause.Label,
-                Stickers = clause.Stickers is not null ? new List<string>(clause.Stickers) : null,
+                Stickers = clause.GetStickerStrings()?.ToList(),
             };
 
             switch (itemType)

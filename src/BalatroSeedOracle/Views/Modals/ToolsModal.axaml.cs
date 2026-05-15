@@ -97,7 +97,7 @@ namespace BalatroSeedOracle.Views.Modals
                                     text = await reader.ReadToEndAsync().ConfigureAwait(false);
                                 }
 
-                                MotelyJsonConfig? config;
+                                JamlRootDocument? config;
                                 if (extension == ".jaml")
                                 {
                                     if (
@@ -121,7 +121,7 @@ namespace BalatroSeedOracle.Views.Modals
                                 {
                                     config = System.Text.Json.JsonSerializer.Deserialize(
                                         text,
-                                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                                        MotelyJsonSerializerContext.Default.JamlRootDocument
                                     );
 
                                     if (config == null)

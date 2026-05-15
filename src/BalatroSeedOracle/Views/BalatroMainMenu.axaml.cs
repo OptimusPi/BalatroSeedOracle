@@ -569,21 +569,21 @@ namespace BalatroSeedOracle.Views
                     filterId = sanitizedName;
                     var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                    var defaultFilter = new MotelyJsonConfig
+                    var defaultFilter = new JamlRootDocument
                     {
                         Name = filterName,
                         Description = "Created with visual filter builder",
                         Author = "pifreak",
-                        DateCreated = DateTime.UtcNow,
+                        DateCreated = DateTime.UtcNow.ToString("o"),
                         Deck = "Red",
                         Stake = "White",
-                        Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                        Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                        MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                        Must = new System.Collections.Generic.List<JamlClauseUnion>(),
+                        Should = new System.Collections.Generic.List<JamlClauseUnion>(),
+                        MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
                     };
                     var jsonContent = System.Text.Json.JsonSerializer.Serialize(
                         defaultFilter,
-                        MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                        MotelyJsonSerializerContext.Default.JamlRootDocument
                     );
                     System.IO.File.WriteAllText(filterPath, jsonContent);
 
@@ -865,22 +865,22 @@ namespace BalatroSeedOracle.Views
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
 
-                var minimalFilter = new MotelyJsonConfig
+                var minimalFilter = new JamlRootDocument
                 {
                     Name = filterName,
                     Description = "Created with visual filter builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.UtcNow.ToString("o"),
                     Deck = "Red",
                     Stake = "White",
-                    Must = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                    Should = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
-                    MustNot = new System.Collections.Generic.List<MotelyJsonConfig.MotelyJsonFilterClause>(),
+                    Must = new System.Collections.Generic.List<JamlClauseUnion>(),
+                    Should = new System.Collections.Generic.List<JamlClauseUnion>(),
+                    MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
                 };
 
                 var json = System.Text.Json.JsonSerializer.Serialize(
                     minimalFilter,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
 
                 await System.IO.File.WriteAllTextAsync(filterPath, json);
