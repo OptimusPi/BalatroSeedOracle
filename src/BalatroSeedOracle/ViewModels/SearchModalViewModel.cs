@@ -538,11 +538,27 @@ namespace BalatroSeedOracle.ViewModels
             // Update button text when Continue checkbox changes
             OnPropertyChanged(nameof(CookButtonText));
 
-            // If user just enabled Continue while search is NOT running, reset progress.
-            // (Saved-progress restoration was removed when Motely took over DB ownership.)
             if (value && !IsSearching)
             {
-                ProgressPercent = 0.0;
+                var state = _userProfileService.GetSearchState();
+                if (state is not null
+                    && !string.IsNullOrEmpty(CurrentFilterPath)
+                    && string.Equals(state.ConfigPath, CurrentFilterPath, StringComparison.OrdinalIgnoreCase)
+                    && state.TotalBatches > 0)
+                {
+                    ProgressPercent = Math.Clamp(
+                        (double)state.LastCompletedBatch / state.TotalBatches * 100.0,
+                        0.0,
+                        100.0
+                    );
+                    AddConsoleMessage(
+                        $"Saved progress found — batch {state.LastCompletedBatch:N0} of {state.TotalBatches:N0} ({ProgressPercent:F1}%)"
+                    );
+                }
+                else
+                {
+                    ProgressPercent = 0.0;
+                }
             }
         }
 
@@ -699,6 +715,14 @@ namespace BalatroSeedOracle.ViewModels
                     $"Search started with ID: {_currentSearchId}"
                 );
 
+                // Persist initial resume state so the desktop icon comes back even if the
+                // user closes the app before the first periodic save (every 10 batches).
+                if (SelectedSearchMode == SearchMode.AllSeeds
+                    && !string.IsNullOrEmpty(CurrentFilterPath))
+                {
+                    _ = SaveSearchStateBackgroundAsync(0);
+                }
+
                 // Configure search transition (if enabled by user)
                 ConfigureSearchTransition();
             }
@@ -731,7 +755,16 @@ namespace BalatroSeedOracle.ViewModels
                         AddConsoleMessage("Pausing search and saving progress...");
                         BsoLogger.Log("SearchModalViewModel", "Pausing search (saving state)");
 
-                        // The SearchInstance already saves state periodically in OnProgressUpdated
+                        // Capture the latest known batch before stopping so the saved state
+                        // reflects exactly where the user paused, not whatever the last
+                        // every-10-batches tick happened to write.
+                        var pausedSeeds = LatestProgress?.SeedsSearched ?? 0UL;
+                        long pausedBatchSize = (long)Math.Pow(35, BatchSize + 1);
+                        int pausedBatch = pausedBatchSize > 0
+                            ? (int)(pausedSeeds / (ulong)pausedBatchSize)
+                            : 0;
+                        _ = SaveSearchStateBackgroundAsync(pausedBatch);
+
                         // We just need to stop gracefully without clearing the database
                         _searchContext.StopSearch();
                     }
@@ -1217,6 +1250,10 @@ namespace BalatroSeedOracle.ViewModels
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 IsSearching = false;
+
+                // A finished search has nothing to resume — drop the saved state so
+                // the desktop icon doesn't reappear on next launch.
+                _userProfileService.ClearSearchState();
 
                 // CRITICAL FIX: Load any remaining results from DuckDB into ObservableCollection
                 // (Real-time results are already added via OnResultFound, but load any missed ones)
@@ -2028,7 +2065,37 @@ namespace BalatroSeedOracle.ViewModels
 
         private Task SaveSearchStateBackgroundAsync(int currentBatch)
         {
-            // Search state persistence has been removed - Motely now owns all database operations
+            try
+            {
+                if (string.IsNullOrEmpty(CurrentFilterPath))
+                    return Task.CompletedTask;
+
+                var totalBatches = BatchSize >= 0 && BatchSize <= 7
+                    ? (ulong)Math.Pow(35, 7 - BatchSize)
+                    : 0UL;
+
+                var state = new Models.SearchResumeState
+                {
+                    ConfigPath = CurrentFilterPath,
+                    LastCompletedBatch = (ulong)Math.Max(0, currentBatch),
+                    EndBatch = ulong.MaxValue,
+                    BatchSize = BatchSize,
+                    ThreadCount = ThreadCount,
+                    MinScore = MinScore,
+                    Deck = DeckSelection,
+                    Stake = StakeSelection,
+                    LastActiveTime = DateTime.UtcNow,
+                    TotalBatches = totalBatches,
+                };
+                _userProfileService.SaveSearchState(state);
+            }
+            catch (Exception ex)
+            {
+                BsoLogger.LogError(
+                    "SearchModalViewModel",
+                    $"Error saving search state: {ex.Message}"
+                );
+            }
             return Task.CompletedTask;
         }
 
