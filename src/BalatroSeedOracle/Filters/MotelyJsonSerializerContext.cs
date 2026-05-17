@@ -17,6 +17,10 @@ namespace Motely.Filters;
 [JsonSerializable(typeof(List<JamlClauseUnion>))]
 [JsonSerializable(typeof(JamlSources))]
 [JsonSerializable(typeof(JamlDefaults))]
+[JsonSerializable(typeof(MotelyJsonConfig))]
+[JsonSerializable(typeof(MotelyJsonConfig.MotelyJsonFilterClause))]
+[JsonSerializable(typeof(SourcesConfig))]
+[JsonSerializable(typeof(MotelyFilterDefaults))]
 public partial class MotelyJsonSerializerContext : JsonSerializerContext
 {
 }

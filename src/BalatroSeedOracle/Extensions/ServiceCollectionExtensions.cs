@@ -69,7 +69,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<FiltersModalViewModel>(),
                 sp.GetRequiredService<CreditsModalViewModel>(),
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
-                sp.GetService<IApiHostService>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
                 sp.GetService<WidgetPositionService>(),

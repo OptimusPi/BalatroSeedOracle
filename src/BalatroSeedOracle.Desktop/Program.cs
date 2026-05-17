@@ -42,17 +42,9 @@ public class Program
                 // Desktop-only services
                 services.AddSingleton<IAudioManager, DesktopAudioManager>();
                 services.AddSingleton<SoundEffectsService>();
-                services.AddSingleton<
-                    ISequentialLibraryInitializer,
-                    SequentialLibraryInitializerService
-                >();
-                services.AddSingleton<
-                    IRestoreActiveSearchesProvider,
-                    RestoreActiveSearchesProviderService
-                >();
-
-                // API host
-                services.AddSingleton<IApiHostService, DesktopApiHostService>();
+                // Sequential library, restore-active-searches, and in-app API host all
+                // lived behind Motely.DB / Motely.API which are gone. Re-register when
+                // their replacements arrive on top of JamlSearchBuilder.
             };
 
             // Start Avalonia

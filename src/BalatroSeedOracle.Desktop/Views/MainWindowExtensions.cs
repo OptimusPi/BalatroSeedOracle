@@ -78,25 +78,8 @@ public static class MainWindowExtensions
             return;
         }
 
-        // Add API Host Widget
-        if (viewModel.ApiHostWidgetViewModel != null)
-        {
-            var apiHostWidget = new ApiHostWidget
-            {
-                DataContext = viewModel.ApiHostWidgetViewModel,
-                ClipToBounds = false,
-                [Avalonia.Visual.ZIndexProperty] = viewModel.ApiHostWidgetViewModel.WidgetZIndex,
-            };
-
-            BindVisibility(
-                apiHostWidget,
-                viewModel,
-                nameof(BalatroMainMenuViewModel.IsHostApiWidgetVisible),
-                () => viewModel.IsHostApiWidgetVisible
-            );
-            desktopCanvas.Children.Add(apiHostWidget);
-            DebugLogger.Log("DesktopWidgetInit", "Added ApiHostWidget");
-        }
+        // API Host Widget removed alongside Motely.API. The toggle in the menu is
+        // kept as a no-op for now so user preferences round-trip.
 
         // Add Music Mixer Widget
         var musicMixerVm = ServiceHelper.GetService<MusicMixerWidgetViewModel>();

@@ -29,7 +29,7 @@ namespace BalatroSeedOracle.Browser.Interop
                 // Parse Config using AOT-compatible source-generated context
                 var config = JsonSerializer.Deserialize(
                     jamlConfigJson,
-                    MotelyJsonSerializerContext.Default.MotelyJsonConfig
+                    MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
 
                 if (config == null)

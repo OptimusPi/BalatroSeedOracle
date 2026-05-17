@@ -174,40 +174,12 @@ public sealed class SearchManager : IDisposable
 
     public void InitializeLibrary(string seedsPath)
     {
-        if (!_platformServices.SupportsFileSystem)
-        {
-            DebugLogger.Log("SearchManager", "Skipping library initialization (browser)");
-            return;
-        }
-
-        try
-        {
-            var initializer = ServiceHelper.GetService<ISequentialLibraryInitializer>();
-            initializer?.SetLibraryRoot(seedsPath);
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SearchManager", $"Failed to initialize library: {ex.Message}");
-        }
+        DebugLogger.Log("SearchManager", $"InitializeLibrary({seedsPath}) — sequential library not wired in this build");
     }
 
-    public async Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
+    public Task<List<RestoredSearchInfo>> RestoreActiveSearchesAsync(string jamlFiltersDir)
     {
-        var restored = new List<RestoredSearchInfo>();
-        if (!_platformServices.SupportsFileSystem) return restored;
-
-        try
-        {
-            var provider = ServiceHelper.GetService<IRestoreActiveSearchesProvider>();
-            if (provider == null) return restored;
-            restored = await provider.RestoreAsync(jamlFiltersDir).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError("SearchManager", $"Error during search restoration: {ex.Message}");
-        }
-
-        return restored;
+        return Task.FromResult(new List<RestoredSearchInfo>());
     }
 
     public ActiveSearchContext? ResumeSearch(RestoredSearchInfo info, int threads)

@@ -16,7 +16,6 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class ToolsModal : UserControl
     {
         private readonly UserProfileService? _userProfileService;
-        private readonly IApiHostService? _apiHostService;
 
         /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass dependencies.</summary>
         public ToolsModal()
@@ -26,17 +25,15 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (throwForDesignTimeOnly)
                 throw new InvalidOperationException(
-                    "Do not use ToolsModal(). Creator must pass (UserProfileService, IApiHostService)."
+                    "Do not use ToolsModal(). Creator must pass UserProfileService."
                 );
             _userProfileService = null;
-            _apiHostService = null;
             InitializeComponent();
         }
 
-        public ToolsModal(UserProfileService? userProfileService, IApiHostService? apiHostService)
+        public ToolsModal(UserProfileService? userProfileService)
         {
             _userProfileService = userProfileService;
-            _apiHostService = apiHostService;
             InitializeComponent();
         }
 
@@ -282,14 +279,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnWebAppClick(object? sender, RoutedEventArgs e)
         {
-            // Use web app in WebView instead of re-creating: prefer running API (BSO at /BSO), else fallback
-            var url =
-                _apiHostService != null
-                && _apiHostService.IsRunning
-                && !string.IsNullOrWhiteSpace(_apiHostService.ServerUrl)
-                    ? new Uri(new Uri(_apiHostService.ServerUrl.TrimEnd('/')), "BSO/")
-                    : WebAppFallbackUri;
-            OpenWebViewDialog("Web App", url);
+            OpenWebViewDialog("Web App", WebAppFallbackUri);
         }
 
         private void OpenWebViewDialog(string title, Uri source)

@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using BalatroSeedOracle.Desktop.Views;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
+using Motely.Executors;
 
 namespace BalatroSeedOracle.Desktop;
 
@@ -48,6 +49,9 @@ public static class DesktopAppInitializer
     {
         try
         {
+            MultiSearchManager.Instance.SetTotalThreads(Environment.ProcessorCount);
+            DebugLogger.Log("App", $"Thread budget set to: {Environment.ProcessorCount}");
+
             var searchManager = App.GetService<SearchManager>();
             if (searchManager != null)
             {
