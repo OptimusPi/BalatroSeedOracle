@@ -87,56 +87,56 @@ internal static class JamlClauseUnionExt
         switch (type?.ToLowerInvariant())
         {
             case "joker":
-                if (isAny) c.Joker = Motely.Filters.EnumOrAny<Motely.MotelyJoker>.Any;
-                else if (Enum.TryParse<Motely.MotelyJoker>(value, true, out var jv)) c.Joker = Motely.Filters.EnumOrAny<Motely.MotelyJoker>.Of(jv);
+                if (isAny) c.Joker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJoker>.Any;
+                else if (Enum.TryParse<Motely.Enums.MotelyJoker>(value, true, out var jv)) c.Joker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJoker>.Of(jv);
                 break;
             case "commonjoker":
-                if (isAny) c.CommonJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerCommon>.Any;
-                else if (Enum.TryParse<Motely.MotelyJokerCommon>(value, true, out var cjv)) c.CommonJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerCommon>.Of(cjv);
+                if (isAny) c.CommonJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerCommon>.Any;
+                else if (Enum.TryParse<Motely.Enums.MotelyJokerCommon>(value, true, out var cjv)) c.CommonJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerCommon>.Of(cjv);
                 break;
             case "uncommonjoker":
-                if (isAny) c.UncommonJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerUncommon>.Any;
-                else if (Enum.TryParse<Motely.MotelyJokerUncommon>(value, true, out var ujv)) c.UncommonJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerUncommon>.Of(ujv);
+                if (isAny) c.UncommonJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerUncommon>.Any;
+                else if (Enum.TryParse<Motely.Enums.MotelyJokerUncommon>(value, true, out var ujv)) c.UncommonJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerUncommon>.Of(ujv);
                 break;
             case "rarejoker":
-                if (isAny) c.RareJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerRare>.Any;
-                else if (Enum.TryParse<Motely.MotelyJokerRare>(value, true, out var rjv)) c.RareJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerRare>.Of(rjv);
+                if (isAny) c.RareJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerRare>.Any;
+                else if (Enum.TryParse<Motely.Enums.MotelyJokerRare>(value, true, out var rjv)) c.RareJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerRare>.Of(rjv);
                 break;
             case "legendaryjoker":
             case "souljoker":
-                if (isAny) c.LegendaryJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerLegendary>.Any;
-                else if (Enum.TryParse<Motely.MotelyJokerLegendary>(value, true, out var ljv)) c.LegendaryJoker = Motely.Filters.EnumOrAny<Motely.MotelyJokerLegendary>.Of(ljv);
+                if (isAny) c.LegendaryJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerLegendary>.Any;
+                else if (Enum.TryParse<Motely.Enums.MotelyJokerLegendary>(value, true, out var ljv)) c.LegendaryJoker = Motely.Filters.Jaml.EnumOrAny<Motely.Enums.MotelyJokerLegendary>.Of(ljv);
                 break;
             case "voucher":
-                if (Enum.TryParse<Motely.MotelyVoucher>(value, true, out var vv)) c.Voucher = vv;
+                if (Enum.TryParse<Motely.Enums.MotelyVoucher>(value, true, out var vv)) c.Voucher = vv;
                 break;
             case "tarot":
             case "tarotcard":
-                if (Enum.TryParse<Motely.MotelyTarotCard>(value, true, out var tv)) c.TarotCard = tv;
+                if (Enum.TryParse<Motely.Enums.MotelyTarotCard>(value, true, out var tv)) c.TarotCard = tv;
                 break;
             case "spectral":
             case "spectralcard":
-                if (Enum.TryParse<Motely.MotelySpectralCard>(value, true, out var sv)) c.SpectralCard = sv;
+                if (Enum.TryParse<Motely.Enums.MotelySpectralCard>(value, true, out var sv)) c.SpectralCard = sv;
                 break;
             case "planet":
             case "planetcard":
-                if (Enum.TryParse<Motely.MotelyPlanetCard>(value, true, out var pv)) c.PlanetCard = pv;
+                if (Enum.TryParse<Motely.Enums.MotelyPlanetCard>(value, true, out var pv)) c.PlanetCard = pv;
                 break;
             case "boss":
-                if (Enum.TryParse<Motely.MotelyBossBlind>(value, true, out var bv)) c.Boss = bv;
+                if (Enum.TryParse<Motely.Enums.MotelyBossBlind>(value, true, out var bv)) c.Boss = bv;
                 break;
             case "tag":
-                if (Enum.TryParse<Motely.MotelyTag>(value, true, out var tgv)) c.Tag = tgv;
+                if (Enum.TryParse<Motely.Enums.MotelyTag>(value, true, out var tgv)) c.Tag = tgv;
                 break;
             case "smallblindtag":
-                if (Enum.TryParse<Motely.MotelyTag>(value, true, out var sbtv)) c.SmallBlindTag = sbtv;
+                if (Enum.TryParse<Motely.Enums.MotelyTag>(value, true, out var sbtv)) c.SmallBlindTag = sbtv;
                 break;
             case "bigblindtag":
-                if (Enum.TryParse<Motely.MotelyTag>(value, true, out var bbtv)) c.BigBlindTag = bbtv;
+                if (Enum.TryParse<Motely.Enums.MotelyTag>(value, true, out var bbtv)) c.BigBlindTag = bbtv;
                 break;
             case "standardcard":
             case "playingcard":
-                c.StandardCard = new Motely.Filters.StandardCardValue { StringValue = value };
+                c.StandardCard = new Motely.Filters.Jaml.StandardCardValue { StringValue = value };
                 break;
             case "erraticrank":
                 c.ErraticRank = value;
@@ -151,7 +151,7 @@ internal static class JamlClauseUnionExt
                 c.StartingDraw = value;
                 break;
             case "event":
-                if (Enum.TryParse<Motely.MotelyEventType>(value, true, out var ev)) c.Event = ev;
+                if (Enum.TryParse<Motely.Enums.MotelyEventType>(value, true, out var ev)) c.Event = ev;
                 break;
         }
     }
@@ -162,7 +162,7 @@ internal static class JamlClauseUnionExt
     {
         if (string.IsNullOrEmpty(value) || value.Equals("None", StringComparison.OrdinalIgnoreCase) || value.Equals("none", StringComparison.Ordinal))
             c.Edition = null;
-        else if (Enum.TryParse<Motely.MotelyItemEdition>(value, true, out var e))
+        else if (Enum.TryParse<Motely.Enums.MotelyItemEdition>(value, true, out var e))
             c.Edition = e;
     }
 
@@ -172,7 +172,7 @@ internal static class JamlClauseUnionExt
     {
         if (string.IsNullOrEmpty(value) || value.Equals("None", StringComparison.OrdinalIgnoreCase))
             c.Seal = null;
-        else if (Enum.TryParse<Motely.MotelyItemSeal>(value, true, out var s))
+        else if (Enum.TryParse<Motely.Enums.MotelyItemSeal>(value, true, out var s))
             c.Seal = s;
     }
 
@@ -182,7 +182,7 @@ internal static class JamlClauseUnionExt
     {
         if (string.IsNullOrEmpty(value) || value.Equals("None", StringComparison.OrdinalIgnoreCase))
             c.Enhancement = null;
-        else if (Enum.TryParse<Motely.MotelyItemEnhancement>(value, true, out var en))
+        else if (Enum.TryParse<Motely.Enums.MotelyItemEnhancement>(value, true, out var en))
             c.Enhancement = en;
     }
 
@@ -192,9 +192,9 @@ internal static class JamlClauseUnionExt
     public static void SetStickerStrings(this JamlClauseUnion c, string[]? value)
     {
         if (value is null || value.Length == 0) { c.Stickers = null; return; }
-        var result = new System.Collections.Generic.List<Motely.MotelyJokerSticker>(value.Length);
+        var result = new System.Collections.Generic.List<Motely.Enums.MotelyJokerSticker>(value.Length);
         foreach (var s in value)
-            if (Enum.TryParse<Motely.MotelyJokerSticker>(s, true, out var st)) result.Add(st);
+            if (Enum.TryParse<Motely.Enums.MotelyJokerSticker>(s, true, out var st)) result.Add(st);
         c.Stickers = result.Count > 0 ? result.ToArray() : null;
     }
 }

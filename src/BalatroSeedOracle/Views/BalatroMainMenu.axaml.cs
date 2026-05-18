@@ -2202,8 +2202,7 @@ namespace BalatroSeedOracle.Views
                 // Remove focus from textbox
                 if (sender is TextBox textBox)
                 {
-                    var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
-                    focusManager?.ClearFocus();
+                    TopLevel.GetTopLevel(this)?.Focus();
                 }
             }
             else if (e.Key == Key.Escape)

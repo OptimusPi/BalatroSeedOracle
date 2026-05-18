@@ -114,7 +114,7 @@ namespace BalatroSeedOracle.ViewModels
             var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.JamlRootDocument
+            var emptyFilter = new Motely.Filters.Jaml.JamlRootDocument
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
@@ -123,11 +123,11 @@ namespace BalatroSeedOracle.ViewModels
                     ?? "Unknown",
                 DateCreated = DateTime.UtcNow.ToString("o"),
                 Must =
-                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
+                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
                 Should =
-                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
+                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
                 MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.JamlClauseUnion>(),
+                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
             };
 
             var json = JsonSerializer.Serialize(
@@ -300,7 +300,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                Motely.Filters.JamlRootDocument? config = null;
+                Motely.Filters.Jaml.JamlRootDocument? config = null;
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
                 if (extension == ".jaml")
@@ -380,7 +380,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.JamlClauseUnion> clauses,
+            List<Motely.Filters.Jaml.JamlClauseUnion> clauses,
             int? scoreOverride = null
         )
         {
@@ -445,7 +445,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.JamlClauseUnion clause,
+            Motely.Filters.Jaml.JamlClauseUnion clause,
             string itemValue,
             int? scoreOverride = null
         )

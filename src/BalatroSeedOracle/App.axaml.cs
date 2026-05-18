@@ -75,9 +75,7 @@ public partial class App : Application
             // Initialize filter cache (works on all platforms)
             InitializeFilterCache();
 
-            // Line below is needed to remove Avalonia data validation.
-            // Without this line you will get duplicate validations from both Avalonia and CT
-            BindingPlugins.DataValidators.RemoveAt(0);
+            // Avalonia 12: BindingPlugins is internal; DataAnnotations validator is no longer registered by default.
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {

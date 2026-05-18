@@ -1410,7 +1410,7 @@
         </Style>
 
         <Style Selector="Popup">
-            <Setter Property="PlacementMode" Value="AnchorAndGravity"/>
+            <Setter Property="Placement" Value="AnchorAndGravity"/>
         </Style>
 
         <Style Selector="ToolTip">

@@ -128,7 +128,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.JamlRootDocument>(
+                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlRootDocument>(
                         filePath
                     );
                 return config != null;

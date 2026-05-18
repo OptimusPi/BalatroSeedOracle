@@ -1510,7 +1510,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         darkBg ?? new Avalonia.Media.SolidColorBrush(Color.FromRgb(45, 54, 59)),
                     Title = "Start Over?",
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.None },
-                    SystemDecorations = SystemDecorations.Full,
+                    WindowDecorations = WindowDecorations.Full,
                 };
 
                 var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 20 };
@@ -2407,8 +2407,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     // Remove focus from textbox
                     if (sender is TextBox textBox)
                     {
-                        var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
-                        focusManager?.ClearFocus();
+                        TopLevel.GetTopLevel(this)?.Focus();
                     }
                 }
                 else if (e.Key == Key.Escape)

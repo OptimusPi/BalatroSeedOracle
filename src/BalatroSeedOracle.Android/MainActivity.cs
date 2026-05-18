@@ -20,24 +20,19 @@ namespace BalatroSeedOracle.Android;
         | ConfigChanges.ScreenSize
         | ConfigChanges.UiMode
 )]
-public class MainActivity : AvaloniaMainActivity<App>
+public class MainActivity : AvaloniaMainActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        base.OnCreate(savedInstanceState);
-    }
-
-    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-    {
-        // Register Android-specific services following Avalonia cross-platform pattern
+        // Avalonia 12 dropped AvaloniaMainActivity<TApp>/CustomizeAppBuilder.
+        // Register Android-specific services before Avalonia initializes.
         PlatformServices.RegisterServices = services =>
         {
-            // Android-specific implementations (in Android/Services folder)
             services.AddSingleton<IAppDataStore, AndroidAppDataStore>();
             services.AddSingleton<IPlatformServices, AndroidPlatformServices>();
             services.AddSingleton<IAudioManager, AndroidAudioManager>();
         };
 
-        return base.CustomizeAppBuilder(builder);
+        base.OnCreate(savedInstanceState);
     }
 }

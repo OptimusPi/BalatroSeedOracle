@@ -10,13 +10,12 @@ using Avalonia.VisualTree;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Models;
 
-#pragma warning disable CS0618 // Suppress obsolete warnings for DataObject/DragDrop - new DataTransfer API not fully available in Avalonia 11.3
-
 namespace BalatroSeedOracle.Components
 {
     public partial class FilterOperatorControl : UserControl
     {
-        private const string FilterItemFormatId = "BalatroSeedOracle.FilterItem";
+        private static readonly DataFormat<FilterItem> FilterItemFormat =
+            DataFormat.CreateInProcessFormat<FilterItem>("BalatroSeedOracle.FilterItem");
 
         public FilterOperatorControl()
         {
@@ -106,11 +105,9 @@ namespace BalatroSeedOracle.Components
                 {
                     if (source is Border border && border.DataContext is FilterItem item)
                     {
-                        // Start drag operation for this individual card
-                        var data = new DataObject();
-                        data.Set(FilterItemFormatId, item);
-
-                        await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+                        var dt = new DataTransfer();
+                        dt.Add(DataTransferItem.Create(FilterItemFormat, item));
+                        await DragDrop.DoDragDropAsync(e, dt, DragDropEffects.Move);
                         e.Handled = true;
                         return;
                     }
@@ -257,9 +254,9 @@ namespace BalatroSeedOracle.Components
         private void OnChildrenDragOver(object? sender, DragEventArgs e)
         {
             // Only allow FilterItems (not operators) to be dropped here
-            if (e.Data.Contains(FilterItemFormatId))
+            if (e.DataTransfer is not null && e.DataTransfer.Contains(FilterItemFormat))
             {
-                var item = e.Data.Get(FilterItemFormatId) as FilterItem;
+                var item = e.DataTransfer.TryGetValue(FilterItemFormat);
                 if (item is not null and not FilterOperatorItem)
                 {
                     e.DragEffects = DragDropEffects.Move;
@@ -312,9 +309,9 @@ namespace BalatroSeedOracle.Components
                 OperatorContainer.Classes.Remove("drag-over");
             }
 
-            if (e.Data.Contains(FilterItemFormatId))
+            if (e.DataTransfer is not null && e.DataTransfer.Contains(FilterItemFormat))
             {
-                var item = e.Data.Get(FilterItemFormatId) as FilterItem;
+                var item = e.DataTransfer.TryGetValue(FilterItemFormat);
                 if (item is not null and not FilterOperatorItem)
                 {
                     // Get the operator item from DataContext

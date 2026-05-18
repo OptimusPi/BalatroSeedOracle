@@ -18,15 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MotelyJAML", "MotelyJAML", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely", "src\MotelyJAML\Motely\Motely.csproj", "{EDC7B3DB-A702-4B21-1617-CF0073CD45B3}"
 EndProject
-<<<<<<< HEAD
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.CLI", "src\MotelyJAML\Motely.CLI\Motely.CLI.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.DataLake", "src\MotelyJAML\Motely.DataLake\Motely.DataLake.csproj", "{C3D4E5F6-A7B8-9012-CDEF-123456789012}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.Wasm", "src\MotelyJAML\Motely.Wasm\Motely.Wasm.csproj", "{E8AFF8C0-8A08-EF5F-1857-CC83539C61E1}"
-EndProject
-=======
->>>>>>> origin/claude/revive-avalonia-app-7W1Mw
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.Tests", "src\MotelyJAML\Motely.Tests\Motely.Tests.csproj", "{49688DA2-4307-246E-963D-4C09A7C3DAB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Motely.TUI", "src\MotelyJAML\Motely.TUI\Motely.TUI.csproj", "{287004BE-1C2A-7335-791E-EC405C0D9760}"

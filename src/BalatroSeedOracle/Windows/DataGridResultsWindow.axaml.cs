@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
@@ -708,7 +709,7 @@ LIMIT 50;",
                 try
                 {
                     // Find the main window and show as modal
-                    var mainWindow = this.GetVisualRoot() as Views.MainWindow;
+                    var mainWindow = TopLevel.GetTopLevel(this) as Views.MainWindow;
                     var mainMenu = mainWindow?.MainMenu;
 
                     if (mainMenu != null)

@@ -29,16 +29,16 @@ namespace BalatroSeedOracle.Converters
                 var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
                 return item.TypeCategory switch
                 {
-                    Motely.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(
+                    Motely.Enums.MotelyItemTypeCategory.Joker => spriteService.GetJokerImage(
                         item.SpriteKey
                     ),
-                    Motely.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
+                    Motely.Enums.MotelyItemTypeCategory.TarotCard => spriteService.GetTarotImage(
                         item.SpriteKey
                     ),
-                    Motely.MotelyItemTypeCategory.PlanetCard => spriteService.GetPlanetCardImage(
+                    Motely.Enums.MotelyItemTypeCategory.PlanetCard => spriteService.GetPlanetCardImage(
                         item.SpriteKey
                     ),
-                    Motely.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(
+                    Motely.Enums.MotelyItemTypeCategory.SpectralCard => spriteService.GetSpectralImage(
                         item.SpriteKey
                     ),
                     _ => null,

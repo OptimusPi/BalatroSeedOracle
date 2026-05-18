@@ -402,7 +402,7 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private void LoadItemsFromConfig(
-            List<Motely.Filters.JamlClauseUnion> items,
+            List<Motely.Filters.Jaml.JamlClauseUnion> items,
             ObservableCollection<FilterItemViewModel> collection,
             SpriteService? spriteService
         )
@@ -504,7 +504,7 @@ namespace BalatroSeedOracle.ViewModels
                 FilterItems.Clear();
 
                 // Get the items list for the selected tab
-                List<Motely.Filters.JamlClauseUnion>? items = tabType switch
+                List<Motely.Filters.Jaml.JamlClauseUnion>? items = tabType switch
                 {
                     "must_have" => config.Must,
                     "should_have" => config.Should,

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;

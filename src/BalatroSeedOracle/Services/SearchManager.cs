@@ -97,7 +97,7 @@ public sealed class SearchManager : IDisposable
     private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, JamlRootDocument config)
     {
         var yaml = JamlFormatter.Format(config);
-        if (!Motely.Filters.JamlConfigLoader.TryLoad(yaml, out var jamlConfig, out var conversionError) || jamlConfig is null)
+        if (!Motely.Filters.Jaml.JamlConfigLoader.TryLoad(yaml, out var jamlConfig, out var conversionError) || jamlConfig is null)
         {
             DebugLogger.LogError("SearchManager", $"Failed to parse JAML: {conversionError}");
             throw new InvalidOperationException($"Filter config could not be parsed as JAML: {conversionError}");

@@ -94,11 +94,11 @@ namespace BalatroSeedOracle.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedDeckIndex))]
-        private Motely.MotelyDeck _selectedDeck = MotelyDeck.Red;
+        private Motely.Enums.MotelyDeck _selectedDeck = MotelyDeck.Red;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(SelectedStakeIndex))]
-        private Motely.MotelyStake _selectedStake = MotelyStake.White;
+        private Motely.Enums.MotelyStake _selectedStake = MotelyStake.White;
 
         // Tab visibility properties - proper MVVM pattern
         [ObservableProperty]
@@ -206,7 +206,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 if (value >= 0 && value <= 14) // 0-14 for 15 decks
                 {
-                    SelectedDeck = (Motely.MotelyDeck)value;
+                    SelectedDeck = (Motely.Enums.MotelyDeck)value;
                 }
             }
         }
@@ -274,7 +274,7 @@ namespace BalatroSeedOracle.ViewModels
             FilterNameDisplayMode = !value;
         }
 
-        partial void OnSelectedDeckChanged(Motely.MotelyDeck value)
+        partial void OnSelectedDeckChanged(Motely.Enums.MotelyDeck value)
         {
             BsoLogger.Log("FiltersModalViewModel", $"Deck changed to: {value}");
             if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
@@ -283,7 +283,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        partial void OnSelectedStakeChanged(Motely.MotelyStake value)
+        partial void OnSelectedStakeChanged(Motely.Enums.MotelyStake value)
         {
             BsoLogger.Log("FiltersModalViewModel", $"Stake changed to: {value}");
             if (JamlEditorTab is FilterTabs.JamlEditorTabViewModel jamlVm)
@@ -441,14 +441,14 @@ namespace BalatroSeedOracle.ViewModels
                 // Convert string deck/stake to enum values
                 if (
                     !string.IsNullOrEmpty(config.Deck)
-                    && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck)
+                    && Enum.TryParse<Motely.Enums.MotelyDeck>(config.Deck, true, out var deck)
                 )
                 {
                     SelectedDeck = deck;
                 }
                 if (
                     !string.IsNullOrEmpty(config.Stake)
-                    && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake)
+                    && Enum.TryParse<Motely.Enums.MotelyStake>(config.Stake, true, out var stake)
                 )
                 {
                     SelectedStake = stake;
@@ -571,7 +571,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void PopulateFilterTabs(Motely.Filters.JamlRootDocument config)
+        private void PopulateFilterTabs(Motely.Filters.Jaml.JamlRootDocument config)
         {
             MustHaveItems.Items.Clear();
             ShouldHaveItems.Items.Clear();
@@ -640,7 +640,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.JamlRootDocument>(
+                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlRootDocument>(
                         CurrentFilterPath
                     );
                 if (config is not null)
@@ -913,12 +913,12 @@ namespace BalatroSeedOracle.ViewModels
         /// Builds JamlRootDocument from current ViewModel state
         /// Called by code-behind and ViewModel methods
         /// </summary>
-        public Motely.Filters.JamlRootDocument BuildConfigFromCurrentState()
+        public Motely.Filters.Jaml.JamlRootDocument BuildConfigFromCurrentState()
         {
             var userProfileService = ServiceHelper.GetService<UserProfileService>();
             var author = userProfileService?.GetAuthorName() ?? "Unknown";
 
-            var config = new Motely.Filters.JamlRootDocument
+            var config = new Motely.Filters.Jaml.JamlRootDocument
             {
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
@@ -1241,7 +1241,7 @@ namespace BalatroSeedOracle.ViewModels
             return clause;
         }
 
-        public void LoadConfigIntoState(Motely.Filters.JamlRootDocument config)
+        public void LoadConfigIntoState(Motely.Filters.Jaml.JamlRootDocument config)
         {
             // Clear current state
             ClearAllSelections();
@@ -1257,14 +1257,14 @@ namespace BalatroSeedOracle.ViewModels
             // Load deck and stake from JSON strings → parse to enums
             if (
                 !string.IsNullOrEmpty(config.Deck)
-                && Enum.TryParse<Motely.MotelyDeck>(config.Deck, true, out var deck)
+                && Enum.TryParse<Motely.Enums.MotelyDeck>(config.Deck, true, out var deck)
             )
             {
                 SelectedDeck = deck;
             }
             if (
                 !string.IsNullOrEmpty(config.Stake)
-                && Enum.TryParse<Motely.MotelyStake>(config.Stake, true, out var stake)
+                && Enum.TryParse<Motely.Enums.MotelyStake>(config.Stake, true, out var stake)
             )
             {
                 SelectedStake = stake;

@@ -492,7 +492,7 @@ namespace BalatroSeedOracle.ViewModels
                     Height = 250,
                     CanResize = false,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SystemDecorations = SystemDecorations.None,
+                    WindowDecorations = WindowDecorations.None,
                     Background = Avalonia.Media.Brushes.Transparent,
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 };

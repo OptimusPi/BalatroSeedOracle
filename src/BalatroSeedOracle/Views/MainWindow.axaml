@@ -64,7 +64,6 @@
             </Grid>
         </Border>
 
-        <AdornerLayer />
     </Panel>
     
 </Window>

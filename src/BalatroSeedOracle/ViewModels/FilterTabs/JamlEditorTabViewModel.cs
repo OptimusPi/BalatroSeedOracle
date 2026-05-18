@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;

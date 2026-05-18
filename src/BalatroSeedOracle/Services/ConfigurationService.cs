@@ -68,7 +68,7 @@ namespace BalatroSeedOracle.Services
                     EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
                 }
 
-                if (config is Motely.Filters.JamlRootDocument motelyConfig)
+                if (config is Motely.Filters.Jaml.JamlRootDocument motelyConfig)
                 {
                     // Use FilterSerializationService for consistent, clean JSON output
                     // This omits null properties, empty arrays, and empty strings
@@ -141,7 +141,7 @@ namespace BalatroSeedOracle.Services
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
-                    if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
+                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
                     {
                         // AOT-compatible: Use Motely's source-generated serializer context
                         var config = JsonSerializer.Deserialize(
@@ -159,7 +159,7 @@ namespace BalatroSeedOracle.Services
                         return null;
 
                     // For JamlRootDocument, try cache first for better performance
-                    if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
+                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
                     {
                         if (_filterCacheService is not null)
                         {
@@ -174,7 +174,7 @@ namespace BalatroSeedOracle.Services
                     // Fallback to disk loading
                     return await Task.Run(() =>
                     {
-                        if (typeof(T) == typeof(Motely.Filters.JamlRootDocument))
+                        if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
                         {
                             try
                             {

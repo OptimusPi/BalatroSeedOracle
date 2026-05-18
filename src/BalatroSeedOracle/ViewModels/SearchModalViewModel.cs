@@ -9,6 +9,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using BalatroSeedOracle.Extensions;
 using BalatroSeedOracle.Helpers;
@@ -60,7 +61,7 @@ namespace BalatroSeedOracle.ViewModels
         private bool _isSearching = false;
 
         [ObservableProperty]
-        private Motely.Filters.JamlRootDocument? _loadedConfig;
+        private Motely.Filters.Jaml.JamlRootDocument? _loadedConfig;
 
         [ObservableProperty]
         private int _selectedTabIndex = 0;
@@ -1809,7 +1810,7 @@ namespace BalatroSeedOracle.ViewModels
                 var content =
                     await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
-                Motely.Filters.JamlRootDocument? config = null;
+                Motely.Filters.Jaml.JamlRootDocument? config = null;
                 var extension = Path.GetExtension(configPath).ToLowerInvariant();
                 if (extension == ".jaml")
                 {
@@ -1833,7 +1834,7 @@ namespace BalatroSeedOracle.ViewModels
                 else
                 {
                     config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.JamlRootDocument>(
+                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.Jaml.JamlRootDocument>(
                             content
                         );
                 }

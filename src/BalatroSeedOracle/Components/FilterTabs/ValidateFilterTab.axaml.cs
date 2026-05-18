@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels.FilterTabs;

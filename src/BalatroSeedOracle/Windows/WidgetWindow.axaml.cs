@@ -51,7 +51,7 @@ namespace BalatroSeedOracle.Windows
                 Owner = desktop.MainWindow;
             }
 
-            SystemDecorations = SystemDecorations.None;
+            WindowDecorations = WindowDecorations.None;
             // TransparencyLevelHint = WindowTransparencyLevel.Transparent;
             Background = Brushes.Transparent;
 

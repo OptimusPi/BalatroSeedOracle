@@ -77,7 +77,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             // Check if files are being dragged
             e.DragEffects =
-                e.Data.GetFiles()?.Any() == true ? DragDropEffects.Copy : DragDropEffects.None;
+                e.DataTransfer?.TryGetFiles()?.Any() == true ? DragDropEffects.Copy : DragDropEffects.None;
             e.Handled = true;
         }
 
@@ -85,7 +85,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var files = e.Data.GetFiles();
+                var files = e.DataTransfer?.TryGetFiles();
                 if (files == null)
                     return;
 
@@ -192,7 +192,7 @@ namespace BalatroSeedOracle.Views.Modals
                     SizeToContent = SizeToContent.Height,
                     CanResize = false,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SystemDecorations = SystemDecorations.None,
+                    WindowDecorations = WindowDecorations.None,
                     Background = Brushes.Transparent,
                     TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
                 };

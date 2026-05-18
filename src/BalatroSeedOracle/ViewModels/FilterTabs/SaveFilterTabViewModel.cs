@@ -757,7 +757,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private string GetDeckName(int index)
         {
             if (index >= 0 && index <= 14)
-                return ((Motely.MotelyDeck)index).ToString();
+                return ((Motely.Enums.MotelyDeck)index).ToString();
             return "Red";
         }
 
@@ -766,15 +766,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             var stake = index switch
             {
-                0 => Motely.MotelyStake.White,
-                1 => Motely.MotelyStake.Red,
-                2 => Motely.MotelyStake.Green,
-                3 => Motely.MotelyStake.Black,
-                4 => Motely.MotelyStake.Blue,
-                5 => Motely.MotelyStake.Purple,
-                6 => Motely.MotelyStake.Orange,
-                7 => Motely.MotelyStake.Gold,
-                _ => Motely.MotelyStake.White,
+                0 => Motely.Enums.MotelyStake.White,
+                1 => Motely.Enums.MotelyStake.Red,
+                2 => Motely.Enums.MotelyStake.Green,
+                3 => Motely.Enums.MotelyStake.Black,
+                4 => Motely.Enums.MotelyStake.Blue,
+                5 => Motely.Enums.MotelyStake.Purple,
+                6 => Motely.Enums.MotelyStake.Orange,
+                7 => Motely.Enums.MotelyStake.Gold,
+                _ => Motely.Enums.MotelyStake.White,
             };
             return stake.ToString().ToLower();
         }

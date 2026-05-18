@@ -97,7 +97,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.JamlRootDocument config
+            Motely.Filters.Jaml.JamlRootDocument config
         )
         {
             var filtersContent = new Views.Modals.FiltersModal(
@@ -112,7 +112,7 @@ namespace BalatroSeedOracle.Helpers
 
         private static async Task LoadFilterForEditingAsync(
             Views.Modals.FiltersModal filtersContent,
-            Motely.Filters.JamlRootDocument config
+            Motely.Filters.Jaml.JamlRootDocument config
         )
         {
             try
@@ -192,7 +192,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.JamlRootDocument config
+            Motely.Filters.Jaml.JamlRootDocument config
         )
         {
             // This method should not be used - filters must be saved first!
@@ -343,7 +343,7 @@ namespace BalatroSeedOracle.Helpers
                 Height = 180,
                 CanResize = false,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                SystemDecorations = SystemDecorations.None,
+                WindowDecorations = WindowDecorations.None,
                 Background = Avalonia.Media.Brushes.Transparent,
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
             };

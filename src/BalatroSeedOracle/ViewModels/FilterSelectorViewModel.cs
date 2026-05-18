@@ -214,7 +214,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a fanned preview image showing multiple cards from the filter config
         /// </summary>
-        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.JamlRootDocument config)
+        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.Jaml.JamlRootDocument config)
         {
             try
             {
@@ -342,7 +342,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Gets a fallback single image preview from the filter config
         /// </summary>
-        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.JamlRootDocument config)
+        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.Jaml.JamlRootDocument config)
         {
             try
             {
