@@ -1,0 +1,29 @@
+END USER LICENSE AGREEMENT
+Balatro Seed Oracle
+Copyright (C) 2025 OptimusPi
+
+This software is free software licensed under the GNU General Public License version 3 (GPL-3.0).
+
+You are free to:
+  - Use this software for any purpose
+  - Study how it works and modify it
+  - Redistribute copies to help others
+  - Distribute your modified versions
+
+This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under the conditions specified in the GPL-3.0 license.
+
+For the complete license terms, visit: https://www.gnu.org/licenses/gpl-3.0.html
+
+Source code is available at: https://github.com/OptimusPi/BalatroSeedOracle
+
+By installing and using this software, you acknowledge that you have read and agree to the terms of the GNU General Public License version 3.
+
+--
+
+DISCLAIMER OF WARRANTY
+
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+LIMITATION OF LIABILITY
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM.

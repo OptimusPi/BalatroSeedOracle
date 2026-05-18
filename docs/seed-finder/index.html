@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Balatro Seed Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header>
+  <h1>Balatro Seed Finder</h1>
+  <p class="sub">Write a JAML filter, hit search, watch matches stream in. Runs entirely in your browser via <a href="https://www.npmjs.com/package/motely-wasm">motely-wasm</a>.</p>
+  <p id="boot-status" class="boot">Booting motely-wasm&hellip;</p>
+</header>
+
+<main>
+  <section class="editor">
+    <div class="row">
+      <h2>Filter (JAML)</h2>
+      <span id="validate-status"></span>
+    </div>
+    <textarea id="jaml" spellcheck="false"></textarea>
+    <div class="controls">
+      <button id="validate">Validate</button>
+      <button id="search" disabled>Start search</button>
+      <button id="stop" disabled>Stop</button>
+      <label class="batch">
+        Batch size:
+        <input id="batch" type="number" min="1" max="7" value="3">
+      </label>
+    </div>
+  </section>
+
+  <section class="output">
+    <div class="row">
+      <h2>Progress</h2>
+      <span id="progress-text">idle</span>
+    </div>
+    <progress id="progress" value="0" max="100"></progress>
+
+    <div class="row">
+      <h2>Matches (<span id="match-count">0</span>)</h2>
+    </div>
+    <table id="results">
+      <thead><tr><th>Seed</th><th>Score</th><th>Tallies</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+  <p>
+    <a href="https://github.com/OptimusPi/BalatroSeedOracle">source</a> &middot;
+    <a href="./motely-wasm/jaml.schema.json">jaml.schema.json</a> &middot;
+    <a href="https://github.com/OptimusPi/MotelyJAML">MotelyJAML</a>
+  </p>
+</footer>
+
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>

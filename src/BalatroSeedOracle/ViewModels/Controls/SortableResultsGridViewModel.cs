@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
@@ -396,41 +395,29 @@ namespace BalatroSeedOracle.ViewModels.Controls
         {
             var source = new FlatTreeDataGridSource<SearchResult>(DisplayedResults);
 
-            // Fixed columns: Seed and TotalScore
-            source.Columns.Add(
-                new TextColumn<SearchResult, string>(
-                    "SEED",
-                    x => x.Seed,
-                    width: new GridLength(120)
-                )
-            );
+            source.WithTextColumn<SearchResult, string>(
+                "SEED",
+                x => x.Seed,
+                o => o.Width = new GridLength(120));
 
-            source.Columns.Add(
-                new TextColumn<SearchResult, int>(
-                    "SCORE",
-                    x => x.TotalScore,
-                    width: new GridLength(80)
-                )
-            );
+            source.WithTextColumn<SearchResult, int>(
+                "SCORE",
+                x => x.TotalScore,
+                o => o.Width = new GridLength(80));
 
-            // Dynamic tally columns from Labels
             if (_currentLabels is not null)
             {
                 for (int i = 0; i < _currentLabels.Length; i++)
                 {
-                    var index = i; // Capture for closure
+                    var index = i;
                     var label = _currentLabels[i];
 
-                    source.Columns.Add(
-                        new TextColumn<SearchResult, string>(
-                            label.ToUpperInvariant(),
-                            x =>
-                                (x.Scores != null && index < x.Scores.Length)
-                                    ? x.Scores[index].ToString()
-                                    : "-",
-                            width: new GridLength(70)
-                        )
-                    );
+                    source.WithTextColumn<SearchResult, string>(
+                        label.ToUpperInvariant(),
+                        x => (x.Scores != null && index < x.Scores.Length)
+                            ? x.Scores[index].ToString()
+                            : "-",
+                        o => o.Width = new GridLength(70));
                 }
             }
 
