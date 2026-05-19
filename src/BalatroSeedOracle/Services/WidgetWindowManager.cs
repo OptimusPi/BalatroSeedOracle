@@ -17,12 +17,9 @@ namespace BalatroSeedOracle.Services
         private readonly List<BaseWidgetViewModel> _activeWidgets = new();
         private readonly WidgetPositionService _positionService;
 
-        public static WidgetWindowManager Instance { get; } = new();
-
-        private WidgetWindowManager()
+        public WidgetWindowManager(WidgetPositionService positionService)
         {
-            _positionService =
-                ServiceHelper.GetService<WidgetPositionService>() ?? new WidgetPositionService();
+            _positionService = positionService;
         }
 
         /// <summary>

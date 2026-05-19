@@ -45,6 +45,10 @@ public partial class App : Application
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
 
+            // Eagerly construct singletons that publish a static .Instance for
+            // XAML-constructed callers (converters/behaviors) that can't use DI.
+            _ = _serviceProvider.GetService<Services.FavoritesService>();
+
             // Get platform services for platform-specific initialization
             var platformServices = _serviceProvider.GetService<Services.IPlatformServices>();
             if (platformServices is not null)

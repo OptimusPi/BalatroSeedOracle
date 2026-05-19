@@ -23,13 +23,15 @@ namespace BalatroSeedOracle.Extensions
             // Note: IAppDataStore and IPlatformServices are registered by platform-specific projects (Desktop/Browser)
             // IApiHostService is also registered by platform-specific projects
 
-            services.AddSingleton<IFilterService>(sp => new FilterService(
-                sp.GetRequiredService<IConfigurationService>(),
+            services.AddSingleton<IFilterCacheService>(sp => new FilterCacheService(
                 sp.GetRequiredService<IAppDataStore>(),
                 sp.GetService<IPlatformServices>()
             ));
-            services.AddSingleton<IFilterCacheService>(sp => new FilterCacheService(
+            services.AddSingleton<IFilterService>(sp => new FilterService(
+                sp.GetRequiredService<IConfigurationService>(),
                 sp.GetRequiredService<IAppDataStore>(),
+                sp.GetRequiredService<IFilterCacheService>(),
+                sp.GetRequiredService<UserProfileService>(),
                 sp.GetService<IPlatformServices>()
             ));
             services.AddSingleton<SpriteService>();
@@ -50,8 +52,12 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<Views.MainWindow>(),
                 sp.GetService<Views.BalatroMainMenu>()
             ));
-            services.AddSingleton<FavoritesService>(_ => FavoritesService.Instance);
-            services.AddSingleton<DaylatroHighScoreService>();
+            services.AddSingleton<FavoritesService>(sp => new FavoritesService(
+                sp.GetService<IPlatformServices>()
+            ));
+            services.AddSingleton<DaylatroHighScoreService>(sp => new DaylatroHighScoreService(
+                sp.GetService<IPlatformServices>()
+            ));
             services.AddSingleton<FilterSerializationService>();
             services.AddSingleton<WidgetPositionService>();
             services.AddSingleton<WidgetWindowManager>();
@@ -69,6 +75,7 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<FiltersModalViewModel>(),
                 sp.GetRequiredService<CreditsModalViewModel>(),
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
+                sp.GetRequiredService<WidgetWindowManager>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
                 sp.GetService<WidgetPositionService>(),

@@ -9,7 +9,13 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class SoundEffectsService
     {
+        private readonly IAudioManager _audioManager;
         private float _volume = 1.0f;
+
+        public SoundEffectsService(IAudioManager audioManager)
+        {
+            _audioManager = audioManager;
+        }
 
         public float Volume
         {
@@ -25,8 +31,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var effectiveVolume = _volume * volumeMultiplier;
-                var audioManager = ServiceHelper.GetService<IAudioManager>();
-                audioManager?.PlaySfx(soundName, effectiveVolume);
+                _audioManager.PlaySfx(soundName, effectiveVolume);
             }
             catch (Exception ex)
             {

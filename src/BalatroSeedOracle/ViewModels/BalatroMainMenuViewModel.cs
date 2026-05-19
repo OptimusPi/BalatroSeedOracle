@@ -26,6 +26,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IPlatformServices? _platformServices;
+        private readonly WidgetWindowManager _widgetWindowManager;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -214,6 +215,7 @@ namespace BalatroSeedOracle.ViewModels
             FiltersModalViewModel filtersModalViewModel,
             CreditsModalViewModel creditsModalViewModel,
             Func<AnalyzeModalViewModel> analyzeModalFactory,
+            WidgetWindowManager widgetWindowManager,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
             WidgetPositionService? widgetPositionService = null,
@@ -229,6 +231,7 @@ namespace BalatroSeedOracle.ViewModels
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
             CreditsModalViewModel = creditsModalViewModel;
+            _widgetWindowManager = widgetWindowManager;
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;
@@ -236,6 +239,9 @@ namespace BalatroSeedOracle.ViewModels
             // Load settings
             LoadSettings();
         }
+
+        /// <summary>Exposes the WidgetWindowManager to the View (needed for code-behind widget restore).</summary>
+        public WidgetWindowManager WidgetWindowManager => _widgetWindowManager;
 
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by View to show analyze modal.</summary>
         public AnalyzeModalViewModel CreateAnalyzeModalViewModel() => _analyzeModalFactory();
@@ -555,7 +561,7 @@ namespace BalatroSeedOracle.ViewModels
             IsSearchWidgetsVisible = newState;
 
             // Show/hide search widgets via window manager
-            var widgetManager = WidgetWindowManager.Instance;
+            var widgetManager = _widgetWindowManager;
             if (newState)
             {
                 widgetManager.ShowAllWidgets();
@@ -573,7 +579,7 @@ namespace BalatroSeedOracle.ViewModels
             IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
 
             // Show/hide all search widgets via window manager
-            var widgetManager = WidgetWindowManager.Instance;
+            var widgetManager = _widgetWindowManager;
             if (IsSearchWidgetsVisible)
             {
                 widgetManager.ShowAllWidgets();
@@ -626,7 +632,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsSearchWidgetsVisible = false;
 
                 // Hide search widgets via window manager
-                var widgetManager = WidgetWindowManager.Instance;
+                var widgetManager = _widgetWindowManager;
                 widgetManager.HideAllWidgets();
             }
             else
@@ -634,7 +640,7 @@ namespace BalatroSeedOracle.ViewModels
                 IsSearchWidgetsVisible = true;
 
                 // Show search widgets via window manager
-                var widgetManager = WidgetWindowManager.Instance;
+                var widgetManager = _widgetWindowManager;
                 widgetManager.ShowAllWidgets();
             }
 

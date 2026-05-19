@@ -2022,7 +2022,7 @@ namespace BalatroSeedOracle.Views
                     viewModel.IsMinimized = true;
 
                     // Use the new window manager instead of desktop canvas
-                    var widgetManager = WidgetWindowManager.Instance;
+                    var widgetManager = ViewModel.WidgetWindowManager;
                     widgetManager.CreateWidget(viewModel);
                 }
 
@@ -2053,7 +2053,7 @@ namespace BalatroSeedOracle.Views
             try
             {
                 // Find the widget in the window manager (works on all platforms)
-                var widgetManager = WidgetWindowManager.Instance;
+                var widgetManager = ViewModel.WidgetWindowManager;
                 var activeWidgets = widgetManager.GetActiveWidgets();
 
                 var widgetToRemove = activeWidgets.FirstOrDefault(w =>
