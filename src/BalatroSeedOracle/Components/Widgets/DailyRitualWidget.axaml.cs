@@ -16,7 +16,8 @@ namespace BalatroSeedOracle.Components
         {
             // Initialize ViewModel
             ViewModel = new DailyRitualWidgetViewModel(
-                DaylatroHighScoreService.Instance,
+                App.GetService<DaylatroHighScoreService>()
+                    ?? throw new InvalidOperationException("DaylatroHighScoreService not available"),
                 App.GetService<UserProfileService>()
                     ?? throw new InvalidOperationException("UserProfileService not available"),
                 App.GetService<FilterConfigurationService>()
