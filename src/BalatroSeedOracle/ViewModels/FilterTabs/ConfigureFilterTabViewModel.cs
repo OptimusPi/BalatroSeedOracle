@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class ConfigureFilterTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+        private readonly IConfigurationService? _configurationService;
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
@@ -155,9 +156,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
-        public ConfigureFilterTabViewModel(FiltersModalViewModel? parentViewModel = null)
+        public ConfigureFilterTabViewModel(
+            FiltersModalViewModel? parentViewModel = null,
+            IConfigurationService? configurationService = null
+        )
         {
             _parentViewModel = parentViewModel;
+            _configurationService = configurationService;
 
             // Subscribe to parent's property changes
             if (_parentViewModel is not null)
@@ -1156,7 +1161,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 var config = _parentViewModel.BuildConfigFromCurrentState();
-                var configService = ServiceHelper.GetService<IConfigurationService>();
+                var configService = _configurationService;
 
                 if (configService is null)
                     return;

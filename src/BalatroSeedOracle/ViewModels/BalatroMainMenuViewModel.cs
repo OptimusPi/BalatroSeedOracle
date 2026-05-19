@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
+        private readonly Func<FilterSelectionModalViewModel>? _filterSelectionFactory;
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IPlatformServices? _platformServices;
@@ -216,13 +217,15 @@ namespace BalatroSeedOracle.ViewModels
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
             WidgetPositionService? widgetPositionService = null,
-            IPlatformServices? platformServices = null
+            IPlatformServices? platformServices = null,
+            Func<FilterSelectionModalViewModel>? filterSelectionFactory = null
         )
         {
             // Store injected services
             _userProfileService = userProfileService;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            _filterSelectionFactory = filterSelectionFactory;
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
             CreditsModalViewModel = creditsModalViewModel;
@@ -346,7 +349,13 @@ namespace BalatroSeedOracle.ViewModels
             _eventFXService?.TriggerEvent(EventFXType.SearchLaunchModal);
             try
             {
-                var filterSelectionVM = new FilterSelectionModalViewModel(
+                if (_filterSelectionFactory is null)
+                {
+                    DebugLogger.LogError("BalatroMainMenuViewModel", "FilterSelectionModalViewModel factory not registered");
+                    return;
+                }
+                var filterSelectionVM = _filterSelectionFactory();
+                filterSelectionVM.Configure(
                     enableSearch: true,
                     enableEdit: true,
                     enableCopy: false,
@@ -368,8 +377,8 @@ namespace BalatroSeedOracle.ViewModels
                         && !string.IsNullOrEmpty(result.FilterId)
                     )
                     {
-                        // Transition to SearchModal
-                        var searchVM = ServiceHelper.GetRequiredService<SearchModalViewModel>();
+                        // Transition to SearchModal using the injected VM
+                        var searchVM = SearchModalViewModel;
                         searchVM.MainMenu = null; // We'll handle navigation via ActiveModal
 
                         // Load filter and show

@@ -34,6 +34,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     public partial class VisualBuilderTabViewModel : ObservableObject
     {
         private readonly FiltersModalViewModel? _parentViewModel;
+        private readonly FavoritesService? _favoritesService;
+        private readonly IConfigurationService? _configurationService;
+        private readonly IFilterService? _filterService;
 
         // Auto-save debouncing
         private CancellationTokenSource? _autoSaveCts;
@@ -387,9 +390,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         // Item configurations
         public Dictionary<string, ItemConfig> ItemConfigs { get; }
 
-        public VisualBuilderTabViewModel(FiltersModalViewModel? parentViewModel = null)
+        public VisualBuilderTabViewModel(
+            FiltersModalViewModel? parentViewModel = null,
+            FavoritesService? favoritesService = null,
+            IConfigurationService? configurationService = null,
+            IFilterService? filterService = null
+        )
         {
             _parentViewModel = parentViewModel;
+            _favoritesService = favoritesService;
+            _configurationService = configurationService;
+            _filterService = filterService;
 
             // Subscribe to parent's property changes to update FilterName and edit mode
             if (_parentViewModel is not null)
@@ -2091,8 +2102,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Mark favorite items AFTER all items are loaded with their proper categories
                 // This ensures favorited items appear in BOTH Favorites AND their original category
-                var favoritesService = ServiceHelper.GetService<FavoritesService>();
-                var favoriteNames = favoritesService?.GetFavoriteItems() ?? new List<string>();
+                var favoriteNames = (_favoritesService ?? FavoritesService.Instance)
+                    ?.GetFavoriteItems() ?? new List<string>();
 
                 foreach (var favoriteName in favoriteNames)
                 {
@@ -2625,8 +2636,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var config = _parentViewModel.BuildConfigFromCurrentState();
 
                 // Get configuration service
-                var configService = ServiceHelper.GetService<IConfigurationService>();
-                var filterService = ServiceHelper.GetService<IFilterService>();
+                var configService = _configurationService;
+                var filterService = _filterService;
 
                 if (configService is null || filterService is null)
                 {

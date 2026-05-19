@@ -92,7 +92,8 @@ namespace BalatroSeedOracle.Components
 
         public PaginatedFilterBrowser()
         {
-            ViewModel = new PaginatedFilterBrowserViewModel();
+            ViewModel = App.GetService<PaginatedFilterBrowserViewModel>()
+                ?? throw new InvalidOperationException("PaginatedFilterBrowserViewModel not registered");
             DataContext = ViewModel;
 
             InitializeComponent();

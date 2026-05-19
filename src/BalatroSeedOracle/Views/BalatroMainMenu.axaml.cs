@@ -227,15 +227,19 @@ namespace BalatroSeedOracle.Views
             _previousModalContent = null;
             _previousModalTitle = null;
 
-            var filterSelectionVM = new FilterSelectionModalViewModel(
+            var configurationService = App.GetService<IConfigurationService>()
+                ?? throw new InvalidOperationException("IConfigurationService not registered");
+            var filterService = App.GetService<IFilterService>()
+                ?? throw new InvalidOperationException("IFilterService not registered");
+            var filterSelectionVM = App.GetService<FilterSelectionModalViewModel>()
+                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            filterSelectionVM.Configure(
                 enableSearch: true,
                 enableEdit: true,
                 enableCopy: false,
                 enableDelete: false,
                 enableAnalyze: false
             );
-            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
-            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
             var filterSelectionModal = new FilterSelectionModal(
                 filterSelectionVM,
                 configurationService,
@@ -421,15 +425,19 @@ namespace BalatroSeedOracle.Views
         public void ShowFiltersModal()
         {
             // Create FilterSelectionModal with Edit/Copy/Delete actions enabled
-            var filterSelectionVM = new FilterSelectionModalViewModel(
+            var configurationService = App.GetService<IConfigurationService>()
+                ?? throw new InvalidOperationException("IConfigurationService not registered");
+            var filterService = App.GetService<IFilterService>()
+                ?? throw new InvalidOperationException("IFilterService not registered");
+            var filterSelectionVM = App.GetService<FilterSelectionModalViewModel>()
+                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            filterSelectionVM.Configure(
                 enableSearch: false,
                 enableEdit: true,
                 enableCopy: true,
                 enableDelete: true,
                 enableAnalyze: false
             );
-            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
-            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
             var filterSelectionModal = new FilterSelectionModal(
                 filterSelectionVM,
                 configurationService,
@@ -1982,17 +1990,20 @@ namespace BalatroSeedOracle.Views
                     return;
                 }
 
-                var platformServices = ServiceHelper.GetService<IPlatformServices>();
+                var platformServices = App.GetService<IPlatformServices>();
                 if (platformServices?.SupportsResultsGrid == true)
                 {
                     // Create SearchWidget with proper ViewModel (works on all platforms)
                     var spriteService = SpriteService.Instance;
-                    var notificationService = ServiceHelper.GetService<NotificationService>();
+                    var notificationService = App.GetService<NotificationService>();
+                    var userProfileService = App.GetService<UserProfileService>();
+                    var widgetPositionService = App.GetService<WidgetPositionService>();
                     var viewModel = new SearchWidgetViewModel(
                         searchInstance,
                         spriteService,
-                        null,
-                        notificationService
+                        widgetPositionService,
+                        notificationService,
+                        userProfileService
                     );
                     var searchWidget = new Components.Widgets.SearchWidget
                     {

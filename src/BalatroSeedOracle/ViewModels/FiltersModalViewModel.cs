@@ -36,6 +36,10 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IFilterService _filterService;
         private readonly IPlatformServices _platformServices;
         private readonly NotificationService? _notificationService;
+        private readonly UserProfileService? _userProfileService;
+        private readonly SearchManager? _searchManager;
+        private readonly FilterSerializationService? _serializationService;
+        private readonly Func<ValidateFilterTabViewModel>? _validateTabFactory;
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -147,14 +151,21 @@ namespace BalatroSeedOracle.ViewModels
             IConfigurationService configurationService,
             IFilterService filterService,
             IPlatformServices platformServices,
-            NotificationService? notificationService = null
+            NotificationService? notificationService = null,
+            UserProfileService? userProfileService = null,
+            SearchManager? searchManager = null,
+            FilterSerializationService? serializationService = null,
+            Func<ValidateFilterTabViewModel>? validateTabFactory = null
         )
         {
             _configurationService = configurationService;
             _filterService = filterService;
             _platformServices = platformServices;
-            _notificationService =
-                notificationService ?? ServiceHelper.GetService<NotificationService>();
+            _notificationService = notificationService;
+            _userProfileService = userProfileService;
+            _searchManager = searchManager;
+            _serializationService = serializationService;
+            _validateTabFactory = validateTabFactory;
 
             _itemCategories = InitializeItemCategories();
 
@@ -343,8 +354,7 @@ namespace BalatroSeedOracle.ViewModels
                     BsoLogger.Log("FiltersModalViewModel", $"✅ Filter saved: {CurrentFilterPath}");
 
                     // Show notification
-                    var notificationService = ServiceHelper.GetService<NotificationService>();
-                    notificationService?.ShowSuccess(
+                    _notificationService?.ShowSuccess(
                         "Filter Saved",
                         $"Filter '{FilterName}' saved successfully",
                         TimeSpan.FromSeconds(3)
@@ -394,10 +404,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var filterName = Path.GetFileNameWithoutExtension(CurrentFilterPath);
-                var searchManager = ServiceHelper.GetService<SearchManager>();
-                if (searchManager is not null)
+                if (_searchManager is not null)
                 {
-                    searchManager.StopSearchesForFilter(filterName);
+                    _searchManager.StopSearchesForFilter(filterName);
                     BsoLogger.Log(
                         "FiltersModalViewModel",
                         $"Stopped searches for filter: {filterName}"
@@ -915,8 +924,7 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public Motely.Filters.Jaml.JamlRootDocument BuildConfigFromCurrentState()
         {
-            var userProfileService = ServiceHelper.GetService<UserProfileService>();
-            var author = userProfileService?.GetAuthorName() ?? "Unknown";
+            var author = _userProfileService?.GetAuthorName() ?? "Unknown";
 
             var config = new Motely.Filters.Jaml.JamlRootDocument
             {
@@ -1440,23 +1448,24 @@ namespace BalatroSeedOracle.ViewModels
             JamlEditorTab = jamlEditorViewModel; // Store reference
             TabItems.Add(new TabItemViewModel("JAML EDITOR", jamlEditorTab));
 
-            // Save Filter tab
-            var configService =
-                ServiceHelper.GetService<IConfigurationService>()
-                ?? throw new InvalidOperationException("IConfigurationService not available");
-            var filterService =
-                ServiceHelper.GetService<IFilterService>()
-                ?? throw new InvalidOperationException("IFilterService not available");
-            var userProfileService =
-                ServiceHelper.GetService<UserProfileService>()
-                ?? throw new InvalidOperationException("UserProfileService not available");
-            var platformServices = ServiceHelper.GetRequiredService<IPlatformServices>();
-            var validateFilterViewModel = new FilterTabs.ValidateFilterTabViewModel(
-                this,
-                configService,
-                filterService,
-                platformServices
-            );
+            // Save Filter tab - resolve through DI factory so dependencies stay in one place
+            ValidateFilterTabViewModel validateFilterViewModel;
+            if (_validateTabFactory is not null)
+            {
+                validateFilterViewModel = _validateTabFactory();
+            }
+            else
+            {
+                // Fallback: construct directly from the services already injected here.
+                validateFilterViewModel = new ValidateFilterTabViewModel(
+                    this,
+                    _configurationService,
+                    _filterService,
+                    _platformServices,
+                    _serializationService,
+                    _searchManager
+                );
+            }
             var validateFilterTab = new Components.FilterTabs.ValidateFilterTab
             {
                 DataContext = validateFilterViewModel,

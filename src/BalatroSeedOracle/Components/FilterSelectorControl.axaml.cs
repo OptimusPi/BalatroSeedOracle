@@ -59,7 +59,8 @@ namespace BalatroSeedOracle.Components
 
         private void InitializeViewModel()
         {
-            _viewModel = new FilterListViewModel();
+            _viewModel = App.GetService<FilterListViewModel>()
+                ?? throw new InvalidOperationException("FilterListViewModel not registered");
             DataContext = _viewModel;
 
             // Wire up SizeChanged event for dynamic pagination
