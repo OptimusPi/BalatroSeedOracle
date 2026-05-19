@@ -12,23 +12,31 @@ namespace BalatroSeedOracle.Services
     public class FavoritesService
     {
         private static FavoritesService? _instance;
-        public static FavoritesService Instance => _instance ??= new FavoritesService();
+        public static FavoritesService Instance =>
+            _instance ?? throw new InvalidOperationException(
+                "FavoritesService not initialized. Call Initialize() at app startup."
+            );
 
         private readonly string _favoritesPath;
+        private readonly IPlatformServices? _platformServices;
         private FavoritesData _data = new FavoritesData();
 
-        private FavoritesService()
+        public FavoritesService(IPlatformServices? platformServices)
         {
+            _platformServices = platformServices;
             _favoritesPath = Path.Combine(AppPaths.DataRootDir, "favorites.json");
 
             LoadFavorites();
             InitializeDefaultSets();
+
+            // Publish for XAML-constructed callers (converters/behaviors/code-behind
+            // that have no DI access). DI always wins; this is a fallback accessor.
+            _instance = this;
         }
 
         private void LoadFavorites()
         {
-            var platformServices = ServiceHelper.GetService<IPlatformServices>();
-            if (platformServices is null || !platformServices.SupportsFileSystem)
+            if (_platformServices is null || !_platformServices.SupportsFileSystem)
             {
                 // Browser: Skip file loading, use empty data
                 _data = new FavoritesData();

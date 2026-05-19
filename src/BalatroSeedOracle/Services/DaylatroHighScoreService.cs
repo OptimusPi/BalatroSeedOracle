@@ -17,17 +17,13 @@ namespace BalatroSeedOracle.Services
     /// </summary>
     public class DaylatroHighScoreService
     {
-        private static readonly Lazy<DaylatroHighScoreService> _lazy = new(() =>
-            new DaylatroHighScoreService()
-        );
-        public static DaylatroHighScoreService Instance => _lazy.Value;
-
         private const string DAYLATRO_URL = "https://daylatro.fly.dev";
         private static readonly HttpClient _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(10),
         };
 
+        private readonly IPlatformServices? _platformServices;
         private readonly string _dataPath;
         private readonly string _submissionsPath;
         private readonly Dictionary<string, DaylatroDailyScores> _cache = new();
@@ -43,8 +39,9 @@ namespace BalatroSeedOracle.Services
         // Track submissions per day (UTC)
         private readonly Dictionary<string, DateTime> _lastSubmissionDates = new();
 
-        private DaylatroHighScoreService()
+        public DaylatroHighScoreService(IPlatformServices? platformServices = null)
         {
+            _platformServices = platformServices;
             var baseDir = AppContext.BaseDirectory;
             _dataPath = Path.Combine(baseDir, "daylatro_scores.json");
             _submissionsPath = Path.Combine(baseDir, "daylatro_submissions.json");
@@ -56,8 +53,7 @@ namespace BalatroSeedOracle.Services
             if (_loaded)
                 return;
 
-            var platformServices = ServiceHelper.GetService<IPlatformServices>();
-            if (platformServices == null || !platformServices.SupportsFileSystem)
+            if (_platformServices == null || !_platformServices.SupportsFileSystem)
             {
                 // Browser: Skip file loading
                 _loaded = true;
@@ -116,8 +112,7 @@ namespace BalatroSeedOracle.Services
 
         private void LoadSubmissionDates()
         {
-            var platformServices = ServiceHelper.GetService<IPlatformServices>();
-            if (platformServices == null || !platformServices.SupportsFileSystem)
+            if (_platformServices == null || !_platformServices.SupportsFileSystem)
             {
                 // Browser: Skip file loading
                 return;

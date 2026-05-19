@@ -23,16 +23,22 @@ namespace BalatroSeedOracle.Services
     {
         private readonly IConfigurationService _configurationService;
         private readonly IAppDataStore _store;
+        private readonly IFilterCacheService _filterCache;
+        private readonly UserProfileService _userProfileService;
         private readonly IPlatformServices? _platformServices;
 
         public FilterService(
             IConfigurationService configurationService,
             IAppDataStore store,
+            IFilterCacheService filterCache,
+            UserProfileService userProfileService,
             IPlatformServices? platformServices = null
         )
         {
             _configurationService = configurationService;
             _store = store;
+            _filterCache = filterCache;
+            _userProfileService = userProfileService;
             _platformServices = platformServices;
         }
 
@@ -107,10 +113,8 @@ namespace BalatroSeedOracle.Services
                         File.Delete(filePath);
                     }
 
-                    // Remove from cache (use ServiceHelper to avoid circular dependency)
                     var filterId = Path.GetFileNameWithoutExtension(filePath);
-                    var filterCache = Helpers.ServiceHelper.GetService<IFilterCacheService>();
-                    filterCache?.RemoveFilter(filterId);
+                    _filterCache.RemoveFilter(filterId);
 
                     return true;
                 }
@@ -265,9 +269,7 @@ namespace BalatroSeedOracle.Services
 
                 config.Name = newName;
                 config.DateCreated = DateTime.UtcNow.ToString("o");
-                config.Author =
-                    Helpers.ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
-                    ?? "Unknown";
+                config.Author = _userProfileService.GetAuthorName() ?? "Unknown";
 
                 var newId = $"{newName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var newPath = Path.Combine(filtersDir, $"{newId}.json");
