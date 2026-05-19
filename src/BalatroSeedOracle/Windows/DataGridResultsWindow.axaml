@@ -71,7 +71,7 @@
                 
                 <TextBox Grid.Column="1"
                          x:Name="QuickSearchBox"
-                         Watermark="Quick search..."
+                         PlaceholderText="Quick search..."
                          VerticalAlignment="Center"/>
                 
                 <Button Grid.Column="2"

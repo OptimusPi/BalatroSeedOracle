@@ -1064,44 +1064,23 @@ namespace BalatroSeedOracle.Services
             throw new FileNotFoundException($"Asset not found: {avaresUri}");
         }
 
-        private static IImage GetSpriteImage(
+        private static IImage? GetSpriteImage(
             string name_in,
-            Dictionary<string, SpritePosition> positions,
+            Dictionary<string, SpritePosition>? positions,
             Bitmap? spriteSheet,
             int spriteWidth,
             int spriteHeight,
             string category
         )
         {
-            // FAIL LOUDLY: If basic preconditions aren't met, the app is fundamentally broken
-            System.Diagnostics.Debug.Assert(
-                !string.IsNullOrEmpty(name_in),
-                $"[SPRITE SERVICE] name_in is null or empty for category '{category}'"
-            );
-            System.Diagnostics.Debug.Assert(
-                positions != null,
-                $"[SPRITE SERVICE] positions dictionary is null for category '{category}'"
-            );
-            System.Diagnostics.Debug.Assert(
-                spriteSheet != null,
-                $"[SPRITE SERVICE] spriteSheet is null for category '{category}' - assets failed to load!"
-            );
-
             if (string.IsNullOrEmpty(name_in))
-                throw new ArgumentException(
-                    $"Sprite name cannot be null or empty (category: {category})",
-                    nameof(name_in)
-                );
+                return null;
 
-            if (positions == null)
-                throw new InvalidOperationException(
-                    $"Sprite positions dictionary is null for category '{category}' - SpriteService failed to initialize properly!"
-                );
-
-            if (spriteSheet == null)
-                throw new InvalidOperationException(
-                    $"Sprite sheet is null for category '{category}' - Assets failed to load! Check that all sprite assets are present."
-                );
+            // Sprites load asynchronously after first window show; bindings that fire before
+            // metadata + bitmaps land must degrade gracefully rather than throw. The binding
+            // will be re-evaluated on the next PropertyChanged or DataContext refresh.
+            if (positions is null || spriteSheet is null)
+                return null;
 
             // Normalize the sprite name for consistent lookup
             string name = NormalizeSpriteName(name_in);

@@ -266,7 +266,7 @@
                             CornerRadius="8"
                             Padding="8">
                         <TextBox Text="{Binding SearchFilter, Mode=TwoWay}"
-                                 Watermark="Search items..."
+                                 PlaceholderText="Search items..."
                                  Background="Transparent"
                                  BorderThickness="0"
                                  FontFamily="{StaticResource BalatroFont}"

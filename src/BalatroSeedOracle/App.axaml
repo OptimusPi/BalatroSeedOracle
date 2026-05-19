@@ -1181,7 +1181,7 @@
         <Style Selector="TextBox.search-box">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="MinHeight" Value="32" />
-            <Setter Property="Watermark" Value="Search items..." />
+            <Setter Property="PlaceholderText" Value="Search items..." />
             <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
 

@@ -58,7 +58,7 @@
                         <!-- Label (Should items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="2" IsVisible="{Binding IsLabelVisible}">
                             <TextBlock Text="LABEL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="e.g., 'Bram Neg'" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="e.g., 'Bram Neg'" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <!-- Score (Should items only) -->
@@ -149,32 +149,32 @@
                         <!-- Special Properties for other JAML item types -->
                         <StackPanel Grid.Column="0" Grid.Row="8" Spacing="2" IsVisible="{Binding IsTarotCardVisible}">
                             <TextBlock Text="TAROT SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Tarot card special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Tarot card special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="8" Spacing="2" IsVisible="{Binding IsPlanetCardVisible}">
                             <TextBlock Text="PLANET SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Planet card special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Planet card special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="0" Grid.Row="10" Spacing="2" IsVisible="{Binding IsSpectralCardVisible}">
                             <TextBlock Text="SPECTRAL SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Spectral card special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Spectral card special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="10" Spacing="2" IsVisible="{Binding IsBossBlindVisible}">
                             <TextBlock Text="BOSS BLIND INFO" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Boss blind special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Boss blind special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="0" Grid.Row="12" Spacing="2" IsVisible="{Binding IsVoucherVisible}">
                             <TextBlock Text="VOUCHER INFO" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Voucher special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Voucher special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="12" Spacing="2" IsVisible="{Binding IsTagVisible}">
                             <TextBlock Text="TAG INFO" FontFamily="{StaticResource BalatroFont}" FontSize="10" Foreground="{StaticResource Gold}"/>
-                            <TextBox Text="{Binding Label}" Watermark="Tag special property" FontSize="11" Height="24"/>
+                            <TextBox Text="{Binding Label}" PlaceholderText="Tag special property" FontSize="11" Height="24"/>
                         </StackPanel>
 
                     </Grid>

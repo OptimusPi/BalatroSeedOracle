@@ -1734,7 +1734,7 @@ namespace BalatroSeedOracle.ViewModels
                 };
                 var textBox = new TextBox
                 {
-                    Watermark = watermark,
+                    PlaceholderText = watermark,
                     FontSize = 14,
                     Padding = new Avalonia.Thickness(10),
                 };

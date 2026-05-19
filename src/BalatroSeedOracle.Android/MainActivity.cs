@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -22,6 +23,7 @@ namespace BalatroSeedOracle.Android;
 )]
 public class MainActivity : AvaloniaMainActivity
 {
+    [SupportedOSPlatform("android24.0")]
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         // Avalonia 12 dropped AvaloniaMainActivity<TApp>/CustomizeAppBuilder.

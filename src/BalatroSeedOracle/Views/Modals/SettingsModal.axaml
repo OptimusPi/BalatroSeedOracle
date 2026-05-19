@@ -40,7 +40,7 @@
                         </ComboBox>
                         
                         <TextBox Text="{Binding CustomRemoteUrl}" 
-                                 Watermark="http://192.168.1.x:5000"
+                                 PlaceholderText="http://192.168.1.x:5000"
                                  IsVisible="{Binding IsCustomUrlVisible}"
                                  HorizontalAlignment="Stretch"/>
                     </StackPanel>

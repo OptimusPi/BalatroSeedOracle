@@ -96,5 +96,7 @@ internal sealed class iOSAudioManager : IAudioManager
 
     public FrequencyBands GetFrequencyBands(string trackName) => default;
 
+#pragma warning disable CS0067 // event required by interface; this stub never raises it
     public event System.Action<float, float, float, float>? AudioAnalysisUpdated;
+#pragma warning restore CS0067
 }

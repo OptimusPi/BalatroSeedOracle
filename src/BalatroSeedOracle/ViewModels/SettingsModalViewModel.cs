@@ -65,6 +65,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void UpdateSearchEngine()
         {
+            if (_searchManager is null) return;
             switch (SelectedSearchEngineIndex)
             {
                 case 0:
@@ -143,20 +144,21 @@ namespace BalatroSeedOracle.ViewModels
             var profile = _userProfileService.GetProfile();
             VisualizerTheme = profile.VisualizerSettings.ThemeIndex;
 
-            // Load Engine Settings
-            if (_searchManager.ActiveEngine.IsLocal)
+            if (_searchManager is not null)
             {
-                SelectedSearchEngineIndex = 0;
-            }
-            else if (_searchManager.ActiveEngine.Name.Contains("api.motely.gg"))
-            {
-                SelectedSearchEngineIndex = 1;
-            }
-            else
-            {
-                SelectedSearchEngineIndex = 2;
-                IsCustomUrlVisible = true;
-                // Ideally extract URL from ActiveEngine name if possible
+                if (_searchManager.ActiveEngine.IsLocal)
+                {
+                    SelectedSearchEngineIndex = 0;
+                }
+                else if (_searchManager.ActiveEngine.Name.Contains("api.motely.gg"))
+                {
+                    SelectedSearchEngineIndex = 1;
+                }
+                else
+                {
+                    SelectedSearchEngineIndex = 2;
+                    IsCustomUrlVisible = true;
+                }
             }
 
             // Load feature toggles (default OFF if not in profile)

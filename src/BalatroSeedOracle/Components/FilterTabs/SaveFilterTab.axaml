@@ -23,7 +23,7 @@
                            Foreground="{StaticResource LightGrey}"
                            FontFamily="{StaticResource BalatroFont}"/>
                 <TextBox Text="{Binding FilterName, Mode=TwoWay}"
-                         Watermark="My Awesome Filter"
+                         PlaceholderText="My Awesome Filter"
                          FontSize="14"
                          Height="32"/>
             </StackPanel>
@@ -50,7 +50,7 @@
                            Foreground="{StaticResource LightGrey}"
                            FontFamily="{StaticResource BalatroFont}"/>
                 <TextBox Text="{Binding FilterDescription, Mode=TwoWay}"
-                         Watermark="Write something helpful, or explain the filter mechanics..."
+                         PlaceholderText="Write something helpful, or explain the filter mechanics..."
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          FontSize="12"

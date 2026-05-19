@@ -711,7 +711,7 @@ namespace BalatroSeedOracle.Views
             var textBox = new TextBox
             {
                 Text = defaultText,
-                Watermark = "Enter filter name...",
+                PlaceholderText = "Enter filter name...",
                 Margin = new Thickness(0, 10, 0, 0),
                 FontSize = 18,
                 Padding = new Thickness(12, 8),

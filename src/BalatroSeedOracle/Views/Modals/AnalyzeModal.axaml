@@ -203,7 +203,7 @@
                                     Text="{Binding SeedInput}"
                                     FontSize="16"
                                     MaxLength="8"
-                                    Watermark="Enter seed..."
+                                    PlaceholderText="Enter seed..."
                                     VerticalAlignment="Center"
                                     Height="40"
                                     Margin="0,0,15,0"

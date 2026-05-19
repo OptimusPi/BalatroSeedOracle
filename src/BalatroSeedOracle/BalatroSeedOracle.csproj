@@ -3,6 +3,10 @@
     <!-- Shared library - single target (platform-specific code moved to head projects) -->
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <!-- CS0108: Avalonia name generator emits InitializeComponent(bool) on every .axaml-having
+         partial class. When one derives from another (e.g. AudioVisualizerSettingsModal : StandardModal),
+         the derived emission "hides" the base; this is structural to the generator, not real shadowing. -->
+    <NoWarn>$(NoWarn);CS0108</NoWarn>
   </PropertyGroup>
 
   <!-- Apply license key from Directory.Build.props for Avalonia Accelerate components -->

@@ -249,7 +249,7 @@
                                        Margin="0,0,0,4"/>
                             <TextBox Name="SeedInputBox"
                                      Text="{Binding SeedInput}"
-                                     Watermark="Enter seed..."
+                                     PlaceholderText="Enter seed..."
                                      MaxLength="8"
                                      FontFamily="{StaticResource BalatroFont}"
                                      FontSize="14"

@@ -926,7 +926,7 @@
                                                         <TextBox Grid.Column="1"
                                                                  Text="{Binding Name}"
                                                                  FontSize="13"
-                                                                 Watermark="Breakpoint Name"/>
+                                                                 PlaceholderText="Breakpoint Name"/>
                                                         <Button Grid.Column="2"
                                                                 Content="X"
                                                                 Classes="btn-red"
@@ -960,7 +960,7 @@
                                                     <Grid Grid.Row="2" ColumnDefinitions="*,80,80" ColumnSpacing="6">
                                                         <StackPanel Grid.Column="0" Spacing="2">
                                                             <TextBlock Text="Effect" Foreground="{StaticResource White}" FontSize="11"/>
-                                                            <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" Watermark="Effect Name"/>
+                                                            <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" PlaceholderText="Effect Name"/>
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="1" Spacing="2">
                                                             <TextBlock Text="Intensity" Foreground="{StaticResource White}" FontSize="11"/>
@@ -1023,7 +1023,7 @@
                                                         <TextBox Grid.Column="1"
                                                                  Text="{Binding Name}"
                                                                  FontSize="13"
-                                                                 Watermark="Melodic Event Name"/>
+                                                                 PlaceholderText="Melodic Event Name"/>
                                                         <Button Grid.Column="2"
                                                                 Content="X"
                                                                 Classes="btn-red"
@@ -1056,7 +1056,7 @@
                                                     <Grid Grid.Row="2" ColumnDefinitions="*,80,80" ColumnSpacing="6">
                                                         <StackPanel Grid.Column="0" Spacing="2">
                                                             <TextBlock Text="Effect" Foreground="{StaticResource White}" FontSize="11"/>
-                                                            <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" Watermark="Effect Name"/>
+                                                            <TextBox Text="{Binding EffectName}" FontSize="12" Padding="4" PlaceholderText="Effect Name"/>
                                                         </StackPanel>
                                                         <StackPanel Grid.Column="1" Spacing="2">
                                                             <TextBlock Text="Sustain (ms)" Foreground="{StaticResource White}" FontSize="11"/>

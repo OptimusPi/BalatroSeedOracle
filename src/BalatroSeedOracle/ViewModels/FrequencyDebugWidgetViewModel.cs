@@ -501,7 +501,7 @@ namespace BalatroSeedOracle.ViewModels
                 var textBox = new TextBox
                 {
                     Text = defaultName,
-                    Watermark = "e.g., deepBass1, banana, etc.",
+                    PlaceholderText = "e.g., deepBass1, banana, etc.",
                     Margin = new Avalonia.Thickness(0, 10, 0, 0),
                     FontSize = 18,
                     Padding = new Avalonia.Thickness(12, 8),

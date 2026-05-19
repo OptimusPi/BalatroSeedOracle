@@ -235,11 +235,14 @@ namespace BalatroSeedOracle.ViewModels
                     }
                 }
 
-                foreach (var item in config.Should)
+                if (config.Should is not null)
                 {
-                    if (!string.IsNullOrEmpty(item.GetValueName()))
+                    foreach (var item in config.Should)
                     {
-                        previewItems.Add((item.GetValueName(), item.GetTypeName()));
+                        if (!string.IsNullOrEmpty(item.GetValueName()))
+                        {
+                            previewItems.Add((item.GetValueName(), item.GetTypeName()));
+                        }
                     }
                 }
 
