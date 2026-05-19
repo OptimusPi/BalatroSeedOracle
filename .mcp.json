@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "avalonia-devtools": {
+      "type": "stdio",
+      "command": "avdt",
+      "args": ["mcp"]
+    }
+  }
+}

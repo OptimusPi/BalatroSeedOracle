@@ -1,7 +1,5 @@
-using System;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Components;
-using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Desktop.Components.Widgets
@@ -12,21 +10,12 @@ namespace BalatroSeedOracle.Desktop.Components.Widgets
     /// </summary>
     public partial class AudioVisualizerSettingsWidget : BaseWidgetControl
     {
-        public AudioVisualizerSettingsWidgetViewModel ViewModel { get; }
+        private AudioVisualizerSettingsWidgetViewModel? ViewModel =>
+            DataContext as AudioVisualizerSettingsWidgetViewModel;
 
         public AudioVisualizerSettingsWidget()
         {
             InitializeComponent();
-
-            // Get ViewModel from DI container
-            ViewModel =
-                ServiceHelper.GetService<AudioVisualizerSettingsWidgetViewModel>()
-                ?? throw new InvalidOperationException(
-                    "AudioVisualizerSettingsWidgetViewModel service not registered in DI container"
-                );
-            DataContext = ViewModel;
-
-            // Update ZIndex when IsMinimized changes - now handled by XAML binding to WidgetZIndex
         }
 
         private void InitializeComponent()
@@ -37,14 +26,14 @@ namespace BalatroSeedOracle.Desktop.Components.Widgets
         protected override void OnWidgetAttached()
         {
             base.OnWidgetAttached();
-            // CRITICAL: Initialize ViewModel with ownerControl reference so it can find BalatroMainMenu
-            ViewModel.OnAttached(this);
+            // Initialize ViewModel with ownerControl reference so it can find BalatroMainMenu
+            ViewModel?.OnAttached(this);
         }
 
         protected override void OnWidgetDetached()
         {
             base.OnWidgetDetached();
-            ViewModel.OnDetached();
+            ViewModel?.OnDetached();
         }
 
         // Event handlers inherited from BaseWidgetControl:

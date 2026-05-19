@@ -153,8 +153,7 @@ namespace BalatroSeedOracle.ViewModels
             _configurationService = configurationService;
             _filterService = filterService;
             _platformServices = platformServices;
-            _notificationService =
-                notificationService ?? ServiceHelper.GetService<NotificationService>();
+            _notificationService = notificationService;
 
             _itemCategories = InitializeItemCategories();
 

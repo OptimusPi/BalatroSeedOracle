@@ -21,14 +21,14 @@ public static class DesktopAppInitializer
 
         App.PlatformSpecificInitialization = async () =>
         {
-            var app = Avalonia.Application.Current;
+            var app = Avalonia.Application.Current as BalatroSeedOracle.App;
             if (app?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 if (desktop.MainWindow is BalatroSeedOracle.Views.MainWindow mainWindow)
                 {
                     try
                     {
-                        mainWindow.InitializeDesktopWidgets();
+                        mainWindow.InitializeDesktopWidgets(app.Services);
                         DebugLogger.Log("App", "Desktop widgets initialized successfully");
                         await InitializeSearchLibraryAsync();
                     }

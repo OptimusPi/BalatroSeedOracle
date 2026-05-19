@@ -1,11 +1,10 @@
 using System;
-using System.ComponentModel;
 using Avalonia.Controls;
 using BalatroSeedOracle.Desktop.Components.Widgets;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BalatroSeedOracle.Desktop.Views;
 
@@ -38,7 +37,7 @@ public static class MainWindowExtensions
     /// Initialize desktop-specific widgets for BalatroMainMenu.
     /// Should be called after MainWindow is created and shown.
     /// </summary>
-    public static void InitializeDesktopWidgets(this MainWindow mainWindow)
+    public static void InitializeDesktopWidgets(this MainWindow mainWindow, IServiceProvider services)
     {
         if (mainWindow.MainMenu == null)
         {
@@ -49,19 +48,19 @@ public static class MainWindowExtensions
         // Check if already loaded
         if (mainWindow.MainMenu.IsLoaded)
         {
-            AddDesktopWidgets(mainWindow.MainMenu);
+            AddDesktopWidgets(mainWindow.MainMenu, services);
         }
         else
         {
             // Subscribe to Loaded event to add widgets after XAML is loaded
             mainWindow.MainMenu.Loaded += (sender, e) =>
             {
-                AddDesktopWidgets(mainWindow.MainMenu);
+                AddDesktopWidgets(mainWindow.MainMenu, services);
             };
         }
     }
 
-    private static void AddDesktopWidgets(BalatroMainMenu mainMenu)
+    private static void AddDesktopWidgets(BalatroMainMenu mainMenu, IServiceProvider services)
     {
         // Direct access via public property (DesktopCanvas is x:Name in shared assembly)
         var desktopCanvas = mainMenu.DesktopCanvasHost;
@@ -82,7 +81,7 @@ public static class MainWindowExtensions
         // kept as a no-op for now so user preferences round-trip.
 
         // Add Music Mixer Widget
-        var musicMixerVm = ServiceHelper.GetService<MusicMixerWidgetViewModel>();
+        var musicMixerVm = services.GetService<MusicMixerWidgetViewModel>();
         if (musicMixerVm != null)
         {
             var musicMixerWidget = new MusicMixerWidget
@@ -103,7 +102,7 @@ public static class MainWindowExtensions
         }
 
         // Add Audio Visualizer Settings Widget
-        var visualizerVm = ServiceHelper.GetService<AudioVisualizerSettingsWidgetViewModel>();
+        var visualizerVm = services.GetService<AudioVisualizerSettingsWidgetViewModel>();
         if (visualizerVm != null)
         {
             var visualizerWidget = new AudioVisualizerSettingsWidget
@@ -124,7 +123,7 @@ public static class MainWindowExtensions
         }
 
         // Add Audio Mixer Widget
-        var audioMixerVm = ServiceHelper.GetService<AudioMixerWidgetViewModel>();
+        var audioMixerVm = services.GetService<AudioMixerWidgetViewModel>();
         if (audioMixerVm != null)
         {
             var audioMixerWidget = new AudioMixerWidget
@@ -139,7 +138,7 @@ public static class MainWindowExtensions
         }
 
         // Add Frequency Debug Widget
-        var frequencyDebugVm = ServiceHelper.GetService<FrequencyDebugWidgetViewModel>();
+        var frequencyDebugVm = services.GetService<FrequencyDebugWidgetViewModel>();
         if (frequencyDebugVm != null)
         {
             var frequencyDebugWidget = new FrequencyDebugWidget
@@ -154,7 +153,7 @@ public static class MainWindowExtensions
         }
 
         // Add Transition Designer Widget
-        var transitionDesignerVm = ServiceHelper.GetService<TransitionDesignerWidgetViewModel>();
+        var transitionDesignerVm = services.GetService<TransitionDesignerWidgetViewModel>();
         if (transitionDesignerVm != null)
         {
             var transitionDesignerWidget = new TransitionDesignerWidget

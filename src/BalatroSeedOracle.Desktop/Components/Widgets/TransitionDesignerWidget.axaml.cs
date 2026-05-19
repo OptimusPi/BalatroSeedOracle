@@ -1,8 +1,5 @@
-using System;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Components;
-using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Desktop.Components.Widgets
 {
@@ -12,19 +9,9 @@ namespace BalatroSeedOracle.Desktop.Components.Widgets
     /// </summary>
     public partial class TransitionDesignerWidget : BaseWidgetControl
     {
-        public TransitionDesignerWidgetViewModel ViewModel { get; }
-
         public TransitionDesignerWidget()
         {
             InitializeComponent();
-
-            // Get ViewModel from DI container
-            ViewModel =
-                ServiceHelper.GetService<TransitionDesignerWidgetViewModel>()
-                ?? throw new InvalidOperationException(
-                    "TransitionDesignerWidgetViewModel service not registered in DI container"
-                );
-            DataContext = ViewModel;
         }
 
         private void InitializeComponent()
