@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -10,12 +11,14 @@ namespace BalatroSeedOracle.ViewModels
 {
     public partial class FilterSelectionModalViewModel : ObservableObject, IModalBackNavigable
     {
-        // Configuration passed in constructor
-        public bool EnableSearch { get; }
-        public bool EnableEdit { get; }
-        public bool EnableCopy { get; }
-        public bool EnableDelete { get; }
-        public bool EnableAnalyze { get; }
+        private readonly IFilterService _filterService;
+
+        // Per-instance button visibility, set via Configure() after construction.
+        public bool EnableSearch { get; private set; }
+        public bool EnableEdit { get; private set; }
+        public bool EnableCopy { get; private set; }
+        public bool EnableDelete { get; private set; }
+        public bool EnableAnalyze { get; private set; }
 
         // DEBUG: Add comprehensive logging
 
@@ -100,6 +103,27 @@ namespace BalatroSeedOracle.ViewModels
         public event EventHandler<string>? DeleteConfirmationRequested;
 
         public FilterSelectionModalViewModel(
+            IFilterService filterService,
+            PaginatedFilterBrowserViewModel filterList
+        )
+        {
+            _filterService = filterService;
+            FilterList = filterList;
+
+            // Subscribe to filter selection changes
+            FilterList.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(FilterList.SelectedFilter))
+                {
+                    SelectedFilter = FilterList.SelectedFilter;
+                }
+            };
+        }
+
+        /// <summary>
+        /// Sets which action buttons should be visible. Call once right after construction.
+        /// </summary>
+        public void Configure(
             bool enableSearch = false,
             bool enableEdit = false,
             bool enableCopy = false,
@@ -113,22 +137,17 @@ namespace BalatroSeedOracle.ViewModels
             EnableDelete = enableDelete;
             EnableAnalyze = enableAnalyze;
 
+            OnPropertyChanged(nameof(EnableSearch));
+            OnPropertyChanged(nameof(EnableEdit));
+            OnPropertyChanged(nameof(EnableCopy));
+            OnPropertyChanged(nameof(EnableDelete));
+            OnPropertyChanged(nameof(EnableAnalyze));
+            OnPropertyChanged(nameof(PlaceholderText));
+
             DebugLogger.Log(
                 "FilterSelectionModalVM",
-                $"🔵 CONSTRUCTOR: EnableSearch={EnableSearch}, EnableEdit={EnableEdit}, EnableCopy={EnableCopy}"
+                $"Configured: EnableSearch={EnableSearch}, EnableEdit={EnableEdit}, EnableCopy={EnableCopy}, EnableDelete={EnableDelete}, EnableAnalyze={EnableAnalyze}"
             );
-
-            // Create child ViewModel for filter list
-            FilterList = new PaginatedFilterBrowserViewModel();
-
-            // Subscribe to filter selection changes
-            FilterList.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(FilterList.SelectedFilter))
-                {
-                    SelectedFilter = FilterList.SelectedFilter;
-                }
-            };
         }
 
         partial void OnSelectedFilterChanged(FilterBrowserItem? value)
@@ -328,13 +347,11 @@ namespace BalatroSeedOracle.ViewModels
                     $"Starting delete for filter: {filterNameToDelete} ({filterIdToDelete})"
                 );
 
-                // Get FilterService to perform the deletion
-                var filterService = ServiceHelper.GetRequiredService<Services.IFilterService>();
                 var filtersDir = AppPaths.FiltersDir;
                 var filterPath = System.IO.Path.Combine(filtersDir, $"{filterIdToDelete}.json");
 
                 // Perform deletion (this also removes from cache)
-                var deleted = await filterService.DeleteFilterAsync(filterPath);
+                var deleted = await _filterService.DeleteFilterAsync(filterPath);
 
                 if (!deleted)
                 {

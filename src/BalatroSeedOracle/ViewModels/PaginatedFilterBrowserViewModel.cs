@@ -19,6 +19,8 @@ namespace BalatroSeedOracle.ViewModels
     {
         private const int ITEMS_PER_PAGE = 10;
 
+        private readonly IFilterCacheService _filterCacheService;
+        private readonly UserProfileService? _userProfileService;
         private readonly List<FilterBrowserItem> _allFilters = [];
 
         [ObservableProperty]
@@ -62,8 +64,13 @@ namespace BalatroSeedOracle.ViewModels
         // Events
         public event EventHandler<FilterBrowserItem>? FilterSelected;
 
-        public PaginatedFilterBrowserViewModel()
+        public PaginatedFilterBrowserViewModel(
+            IFilterCacheService filterCacheService,
+            UserProfileService? userProfileService = null
+        )
         {
+            _filterCacheService = filterCacheService;
+            _userProfileService = userProfileService;
             LoadFilters();
         }
 
@@ -118,9 +125,7 @@ namespace BalatroSeedOracle.ViewModels
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author =
-                    ServiceHelper.GetService<Services.UserProfileService>()?.GetAuthorName()
-                    ?? "Unknown",
+                Author = _userProfileService?.GetAuthorName() ?? "Unknown",
                 DateCreated = DateTime.UtcNow.ToString("o"),
                 Must =
                     new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
@@ -169,54 +174,14 @@ namespace BalatroSeedOracle.ViewModels
             {
                 _allFilters.Clear();
 
-                // Try to use the cache service first for performance
-                var filterCache = ServiceHelper.GetService<Services.IFilterCacheService>();
-                if (filterCache is not null)
-                {
-                    DebugLogger.Log(
-                        "PaginatedFilterBrowserViewModel",
-                        $"Loading filters from cache ({filterCache.Count} cached)"
-                    );
-
-                    var cachedFilters = filterCache.GetAllFilters();
-                    foreach (var cached in cachedFilters)
-                    {
-                        var filterItem = ConvertCachedFilterToBrowserItem(cached);
-                        if (filterItem is not null)
-                        {
-                            _allFilters.Add(filterItem);
-                        }
-                    }
-
-                    UpdateCurrentPage();
-                    return;
-                }
-
-                // Fallback to disk loading if cache not available
                 DebugLogger.Log(
                     "PaginatedFilterBrowserViewModel",
-                    "Cache service not available, loading from disk"
+                    $"Loading filters from cache ({_filterCacheService.Count} cached)"
                 );
 
-                var filtersDir = AppPaths.FiltersDir;
-                if (!Directory.Exists(filtersDir))
+                foreach (var cached in _filterCacheService.GetAllFilters())
                 {
-                    UpdateCurrentPage();
-                    return;
-                }
-
-                // Load both .json and .jaml filter files
-                var jsonFiles = Directory.GetFiles(filtersDir, "*.json");
-                var jamlFiles = Directory.GetFiles(filtersDir, "*.jaml");
-                var filterFiles = jsonFiles
-                    .Concat(jamlFiles)
-                    .Where(f => Path.GetFileName(f) != "_UNSAVED_CREATION.json") // Skip temp files
-                    .OrderByDescending(File.GetLastWriteTime)
-                    .ToList();
-
-                foreach (var filePath in filterFiles)
-                {
-                    var filterItem = LoadFilterBrowserItem(filePath);
+                    var filterItem = ConvertCachedFilterToBrowserItem(cached);
                     if (filterItem is not null)
                     {
                         _allFilters.Add(filterItem);
@@ -543,11 +508,9 @@ namespace BalatroSeedOracle.ViewModels
 
         public void RefreshFilters()
         {
-            // CRITICAL FIX: Rescan filesystem FIRST to remove deleted filters from cache
-            var filterCache = ServiceHelper.GetService<IFilterCacheService>();
-            filterCache?.RefreshCache();
-
-            // THEN reload from refreshed cache
+            // Rescan filesystem first so deleted filters drop out of the cache,
+            // then reload our list from the refreshed cache.
+            _filterCacheService.RefreshCache();
             LoadFilters();
         }
     }

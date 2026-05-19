@@ -22,6 +22,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly IFilterService _filterService;
         private readonly FiltersModalViewModel _parentViewModel;
         private readonly IPlatformServices _platformServices;
+        private readonly FilterSerializationService? _serializationService;
+        private readonly SearchManager? _searchManager;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -217,15 +219,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             IConfigurationService configurationService,
             IFilterService filterService,
             IPlatformServices platformServices,
-            NotificationService? notificationService = null
+            NotificationService? notificationService = null,
+            FilterSerializationService? serializationService = null,
+            SearchManager? searchManager = null
         )
         {
             _parentViewModel = parentViewModel;
             _configurationService = configurationService;
             _filterService = filterService;
             _platformServices = platformServices;
-            _notificationService =
-                notificationService ?? ServiceHelper.GetService<NotificationService>();
+            _notificationService = notificationService;
+            _serializationService = serializationService;
+            _searchManager = searchManager;
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -361,10 +366,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Use custom serializer to include mode and preserve score formatting
-                var userProfileService = ServiceHelper.GetService<UserProfileService>();
-                var serializer = new FilterSerializationService(userProfileService!);
-                var json = serializer.SerializeConfig(config);
+                if (_serializationService is null)
+                {
+                    UpdateStatus("Export not available (FilterSerializationService missing)", true);
+                    return;
+                }
+                var json = _serializationService.SerializeConfig(config);
 
                 var exportFileName = $"{NormalizeFilterName(config.Name ?? "filter")}.json";
 
@@ -637,9 +644,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 };
 
                 // Start search via SearchManager and wait for results
-                var searchManager =
-                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
-                if (searchManager is null)
+                if (_searchManager is null)
                 {
                     IsTestRunning = false;
                     ShowTestError = true;
@@ -647,6 +652,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     UpdateStatus("SearchManager not available", true);
                     return;
                 }
+                var searchManager = _searchManager;
 
                 // Run quick search with in-memory config (no file I/O!)
                 UpdateStatus(

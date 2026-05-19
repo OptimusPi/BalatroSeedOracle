@@ -25,6 +25,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         private readonly FiltersModalViewModel _parentViewModel;
         private readonly ClauseConversionService _clauseConversionService;
         private readonly IPlatformServices _platformServices;
+        private readonly FilterSerializationService? _serializationService;
+        private readonly SearchManager? _searchManager;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -115,7 +117,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             FiltersModalViewModel parentViewModel,
             IConfigurationService configurationService,
             IFilterService filterService,
-            IPlatformServices platformServices
+            IPlatformServices platformServices,
+            FilterSerializationService? serializationService = null,
+            SearchManager? searchManager = null
         )
         {
             _parentViewModel = parentViewModel;
@@ -123,6 +127,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             _filterService = filterService;
             _clauseConversionService = new ClauseConversionService();
             _platformServices = platformServices;
+            _serializationService = serializationService;
+            _searchManager = searchManager;
 
             // PRE-FILL filter name and description if available
             PreFillFilterData();
@@ -689,10 +695,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return Task.CompletedTask;
                 }
 
-                // Serialize to JSON
-                var userProfileService = ServiceHelper.GetService<UserProfileService>();
-                var serializer = new FilterSerializationService(userProfileService!);
-                var json = serializer.SerializeConfig(config);
+                if (_serializationService is null)
+                {
+                    UpdateStatus("Copy not available (FilterSerializationService missing)", true);
+                    return Task.CompletedTask;
+                }
+                var json = _serializationService.SerializeConfig(config);
 
                 // Copy to clipboard via event
                 CopyToClipboardRequested?.Invoke(this, json);
@@ -757,10 +765,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Use custom serializer to include mode and preserve score formatting
-                var userProfileService = ServiceHelper.GetService<UserProfileService>();
-                var serializer = new FilterSerializationService(userProfileService!);
-                var json = serializer.SerializeConfig(config);
+                if (_serializationService is null)
+                {
+                    UpdateStatus("Export not available (FilterSerializationService missing)", true);
+                    return;
+                }
+                var json = _serializationService.SerializeConfig(config);
 
                 var exportFileName = $"{config.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
@@ -855,9 +865,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var deckName = GetDeckName(_parentViewModel.SelectedDeckIndex);
                 var stakeName = GetStakeName(_parentViewModel.SelectedStakeIndex);
 
-                var searchManager =
-                    ServiceHelper.GetService<BalatroSeedOracle.Services.SearchManager>();
-                if (searchManager is null)
+                if (_searchManager is null)
                 {
                     IsTestRunning = false;
                     IsLiveSearchActive = false;
@@ -866,6 +874,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     UpdateStatus("SearchManager not available", true);
                     return;
                 }
+                var searchManager = _searchManager;
 
                 // PHASE 1: Ultra-quick sanity check (1 batch = 35 seeds)
                 LiveSearchStatus = "Phase 1: Quick sanity check (35 seeds)...";

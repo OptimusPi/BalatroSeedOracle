@@ -31,6 +31,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         };
 
         private readonly FiltersModalViewModel? _parentViewModel;
+        private readonly FilterSerializationService? _serializationService;
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -51,9 +52,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 ? $"📄 {_parentViewModel.FilterName}.json"
                 : "📄 filter.json";
 
-        public JsonEditorTabViewModel(FiltersModalViewModel? parentViewModel = null)
+        public JsonEditorTabViewModel(
+            FiltersModalViewModel? parentViewModel = null,
+            FilterSerializationService? serializationService = null
+        )
         {
             _parentViewModel = parentViewModel;
+            _serializationService = serializationService;
 
             // Set default JSON content
             JsonContent = GetDefaultJsonContent();
@@ -128,9 +133,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // No separate MustNot collection needed
 
                 // Update JSON content silently using FilterSerializationService for proper formatting
-                var serializationService = ServiceHelper.GetService<FilterSerializationService>();
                 JsonContent =
-                    serializationService?.SerializeConfig(config)
+                    _serializationService?.SerializeConfig(config)
                     ?? JsonSerializer.Serialize(config, SerializeOptions);
 
                 // Silent status update (no user-visible message)
