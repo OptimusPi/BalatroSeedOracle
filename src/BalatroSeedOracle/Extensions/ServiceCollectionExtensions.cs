@@ -72,7 +72,8 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
                 sp.GetService<WidgetPositionService>(),
-                sp.GetService<IPlatformServices>()
+                sp.GetService<IPlatformServices>(),
+                () => sp.GetRequiredService<FilterSelectionModalViewModel>()
             ));
 
             // Views
@@ -97,7 +98,11 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<IConfigurationService>(),
                 sp.GetRequiredService<IFilterService>(),
                 sp.GetRequiredService<IPlatformServices>(),
-                sp.GetService<NotificationService>()
+                sp.GetService<NotificationService>(),
+                sp.GetService<UserProfileService>(),
+                sp.GetService<SearchManager>(),
+                sp.GetService<FilterSerializationService>(),
+                () => sp.GetRequiredService<ViewModels.FilterTabs.ValidateFilterTabViewModel>()
             ));
             services.AddSingleton<SearchModalViewModel>(sp => new SearchModalViewModel(
                 sp.GetRequiredService<SearchManager>(),
@@ -126,25 +131,62 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<BaseWidgetViewModel>();
-            services.AddTransient<FilterListViewModel>();
-            services.AddTransient<PaginatedFilterBrowserViewModel>();
-            services.AddTransient<FilterSelectionModalViewModel>();
+            services.AddTransient<FilterListViewModel>(sp => new FilterListViewModel(
+                sp.GetRequiredService<IFilterCacheService>(),
+                sp.GetService<SpriteService>()
+            ));
+            services.AddTransient<PaginatedFilterBrowserViewModel>(sp => new PaginatedFilterBrowserViewModel(
+                sp.GetRequiredService<IFilterCacheService>(),
+                sp.GetService<UserProfileService>()
+            ));
+            services.AddTransient<FilterSelectionModalViewModel>(sp => new FilterSelectionModalViewModel(
+                sp.GetRequiredService<IFilterService>(),
+                sp.GetRequiredService<PaginatedFilterBrowserViewModel>()
+            ));
 
             // Filter Tab ViewModels
-            services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.VisualBuilderTabViewModel>(sp =>
+                new ViewModels.FilterTabs.VisualBuilderTabViewModel(
+                    sp.GetService<FiltersModalViewModel>(),
+                    sp.GetService<FavoritesService>(),
+                    sp.GetService<IConfigurationService>(),
+                    sp.GetService<IFilterService>()
+                )
+            );
             services.AddTransient<ViewModels.FilterTabs.DeckStakeTabViewModel>();
-            services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>();
-            services.AddTransient<ViewModels.FilterTabs.ValidateFilterTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.JsonEditorTabViewModel>(sp =>
+                new ViewModels.FilterTabs.JsonEditorTabViewModel(
+                    sp.GetService<FiltersModalViewModel>(),
+                    sp.GetService<FilterSerializationService>()
+                )
+            );
+            services.AddTransient<ViewModels.FilterTabs.ValidateFilterTabViewModel>(sp =>
+                new ViewModels.FilterTabs.ValidateFilterTabViewModel(
+                    sp.GetRequiredService<FiltersModalViewModel>(),
+                    sp.GetRequiredService<IConfigurationService>(),
+                    sp.GetRequiredService<IFilterService>(),
+                    sp.GetRequiredService<IPlatformServices>(),
+                    sp.GetService<FilterSerializationService>(),
+                    sp.GetService<SearchManager>()
+                )
+            );
             services.AddTransient<ViewModels.FilterTabs.SaveFilterTabViewModel>(
                 sp => new ViewModels.FilterTabs.SaveFilterTabViewModel(
                     sp.GetRequiredService<FiltersModalViewModel>(),
                     sp.GetRequiredService<IConfigurationService>(),
                     sp.GetRequiredService<IFilterService>(),
                     sp.GetRequiredService<IPlatformServices>(),
-                    sp.GetService<NotificationService>()
+                    sp.GetService<NotificationService>(),
+                    sp.GetService<FilterSerializationService>(),
+                    sp.GetService<SearchManager>()
                 )
             );
-            services.AddTransient<ViewModels.FilterTabs.ConfigureFilterTabViewModel>();
+            services.AddTransient<ViewModels.FilterTabs.ConfigureFilterTabViewModel>(sp =>
+                new ViewModels.FilterTabs.ConfigureFilterTabViewModel(
+                    sp.GetService<FiltersModalViewModel>(),
+                    sp.GetService<IConfigurationService>()
+                )
+            );
 
             return services;
         }

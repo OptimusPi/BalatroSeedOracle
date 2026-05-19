@@ -44,12 +44,14 @@ namespace BalatroSeedOracle.ViewModels
         private string _progressText = "0%";
 
         private readonly NotificationService? _notificationService;
+        private readonly UserProfileService? _userProfileService;
 
         public SearchWidgetViewModel(
             ActiveSearchContext searchInstance,
             SpriteService spriteService,
             WidgetPositionService? widgetPositionService = null,
-            NotificationService? notificationService = null
+            NotificationService? notificationService = null,
+            UserProfileService? userProfileService = null
         )
             : base(widgetPositionService)
         {
@@ -58,6 +60,7 @@ namespace BalatroSeedOracle.ViewModels
             _spriteService =
                 spriteService ?? throw new ArgumentNullException(nameof(spriteService));
             _notificationService = notificationService;
+            _userProfileService = userProfileService;
 
             // Initialize from SearchInstance
             FilterName = _searchInstance.FilterName ?? "Search";
@@ -242,8 +245,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var profileService = ServiceHelper.GetService<UserProfileService>();
-                if (profileService is null)
+                if (_userProfileService is null)
                 {
                     DebugLogger.LogError(
                         "SearchWidgetViewModel",
@@ -252,7 +254,7 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var profile = profileService.GetProfile();
+                var profile = _userProfileService.GetProfile();
 
                 // Find existing saved widget or create new
                 var saved = profile.SavedSearchWidgets.FirstOrDefault(w =>
@@ -272,7 +274,7 @@ namespace BalatroSeedOracle.ViewModels
                 saved.ZIndexOffset = 0; // Will use BaseWidgetViewModel's _zIndexOffset if needed
                 saved.LastUsed = DateTime.UtcNow;
 
-                profileService.SaveProfile(profile);
+                _userProfileService.SaveProfile(profile);
 
                 DebugLogger.Log(
                     "SearchWidgetViewModel",
@@ -296,14 +298,13 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 // Remove from saved widgets
-                var profileService = ServiceHelper.GetService<UserProfileService>();
-                if (profileService is not null)
+                if (_userProfileService is not null)
                 {
-                    var profile = profileService.GetProfile();
+                    var profile = _userProfileService.GetProfile();
                     profile.SavedSearchWidgets.RemoveAll(w =>
                         w.SearchInstanceId == SearchInstanceId
                     );
-                    profileService.SaveProfile(profile);
+                    _userProfileService.SaveProfile(profile);
 
                     DebugLogger.Log(
                         "SearchWidgetViewModel",

@@ -23,6 +23,7 @@ namespace BalatroSeedOracle.ViewModels
         private const double ITEM_HEIGHT = 23.0; // default fallback: 22px button + 1px safety
 
         private readonly IFilterCacheService _filterCacheService;
+        private readonly SpriteService? _spriteService;
 
         [ObservableProperty]
         private int _filtersPerPage = DEFAULT_FILTERS_PER_PAGE;
@@ -102,9 +103,10 @@ namespace BalatroSeedOracle.ViewModels
 
         private List<FilterListItem> _allFilters = new();
 
-        public FilterListViewModel()
+        public FilterListViewModel(IFilterCacheService filterCacheService, SpriteService? spriteService = null)
         {
-            _filterCacheService = ServiceHelper.GetRequiredService<IFilterCacheService>();
+            _filterCacheService = filterCacheService;
+            _spriteService = spriteService;
             LoadFilters();
         }
 
@@ -328,12 +330,10 @@ namespace BalatroSeedOracle.ViewModels
                     SelectedFilterDescription = config.Description;
                 }
 
-                var spriteService = ServiceHelper.GetService<SpriteService>();
-
                 // Load Must Have items
                 if (config.Must is not null && config.Must.Count > 0)
                 {
-                    LoadItemsFromConfig(config.Must, MustHaveItems, spriteService);
+                    LoadItemsFromConfig(config.Must, MustHaveItems, _spriteService);
                     HasMustHaveItems = MustHaveItems.Count > 0;
                     SelectedFilterStats.Add(
                         new FilterStat
@@ -352,7 +352,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Load Should Have items
                 if (config.Should is not null && config.Should.Count > 0)
                 {
-                    LoadItemsFromConfig(config.Should, ShouldHaveItems, spriteService);
+                    LoadItemsFromConfig(config.Should, ShouldHaveItems, _spriteService);
                     HasShouldHaveItems = ShouldHaveItems.Count > 0;
                     SelectedFilterStats.Add(
                         new FilterStat
@@ -371,7 +371,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Load Must Not Have items
                 if (config.MustNot is not null && config.MustNot.Count > 0)
                 {
-                    LoadItemsFromConfig(config.MustNot, MustNotHaveItems, spriteService);
+                    LoadItemsFromConfig(config.MustNot, MustNotHaveItems, _spriteService);
                     HasMustNotHaveItems = MustNotHaveItems.Count > 0;
                     SelectedFilterStats.Add(
                         new FilterStat
@@ -514,8 +514,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 if (items is not null && items.Count > 0)
                 {
-                    var spriteService = ServiceHelper.GetService<SpriteService>();
-                    LoadItemsFromConfig(items, FilterItems, spriteService);
+                    LoadItemsFromConfig(items, FilterItems, _spriteService);
                     HasFilterItems = FilterItems.Count > 0;
                 }
                 else

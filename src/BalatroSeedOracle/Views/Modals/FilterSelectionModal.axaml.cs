@@ -568,9 +568,12 @@ namespace BalatroSeedOracle.Views.Modals
 
                 var configurationService =
                     _configurationService
-                    ?? ServiceHelper.GetRequiredService<IConfigurationService>();
+                    ?? App.GetService<IConfigurationService>()
+                    ?? throw new InvalidOperationException("IConfigurationService not registered");
                 var filterService =
-                    _filterService ?? ServiceHelper.GetRequiredService<IFilterService>();
+                    _filterService
+                    ?? App.GetService<IFilterService>()
+                    ?? throw new InvalidOperationException("IFilterService not registered");
                 var baseName = !string.IsNullOrWhiteSpace(config.Name)
                     ? config.Name
                     : Path.GetFileNameWithoutExtension(file.Name);

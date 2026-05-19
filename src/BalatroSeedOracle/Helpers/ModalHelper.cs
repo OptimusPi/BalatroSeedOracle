@@ -61,15 +61,13 @@ namespace BalatroSeedOracle.Helpers
             bool enableAnalyze = false
         )
         {
-            var vm = new FilterSelectionModalViewModel(
-                enableSearch,
-                enableEdit,
-                enableCopy,
-                enableDelete,
-                enableAnalyze
-            );
-            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
-            var filterService = ServiceHelper.GetRequiredService<IFilterService>();
+            var configurationService = App.GetService<IConfigurationService>()
+                ?? throw new InvalidOperationException("IConfigurationService not registered");
+            var filterService = App.GetService<IFilterService>()
+                ?? throw new InvalidOperationException("IFilterService not registered");
+            var vm = App.GetService<FilterSelectionModalViewModel>()
+                ?? throw new InvalidOperationException("FilterSelectionModalViewModel not registered");
+            vm.Configure(enableSearch, enableEdit, enableCopy, enableDelete, enableAnalyze);
             var modal = new FilterSelectionModal(vm, configurationService, filterService);
 
             var result = await modal.ShowDialog(menu.GetWindow());
@@ -208,7 +206,8 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
         {
-            var userProfile = ServiceHelper.GetRequiredService<UserProfileService>();
+            var userProfile = App.GetService<UserProfileService>()
+                ?? throw new InvalidOperationException("UserProfileService not registered");
             var ToolView = new ToolsModal(userProfile);
             return menu.ShowModal("MORE", ToolView);
         }
@@ -452,8 +451,7 @@ namespace BalatroSeedOracle.Helpers
             {
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
-                Author =
-                    ServiceHelper.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
+                Author = App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
                 DateCreated = DateTime.UtcNow.ToString("o"),
                 Must = new System.Collections.Generic.List<JamlClauseUnion>(),
                 Should = new System.Collections.Generic.List<JamlClauseUnion>(),
@@ -488,8 +486,7 @@ namespace BalatroSeedOracle.Helpers
                 {
                     config.Name = $"{config.Name} (Copy)";
                     config.Author =
-                        ServiceHelper.GetService<UserProfileService>()?.GetAuthorName()
-                        ?? "Unknown";
+                        App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
                     config.DateCreated = DateTime.UtcNow.ToString("o");
 
                     var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Name}.json");
