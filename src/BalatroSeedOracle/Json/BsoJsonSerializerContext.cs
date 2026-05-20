@@ -82,6 +82,8 @@ namespace BalatroSeedOracle.Json;
 // DataGrid export types
 [JsonSerializable(typeof(DataGridResultItem))]
 [JsonSerializable(typeof(List<DataGridResultItem>))]
+// Search result export (DbListExportService)
+[JsonSerializable(typeof(SearchResultExport))]
 // EventFX config
 [JsonSerializable(typeof(EventFXConfig))]
 public partial class BsoJsonSerializerContext : JsonSerializerContext { }
@@ -114,24 +116,19 @@ public class JokerSet
 }
 
 /// <summary>
-/// Credit entry for the credits modal
+/// Credit entry for the credits modal. Deserialized via source-gen
+/// (BsoJsonSerializerContext) — credits.json uses lowercase keys, matched by the
+/// context's CamelCase naming policy + case-insensitive option.
 /// </summary>
 public class Credit
 {
     public string? Name { get; set; }
     public string? Role { get; set; }
+    public string? Note { get; set; }
     public string? Link { get; set; }
-}
 
-/// <summary>
-/// EventFX configuration for event-based visual effects
-/// </summary>
-public class EventFXConfig
-{
-    public string? PresetName { get; set; }
-    public double Duration { get; set; } = 2.0;
-    public string? AudioTriggerName { get; set; }
-    public bool Enabled { get; set; } = true;
+    [JsonIgnore]
+    public bool HasLink => !string.IsNullOrWhiteSpace(Link);
 }
 
 /// <summary>
@@ -142,4 +139,24 @@ public class DataGridResultItem
     public string? Seed { get; set; }
     public long Score { get; set; }
     public Dictionary<string, object>? Tallies { get; set; }
+}
+
+/// <summary>
+/// Named export shape for DbListExportService JSON export (replaces an anonymous type
+/// that could not be source-gen serialized under AOT).
+/// </summary>
+public class SearchResultExport
+{
+    public System.DateTime ExportDate { get; set; }
+    public int TotalResults { get; set; }
+    public List<SearchResultExportRow> Results { get; set; } = new();
+}
+
+public class SearchResultExportRow
+{
+    public string? Seed { get; set; }
+    public int TotalScore { get; set; }
+    public int[]? Scores { get; set; }
+    public string[]? Labels { get; set; }
+    public string? ScoresDisplay { get; set; }
 }

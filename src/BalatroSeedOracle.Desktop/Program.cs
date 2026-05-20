@@ -168,6 +168,16 @@ public class Program
         }
     }
 
-    public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().WithInterFont();
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        var builder = AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().WithInterFont();
+#if DEBUG
+        // Enables the Avalonia DevTools MCP (avdt) to attach to the running app.
+        // Requires the AvaloniaUI.DiagnosticsSupport package + an Accelerate/Plus license.
+        // Debug-only: the Release head is Native AOT (IlcDisableReflection=true) and DevTools
+        // relies on reflection, so it must not ship in the AOT build.
+        builder = builder.WithDeveloperTools();
+#endif
+        return builder;
+    }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using Avalonia.Platform;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -31,9 +32,9 @@ namespace BalatroSeedOracle.ViewModels
 
                     DebugLogger.Log("CreditsModalViewModel", $"JSON loaded, length: {json.Length}");
 
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    // Source-gen deserialization (AOT-safe; reflection JSON is disabled app-wide).
                     var items =
-                        JsonSerializer.Deserialize<Credit[]>(json, options)
+                        JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.CreditArray)
                         ?? Array.Empty<Credit>();
 
                     DebugLogger.Log(
@@ -58,20 +59,5 @@ namespace BalatroSeedOracle.ViewModels
                 Credits = new ObservableCollection<Credit>();
             }
         }
-    }
-
-    public class Credit
-    {
-        public string? name { get; set; }
-        public string? role { get; set; }
-        public string? note { get; set; }
-        public string? link { get; set; }
-
-        // Properties for binding (uppercase)
-        public string? Name => name;
-        public string? Role => role;
-        public string? Note => note;
-        public string? Link => link;
-        public bool HasLink => !string.IsNullOrWhiteSpace(link);
     }
 }
