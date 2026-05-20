@@ -100,7 +100,7 @@ namespace BalatroSeedOracle.Services
                     return null;
 
                 var json = File.ReadAllText(configPath);
-                return JsonSerializer.Deserialize<EventFXConfig>(json);
+                return JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.EventFXConfig);
             }
             catch (Exception ex)
             {

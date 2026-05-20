@@ -109,7 +109,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
             if (File.Exists(configPath))
             {
                 var json = File.ReadAllText(configPath);
-                var config = JsonSerializer.Deserialize<EventFXConfig>(json);
+                var config = JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.EventFXConfig);
                 if (config is not null)
                 {
                     SelectedTransitionPreset = config.TransitionPreset ?? "(none)";
@@ -168,7 +168,7 @@ public partial class EventFXWidgetViewModel : BaseWidgetViewModel
             var configPath = Path.Combine(AppPaths.EventFXDir, GetConfigFileName(SelectedEvent));
             var json = JsonSerializer.Serialize(
                 config,
-                new JsonSerializerOptions { WriteIndented = true }
+                BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.EventFXConfig
             );
             File.WriteAllText(configPath, json);
 

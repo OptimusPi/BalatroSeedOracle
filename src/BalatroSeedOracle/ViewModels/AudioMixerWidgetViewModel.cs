@@ -31,12 +31,6 @@ namespace BalatroSeedOracle.ViewModels
             "audio_mixes"
         );
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         public ObservableCollection<TrackMixViewModel> Tracks { get; } = new();
 
         [ObservableProperty]
@@ -216,7 +210,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var filePath = Path.Combine(MixPresetsPath, $"{presetName}.json");
-                var json = JsonSerializer.Serialize(preset, JsonOptions);
+                var json = JsonSerializer.Serialize(preset, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.MusicMixPreset);
                 await File.WriteAllTextAsync(filePath, json);
 
                 CurrentPresetName = presetName;
@@ -250,7 +244,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var json = await File.ReadAllTextAsync(filePath);
-                var preset = JsonSerializer.Deserialize<MusicMixPreset>(json, JsonOptions);
+                var preset = JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.MusicMixPreset);
 
                 if (preset?.Tracks is not null)
                 {

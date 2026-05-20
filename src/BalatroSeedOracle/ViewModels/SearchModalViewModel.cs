@@ -1834,8 +1834,9 @@ namespace BalatroSeedOracle.ViewModels
                 else
                 {
                     config =
-                        System.Text.Json.JsonSerializer.Deserialize<Motely.Filters.Jaml.JamlRootDocument>(
-                            content
+                        System.Text.Json.JsonSerializer.Deserialize(
+                            content,
+                            Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument
                         );
                 }
 

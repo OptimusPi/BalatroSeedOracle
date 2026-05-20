@@ -617,7 +617,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 var json = JsonSerializer.Serialize(
                     settings,
-                    new JsonSerializerOptions { WriteIndented = true }
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.MixerSettings
                 );
                 File.WriteAllText(MIXER_SETTINGS_FILE, json);
 
@@ -650,7 +650,7 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 var json = File.ReadAllText(MIXER_SETTINGS_FILE);
-                var settings = JsonSerializer.Deserialize<MixerSettings>(json);
+                var settings = JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.MixerSettings);
 
                 if (settings is not null)
                 {

@@ -16,14 +16,6 @@ namespace BalatroSeedOracle.Helpers
     {
         private static readonly string PresetsDirectory = AppPaths.VisualizerPresetsDir;
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-        };
-
         static PresetHelper() { }
 
         /// <summary>
@@ -93,7 +85,7 @@ namespace BalatroSeedOracle.Helpers
                 string fullPath = Path.Combine(PresetsDirectory, filename);
 
                 // Serialize and save
-                string json = JsonSerializer.Serialize(preset, JsonOptions);
+                string json = JsonSerializer.Serialize(preset, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset);
                 File.WriteAllText(fullPath, json);
 
                 DebugLogger.Log("PresetHelper", $"Saved preset '{preset.Name}' to {fullPath}");
@@ -122,7 +114,7 @@ namespace BalatroSeedOracle.Helpers
                 }
 
                 string json = File.ReadAllText(filePath);
-                var preset = JsonSerializer.Deserialize<VisualizerPreset>(json, JsonOptions);
+                var preset = JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset);
 
                 DebugLogger.Log("PresetHelper", $"Loaded preset from {filePath}");
                 return preset;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Json;
 using BalatroSeedOracle.Models;
 
 namespace BalatroSeedOracle.Services
@@ -23,12 +24,6 @@ namespace BalatroSeedOracle.Services
 
         // Inertia state tracking for AddInertia mode (shader param → velocity)
         private readonly Dictionary<string, float> _inertiaVelocities = new();
-
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
 
         public TriggerService()
         {
@@ -123,9 +118,9 @@ namespace BalatroSeedOracle.Services
                     try
                     {
                         var json = File.ReadAllText(file);
-                        var triggerPoint = JsonSerializer.Deserialize<AudioTriggerPoint>(
+                        var triggerPoint = JsonSerializer.Deserialize(
                             json,
-                            JsonOptions
+                            BsoJsonSerializerContext.Default.AudioTriggerPoint
                         );
 
                         if (triggerPoint != null && !string.IsNullOrEmpty(triggerPoint.Name))
@@ -167,7 +162,7 @@ namespace BalatroSeedOracle.Services
                 var fileName = $"{trigger.Name}.json";
                 var filePath = Path.Combine(_audioTriggersPath, fileName);
 
-                var json = JsonSerializer.Serialize(trigger, JsonOptions);
+                var json = JsonSerializer.Serialize(trigger, BsoJsonSerializerContext.Default.AudioTriggerPoint);
                 File.WriteAllText(filePath, json);
 
                 // Register the trigger

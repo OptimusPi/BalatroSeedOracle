@@ -228,12 +228,12 @@ namespace BalatroSeedOracle.Services
 
         private string GenerateJsonContent(List<SearchResult> results)
         {
-            var exportData = new
+            var exportData = new BalatroSeedOracle.Json.SearchResultExport
             {
                 ExportDate = DateTime.UtcNow,
                 TotalResults = results.Count,
                 Results = results
-                    .Select(r => new
+                    .Select(r => new BalatroSeedOracle.Json.SearchResultExportRow
                     {
                         Seed = r.Seed,
                         TotalScore = r.TotalScore,
@@ -241,16 +241,12 @@ namespace BalatroSeedOracle.Services
                         Labels = r.Labels,
                         ScoresDisplay = r.ScoresDisplay,
                     })
-                    .ToArray(),
+                    .ToList(),
             };
 
             return System.Text.Json.JsonSerializer.Serialize(
                 exportData,
-                new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                }
+                BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.SearchResultExport
             );
         }
 

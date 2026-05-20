@@ -46,12 +46,6 @@ namespace BalatroSeedOracle.ViewModels
             "Metadata"
         );
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         [ObservableProperty]
         private int _selectedTrackIndex = 2; // Default to Drums1
 
@@ -332,7 +326,7 @@ namespace BalatroSeedOracle.ViewModels
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);
-                    var metadata = JsonSerializer.Deserialize<TrackMetadata>(json, JsonOptions);
+                    var metadata = JsonSerializer.Deserialize(json, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.TrackMetadata);
 
                     if (metadata is not null)
                     {
@@ -427,7 +421,7 @@ namespace BalatroSeedOracle.ViewModels
                     HighPeakMax = HighPeakMax,
                 };
 
-                var json = JsonSerializer.Serialize(metadata, JsonOptions);
+                var json = JsonSerializer.Serialize(metadata, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.TrackMetadata);
                 File.WriteAllText(filePath, json);
 
                 DebugLogger.Log("FrequencyDebugWidget", $"Saved metadata for {trackName}");
@@ -657,7 +651,7 @@ namespace BalatroSeedOracle.ViewModels
                 var fileName = $"{normalizedName}.json";
                 var filePath = Path.Combine(triggerPointsDir, fileName);
 
-                var json = JsonSerializer.Serialize(audioTrigger, JsonOptions);
+                var json = JsonSerializer.Serialize(audioTrigger, BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.AudioTriggerPoint);
                 File.WriteAllText(filePath, json);
 
                 DebugLogger.LogImportant(

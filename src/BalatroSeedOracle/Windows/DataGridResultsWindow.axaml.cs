@@ -545,8 +545,8 @@ LIMIT 50;",
             try
             {
                 var json = JsonSerializer.Serialize(
-                    _filteredResults,
-                    new JsonSerializerOptions { WriteIndented = true }
+                    _filteredResults.ToList(),
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.ListDataGridResultItem
                 );
                 await File.WriteAllTextAsync(file.Path.LocalPath, json);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to JSON");
@@ -686,7 +686,7 @@ LIMIT 50;",
             var items = _resultsGrid.SelectedItems.Cast<DataGridResultItem>().ToList();
             var json = JsonSerializer.Serialize(
                 items,
-                new JsonSerializerOptions { WriteIndented = true }
+                BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.ListDataGridResultItem
             );
 
             Clipboard?.SetTextAsync(json);

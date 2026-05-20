@@ -14,22 +14,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
     public partial class JsonEditorTabViewModel : ObservableObject
     {
-        private static readonly JsonSerializerOptions SerializeOptions = new()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = System
-                .Text
-                .Json
-                .Serialization
-                .JsonIgnoreCondition
-                .WhenWritingNull,
-        };
-
-        private static readonly JsonSerializerOptions DeserializeOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-        };
-
         private readonly FiltersModalViewModel? _parentViewModel;
         private readonly FilterSerializationService? _serializationService;
 
@@ -135,7 +119,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // Update JSON content silently using FilterSerializationService for proper formatting
                 JsonContent =
                     _serializationService?.SerializeConfig(config)
-                    ?? JsonSerializer.Serialize(config, SerializeOptions);
+                    ?? JsonSerializer.Serialize(config, Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument);
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count;
@@ -204,7 +188,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
                 // No separate MustNot collection needed
 
-                JsonContent = JsonSerializer.Serialize(config, SerializeOptions);
+                JsonContent = JsonSerializer.Serialize(config, Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument);
 
                 ValidationStatus =
                     $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -252,9 +236,9 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 }
 
                 // Parse the JSON
-                var config = JsonSerializer.Deserialize<JamlRootDocument>(
+                var config = JsonSerializer.Deserialize(
                     JsonContent,
-                    DeserializeOptions
+                    Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument
                 );
 
                 if (config is null)

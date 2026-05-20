@@ -151,7 +151,10 @@ namespace BalatroSeedOracle.Services
                 }
 
                 var json = File.ReadAllText(presetFile);
-                var preset = System.Text.Json.JsonSerializer.Deserialize<VisualizerPreset>(json);
+                var preset = System.Text.Json.JsonSerializer.Deserialize(
+                    json,
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset
+                );
 
                 if (preset != null)
                 {

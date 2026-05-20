@@ -581,16 +581,9 @@ namespace BalatroSeedOracle.ViewModels
                     {
                         var json = await File.ReadAllTextAsync(file);
                         var trigger =
-                            System.Text.Json.JsonSerializer.Deserialize<AudioTriggerPoint>(
+                            System.Text.Json.JsonSerializer.Deserialize(
                                 json,
-                                new System.Text.Json.JsonSerializerOptions
-                                {
-                                    PropertyNamingPolicy = System
-                                        .Text
-                                        .Json
-                                        .JsonNamingPolicy
-                                        .CamelCase,
-                                }
+                                BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.AudioTriggerPoint
                             );
 
                         if (trigger is not null && !string.IsNullOrEmpty(trigger.Name))
@@ -1459,8 +1452,9 @@ namespace BalatroSeedOracle.ViewModels
             try
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var preset = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
-                    json
+                var preset = System.Text.Json.JsonSerializer.Deserialize(
+                    json,
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset
                 );
 
                 if (preset is not null)
@@ -1571,8 +1565,10 @@ namespace BalatroSeedOracle.ViewModels
                             : null,
                 };
 
-                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-                var json = System.Text.Json.JsonSerializer.Serialize(preset, options);
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    preset,
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset
+                );
                 await File.WriteAllTextAsync(filePath, json);
 
                 CurrentPresetName = preset.Name;
@@ -1926,14 +1922,16 @@ namespace BalatroSeedOracle.ViewModels
 
                 // Load preset A
                 var jsonA = await File.ReadAllTextAsync(presetAPath);
-                var presetA = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
-                    jsonA
+                var presetA = System.Text.Json.JsonSerializer.Deserialize(
+                    jsonA,
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset
                 );
 
                 // Load preset B
                 var jsonB = await File.ReadAllTextAsync(presetBPath);
-                var presetB = System.Text.Json.JsonSerializer.Deserialize<Models.VisualizerPreset>(
-                    jsonB
+                var presetB = System.Text.Json.JsonSerializer.Deserialize(
+                    jsonB,
+                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.VisualizerPreset
                 );
 
                 if (presetA is not null && presetB is not null)
