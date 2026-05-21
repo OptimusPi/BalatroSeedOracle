@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 
 namespace BalatroSeedOracle.Views.Modals
@@ -99,19 +100,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Use AppPaths for proper cross-platform user data directory
                 var filtersDir = AppPaths.FiltersDir;
 
-                // Open the directory in the default file manager
-                if (OperatingSystem.IsWindows())
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", filtersDir);
-                }
-                else if (OperatingSystem.IsMacOS())
-                {
-                    System.Diagnostics.Process.Start("open", filtersDir);
-                }
-                else if (OperatingSystem.IsLinux())
-                {
-                    System.Diagnostics.Process.Start("xdg-open", filtersDir);
-                }
+                // Open the directory via the platform service (OS branching lives there).
+                ServiceHelper.GetService<IPlatformServices>()?.OpenInFileManager(filtersDir);
 
                 DebugLogger.Log("SettingsModal", $"Opened filters directory: {filtersDir}");
             }
@@ -131,19 +121,8 @@ namespace BalatroSeedOracle.Views.Modals
                 // Use AppPaths.DataRootDir for the proper AppData folder, not bin folder
                 var appDir = AppPaths.DataRootDir;
 
-                // Open the directory in the default file manager
-                if (OperatingSystem.IsWindows())
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", appDir);
-                }
-                else if (OperatingSystem.IsMacOS())
-                {
-                    System.Diagnostics.Process.Start("open", appDir);
-                }
-                else if (OperatingSystem.IsLinux())
-                {
-                    System.Diagnostics.Process.Start("xdg-open", appDir);
-                }
+                // Open the directory via the platform service (OS branching lives there).
+                ServiceHelper.GetService<IPlatformServices>()?.OpenInFileManager(appDir);
 
                 DebugLogger.Log("SettingsModal", $"Opened app directory: {appDir}");
             }

@@ -75,5 +75,17 @@ namespace BalatroSeedOracle.Desktop.Services
         {
             System.Diagnostics.Debug.WriteLine(message);
         }
+
+        public void OpenInFileManager(string path)
+        {
+            // Desktop head targets Windows/macOS/Linux from one binary, so the
+            // OS branch is correct here (platform service), not in a View.
+            if (OperatingSystem.IsWindows())
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            else if (OperatingSystem.IsMacOS())
+                System.Diagnostics.Process.Start("open", path);
+            else if (OperatingSystem.IsLinux())
+                System.Diagnostics.Process.Start("xdg-open", path);
+        }
     }
 }

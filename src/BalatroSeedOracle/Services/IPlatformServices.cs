@@ -78,5 +78,11 @@ namespace BalatroSeedOracle.Services
         /// Writes a debug log message to the platform's logging mechanism.
         /// </summary>
         void WriteDebugLog(string message);
+
+        /// <summary>
+        /// Opens the given directory (or file) in the platform's native file manager.
+        /// No-op on platforms without a desktop file manager (browser/mobile).
+        /// </summary>
+        void OpenInFileManager(string path);
     }
 }

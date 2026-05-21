@@ -62,6 +62,9 @@ internal sealed class iOSPlatformServices : IPlatformServices
     public void WriteLog(string message) { }
 
     public void WriteDebugLog(string message) { }
+
+    // No desktop file manager on iOS.
+    public void OpenInFileManager(string path) { }
 }
 
 /// <summary>iOS Audio manager - stub</summary>

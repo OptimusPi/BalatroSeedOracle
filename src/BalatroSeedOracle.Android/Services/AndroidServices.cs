@@ -82,6 +82,9 @@ public class AndroidPlatformServices : IPlatformServices
     public void WriteLog(string message) { }
 
     public void WriteDebugLog(string message) { }
+
+    // No desktop file manager on Android.
+    public void OpenInFileManager(string path) { }
 }
 
 public class AndroidAudioManager : IAudioManager

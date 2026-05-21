@@ -92,5 +92,8 @@ namespace BalatroSeedOracle.Browser.Services
         {
             System.Diagnostics.Debug.WriteLine(message);
         }
+
+        // No native file manager in the browser sandbox.
+        public void OpenInFileManager(string path) { }
     }
 }
