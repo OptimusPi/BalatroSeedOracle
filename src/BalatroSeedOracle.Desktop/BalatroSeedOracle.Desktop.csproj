@@ -19,11 +19,14 @@
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <DebuggerSupport>false</DebuggerSupport>
-    <EnableStackTraceInException>false</EnableStackTraceInException>
+    <!-- Keep stack traces so AOT/Release crashes are diagnosable (prior crash.log entries had blank stacks). -->
+    <EnableStackTraceInException>true</EnableStackTraceInException>
     <OptimizationPreference>Speed</OptimizationPreference>
     <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
     <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
-    <IlcDisableReflection>true</IlcDisableReflection>
+    <!-- IlcDisableReflection removed: it strips reflection metadata Avalonia's XAML
+         loader needs, which produces "No precompiled XAML found for App" at startup
+         in published builds. Avalonia is not compatible with full reflection-disable. -->
   </PropertyGroup>
 
   <!-- Release-specific optimizations -->
