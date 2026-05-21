@@ -9,12 +9,17 @@
     <AssemblyName>BalatroSeedOracle.Desktop</AssemblyName>
   </PropertyGroup>
 
-  <!-- AOT Configuration - Optimized for Speed -->
+  <!-- Native AOT + trimming DISABLED: the app uses reflection (YamlDotNet
+       DeserializerBuilder, Avalonia ReflectionBinding, reflection JSON) that is
+       not AOT/trim-safe. Forcing AOT (esp. with the former IlcDisableReflection)
+       made published builds crash instantly at startup. Ship a normal
+       self-contained JIT build instead — launches reliably; SIMD (in the engine)
+       still vectorizes under JIT. Revisit AOT only after the ~54 IL3050/IL2026
+       sites are made static. -->
   <PropertyGroup>
-    <PublishAot>true</PublishAot>
-    <TrimMode>link</TrimMode>
-    <PublishTrimmed>true</PublishTrimmed>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <PublishAot>false</PublishAot>
+    <PublishTrimmed>false</PublishTrimmed>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <InvariantGlobalization>true</InvariantGlobalization>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
