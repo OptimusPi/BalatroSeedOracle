@@ -73,21 +73,34 @@ public class DesktopAudioManager : IAudioManager, IDisposable
     public bool IsPlaying => _device?.IsRunning == true;
     public event Action<float, float, float, float>? AudioAnalysisUpdated;
 
-    public DesktopAudioManager()
+    // Constructor does no work (Avalonia/Cleary: constructors must not block, and this service
+    // is a ctor dependency of the main-menu ViewModel built on the UI thread). Real device init
+    // happens in InitializeAsync, awaited from startup after the window is shown.
+    public DesktopAudioManager() { }
+
+    /// <summary>
+    /// Initializes the SoundFlow/MiniAudio backend. The blocking native device init runs on a
+    /// background thread (Task.Run) and is awaited by the caller, so it never freezes the UI
+    /// thread. Failures are swallowed → audio is simply silent (e.g. no audio device present).
+    /// </summary>
+    public async System.Threading.Tasks.Task InitializeAsync()
     {
         try
         {
-            _engine = new MiniAudioEngine();
-            var format = AudioFormat.Cd;
-            var defaultDevice = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
-            _device = _engine.InitializePlaybackDevice(defaultDevice, format);
-            LoadTracks(format);
-            LoadSoundEffects(format);
-            _device.MasterMixer.Volume = 0f;
-            _masterVolume = 0f;
-            _device.Start();
-            _cancellationTokenSource = new CancellationTokenSource();
-            _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
+            await Task.Run(() =>
+            {
+                _engine = new MiniAudioEngine();
+                var format = AudioFormat.Cd;
+                var defaultDevice = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
+                _device = _engine.InitializePlaybackDevice(defaultDevice, format);
+                LoadTracks(format);
+                LoadSoundEffects(format);
+                _device.MasterMixer.Volume = 0f;
+                _masterVolume = 0f;
+                _device.Start();
+                _cancellationTokenSource = new CancellationTokenSource();
+                _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);
+            });
         }
         catch (Exception ex)
         {

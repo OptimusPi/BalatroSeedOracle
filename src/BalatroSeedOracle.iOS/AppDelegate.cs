@@ -85,6 +85,9 @@ internal sealed class iOSAudioManager : IAudioManager
     public float ChordsIntensity => 0;
     public float MelodyIntensity => 0;
 
+    public System.Threading.Tasks.Task InitializeAsync() =>
+        System.Threading.Tasks.Task.CompletedTask;
+
     public void SetTrackVolume(string trackName, float volume) { }
 
     public void SetTrackPan(string trackName, float pan) { }

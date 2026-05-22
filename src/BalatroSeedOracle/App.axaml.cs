@@ -109,6 +109,9 @@ public partial class App : Application
                 // Pre-load sprites asynchronously (without the complex shader transition)
                 _ = PreloadSpritesWithoutTransition();
 
+                // Browser/mobile audio init is non-blocking (async JS interop, or no-op stubs).
+                _ = _serviceProvider?.GetService<Services.IAudioManager>()?.InitializeAsync();
+
                 DebugLogger.Log("App", "Browser/Mobile initialization complete");
             }
 
@@ -318,14 +321,16 @@ public partial class App : Application
                 await PreloadSpritesWithoutTransition();
             }
 
-            // Initialize background music with SoundFlow (8-track) - Desktop only
+            // Initialize background music (SoundFlow 8-track). Awaited here — AFTER the window is
+            // shown — so the blocking native device init never freezes startup. InitializeAsync
+            // offloads the native init to a background thread internally and never throws.
             try
             {
                 var audioManager = _serviceProvider?.GetService<Services.IAudioManager>();
                 if (audioManager != null)
                 {
-                    DebugLogger.LogImportant("App", "Starting 8-track audio with SoundFlow");
-                    DebugLogger.Log("App", $"Audio manager initialized: {audioManager}");
+                    DebugLogger.LogImportant("App", "Initializing 8-track audio with SoundFlow");
+                    await audioManager.InitializeAsync();
                 }
             }
             catch (Exception ex)

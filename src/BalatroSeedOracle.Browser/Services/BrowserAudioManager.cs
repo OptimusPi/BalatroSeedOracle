@@ -58,12 +58,10 @@ public sealed partial class BrowserAudioManager : IAudioManager, IDisposable
     public bool IsPlaying => _isInitialized;
     public event Action<float, float, float, float>? AudioAnalysisUpdated;
 
-    public BrowserAudioManager()
-    {
-        _ = InitializeAsync();
-    }
+    // Constructor does no work; InitializeAsync is awaited from startup after the window is shown.
+    public BrowserAudioManager() { }
 
-    private async Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         try
         {

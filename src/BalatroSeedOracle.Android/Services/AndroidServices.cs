@@ -104,6 +104,8 @@ public class AndroidAudioManager : IAudioManager
     public float ChordsIntensity => 0;
     public float MelodyIntensity => 0;
 
+    public Task InitializeAsync() => Task.CompletedTask;
+
     public void SetTrackVolume(string t, float v) { }
 
     public void SetTrackPan(string t, float p) { }

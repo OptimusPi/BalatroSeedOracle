@@ -6,6 +6,13 @@ namespace BalatroSeedOracle.Services;
 /// </summary>
 public interface IAudioManager
 {
+    /// <summary>
+    /// Initializes the audio backend. Called once from app startup AFTER the main window is
+    /// shown, so backend/device init never blocks the UI thread during construction.
+    /// Implementations must not throw; failures degrade to silent audio.
+    /// </summary>
+    System.Threading.Tasks.Task InitializeAsync();
+
     float MasterVolume { get; set; }
     bool IsPlaying { get; }
     float Bass1Intensity { get; }

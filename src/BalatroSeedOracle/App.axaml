@@ -190,8 +190,9 @@
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
-        <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" />
-        <StyleInclude Source="avares://IconPacks.Avalonia.Material/Material.axaml" />
+        <!-- BISECT TEST: temporarily disabled to isolate the DynamicResource MethodNotFound (Avalonia 11/12 skew). -->
+        <!-- <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" /> -->
+        <!-- <StyleInclude Source="avares://IconPacks.Avalonia.Material/Material.axaml" /> -->
         <!-- Avalonia Accelerate Components -->
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <!-- DISABLED FOR WASM BUILD: <StyleInclude Source="avares://Avalonia.Controls.Markdown/Themes/Fluent.axaml" /> -->
