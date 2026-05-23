@@ -77,14 +77,13 @@ namespace BalatroSeedOracle.Services
         /// </summary>
         public void SetProgress(float progress)
         {
+            // No active transition is the normal post-completion state. Callers like the
+            // fire-and-forget UniformProgressLoopAsync race against SetProgress(1.0f) /
+            // StopTransition() and naturally tick a few frames past the end — silently
+            // ignore instead of spamming an error 30x/sec. If you're hitting this and you
+            // expected a live transition, log at the caller (you have the context there).
             if (!_isRunning || _activeTransition == null)
-            {
-                DebugLogger.LogError(
-                    "TransitionService",
-                    "Cannot set progress - no active transition"
-                );
                 return;
-            }
 
             _activeTransition.CurrentProgress = Math.Clamp(progress, 0f, 1f);
             ApplyCurrentState();

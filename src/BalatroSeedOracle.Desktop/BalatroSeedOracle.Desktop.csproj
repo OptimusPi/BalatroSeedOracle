@@ -17,9 +17,9 @@
        still vectorizes under JIT. Revisit AOT only after the ~54 IL3050/IL2026
        sites are made static. -->
   <PropertyGroup>
-    <PublishAot>false</PublishAot>
-    <PublishTrimmed>false</PublishTrimmed>
-    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <InvariantGlobalization>true</InvariantGlobalization>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>

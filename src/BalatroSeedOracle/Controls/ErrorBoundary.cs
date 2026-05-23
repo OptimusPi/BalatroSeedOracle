@@ -23,6 +23,23 @@ public class ErrorBoundary : ContentControl
         string
     >(nameof(ErrorMessage), defaultValue: "");
 
+    // Computed inverse of HasError, exposed so the control template can drive
+    // ContentPresenter.IsVisible with a plain {TemplateBinding} — no negation,
+    // no RelativeSource, no compiled-binding x:DataType ceremony.
+    public static readonly DirectProperty<ErrorBoundary, bool> IsContentVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ErrorBoundary, bool>(
+            nameof(IsContentVisible),
+            o => o.IsContentVisible
+        );
+
+    // Read-only command exposed as DirectProperty so the template can bind to it
+    // via {TemplateBinding RetryCommand} (TemplateBinding requires AvaloniaProperty).
+    public static readonly DirectProperty<ErrorBoundary, System.Windows.Input.ICommand?> RetryCommandProperty =
+        AvaloniaProperty.RegisterDirect<ErrorBoundary, System.Windows.Input.ICommand?>(
+            nameof(RetryCommand),
+            o => o.RetryCommand
+        );
+
     private readonly RelayCommand _retryCommand;
 
     public bool HasError
@@ -35,6 +52,16 @@ public class ErrorBoundary : ContentControl
     {
         get => GetValue(ErrorMessageProperty) ?? "";
         set => SetValue(ErrorMessageProperty, value);
+    }
+
+    public bool IsContentVisible => !HasError;
+
+    static ErrorBoundary()
+    {
+        // Re-raise IsContentVisible whenever HasError changes so the template binding updates.
+        HasErrorProperty.Changed.AddClassHandler<ErrorBoundary>(
+            (b, _) => b.RaisePropertyChanged(IsContentVisibleProperty, !b.IsContentVisible, b.IsContentVisible)
+        );
     }
 
     /// <summary>

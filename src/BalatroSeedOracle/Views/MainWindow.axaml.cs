@@ -42,10 +42,24 @@ public partial class MainWindow : Window
             BuyBalatroLink.PointerPressed += OnBuyBalatroClick;
         }
 
-        // Host the DI-created main menu instance (View composes content; ViewModel does not hold View reference)
+        // Host the DI-created main menu instance.
+        // The auto-generated x:Name field for MainContentHost isn't populated by
+        // AvaloniaXamlLoader.Load(this) in this configuration — verified by the previous
+        // diagnostic run which logged "MainContentHost is NULL after InitializeComponent".
+        // FindControl<T> is the reliable way to grab the named control after Load.
         _mainMenu = mainMenu;
-        if (MainContentHost != null)
-            MainContentHost.Content = _mainMenu;
+        var contentHost = this.FindControl<Controls.ErrorBoundary>("MainContentHost");
+        if (contentHost != null)
+        {
+            contentHost.Content = _mainMenu;
+            DebugLogger.Log("MainWindow",
+                $"MainContentHost.Content assigned via FindControl to {(_mainMenu is null ? "NULL" : _mainMenu.GetType().Name)}");
+        }
+        else
+        {
+            DebugLogger.LogError("MainWindow",
+                "FindControl<ErrorBoundary>(\"MainContentHost\") returned null — the named control wasn't registered in the XAML name scope. Check that MainWindow.axaml still has x:Name=\"MainContentHost\".");
+        }
 
         // Sync IsVibeOutMode from MainMenu to MainWindow
         if (_mainMenu?.ViewModel is not null && ViewModel is not null)

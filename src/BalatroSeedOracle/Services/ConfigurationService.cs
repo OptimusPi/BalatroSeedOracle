@@ -185,7 +185,10 @@ namespace BalatroSeedOracle.Services
                                 );
                                 if (config != null) return config as T;
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                DebugLogger.LogError("ConfigurationService", $"Failed to deserialize filter from '{filePath}': {ex.Message}");
+                            }
                         }
                         return null;
                     });

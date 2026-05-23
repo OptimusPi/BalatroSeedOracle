@@ -5,9 +5,9 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:ErrorBoundary">
                 <Grid>
+                    <!-- DIAGNOSTIC: IsVisible binding removed temporarily to discriminate template-binding failure vs unset Content. -->
                     <ContentPresenter Name="PART_ContentPresenter"
-                                      Content="{TemplateBinding Content}"
-                                      IsVisible="{Binding !HasError, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                      Content="{TemplateBinding Content}"/>
                     <Border Background="{StaticResource DarkBorder}"
                             BorderBrush="{StaticResource Gold}"
                             BorderThickness="2"
@@ -15,20 +15,20 @@
                             Padding="24,20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            IsVisible="{Binding HasError, RelativeSource={RelativeSource TemplatedParent}}">
+                            IsVisible="{TemplateBinding HasError}">
                         <StackPanel Spacing="12" MinWidth="320">
                             <TextBlock Text="Something went wrong"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="18"
                                        Foreground="{StaticResource Gold}"/>
-                            <TextBlock Text="{Binding ErrorMessage, RelativeSource={RelativeSource TemplatedParent}}"
+                            <TextBlock Text="{TemplateBinding ErrorMessage}"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="14"
                                        Foreground="{StaticResource White}"
                                        TextWrapping="Wrap"
                                        MaxWidth="400"/>
                             <Button Content="Retry"
-                                    Command="{Binding RetryCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Command="{TemplateBinding RetryCommand}"
                                     HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Border>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using BalatroSeedOracle.Helpers;
 using Motely;
 using Motely.Filters;
 
@@ -89,7 +90,7 @@ internal sealed class BsoSearchContext : IDisposable
 
     public void Cancel()
     {
-        try { _cts?.Cancel(); } catch { }
+        try { _cts?.Cancel(); } catch (Exception ex) { DebugLogger.LogError("BsoSearchContext", $"Failed to cancel search: {ex.Message}"); }
         _status = MotelySearchStatus.Cancelled;
         _stopwatch.Stop();
     }
@@ -129,7 +130,7 @@ internal sealed class BsoSearchContext : IDisposable
 
     public void Dispose()
     {
-        try { _search?.Dispose(); } catch { }
-        try { _cts?.Dispose(); } catch { }
+        try { _search?.Dispose(); } catch (Exception ex) { DebugLogger.LogError("BsoSearchContext", $"Failed to dispose search: {ex.Message}"); }
+        try { _cts?.Dispose(); } catch (Exception ex) { DebugLogger.LogError("BsoSearchContext", $"Failed to dispose CancellationTokenSource: {ex.Message}"); }
     }
 }

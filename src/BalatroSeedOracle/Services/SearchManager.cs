@@ -226,7 +226,7 @@ public sealed class SearchManager : IDisposable
         {
             if (_activeSearches.TryRemove(searchId, out var context))
             {
-                try { context.Stop(); context.Dispose(); } catch { }
+                try { context.Stop(); context.Dispose(); } catch (Exception ex) { DebugLogger.LogError("SearchManager", $"Error stopping search {context.SearchId}: {ex.Message}"); }
             }
         }
         return toRemove.Count;

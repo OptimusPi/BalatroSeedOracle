@@ -87,7 +87,10 @@ namespace BalatroSeedOracle.Helpers
                     }
                     return overrideDir;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    DebugLogger.LogError("AppPaths", $"Failed to use BSO_DATA_DIR override '{overrideDir}': {ex.Message}");
+                }
             }
 
             var exeDir = AppContext.BaseDirectory;
@@ -104,7 +107,10 @@ namespace BalatroSeedOracle.Helpers
                 }
                 return localData;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("AppPaths", $"Failed to create/access local Data directory at '{localData}': {ex.Message}");
+            }
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var root = Path.Combine(appData, "BalatroSeedOracle");
