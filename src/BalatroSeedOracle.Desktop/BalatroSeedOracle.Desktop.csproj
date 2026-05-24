@@ -48,7 +48,20 @@
   <!-- AOT Trimming Configuration -->
   <ItemGroup>
     <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
+    <!-- These libraries use heavy reflection (YAML reflective deserialization, programmatic
+         DataGrid Binding(string) instances). Rooting the whole assembly keeps their internal
+         reflection paths intact. Long-term: get BSO off direct YamlDotNet usage (Motely owns
+         JAML parsing) and migrate DataGridResultsWindow → TreeDataGrid. -->
+    <TrimmerRootAssembly Include="YamlDotNet" />
+    <TrimmerRootAssembly Include="Avalonia.Controls.DataGrid" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Acknowledged: assembly-level warnings from the rooted libraries above (IL3053/IL2104)
+         and the specific Binding(string) call sites in DataGridResultsWindow (IL3050/IL2026).
+         These are gated by TrimmerRootAssembly + the planned TreeDataGrid migration. -->
+    <NoWarn>$(NoWarn);IL3050;IL2026;IL3053;IL2104</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />

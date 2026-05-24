@@ -152,6 +152,13 @@ public partial class App : Application
     {
         while (true)
         {
+            // Bail if something else already finished the transition (e.g. the main
+            // flow's SetProgress(1.0f) completed and StopTransition'd while we were
+            // still ticking). Without this the loop runs all 3.14s of minIntro past
+            // the actual transition's end.
+            if (!transitionService.IsTransitionActive)
+                return;
+
             var elapsed = DateTime.UtcNow - introStart;
             if (elapsed >= minIntro)
             {
