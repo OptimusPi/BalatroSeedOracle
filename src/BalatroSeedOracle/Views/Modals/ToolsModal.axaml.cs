@@ -16,24 +16,30 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class ToolsModal : UserControl
     {
         private readonly UserProfileService? _userProfileService;
+        private readonly IConfigurationService? _configurationService;
+        private readonly IFilterService? _filterService;
+        private readonly IFilterCacheService? _filterCacheService;
+        private readonly IPlatformServices? _platformServices;
 
-        /// <summary>Parameterless ctor for XAML loader only. Throws at runtime. Creator must pass dependencies.</summary>
+        /// <summary>Parameterless ctor for XAML loader only.</summary>
         public ToolsModal()
-            : this(throwForDesignTimeOnly: true) { }
-
-        private ToolsModal(bool throwForDesignTimeOnly)
         {
-            if (throwForDesignTimeOnly)
-                throw new InvalidOperationException(
-                    "Do not use ToolsModal(). Creator must pass UserProfileService."
-                );
-            _userProfileService = null;
             InitializeComponent();
         }
 
-        public ToolsModal(UserProfileService? userProfileService)
+        public ToolsModal(
+            UserProfileService? userProfileService = null,
+            IConfigurationService? configurationService = null,
+            IFilterService? filterService = null,
+            IFilterCacheService? filterCacheService = null,
+            IPlatformServices? platformServices = null
+        )
         {
             _userProfileService = userProfileService;
+            _configurationService = configurationService;
+            _filterService = filterService;
+            _filterCacheService = filterCacheService;
+            _platformServices = platformServices;
             InitializeComponent();
         }
 
@@ -68,9 +74,9 @@ namespace BalatroSeedOracle.Views.Modals
                     try
                     {
                         var configurationService =
-                            ServiceHelper.GetRequiredService<IConfigurationService>();
-                        var filterService = ServiceHelper.GetRequiredService<IFilterService>();
-                        var filterCache = ServiceHelper.GetService<IFilterCacheService>();
+                            _configurationService ?? ServiceHelper.GetRequiredService<IConfigurationService>();
+                        var filterService = _filterService ?? ServiceHelper.GetRequiredService<IFilterService>();
+                        var filterCache = _filterCacheService ?? ServiceHelper.GetService<IFilterCacheService>();
 
                         int successCount = 0;
                         int failCount = 0;
@@ -302,7 +308,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnAudioVisualizerSettingsClick(object? sender, RoutedEventArgs e)
         {
-            var platformServices = ServiceHelper.GetService<IPlatformServices>();
+            var platformServices = _platformServices ?? ServiceHelper.GetService<IPlatformServices>();
             if (platformServices?.SupportsAudio != true)
                 return;
 

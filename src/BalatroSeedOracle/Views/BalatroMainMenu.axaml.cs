@@ -685,9 +685,7 @@ namespace BalatroSeedOracle.Views
             var previousContent = _activeModalContent;
             var previousTitle = _mainTitleText?.Text;
 
-            var tcs = new TaskCompletionSource<string?>();
-
-            // Use provided default name, or generate a fun random filter name
+            // Generate default name if not provided
             string defaultText;
             if (!string.IsNullOrEmpty(defaultName))
             {
@@ -716,138 +714,17 @@ namespace BalatroSeedOracle.Views
                 defaultText = randomNames[new Random().Next(randomNames.Length)];
             }
 
-            var textBox = new TextBox
-            {
-                Text = defaultText,
-                PlaceholderText = "Enter filter name...",
-                Margin = new Thickness(0, 10, 0, 0),
-                FontSize = 18,
-                Padding = new Thickness(12, 8),
-                MinHeight = 45,
-            };
-
-            var okButton = new Button
-            {
-                Content = "CREATE",
-                Classes = { "btn-blue" },
-                MinWidth = 120,
-                Height = 45,
-            };
-
-            var cancelButton = new Button
-            {
-                Content = "CANCEL",
-                Classes = { "btn-red" },
-                MinWidth = 120,
-                Height = 45,
-            };
-
-            okButton.Click += (s, e) =>
-            {
-                tcs.TrySetResult(textBox.Text);
-            };
-
-            cancelButton.Click += (s, e) =>
-            {
-                tcs.TrySetResult(null);
-            };
-
-            // Main container with border and rounded corners
-            var mainBorder = new Border
-            {
-                Background = this.FindResource("DarkBorder") as Avalonia.Media.IBrush,
-                BorderBrush = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
-                BorderThickness = new Thickness(3),
-                CornerRadius = new CornerRadius(16),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Width = 450,
-                Height = 250,
-            };
-
-            var mainGrid = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
-
-            // Title bar
-            var titleBar = new Border
-            {
-                [Grid.RowProperty] = 0,
-                Background = this.FindResource("ModalGrey") as Avalonia.Media.IBrush,
-                CornerRadius = new CornerRadius(14, 14, 0, 0),
-                Padding = new Thickness(20, 12),
-            };
-
-            var titleText = new TextBlock
-            {
-                Text = defaultName == null ? "Create New Filter" : "Copy Filter",
-                FontSize = 24,
-                Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-
-            titleBar.Child = titleText;
-            mainGrid.Children.Add(titleBar);
-
-            // Content area
-            var contentBorder = new Border
-            {
-                [Grid.RowProperty] = 1,
-                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                Padding = new Thickness(24),
-            };
-
-            var contentStack = new StackPanel { Spacing = 8 };
-            contentStack.Children.Add(
-                new TextBlock
-                {
-                    Text = "Filter Name:",
-                    FontSize = 16,
-                    Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
-                }
+            var dialog = new FilterNameInputDialog(
+                defaultName == null ? "Create New Filter" : "Copy Filter",
+                defaultName == null ? "CREATE" : "COPY",
+                defaultText
             );
-            contentStack.Children.Add(textBox);
-
-            contentBorder.Child = contentStack;
-            mainGrid.Children.Add(contentBorder);
-
-            // Button area
-            var buttonBorder = new Border
-            {
-                [Grid.RowProperty] = 2,
-                Background = this.FindResource("DarkBackground") as Avalonia.Media.IBrush,
-                CornerRadius = new CornerRadius(0, 0, 14, 14),
-                Padding = new Thickness(20, 12, 20, 20),
-            };
-
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Spacing = 12,
-            };
-            buttonPanel.Children.Add(okButton);
-            buttonPanel.Children.Add(cancelButton);
-
-            buttonBorder.Child = buttonPanel;
-            mainGrid.Children.Add(buttonBorder);
-
-            mainBorder.Child = mainGrid;
-
-            // Wrap in UserControl for ShowModalContent
-            var contentControl = new UserControl { Content = mainBorder };
 
             // Show it
-            ShowModalContent(contentControl, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
-
-            // Focus textbox after a short delay
-            Dispatcher.UIThread.Post(async () =>
-            {
-                await Task.Delay(100);
-                textBox.Focus();
-                textBox.SelectAll();
-            });
+            ShowModalContent(dialog, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
 
             // Wait for user input
-            var result = await tcs.Task;
+            var result = await dialog.GetResultAsync();
 
             // If cancelled, restore previous modal
             if (result == null && previousContent != null)
@@ -1016,7 +893,12 @@ namespace BalatroSeedOracle.Views
                 _previousModalTitle = "SETTINGS";
             }
 
-            var widgetPicker = new Modals.WidgetPickerModal();
+            var widgetPicker = App.GetService<Modals.WidgetPickerModal>();
+            if (widgetPicker == null)
+            {
+                DebugLogger.LogError("BalatroMainMenu", "WidgetPickerModal could not be resolved from services");
+                return;
+            }
             var modal = new StandardModal("ADD WIDGETS");
             modal.Squeeze = true;
             modal.SetContent(widgetPicker);
@@ -1043,7 +925,12 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void ShowToolsModal()
         {
-            var toolsModal = new Modals.ToolsModal();
+            var toolsModal = App.GetService<Modals.ToolsModal>();
+            if (toolsModal == null)
+            {
+                DebugLogger.LogError("BalatroMainMenu", "ToolsModal could not be resolved from services");
+                return;
+            }
             var modal = new StandardModal("TOOLS");
             modal.SetContent(toolsModal);
             modal.BackClicked += (s, ev) => HideModalContent();

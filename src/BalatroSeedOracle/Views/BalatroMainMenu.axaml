@@ -49,7 +49,7 @@
                     Padding="15,20">
                 <StackPanel Spacing="10">
                     <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,0,0,5">
-                        <material:PackIconMaterial Kind="VolumeHigh" Width="14" Height="14" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
+                        <Path Width="14" Height="14" Fill="{StaticResource Gold}" Data="{StaticResource VolumeHighIconData}" VerticalAlignment="Center"/>
                         <TextBlock Text="VOLUME"
                                    FontSize="14"
                                    Foreground="{StaticResource Gold}"/>
@@ -258,7 +258,7 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding ToggleWidgetDockCommand}"
                                     ToolTip.Tip="Widget dock">
-                                <feather:PackIconFeatherIcons Kind="Grid" Width="28" Height="28" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <Path Width="28" Height="28" Fill="{StaticResource White}" Data="{StaticResource GridIconData}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Button>
                             
                             <!-- Toggle All Widgets Button -->
@@ -273,10 +273,19 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding ToggleAllWidgetsCommand}"
                                     ToolTip.Tip="Toggle all widgets">
-                                <material:PackIconMaterial Kind="{Binding ToggleAllWidgetsIcon}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Width="24" Height="24"/>
+                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path.Styles>
+                                        <Style Selector="Path">
+                                            <Setter Property="Data" Value="{StaticResource WidgetsIconData}"/>
+                                        </Style>
+                                        <Style Selector="Path[Tag=WidgetsOutline]">
+                                            <Setter Property="Data" Value="{StaticResource WidgetsOutlineIconData}"/>
+                                        </Style>
+                                    </Path.Styles>
+                                    <Path.Tag>
+                                        <Binding Path="ToggleAllWidgetsIcon"/>
+                                    </Path.Tag>
+                                </Path>
                             </Button>
                             
                             <!-- Widget Dock Popup -->
@@ -300,10 +309,19 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding AnimationToggleCommand}"
                                     ToolTip.Tip="Pause/resume background animation">
-                                <material:PackIconMaterial Kind="{Binding AnimationIcon}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Width="24" Height="24"/>
+                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path.Styles>
+                                        <Style Selector="Path">
+                                            <Setter Property="Data" Value="{StaticResource PauseIconData}"/>
+                                        </Style>
+                                        <Style Selector="Path[Tag=Play]">
+                                            <Setter Property="Data" Value="{StaticResource PlayIconData}"/>
+                                        </Style>
+                                    </Path.Styles>
+                                    <Path.Tag>
+                                        <Binding Path="AnimationIcon"/>
+                                    </Path.Tag>
+                                </Path>
                             </Button>
 
                             <!-- Music Toggle Button -->
@@ -318,10 +336,19 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding MusicToggleCommand}"
                                     ToolTip.Tip="Adjust volume">
-                                <material:PackIconMaterial Kind="{Binding MusicIcon}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Width="24" Height="24"/>
+                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path.Styles>
+                                        <Style Selector="Path">
+                                            <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
+                                        </Style>
+                                        <Style Selector="Path[Tag=VolumeOff]">
+                                            <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
+                                        </Style>
+                                    </Path.Styles>
+                                    <Path.Tag>
+                                        <Binding Path="MusicIcon"/>
+                                    </Path.Tag>
+                                </Path>
                             </Button>
 
                             <!-- Search Widgets Toggle Button -->
@@ -336,10 +363,19 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding ToggleSearchWidgetsCommand}"
                                     ToolTip.Tip="Toggle search widgets">
-                                <material:PackIconMaterial Kind="{Binding SearchWidgetsIcon}"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Width="24" Height="24"/>
+                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path.Styles>
+                                        <Style Selector="Path">
+                                            <Setter Property="Data" Value="{StaticResource MagnifyIconData}"/>
+                                        </Style>
+                                        <Style Selector="Path[Tag=MagnifyPlus]">
+                                            <Setter Property="Data" Value="{StaticResource MagnifyPlusIconData}"/>
+                                        </Style>
+                                    </Path.Styles>
+                                    <Path.Tag>
+                                        <Binding Path="SearchWidgetsIcon"/>
+                                    </Path.Tag>
+                                </Path>
                             </Button>
                         </StackPanel>
                     </Border>
