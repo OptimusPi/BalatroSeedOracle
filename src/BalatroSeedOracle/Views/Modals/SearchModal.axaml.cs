@@ -6,6 +6,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
@@ -163,8 +164,11 @@ namespace BalatroSeedOracle.Views.Modals
                 // Close SearchModal
                 CloseRequested?.Invoke(this, EventArgs.Empty);
 
-                // Open FiltersModal with the filter loaded
-                _ = ViewModel.MainMenu.ShowFiltersModalDirectAsync(filterId);
+                // Open FiltersModal with the filter loaded safely on UI thread
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _ = ViewModel.MainMenu.ShowFiltersModalDirectAsync(filterId);
+                });
 
                 DebugLogger.Log("SearchModal", $"Opened FiltersModal with filter: {filterId}");
             }

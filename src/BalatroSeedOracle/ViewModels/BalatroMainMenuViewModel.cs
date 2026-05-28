@@ -355,57 +355,11 @@ namespace BalatroSeedOracle.ViewModels
             _eventFXService?.TriggerEvent(EventFXType.SearchLaunchModal);
             try
             {
-                if (_filterSelectionFactory is null)
-                {
-                    DebugLogger.LogError("BalatroMainMenuViewModel", "FilterSelectionModalViewModel factory not registered");
-                    return;
-                }
-                var filterSelectionVM = _filterSelectionFactory();
-                filterSelectionVM.Configure(
-                    enableSearch: true,
-                    enableEdit: true,
-                    enableCopy: false,
-                    enableDelete: false,
-                    enableAnalyze: false
-                );
-
-                filterSelectionVM.ModalCloseRequested += (s, e) =>
-                {
-                    var result = filterSelectionVM.Result;
-                    if (result.Cancelled)
-                    {
-                        HideModal();
-                        return;
-                    }
-
-                    if (
-                        result.Action == FilterAction.Search
-                        && !string.IsNullOrEmpty(result.FilterId)
-                    )
-                    {
-                        // Transition to SearchModal using the injected VM
-                        var searchVM = SearchModalViewModel;
-                        searchVM.MainMenu = null; // We'll handle navigation via ActiveModal
-
-                        // Load filter and show
-                        var filtersDir = AppPaths.FiltersDir;
-                        var configPath = Path.Combine(filtersDir, result.FilterId + ".jaml");
-                        if (!File.Exists(configPath))
-                            configPath = Path.Combine(filtersDir, result.FilterId + ".json");
-
-                        _ = searchVM.LoadFilterAsync(configPath);
-                        ActiveModal = searchVM;
-                        MainTitle = "🎰 SEED SEARCH";
-                    }
-                };
-
-                ActiveModal = filterSelectionVM;
                 IsModalVisible = true;
-                MainTitle = "🔍 SELECT FILTER";
+                ModalRequested?.Invoke(this, new ModalRequestedEventArgs(ModalType.Search));
             }
             catch (Exception ex)
             {
-                ActiveModal = null;
                 HandleModalOpenError("search", "Search", ex);
             }
         }

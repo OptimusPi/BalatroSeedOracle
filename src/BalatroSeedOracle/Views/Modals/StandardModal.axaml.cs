@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using BalatroSeedOracle.Helpers;
@@ -36,8 +37,9 @@ namespace BalatroSeedOracle.Views.Modals
         {
             InitializeComponent();
 
-            if (BackButton is not null)
-                BackButton.Click += OnBackButtonClick;
+            var backButton = this.FindControl<Button>("BackButton");
+            if (backButton is not null)
+                backButton.Click += OnBackButtonClick;
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -61,19 +63,21 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>Sets the modal content area.</summary>
         public void SetContent(Control content)
         {
-            if (ModalContent is null)
+            var modalContent = this.FindControl<ContentPresenter>("ModalContent");
+            if (modalContent is null)
             {
                 DebugLogger.LogError("ModalContent is null!");
                 return;
             }
-            ModalContent.Content = content;
+            modalContent.Content = content;
         }
 
         /// <summary>Sets the back button text.</summary>
         public void SetBackButtonText(string text)
         {
-            if (BackButton is not null)
-                BackButton.Content = text;
+            var backButton = this.FindControl<Button>("BackButton");
+            if (backButton is not null)
+                backButton.Content = text;
         }
 
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
@@ -122,7 +126,8 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var content = ModalContent?.Content;
+                var modalContent = this.FindControl<ContentPresenter>("ModalContent");
+                var content = modalContent?.Content;
 
                 if (content is IModalBackNavigable viewNav && viewNav.TryGoBack())
                     return true;

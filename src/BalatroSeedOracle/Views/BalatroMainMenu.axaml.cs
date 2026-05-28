@@ -325,13 +325,32 @@ namespace BalatroSeedOracle.Views
 
                     case Models.FilterAction.Edit:
                         if (result.FilterId != null)
-                            _ = ShowFiltersModalDirectAsync(result.FilterId);
-                        else
-                            _ = ShowFiltersModalDirectAsync();
+                        {
+                            await Dispatcher.UIThread.InvokeAsync(() =>
+                                ShowFiltersModalDirectAsync(result.FilterId)
+                            );
+                        }
                         break;
 
                     case Models.FilterAction.CreateNew:
-                        _ = ShowFiltersModalDirectAsync();
+                        var filterName = await ShowFilterNameInputDialog();
+                        if (!string.IsNullOrWhiteSpace(filterName))
+                        {
+                            var newFilterId = await CreateNewFilterWithName(filterName);
+                            if (!string.IsNullOrEmpty(newFilterId))
+                            {
+                                await Dispatcher.UIThread.InvokeAsync(() =>
+                                    ShowFiltersModalDirectAsync(newFilterId)
+                                );
+                            }
+                        }
+                        else
+                        {
+                            DebugLogger.Log(
+                                "BalatroMainMenu",
+                                "Create filter cancelled - staying in filter selection"
+                            );
+                        }
                         break;
                 }
             };
@@ -552,55 +571,15 @@ namespace BalatroSeedOracle.Views
         /// <summary>
         /// Show filters modal directly (internal use - called after filter selection)
         /// </summary>
-        public async Task ShowFiltersModalDirectAsync(string? filterId = null)
+        public async Task ShowFiltersModalDirectAsync(string filterId)
         {
+            if (string.IsNullOrEmpty(filterId))
+            {
+                throw new ArgumentException("FilterId cannot be null or empty.", nameof(filterId));
+            }
+
             try
             {
-                // If no filterId provided (Create New), prompt for filter name first
-                if (string.IsNullOrEmpty(filterId))
-                {
-                    var filterName = await ShowFilterNameInputDialog();
-                    if (string.IsNullOrEmpty(filterName))
-                    {
-                        DebugLogger.Log("BalatroMainMenu", "Filter creation cancelled by user");
-                        return; // User cancelled
-                    }
-
-                    // Create new filter file with user's chosen name
-                    var filtersDir = AppPaths.FiltersDir;
-
-                    // Sanitize filename
-                    var sanitizedName = string.Join(
-                        "_",
-                        filterName.Split(System.IO.Path.GetInvalidFileNameChars())
-                    );
-                    filterId = sanitizedName;
-                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
-
-                    var defaultFilter = new JamlRootDocument
-                    {
-                        Name = filterName,
-                        Description = "Created with visual filter builder",
-                        Author = "pifreak",
-                        DateCreated = DateTime.UtcNow.ToString("o"),
-                        Deck = "Red",
-                        Stake = "White",
-                        Must = new System.Collections.Generic.List<JamlClauseUnion>(),
-                        Should = new System.Collections.Generic.List<JamlClauseUnion>(),
-                        MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
-                    };
-                    var jsonContent = System.Text.Json.JsonSerializer.Serialize(
-                        defaultFilter,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
-                    System.IO.File.WriteAllText(filterPath, jsonContent);
-
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"✅ Created new filter: {filterName} ({filterId}.json)"
-                    );
-                }
-
                 // Back to the REAL FiltersModal with visual item shelf and card display!
                 var filtersModal = new Modals.FiltersModal(ViewModel.FiltersModalViewModel);
 
@@ -622,42 +601,28 @@ namespace BalatroSeedOracle.Views
                     HideModalContent();
                 };
 
-                // Load the filter data FIRST if provided
-                if (!string.IsNullOrEmpty(filterId))
+                // Load the filter data
+                var filtersDir = AppPaths.FiltersDir;
+                // Try .jaml first, then .json as fallback
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
+
+                if (!System.IO.File.Exists(filterPath))
                 {
-                    var filtersDir = AppPaths.FiltersDir;
-                    // Try .jaml first, then .json as fallback
-                    var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
-
-                    if (!System.IO.File.Exists(filterPath))
-                    {
-                        filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
-                    }
-
-                    filtersModal.ViewModel.CurrentFilterPath = filterPath;
-
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"🔄 Loading filter for editing: {filterPath}"
-                    );
-
-                    await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(
-                        null
-                    );
-
-                    DebugLogger.Log("BalatroMainMenu", $"✅ Filter loaded for editing: {filterId}");
+                    filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
                 }
 
-                // Verify filter was loaded properly
-                if (string.IsNullOrEmpty(filterId))
-                {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "Filter Designer opened without a valid filter! FilterId must be provided."
-                    );
-                    HideModalContent();
-                    return;
-                }
+                filtersModal.ViewModel.CurrentFilterPath = filterPath;
+
+                DebugLogger.Log(
+                    "BalatroMainMenu",
+                    $"🔄 Loading filter for editing: {filterPath}"
+                );
+
+                await filtersModal.ViewModel.ReloadVisualFromSavedFileCommand.ExecuteAsync(
+                    null
+                );
+
+                DebugLogger.Log("BalatroMainMenu", $"✅ Filter loaded for editing: {filterId}");
 
                 // THEN show the modal with loaded content
                 var modal = new StandardModal("🎨 FILTER DESIGNER");

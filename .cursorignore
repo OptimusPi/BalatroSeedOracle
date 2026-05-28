@@ -1,0 +1,7 @@
+# Exclude build and smoke logs
+*.log
+
+# Exclude old submodule notes and recovered clipboard files
+src/MotelyJAML/Seeds/sixtid4_recovered_clipboard.txt
+src/MotelyJAML/JamlFilters/sixtidlolanotes.txt
+src/MotelyJAML/JamlFilters/lola.txt

@@ -68,7 +68,7 @@ avalonia.license.local
 /external/JamlGenie
 /JamlFilters/JsonItemFilters
 /external
-build.log
+*.log
 docs/BLUEPRINT_GITHUB_PAGES_FIX.md
 *.md
 
