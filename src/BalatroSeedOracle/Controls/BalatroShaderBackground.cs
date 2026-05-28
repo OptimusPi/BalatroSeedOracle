@@ -412,23 +412,23 @@ namespace BalatroSeedOracle.Controls
                 _shaderBuilder.Uniforms["spin_time"] = _spinTime;
                 _shaderBuilder.Uniforms["colour_1"] = new float[]
                 {
-                    _color1.Red / 255f,
-                    _color1.Green / 255f,
-                    _color1.Blue / 255f,
+                    (_color1.Red / 255f) * 0.9f,
+                    (_color1.Green / 255f) * 0.9f,
+                    (_color1.Blue / 255f) * 0.9f,
                     1f,
                 };
                 _shaderBuilder.Uniforms["colour_2"] = new float[]
                 {
-                    _color2.Red / 255f,
-                    _color2.Green / 255f,
-                    _color2.Blue / 255f,
+                    (_color2.Red / 255f) * 1.3f,
+                    (_color2.Green / 255f) * 1.3f,
+                    (_color2.Blue / 255f) * 1.3f,
                     1f,
                 };
                 _shaderBuilder.Uniforms["colour_3"] = new float[]
                 {
-                    _color3.Red / 255f,
-                    _color3.Green / 255f,
-                    _color3.Blue / 255f,
+                    (_color3.Red / 255f) * 0.7f,
+                    (_color3.Green / 255f) * 0.7f,
+                    (_color3.Blue / 255f) * 0.7f,
                     1f,
                 };
                 _shaderBuilder.Uniforms["contrast"] = _contrast;

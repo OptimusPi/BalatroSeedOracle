@@ -3,8 +3,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using IconPacks.Avalonia;
-using IconPacks.Avalonia.Material;
 
 namespace BalatroSeedOracle.Controls
 {
@@ -84,14 +82,14 @@ namespace BalatroSeedOracle.Controls
             if (_isMaximized)
             {
                 // Show restore icon and tooltip
-                IconBlock.Kind = PackIconMaterialKind.WindowRestore;
+                IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("WindowRestoreIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Restore Window");
                 LabelBlock.Text = "";
             }
             else
             {
                 // Show maximize icon and tooltip
-                IconBlock.Kind = PackIconMaterialKind.Fullscreen;
+                IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("FullscreenIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Maximize Window");
                 LabelBlock.Text = "";
             }

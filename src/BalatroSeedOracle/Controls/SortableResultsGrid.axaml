@@ -1,7 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:treeDataGrid="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
              x:DataType="vm:SortableResultsGridViewModel">
@@ -40,19 +39,19 @@
                             Classes="btn-blue"
                             Padding="8,4"
                             IsEnabled="{Binding HasSelection}">
-                        <material:PackIconMaterial Kind="ContentCopy" Width="14" Height="14"/>
+                        <PathIcon Data="{StaticResource ContentCopyIconData}" Width="14" Height="14"/>
                     </Button>
                     <Button Command="{Binding PopOutCommand}" 
                             ToolTip.Tip="Open in new window"
                             Classes="btn-blue"
                             Padding="8,4">
-                        <material:PackIconMaterial Kind="OpenInNew" Width="14" Height="14"/>
+                        <PathIcon Data="{StaticResource OpenInNewIconData}" Width="14" Height="14"/>
                     </Button>
                     <Button Command="{Binding ExportAllCommand}" 
                             ToolTip.Tip="Export all results"
                             Classes="btn-green"
                             Padding="8,4">
-                        <material:PackIconMaterial Kind="FileExport" Width="14" Height="14"/>
+                        <PathIcon Data="{StaticResource FileExportIconData}" Width="14" Height="14"/>
                     </Button>
                 </StackPanel>
             </Grid>

@@ -1,8 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:components="using:BalatroSeedOracle.Components"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
              x:DataType="vm:SearchModalViewModel"
              x:CompileBindings="True">
@@ -84,7 +83,7 @@
 
                 <!-- Warning content -->
                 <StackPanel Grid.Row="1" Margin="15" Spacing="10" VerticalAlignment="Center">
-                    <material:PackIconMaterial Kind="Alert" Width="32" Height="32" HorizontalAlignment="Center" Foreground="{StaticResource Gold}"/>
+                    <PathIcon Data="{StaticResource AlertIconData}" Width="32" Height="32" HorizontalAlignment="Center" Foreground="{StaticResource Gold}"/>
                     <TextBlock Text="This filter's criteria includes deck-specific items. Search results will match the preferred deck and stake shown above. To override these settings for the current search, use the Deck/Stake spinners on the Search tab."
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="12"

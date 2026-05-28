@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -6,7 +6,6 @@
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:components="using:BalatroSeedOracle.Components"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
              x:CompileBindings="True"
@@ -689,7 +688,7 @@
                             ToolTip.Tip="Cycle: OR -> AND -> BANNED"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
-                        <icons:PackIconMaterial Kind="SwapHorizontal"
+                        <PathIcon Data="{StaticResource SwapHorizontalIconData}"
                                    Width="20" Height="20"
                                    Foreground="{Binding UnifiedOperator.OperatorType, Converter={x:Static converters:OperatorColorConverter.Instance}}"/>
                     </Button>
@@ -916,7 +915,7 @@
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
                                                                 Name="RemoveButton">
-                                                            <icons:PackIconMaterial Kind="Close" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">
                                                                     <Setter Property="Background" Value="{StaticResource RedHover}"/>
@@ -1031,7 +1030,7 @@
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
                                                                 Name="RemoveButton">
-                                                            <icons:PackIconMaterial Kind="Close" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                            <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">
                                                                     <Setter Property="Background" Value="{StaticResource RedHover}"/>

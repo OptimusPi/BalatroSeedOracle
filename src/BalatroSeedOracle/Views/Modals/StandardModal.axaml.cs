@@ -49,7 +49,7 @@ namespace BalatroSeedOracle.Views.Modals
             SetTitle(title);
         }
 
-        private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
+
 
         /// <summary>Sets the modal title. Currently a no-op placeholder retained for API compatibility.</summary>
         public void SetTitle(string title)

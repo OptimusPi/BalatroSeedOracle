@@ -1,7 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
     
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -76,7 +74,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <material:PackIconMaterial Kind="Web" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource WebIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="My Website"
                                FontSize="20"
                                FontFamily="{StaticResource BalatroFont}"
@@ -93,7 +91,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <material:PackIconMaterial Kind="Web" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource WebIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Balatro"
                                FontSize="20"
                                FontFamily="{StaticResource BalatroFont}"
@@ -110,7 +108,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <material:PackIconMaterial Kind="Application" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource ApplicationIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Web App"
                                FontSize="20"
                                FontFamily="{StaticResource BalatroFont}"
@@ -127,7 +125,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <material:PackIconMaterial Kind="Music" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource MusicIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Audio Visualizer"
                                FontSize="20"
                                FontFamily="{StaticResource BalatroFont}"
@@ -146,14 +144,14 @@
                    HorizontalAlignment="Center"
                    Background="{StaticResource BrightRed2}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <material:PackIconMaterial Kind="Fire" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
+                    <PathIcon Data="{StaticResource FireIconData}" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
                     <TextBlock Text="Nuke Everything" 
                                FontSize="20"
                                Foreground="White"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"/>
-                    <icons:PackIconMaterial Kind="Fire" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
+                    <PathIcon Data="{StaticResource FireIconData}" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
                 </StackPanel>
             </Button>
         </StackPanel>

@@ -1,10 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.EventFXWidget"
              x:DataType="vm:EventFXWidgetViewModel"
              x:CompileBindings="True"
@@ -33,7 +32,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <icons:PackIconMaterial Kind="Star" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
+                <PathIcon Data="{StaticResource StarIconData}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
             </Border>
             <TextBlock Text="Event FX"
                        FontSize="14"

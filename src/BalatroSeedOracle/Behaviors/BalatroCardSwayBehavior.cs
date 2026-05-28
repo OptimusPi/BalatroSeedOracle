@@ -20,6 +20,7 @@ namespace BalatroSeedOracle.Behaviors
         private DateTime _startTime;
         private double _cardId; // Unique ID for timing variation
         private bool _isHovering; // Track if mouse is over the card
+        private RotateTransform? _rotateTransform;
 
         /// <summary>
         /// Ambient tilt strength (0.2 = Balatro default)
@@ -47,18 +48,25 @@ namespace BalatroSeedOracle.Behaviors
             _cardId = new Random().NextDouble() * 100;
             _startTime = DateTime.Now;
 
-            // Set up render transform if not already set
-            // If there's already a TransformGroup, we'll use that
-            // Otherwise create a new TranslateTransform (NOT RotateTransform!)
-            if (AssociatedObject.RenderTransform == null)
+            // Setup or retrieve the shared TransformGroup to prevent stomping on other behaviors
+            TransformGroup? group = AssociatedObject.RenderTransform as TransformGroup;
+            if (group == null)
             {
+                group = new TransformGroup();
+                if (AssociatedObject.RenderTransform is Transform t)
+                {
+                    group.Children.Add(t);
+                }
+                AssociatedObject.RenderTransform = group;
                 AssociatedObject.RenderTransformOrigin = new RelativePoint(
                     0.5,
                     0.5,
                     RelativeUnit.Relative
                 );
-                AssociatedObject.RenderTransform = new TranslateTransform();
             }
+
+            _rotateTransform = new RotateTransform();
+            group.Children.Add(_rotateTransform);
 
             // Listen for hover events to pause sway when hovering
             AssociatedObject.PointerEntered += OnPointerEntered;
@@ -81,10 +89,20 @@ namespace BalatroSeedOracle.Behaviors
             {
                 AssociatedObject.PointerEntered -= OnPointerEntered;
                 AssociatedObject.PointerExited -= OnPointerExited;
+
+                if (AssociatedObject.RenderTransform is TransformGroup group && _rotateTransform != null)
+                {
+                    group.Children.Remove(_rotateTransform);
+                    if (group.Children.Count == 0)
+                    {
+                        AssociatedObject.RenderTransform = null;
+                    }
+                }
             }
 
             _animationTimer?.Stop();
             _animationTimer = null;
+            _rotateTransform = null;
         }
 
         private void OnPointerEntered(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -99,27 +117,11 @@ namespace BalatroSeedOracle.Behaviors
 
         private void OnAnimationTick(object? sender, EventArgs e)
         {
-            if (AssociatedObject == null)
+            if (AssociatedObject == null || _rotateTransform == null)
                 return;
 
             // STOP sway when hovering - let magnetic tilt take over!
             if (_isHovering)
-                return;
-
-            // Find the RotateTransform - either standalone or in a TransformGroup
-            RotateTransform? rotateTransform = null;
-
-            if (AssociatedObject.RenderTransform is RotateTransform rotate)
-            {
-                rotateTransform = rotate;
-            }
-            else if (AssociatedObject.RenderTransform is TransformGroup group)
-            {
-                // Look for RotateTransform in the group
-                rotateTransform = group.Children.OfType<RotateTransform>().FirstOrDefault();
-            }
-
-            if (rotateTransform == null)
                 return;
 
             // AMBIENT MODE - Breathing motion when not hovering
@@ -135,7 +137,7 @@ namespace BalatroSeedOracle.Behaviors
             var swayAngle = AmbientTilt * Math.Cos(tilt_angle) * 10; // 10 degrees max sway
 
             // Apply rotation (creates subtle breathing sway)
-            rotateTransform.Angle = swayAngle;
+            _rotateTransform.Angle = swayAngle;
         }
     }
 }

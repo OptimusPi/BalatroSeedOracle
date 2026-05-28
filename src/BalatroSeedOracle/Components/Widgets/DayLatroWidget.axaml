@@ -1,11 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.DayLatroWidget"
              x:DataType="vm:DayLatroWidgetViewModel"
              x:CompileBindings="True"
@@ -51,7 +49,7 @@
                             Cursor="Hand"
                             PointerPressed="OnMinimizedIconPressed"
                             PointerReleased="OnMinimizedIconReleased">
-                        <material:PackIconMaterial Kind="Calendar" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
+                        <PathIcon Data="{StaticResource CalendarIconData}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
                     </Border>
 
                     <!-- Notification badge overlay -->
@@ -65,7 +63,7 @@
                             VerticalAlignment="Top"
                             Margin="0,-5,-5,0"
                             IsVisible="{Binding ShowNewDayBadge}">
-                        <material:PackIconMaterial Kind="Alert"
+                        <PathIcon Data="{StaticResource AlertIconData}"
                                    Width="12" Height="12"
                                    Foreground="{StaticResource White}"
                                    HorizontalAlignment="Center"
@@ -114,7 +112,7 @@
                                     Padding="0"
                                     Command="{Binding CopySeedCommand}"
                                     ToolTip.Tip="Copy Seed">
-                                <icons:PackIconMaterial Kind="ContentCopy" Width="16" Height="16"/>
+                                <PathIcon Data="{StaticResource ContentCopyIconData}" Width="16" Height="16"/>
                             </Button>
                         </StackPanel>
 
@@ -193,7 +191,7 @@
                                     BorderThickness="0"
                                     Command="{Binding RefreshScoresCommand}"
                                     ToolTip.Tip="Refresh scores">
-                                <icons:PackIconMaterial Kind="Refresh" Width="16" Height="16"/>
+                                <PathIcon Data="{StaticResource RefreshIconData}" Width="16" Height="16"/>
                             </Button>
                         </Grid>
 
@@ -247,7 +245,7 @@
                                     Command="{Binding AnalyzeSeedCommand}"
                                     ToolTip.Tip="Analyze This Seed">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <icons:PackIconMaterial Kind="Magnify" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <PathIcon Data="{StaticResource MagnifyIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                     <TextBlock Text="Analyze" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -255,7 +253,7 @@
                                     Command="{Binding OpenDaylatroWebsiteCommand}"
                                     ToolTip.Tip="Visit Daylatro Website">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <icons:PackIconMaterial Kind="Web" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <PathIcon Data="{StaticResource WebIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                     <TextBlock Text="Daylatro" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>

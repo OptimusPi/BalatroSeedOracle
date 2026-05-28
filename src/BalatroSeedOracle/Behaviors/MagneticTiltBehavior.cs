@@ -22,6 +22,7 @@ namespace BalatroSeedOracle.Behaviors
         private DispatcherTimer? _tiltTimer;
         private Point? _lastPointerPosition;
         private bool _isHovering;
+        private MatrixTransform? _matrixTransform;
 
         protected override void OnAttached()
         {
@@ -29,6 +30,26 @@ namespace BalatroSeedOracle.Behaviors
 
             if (AssociatedObject == null)
                 return;
+
+            // Setup or retrieve the shared TransformGroup to prevent stomping on other behaviors
+            TransformGroup? group = AssociatedObject.RenderTransform as TransformGroup;
+            if (group == null)
+            {
+                group = new TransformGroup();
+                if (AssociatedObject.RenderTransform is Transform t)
+                {
+                    group.Children.Add(t);
+                }
+                AssociatedObject.RenderTransform = group;
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
+            }
+
+            _matrixTransform = new MatrixTransform();
+            group.Children.Add(_matrixTransform);
 
             // Track pointer events for magnetic tilt
             AssociatedObject.PointerEntered += OnPointerEntered;
@@ -50,10 +71,20 @@ namespace BalatroSeedOracle.Behaviors
                 AssociatedObject.PointerEntered -= OnPointerEntered;
                 AssociatedObject.PointerExited -= OnPointerExited;
                 AssociatedObject.PointerMoved -= OnPointerMoved;
+
+                if (AssociatedObject.RenderTransform is TransformGroup group && _matrixTransform != null)
+                {
+                    group.Children.Remove(_matrixTransform);
+                    if (group.Children.Count == 0)
+                    {
+                        AssociatedObject.RenderTransform = null;
+                    }
+                }
             }
 
             _tiltTimer?.Stop();
             _tiltTimer = null;
+            _matrixTransform = null;
         }
 
         private void OnPointerEntered(object? sender, PointerEventArgs e)
@@ -78,7 +109,7 @@ namespace BalatroSeedOracle.Behaviors
 
         private void UpdateMagneticTilt(object? sender, EventArgs e)
         {
-            if (AssociatedObject == null)
+            if (AssociatedObject == null || _matrixTransform == null)
                 return;
 
             // Get card dimensions first
@@ -87,36 +118,10 @@ namespace BalatroSeedOracle.Behaviors
             if (cardWidth <= 0 || cardHeight <= 0)
                 return;
 
-            // Get or create MatrixTransform for TRUE 3D-like magnetic tilt
-            MatrixTransform? matrixTransform = null;
-            if (AssociatedObject.RenderTransform is MatrixTransform existing)
-            {
-                matrixTransform = existing;
-            }
-            else if (AssociatedObject.RenderTransform is TransformGroup group)
-            {
-                matrixTransform = group.Children.OfType<MatrixTransform>().FirstOrDefault();
-                if (matrixTransform == null)
-                {
-                    matrixTransform = new MatrixTransform();
-                    group.Children.Add(matrixTransform);
-                }
-            }
-            else
-            {
-                matrixTransform = new MatrixTransform();
-                AssociatedObject.RenderTransform = matrixTransform;
-                AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                    0.5,
-                    0.5,
-                    RelativeUnit.Relative
-                );
-            }
-
             // If not hovering, reset to identity matrix
             if (!_isHovering || _lastPointerPosition == null)
             {
-                matrixTransform.Matrix = Matrix.Identity;
+                _matrixTransform.Matrix = Matrix.Identity;
                 return;
             }
 
@@ -149,7 +154,7 @@ namespace BalatroSeedOracle.Behaviors
                 0
             );
 
-            matrixTransform.Matrix = m;
+            _matrixTransform.Matrix = m;
         }
     }
 }

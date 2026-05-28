@@ -196,6 +196,7 @@
 
     <Application.Styles>
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
+        <StyleInclude Source="avares://BalatroSeedOracle/Styles/Icons.axaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <!-- Commented out to prevent Avalonia 11/12 skewed assembly startup crash -->
         <!-- <StyleInclude Source="avares://IconPacks.Avalonia.FeatherIcons/FeatherIcons.axaml" /> -->

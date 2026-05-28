@@ -5,9 +5,9 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="controls:ErrorBoundary">
                 <Grid>
-                    <!-- DIAGNOSTIC: IsVisible binding removed temporarily to discriminate template-binding failure vs unset Content. -->
                     <ContentPresenter Name="PART_ContentPresenter"
-                                      Content="{TemplateBinding Content}"/>
+                                      Content="{TemplateBinding Content}"
+                                      IsVisible="{TemplateBinding IsContentVisible}"/>
                     <Border Background="{StaticResource DarkBorder}"
                             BorderBrush="{StaticResource Gold}"
                             BorderThickness="2"

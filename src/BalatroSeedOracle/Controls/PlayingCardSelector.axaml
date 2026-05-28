@@ -1,9 +1,8 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="BalatroSeedOracle.Controls.PlayingCardSelector"
@@ -42,7 +41,7 @@
                   CommandParameter="Spades"
                   Margin="0,0,5,0">
             <StackPanel Orientation="Horizontal" Spacing="4">
-              <icons:PackIconMaterial Kind="CardsSpade" Width="14" Height="14" VerticalAlignment="Center"/>
+              <PathIcon Data="{StaticResource CardsSpadeIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
               <TextBlock Text="Spades" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
@@ -51,7 +50,7 @@
                   Margin="0,0,5,0"
                   Foreground="Red">
             <StackPanel Orientation="Horizontal" Spacing="4">
-              <icons:PackIconMaterial Kind="CardsHeart" Width="14" Height="14" VerticalAlignment="Center"/>
+              <PathIcon Data="{StaticResource CardsHeartIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
               <TextBlock Text="Hearts" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
@@ -60,7 +59,7 @@
                   Margin="0,0,5,0"
                   Foreground="Red">
             <StackPanel Orientation="Horizontal" Spacing="4">
-              <icons:PackIconMaterial Kind="CardsDiamond" Width="14" Height="14" VerticalAlignment="Center"/>
+              <PathIcon Data="{StaticResource CardsDiamondIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
               <TextBlock Text="Diamonds" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
@@ -68,7 +67,7 @@
                   CommandParameter="Clubs"
                   Margin="0,0,15,0">
             <StackPanel Orientation="Horizontal" Spacing="4">
-              <icons:PackIconMaterial Kind="CardsClub" Width="14" Height="14" VerticalAlignment="Center"/>
+              <PathIcon Data="{StaticResource CardsClubIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
               <TextBlock Text="Clubs" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>

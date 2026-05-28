@@ -1,9 +1,8 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:BalatroSeedOracle.Views"
         xmlns:vm="using:BalatroSeedOracle.ViewModels"
         xmlns:controls="using:BalatroSeedOracle.Controls"
-        xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         x:Class="BalatroSeedOracle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
@@ -55,7 +54,7 @@
                     <TextBlock Classes="attribution" Text=" • "/>
                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                         <TextBlock Classes="attribution" Text="Created with"/>
-                        <icons:PackIconMaterial Kind="Heart" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
+                        <PathIcon Data="{StaticResource HeartIconData}" Width="12" Height="12" Foreground="Red" VerticalAlignment="Center"/>
                         <TextBlock Classes="attribution" Text="for the Balatro community"/>
                     </StackPanel>
 

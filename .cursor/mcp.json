@@ -1,11 +1,9 @@
 {
   "mcpServers": {
     "avalonia-docs": {
-      "type": "http",
       "url": "https://docs-mcp.avaloniaui.net/mcp"
     },
     "avalonia-devtools": {
-      "type": "stdio",
       "command": "avdt",
       "args": ["mcp"],
       "env": {
@@ -13,7 +11,6 @@
       }
     },
     "parcel": {
-      "type": "stdio",
       "command": "parcel",
       "args": ["mcp"],
       "env": {

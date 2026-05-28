@@ -1,8 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterTabs.ClauseRowControl"
              x:DataType="vm:ClauseRowViewModel">
 
@@ -60,7 +59,7 @@
                             <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
                         </Transitions>
                     </Button.Transitions>
-                    <icons:PackIconMaterial Kind="Cog"
+                    <PathIcon Data="{StaticResource CogIconData}"
                                Width="14" Height="14"
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
@@ -84,7 +83,7 @@
                             <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1"/>
                         </Transitions>
                     </Button.Transitions>
-                    <icons:PackIconMaterial Kind="Close"
+                    <PathIcon Data="{StaticResource CloseIconData}"
                                Width="14" Height="14"
                                Foreground="{StaticResource Red}"
                                HorizontalAlignment="Center"
