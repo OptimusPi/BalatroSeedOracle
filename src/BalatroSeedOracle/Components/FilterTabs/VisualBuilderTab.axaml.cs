@@ -1604,10 +1604,11 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        // NOTE: No hand-written InitializeComponent() override here. A parameterless
+        // override shadows the source-generated InitializeComponent(bool) that wires the
+        // x:Name fields (MustDropZone, ShouldDropZone, UnifiedTray, DragAdornerLayer, ...),
+        // leaving them null -> SetupDropZones() silently attaches nothing and drag/drop dies.
+        // The constructor's InitializeComponent() call binds to the generated overload.
 
         private void CreateDragAdorner(Models.FilterItem item, Avalonia.Point startPosition)
         {

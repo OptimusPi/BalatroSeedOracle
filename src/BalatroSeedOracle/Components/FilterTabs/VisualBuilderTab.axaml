@@ -521,7 +521,7 @@
                                                         <Grid.RenderTransformOrigin>0.5,0.5</Grid.RenderTransformOrigin>
 
                                                         <i:Interaction.Behaviors>
-                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.55"/>
+                                                            <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.18"/>
                                                         </i:Interaction.Behaviors>
 
                                                         <!-- Self-contained FilterItemCard -->
@@ -889,7 +889,7 @@
                                                         Margin="1,2,1,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
-                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.15"/>
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->
@@ -1004,7 +1004,7 @@
                                                         Margin="1,2,1,8"
                                                         PointerPressed="OnDropZoneItemPointerPressed">
                                                     <i:Interaction.Behaviors>
-                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.4"/>
+                                                        <behaviors:CardDragBehavior IsEnabled="True" JuiceAmount="0.15"/>
                                                     </i:Interaction.Behaviors>
 
                                                     <!-- Reusable FilterItemCard component with Remove button -->

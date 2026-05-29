@@ -25,16 +25,9 @@ namespace BalatroSeedOracle.Components
         public FilterItemCarousel()
         {
             InitializeComponent();
-        }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            // Direct field access from x:Name
+            // CarouselItems (x:Name) is wired by the generated InitializeComponent(); bind ItemsSource through it.
             _carouselItems = CarouselItems;
-
-            // Bind ItemsSource property to inner ItemsControl
             if (_carouselItems != null)
             {
                 _carouselItems.Bind(

@@ -34,6 +34,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
         public JsonEditorTab()
         {
             InitializeComponent();
+            SetupJsonEditor();
 
             // Setup JSON editor after initialization
             _jsonEditor = JsonEditor;
@@ -68,10 +69,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
-        private void InitializeComponent()
+        private void SetupJsonEditor()
         {
-            AvaloniaXamlLoader.Load(this);
-
+            // XAML + JsonEditor (x:Name) already wired by the generated InitializeComponent().
             // Get reference to the TextEditor
             _jsonEditor = JsonEditor;
 

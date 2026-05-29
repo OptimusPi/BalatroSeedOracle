@@ -18,17 +18,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            // Get reference to the DeckAndStakeSelector
-            _deckAndStakeSelector = DeckAndStakeSelector;
-        }
-
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
+
+            // DeckAndStakeSelector (x:Name) is wired by the generated InitializeComponent(); cache it here.
+            _deckAndStakeSelector = DeckAndStakeSelector;
 
             // Subscribe to events from the DeckAndStakeSelector
             if (_deckAndStakeSelector != null)

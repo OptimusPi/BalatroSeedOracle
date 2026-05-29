@@ -37,17 +37,12 @@ namespace BalatroSeedOracle.Views.Modals
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            // Get deck/stake selector component
-            _deckAndStakeSelector = DeckAndStakeSelector;
-        }
-
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
+
+            // DeckAndStakeSelector (x:Name) is wired by the generated InitializeComponent(); cache it here.
+            _deckAndStakeSelector = DeckAndStakeSelector;
 
             // Subscribe to DeckSelected event to switch to analyzer tab
             if (_deckAndStakeSelector != null && ViewModel != null)
