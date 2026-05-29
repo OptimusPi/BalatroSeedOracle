@@ -28,17 +28,29 @@ public partial class AnalyzerView : UserControl
         this.Focusable = true;
         this.Loaded += (s, e) => this.Focus();
 
-        // Wire up clipboard event
         this.DataContextChanged += OnDataContextChanged;
     }
 
+    private AnalyzerViewModel? _subscribedViewModel;
+
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (ViewModel != null)
+        if (_subscribedViewModel != null)
         {
-            ViewModel.CopyToClipboardRequested += async (s, text) =>
-                await CopyToClipboardAsync(text);
+            _subscribedViewModel.CopyToClipboardRequested -= OnCopyToClipboardRequested;
+            _subscribedViewModel = null;
         }
+
+        _subscribedViewModel = DataContext as AnalyzerViewModel;
+        if (_subscribedViewModel != null)
+        {
+            _subscribedViewModel.CopyToClipboardRequested += OnCopyToClipboardRequested;
+        }
+    }
+
+    private async void OnCopyToClipboardRequested(object? sender, string text)
+    {
+        await CopyToClipboardAsync(text);
     }
 
     public async Task CopyToClipboardAsync(string text)

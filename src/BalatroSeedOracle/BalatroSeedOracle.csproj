@@ -62,8 +62,6 @@
     <PackageReference Include="Avalonia.Controls.Markdown" />
     <PackageReference Include="Avalonia.Controls.WebView" />
     <PackageReference Include="AvaloniaEdit.TextMate" />
-    <PackageReference Include="IconPacks.Avalonia.FeatherIcons" />
-    <PackageReference Include="IconPacks.Avalonia.Material" />
     <PackageReference Include="MessageBox.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="CommunityToolkit.Mvvm" />

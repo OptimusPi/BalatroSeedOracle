@@ -1,11 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Desktop.Components.Widgets.MusicMixerWidget"
              x:DataType="vm:MusicMixerWidgetViewModel"
              x:CompileBindings="True"
@@ -35,7 +33,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <material:PackIconMaterial Kind="Music" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                <PathIcon Data="{StaticResource MusicIconData}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
             </Border>
             <TextBlock Text="Mixer"
                        FontSize="16"
@@ -97,14 +95,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -185,14 +183,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -274,14 +272,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -363,14 +361,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -452,14 +450,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -541,14 +539,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -630,14 +628,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->
@@ -719,14 +717,14 @@
                                     <Style Selector="ToggleButton:checked">
                                         <Setter Property="Background" Value="{StaticResource Red}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeHigh"/>
+                                    <Style Selector="ToggleButton PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeHighIconData}"/>
                                     </Style>
-                                    <Style Selector="ToggleButton:checked material|PackIconMaterial">
-                                        <Setter Property="Kind" Value="VolumeOff"/>
+                                    <Style Selector="ToggleButton:checked PathIcon">
+                                        <Setter Property="Data" Value="{StaticResource VolumeOffIconData}"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <material:PackIconMaterial Width="12" Height="12"/>
+                                <PathIcon Width="12" Height="12"/>
                             </ToggleButton>
 
                             <!-- Solo Button -->

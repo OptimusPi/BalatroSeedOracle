@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
@@ -6,8 +6,6 @@
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.Modals.AnalyzeModal"
              x:DataType="vm:AnalyzeModalViewModel">
     
@@ -242,7 +240,7 @@
                                Margin="20"
                                IsVisible="{Binding ShowPlaceholder}">
                             <StackPanel>
-                                <icons:PackIconMaterial Kind="CardsOutline"
+                                <PathIcon Data="{StaticResource CardsOutlineIconData}"
                                           Width="48" Height="48"
                                           HorizontalAlignment="Center"
                                           Foreground="{StaticResource White}"

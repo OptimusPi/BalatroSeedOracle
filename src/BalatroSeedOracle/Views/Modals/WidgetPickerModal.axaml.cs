@@ -29,11 +29,16 @@ namespace BalatroSeedOracle.Views.Modals
         private TextBlock? _hostApiStatus;
         private TextBlock? _eventFXStatus;
 
+        /// <summary>Parameterless ctor for XAML loader only.</summary>
         public WidgetPickerModal()
         {
             InitializeComponent();
+        }
 
-            _userProfileService = App.GetService<UserProfileService>();
+        public WidgetPickerModal(UserProfileService? userProfileService)
+        {
+            _userProfileService = userProfileService ?? App.GetService<UserProfileService>();
+            InitializeComponent();
             RefreshToggles();
 
             // Direct field access from x:Name - no FindControl anti-pattern!

@@ -53,7 +53,13 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
         {
             try
             {
-                var window = new Windows.DataGridResultsWindow(args.Search, args.FilterName);
+                var exportService = App.GetService<Services.Export.ResultsExportService>();
+                if (exportService == null)
+                {
+                    DebugLogger.LogError("ResultsTab", "ResultsExportService not found in App services");
+                    return;
+                }
+                var window = new Windows.DataGridResultsWindow(args.Search, exportService, args.FilterName);
                 window.Show();
             }
             catch (Exception ex)

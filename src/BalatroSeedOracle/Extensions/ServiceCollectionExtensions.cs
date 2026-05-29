@@ -63,6 +63,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<WidgetWindowManager>();
             services.AddSingleton<NotificationService>();
             services.AddTransient<ClauseConversionService>();
+            services.AddSingleton<Services.Export.ResultsExportService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
@@ -116,10 +117,21 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<UserProfileService>(),
                 sp.GetRequiredService<Services.Storage.IAppDataStore>(),
                 sp.GetRequiredService<IPlatformServices>(),
-                sp.GetRequiredService<Func<AnalyzeModalViewModel>>()
+                sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
+                sp.GetRequiredService<Services.Export.ResultsExportService>()
             ));
             services.AddTransient<Views.Modals.SearchModal>(sp => new Views.Modals.SearchModal(
                 sp.GetRequiredService<SearchModalViewModel>()
+            ));
+            services.AddTransient<Views.Modals.ToolsModal>(sp => new Views.Modals.ToolsModal(
+                sp.GetService<UserProfileService>(),
+                sp.GetService<IConfigurationService>(),
+                sp.GetService<IFilterService>(),
+                sp.GetService<IFilterCacheService>(),
+                sp.GetService<IPlatformServices>()
+            ));
+            services.AddTransient<Views.Modals.WidgetPickerModal>(sp => new Views.Modals.WidgetPickerModal(
+                sp.GetRequiredService<UserProfileService>()
             ));
 
             services.AddTransient<AnalyzeModalViewModel>(sp => new AnalyzeModalViewModel(

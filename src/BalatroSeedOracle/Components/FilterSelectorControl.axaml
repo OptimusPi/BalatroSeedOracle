@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
@@ -7,7 +7,6 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.FilterSelectorControl"
              x:DataType="vm:FilterListViewModel">
 
@@ -148,7 +147,7 @@
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
                                             IsVisible="{Binding IsSelected}">
-                                        <icons:PackIconMaterial Kind="Check"
+                                        <PathIcon Data="{StaticResource CheckIconData}"
                                                    Foreground="{StaticResource White}"
                                                    Width="12" Height="12"
                                                    HorizontalAlignment="Center"
@@ -169,7 +168,7 @@
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"
                             IsEnabled="{Binding CanGoToPreviousPage}">
-                        <icons:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20"/>
+                        <PathIcon Data="{StaticResource ChevronLeftIconData}" Width="20" Height="20"/>
                     </Button>
 
                     <!-- Page indicator -->
@@ -194,7 +193,7 @@
                             CornerRadius="8"
                             Command="{Binding NextPageCommand}"
                             IsEnabled="{Binding CanGoToNextPage}">
-                        <icons:PackIconMaterial Kind="ChevronRight" Width="20" Height="20"/>
+                        <PathIcon Data="{StaticResource ChevronRightIconData}" Width="20" Height="20"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -507,7 +506,7 @@
                                     FontSize="14"
                                     Click="OnCopyFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <icons:PackIconMaterial Kind="ContentCopy" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <PathIcon Data="{StaticResource ContentCopyIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                     <TextBlock Text="COPY" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -520,7 +519,7 @@
                                     FontSize="14"
                                     Click="OnEditFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <icons:PackIconMaterial Kind="Pencil" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <PathIcon Data="{StaticResource PencilIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                     <TextBlock Text="EDIT" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -533,7 +532,7 @@
                                     FontSize="14"
                                     Click="OnDeleteFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <icons:PackIconMaterial Kind="Delete" Width="14" Height="14" VerticalAlignment="Center"/>
+                                    <PathIcon Data="{StaticResource DeleteIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                     <TextBlock Text="DELETE" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>

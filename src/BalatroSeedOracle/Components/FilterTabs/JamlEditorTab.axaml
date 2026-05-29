@@ -1,8 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              xmlns:components="using:BalatroSeedOracle.Components"
              xmlns:filterTabs="clr-namespace:BalatroSeedOracle.Components.FilterTabs"
              xmlns:models="using:BalatroSeedOracle.Models"
@@ -81,7 +80,7 @@
                                 BorderThickness="0"
                                 CornerRadius="4">
                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                <icons:PackIconMaterial Kind="ContentCopy" Width="12" Height="12" Foreground="{StaticResource Blue}"/>
+                                <PathIcon Data="{StaticResource ContentCopyIconData}" Width="12" Height="12" Foreground="{StaticResource Blue}"/>
                                 <TextBlock Text="Copy JAML" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>

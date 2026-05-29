@@ -1,11 +1,10 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:converters="using:BalatroSeedOracle.Converters"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
              x:Class="BalatroSeedOracle.Components.FilterItemConfigRow"
              x:DataType="vm:FilterItemConfigRowViewModel">
@@ -49,7 +48,7 @@
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="12"
                                Foreground="{StaticResource LightGrey}"/>
-                    <icons:PackIconMaterial Kind="CircleSmall" Width="8" Height="8" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center" Margin="4,0"/>
+                    <PathIcon Data="{StaticResource CircleSmallIconData}" Width="8" Height="8" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center" Margin="4,0"/>
                     <TextBlock Text="{Binding ConfigSummary}"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="12"
@@ -69,7 +68,7 @@
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         ToolTip.Tip="Configure">
-                    <icons:PackIconMaterial Kind="ChevronRight"
+                    <PathIcon Data="{StaticResource ChevronRightIconData}"
                                             Width="14" Height="14"
                                             Foreground="{StaticResource LightGrey}"/>
                 </Button>
@@ -91,7 +90,7 @@
                             <Setter Property="Background" Value="{StaticResource RedHover}"/>
                         </Style>
                     </Button.Styles>
-                    <icons:PackIconMaterial Kind="Close"
+                    <PathIcon Data="{StaticResource CloseIconData}"
                                             Width="14" Height="14"
                                             Foreground="{StaticResource White}"/>
                 </Button>
@@ -128,7 +127,7 @@
                         <Button Content="1-3" Command="{Binding QuickAntes1to3Command}" Classes="mini-button" ToolTip.Tip="Quick set 1-3"/>
                         <Button Content="All" Command="{Binding QuickAntesAllCommand}" Classes="mini-button" ToolTip.Tip="All Antes"/>
                         <Button Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear">
-                            <icons:PackIconMaterial Kind="Close" Width="10" Height="10" Foreground="{StaticResource White}"/>
+                            <PathIcon Data="{StaticResource CloseIconData}" Width="10" Height="10" Foreground="{StaticResource White}"/>
                         </Button>
                     </WrapPanel>
 

@@ -44,6 +44,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly BalatroSeedOracle.Services.Storage.IAppDataStore _appDataStore;
         private readonly IPlatformServices _platformServices;
         private readonly Func<AnalyzeModalViewModel> _analyzeModalFactory;
+        private readonly BalatroSeedOracle.Services.Export.ResultsExportService _exportService;
 
         private ActiveSearchContext? _searchContext;
         private string _currentSearchId = string.Empty;
@@ -292,7 +293,8 @@ namespace BalatroSeedOracle.ViewModels
             UserProfileService userProfileService,
             BalatroSeedOracle.Services.Storage.IAppDataStore appDataStore,
             IPlatformServices platformServices,
-            Func<AnalyzeModalViewModel> analyzeModalFactory
+            Func<AnalyzeModalViewModel> analyzeModalFactory,
+            BalatroSeedOracle.Services.Export.ResultsExportService exportService
         )
         {
             _searchManager = searchManager;
@@ -301,6 +303,7 @@ namespace BalatroSeedOracle.ViewModels
             _platformServices = platformServices;
             _analyzeModalFactory =
                 analyzeModalFactory ?? throw new ArgumentNullException(nameof(analyzeModalFactory));
+            _exportService = exportService ?? throw new ArgumentNullException(nameof(exportService));
             _consoleBuffer = new CircularConsoleBuffer(1000);
 
             SearchResults = new ObservableCollection<Models.SearchResult>();
@@ -463,8 +466,6 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                var first = results.First();
-                var labels = first?.Labels ?? Array.Empty<string>();
                 var filePath = file.Path.LocalPath;
 
                 if (
@@ -480,7 +481,7 @@ namespace BalatroSeedOracle.ViewModels
                         BsoLogger.Log("SearchModalViewModel", "No active search to export");
                         return;
                     }
-                    ctx.ExportTo(filePath);
+                    _exportService.ExportToContextFormat(ctx, filePath);
                     var ext = System.IO.Path.GetExtension(filePath);
                     BsoLogger.Log(
                         "SearchModalViewModel",
@@ -489,27 +490,8 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    var header = "SEED,TOTALSCORE";
-                    if (labels.Length > 0)
-                    {
-                        header +=
-                            "," + string.Join(",", labels.Select(l => l.ToUpperInvariant()));
-                    }
-
-                    var csv = new System.Text.StringBuilder();
-                    csv.AppendLine(header);
-
-                    foreach (var result in results)
-                    {
-                        var csvRow = $"{result.Seed},{result.TotalScore}";
-                        if (result.Scores != null && result.Scores.Length > 0)
-                        {
-                            csvRow += "," + string.Join(",", result.Scores);
-                        }
-                        csv.AppendLine(csvRow);
-                    }
-
-                    await System.IO.File.WriteAllTextAsync(filePath, csv.ToString());
+                    await using var stream = await file.OpenWriteAsync();
+                    await _exportService.ExportToCsvAsync(stream, results);
                     BsoLogger.Log(
                         "SearchModalViewModel",
                         $"Exported {results.Count()} results to CSV: {filePath}"
@@ -1496,24 +1478,6 @@ namespace BalatroSeedOracle.ViewModels
                     return;
                 }
 
-                // Create export text
-                var exportText = $"Balatro Seed Search Results\n";
-                exportText += $"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n";
-                exportText += $"Filter: {LoadedConfig?.Name ?? "Unknown"}\n";
-                exportText += $"Total Results: {SearchResults.Count}\n";
-                exportText += new string('=', 50) + "\n\n";
-
-                foreach (var result in SearchResults)
-                {
-                    exportText += $"Seed: {result.Seed}\n";
-                    exportText += $"Score: {result.TotalScore}\n";
-                    if (result.Scores is not null && result.Scores.Length > 0)
-                    {
-                        exportText += $"Scores: {string.Join(", ", result.Scores)}\n";
-                    }
-                    exportText += "\n";
-                }
-
                 // Save to file
                 var fileName = $"search_results_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
                 var filePath = Path.Combine(
@@ -1521,7 +1485,7 @@ namespace BalatroSeedOracle.ViewModels
                     fileName
                 );
 
-                await File.WriteAllTextAsync(filePath, exportText);
+                await _exportService.ExportToTextReportFileAsync(filePath, SearchResults, LoadedConfig?.Name);
                 BsoLogger.Log("SearchModalViewModel", $"Results exported to: {filePath}");
             }
             catch (Exception ex)

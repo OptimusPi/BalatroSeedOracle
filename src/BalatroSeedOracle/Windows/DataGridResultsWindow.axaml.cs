@@ -32,6 +32,7 @@ namespace BalatroSeedOracle.Windows
     public partial class DataGridResultsWindow : Window
     {
         private readonly ActiveSearchContext? _searchInstance;
+        private readonly Services.Export.ResultsExportService? _exportService;
         private readonly string? _filterName;
         private DataGrid? _resultsGrid;
         private DataGrid? _queryResultsGrid;
@@ -55,9 +56,10 @@ namespace BalatroSeedOracle.Windows
             InitializeComponent();
         }
 
-        public DataGridResultsWindow(ActiveSearchContext searchInstance, string? filterName = null)
+        public DataGridResultsWindow(ActiveSearchContext searchInstance, Services.Export.ResultsExportService exportService, string? filterName = null)
         {
             _searchInstance = searchInstance;
+            _exportService = exportService;
             _filterName = filterName;
             InitializeComponent();
             SetupControls();
@@ -470,6 +472,7 @@ LIMIT 50;",
 
         private async Task ExportToCsvAsync()
         {
+            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -491,27 +494,15 @@ LIMIT 50;",
 
             try
             {
-                var sb = new StringBuilder();
-
-                // Headers
-                sb.AppendLine(
-                    "Rank,Seed,Total Score,"
-                        + string.Join(
-                            ",",
-                            _searchInstance?.ColumnNames.Skip(2).Select(n => n.Replace("_", " "))
-                                ?? new List<string>()
-                        )
-                );
-
-                // Data
-                foreach (var item in _filteredResults)
+                var searchResults = _filteredResults.Select(item => new SearchResult
                 {
-                    sb.AppendLine(
-                        $"{item.Rank},{item.Seed},{item.TotalScore},{string.Join(",", item.TallyScores)}"
-                    );
-                }
+                    Seed = item.Seed,
+                    TotalScore = item.TotalScore,
+                    Scores = item.TallyScores?.ToArray()
+                });
 
-                await File.WriteAllTextAsync(file.Path.LocalPath, sb.ToString());
+                await using var stream = await file.OpenWriteAsync();
+                await _exportService.ExportToCsvAsync(stream, searchResults);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to CSV");
             }
             catch (Exception ex)
@@ -523,6 +514,7 @@ LIMIT 50;",
 
         private async Task ExportToJsonAsync()
         {
+            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -544,11 +536,15 @@ LIMIT 50;",
 
             try
             {
-                var json = JsonSerializer.Serialize(
-                    _filteredResults.ToList(),
-                    BalatroSeedOracle.Json.BsoJsonSerializerContext.Default.ListDataGridResultItem
-                );
-                await File.WriteAllTextAsync(file.Path.LocalPath, json);
+                var searchResults = _filteredResults.Select(item => new SearchResult
+                {
+                    Seed = item.Seed,
+                    TotalScore = item.TotalScore,
+                    Scores = item.TallyScores?.ToArray()
+                });
+
+                await using var stream = await file.OpenWriteAsync();
+                await _exportService.ExportToJsonAsync(stream, searchResults);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to JSON");
             }
             catch (Exception ex)
@@ -560,6 +556,7 @@ LIMIT 50;",
 
         private async Task ExportToParquetAsync()
         {
+            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -589,7 +586,7 @@ LIMIT 50;",
                     UpdateStatus("No active search to export");
                     return;
                 }
-                _searchInstance.ExportTo(file.Path.LocalPath);
+                _exportService.ExportToContextFormat(_searchInstance, file.Path.LocalPath);
                 UpdateStatus($"Exported {_filteredResults.Count} rows to Parquet");
             }
             catch (Exception ex)
@@ -601,6 +598,7 @@ LIMIT 50;",
 
         private async Task ExportToWordlistAsync()
         {
+            if (_exportService == null) return;
             var topLevel = GetTopLevel(this);
             if (topLevel == null)
                 return;
@@ -623,9 +621,9 @@ LIMIT 50;",
 
             try
             {
-                // Export just the seeds, one per line - perfect for Motely wordlist input
                 var seeds = _filteredResults.Select(r => r.Seed);
-                await File.WriteAllLinesAsync(file.Path.LocalPath, seeds);
+                await using var stream = await file.OpenWriteAsync();
+                await _exportService.ExportToWordlistAsync(stream, seeds);
                 UpdateStatus($"Exported {_filteredResults.Count} seeds to wordlist");
             }
             catch (Exception ex)

@@ -1,8 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:controls="using:BalatroSeedOracle.Controls"
-             xmlns:icons="https://github.com/MahApps/IconPacks.Avalonia"
              x:Class="BalatroSeedOracle.Components.FilterTabs.SaveFilterTab"
              x:DataType="vm:SaveFilterTabViewModel">
 
@@ -69,7 +68,7 @@
                     MinWidth="400"
                     HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <icons:PackIconMaterial Kind="Magnify" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource MagnifyIconData}" Width="28" Height="28" VerticalAlignment="Center"/>
                     <TextBlock Text="GO TO SEARCH"
                                FontSize="24"
                                FontFamily="{StaticResource BalatroFont}"
@@ -84,7 +83,7 @@
                     MinWidth="400"
                     HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <icons:PackIconMaterial Kind="ContentSave" Width="28" Height="28" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource ContentSaveIconData}" Width="28" Height="28" VerticalAlignment="Center"/>
                     <TextBlock Text="SAVE AND CLOSE"
                                FontSize="24"
                                FontFamily="{StaticResource BalatroFont}"

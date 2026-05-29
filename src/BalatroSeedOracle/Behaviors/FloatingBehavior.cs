@@ -121,20 +121,28 @@ namespace BalatroSeedOracle.Behaviors
 
             _startTime = DateTime.Now;
 
-            // Set up transform group
-            _transformGroup = new TransformGroup();
+            // Setup or retrieve the shared TransformGroup to prevent stomping on other behaviors
+            _transformGroup = AssociatedObject.RenderTransform as TransformGroup;
+            if (_transformGroup == null)
+            {
+                _transformGroup = new TransformGroup();
+                if (AssociatedObject.RenderTransform is Transform t)
+                {
+                    _transformGroup.Children.Add(t);
+                }
+                AssociatedObject.RenderTransform = _transformGroup;
+                AssociatedObject.RenderTransformOrigin = new RelativePoint(
+                    0.5,
+                    0.5,
+                    RelativeUnit.Relative
+                );
+            }
+
             _rotateTransform = new RotateTransform();
             _translateTransform = new TranslateTransform();
 
             _transformGroup.Children.Add(_rotateTransform);
             _transformGroup.Children.Add(_translateTransform);
-
-            AssociatedObject.RenderTransform = _transformGroup;
-            AssociatedObject.RenderTransformOrigin = new RelativePoint(
-                0.5,
-                0.5,
-                RelativeUnit.Relative
-            );
 
             // Start animation at 60 FPS (matches Balatro's animation rate)
             _animationTimer = new DispatcherTimer
@@ -190,8 +198,19 @@ namespace BalatroSeedOracle.Behaviors
 
             if (AssociatedObject != null)
             {
-                AssociatedObject.RenderTransform = null;
+                if (AssociatedObject.RenderTransform is TransformGroup group)
+                {
+                    if (_rotateTransform != null) group.Children.Remove(_rotateTransform);
+                    if (_translateTransform != null) group.Children.Remove(_translateTransform);
+                    if (group.Children.Count == 0)
+                    {
+                        AssociatedObject.RenderTransform = null;
+                    }
+                }
             }
+
+            _rotateTransform = null;
+            _translateTransform = null;
         }
     }
 }

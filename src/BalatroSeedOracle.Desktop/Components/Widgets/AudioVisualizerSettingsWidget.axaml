@@ -1,12 +1,10 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Desktop.Components.Widgets.AudioVisualizerSettingsWidget"
              x:DataType="vm:AudioVisualizerSettingsWidgetViewModel"
              x:CompileBindings="True"
@@ -37,7 +35,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <material:PackIconMaterial Kind="Palette" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
+                <PathIcon Data="{StaticResource PaletteIconData}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
             </Border>
             <TextBlock Text="Visual"
                        FontSize="16"
@@ -244,19 +242,19 @@
                                         Margin="0,0,0,4">
                                     <StackPanel Spacing="4">
                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <icons:PackIconMaterial Kind="CircleSmall" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                            <PathIcon Data="{StaticResource CircleSmallIconData}" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
                                             <TextBlock Text="SetValue: Direct mapping (snappy, instant)"
                                                        Foreground="{StaticResource LightTextGrey}"
                                                        FontSize="11"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <icons:PackIconMaterial Kind="CircleSmall" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
+                                            <PathIcon Data="{StaticResource CircleSmallIconData}" Width="12" Height="12" Foreground="{StaticResource LightTextGrey}" VerticalAlignment="Center"/>
                                             <TextBlock Text="AddInertia: Physics-based (smooth, alive feel with decay)"
                                                        Foreground="{StaticResource LightTextGrey}"
                                                        FontSize="11"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <icons:PackIconMaterial Kind="LightbulbOn" Width="12" Height="12" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
+                                            <PathIcon Data="{StaticResource LightbulbOnIconData}" Width="12" Height="12" Foreground="{StaticResource Gold}" VerticalAlignment="Center"/>
                                             <TextBlock Text="Create triggers in FFT Window first!"
                                                        Foreground="{StaticResource Gold}"
                                                        FontSize="11"

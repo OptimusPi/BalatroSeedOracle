@@ -1,7 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Controls.SourceSelector"
              x:DataType="vm:SourceSelectorViewModel">
     
@@ -78,7 +77,7 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="10">
-                    <icons:PackIconMaterial Kind="Target" Width="20" Height="20" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource TargetIconData}" Width="20" Height="20" Foreground="{StaticResource White}" VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding PreviewText}"
                                Foreground="{Binding PreviewColor}"
                                Classes="source-description"

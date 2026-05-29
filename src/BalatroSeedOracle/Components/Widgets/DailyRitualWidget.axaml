@@ -1,10 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:behaviors="using:BalatroSeedOracle.Behaviors"
              xmlns:local="using:BalatroSeedOracle.Components"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Components.DailyRitualWidget"
              x:DataType="vm:DailyRitualWidgetViewModel"
              x:CompileBindings="True"
@@ -41,7 +40,7 @@
                     Cursor="Hand"
                     PointerPressed="OnMinimizedIconPressed"
                     PointerReleased="OnMinimizedIconReleased">
-                <material:PackIconMaterial Kind="CardsPlayingOutline" Width="32" Height="32" 
+                <PathIcon Data="{StaticResource CardsPlayingOutlineIconData}" Width="32" Height="32" 
                                          HorizontalAlignment="Center" VerticalAlignment="Center" 
                                          Foreground="{StaticResource White}"/>
             </Border>
@@ -59,13 +58,13 @@
                     <!-- Date Navigation -->
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <Button Grid.Column="0" Command="{Binding PrevDayCommand}" Classes="btn-icon">
-                            <material:PackIconMaterial Kind="ChevronLeft" />
+                            <PathIcon Data="{StaticResource ChevronLeftIconData}" />
                         </Button>
                         <TextBlock Grid.Column="1" Text="{Binding DateText}" 
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    FontSize="16" FontWeight="Bold"/>
                         <Button Grid.Column="2" Command="{Binding NextDayCommand}" Classes="btn-icon">
-                            <material:PackIconMaterial Kind="ChevronRight" />
+                            <PathIcon Data="{StaticResource ChevronRightIconData}" />
                         </Button>
                     </Grid>
 

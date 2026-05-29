@@ -1,9 +1,8 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
-        xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="BalatroSeedOracle.Windows.DataGridResultsWindow"
         Title="Results"
@@ -31,7 +30,7 @@
                 <Button x:Name="ExportButton">
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="Export"/>
-                        <icons:PackIconMaterial Kind="ChevronDown" Width="14" Height="14" VerticalAlignment="Center"/>
+                        <PathIcon Data="{StaticResource ChevronDownIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button.Flyout>
                         <MenuFlyout>
@@ -63,8 +62,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <icons:PackIconMaterial Grid.Column="0" 
-                           Kind="Magnify" 
+                <PathIcon Data="{StaticResource MagnifyIconData}" Grid.Column="0" 
                            Width="16" Height="16"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
@@ -130,7 +128,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button x:Name="RunQueryButton" Classes="Success">
                             <StackPanel Orientation="Horizontal" Spacing="5">
-                                <icons:PackIconMaterial Kind="Play" Width="14" Height="14" VerticalAlignment="Center"/>
+                                <PathIcon Data="{StaticResource PlayIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
                                 <TextBlock Text="Run (F5)"/>
                             </StackPanel>
                         </Button>

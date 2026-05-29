@@ -180,33 +180,7 @@ public partial class App : Application
     {
         var ex = e.Exception;
         HandleException("UI_THREAD", ex);
-
-        // Show message box asynchronously on UI thread
-        Dispatcher.UIThread.Post(() =>
-        {
-            try
-            {
-                var message = $"An unexpected UI error occurred:\n\n{ex.Message}";
-                if (ex.InnerException != null)
-                {
-                    message += $"\n\nInner Exception: {ex.InnerException.Message}";
-                }
-                message += $"\n\nStack Trace:\n{ex.StackTrace}";
-
-                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
-                    "Unexpected Application Error",
-                    message,
-                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error
-                );
-                _ = box.ShowAsync();
-            }
-            catch
-            {
-                // Ignore if we can't show the error box
-            }
-        });
-
+        ShowErrorOnUI("UI_THREAD", ex);
         e.Handled = true;
     }
 
@@ -218,6 +192,7 @@ public partial class App : Application
         if (e.ExceptionObject is Exception ex)
         {
             HandleException("APP_DOMAIN", ex);
+            ShowErrorOnUI("APP_DOMAIN", ex);
         }
         else
         {
@@ -232,34 +207,41 @@ public partial class App : Application
     {
         var ex = e.Exception;
         HandleException("TASK_SCHEDULER", ex);
+        ShowErrorOnUI("TASK_SCHEDULER", ex);
+        e.SetObserved();
+    }
 
-        // Show message box asynchronously on UI thread
+    /// <summary>
+    /// Displays the exception on the UI ErrorBoundary if available
+    /// </summary>
+    private void ShowErrorOnUI(string source, Exception ex)
+    {
         Dispatcher.UIThread.Post(() =>
         {
             try
             {
-                var message = $"A background task error occurred:\n\n{ex.Message}";
-                if (ex.InnerException != null)
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
                 {
-                    message += $"\n\nInner Exception: {ex.InnerException.Message}";
+                    var errorBoundary = desktop.MainWindow.FindControl<Controls.ErrorBoundary>("MainContentHost");
+                    if (errorBoundary != null)
+                    {
+                        errorBoundary.HasError = true;
+                        errorBoundary.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+                        return;
+                    }
                 }
-                message += $"\n\nStack Trace:\n{ex.StackTrace}";
 
-                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
-                    "Background Task Error",
-                    message,
-                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
-                    MsBox.Avalonia.Enums.Icon.Error
-                );
-                _ = box.ShowAsync();
+                if (ApplicationLifetime is ISingleViewApplicationLifetime singleView && singleView.MainView is Controls.ErrorBoundary errorBoundaryView)
+                {
+                    errorBoundaryView.HasError = true;
+                    errorBoundaryView.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+                }
             }
-            catch
+            catch (Exception dex)
             {
-                // Ignore if we can't show the error box
+                DebugLogger.LogError("ERROR_REPORTING", $"Failed to display error in UI: {dex.Message}");
             }
         });
-
-        e.SetObserved();
     }
 
     /// <summary>

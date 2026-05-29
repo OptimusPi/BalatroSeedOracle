@@ -1,7 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:converters="using:BalatroSeedOracle.Converters"
              x:Class="BalatroSeedOracle.Components.WidgetDock"
              x:DataType="vm:BalatroMainMenuViewModel"
@@ -25,7 +24,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnMusicMixerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="MusicNote" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource MusicNoteIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="Mixer" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -41,7 +40,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnVisualizerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="Palette" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource PaletteIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="Visual" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -57,7 +56,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnTransitionDesignerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="Movie" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource MovieIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="Trans" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -73,7 +72,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnFertilizerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="Flower" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource FlowerIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="Fert" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -89,7 +88,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnHostApiClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="Server" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource ServerIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="API" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -105,7 +104,7 @@
                     Classes="widget-dock-item"
                     PointerPressed="OnEventFXClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-                    <icons:PackIconMaterial Kind="AutoFix" Width="24" Height="24" Foreground="{StaticResource White}"/>
+                    <PathIcon Data="{StaticResource AutoFixIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
                     <TextBlock Text="FX" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>

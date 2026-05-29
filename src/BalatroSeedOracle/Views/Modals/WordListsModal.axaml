@@ -1,6 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
     <StackPanel Spacing="20" Margin="20">
@@ -49,7 +48,7 @@
                             Background="{StaticResource Blue}"
                             Click="OnPasteClick">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <material:PackIconMaterial Kind="ClipboardArrowDown" Width="12" Height="12" VerticalAlignment="Center"/>
+                            <PathIcon Data="{StaticResource ClipboardArrowDownIconData}" Width="12" Height="12" VerticalAlignment="Center"/>
                             <TextBlock Text="Paste" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>

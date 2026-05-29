@@ -38,7 +38,6 @@ namespace BalatroSeedOracle.Views.Modals
             _configurationService = null;
             _filterService = null;
             InitializeComponent();
-            this.DataContextChanged += OnDataContextChanged;
             this.Loaded += OnLoaded;
         }
 
@@ -56,7 +55,6 @@ namespace BalatroSeedOracle.Views.Modals
                 filterService ?? throw new ArgumentNullException(nameof(filterService));
             DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             InitializeComponent();
-            this.DataContextChanged += OnDataContextChanged;
             this.Loaded += OnLoaded;
         }
 
@@ -125,47 +123,47 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void OnDataContextChanged(object? sender, EventArgs e)
+        private FilterSelectionModalViewModel? _subscribedViewModel;
+
+        protected override void OnDataContextChanged(EventArgs e)
         {
+            base.OnDataContextChanged(e);
             DebugLogger.Log("FilterSelectionModal", "🔵 DataContext changed!");
 
-            // Unsubscribe from old ViewModel if any
-            if (sender is FilterSelectionModal modal)
+            // Unsubscribe from old ViewModel
+            if (_subscribedViewModel is not null)
             {
-                var oldVm = modal.DataContext as FilterSelectionModalViewModel;
-                if (oldVm != null)
-                {
-                    DebugLogger.Log("FilterSelectionModal", "  Unsubscribing from old ViewModel");
-                    oldVm.ModalCloseRequested -= OnModalCloseRequested;
-                    oldVm.PropertyChanged -= OnViewModelPropertyChanged;
-                    oldVm.DeleteConfirmationRequested -= OnDeleteConfirmationRequested;
-                }
+                DebugLogger.Log("FilterSelectionModal", "  Unsubscribing from old ViewModel");
+                _subscribedViewModel.ModalCloseRequested -= OnModalCloseRequested;
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel.DeleteConfirmationRequested -= OnDeleteConfirmationRequested;
+                _subscribedViewModel = null;
+            }
 
-                // Subscribe to new ViewModel
-                var newVm = modal.DataContext as FilterSelectionModalViewModel;
-                if (newVm != null)
-                {
-                    DebugLogger.Log(
-                        "FilterSelectionModal",
-                        $"  Subscribing to new ViewModel - EnableSearch={newVm.EnableSearch}"
-                    );
-                    newVm.ModalCloseRequested += OnModalCloseRequested;
-                    newVm.PropertyChanged += OnViewModelPropertyChanged;
-                    newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
+            // Subscribe to new ViewModel
+            if (DataContext is FilterSelectionModalViewModel newVm)
+            {
+                _subscribedViewModel = newVm;
+                DebugLogger.Log(
+                    "FilterSelectionModal",
+                    $"  Subscribing to new ViewModel - EnableSearch={newVm.EnableSearch}"
+                );
+                newVm.ModalCloseRequested += OnModalCloseRequested;
+                newVm.PropertyChanged += OnViewModelPropertyChanged;
+                newVm.DeleteConfirmationRequested += OnDeleteConfirmationRequested;
 
-                    // Load initial deck/stake if filter is already selected
-                    if (newVm.SelectedFilter != null)
-                    {
-                        UpdateDeckAndStake(newVm.SelectedFilter);
-                    }
-                }
-                else
+                // Load initial deck/stake if filter is already selected
+                if (newVm.SelectedFilter is not null)
                 {
-                    DebugLogger.LogError(
-                        "FilterSelectionModal",
-                        "  ❌ NEW DATACONTEXT IS NOT FilterSelectionModalViewModel!"
-                    );
+                    UpdateDeckAndStake(newVm.SelectedFilter);
                 }
+            }
+            else if (DataContext is not null)
+            {
+                DebugLogger.LogError(
+                    "FilterSelectionModal",
+                    $"  ❌ NEW DATACONTEXT IS NOT FilterSelectionModalViewModel! It is {DataContext.GetType().Name}"
+                );
             }
         }
 

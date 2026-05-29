@@ -1,10 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
-             xmlns:icons="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
              x:DataType="vm:AnalyzerViewModel"
              x:CompileBindings="True">
@@ -88,7 +87,7 @@
                             Width="32"
                             Height="32"
                             Padding="0">
-                        <icons:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16"/>
+                        <PathIcon Data="{StaticResource ChevronLeftIconData}" Width="16" Height="16"/>
                     </Button>
                     <Button Command="{Binding NextResultCommand}"
                             IsEnabled="{Binding HasNextResult}"
@@ -96,7 +95,7 @@
                             Width="32"
                             Height="32"
                             Padding="0">
-                        <icons:PackIconMaterial Kind="ChevronRight" Width="16" Height="16"/>
+                        <PathIcon Data="{StaticResource ChevronRightIconData}" Width="16" Height="16"/>
                     </Button>
                 </StackPanel>
 
@@ -115,14 +114,14 @@
                             Width="32"
                             Height="32"
                             Padding="0">
-                        <icons:PackIconMaterial Kind="ChevronUp" Width="16" Height="16"/>
+                        <PathIcon Data="{StaticResource ChevronUpIconData}" Width="16" Height="16"/>
                     </Button>
                     <Button Command="{Binding ScrollDownAnteCommand}"
                             ToolTip.Tip="Next Ante (↓)"
                             Width="32"
                             Height="32"
                             Padding="0">
-                        <icons:PackIconMaterial Kind="ChevronDown" Width="16" Height="16"/>
+                        <PathIcon Data="{StaticResource ChevronDownIconData}" Width="16" Height="16"/>
                     </Button>
                 </StackPanel>
 

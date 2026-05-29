@@ -1,6 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:material="clr-namespace:IconPacks.Avalonia.Material;assembly=IconPacks.Avalonia.Material"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.CreditsModal"
              x:DataType="vm:CreditsModalViewModel"
@@ -36,7 +35,7 @@
                                Foreground="{StaticResource Gold}"
                                FontFamily="{StaticResource BalatroFont}"
                                VerticalAlignment="Center"/>
-                    <material:PackIconMaterial Kind="Heart" Foreground="{StaticResource Red}" Width="18" Height="18" VerticalAlignment="Center"/>
+                    <PathIcon Data="{StaticResource HeartIconData}" Foreground="{StaticResource Red}" Width="18" Height="18" VerticalAlignment="Center"/>
                     <TextBlock Text="pifreak loves you!" 
                                FontSize="18"
                                Foreground="{StaticResource Gold}"
