@@ -7,6 +7,7 @@ using System.Text.Json;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 using ItemConfig = BalatroSeedOracle.Models.ItemConfig;
 
 namespace BalatroSeedOracle.Services
@@ -85,11 +86,16 @@ namespace BalatroSeedOracle.Services
                 var ext = Path.GetExtension(filePath).ToLowerInvariant();
                 if (ext == ".yaml" || ext == ".yml" || ext == ".jaml")
                 {
-                    var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                        .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.NullNamingConvention.Instance)
-                        .IgnoreUnmatchedProperties()
-                        .Build();
-                    return deserializer.Deserialize<JamlRootDocument>(text);
+                    // Motely owns JAML parsing — route through the engine's AOT-safe strict
+                    // loader instead of a reflection YamlDotNet deserializer (IL3050/IL2026).
+                    if (JamlConfigLoader.TryParseRoot(text, out var doc, out var jamlError))
+                        return doc;
+
+                    DebugLogger.LogError(
+                        "FilterSerializationService",
+                        $"Failed to parse JAML '{filePath}': {jamlError}"
+                    );
+                    return null;
                 }
                 return DeserializeConfig(text);
             }

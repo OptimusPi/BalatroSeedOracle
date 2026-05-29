@@ -1,20 +1,11 @@
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
 namespace Motely.Filters;
 
 internal static class JamlFormatter
 {
+    // Motely owns JAML emission — delegate to the engine's AOT-safe StaticSerializer
+    // instead of a reflection-based SerializerBuilder (IL3050).
     public static string Format(JamlRootDocument config) =>
-        new SerializerBuilder()
-            .WithNamingConvention(NullNamingConvention.Instance)
-            .DisableAliases()
-            .ConfigureDefaultValuesHandling(
-                DefaultValuesHandling.OmitNull
-                    | DefaultValuesHandling.OmitEmptyCollections
-                    | DefaultValuesHandling.OmitDefaults)
-            .Build()
-            .Serialize(config);
+        Motely.Filters.Jaml.JamlConfigLoader.SerializeRoot(config);
 
     public static string Format(string jaml)
     {
