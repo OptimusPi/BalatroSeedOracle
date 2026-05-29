@@ -362,7 +362,7 @@
             </Border>
 
             <!-- Modal content wrapper - slides up with bounce -->
-            <ContentControl x:Name="ModalContentWrapper" Content="{Binding ActiveModal}">
+            <ContentControl x:Name="ModalContentWrapper">
                 <ContentControl.DataTemplates>
                     <DataTemplate DataType="vm:FilterSelectionModalViewModel">
                         <modals:FilterSelectionModal />

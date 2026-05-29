@@ -180,6 +180,33 @@ public partial class App : Application
     {
         var ex = e.Exception;
         HandleException("UI_THREAD", ex);
+
+        // Show message box asynchronously on UI thread
+        Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                var message = $"An unexpected UI error occurred:\n\n{ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    message += $"\n\nInner Exception: {ex.InnerException.Message}";
+                }
+                message += $"\n\nStack Trace:\n{ex.StackTrace}";
+
+                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                    "Unexpected Application Error",
+                    message,
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error
+                );
+                _ = box.ShowAsync();
+            }
+            catch
+            {
+                // Ignore if we can't show the error box
+            }
+        });
+
         e.Handled = true;
     }
 
@@ -203,7 +230,35 @@ public partial class App : Application
     /// </summary>
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        HandleException("TASK_SCHEDULER", e.Exception);
+        var ex = e.Exception;
+        HandleException("TASK_SCHEDULER", ex);
+
+        // Show message box asynchronously on UI thread
+        Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                var message = $"A background task error occurred:\n\n{ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    message += $"\n\nInner Exception: {ex.InnerException.Message}";
+                }
+                message += $"\n\nStack Trace:\n{ex.StackTrace}";
+
+                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                    "Background Task Error",
+                    message,
+                    MsBox.Avalonia.Enums.ButtonEnum.Ok,
+                    MsBox.Avalonia.Enums.Icon.Error
+                );
+                _ = box.ShowAsync();
+            }
+            catch
+            {
+                // Ignore if we can't show the error box
+            }
+        });
+
         e.SetObserved();
     }
 

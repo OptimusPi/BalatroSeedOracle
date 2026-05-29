@@ -67,14 +67,41 @@ namespace BalatroSeedOracle.Desktop.Services
             return Task.FromResult(File.Exists(path));
         }
 
+        private static readonly object _logLock = new();
+
+        private static void AppendToLogFile(string message)
+        {
+            // WinExe has no attached console, so Console.WriteLine is invisible.
+            // Persist to a file under the data root so logs are diagnosable.
+            try
+            {
+                lock (_logLock)
+                {
+                    var logPath = Path.Combine(AppPaths.DataRootDir, "debug.log");
+                    var dir = Path.GetDirectoryName(logPath);
+                    if (!string.IsNullOrEmpty(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    File.AppendAllText(logPath, message + Environment.NewLine);
+                }
+            }
+            catch
+            {
+                // Logging must never crash the app.
+            }
+        }
+
         public void WriteLog(string message)
         {
             Console.WriteLine(message);
+            AppendToLogFile(message);
         }
 
         public void WriteDebugLog(string message)
         {
             System.Diagnostics.Debug.WriteLine(message);
+            AppendToLogFile(message);
         }
 
         public void OpenInFileManager(string path)

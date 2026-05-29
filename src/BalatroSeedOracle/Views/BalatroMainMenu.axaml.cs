@@ -73,7 +73,8 @@ namespace BalatroSeedOracle.Views
                 );
             ViewModel = null!;
             DataContext = null;
-            InitializeComponent();
+            InitializeComponent(); // generated: loads XAML + assigns x:Name fields
+            WireUpControls();
             WireViewModelEvents();
             this.Loaded += OnLoaded;
         }
@@ -83,17 +84,23 @@ namespace BalatroSeedOracle.Views
             ViewModel = viewModel;
             DataContext = ViewModel;
 
-            InitializeComponent();
+            InitializeComponent(); // generated: loads XAML + assigns x:Name fields
+            WireUpControls();
             WireViewModelEvents();
 
             this.Loaded += OnLoaded;
         }
 
-        private void InitializeComponent()
+        /// <summary>
+        /// Caches strongly-typed references to x:Name controls and wires container handlers.
+        /// MUST run AFTER the generated InitializeComponent() (which loads the XAML and assigns
+        /// the x:Name fields). This used to be a hand-written InitializeComponent() override,
+        /// but that shadowed the source-generated InitializeComponent(bool) so the x:Name fields
+        /// were never assigned (all named controls came back null → modals never showed content).
+        /// </summary>
+        private void WireUpControls()
         {
-            AvaloniaXamlLoader.Load(this);
-
-            // Direct field access from x:Name - no FindControl anti-pattern!
+            // Direct field access from x:Name - assigned by the generated InitializeComponent().
             _modalContainer = ModalContainer;
             _modalOverlay = ModalOverlay;
             _modalContentWrapper = ModalContentWrapper;
@@ -1377,7 +1384,9 @@ namespace BalatroSeedOracle.Views
             translateTransform.X = 0;
 
             // Set the content in the wrapper
+            DebugLogger.LogImportant("BalatroMainMenu", $"[ShowModalContent] Attempting to set wrapper content to: {content?.GetType().FullName ?? "NULL"}");
             _modalContentWrapper.Content = content;
+            DebugLogger.LogImportant("BalatroMainMenu", $"[ShowModalContent] Wrapper content is now: {_modalContentWrapper.Content?.GetType().FullName ?? "NULL"}");
 
             // Make container visible
             _modalContainer.IsVisible = true;
@@ -1599,6 +1608,9 @@ namespace BalatroSeedOracle.Views
             if (_modalContainer == null || _modalContentWrapper == null)
                 return;
 
+            // Capture the content we are hiding so we only clear it if no new modal has opened since.
+            var contentToClear = _modalContentWrapper.Content;
+
             // PERFORMANCE FIX: Defer content clearing to prevent audio crackling
             // FiltersModal has thousands of controls - clearing synchronously blocks UI thread
             // which causes audio buffer underruns
@@ -1616,7 +1628,10 @@ namespace BalatroSeedOracle.Views
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    _modalContentWrapper.Content = null;
+                    if (_modalContentWrapper.Content == contentToClear)
+                    {
+                        _modalContentWrapper.Content = null;
+                    }
                 },
                 DispatcherPriority.Background
             );
