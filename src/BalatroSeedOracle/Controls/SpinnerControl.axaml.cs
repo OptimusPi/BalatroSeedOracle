@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -139,11 +138,7 @@ namespace BalatroSeedOracle.Controls
         {
             base.OnApplyTemplate(e);
 
-            // Update the initial display value - direct field access from x:Name
-            if (ValueText != null)
-            {
-                ValueText.Text = GetDisplayValue();
-            }
+            // Badge text is now bound via SpinnerDisplayConverter (no imperative assignment).
 
             // Hide label if empty - direct field access from x:Name
             if (LabelText != null)
@@ -172,26 +167,6 @@ namespace BalatroSeedOracle.Controls
             Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
         }
 
-        private string GetDisplayValue()
-        {
-            // Check if we should show "Auto" for special values
-            // Use -1 for Auto so that 0 can be a valid explicit value
-            if (AllowAuto && Value < 0)
-            {
-                return "Auto";
-            }
-
-            // Use provided DisplayValues if available
-            if (DisplayValues != null && DisplayValues.Length > 0)
-            {
-                var index = Math.Max(0, Math.Min(Value, DisplayValues.Length - 1));
-                return DisplayValues[index];
-            }
-
-            // Default to showing the numeric value
-            return Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
-
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -204,11 +179,7 @@ namespace BalatroSeedOracle.Controls
                 || change.Property == AllowAutoProperty
             )
             {
-                // Update display text - direct field access from x:Name
-                if (ValueText != null)
-                {
-                    ValueText.Text = GetDisplayValue();
-                }
+                // Badge text is bound via SpinnerDisplayConverter; nothing to push here.
 
                 // Update label visibility if label changed - direct field access from x:Name
                 if (change.Property == LabelProperty)
@@ -282,18 +253,6 @@ namespace BalatroSeedOracle.Controls
             else
             {
                 Value = Math.Min(Maximum, Value + Increment);
-            }
-        }
-
-        /// <summary>
-        /// Sets a custom display text for the current value
-        /// </summary>
-        public void SetDisplayText(string text)
-        {
-            // Direct field access from x:Name
-            if (ValueText != null)
-            {
-                ValueText.Text = text;
             }
         }
 

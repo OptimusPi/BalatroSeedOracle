@@ -18,7 +18,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -76,7 +76,7 @@
         <!-- Label style -->
         <Style Selector="TextBlock.spinner-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="Foreground" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -86,7 +86,7 @@
         <!-- Value text style -->
         <Style Selector="TextBlock.value-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -96,7 +96,7 @@
         <!-- Dots indicator -->
         <Style Selector="TextBlock.dots-indicator">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
@@ -150,7 +150,15 @@
                         <!-- Display mode -->
                         <TextBlock x:Name="ValueText"
                                    Classes="value-text"
-                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}}"/>
+                                   IsVisible="{Binding !IsEditing, RelativeSource={RelativeSource AncestorType=controls:SpinnerControl}}">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{x:Static converters:SpinnerDisplayConverter.Instance}">
+                                    <Binding Path="Value" RelativeSource="{RelativeSource AncestorType=controls:SpinnerControl}"/>
+                                    <Binding Path="DisplayValues" RelativeSource="{RelativeSource AncestorType=controls:SpinnerControl}"/>
+                                    <Binding Path="AllowAuto" RelativeSource="{RelativeSource AncestorType=controls:SpinnerControl}"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                         <!-- Edit mode -->
                         <TextBox x:Name="ValueEdit"
                                  Classes="value-text"
