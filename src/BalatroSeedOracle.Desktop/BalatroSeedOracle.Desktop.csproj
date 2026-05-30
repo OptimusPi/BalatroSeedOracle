@@ -9,27 +9,23 @@
     <AssemblyName>BalatroSeedOracle.Desktop</AssemblyName>
   </PropertyGroup>
 
-  <!-- Native AOT + trimming ENABLED: The application has been refactored
-       to be fully trim-safe and AOT-compatible by migrating reflection-based 
-       serialization to source-generated contexts (BsoJsonSerializerContext /
-       MotelyJsonSerializerContext) and utilizing compiled XAML bindings. 
-       This produces a highly optimized, single-file native executable. -->
+  <!-- Native AOT is DEFERRED pending elimination of reflection dependencies:
+       YamlDotNet (6 DeserializerBuilder call sites need StaticDeserializerBuilder),
+       DataGridResultsWindow programmatic new Binding(string) columns (needs TreeDataGrid),
+       and RemoteSearchEngine reflection JSON. The committed AOT=true config hard-failed
+       ILC (MSB3073, exit -1, ~30 IL3050/IL2026 errors). Ship with JIT; re-enable AOT
+       after those blockers are removed (see docs/ARCHITECTURE.md M6). -->
   <PropertyGroup>
-    <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <PublishAot>false</PublishAot>
+    <PublishTrimmed>false</PublishTrimmed>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <InvariantGlobalization>true</InvariantGlobalization>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <DebuggerSupport>false</DebuggerSupport>
-    <!-- Keep stack traces so AOT/Release crashes are diagnosable (prior crash.log entries had blank stacks). -->
+    <!-- Keep stack traces so Release crashes are diagnosable. -->
     <EnableStackTraceInException>true</EnableStackTraceInException>
     <OptimizationPreference>Speed</OptimizationPreference>
-    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
-    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
-    <!-- IlcDisableReflection removed: it strips reflection metadata Avalonia's XAML
-         loader needs, which produces "No precompiled XAML found for App" at startup
-         in published builds. Avalonia is not compatible with full reflection-disable. -->
   </PropertyGroup>
 
   <!-- Release-specific optimizations -->
@@ -42,17 +38,6 @@
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
   </PropertyGroup>
-
-  <!-- AOT Trimming Configuration -->
-  <ItemGroup>
-    <TrimmerRootDescriptor Include="..\BalatroSeedOracle\TrimmerRoots.xml" />
-    <!-- These libraries use heavy reflection (YAML reflective deserialization, programmatic
-         DataGrid Binding(string) instances). Rooting the whole assembly keeps their internal
-         reflection paths intact. Long-term: get BSO off direct YamlDotNet usage (Motely owns
-         JAML parsing) and migrate DataGridResultsWindow → TreeDataGrid. -->
-    <TrimmerRootAssembly Include="YamlDotNet" />
-    <TrimmerRootAssembly Include="Avalonia.Controls.DataGrid" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />

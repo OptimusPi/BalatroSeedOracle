@@ -71,6 +71,7 @@ avalonia.license.local
 *.log
 docs/BLUEPRINT_GITHUB_PAGES_FIX.md
 *.md
+!CLAUDE.md
 
 # Build/publish logs and scratch txt — these have leaked into the repo
 # multiple times (publish_log.txt, publish_retry.txt, temp_duckdb_ops.txt,

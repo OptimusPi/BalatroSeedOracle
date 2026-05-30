@@ -8,7 +8,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     env:
-      PARCEL_LICENSE_KEY: ${{ secrets.PARCEL_LICENSE_KEY }}
+      PARCEL_LICENSE: ${{ secrets.PARCEL_LICENSE_KEY }}
 
     steps:
     - name: Checkout code

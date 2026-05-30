@@ -1,6 +1,6 @@
 {
     "GeneralSettings": {
-        "NetProjectPath": "BalatroSeedOracle.csproj",
+        "NetProjectPath": "../BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj",
         "ApplicationName": "Balatro Seed Oracle",
         "Version": "2.0.0",
         "PackageName": {

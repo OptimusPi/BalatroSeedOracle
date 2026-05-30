@@ -23,11 +23,9 @@
     <AvaloniaUILicenseKey Include="$(_AvaloniaLicenseKey)" />
   </ItemGroup>
 
-  <!-- AOT-mandatory: compiled bindings everywhere.
-       Desktop sets IlcDisableReflection=true and Browser uses TrimMode=full,
-       so any reflection-based binding would crash at runtime. Per Avalonia's
-       Native AOT guidance, this prop must apply across all heads, not just
-       the shared library. -->
+  <!-- Compiled bindings required everywhere: Desktop ships with AOT deferred (JIT Release)
+       and Browser uses TrimMode=full, so any reflection-based binding would crash at
+       runtime. Per Avalonia's Native AOT guidance this prop applies to all heads. -->
   <PropertyGroup>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>

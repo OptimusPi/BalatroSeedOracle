@@ -13,7 +13,7 @@
             <Setter Property="Background" Value="{StaticResource TerminalBackground}"/>
             <Setter Property="Foreground" Value="{StaticResource SpecialGreenText}"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
@@ -39,7 +39,7 @@
         <!-- Stats label style -->
         <Style Selector="TextBlock.stat-label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource MediumGrey}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,2"/>
@@ -47,7 +47,7 @@
 
         <Style Selector="TextBlock.stat-value">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource LightCream}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
@@ -64,7 +64,7 @@
         <Style Selector="Border.strip-label">
             <Setter Property="Background" Value="{StaticResource VeryLightGrey}"/>
             <Setter Property="CornerRadius" Value="4,0,0,4"/>
-            <Setter Property="Padding" Value="12,0,12,0"/>
+            <Setter Property="Padding" Value="8,0,4,0"/>
         </Style>
 
         <Style Selector="Border.strip-value">
@@ -72,19 +72,19 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource LightCream}"/>
             <Setter Property="CornerRadius" Value="0,4,4,0"/>
-            <Setter Property="Padding" Value="12,0,12,0"/>
+            <Setter Property="Padding" Value="4,0,8,0"/>
         </Style>
 
         <Style Selector="TextBlock.strip-label-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Foreground" Value="{StaticResource VeryDarkGrey2}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style Selector="TextBlock.strip-value-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Foreground" Value="{StaticResource LightCream}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -149,13 +149,13 @@
                         <StackPanel Margin="0,0,0,8">
                             <TextBlock Text="Active Filter"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
+                                       FontSize="18"
                                        Foreground="{StaticResource MediumGrey}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,2"/>
                             <TextBlock Text="{Binding LoadedConfig.Name}"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="12"
+                                       FontSize="18"
                                        Foreground="{StaticResource Gold}"
                                        HorizontalAlignment="Center"
                                        TextWrapping="Wrap"
@@ -223,7 +223,7 @@
                                   IsChecked="{Binding IsSmartAutoMode}"
                                   Foreground="{StaticResource White}"
                                   FontFamily="{StaticResource BalatroFont}"
-                                  FontSize="11"
+                                  FontSize="18"
                                   Margin="0,0,0,8"
                                   ToolTip.Tip="Automatically manages threads and resources for optimal performance"/>
 
@@ -243,7 +243,7 @@
                                     Margin="0,0,0,8">
                             <TextBlock Text="Seed Name"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
+                                       FontSize="18"
                                        Foreground="{StaticResource MediumGrey}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -252,7 +252,7 @@
                                      PlaceholderText="Enter seed..."
                                      MaxLength="8"
                                      FontFamily="{StaticResource BalatroFont}"
-                                     FontSize="14"
+                                     FontSize="18"
                                      TextAlignment="Center"
                                      Background="{StaticResource DarkTealGrey}"
                                      BorderBrush="{StaticResource DarkBorder}"
@@ -267,7 +267,7 @@
                                     Margin="0,0,0,8">
                             <TextBlock Text="Word List"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
+                                       FontSize="18"
                                        Foreground="{StaticResource MediumGrey}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -276,7 +276,7 @@
                                       SelectedIndex="{Binding SelectedWordListIndex}"
                                       HorizontalAlignment="Stretch"
                                       FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="12"
+                                      FontSize="18"
                                       Background="{StaticResource DarkTealGrey}"
                                       Foreground="{StaticResource White}"
                                       BorderBrush="{StaticResource DarkBorder}"
@@ -290,7 +290,7 @@
                                     Margin="0,0,0,8">
                             <TextBlock Text="DB List"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="11"
+                                       FontSize="18"
                                        Foreground="{StaticResource MediumGrey}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,4"/>
@@ -299,7 +299,7 @@
                                       SelectedIndex="{Binding SelectedDbListIndex}"
                                       HorizontalAlignment="Stretch"
                                       FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="12"
+                                      FontSize="18"
                                       Background="{StaticResource DarkTealGrey}"
                                       Foreground="{StaticResource White}"
                                       BorderBrush="{StaticResource DarkBorder}"
@@ -361,7 +361,7 @@
                                       IsChecked="{Binding ContinueFromLast}"
                                       Foreground="{StaticResource White}"
                                       FontFamily="{StaticResource BalatroFont}"
-                                      FontSize="11"
+                                      FontSize="18"
                                       IsVisible="{Binding IsContinueVisible}"
                                       VerticalAlignment="Center"
                                       Margin="0,0,16,0"/>
@@ -373,7 +373,7 @@
                                     Classes.btn-warning="{Binding IsSearching}"
                                     Command="{Binding ToggleSearchCommand}"
                                     FontFamily="{StaticResource BalatroFont}"
-                                    FontSize="24"
+                                    FontSize="18"
                                     Height="52"
                                     MinWidth="200"
                                     Margin="0,0,12,0"/>
@@ -399,7 +399,7 @@
                 <StackPanel Spacing="0">
                     <TextBlock Text="Search Progress"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
+                               FontSize="18"
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,12"/>
