@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
@@ -33,7 +33,7 @@
                         <TextBlock Text="{Binding FilterFileName}"
                                     Foreground="{StaticResource EditorTextGrey}"
                                     FontFamily="{StaticResource BalatroFont}"
-                                    FontSize="14"
+                                    FontSize="18"
                                     VerticalAlignment="Center"/>
                     </StackPanel>
                     
@@ -43,7 +43,7 @@
                                 Command="{Binding FormatJsonCommand}"
                                 Height="24"
                                 Padding="8,4"
-                                FontSize="11"
+                                FontSize="18"
                                 Background="{StaticResource EditorButtonBg}"
                                 BorderThickness="0"
                                 CornerRadius="4"
@@ -53,7 +53,7 @@
                                 Command="{Binding ValidateJsonCommand}"
                                 Height="24"
                                 Padding="8,4"
-                                FontSize="11"
+                                FontSize="18"
                                 Background="{StaticResource EditorButtonBg}"
                                 BorderThickness="0"
                                 CornerRadius="4"
@@ -62,7 +62,7 @@
                                 Command="{Binding CopyJsonCommand}"
                                 Height="24"
                                 Padding="8,4"
-                                FontSize="11"
+                                FontSize="18"
                                 Background="{StaticResource EditorButtonBg}"
                                 BorderThickness="0"
                                 CornerRadius="4">
@@ -81,7 +81,7 @@
                                     SyntaxHighlighting="Json"
                                     ShowLineNumbers="True"
                                     FontFamily="Cascadia Code,Consolas,Menlo,Courier New,monospace"
-                                    FontSize="16"
+                                    FontSize="18"
                                     Background="{StaticResource EditorDarkBg}"
                                     Foreground="{StaticResource White}"
                                     LineNumbersForeground="{StaticResource EditorLineNumbers}"

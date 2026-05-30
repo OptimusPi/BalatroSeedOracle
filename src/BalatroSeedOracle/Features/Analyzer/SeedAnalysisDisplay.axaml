@@ -49,7 +49,7 @@
                                             Margin="4">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
                                             <TextBlock Text="BOSS"
-                                                       FontSize="12"
+                                                       FontSize="18"
                                                        Foreground="{StaticResource TextInactive}"
                                                        HorizontalAlignment="Center"/>
                                             <Image Source="{Binding Boss, Converter={StaticResource BossSpriteConverter}}"
@@ -57,7 +57,7 @@
                                                    Height="68"
                                                    Stretch="Uniform"/>
                                             <TextBlock Text="{Binding BossName}"
-                                                       FontSize="12"
+                                                       FontSize="18"
                                                        Foreground="{StaticResource White}"
                                                        HorizontalAlignment="Center"
                                                        TextWrapping="Wrap"
@@ -74,7 +74,7 @@
                                             IsVisible="{Binding HasVoucher}">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
                                             <TextBlock Text="VOUCHER"
-                                                       FontSize="12"
+                                                       FontSize="18"
                                                        Foreground="{StaticResource TextInactive}"
                                                        HorizontalAlignment="Center"/>
                                             <Image Source="{Binding Voucher, Converter={StaticResource VoucherSpriteConverter}}"
@@ -82,7 +82,7 @@
                                                    Height="95"
                                                    Stretch="Uniform"/>
                                             <TextBlock Text="{Binding VoucherName}"
-                                                       FontSize="12"
+                                                       FontSize="18"
                                                        Foreground="{StaticResource White}"
                                                        HorizontalAlignment="Center"
                                                        TextWrapping="Wrap"
@@ -95,7 +95,7 @@
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="SKIP TAGS"
                                                
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <WrapPanel Orientation="Horizontal">
                                         <!-- Small Blind Tag -->
@@ -111,11 +111,11 @@
                                                        Stretch="Uniform"/>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Small Blind"
-                                                               FontSize="9"
+                                                               FontSize="18"
                                                                Opacity="0.7"
                                                                Foreground="{StaticResource VeryLightGrey}"/>
                                                     <TextBlock Text="{Binding SmallBlindTag.TagName}"
-                                                               FontSize="12"
+                                                               FontSize="18"
                                                                Foreground="{StaticResource White}"/>
                                                 </StackPanel>
                                             </StackPanel>
@@ -133,11 +133,11 @@
                                                        Stretch="Uniform"/>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Big Blind"
-                                                               FontSize="9"
+                                                               FontSize="18"
                                                                Opacity="0.7"
                                                                Foreground="{StaticResource VeryLightGrey}"/>
                                                     <TextBlock Text="{Binding BigBlindTag.TagName}"
-                                                               FontSize="12"
+                                                               FontSize="18"
                                                                Foreground="{StaticResource White}"/>
                                                 </StackPanel>
                                             </StackPanel>
@@ -149,7 +149,7 @@
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="SHOP QUEUE"
                                                
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding ShopItems}">
                                         <ItemsControl.ItemsPanel>
@@ -173,7 +173,7 @@
                                                                Stretch="Uniform"/>
                                                         <!-- Edition Badge -->
                                                         <TextBlock Text="{Binding EditionName}"
-                                                                   FontSize="9"
+                                                                   FontSize="18"
                                                                    HorizontalAlignment="Center"
                                                                    Foreground="{Binding EditionColor}"
                                                                    IsVisible="{Binding HasEdition}"/>
@@ -188,7 +188,7 @@
                                 <StackPanel Spacing="8" Margin="0,8">
                                     <TextBlock Text="BOOSTER PACKS"
                                                
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
                                     <ItemsControl ItemsSource="{Binding BoosterPacks}">
                                         <ItemsControl.ItemsPanel>
@@ -214,12 +214,12 @@
                                                                Stretch="Uniform"/>
                                                         <!-- Pack Name -->
                                                         <TextBlock Text="{Binding PackName}"
-                                                                   FontSize="10"
+                                                                   FontSize="18"
                                                                    HorizontalAlignment="Center"
                                                                    Foreground="{StaticResource White}"/>
                                                         <!-- Pack Items -->
                                                         <TextBlock Text="{Binding ItemsText}"
-                                                                   FontSize="8"
+                                                                   FontSize="18"
                                                                    HorizontalAlignment="Center"
                                                                    TextWrapping="Wrap"
                                                                    MaxWidth="90"

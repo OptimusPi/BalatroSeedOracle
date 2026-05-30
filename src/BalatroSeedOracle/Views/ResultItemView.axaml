@@ -44,8 +44,8 @@
                         Padding="4,2" 
                         CornerRadius="2"
                         Classes="score-badge">
-                  <TextBlock Text="{Binding}" 
-                             FontSize="10" 
+                  <TextBlock Text="{Binding}"
+                             FontSize="18"
                              FontWeight="Bold" />
                 </Border>
               </DataTemplate>

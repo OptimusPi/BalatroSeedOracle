@@ -99,7 +99,7 @@
         <!-- Card name label with proper height for 2-line wrapping -->
         <TextBlock Text="{Binding DisplayName}"
                    FontFamily="{StaticResource BalatroFont}"
-                   FontSize="13"
+                   FontSize="18"
                    Foreground="{StaticResource White}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"

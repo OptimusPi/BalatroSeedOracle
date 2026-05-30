@@ -32,7 +32,7 @@
             <Setter Property="Background" Value="{StaticResource Blue}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="CornerRadius" Value="6"/>
@@ -105,7 +105,7 @@
                         Background="{StaticResource Red}"
                         Foreground="White"
                         FontFamily="{StaticResource BalatroFont}"
-                        FontSize="14"
+                        FontSize="18"
                         FontWeight="Bold"
                         Padding="16,8"
                         Margin="8,8,0,8"
@@ -146,12 +146,12 @@
 
                 <TextBlock Text="Searching for seeds..."
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="16"
+                           FontSize="18"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"/>
 
                 <TextBlock Text="Results will appear here as they are found"
-                           FontSize="12"
+                           FontSize="18"
                            Foreground="{StaticResource MediumGrey}"
                            HorizontalAlignment="Center"/>
             </StackPanel>

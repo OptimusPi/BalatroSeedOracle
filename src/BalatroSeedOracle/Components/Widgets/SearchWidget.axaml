@@ -77,7 +77,7 @@
                         Margin="0,2,0,0">
                     <TextBlock Text="{Binding ProgressText}"
                                Foreground="{StaticResource Gold}"
-                               FontSize="12"
+                               FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
                                FontWeight="Bold"/>
                 </Border>
@@ -85,7 +85,7 @@
 
             <!-- Filter Name Label -->
             <TextBlock Text="{Binding FilterName}"
-                       FontSize="14"
+                       FontSize="18"
                        Foreground="White"
                        FontFamily="{StaticResource BalatroFont}"
                        HorizontalAlignment="Center"

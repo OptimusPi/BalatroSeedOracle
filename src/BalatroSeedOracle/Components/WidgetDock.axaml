@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:converters="using:BalatroSeedOracle.Converters"
@@ -25,7 +25,7 @@
                     PointerPressed="OnMusicMixerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource MusicNoteIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="Mixer" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Mixer" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             
@@ -41,7 +41,7 @@
                     PointerPressed="OnVisualizerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource PaletteIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="Visual" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Visual" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             
@@ -57,7 +57,7 @@
                     PointerPressed="OnTransitionDesignerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource MovieIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="Trans" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Trans" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             
@@ -73,7 +73,7 @@
                     PointerPressed="OnFertilizerClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource FlowerIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="Fert" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Fert" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             
@@ -89,7 +89,7 @@
                     PointerPressed="OnHostApiClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource ServerIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="API" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="API" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
             
@@ -105,7 +105,7 @@
                     PointerPressed="OnEventFXClick">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                     <PathIcon Data="{StaticResource AutoFixIconData}" Width="24" Height="24" Foreground="{StaticResource White}"/>
-                    <TextBlock Text="FX" FontSize="8" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="FX" FontSize="18" Foreground="{StaticResource White}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
         </StackPanel>

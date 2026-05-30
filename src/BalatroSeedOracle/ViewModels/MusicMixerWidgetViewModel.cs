@@ -1022,12 +1022,12 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     Text = labelText,
                     Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
-                    FontSize = 14,
+                    FontSize = 18,
                 };
                 var textBox = new TextBox
                 {
                     PlaceholderText = watermark,
-                    FontSize = 14,
+                    FontSize = 18,
                     Padding = new Avalonia.Thickness(10),
                 };
                 var buttons = new StackPanel
@@ -1124,7 +1124,7 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     Text = labelText,
                     Foreground = new SolidColorBrush(Color.Parse("#FFD700")),
-                    FontSize = 14,
+                    FontSize = 18,
                 };
                 var combo = new ComboBox
                 {

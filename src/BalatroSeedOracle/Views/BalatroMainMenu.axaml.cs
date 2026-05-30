@@ -312,7 +312,7 @@ namespace BalatroSeedOracle.Views
                                         new TextBlock
                                         {
                                             Text = "Error",
-                                            FontSize = 24,
+                                            FontSize = 18,
                                             FontWeight = FontWeight.Bold,
                                             Margin = new Thickness(0, 0, 0, 10),
                                         },

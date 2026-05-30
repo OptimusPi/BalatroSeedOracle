@@ -16,7 +16,7 @@
         
         <Style Selector="TextBlock.tag-text">
             <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         
@@ -27,7 +27,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
         
         <Style Selector="Button.tag-remove:pointerover">

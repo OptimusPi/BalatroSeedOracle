@@ -20,7 +20,7 @@
         <TextBlock Grid.Row="0"
                    Text="SETTINGS"
                    FontFamily="{StaticResource BalatroFont}"
-                   FontSize="24"
+                   FontSize="18"
                    Foreground="{StaticResource Gold}"
                    HorizontalAlignment="Center"/>
 

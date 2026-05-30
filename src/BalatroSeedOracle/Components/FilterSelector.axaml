@@ -44,7 +44,7 @@
                         Classes="btn-blue"
                         Height="44"
                         MinWidth="110"
-                        FontSize="14"
+                        FontSize="18"
                         Command="{Binding CopyFilterCommand}"/>
 
                 <Button Name="EditFilterButton"
@@ -52,7 +52,7 @@
                         Classes="btn-orange"
                         Height="44"
                         MinWidth="130"
-                        FontSize="14"
+                        FontSize="18"
                         Command="{Binding EditFilterCommand}"/>
 
                 <Button Name="DeleteFilterButton"
@@ -60,7 +60,7 @@
                         Classes="btn-red"
                         Height="44"
                         Width="80"
-                        FontSize="14"
+                        FontSize="18"
                         Command="{Binding DeleteFilterCommand}"/>
             </StackPanel>
 

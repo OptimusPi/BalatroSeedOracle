@@ -9,13 +9,13 @@
         <StackPanel Spacing="6">
             <TextBlock Text="NOTE"
                        FontFamily="{StaticResource BalatroFont}"
-                       FontSize="18"
+                       FontSize="36"
                        
                        Foreground="{StaticResource TextDark}"/>
 
             <TextBlock Text="{Binding PanelText}"
                        Foreground="{StaticResource White}"
-                       FontSize="13"
+                       FontSize="18"
                        TextWrapping="Wrap"/>
         </StackPanel>
     </Border>

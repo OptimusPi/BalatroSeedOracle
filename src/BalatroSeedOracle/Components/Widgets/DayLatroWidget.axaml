@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -72,7 +72,7 @@
                 </Grid>
 
                 <TextBlock Text="Daylatro"
-                           FontSize="16"
+                           FontSize="18"
                            FontFamily="{StaticResource BalatroFont}"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"/>
@@ -104,7 +104,7 @@
                         <!-- Seed text with Copy button inline -->
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,0,0,15">
                             <TextBlock Text="{Binding TodaySeed}"
-                                       FontSize="24"
+                                       FontSize="18"
                                        Foreground="{StaticResource Red}"
                                        VerticalAlignment="Center"/>
                             <Button Width="32" Height="32"
@@ -118,7 +118,7 @@
 
                         <!-- My Score Section -->
                         <TextBlock Text="Submit Score"
-                                   FontSize="14"
+                                   FontSize="18"
                                    Margin="0,0,0,5"/>
 
                         <!-- Input Fields Grid -->
@@ -156,7 +156,7 @@
 
                         <!-- Submission Message - Success -->
                         <TextBlock Text="{Binding SubmissionMessage}"
-                                   FontSize="12"
+                                   FontSize="18"
                                    Foreground="{StaticResource SuccessGreen}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,10"
@@ -165,7 +165,7 @@
 
                         <!-- Submission Message - Error -->
                         <TextBlock Text="{Binding SubmissionMessage}"
-                                   FontSize="12"
+                                   FontSize="18"
                                    Foreground="{StaticResource ErrorRed}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,10"
@@ -181,7 +181,7 @@
 
                             <TextBlock Grid.Column="0"
                                        Text="Today's High Scores"
-                                       FontSize="14"
+                                       FontSize="18"
                                        VerticalAlignment="Center"/>
 
                             <Button Grid.Column="1"
@@ -213,20 +213,20 @@
 
                                                 <TextBlock Grid.Column="0"
                                                            Text="{Binding Rank}"
-                                                           FontSize="12"/>
+                                                           FontSize="18"/>
 
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding Initials}"
-                                                           FontSize="12"
+                                                           FontSize="18"
                                                            FontFamily="{StaticResource BalatroFont}"/>
 
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding Ante}"
-                                                           FontSize="12"/>
+                                                           FontSize="18"/>
 
                                                 <TextBlock Grid.Column="3"
                                                            Text="{Binding Score}"
-                                                           FontSize="12"
+                                                           FontSize="18"
                                                            Foreground="{StaticResource DaytroOrange}"
                                                            HorizontalAlignment="Right"/>
                                             </Grid>

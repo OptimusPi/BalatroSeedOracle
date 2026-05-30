@@ -13,20 +13,20 @@
     
     <Window.Styles>
         <Style Selector="TextBlock.attribution">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource Border}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         
         <Style Selector="TextBlock.attribution-link:pointerover">
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
     </Window.Styles>
     

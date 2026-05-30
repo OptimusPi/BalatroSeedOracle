@@ -61,7 +61,7 @@
         <!-- Operator label text style -->
         <Style Selector="TextBlock.operator-label">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>

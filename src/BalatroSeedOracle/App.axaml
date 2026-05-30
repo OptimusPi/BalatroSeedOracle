@@ -227,7 +227,7 @@
         <!-- DEFAULT: Balatro Red background, white text, flat drop shadow -->
         <Style Selector="Button:not(.SystemCaptionButton)">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="Background" Value="{StaticResource Red}" />
             <Setter Property="BorderThickness" Value="0" />
@@ -390,7 +390,7 @@
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Padding" Value="12,8" />
         </Style>
         <Style Selector="Button.author-button:pointerover">
@@ -417,7 +417,7 @@
         <Style Selector="Label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
         </Style>
 
         <Style Selector="TextBox">
@@ -428,7 +428,7 @@
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="8,6" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="CaretBrush" Value="{StaticResource White}" />
         </Style>
@@ -444,7 +444,7 @@
         <Style Selector="CheckBox">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
         </Style>
 
         <Style Selector="CheckBox /template/ Border#NormalRectangle">
@@ -758,7 +758,7 @@
 
         <Style Selector="TabItem">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="Padding" Value="16,8" />
@@ -928,7 +928,7 @@
 
         <Style Selector="Button.back-button">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Background" Value="{StaticResource Orange}"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -950,7 +950,7 @@
 
         <Style Selector="Button.btn-back">
             <Setter Property="Background" Value="{StaticResource Orange}" />
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="MinHeight" Value="50" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Margin" Value="0,16,0,0" />
@@ -958,7 +958,7 @@
 
         <Style Selector="Button.nav-button">
             <Setter Property="Background" Value="{StaticResource Red}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,1" />
@@ -1007,7 +1007,7 @@
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="BorderBrush" Value="{StaticResource ModalBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Padding" Value="8,4" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
@@ -1025,7 +1025,7 @@
             <Setter Property="Background" Value="{StaticResource Red}"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="MinHeight" Value="46"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinWidth" Value="128"/>
@@ -1140,7 +1140,7 @@
         </Style>
 
         <Style Selector="Border.notification-badge TextBlock">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -1148,7 +1148,7 @@
         </Style>
 
         <Style Selector="Border.notification-badge.small TextBlock">
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
         <!-- =============================================
@@ -1157,7 +1157,7 @@
 
         <Style Selector="TextBlock.balatro-section-header">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="Margin" Value="0,0,0,12" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -1165,7 +1165,7 @@
 
         <Style Selector="TextBlock.balatro-modal-title">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
-            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontSize" Value="36" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,0,20" />
@@ -1174,7 +1174,7 @@
 
         <Style Selector="TextBlock.BalatroSeedOracle-modal-text">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
@@ -1183,12 +1183,12 @@
         <Style Selector="TextBlock.info-display">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
         <Style Selector="TextBox.search-box">
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="MinHeight" Value="32" />
             <Setter Property="PlaceholderText" Value="Search items..." />
             <Setter Property="Margin" Value="0,0,0,4" />
@@ -1200,7 +1200,7 @@
 
         <Style Selector="Button.BalatroSeedOracle-modal-btn">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="FontSize" Value="36"/>
             <Setter Property="Background" Value="{StaticResource PureBlack}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="BorderThickness" Value="0"/>
@@ -1304,7 +1304,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="28"/>
             <Setter Property="Height" Value="28"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource Gold}"/>
         </Style>
 
@@ -1334,7 +1334,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
@@ -1371,7 +1371,7 @@
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="10"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="AcceptsReturn" Value="True"/>
             <Setter Property="MinHeight" Value="60"/>
@@ -1383,14 +1383,14 @@
         </Style>
 
         <Style Selector="TextBlock.widget-title">
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style Selector="TextBlock.widget-label">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -1398,12 +1398,12 @@
         <Style Selector="TextBlock.widget-muted">
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Opacity" Value="0.6"/>
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
         <Style Selector="TextBlock.widget-info">
             <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
         <!-- =============================================
@@ -1428,13 +1428,13 @@
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
 
         <Style Selector="FlyoutPresenter RadioButton">
             <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
         </Style>
 
@@ -1444,7 +1444,7 @@
 
         <Style Selector="FlyoutPresenter CheckBox">
             <Setter Property="Foreground" Value="{StaticResource White}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="0,2"/>
         </Style>
 
@@ -1458,7 +1458,7 @@
 
         <Style Selector="FlyoutPresenter TextBlock.header">
             <Setter Property="Foreground" Value="{StaticResource AccentGreen}"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
         <Style Selector="ComboBoxItem">

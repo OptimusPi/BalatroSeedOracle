@@ -36,7 +36,7 @@
                     Margin="0,0,8,0">
                 <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
                            FontFamily="{StaticResource BalatroFont}"
-                           FontSize="12"
+                           FontSize="18"
                            Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"

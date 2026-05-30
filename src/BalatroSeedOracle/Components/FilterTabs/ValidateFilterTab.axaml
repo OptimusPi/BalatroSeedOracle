@@ -10,7 +10,7 @@
             
             <!-- Header -->
             <TextBlock Text="FINISH"
-                       FontSize="24"
+                       FontSize="18"
                        FontFamily="{StaticResource BalatroFont}"
                        Foreground="{StaticResource Gold}"
                        HorizontalAlignment="Center"
@@ -25,20 +25,20 @@
                 <!-- Filter Name -->
                 <StackPanel>
                     <TextBlock Text="Filter Name"
-                               FontSize="13"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
                                Margin="0,0,0,4"/>
                     <TextBox Text="{Binding FilterName}"
                              PlaceholderText="Enter filter name..."
-                             FontSize="13"
+                             FontSize="18"
                              Height="32"/>
                 </StackPanel>
 
                 <!-- Description -->
                 <StackPanel>
                     <TextBlock Text="Description"
-                               FontSize="13"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
                                Margin="0,0,0,4"/>
@@ -46,7 +46,7 @@
                              PlaceholderText="Enter description..."
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
-                             FontSize="13"
+                             FontSize="18"
                              Height="60"/>
                 </StackPanel>
 
@@ -60,7 +60,7 @@
                                 Classes="btn-blue"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="13"
+                                FontSize="18"
                                 Margin="0,0,4,8"/>
 
                         <Button Grid.Row="0" Grid.Column="1"
@@ -69,7 +69,7 @@
                                 Classes="btn-green"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="13"
+                                FontSize="18"
                                 Margin="4,0,0,8"
                                 IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
@@ -80,7 +80,7 @@
                                 Classes="btn-orange"
                                 Foreground="{StaticResource White}"
                                 Height="40"
-                                FontSize="14"
+                                FontSize="18"
                                 FontWeight="Bold"
                                 Margin="0,0,0,8"
                                 IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -92,7 +92,7 @@
                                 Classes="btn-red"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="13"/>
+                                FontSize="18"/>
                     </Grid>
                 </StackPanel>
 
@@ -106,7 +106,7 @@
                     Padding="12,8"
                     IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                 <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="12"
+                           FontSize="18"
                            Foreground="{Binding StatusColor}"
                            FontFamily="{StaticResource BalatroFont}"
                            TextWrapping="Wrap"

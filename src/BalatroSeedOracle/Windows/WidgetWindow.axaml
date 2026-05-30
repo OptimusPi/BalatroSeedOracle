@@ -30,8 +30,8 @@
                     VerticalAlignment="Top"
                     Margin="0, -20, 0, 0"
                     IsVisible="False">
-                <TextBlock Text="📌 Snapped" 
-                           FontSize="10" 
+                <TextBlock Text="📌 Snapped"
+                           FontSize="18"
                            Foreground="White" 
                            FontWeight="Bold"/>
             </Border>

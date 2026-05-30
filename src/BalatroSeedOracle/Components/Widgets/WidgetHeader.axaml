@@ -25,7 +25,7 @@
                           VerticalAlignment="Center"
                           Foreground="{StaticResource White}"/>
                 <TextBlock Text="{Binding WidgetTitle}"
-                           FontSize="13"
+                           FontSize="18"
                            Foreground="{StaticResource White}"
                            VerticalAlignment="Center"/>
             </StackPanel>

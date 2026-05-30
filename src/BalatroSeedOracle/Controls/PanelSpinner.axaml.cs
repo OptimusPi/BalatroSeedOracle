@@ -196,7 +196,7 @@ public partial class PanelSpinner : UserControl
                 FontFamily =
                     Application.Current?.Resources["BalatroFont"] as FontFamily
                     ?? FontFamily.Default,
-                FontSize = 14,
+                FontSize = 18,
                 Foreground = Brushes.White,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             };

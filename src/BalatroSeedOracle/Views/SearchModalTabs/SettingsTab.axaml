@@ -21,7 +21,7 @@
                         Padding="12,8">
                     <TextBlock Text="Preferred Deck &amp; Stake"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
+                               FontSize="36"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"/>
                 </Border>
@@ -55,7 +55,7 @@
                                    Foreground="{StaticResource Black}"/>
                         <TextBlock Text="{Binding DeckDescription}"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="12"
+                                   FontSize="18"
                                    Foreground="{StaticResource ColorDarkGrey}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
@@ -76,7 +76,7 @@
                         Padding="12,8">
                     <TextBlock Text="Important"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
+                               FontSize="36"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"/>
                 </Border>
@@ -86,7 +86,7 @@
                     <PathIcon Data="{StaticResource AlertIconData}" Width="32" Height="32" HorizontalAlignment="Center" Foreground="{StaticResource Gold}"/>
                     <TextBlock Text="This filter's criteria includes deck-specific items. Search results will match the preferred deck and stake shown above. To override these settings for the current search, use the Deck/Stake spinners on the Search tab."
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource Black}"
                                TextWrapping="Wrap"
                                TextAlignment="Center"

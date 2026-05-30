@@ -248,7 +248,7 @@ namespace BalatroSeedOracle.Views.Modals
                 titleBar.Child = new TextBlock
                 {
                     Text = "Delete Filter?",
-                    FontSize = 24,
+                    FontSize = 18,
                     Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
                     HorizontalAlignment = HorizontalAlignment.Center,
                 };
@@ -276,7 +276,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var warningIcon = new TextBlock
                 {
                     Text = "⚠",
-                    FontSize = 32,
+                    FontSize = 36,
                     Foreground = new Avalonia.Media.SolidColorBrush(Color.Parse("#FF6B6B")),
                     VerticalAlignment = VerticalAlignment.Top,
                     Margin = new Thickness(0, 0, 0, 0),
@@ -285,7 +285,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var messageText = new TextBlock
                 {
                     Text = $"Are you sure you want to delete '{filterName}'?",
-                    FontSize = 14,
+                    FontSize = 18,
                     Foreground = this.FindResource("White") as Avalonia.Media.IBrush,
                     TextWrapping = TextWrapping.Wrap,
                     MaxWidth = 320, // Leave room for icon
@@ -299,7 +299,7 @@ namespace BalatroSeedOracle.Views.Modals
                     new TextBlock
                     {
                         Text = "This cannot be undone.",
-                        FontSize = 14,
+                        FontSize = 18,
                         Foreground = this.FindResource("LightGrey") as Avalonia.Media.IBrush,
                         FontStyle = FontStyle.Italic,
                     }

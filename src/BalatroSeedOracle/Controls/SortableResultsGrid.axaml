@@ -17,15 +17,15 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
                     <TextBlock Text="{Binding ResultsCountText}" 
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="16"
+                               FontSize="18"
                                Foreground="{StaticResource Gold}"/>
                     <TextBlock Text="{Binding StatsText}" 
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource LightGrey}"
                                VerticalAlignment="Center"
                                Margin="0,2,0,0"/>
                     <TextBlock Text="{Binding SelectedCountText}" 
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource BrightGreenEditor}"
                                VerticalAlignment="Center"
                                Margin="8,2,0,0"

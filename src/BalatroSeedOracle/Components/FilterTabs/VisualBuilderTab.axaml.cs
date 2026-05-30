@@ -1518,7 +1518,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 var label = new TextBlock
                 {
                     Text = "Clear everything and start over with a fresh filter?\nAre you sure?",
-                    FontSize = 16,
+                    FontSize = 18,
                     Foreground = white,
                     TextWrapping = TextWrapping.Wrap,
                     TextAlignment = TextAlignment.Center,
@@ -1536,7 +1536,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Content = "Cancel",
                     Width = 120,
                     Height = 45,
-                    FontSize = 16,
+                    FontSize = 18,
                     Background = modalGrey,
                     Foreground = white,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -1548,7 +1548,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     Content = "YES, START OVER",
                     Width = 180,
                     Height = 45,
-                    FontSize = 16,
+                    FontSize = 18,
                     Background = red,
                     Foreground = white,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -1790,7 +1790,7 @@ namespace BalatroSeedOracle.Components.FilterTabs
                             new TextBlock
                             {
                                 Text = item?.DisplayName ?? "",
-                                FontSize = 11,
+                                FontSize = 18,
                                 Foreground = whiteBrush,
                                 TextAlignment = TextAlignment.Center,
                                 TextWrapping = TextWrapping.Wrap,

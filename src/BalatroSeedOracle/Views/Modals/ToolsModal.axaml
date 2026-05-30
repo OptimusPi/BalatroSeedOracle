@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
     
@@ -6,7 +6,7 @@
         <StackPanel HorizontalAlignment="Center" Margin="20" Spacing="20">
             <!-- Title -->
             <TextBlock Text="TOOLS"
-                       FontSize="24"
+                       FontSize="18"
 
                        Foreground="{StaticResource Gold}"
                        FontFamily="{StaticResource BalatroFont}"
@@ -16,7 +16,7 @@
             <!-- Explanatory Text -->
             <TextBlock Text="Import filters, manage wordlists, and tweak your audio visualizer settings here."
                       FontFamily="{StaticResource BalatroFont}"
-                      FontSize="13"
+                      FontSize="18"
                       Foreground="{StaticResource VeryLightGrey}"
                       TextWrapping="Wrap"
                       HorizontalAlignment="Center"
@@ -32,7 +32,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <TextBlock Text="Import Files" 
-                           FontSize="20"
+                           FontSize="18"
                            
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
@@ -46,7 +46,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <TextBlock Text="Word Lists" 
-                           FontSize="20"
+                           FontSize="18"
                            
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
@@ -60,7 +60,7 @@
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <TextBlock Text="Credits"
-                           FontSize="20"
+                           FontSize="18"
 
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
@@ -76,7 +76,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource WebIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="My Website"
-                               FontSize="20"
+                               FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"/>
@@ -93,7 +93,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource WebIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Balatro"
-                               FontSize="20"
+                               FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"/>
@@ -110,7 +110,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource ApplicationIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Web App"
-                               FontSize="20"
+                               FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"/>
@@ -127,7 +127,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource MusicIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Audio Visualizer"
-                               FontSize="20"
+                               FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"/>
@@ -146,7 +146,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource FireIconData}" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
                     <TextBlock Text="Nuke Everything" 
-                               FontSize="20"
+                               FontSize="18"
                                Foreground="White"
                                FontFamily="{StaticResource BalatroFont}"
                                IsHitTestVisible="False"

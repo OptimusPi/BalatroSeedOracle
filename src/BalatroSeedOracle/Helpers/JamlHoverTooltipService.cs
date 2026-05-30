@@ -236,7 +236,7 @@ namespace BalatroSeedOracle.Helpers
                             new TextBlock
                             {
                                 Foreground = Brushes.White,
-                                FontSize = 12,
+                                FontSize = 18,
                                 TextWrapping = TextWrapping.Wrap,
                                 MaxWidth = 300,
                             },

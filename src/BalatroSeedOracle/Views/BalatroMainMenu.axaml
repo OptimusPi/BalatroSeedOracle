@@ -51,7 +51,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,0,0,5">
                         <Path Width="14" Height="14" Fill="{StaticResource Gold}" Data="{StaticResource VolumeHighIconData}" VerticalAlignment="Center"/>
                         <TextBlock Text="VOLUME"
-                                   FontSize="14"
+                                   FontSize="18"
                                    Foreground="{StaticResource Gold}"/>
                     </StackPanel>
 
@@ -68,7 +68,7 @@
                     <!-- Volume Percentage Display -->
                     <TextBlock x:Name="VolumePercentText"
                                Text="{Binding VolumePercentText}"
-                               FontSize="16"
+                               FontSize="18"
                                
                                Foreground="White"
                                HorizontalAlignment="Center"/>
@@ -79,7 +79,7 @@
                             Command="{Binding MuteCommand}"
                             MinWidth="80"
                             Width="80"
-                            FontSize="12"
+                            FontSize="18"
                             Height="30"
                             HorizontalAlignment="Center"/>
                 </StackPanel>
@@ -114,7 +114,7 @@
             <TextBlock x:Name="MainTitleText"
                         Text="{Binding MainTitle}"
                         FontFamily="{StaticResource BalatroFont}"
-                        FontSize="32"
+                        FontSize="36"
 
                         Foreground="{StaticResource White}"
                         HorizontalAlignment="Center"
@@ -150,7 +150,7 @@
                             <TextBlock Text="Author" 
                                         Margin="4,6,4,2"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="14"
+                                       FontSize="18"
                                        
                                        HorizontalAlignment="Center"
                                        Foreground="{StaticResource White}"/>
@@ -170,7 +170,7 @@
                                     <!-- Edit mode -->
                                     <TextBox x:Name="AuthorEdit"
                                              Text="{Binding AuthorName, Mode=TwoWay}"
-                                             FontSize="16"
+                                             FontSize="18"
                                              BorderThickness="0"
                                              VerticalAlignment="Center"
                                              HorizontalAlignment="Stretch"
@@ -210,14 +210,14 @@
                     <Button Classes="btn-blue"
                             Command="{Binding EditorCommand}"
                             Content="DESIGNER"
-                            FontSize="28"
+                            FontSize="36"
                             MinHeight="46"
                             MinWidth="100"/>
 
                     <Button Classes="btn-purple"
                             Command="{Binding AnalyzeCommand}"
                             Content="ANALYZER"
-                            FontSize="28"
+                            FontSize="36"
                             MinHeight="46"
                             MinWidth="100"/>
 
@@ -249,7 +249,7 @@
                             <!-- Widget Dock Button -->
                             <Button x:Name="WidgetDockButton"
                                     Classes="btn-purple"
-                                    FontSize="24"
+                                    FontSize="18"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
@@ -264,7 +264,7 @@
                             <!-- Toggle All Widgets Button -->
                             <Button x:Name="ToggleAllWidgetsButton"
                                     Classes="btn-purple"
-                                    FontSize="16"
+                                    FontSize="18"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
@@ -300,7 +300,7 @@
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
                                     Classes="btn-purple"
-                                    FontSize="16"
+                                    FontSize="18"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
@@ -327,7 +327,7 @@
                             <!-- Music Toggle Button -->
                             <Button x:Name="MusicToggleButton"
                                     Classes="btn-purple"
-                                    FontSize="16"
+                                    FontSize="18"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"
@@ -354,7 +354,7 @@
                             <!-- Search Widgets Toggle Button -->
                             <Button x:Name="SearchWidgetsToggleButton"
                                     Classes="btn-purple"
-                                    FontSize="16"
+                                    FontSize="18"
                                     Width="48"
                                     Height="48"
                                     CornerRadius="8"

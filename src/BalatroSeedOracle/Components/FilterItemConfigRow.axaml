@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -46,12 +46,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0">
                     <TextBlock Text="{Binding Item.DisplayName}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource LightGrey}"/>
                     <PathIcon Data="{StaticResource CircleSmallIconData}" Width="8" Height="8" Foreground="{StaticResource LightGrey}" VerticalAlignment="Center" Margin="4,0"/>
                     <TextBlock Text="{Binding ConfigSummary}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource LightGrey}"/>
                 </StackPanel>
 
@@ -111,18 +111,18 @@
                     <WrapPanel Orientation="Horizontal">
                         <TextBlock Text="Antes:"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="10"
+                                   FontSize="18"
                                    Foreground="{StaticResource Gold}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0"/>
-                        <CheckBox Content="1" IsChecked="{Binding Ante1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="2" IsChecked="{Binding Ante2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="3" IsChecked="{Binding Ante3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="4" IsChecked="{Binding Ante4}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="5" IsChecked="{Binding Ante5}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="6" IsChecked="{Binding Ante6}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="7" IsChecked="{Binding Ante7}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="8" IsChecked="{Binding Ante8}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="1" IsChecked="{Binding Ante1}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="2" IsChecked="{Binding Ante2}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="3" IsChecked="{Binding Ante3}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="4" IsChecked="{Binding Ante4}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="5" IsChecked="{Binding Ante5}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="6" IsChecked="{Binding Ante6}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="7" IsChecked="{Binding Ante7}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="8" IsChecked="{Binding Ante8}" Margin="0,0,12,0" Padding="2" FontSize="18"/>
                         <!-- Inline quick buttons -->
                         <Button Content="1-3" Command="{Binding QuickAntes1to3Command}" Classes="mini-button" ToolTip.Tip="Quick set 1-3"/>
                         <Button Content="All" Command="{Binding QuickAntesAllCommand}" Classes="mini-button" ToolTip.Tip="All Antes"/>
@@ -135,26 +135,26 @@
                     <WrapPanel Orientation="Horizontal">
                         <TextBlock Text="Slots:"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="10"
+                                   FontSize="18"
                                    Foreground="{StaticResource Gold}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0"/>
-                        <CheckBox Content="1" IsChecked="{Binding Slot1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="2" IsChecked="{Binding Slot2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="3" IsChecked="{Binding Slot3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="4" IsChecked="{Binding Slot4}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="1" IsChecked="{Binding Slot1}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="2" IsChecked="{Binding Slot2}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="3" IsChecked="{Binding Slot3}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="4" IsChecked="{Binding Slot4}" Margin="0,0,12,0" Padding="2" FontSize="18"/>
 
                         <TextBlock Text="Packs:"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="10"
+                                   FontSize="18"
                                    Foreground="{StaticResource Gold}"
                                    VerticalAlignment="Center"
                                    Margin="12,0,6,0"/>
-                        <CheckBox Content="1" IsChecked="{Binding Pack1}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="2" IsChecked="{Binding Pack2}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="3" IsChecked="{Binding Pack3}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="4" IsChecked="{Binding Pack4}" Margin="0,0,4,0" Padding="2" FontSize="10"/>
-                        <CheckBox Content="5" IsChecked="{Binding Pack5}" Margin="0,0,12,0" Padding="2" FontSize="10"/>
+                        <CheckBox Content="1" IsChecked="{Binding Pack1}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="2" IsChecked="{Binding Pack2}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="3" IsChecked="{Binding Pack3}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="4" IsChecked="{Binding Pack4}" Margin="0,0,4,0" Padding="2" FontSize="18"/>
+                        <CheckBox Content="5" IsChecked="{Binding Pack5}" Margin="0,0,12,0" Padding="2" FontSize="18"/>
                     </WrapPanel>
 
                     <!-- Line 3: Score + Label (compact horizontal) -->
@@ -163,7 +163,7 @@
                         <StackPanel Orientation="Horizontal" IsVisible="{Binding IsShouldItem}" Margin="0,0,12,0">
                             <TextBlock Text="Score:"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="10"
+                                       FontSize="18"
                                        Foreground="{StaticResource Gold}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,6,0"/>
@@ -173,20 +173,20 @@
                                            Increment="1"
                                            Width="60"
                                            Height="22"
-                                           FontSize="10"
+                                           FontSize="18"
                                            PlaceholderText="0"/>
                         </StackPanel>
 
                         <!-- Label (Optional) -->
                         <TextBlock Text="Label:"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="10"
+                                   FontSize="18"
                                    Foreground="{StaticResource Gold}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0"/>
                         <TextBox Text="{Binding Label, Mode=TwoWay}"
                                  PlaceholderText="Optional label..."
-                                 FontSize="10"
+                                 FontSize="18"
                                  Height="22"
                                  MinWidth="150"
                                  MaxLength="100"/>
@@ -206,7 +206,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="3"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="Margin" Value="0,0,2,0"/>
             <Setter Property="Height" Value="20"/>
@@ -222,7 +222,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="3"/>
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="Margin" Value="0,0,2,0"/>
             <Setter Property="Height" Value="20"/>

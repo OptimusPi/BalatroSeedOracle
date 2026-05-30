@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using BalatroSeedOracle.Helpers;
 using CommunityToolkit.Mvvm.Input;
 
@@ -40,7 +41,14 @@ public class ErrorBoundary : ContentControl
             o => o.RetryCommand
         );
 
+    public static readonly DirectProperty<ErrorBoundary, System.Windows.Input.ICommand?> CopyCommandProperty =
+        AvaloniaProperty.RegisterDirect<ErrorBoundary, System.Windows.Input.ICommand?>(
+            nameof(CopyCommand),
+            o => o.CopyCommand
+        );
+
     private readonly RelayCommand _retryCommand;
+    private readonly RelayCommand _copyCommand;
 
     public bool HasError
     {
@@ -69,9 +77,21 @@ public class ErrorBoundary : ContentControl
     /// </summary>
     public RelayCommand RetryCommand => _retryCommand;
 
+    /// <summary>
+    /// Command to copy the full error message to the clipboard.
+    /// </summary>
+    public RelayCommand CopyCommand => _copyCommand;
+
     public ErrorBoundary()
     {
         _retryCommand = new RelayCommand(ClearError);
+        _copyCommand = new RelayCommand(CopyError);
+    }
+
+    private void CopyError()
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        _ = clipboard?.SetTextAsync(ErrorMessage ?? "");
     }
 
     private void ClearError()

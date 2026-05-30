@@ -18,7 +18,7 @@
                     Padding="20,12">
                 <TextBlock x:Name="TitleTextBlock"
                            Text="Create New Filter"
-                           FontSize="24"
+                           FontSize="18"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
                            FontFamily="{StaticResource BalatroFont}"/>
@@ -30,7 +30,7 @@
                     Padding="24">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Filter Name:"
-                               FontSize="16"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"/>
                     <TextBox x:Name="FilterNameTextBox"

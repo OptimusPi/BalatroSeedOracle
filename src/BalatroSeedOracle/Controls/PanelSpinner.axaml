@@ -67,7 +67,7 @@
         <!-- Title text style -->
         <Style Selector="TextBlock.panel-title">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontSize" Value="36"/>
             
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -78,7 +78,7 @@
         <!-- Description text style -->
         <Style Selector="TextBlock.panel-description">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{StaticResource Gold}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
@@ -100,7 +100,7 @@
         <!-- Position dots style -->
         <Style Selector="TextBlock.position-dot">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Text" Value="•"/>
         </Style>
         
@@ -116,7 +116,7 @@
         
         <!-- Compact dots for many items -->
         <Style Selector="TextBlock.position-dot.compact">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Margin" Value="0"/>
         </Style>
     </UserControl.Styles>

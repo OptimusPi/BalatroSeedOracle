@@ -562,7 +562,7 @@ namespace BalatroSeedOracle.ViewModels
                 var titleText = new TextBlock
                 {
                     Text = "Save Audio Trigger",
-                    FontSize = 24,
+                    FontSize = 18,
                     Foreground = mainWindow.FindResource("White") as Avalonia.Media.IBrush,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 };
@@ -583,7 +583,7 @@ namespace BalatroSeedOracle.ViewModels
                     new TextBlock
                     {
                         Text = "Trigger Name:",
-                        FontSize = 16,
+                        FontSize = 18,
                         Foreground = mainWindow.FindResource("White") as Avalonia.Media.IBrush,
                     }
                 );

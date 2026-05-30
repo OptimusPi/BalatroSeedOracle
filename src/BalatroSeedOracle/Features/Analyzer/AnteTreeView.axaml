@@ -30,17 +30,17 @@
                                 <TextBlock Grid.Row="0"
                                            Text="{Binding AnteTitle}"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="16"
+                                           FontSize="18"
                                            Foreground="{StaticResource Orange}"
                                            Margin="0,0,0,8"/>
 
                                 <!-- Boss -->
                                 <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
                                     <TextBlock Text="BOSS:"
-                                               FontSize="12"
+                                               FontSize="18"
                                                Foreground="{StaticResource LightGrey}"/>
                                     <TextBlock Text="{Binding BossName}"
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="{StaticResource White}"
                                                FontWeight="Bold"/>
                                 </StackPanel>
@@ -48,10 +48,10 @@
                                 <!-- Voucher -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
                                     <TextBlock Text="VOUCHER:"
-                                               FontSize="12"
+                                               FontSize="18"
                                                Foreground="{StaticResource LightGrey}"/>
                                     <TextBlock Text="{Binding VoucherName}"
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="{StaticResource White}"/>
                                 </StackPanel>
 
@@ -59,18 +59,18 @@
                                 <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="16" Margin="0,0,0,4">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="SMALL:"
-                                                   FontSize="11"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource MediumGrey}"/>
                                         <TextBlock Text="{Binding SmallBlindTag.TagName}"
-                                                   FontSize="12"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource White}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <TextBlock Text="BIG:"
-                                                   FontSize="11"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource MediumGrey}"/>
                                         <TextBlock Text="{Binding BigBlindTag.TagName}"
-                                                   FontSize="12"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource White}"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -78,7 +78,7 @@
                                 <!-- Shop Items Count -->
                                 <TextBlock Grid.Row="4"
                                            Text="{Binding ShopItemsCountText}"
-                                           FontSize="11"
+                                           FontSize="18"
                                            Foreground="{StaticResource MediumGrey}"
                                            Margin="0,4,0,0"/>
                             </Grid>
@@ -89,7 +89,7 @@
 
             <!-- Empty State -->
             <TextBlock Text="No analysis available"
-                       FontSize="14"
+                       FontSize="18"
                        Foreground="{StaticResource MediumGrey}"
                        HorizontalAlignment="Center"
                        IsVisible="{Binding !DisplayAnalysis}"/>

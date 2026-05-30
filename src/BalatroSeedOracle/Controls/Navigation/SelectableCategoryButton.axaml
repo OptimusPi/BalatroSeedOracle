@@ -6,7 +6,7 @@
     <Style Selector="nav|SelectableCategoryButton">
         <!-- Default state matches Balatro nav buttons -->
         <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="Foreground" Value="{StaticResource White}"/>
         <Setter Property="Background" Value="{StaticResource Red}"/>
         <Setter Property="BorderThickness" Value="0"/>

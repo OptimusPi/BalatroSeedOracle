@@ -24,7 +24,7 @@
       <StackPanel Grid.Row="0" Margin="0,0,0,10">
         <TextBlock Text="SELECT PLAYING CARDS"
                    FontFamily="{DynamicResource BalatroFont}"
-                   FontSize="16"
+                   FontSize="36"
                    Foreground="{DynamicResource LightGrey}"
                    Margin="0,0,0,10"/>
 
@@ -126,7 +126,7 @@
 
                         <TextBlock Grid.Row="1"
                                    Text="{Binding SuitSymbol}"
-                                   FontSize="24"
+                                   FontSize="18"
                                    Foreground="{Binding SuitColorHex, Converter={StaticResource HexToBrushConverter}}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
@@ -144,7 +144,7 @@
       <TextBlock Grid.Row="2"
                  Text="{Binding SelectionSummary}"
                  FontFamily="{DynamicResource BalatroFont}"
-                 FontSize="12"
+                 FontSize="18"
                  Foreground="{DynamicResource MediumGrey}"
                  Margin="0,10,0,0"/>
     </Grid>

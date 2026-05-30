@@ -19,11 +19,16 @@ public static class UIConstants
     public const int UIAssetSpriteWidth = 18;
     public const int UIAssetSpriteHeight = 18;
 
-    // Font Sizes
-    public const int SmallFontSize = 12;
-    public const int DefaultFontSize = 14;
-    public const int LargeFontSize = 16;
-    public const int HeaderFontSize = 18;
+    // Font Sizes — m6x11plus is a PIXEL font (Daniel Linssen). It only renders crisply at
+    // integer multiples of its base size 18 (18, 36, 54, 72, ...). m6x11 uses multiples of 16.
+    // Off-grid sizes (12/13/14/etc.) make the pixel font blurry. Always snap to the ladder below.
+    public const int FontBase = 18; // m6x11plus base unit — the smallest crisp size
+
+    public const int SmallFontSize = 18;   // body / default — floor for crisp pixel rendering
+    public const int DefaultFontSize = 18;  // body text
+    public const int LargeFontSize = 36;    // subheaders / emphasis (2x)
+    public const int HeaderFontSize = 54;   // titles (3x)
+    public const int HeroFontSize = 72;     // hero / big numbers (4x)
 
     // Layout Constants
     public const double DefaultCornerRadius = 6.0;

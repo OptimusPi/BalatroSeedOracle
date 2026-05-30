@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -35,7 +35,7 @@
                 <PathIcon Data="{StaticResource StarIconData}" Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource White}"/>
             </Border>
             <TextBlock Text="Event FX"
-                       FontSize="14"
+                       FontSize="18"
                        Foreground="White"
                        HorizontalAlignment="Center"
                        FontFamily="{StaticResource BalatroFont}"/>
@@ -64,14 +64,14 @@
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Event"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
+                                           FontSize="18"
                                            Foreground="{StaticResource Gold}"
                                            HorizontalAlignment="Center"/>
 
                                 <ComboBox ItemsSource="{Binding EventOptions}"
                                           SelectedItem="{Binding SelectedEvent}"
                                           HorizontalAlignment="Stretch"
-                                          FontSize="12"
+                                          FontSize="18"
                                           Height="32"/>
                             </StackPanel>
                         </Border>
@@ -85,42 +85,42 @@
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Transition"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="14"
+                                           FontSize="18"
                                            Foreground="{StaticResource Blue}"
                                            HorizontalAlignment="Center"/>
 
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                                     <StackPanel Grid.Column="0" Spacing="4">
                                         <TextBlock Text="Preset"
-                                                   FontSize="11"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource LightGrey}"/>
                                         <ComboBox ItemsSource="{Binding TransitionPresetOptions}"
                                                   SelectedItem="{Binding SelectedTransitionPreset}"
                                                   HorizontalAlignment="Stretch"
-                                                  FontSize="11"
+                                                  FontSize="18"
                                                   Height="28"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Spacing="4">
                                         <TextBlock Text="Duration"
-                                                   FontSize="11"
+                                                   FontSize="18"
                                                    Foreground="{StaticResource LightGrey}"/>
                                         <ComboBox ItemsSource="{Binding DurationOptions}"
                                                   SelectedItem="{Binding SelectedDuration}"
                                                   HorizontalAlignment="Stretch"
-                                                  FontSize="11"
+                                                  FontSize="18"
                                                   Height="28"/>
                                     </StackPanel>
                                 </Grid>
 
                                 <StackPanel Spacing="4">
                                     <TextBlock Text="Easing"
-                                               FontSize="11"
+                                               FontSize="18"
                                                Foreground="{StaticResource LightGrey}"/>
                                     <ComboBox ItemsSource="{Binding EasingOptions}"
                                               SelectedItem="{Binding SelectedEasing}"
                                               HorizontalAlignment="Stretch"
-                                              FontSize="11"
+                                              FontSize="18"
                                               Height="28"/>
                                 </StackPanel>
                             </StackPanel>
@@ -134,7 +134,7 @@
                                     Command="{Binding PreviewCommand}"
                                     HorizontalAlignment="Stretch"
                                     Height="32"
-                                    FontSize="12"/>
+                                    FontSize="18"/>
 
                             <Button Grid.Column="1"
                                     Content="Save"
@@ -142,7 +142,7 @@
                                     Command="{Binding SaveCommand}"
                                     HorizontalAlignment="Stretch"
                                     Height="32"
-                                    FontSize="12"/>
+                                    FontSize="18"/>
                         </Grid>
 
                     </StackPanel>

@@ -912,13 +912,13 @@ namespace BalatroSeedOracle.ViewModels
                     Foreground = new Avalonia.Media.SolidColorBrush(
                         Avalonia.Media.Color.Parse("#FFD700")
                     ),
-                    FontSize = 14,
+                    FontSize = 18,
                 };
 
                 var textBox = new TextBox
                 {
                     PlaceholderText = "My Awesome Preset",
-                    FontSize = 14,
+                    FontSize = 18,
                     Padding = new Avalonia.Thickness(10),
                 };
 

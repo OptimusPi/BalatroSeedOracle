@@ -106,7 +106,7 @@
                 Padding="8,4">
             <SelectableTextBlock x:Name="StatusText"
                        Text="Loading..."
-                       FontSize="12"
+                       FontSize="18"
                        IsHitTestVisible="True"/>
         </Border>
             </Grid>
@@ -148,7 +148,7 @@
                 <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="5">
                     <ae:TextEditor x:Name="SqlEditor"
                                    FontFamily="Cascadia Code,Consolas,monospace"
-                                   FontSize="13"
+                                   FontSize="18"
                                    ShowLineNumbers="True"
                                    WordWrap="False"
                                    HorizontalScrollBarVisibility="Auto"
@@ -175,7 +175,7 @@
                 
                 <!-- Query Status Bar -->
                 <Border Grid.Row="4" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8,4">
-                    <SelectableTextBlock x:Name="QueryStatusText" Text="Ready" FontSize="12" IsHitTestVisible="True"/>
+                    <SelectableTextBlock x:Name="QueryStatusText" Text="Ready" FontSize="18" IsHitTestVisible="True"/>
                 </Border>
             </Grid>
         </TabItem>

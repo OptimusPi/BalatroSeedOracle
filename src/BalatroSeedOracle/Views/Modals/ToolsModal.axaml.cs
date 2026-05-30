@@ -189,7 +189,7 @@ namespace BalatroSeedOracle.Views.Modals
                             var messageText = new TextBlock
                             {
                                 Text = message,
-                                FontSize = 16,
+                                FontSize = 18,
                                 Margin = new Avalonia.Thickness(20),
                                 TextAlignment = Avalonia.Media.TextAlignment.Center,
                             };

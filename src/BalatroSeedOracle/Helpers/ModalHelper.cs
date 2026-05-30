@@ -350,7 +350,7 @@ namespace BalatroSeedOracle.Helpers
             var textBox = new TextBox
             {
                 Text = defaultValue,
-                FontSize = 14,
+                FontSize = 18,
                 Margin = new Avalonia.Thickness(0, 8, 0, 0),
             };
 
@@ -398,7 +398,7 @@ namespace BalatroSeedOracle.Helpers
                 new TextBlock
                 {
                     Text = title,
-                    FontSize = 20,
+                    FontSize = 18,
                     Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 }
@@ -408,7 +408,7 @@ namespace BalatroSeedOracle.Helpers
                 new TextBlock
                 {
                     Text = prompt,
-                    FontSize = 14,
+                    FontSize = 18,
                     Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
                 }
             );

@@ -39,7 +39,7 @@
                     Background="{StaticResource Orange}"
                     Foreground="White"
                     FontFamily="{StaticResource BalatroFont}"
-                    FontSize="14"
+                    FontSize="18"
                     FontWeight="Bold"
                     Padding="12,6"
                     Margin="8,0,8,0"

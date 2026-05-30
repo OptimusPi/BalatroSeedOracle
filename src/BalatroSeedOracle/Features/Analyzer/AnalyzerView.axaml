@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
@@ -34,7 +34,7 @@
                            VerticalAlignment="Center">
                     <TextBlock Text="SEED:"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="14"
+                               FontSize="18"
                                Foreground="{StaticResource Orange}"
                                VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding CurrentSeed}"
@@ -77,7 +77,7 @@
                            Spacing="8"
                            VerticalAlignment="Center">
                     <TextBlock Text="{Binding ResultCounter}"
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
@@ -105,7 +105,7 @@
                            Spacing="8"
                            VerticalAlignment="Center">
                     <TextBlock Text="{Binding AnteNavigationDisplay}"
-                               FontSize="12"
+                               FontSize="18"
                                Foreground="{StaticResource White}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
@@ -138,7 +138,7 @@
                             <Setter Property="Background" Value="{StaticResource Orange}"/>
                             <Setter Property="Foreground" Value="{StaticResource White}"/>
                             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="FontSize" Value="18"/>
                             <Setter Property="CornerRadius" Value="6"/>
                         </Style>
                         <Style Selector="Button.btn-orange:pointerover">

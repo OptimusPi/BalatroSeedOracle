@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
     
@@ -6,7 +6,7 @@
         <!-- Explanatory Text -->
         <TextBlock Text="Create lists of seed keywords to search for (like memorable words or phrases). Your filters can reference these lists!"
                   FontFamily="{StaticResource BalatroFont}"
-                  FontSize="13"
+                  FontSize="18"
                   Foreground="{StaticResource VeryLightGrey}"
                   TextWrapping="Wrap"
                   HorizontalAlignment="Center"
@@ -29,7 +29,7 @@
                            Text="Word List:" 
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"
-                           FontSize="16"
+                           FontSize="18"
                            Foreground="{StaticResource White}"/>
                 
                 <ComboBox Grid.Column="1"
@@ -83,7 +83,7 @@
                         CornerRadius="6,6,0,0"
                         Padding="12,8">
                     <TextBlock Text="One word or phrase per line"
-                               FontSize="14"
+                               FontSize="18"
                                Foreground="{StaticResource ModalGrey}"/>
                 </Border>
                 
@@ -96,7 +96,7 @@
                              AcceptsTab="False"
                              TextWrapping="NoWrap"
                              FontFamily="Cascadia Code, Consolas, monospace"
-                             FontSize="14"
+                             FontSize="18"
                              Background="Transparent"
                              Foreground="{StaticResource White}"
                              BorderThickness="0"
@@ -110,7 +110,7 @@
         <TextBlock Name="StatusText"
                    Text="Edit word lists used by filters"
                    Foreground="{StaticResource ModalGrey}"
-                   FontSize="14"
+                   FontSize="18"
                    HorizontalAlignment="Center"/>
     </StackPanel>
 </UserControl>

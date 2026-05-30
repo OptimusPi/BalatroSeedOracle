@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              xmlns:components="using:BalatroSeedOracle.Components"
@@ -30,7 +30,7 @@
 
                     <!-- Edition Badge -->
                     <TextBlock Text="{Binding EditionName}"
-                              FontSize="10"
+                              FontSize="18"
                               HorizontalAlignment="Center"
                               Foreground="{Binding EditionColor}"
                               IsVisible="{Binding HasEdition}"/>
@@ -50,11 +50,11 @@
                     <!-- Pack Info -->
                     <StackPanel>
                         <TextBlock Text="{Binding PackName}"
-                                  FontSize="10"
+                                  FontSize="18"
                                   HorizontalAlignment="Center"/>
 
                         <TextBlock Text="{Binding ItemsText}"
-                                  FontSize="8"
+                                  FontSize="18"
                                   HorizontalAlignment="Center"
                                   TextWrapping="Wrap"
                                   MaxWidth="90"
@@ -79,10 +79,10 @@
                     <!-- Tag Info -->
                     <StackPanel>
                         <TextBlock Text="{Binding BlindType}"
-                                  FontSize="10"
+                                  FontSize="18"
                                   Opacity="0.7"/>
                         <TextBlock Text="{Binding TagName}"
-                                  FontSize="12"/>
+                                  FontSize="18"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -97,13 +97,13 @@
 
                     <!-- Voucher Section -->
                     <StackPanel IsVisible="{Binding HasVoucher}">
-                        <TextBlock Text="VOUCHER" FontSize="16" Margin="0,10,0,5"/>
-                        <TextBlock Text="{Binding VoucherName}" FontSize="14" Margin="20,0,0,10"/>
+                        <TextBlock Text="VOUCHER" FontSize="18" Margin="0,10,0,5"/>
+                        <TextBlock Text="{Binding VoucherName}" FontSize="18" Margin="20,0,0,10"/>
                     </StackPanel>
 
                     <!-- Shop Section -->
                     <StackPanel IsVisible="{Binding HasShopItems}">
-                        <TextBlock Text="SHOP" FontSize="16" Margin="0,10,0,5"/>
+                        <TextBlock Text="SHOP" FontSize="18" Margin="0,10,0,5"/>
                         <ItemsControl ItemsSource="{Binding ShopItems}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -115,7 +115,7 @@
 
                     <!-- Booster Packs Section -->
                     <StackPanel IsVisible="{Binding HasBoosterPacks}">
-                        <TextBlock Text="BOOSTER PACKS" FontSize="16" Margin="0,15,0,5"/>
+                        <TextBlock Text="BOOSTER PACKS" FontSize="18" Margin="0,15,0,5"/>
                         <ItemsControl ItemsSource="{Binding BoosterPacks}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -127,7 +127,7 @@
 
                     <!-- Tags Section -->
                     <StackPanel>
-                        <TextBlock Text="SKIP TAGS" FontSize="16" Margin="0,15,0,5"/>
+                        <TextBlock Text="SKIP TAGS" FontSize="18" Margin="0,15,0,5"/>
                         <WrapPanel Orientation="Horizontal">
                             <ContentControl Content="{Binding SmallBlindTag}"/>
                             <ContentControl Content="{Binding BigBlindTag}"/>
@@ -162,7 +162,7 @@
                 <!-- Explanatory Text -->
                 <TextBlock Text="Peek inside any seed to see what the shops, packs, and skip tags look like for each ante!"
                           FontFamily="{StaticResource BalatroFont}"
-                          FontSize="13"
+                          FontSize="18"
                           Foreground="{StaticResource VeryLightGrey}"
                           TextWrapping="Wrap"
                           HorizontalAlignment="Center"
@@ -194,12 +194,12 @@
                                       Text="Seed:"
                                       VerticalAlignment="Center"
                                       Margin="0,0,10,0"
-                                      FontSize="16"
+                                      FontSize="18"
                                       Foreground="{StaticResource White}"/>
 
                             <TextBox Grid.Column="1"
                                     Text="{Binding SeedInput}"
-                                    FontSize="16"
+                                    FontSize="18"
                                     MaxLength="8"
                                     PlaceholderText="Enter seed..."
                                     VerticalAlignment="Center"
@@ -213,7 +213,7 @@
                                    Content="ANALYZE"
                                    Command="{Binding AnalyzeSeedCommand}"
                                    MinWidth="120"
-                                   FontSize="16"
+                                   FontSize="18"
                                    CornerRadius="6"
                                    Height="44"
                                    Classes="btn-green"/>
@@ -223,7 +223,7 @@
                                    Content="POP-OUT"
                                    Command="{Binding PopOutAnalyzerCommand}"
                                    MinWidth="100"
-                                   FontSize="16"
+                                   FontSize="18"
                                    CornerRadius="6"
                                    Height="44"
                                    Classes="btn-blue"/>
@@ -251,7 +251,7 @@
                                           Foreground="{StaticResource White}"/>
                                 <TextBlock Text="View shop contents, booster packs, and skip tags for each ante"
                                           HorizontalAlignment="Center"
-                                          FontSize="14"
+                                          FontSize="18"
                                           Margin="0,5,0,0"
                                           Opacity="0.7"/>
                             </StackPanel>
@@ -260,7 +260,7 @@
                         <!-- Analysis Header -->
                         <StackPanel Margin="0,0,0,10" IsVisible="{Binding HasAnalysisResults}">
                             <TextBlock Text="{Binding AnalysisHeader}"
-                                      FontSize="20"
+                                      FontSize="18"
                                       HorizontalAlignment="Center"
                                       Margin="0,10,0,5"/>
                         </StackPanel>

@@ -20,14 +20,14 @@
         </Style>
         
         <Style Selector="TextBlock.set-name">
-            
-            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontSize" Value="36"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
         
         <Style Selector="TextBlock.set-description">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="Opacity" Value="0.8"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -79,7 +79,7 @@
                                Padding="3,1"
                                Margin="1">
                             <TextBlock Text="{Binding}"
-                                      FontSize="8"
+                                      FontSize="18"
                                       Foreground="{StaticResource LightTextGrey}"/>
                         </Border>
                     </DataTemplate>
