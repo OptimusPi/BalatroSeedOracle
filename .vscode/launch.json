@@ -30,34 +30,6 @@
             }
         },
         {
-            "name": "Launch Browser (Debug)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "Build Browser (Debug)",
-            "program": "${workspaceFolder}/src/BalatroSeedOracle.Browser/bin/Debug/net10.0-browser/BalatroSeedOracle.Browser.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole",
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        },
-        {
-            "name": "Launch Browser (Release)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "Build Browser (Release)",
-            "program": "${workspaceFolder}/src/BalatroSeedOracle.Browser/bin/Release/net10.0-browser/BalatroSeedOracle.Browser.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole",
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Production"
-            }
-        },
-        {
             "name": "Attach to Process",
             "type": "coreclr",
             "request": "attach"
