@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:models="using:BalatroSeedOracle.Models"
@@ -93,7 +93,7 @@
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding DisplayIndex}"
                                                FontFamily="{StaticResource BalatroFont}"
-                                               FontSize="18"
+                                               FontSize="14"
                                                Foreground="{StaticResource White}"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Right"
@@ -122,14 +122,14 @@
                                                 <TextBlock Grid.Row="0"
                                                            Text="{Binding Name}"
                                                            FontFamily="{StaticResource BalatroFont}"
-                                                           FontSize="18"
+                                                           FontSize="15"
                                                            TextAlignment="Left"/>
 
                                                 <!-- Author (smaller, subtle) -->
                                                 <TextBlock Grid.Row="1"
                                                            Text="{Binding Author}"
                                                            FontFamily="{StaticResource BalatroFont}"
-                                                           FontSize="18"
+                                                           FontSize="10"
                                                            TextAlignment="Left"
                                                            Opacity="0.7"
                                                            IsVisible="{Binding Author, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -181,7 +181,7 @@
                             VerticalAlignment="Center">
                         <TextBlock Text="{Binding PageIndicator}"
                                    FontFamily="{StaticResource BalatroFont}"
-                                   FontSize="18"
+                                   FontSize="14"
                                    Foreground="White"
                                    TextAlignment="Center"/>
                     </Border>
@@ -215,13 +215,13 @@
                             IsVisible="{Binding !IsFilterSelected}">
                     <TextBlock Text="Select a Filter"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
+                               FontSize="24"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                Opacity="0.9"/>
                     <TextBlock Text="OR"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
+                               FontSize="14"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                Opacity="0.4"/>
@@ -229,7 +229,7 @@
                             Content="+ CREATE NEW FILTER"
                             Classes="btn-blue"
                             Height="42"
-                            FontSize="18"
+                            FontSize="16"
                             Padding="24,8"
                             HorizontalAlignment="Center"
                             Click="OnCreateNewFilterClick"/>
@@ -249,7 +249,7 @@
                     <TextBlock Grid.Row="0"
                                Text="{Binding SelectedFilterName}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
+                               FontSize="22"
                                Foreground="{StaticResource Gold}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap"
@@ -259,7 +259,7 @@
                     <TextBlock Grid.Row="1"
                                Text="{Binding SelectedFilterAuthor}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
+                               FontSize="14"
                                Foreground="{StaticResource White}"
                                HorizontalAlignment="Center"
                                Opacity="0.8"
@@ -277,7 +277,7 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <TextBlock Text="{Binding SelectedFilterDescription}"
                                        FontFamily="{StaticResource BalatroFont}"
-                                       FontSize="18"
+                                       FontSize="13"
                                        Foreground="{StaticResource White}"
                                        TextWrapping="Wrap"
                                        LineHeight="18"
@@ -338,7 +338,7 @@
                                         <!-- Empty state -->
                                         <TextBlock Text="No items required"
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="18"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
@@ -395,7 +395,7 @@
 
                                         <TextBlock Text="No recommended items"
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="18"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
@@ -465,7 +465,7 @@
 
                                         <TextBlock Text="No banned items"
                                                    FontFamily="{StaticResource BalatroFont}"
-                                                   FontSize="18"
+                                                   FontSize="14"
                                                    Foreground="{StaticResource Black}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
@@ -486,7 +486,7 @@
                                 Classes="btn-green"
                                 Height="40"
                                 HorizontalAlignment="Stretch"
-                                FontSize="18"
+                                FontSize="16"
                                 Click="OnSelectFilterClick"
                                 Margin="8,0,8,0"
                                 IsEnabled="{Binding IsFilterSelected}"
@@ -503,11 +503,11 @@
                                     Name="CopyFilterButton"
                                     Classes="btn-blue"
                                     Height="40"
-                                    FontSize="18"
+                                    FontSize="14"
                                     Click="OnCopyFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource ContentCopyIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
-                                    <TextBlock Text="COPY" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Copy" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
@@ -516,11 +516,11 @@
                                     Name="EditFilterButton"
                                     Classes="btn-orange"
                                     Height="40"
-                                    FontSize="18"
+                                    FontSize="14"
                                     Click="OnEditFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource PencilIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
-                                    <TextBlock Text="EDIT" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Edit" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
@@ -529,11 +529,11 @@
                                     Name="DeleteFilterButton"
                                     Classes="btn-red"
                                     Height="40"
-                                    FontSize="18"
+                                    FontSize="14"
                                     Click="OnDeleteFilterClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource DeleteIconData}" Width="14" Height="14" VerticalAlignment="Center"/>
-                                    <TextBlock Text="DELETE" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Delete" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </Grid>

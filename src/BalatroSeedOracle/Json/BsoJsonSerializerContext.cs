@@ -31,7 +31,6 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(SearchResumeState))]
 [JsonSerializable(typeof(VisualizerSettings))]
 [JsonSerializable(typeof(AdvancedMusicSettings))]
-[JsonSerializable(typeof(FeatureToggles))]
 [JsonSerializable(typeof(HostApiSettings))]
 // Visualizer presets and audio
 [JsonSerializable(typeof(VisualizerPreset))]

@@ -1,2 +1,0 @@
-# Words to exclude from filters
-# One word per line

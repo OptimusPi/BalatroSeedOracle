@@ -9,19 +9,40 @@ namespace BalatroSeedOracle.Views.Modals
     public partial class FilterNameInputDialog : UserControl
     {
         private readonly TaskCompletionSource<string?> _tcs = new();
+        private TextBlock? _titleTextBlock;
+        private Button? _confirmButton;
+        private TextBox? _filterNameTextBox;
+        private string? _pendingTitle;
+        private string? _pendingButtonText;
+        private string? _pendingDefaultName;
 
         public FilterNameInputDialog()
         {
             InitializeComponent();
-            
-            // Focus textbox and select all after loaded
+
+            // This project's InitializeComponent only calls AvaloniaXamlLoader.Load(this), which
+            // builds the visual tree but does NOT assign the generated x:Name fields — so
+            // TitleTextBlock/ConfirmButton/FilterNameTextBox are null. Resolve them through the
+            // name scope (as StandardModal does) and null-guard every access so this can't throw.
             this.Loaded += (s, e) =>
             {
+                _titleTextBlock ??= this.FindControl<TextBlock>("TitleTextBlock");
+                _confirmButton ??= this.FindControl<Button>("ConfirmButton");
+                _filterNameTextBox ??= this.FindControl<TextBox>("FilterNameTextBox");
+
+                if (_pendingTitle is not null && _titleTextBlock is not null)
+                    _titleTextBlock.Text = _pendingTitle;
+                if (_pendingButtonText is not null && _confirmButton is not null)
+                    _confirmButton.Content = _pendingButtonText;
+                if (_pendingDefaultName is not null && _filterNameTextBox is not null)
+                    _filterNameTextBox.Text = _pendingDefaultName;
+
+                // Focus the textbox and select all
                 Dispatcher.UIThread.Post(async () =>
                 {
                     await Task.Delay(100);
-                    FilterNameTextBox.Focus();
-                    FilterNameTextBox.SelectAll();
+                    _filterNameTextBox?.Focus();
+                    _filterNameTextBox?.SelectAll();
                 });
             };
 
@@ -31,9 +52,9 @@ namespace BalatroSeedOracle.Views.Modals
 
         public FilterNameInputDialog(string title, string buttonText, string defaultName) : this()
         {
-            TitleTextBlock.Text = title;
-            ConfirmButton.Content = buttonText;
-            FilterNameTextBox.Text = defaultName;
+            _pendingTitle = title;
+            _pendingButtonText = buttonText;
+            _pendingDefaultName = defaultName;
         }
 
         public Task<string?> GetResultAsync() => _tcs.Task;
@@ -45,7 +66,7 @@ namespace BalatroSeedOracle.Views.Modals
 
         private void OnConfirmClick(object? sender, RoutedEventArgs e)
         {
-            _tcs.TrySetResult(FilterNameTextBox.Text);
+            _tcs.TrySetResult(_filterNameTextBox?.Text);
         }
 
         private void OnCancelClick(object? sender, RoutedEventArgs e)
@@ -57,7 +78,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             if (e.Key == Key.Enter)
             {
-                _tcs.TrySetResult(FilterNameTextBox.Text);
+                _tcs.TrySetResult(_filterNameTextBox?.Text);
                 e.Handled = true;
             }
             else if (e.Key == Key.Escape)

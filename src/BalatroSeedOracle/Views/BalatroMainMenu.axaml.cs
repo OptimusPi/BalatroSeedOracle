@@ -38,12 +38,6 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         public BalatroShaderBackground? ShaderBackground => _shaderBackground;
 
-        /// <summary>
-        /// Public accessor for the desktop widget canvas (x:Name="DesktopCanvas").
-        /// Used by Desktop project to add platform-specific widgets; shared code uses direct field.
-        /// </summary>
-        public Grid? DesktopCanvasHost => DesktopCanvas;
-
         private Grid? _mainContent;
         private UserControl? _activeModalContent;
         private TextBlock? _mainTitleText;
@@ -178,22 +172,10 @@ namespace BalatroSeedOracle.Views
                         if (enterFullscreen)
                         {
                             window.WindowState = WindowState.FullScreen;
-
-                            // Direct field access from x:Name
-                            if (DesktopCanvas != null)
-                            {
-                                DesktopCanvas.Margin = new Thickness(0, -30, 0, 0);
-                            }
                         }
                         else
                         {
                             window.WindowState = WindowState.Normal;
-
-                            // Direct field access from x:Name
-                            if (DesktopCanvas != null)
-                            {
-                                DesktopCanvas.Margin = new Thickness(0);
-                            }
                         }
                     },
                     DispatcherPriority.Render
@@ -278,7 +260,7 @@ namespace BalatroSeedOracle.Views
                         if (result.FilterId != null && ViewModel != null)
                         {
                             _previousModalContent = filterSelectionModal;
-                            _previousModalTitle = "🔍 SELECT FILTER";
+                            _previousModalTitle = "🔍 Select Filter";
 
                             try
                             {
@@ -312,7 +294,7 @@ namespace BalatroSeedOracle.Views
                                         new TextBlock
                                         {
                                             Text = "Error",
-                                            FontSize = 18,
+                                            FontSize = 24,
                                             FontWeight = FontWeight.Bold,
                                             Margin = new Thickness(0, 0, 0, 10),
                                         },
@@ -362,7 +344,7 @@ namespace BalatroSeedOracle.Views
                 }
             };
 
-            ShowModalContent(filterSelectionModal, "🔍 SELECT FILTER");
+            ShowModalContent(filterSelectionModal, "🔍 Select Filter");
         }
 
         private async Task ShowSearchModalWithFilterAsync(string configPath)
@@ -572,7 +554,7 @@ namespace BalatroSeedOracle.Views
             };
 
             // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal)
-            ShowModalContent(filterSelectionModal, "🎨 SELECT FILTER");
+            ShowModalContent(filterSelectionModal, "🎨 Select Filter");
         }
 
         /// <summary>
@@ -632,7 +614,7 @@ namespace BalatroSeedOracle.Views
                 DebugLogger.Log("BalatroMainMenu", $"✅ Filter loaded for editing: {filterId}");
 
                 // THEN show the modal with loaded content
-                var modal = new StandardModal("🎨 FILTER DESIGNER");
+                var modal = new StandardModal("🎨 Filter Designer");
                 modal.SetContent(filtersModal);
                 modal.BackClicked += (s, e) => HideModalContent();
                 // Keep backdrop visible during transition to prevent flicker
@@ -693,7 +675,7 @@ namespace BalatroSeedOracle.Views
             );
 
             // Show it
-            ShowModalContent(dialog, defaultName == null ? "CREATE FILTER" : "COPY FILTER");
+            ShowModalContent(dialog, defaultName == null ? "Create Filter" : "Copy Filter");
 
             // Wait for user input
             var result = await dialog.GetResultAsync();
@@ -854,45 +836,6 @@ namespace BalatroSeedOracle.Views
         }
 
         /// <summary>
-        /// Show widget picker from Settings (with back navigation to Settings)
-        /// </summary>
-        public void ShowWidgetPickerFromSettings()
-        {
-            // Save Settings modal for back navigation
-            if (_activeModalContent != null)
-            {
-                _previousModalContent = _activeModalContent;
-                _previousModalTitle = "SETTINGS";
-            }
-
-            var widgetPicker = App.GetService<Modals.WidgetPickerModal>();
-            if (widgetPicker == null)
-            {
-                DebugLogger.LogError("BalatroMainMenu", "WidgetPickerModal could not be resolved from services");
-                return;
-            }
-            var modal = new StandardModal("ADD WIDGETS");
-            modal.Squeeze = true;
-            modal.SetContent(widgetPicker);
-            modal.BackClicked += (s, e) =>
-            {
-                if (_previousModalContent != null && _previousModalTitle != null)
-                {
-                    var previousContent = _previousModalContent;
-                    var previousTitle = _previousModalTitle;
-                    _previousModalContent = null;
-                    _previousModalTitle = null;
-                    ShowModalContent(previousContent, previousTitle, keepBackdrop: true);
-                }
-                else
-                {
-                    HideModalContent();
-                }
-            };
-            ShowModalContent(modal, "ADD WIDGETS", keepBackdrop: true);
-        }
-
-        /// <summary>
         /// Show tools modal
         /// </summary>
         private void ShowToolsModal()
@@ -983,160 +926,11 @@ namespace BalatroSeedOracle.Views
             // Check for resumable search
             ViewModel.CheckAndRestoreSearchIcon(ShowSearchDesktopIcon);
 
-            // Restore saved search widgets
-            RestoreSavedWidgets();
-
             // Set up click-away handler for popups (NOT for main modals which have back buttons)
             this.PointerPressed += OnPointerPressedForPopupClickAway;
 
             // Request focus so keyboard events work (F11, ESC)
             this.Focus();
-
-            // Pass analyze modal factory to DayLatroWidget so it can show analyze modal without ServiceHelper
-            if (DayLatroWidget?.ViewModel is DayLatroWidgetViewModel dwvm && ViewModel != null)
-                dwvm.SetAnalyzeModalFactory(ViewModel.AnalyzeModalFactory);
-        }
-
-        /// <summary>
-        /// Restore saved search widgets from UserProfile
-        /// </summary>
-        private void RestoreSavedWidgets()
-        {
-            try
-            {
-                var profileService = ServiceHelper.GetService<UserProfileService>();
-                var searchManager = ServiceHelper.GetService<SearchManager>();
-
-                if (profileService == null || searchManager == null)
-                {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "Services not available for widget restoration"
-                    );
-                    return;
-                }
-
-                var profile = profileService.GetProfile();
-                // Direct field access from x:Name
-                if (DesktopCanvas == null)
-                {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        "DesktopCanvas not found for widget restoration"
-                    );
-                    return;
-                }
-
-                // Track widgets to remove (orphaned searches)
-                var widgetsToRemove =
-                    new System.Collections.Generic.List<Models.SavedSearchWidget>();
-
-                // Restore each saved widget
-                foreach (var savedWidget in profile.SavedSearchWidgets.ToList())
-                {
-                    // Try to get or restore the search instance
-                    var searchInstance = searchManager.GetOrRestoreSearch(
-                        savedWidget.SearchInstanceId
-                    );
-
-                    if (searchInstance == null)
-                    {
-                        // Search doesn't exist, mark for cleanup
-                        widgetsToRemove.Add(savedWidget);
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Orphaned widget removed: {savedWidget.SearchInstanceId}"
-                        );
-                        continue;
-                    }
-
-                    // Check if search instance has valid filter data (not just "Unknown")
-                    if (
-                        searchInstance.FilterName == "Unknown"
-                        || searchInstance.GetFilterConfig() == null
-                    )
-                    {
-                        // Search exists but has no valid config - stale data, remove it
-                        widgetsToRemove.Add(savedWidget);
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            $"Stale widget removed (no filter config): {savedWidget.SearchInstanceId}"
-                        );
-                        continue;
-                    }
-
-                    // Create SearchWidget at saved position
-                    var spriteService = SpriteService.Instance;
-                    // SearchWidget is desktop-only - registered in Desktop Program.cs
-                    DebugLogger.Log("BalatroMainMenu", "SearchWidget is desktop-only feature");
-                    return;
-                    // Commented out - SearchWidget is desktop-only
-                    /*
-                    var viewModel = new SearchWidgetViewModel(searchInstance, spriteService);
-                    var searchWidget = new Components.Widgets.SearchWidget
-                    {
-                        DataContext = viewModel,
-                    };
-
-                    // Restore position and state
-                    viewModel.PositionX = savedWidget.PositionX;
-                    viewModel.PositionY = savedWidget.PositionY;
-                    viewModel.IsMinimized = savedWidget.IsMinimized;
-
-                    // Set widget content for window system
-                    viewModel.WidgetContent = searchWidget;
-                    viewModel.WidgetTitle = $"Search #{savedWidget.SearchInstanceId}";
-
-                    // Register with position service for collision avoidance
-                    var positionService = Helpers.ServiceHelper.GetService<Services.WidgetPositionService>();
-                    positionService?.RegisterWidget(viewModel);
-
-                    // Wire up event to reopen SearchModal when widget is clicked
-                    viewModel.SearchModalOpenRequested += async (s, sid) =>
-                    {
-                        await ShowSearchModalForInstanceAsync(sid);
-                    };
-
-                    // Use the new window manager instead of desktop canvas
-                    var widgetManager = Services.WidgetWindowManager.Instance;
-                    widgetManager.CreateWidget(viewModel);
-
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Restored widget window: {savedWidget.SearchInstanceId} at ({savedWidget.PositionX}, {savedWidget.PositionY})"
-                    );
-                    */
-                }
-
-                // Clean up orphaned widgets
-                if (widgetsToRemove.Count > 0)
-                {
-                    foreach (var widget in widgetsToRemove)
-                    {
-                        profile.SavedSearchWidgets.Remove(widget);
-                    }
-                    profileService.SaveProfile(profile);
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Cleaned up {widgetsToRemove.Count} orphaned widgets"
-                    );
-                }
-
-                if (profile.SavedSearchWidgets.Count > 0)
-                {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Restored {profile.SavedSearchWidgets.Count} search widgets"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to restore saved widgets: {ex.Message}"
-                );
-            }
         }
 
         /// <summary>
@@ -1835,121 +1629,23 @@ namespace BalatroSeedOracle.Views
             }
         }
 
+        // Search desktop-icon widgets were removed along with the widget system.
+        // These shells remain so existing callers (ModalHelper, SearchModal) compile;
+        // searches still run and surface through SearchModal / the results grid.
         public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
             DebugLogger.Log(
                 "BalatroMainMenu",
-                $"ShowSearchDesktopIcon called with searchId: {searchId}, config: {configPath}"
+                $"ShowSearchDesktopIcon no-op (widgets removed) for searchId: {searchId}"
             );
-
-            try
-            {
-                // Get search instance from service
-                var searchManager = ServiceHelper.GetService<SearchManager>();
-                var searchInstance = searchManager?.GetSearch(searchId);
-
-                if (searchInstance == null)
-                {
-                    DebugLogger.LogError(
-                        "BalatroMainMenu",
-                        $"Search instance not found: {searchId}"
-                    );
-                    return;
-                }
-
-                var platformServices = App.GetService<IPlatformServices>();
-                if (platformServices?.SupportsResultsGrid == true)
-                {
-                    // Create SearchWidget with proper ViewModel (works on all platforms)
-                    var spriteService = SpriteService.Instance;
-                    var notificationService = App.GetService<NotificationService>();
-                    var userProfileService = App.GetService<UserProfileService>();
-                    var widgetPositionService = App.GetService<WidgetPositionService>();
-                    var viewModel = new SearchWidgetViewModel(
-                        searchInstance,
-                        spriteService,
-                        widgetPositionService,
-                        notificationService,
-                        userProfileService
-                    );
-                    var searchWidget = new Components.Widgets.SearchWidget
-                    {
-                        DataContext = viewModel,
-                    };
-
-                    // Wire up event to reopen SearchModal when widget is clicked
-                    viewModel.SearchModalOpenRequested += async (s, sid) =>
-                    {
-                        await ShowSearchModalForInstanceAsync(sid);
-                    };
-
-                    // Set widget content for window system
-                    viewModel.WidgetContent = searchWidget;
-                    viewModel.WidgetTitle = $"Search #{searchId}";
-                    viewModel.IsMinimized = true;
-
-                    // Use the new window manager instead of desktop canvas
-                    var widgetManager = ViewModel.WidgetWindowManager;
-                    widgetManager.CreateWidget(viewModel);
-                }
-
-                DebugLogger.Log(
-                    "BalatroMainMenu",
-                    $"Created SearchWidget window for searchId: {searchId}"
-                );
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to create SearchWidget window: {ex.Message}"
-                );
-            }
         }
 
-        /// <summary>
-        /// Remove Search Widget using window manager
-        /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
             DebugLogger.Log(
                 "BalatroMainMenu",
-                $"RemoveSearchDesktopIcon called for searchId: {searchId}"
+                $"RemoveSearchDesktopIcon no-op (widgets removed) for searchId: {searchId}"
             );
-
-            try
-            {
-                // Find the widget in the window manager (works on all platforms)
-                var widgetManager = ViewModel.WidgetWindowManager;
-                var activeWidgets = widgetManager.GetActiveWidgets();
-
-                var widgetToRemove = activeWidgets.FirstOrDefault(w =>
-                    w is SearchWidgetViewModel searchVm && searchVm.SearchInstanceId == searchId
-                );
-
-                if (widgetToRemove != null)
-                {
-                    widgetManager.CloseWidget(widgetToRemove);
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"Removed SearchWidget window for searchId: {searchId}"
-                    );
-                }
-                else
-                {
-                    DebugLogger.Log(
-                        "BalatroMainMenu",
-                        $"No SearchWidget window found for searchId: {searchId}"
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to remove SearchWidget window: {ex.Message}"
-                );
-            }
         }
 
         #endregion

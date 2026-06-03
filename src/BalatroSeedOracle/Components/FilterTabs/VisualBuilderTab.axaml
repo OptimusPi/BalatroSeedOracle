@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -36,7 +36,7 @@
 
         <Style Selector="Border.dropzone-overlay TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}"/>
-            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontSize" Value="28"/>
             <Setter Property="Foreground" Value="{StaticResource White}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -235,7 +235,7 @@
                                           Opacity="1.0"/>
                     </Border.Effect>
                     <!-- Balatro-style drop zone - Readable text with wrapping -->
-                    <TextBlock Text="ADD TO FAVORITES"
+                    <TextBlock Text="Add to Favorites"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="18"
                                Foreground="{StaticResource White}"
@@ -269,7 +269,7 @@
                                  Background="Transparent"
                                  BorderThickness="0"
                                  FontFamily="{StaticResource BalatroFont}"
-                                 FontSize="18"
+                                 FontSize="12"
                                  Foreground="{StaticResource LightGrey}"/>
                     </Border>
                 </Grid>
@@ -288,7 +288,7 @@
                         <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0">
                     <!-- Edition Buttons (Jokers and Standard Cards only) -->
                     <StackPanel IsVisible="{Binding ShowEditionButtons}" Margin="0,0,0,0">
-                        <TextBlock Text="EDITION"
+                        <TextBlock Text="Edition"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="18"
                                    Foreground="{StaticResource White}"
@@ -371,7 +371,7 @@
 
                     <!-- Sticker Buttons (Jokers only) -->
                     <StackPanel IsVisible="{Binding ShowStickerButtons}" Margin="4,0,0,0">
-                        <TextBlock Text="STICKERS"
+                        <TextBlock Text="Stickers"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="18"
                                    Foreground="{StaticResource White}"
@@ -415,7 +415,7 @@
 
                     <!-- Seal Buttons (StandardCard only) - Show 10 of Spades with seal on top -->
                     <StackPanel IsVisible="{Binding ShowSealButtons}" Margin="4,0,0,0">
-                        <TextBlock Text="SEALS"
+                        <TextBlock Text="Seals"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="18"
                                    Foreground="{StaticResource White}"
@@ -589,7 +589,7 @@
                                           BlurRadius="30"
                                           Opacity="1.0"/>
                     </Border.Effect>
-                    <TextBlock Text="REMOVE FROM FILTER"
+                    <TextBlock Text="Remove from Filter"
                                FontFamily="{StaticResource BalatroFont}"
                                FontSize="18"
                               
@@ -636,7 +636,7 @@
                                     Padding="8,4">
                                 <TextBlock Text="{Binding UnifiedOperator.OperatorType}"
                                            FontFamily="{StaticResource BalatroFont}"
-                                           FontSize="18"
+                                           FontSize="12"
                                           
                                            Foreground="{StaticResource White}"
                                            HorizontalAlignment="Center"
@@ -773,7 +773,7 @@
                                               BlurRadius="30"
                                               Opacity="1.0"/>
                         </Border.Effect>
-                        <TextBlock Text="DROP IN MUST HAVE">
+                        <TextBlock Text="Drop in Must Have">
                             <TextBlock.Effect>
                                 <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
@@ -812,7 +812,7 @@
                                               BlurRadius="30"
                                               Opacity="1.0"/>
                         </Border.Effect>
-                        <TextBlock Text="DROP IN SHOULD HAVE">
+                        <TextBlock Text="Drop in Should Have">
                             <TextBlock.Effect>
                                 <DropShadowEffect Color="{StaticResource ColorBlack}" BlurRadius="12" OffsetX="3" OffsetY="3" Opacity="1"/>
                             </TextBlock.Effect>
@@ -844,7 +844,7 @@
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
                                 Padding="8,0,8,4">
-                            <TextBlock Text="MUST"
+                            <TextBlock Text="Must"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="18"
 
@@ -959,7 +959,7 @@
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkBackground}"
                                 Padding="8,0,8,4">
-                            <TextBlock Text="SHOULD"
+                            <TextBlock Text="Should"
                                        FontFamily="{StaticResource BalatroFont}"
                                        FontSize="18"
 
@@ -1067,7 +1067,7 @@
                                 Background="Transparent"
                                 IsHitTestVisible="False">
                             <StackPanel Spacing="20">
-                                <TextBlock Text="EDITING ITEM" 
+                                <TextBlock Text="Editing Item" 
                                            FontFamily="{StaticResource BalatroFont}" 
                                            FontSize="18" 
                                            Foreground="{StaticResource White}"

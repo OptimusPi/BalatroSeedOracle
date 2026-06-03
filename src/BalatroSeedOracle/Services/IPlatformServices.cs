@@ -29,21 +29,6 @@ namespace BalatroSeedOracle.Services
         bool SupportsResultsGrid { get; }
 
         /// <summary>
-        /// Whether the platform supports audio-related widgets (Audio Mixer, Music Mixer, Audio Visualizer Settings, Frequency Debug).
-        /// </summary>
-        bool SupportsAudioWidgets { get; }
-
-        /// <summary>
-        /// Whether the platform supports the API Host widget (desktop-only feature).
-        /// </summary>
-        bool SupportsApiHostWidget { get; }
-
-        /// <summary>
-        /// Whether the platform supports the Transition Designer widget (desktop-only feature).
-        /// </summary>
-        bool SupportsTransitionDesigner { get; }
-
-        /// <summary>
         /// Gets the temporary directory path for this platform.
         /// </summary>
         string GetTempDirectory();

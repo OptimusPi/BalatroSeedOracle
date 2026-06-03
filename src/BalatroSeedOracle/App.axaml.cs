@@ -309,7 +309,6 @@ public partial class App : Application
                         if (vm is not null)
                         {
                             vm.IsVolumePopupOpen = false;
-                            vm.IsWidgetDockVisible = false;
                         }
                     }
                 }

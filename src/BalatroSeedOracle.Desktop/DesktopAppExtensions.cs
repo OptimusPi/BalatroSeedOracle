@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
-using BalatroSeedOracle.Desktop.Views;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using Motely.Executors;
@@ -28,13 +27,11 @@ public static class DesktopAppInitializer
                 {
                     try
                     {
-                        mainWindow.InitializeDesktopWidgets(app.Services);
-                        DebugLogger.Log("App", "Desktop widgets initialized successfully");
                         await InitializeSearchLibraryAsync();
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.LogError("App", $"Failed to initialize desktop widgets: {ex.Message}");
+                        DebugLogger.LogError("App", $"Failed to initialize search library: {ex.Message}");
                     }
                 }
                 else

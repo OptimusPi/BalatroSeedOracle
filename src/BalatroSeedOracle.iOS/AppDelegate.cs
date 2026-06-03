@@ -38,9 +38,6 @@ internal sealed class iOSPlatformServices : IPlatformServices
     public bool SupportsAudio => true;
     public bool SupportsAnalyzer => false;
     public bool SupportsResultsGrid => true;
-    public bool SupportsAudioWidgets => false;
-    public bool SupportsApiHostWidget => false;
-    public bool SupportsTransitionDesigner => false;
 
     public string GetTempDirectory() => System.IO.Path.GetTempPath();
 

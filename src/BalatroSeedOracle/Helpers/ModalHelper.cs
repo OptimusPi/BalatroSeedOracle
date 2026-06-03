@@ -84,7 +84,7 @@ namespace BalatroSeedOracle.Helpers
             var filtersContent = new Views.Modals.FiltersModal(
                 menu.ViewModel.FiltersModalViewModel
             );
-            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            return menu.ShowModal("Filter Designer", filtersContent);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace BalatroSeedOracle.Helpers
             // Load the filter into the modal for editing - fire-and-forget is OK for UI initialization
             _ = LoadFilterForEditingAsync(filtersContent, config);
 
-            return menu.ShowModal("FILTER DESIGNER", filtersContent);
+            return menu.ShowModal("Filter Designer", filtersContent);
         }
 
         private static async Task LoadFilterForEditingAsync(
@@ -350,7 +350,7 @@ namespace BalatroSeedOracle.Helpers
             var textBox = new TextBox
             {
                 Text = defaultValue,
-                FontSize = 18,
+                FontSize = 14,
                 Margin = new Avalonia.Thickness(0, 8, 0, 0),
             };
 
@@ -398,7 +398,7 @@ namespace BalatroSeedOracle.Helpers
                 new TextBlock
                 {
                     Text = title,
-                    FontSize = 18,
+                    FontSize = 20,
                     Foreground = window.FindResource("White") as Avalonia.Media.IBrush,
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 }
@@ -408,7 +408,7 @@ namespace BalatroSeedOracle.Helpers
                 new TextBlock
                 {
                     Text = prompt,
-                    FontSize = 18,
+                    FontSize = 14,
                     Foreground = window.FindResource("LightGrey") as Avalonia.Media.IBrush,
                 }
             );

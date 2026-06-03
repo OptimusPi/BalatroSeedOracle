@@ -2,11 +2,7 @@
 
 Search millions of Balatro seeds to find the perfect runs for your strategies.
 
-**Balatro Seed Oracle (BSO)** is an **Avalonia UI** application that compiles with **AOT to desktop and browser**. Seed searching is provided by **Motely (MotelyJAML)**, included as a git submodule (fork of [tacodiva/Motely](https://github.com/tacodiva/motely)). Motely now supports browser WASM with AOT, so the BSO browser build is unblocked.
-
-## Docs
-
-- See `docs/INDEX.md` for the current documentation index and cleanup plan.
+**Balatro Seed Oracle (BSO)** is an **Avalonia UI** desktop application for Windows, Linux, and macOS. Seed searching is provided by **Motely (MotelyJAML)**, included as a git submodule (fork of [tacodiva/Motely](https://github.com/tacodiva/motely)).
 
 ## What is this?
 
@@ -34,7 +30,6 @@ Built for the Balatro community to discover optimal seeds for challenge runs, hi
 - I think this might work on other CPUs like ARM, but I have not tested it.
 - I think I might need some changes to Motely's Vector helpers to make it work, but it's possible the fallbacks (if AVX512 and/or AVX2 not supported) tacodiva added already will be compatible.
 - Mobile support is planned for future releases.
-- **Browser/WASM version is available!** See Browser Build section below.
 
 ## Clone this repository (or download zip, or use Github Desktop)
 
@@ -43,12 +38,12 @@ Either click the green button in the upper-right of this page and download in yo
 ```sh
 git clone https://github.com/OptimusPi/BalatroSeedOracle.git
 cd BalatroSeedOracle
-dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
+dotnet run -c Release --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
 ```
 
 ## Initialize the git Submodule
 
-This repo uses a git submodule for the **Motely (MotelyJAML)** search engine at `external/Motely` (fork of [tacodiva/Motely](https://github.com/tacodiva/motely), with MotelyJson and browser WASM support). You must initialize and update the submodule after cloning:
+This repo uses a git submodule for the **Motely (MotelyJAML)** search engine at `src/MotelyJAML` (fork of [tacodiva/Motely](https://github.com/tacodiva/motely), with MotelyJson support). You must initialize and update the submodule after cloning:
 
 ```bash
 git submodule update --init --recursive
@@ -60,52 +55,24 @@ If you are making code changes on your own fork for example, you can specify Deb
 NOTE: This searches a *lot* slower than release version!
 
 ```sh
-dotnet run -c Debug --project ./src/BalatroSeedOracle.csproj
+dotnet run -c Debug --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
 ```
 
 To run the optimized release build:
 
 ```sh
-dotnet run -c Release --project ./src/BalatroSeedOracle.csproj
+dotnet run -c Release --project ./src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj
 ```
-
-## Browser Build (WebAssembly)
-
-The browser app runs entirely in your web browser using WebAssembly with **AOT compilation** for optimal performance.
-
-**Build the browser version:**
-```bash
-dotnet publish -c Release src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
-```
-
-**Features:**
-- ✅ **AOT Compiled** - Ahead-of-time compilation for fast startup and execution
-- ✅ **SIMD Enabled** - Hardware-accelerated vectorization (where supported)
-- ✅ **Full Feature Parity** - Same filtering capabilities as desktop version
-- ⚠️ **Threads Optional** - Requires COOP/COEP headers (see below)
-
-**Threading Support (Optional):**
-To enable multi-threading, serve with these headers:
-- `Cross-Origin-Opener-Policy: same-origin`
-- `Cross-Origin-Embedder-Policy: require-corp`
-
-Build with threads:
-```bash
-dotnet publish -c Release -p:EnableWasmThreads=true src/BalatroSeedOracle.Browser/BalatroSeedOracle.Browser.csproj
-```
-
-**Recommended Hosts:** nginx, Caddy, Apache, or any static server with header injection support.  
-**Note:** GitHub Pages doesn't support COOP/COEP headers for threaded builds.
 
 ## Using the Command Line Interface
 
 For advanced users who prefer CLI usage, the bundled **MotelyJAML** search engine supports command-line operation with JSON/JAML filters, native C# filters, and seed analysis.
 
-**See the [MotelyJAML README](./external/Motely/README.md) for complete CLI documentation.**
+**See the [MotelyJAML README](./src/MotelyJAML/README.md) for complete CLI documentation.**
 
 Quick CLI example:
 ```bash
-cd ./external/Motely
+cd ./src/MotelyJAML
 dotnet run -- --help
 ```
 
@@ -114,39 +81,27 @@ dotnet run -- --help
 ### Visual Editor
 Use the in-app visual filter designer to create complex filters by dragging and dropping criteria.
 
-### JSON Configuration
-Create custom filters manually:
+### JAML Configuration
+Filters are authored in **JAML** (Jimbo's Ante Markup Language), a YAML dialect. This is the only format the app loads — there is no JSON load path. Create custom filters manually:
 
-```json
-{
-  "name": "Negative Perkeo Hunt",
-  "description": "Find seeds with Negative Perkeo and Telescope",
-  "mode": "sum", // optional: "sum" (default) or "max"
-  "deck": "Red", 
-  "stake": "White",
-  "must": [
-    {
-      "type": "Voucher",
-      "value": "Telescope", 
-      "antes": [1, 2]
-    },
-    {
-      "type": "SoulJoker",
-      "value": "Perkeo",
-      "edition": "Negative",
-      "antes": [1, 2, 3]
-    }
-  ],
-  "should": [
-    {
-      "type": "Joker", 
-      "value": "Blueprint",
-      "antes": [2, 3, 4],
-      "score": 10
-    }
-  ]
-}
+```yaml
+name: Negative Perkeo Hunt
+mode: sum            # optional: "sum" (default), "max", or "max_count"
+deck: Red
+stake: White
+must:
+  - voucher: Telescope
+    antes: [1, 2]
+  - soulJoker: Perkeo
+    edition: Negative
+    antes: [1, 2, 3]
+should:
+  - joker: Blueprint
+    antes: [2, 3, 4]
+    score: 10
 ```
+
+Clause discriminators are keys (`joker:`, `voucher:`, `soulJoker:`, `tarot:`, `spectral:`, `planet:`, `boss:`, `tag:`, ...), not a `type`/`value` pair. Names are PascalCase with no spaces (`Blueprint`, `SixthSense`). Ante `0` is the Soul/legendary slot before ante 1.
 
 ### Filter Types
 
@@ -189,23 +144,24 @@ Typical speeds: 10-50 million seeds per second depending on filter complexity.
 
 Example using max aggregation:
 
-```json
-{
-  "name": "Tarot or Planet Rush",
-  "mode": "max",
-  "should": [
-    { "type": "TarotCard", "value": "TheFool", "antes": [1,2,3], "score": 5 },
-    { "type": "PlanetCard", "value": "Jupiter", "antes": [1,2,3], "score": 50 }
-  ]
-}
+```yaml
+name: Tarot or Planet Rush
+mode: max
+should:
+  - tarot: TheFool
+    antes: [1, 2, 3]
+    score: 5
+  - planet: Jupiter
+    antes: [1, 2, 3]
+    score: 50
 ```
 
-In this example, even though `PlanetCard` has higher `score`, `mode: max` ignores `score` and takes the higher raw occurrence count between the two clauses.
+In this example, even though the planet clause has higher `score`, `mode: max` ignores `score` and takes the higher raw occurrence count between the two clauses.
 
 ## File Structure
 
-- `src/` – Main Avalonia application code
-- `external/Motely/` – **Motely (MotelyJAML)** git submodule; high-performance seed search engine
+- `src/` – Main Avalonia application code (`BalatroSeedOracle/` core + `BalatroSeedOracle.Desktop/` head)
+- `src/MotelyJAML/` – **Motely (MotelyJAML)** git submodule; high-performance seed search engine
 - `JamlFilters/` – Pre-made JAML filter configurations (repo root)
 - `SearchResults/` – Database files with search results
 
@@ -223,12 +179,11 @@ This is a community project. Contributions welcome:
 Built on:
 
 - **.NET 10 / C# 14** – Modern C# with high performance features
-- **Avalonia UI** – Cross-platform UI with **AOT to desktop and browser** (and future mobile)
-- **AOT Compilation** – Ahead-of-time compilation for all platforms
-- **DuckDB** – Fast analytical database for results (DuckDB.NET on Desktop, DuckDB-WASM in Browser)
-- **Motely (MotelyJAML)** – Git submodule at `external/Motely`; vectorized Balatro seed search engine (JAML/JSON filters, CLI, browser WASM). Used by BSO for all seed searching. Motely’s browser WASM (AOT) support unblocks the BSO browser build.
+- **Avalonia UI** – Desktop UI for Windows, Linux, and macOS (mobile scaffolding exists for the future)
+- **DuckDB** – Fast analytical database for results (DuckDB.NET on Desktop)
+- **Motely (MotelyJAML)** – Git submodule at `src/MotelyJAML`; vectorized Balatro seed search engine (JAML/JSON filters, CLI). Used by BSO for all seed searching.
 
-The search engine uses advanced vectorized operations (SIMD) to achieve high throughput when analyzing millions of seed combinations. Full AOT compatibility in both BSO and Motely ensures optimal performance across desktop and browser.
+The search engine uses advanced vectorized operations (SIMD) to achieve high throughput when analyzing millions of seed combinations.
 
 ## Support
 

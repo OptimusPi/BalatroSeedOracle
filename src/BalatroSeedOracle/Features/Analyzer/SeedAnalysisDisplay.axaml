@@ -48,7 +48,7 @@
                                             Padding="12"
                                             Margin="4">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="BOSS"
+                                            <TextBlock Text="Boss"
                                                        FontSize="18"
                                                        Foreground="{StaticResource TextInactive}"
                                                        HorizontalAlignment="Center"/>
@@ -57,7 +57,7 @@
                                                    Height="68"
                                                    Stretch="Uniform"/>
                                             <TextBlock Text="{Binding BossName}"
-                                                       FontSize="18"
+                                                       FontSize="12"
                                                        Foreground="{StaticResource White}"
                                                        HorizontalAlignment="Center"
                                                        TextWrapping="Wrap"
@@ -73,7 +73,7 @@
                                             Margin="4"
                                             IsVisible="{Binding HasVoucher}">
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="VOUCHER"
+                                            <TextBlock Text="Voucher"
                                                        FontSize="18"
                                                        Foreground="{StaticResource TextInactive}"
                                                        HorizontalAlignment="Center"/>
@@ -82,7 +82,7 @@
                                                    Height="95"
                                                    Stretch="Uniform"/>
                                             <TextBlock Text="{Binding VoucherName}"
-                                                       FontSize="18"
+                                                       FontSize="12"
                                                        Foreground="{StaticResource White}"
                                                        HorizontalAlignment="Center"
                                                        TextWrapping="Wrap"
@@ -93,7 +93,7 @@
 
                                 <!-- Skip Tags with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
-                                    <TextBlock Text="SKIP TAGS"
+                                    <TextBlock Text="Skip Tags"
                                                
                                                FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
@@ -111,11 +111,11 @@
                                                        Stretch="Uniform"/>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Small Blind"
-                                                               FontSize="18"
+                                                               FontSize="9"
                                                                Opacity="0.7"
                                                                Foreground="{StaticResource VeryLightGrey}"/>
                                                     <TextBlock Text="{Binding SmallBlindTag.TagName}"
-                                                               FontSize="18"
+                                                               FontSize="12"
                                                                Foreground="{StaticResource White}"/>
                                                 </StackPanel>
                                             </StackPanel>
@@ -133,11 +133,11 @@
                                                        Stretch="Uniform"/>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="Big Blind"
-                                                               FontSize="18"
+                                                               FontSize="9"
                                                                Opacity="0.7"
                                                                Foreground="{StaticResource VeryLightGrey}"/>
                                                     <TextBlock Text="{Binding BigBlindTag.TagName}"
-                                                               FontSize="18"
+                                                               FontSize="12"
                                                                Foreground="{StaticResource White}"/>
                                                 </StackPanel>
                                             </StackPanel>
@@ -147,7 +147,7 @@
 
                                 <!-- Shop Queue with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
-                                    <TextBlock Text="SHOP QUEUE"
+                                    <TextBlock Text="Shop Queue"
                                                
                                                FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
@@ -173,7 +173,7 @@
                                                                Stretch="Uniform"/>
                                                         <!-- Edition Badge -->
                                                         <TextBlock Text="{Binding EditionName}"
-                                                                   FontSize="18"
+                                                                   FontSize="9"
                                                                    HorizontalAlignment="Center"
                                                                    Foreground="{Binding EditionColor}"
                                                                    IsVisible="{Binding HasEdition}"/>
@@ -186,7 +186,7 @@
 
                                 <!-- Booster Packs with Sprites -->
                                 <StackPanel Spacing="8" Margin="0,8">
-                                    <TextBlock Text="BOOSTER PACKS"
+                                    <TextBlock Text="Booster Packs"
                                                
                                                FontSize="18"
                                                Foreground="{StaticResource TextInactive}"/>
@@ -214,12 +214,12 @@
                                                                Stretch="Uniform"/>
                                                         <!-- Pack Name -->
                                                         <TextBlock Text="{Binding PackName}"
-                                                                   FontSize="18"
+                                                                   FontSize="10"
                                                                    HorizontalAlignment="Center"
                                                                    Foreground="{StaticResource White}"/>
                                                         <!-- Pack Items -->
                                                         <TextBlock Text="{Binding ItemsText}"
-                                                                   FontSize="18"
+                                                                   FontSize="8"
                                                                    HorizontalAlignment="Center"
                                                                    TextWrapping="Wrap"
                                                                    MaxWidth="90"

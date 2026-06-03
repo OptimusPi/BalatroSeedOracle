@@ -59,11 +59,6 @@ namespace BalatroSeedOracle.Models
         public AdvancedMusicSettings AdvancedMusicSettings { get; set; } = new();
 
         /// <summary>
-        /// Feature toggles for experimental widgets (all default OFF)
-        /// </summary>
-        public FeatureToggles FeatureToggles { get; set; } = new();
-
-        /// <summary>
         /// Host API server settings
         /// </summary>
         public HostApiSettings HostApiSettings { get; set; } = new();
@@ -88,45 +83,6 @@ namespace BalatroSeedOracle.Models
         /// Number of threads to use for searches (default: all cores)
         /// </summary>
         public int ThreadCount { get; set; } = Environment.ProcessorCount;
-    }
-
-    /// <summary>
-    /// Feature toggles for experimental widgets
-    /// </summary>
-    public class FeatureToggles
-    {
-        /// <summary>
-        /// Show Music Mixer widget (default OFF)
-        /// </summary>
-        public bool ShowMusicMixer { get; set; } = false;
-
-        /// <summary>
-        /// Show Visualizer Settings widget (default OFF)
-        /// </summary>
-        public bool ShowVisualizer { get; set; } = false;
-
-        /// <summary>
-        /// Show Transition Designer widget (default OFF)
-        /// </summary>
-        public bool ShowTransitionDesigner { get; set; } = false;
-
-        /// <summary>
-        /// Show Host Server widget (default OFF)
-        /// API server hosting with request counter badge
-        /// </summary>
-        public bool ShowHostServer { get; set; } = false;
-
-        /// <summary>
-        /// Show Fertilizer widget (default OFF)
-        /// Manages the shared seed pile for faster searching
-        /// </summary>
-        public bool ShowFertilizer { get; set; } = false;
-
-        /// <summary>
-        /// Show Event FX widget (default OFF)
-        /// Configure animations for app events like intro
-        /// </summary>
-        public bool ShowEventFX { get; set; } = false;
     }
 
     /// <summary>

@@ -15,11 +15,11 @@
             <StackPanel>
                 <TextBlock Text="{Binding CurrentAnteDisplay}"
                          FontFamily="{StaticResource BalatroFont}"
-                         FontSize="54"
+                         FontSize="20"
                          Foreground="{StaticResource Gold}"
                          HorizontalAlignment="Center"/>
                 <TextBlock Text="{Binding AnteNavigationDisplay}"
-                         FontSize="18"
+                         FontSize="12"
                          Foreground="{StaticResource LightGrey}"
                          HorizontalAlignment="Center"
                          Margin="0,4,0,0"/>
@@ -36,7 +36,7 @@
                         CornerRadius="6"
                         Padding="16">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="BOSS BLIND"
+                        <TextBlock Text="Boss Blind"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="36"
                                    Foreground="{StaticResource Orange}"
@@ -55,7 +55,7 @@
                         CornerRadius="6"
                         Padding="16">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="VOUCHER"
+                        <TextBlock Text="Voucher"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="36"
                                    Foreground="{StaticResource Orange}"
@@ -73,7 +73,7 @@
                         CornerRadius="6"
                         Padding="16">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="SHOP ITEMS"
+                        <TextBlock Text="Shop Items"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="36"
                                    Foreground="{StaticResource Orange}"
@@ -90,12 +90,12 @@
                                         <Grid ColumnDefinitions="Auto,*">
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding DisplayIndex}"
-                                                       FontSize="18"
+                                                       FontSize="12"
                                                        Foreground="{StaticResource MediumGrey}"
                                                        Margin="0,0,8,0"/>
                                             <TextBlock Grid.Column="1"
                                                        Text="{Binding DisplayName}"
-                                                       FontSize="18"
+                                                       FontSize="14"
                                                        Foreground="{StaticResource White}"/>
                                         </Grid>
                                     </Border>
@@ -103,7 +103,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Text="No shop items"
-                                   FontSize="18"
+                                   FontSize="12"
                                    Foreground="{StaticResource MediumGrey}"
                                    IsVisible="{Binding !ShopItems.Count}"/>
                     </StackPanel>
@@ -116,7 +116,7 @@
                         CornerRadius="6"
                         Padding="16">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="BOOSTER PACKS"
+                        <TextBlock Text="Booster Packs"
                                    FontFamily="{StaticResource BalatroFont}"
                                    FontSize="36"
                                    Foreground="{StaticResource Orange}"
@@ -132,14 +132,14 @@
                                             Margin="0,0,0,8">
                                         <StackPanel Spacing="6">
                                             <TextBlock Text="{Binding Name}"
-                                                       FontSize="18"
+                                                       FontSize="14"
                                                        Foreground="{Binding PackColor}"
                                                        FontWeight="Bold"/>
                                             <ItemsControl ItemsSource="{Binding Items}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding DisplayName}"
-                                                                   FontSize="18"
+                                                                   FontSize="12"
                                                                    Foreground="{StaticResource White}"
                                                                    Margin="8,2,0,0"/>
                                                     </DataTemplate>
@@ -151,7 +151,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Text="No booster packs"
-                                   FontSize="18"
+                                   FontSize="12"
                                    Foreground="{StaticResource MediumGrey}"
                                    IsVisible="{Binding !BoosterPacks.Count}"/>
                     </StackPanel>
@@ -159,7 +159,7 @@
 
                 <!-- Empty State -->
                 <TextBlock Text="Select an ante to view details"
-                           FontSize="18"
+                           FontSize="14"
                            Foreground="{StaticResource MediumGrey}"
                            HorizontalAlignment="Center"
                            IsVisible="{Binding !CurrentAnalysis}"/>

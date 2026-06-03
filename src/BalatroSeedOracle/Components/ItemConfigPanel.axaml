@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
@@ -21,7 +21,7 @@
                     <TextBlock Grid.Column="0"
                                Text="{Binding ItemName}"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontSize="18"
+                               FontSize="16"
                                Foreground="{StaticResource Gold}"
                                VerticalAlignment="Center"/>
                     <Button Grid.Column="1"
@@ -56,25 +56,25 @@
 
                         <!-- Label (Should items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="2" IsVisible="{Binding IsLabelVisible}">
-                            <TextBlock Text="LABEL" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Label" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="e.g., 'Bram Neg'" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <!-- Score (Should items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="2" Spacing="2" IsVisible="{Binding IsScoreVisible}">
-                            <TextBlock Text="SCORE" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Score" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <NumericUpDown Value="{Binding Score}" Minimum="1" Maximum="1000" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <!-- Min Count (Must items only) -->
                         <StackPanel Grid.Column="0" Grid.Row="4" Spacing="2" IsVisible="{Binding IsMinCountVisible}">
-                            <TextBlock Text="MIN COUNT" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Min Count" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <NumericUpDown Value="{Binding MinCount}" Minimum="1" Maximum="10" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <!-- Edition (Jokers + StandardCards) - JAML schema: ["Foil", "Holographic", "Polychrome", "Negative"] -->
                         <StackPanel Grid.Column="0" Grid.Row="6" Spacing="2" IsVisible="{Binding IsEditionVisible}">
-                            <TextBlock Text="EDITION" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Edition" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Edition}" FontSize="18" Height="24">
                                 <sys:String>None</sys:String>
                                 <sys:String>Foil</sys:String>
@@ -86,7 +86,7 @@
 
                         <!-- Stickers (Jokers only) -->
                         <StackPanel Grid.Column="0" Grid.Row="8" Spacing="2" IsVisible="{Binding IsStickersVisible}">
-                            <TextBlock Text="STICKERS" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Stickers" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <StackPanel>
                                 <CheckBox Content="Eternal" IsChecked="{Binding IsEternal}" FontSize="18" Margin="0,0,0,1"/>
                                 <CheckBox Content="Perishable" IsChecked="{Binding IsPerishable}" FontSize="18" Margin="0,0,0,1"/>
@@ -98,7 +98,7 @@
 
                         <!-- Seal (StandardCards only) -->
                         <StackPanel Grid.Column="2" Grid.Row="0" Spacing="2" IsVisible="{Binding IsSealVisible}">
-                            <TextBlock Text="SEAL" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Seal" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Seal}" FontSize="18" Height="24">
                                 <sys:String>None</sys:String>
                                 <sys:String>Gold</sys:String>
@@ -110,7 +110,7 @@
 
                         <!-- Enhancement (StandardCards only) - JAML schema: ["Bonus", "Mult", "Wild", "Glass", "Steel", "Stone", "Lucky", "Gold"] -->
                         <StackPanel Grid.Column="2" Grid.Row="2" Spacing="2" IsVisible="{Binding IsEnhancementVisible}">
-                            <TextBlock Text="ENHANCEMENT" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Enhancement" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Enhancement}" FontSize="18" Height="24">
                                 <sys:String>None</sys:String>
                                 <sys:String>Bonus</sys:String>
@@ -126,7 +126,7 @@
 
                         <!-- Rank (StandardCards only) -->
                         <StackPanel Grid.Column="2" Grid.Row="4" Spacing="2" IsVisible="{Binding IsRankSuitVisible}">
-                            <TextBlock Text="RANK" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Rank" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Rank}" FontSize="18" Height="24">
                                 <sys:String>2</sys:String><sys:String>3</sys:String><sys:String>4</sys:String><sys:String>5</sys:String>
                                 <sys:String>6</sys:String><sys:String>7</sys:String><sys:String>8</sys:String><sys:String>9</sys:String>
@@ -136,7 +136,7 @@
 
                         <!-- Suit (StandardCards only) -->
                         <StackPanel Grid.Column="2" Grid.Row="6" Spacing="2" IsVisible="{Binding IsRankSuitVisible}">
-                            <TextBlock Text="SUIT" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Suit" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <ComboBox SelectedItem="{Binding Suit}" FontSize="18" Height="24">
                                 <sys:String>Spades</sys:String>
                                 <sys:String>Hearts</sys:String>
@@ -147,32 +147,32 @@
 
                         <!-- Special Properties for other JAML item types -->
                         <StackPanel Grid.Column="0" Grid.Row="8" Spacing="2" IsVisible="{Binding IsTarotCardVisible}">
-                            <TextBlock Text="TAROT SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Tarot Special" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Tarot card special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="8" Spacing="2" IsVisible="{Binding IsPlanetCardVisible}">
-                            <TextBlock Text="PLANET SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Planet Special" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Planet card special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="0" Grid.Row="10" Spacing="2" IsVisible="{Binding IsSpectralCardVisible}">
-                            <TextBlock Text="SPECTRAL SPECIAL" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Spectral Special" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Spectral card special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="10" Spacing="2" IsVisible="{Binding IsBossBlindVisible}">
-                            <TextBlock Text="BOSS BLIND INFO" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Boss Blind Info" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Boss blind special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="0" Grid.Row="12" Spacing="2" IsVisible="{Binding IsVoucherVisible}">
-                            <TextBlock Text="VOUCHER INFO" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Voucher Info" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Voucher special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Grid.Row="12" Spacing="2" IsVisible="{Binding IsTagVisible}">
-                            <TextBlock Text="TAG INFO" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                            <TextBlock Text="Tag Info" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                             <TextBox Text="{Binding Label}" PlaceholderText="Tag special property" FontSize="18" Height="24"/>
                         </StackPanel>
 
@@ -182,7 +182,7 @@
 
                     <!-- Antes -->
                     <StackPanel Spacing="2">
-                        <TextBlock Text="ANTES" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                        <TextBlock Text="Antes" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                         <WrapPanel>
                             <CheckBox Content="All" IsChecked="{Binding AllAntesSelected}" FontSize="18" Margin="0,0,6,2"/>
                             <CheckBox Content="1" IsChecked="{Binding Ante1Selected}" FontSize="18" Margin="0,0,6,2" IsEnabled="{Binding !AllAntesSelected}"/>
@@ -198,7 +198,7 @@
 
                 <!-- NESTED CONDITIONS -->
                     <StackPanel Spacing="2" Margin="0,4,0,0">
-                        <TextBlock Text="NESTED LOGIC" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                        <TextBlock Text="Nested Logic" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                         <StackPanel>
                             <CheckBox Content="Enable AND Group (all must match)" IsChecked="{Binding EnableAndGroup}" FontSize="18" Margin="0,0,0,1"/>
                             <CheckBox Content="Enable OR Group (any can match)" IsChecked="{Binding EnableOrGroup}" FontSize="18" Margin="0,0,0,1"/>
@@ -207,7 +207,7 @@
 
                 <!-- SOURCES -->
                     <StackPanel Spacing="2" Margin="0,4,0,0">
-                        <TextBlock Text="SOURCES" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
+                        <TextBlock Text="Sources" FontFamily="{StaticResource BalatroFont}" FontSize="18" Foreground="{StaticResource Gold}"/>
                         <StackPanel>
                             <CheckBox Content="Shop" IsChecked="{Binding SourceShop}" FontSize="18" Margin="0,0,0,1"/>
                             <CheckBox Content="Booster Packs" IsChecked="{Binding SourcePack}" FontSize="18" Margin="0,0,0,1"/>
@@ -231,14 +231,14 @@
                             Command="{Binding CancelCommand}"
                             Classes="btn-cancel"
                             Height="32"
-                            FontSize="18"
+                            FontSize="12"
                             Width="100"/>
                     <Button Grid.Column="2"
                             Content="Apply"
                             Command="{Binding ApplyCommand}"
                             Classes="btn-blue"
                             Height="32"
-                            FontSize="18"
+                            FontSize="12"
                             Width="100"/>
                 </Grid>
             </Border>

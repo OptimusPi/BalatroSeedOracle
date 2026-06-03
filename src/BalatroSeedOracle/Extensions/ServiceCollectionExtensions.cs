@@ -59,8 +59,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<IPlatformServices>()
             ));
             services.AddSingleton<FilterSerializationService>();
-            services.AddSingleton<WidgetPositionService>();
-            services.AddSingleton<WidgetWindowManager>();
             services.AddSingleton<NotificationService>();
             services.AddTransient<ClauseConversionService>();
             services.AddSingleton<Services.Export.ResultsExportService>();
@@ -76,10 +74,8 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<FiltersModalViewModel>(),
                 sp.GetRequiredService<CreditsModalViewModel>(),
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
-                sp.GetRequiredService<WidgetWindowManager>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
-                sp.GetService<WidgetPositionService>(),
                 sp.GetService<IPlatformServices>(),
                 () => sp.GetRequiredService<FilterSelectionModalViewModel>()
             ));
@@ -130,26 +126,13 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetService<IFilterCacheService>(),
                 sp.GetService<IPlatformServices>()
             ));
-            services.AddTransient<Views.Modals.WidgetPickerModal>(sp => new Views.Modals.WidgetPickerModal(
-                sp.GetRequiredService<UserProfileService>()
-            ));
-
             services.AddTransient<AnalyzeModalViewModel>(sp => new AnalyzeModalViewModel(
                 sp.GetRequiredService<SpriteService>(),
                 sp.GetRequiredService<UserProfileService>()
             ));
             // Note: AnalyzerViewModel is registered by Desktop Program.cs only
-            // Note: AudioVisualizerSettingsWidgetViewModel and MusicMixerWidgetViewModel are desktop-only and registered by Desktop Program.cs
             services.AddTransient<CreditsModalViewModel>();
-            services.AddTransient<TransitionDesignerWidgetViewModel>(
-                sp => new TransitionDesignerWidgetViewModel(
-                    sp.GetService<TransitionService>(),
-                    sp.GetService<TriggerService>()
-                )
-            );
-            services.AddTransient<EventFXWidgetViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
-            services.AddTransient<BaseWidgetViewModel>();
             services.AddTransient<FilterListViewModel>(sp => new FilterListViewModel(
                 sp.GetRequiredService<IFilterCacheService>(),
                 sp.GetService<SpriteService>()

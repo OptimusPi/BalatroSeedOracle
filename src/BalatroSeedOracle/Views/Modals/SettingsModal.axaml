@@ -70,14 +70,6 @@
                         FontFamily="{StaticResource BalatroFont}"
                         Click="OnOpenAppDirectoryClick"/>
 
-                <Button Content="Add Widgets"
-                        Classes="btn-blue"
-                        Width="320"
-                        Height="50"
-                        FontSize="18"
-                        FontFamily="{StaticResource BalatroFont}"
-                        Click="OnAddWidgetsClick"/>
-
                 <Button Content="Credits"
                         Classes="btn-purple"
                         Width="320"

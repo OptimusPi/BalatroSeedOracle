@@ -86,25 +86,6 @@
             </Border>
         </Popup>
         
-        <!-- Desktop widgets layer - widgets use their own ZIndex bindings -->
-        <!-- IsHitTestVisible="False" allows clicks to pass through to MainContent below -->
-    <Grid x:Name="DesktopCanvas" ZIndex="10" ClipToBounds="False" IsHitTestVisible="False">
-            <!-- Search Widgets will be added dynamically here -->
-
-            <!-- ✨ EVENT FX WIDGET - Configure event animations -->
-            <components:EventFXWidget x:Name="EventFXWidget"
-                                      IsVisible="{Binding IsEventFXWidgetVisible}"
-                                      ClipToBounds="False"/>
-
-            <!-- DayLatro Widget - starts minimized in top right -->
-            <components:DayLatroWidget x:Name="DayLatroWidget"
-                                     ClipToBounds="False"/>
-
-            <!-- DESKTOP-ONLY WIDGETS (AudioMixer, MusicMixer, AudioVisualizerSettings, FrequencyDebug, TransitionDesigner, ApiHost) 
-                 are now in BalatroSeedOracle.Desktop project and added programmatically on Desktop platform -->
-
-        </Grid>
-        
         <!-- Main content that will be blurred when modals are open (hidden in Vibe Out Mode) -->
         <Grid x:Name="MainContent" ZIndex="5" IsVisible="{Binding !IsVibeOutMode}" IsHitTestVisible="True">
             <Grid.RowDefinitions>
@@ -246,57 +227,6 @@
                             Padding="6,4,6,6"
                             Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <!-- Widget Dock Button -->
-                            <Button x:Name="WidgetDockButton"
-                                    Classes="btn-purple"
-                                    FontSize="18"
-                                    Width="48"
-                                    Height="48"
-                                    CornerRadius="8"
-                                    BorderBrush="{StaticResource ModalBorder}"
-                                    BorderThickness="2"
-                                    Margin="0,0,0,2"
-                                    Command="{Binding ToggleWidgetDockCommand}"
-                                    ToolTip.Tip="Widget dock">
-                                <Path Width="28" Height="28" Fill="{StaticResource White}" Data="{StaticResource GridIconData}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            </Button>
-                            
-                            <!-- Toggle All Widgets Button -->
-                            <Button x:Name="ToggleAllWidgetsButton"
-                                    Classes="btn-purple"
-                                    FontSize="18"
-                                    Width="48"
-                                    Height="48"
-                                    CornerRadius="8"
-                                    BorderBrush="{StaticResource ModalBorder}"
-                                    BorderThickness="2"
-                                    Margin="0,0,0,2"
-                                    Command="{Binding ToggleAllWidgetsCommand}"
-                                    ToolTip.Tip="Toggle all widgets">
-                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Path.Styles>
-                                        <Style Selector="Path">
-                                            <Setter Property="Data" Value="{StaticResource WidgetsIconData}"/>
-                                        </Style>
-                                        <Style Selector="Path[Tag=WidgetsOutline]">
-                                            <Setter Property="Data" Value="{StaticResource WidgetsOutlineIconData}"/>
-                                        </Style>
-                                    </Path.Styles>
-                                    <Path.Tag>
-                                        <Binding Path="ToggleAllWidgetsIcon"/>
-                                    </Path.Tag>
-                                </Path>
-                            </Button>
-                            
-                            <!-- Widget Dock Popup -->
-                            <Popup IsOpen="{Binding IsWidgetDockVisible}"
-                                   PlacementTarget="{Binding #WidgetDockButton}"
-                                   Placement="Top"
-                                   HorizontalOffset="0"
-                                   VerticalOffset="-10">
-                                <components:WidgetDock DataContext="{Binding}"/>
-                            </Popup>
-
                             <!-- Pause/Resume Animation Button (square like language buttons) -->
                             <Button x:Name="AnimationToggleButton"
                                     Classes="btn-purple"
@@ -347,33 +277,6 @@
                                     </Path.Styles>
                                     <Path.Tag>
                                         <Binding Path="MusicIcon"/>
-                                    </Path.Tag>
-                                </Path>
-                            </Button>
-
-                            <!-- Search Widgets Toggle Button -->
-                            <Button x:Name="SearchWidgetsToggleButton"
-                                    Classes="btn-purple"
-                                    FontSize="18"
-                                    Width="48"
-                                    Height="48"
-                                    CornerRadius="8"
-                                    BorderBrush="{StaticResource ModalBorder}"
-                                    BorderThickness="2"
-                                    Margin="0,0,0,2"
-                                    Command="{Binding ToggleSearchWidgetsCommand}"
-                                    ToolTip.Tip="Toggle search widgets">
-                                <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Path.Styles>
-                                        <Style Selector="Path">
-                                            <Setter Property="Data" Value="{StaticResource MagnifyIconData}"/>
-                                        </Style>
-                                        <Style Selector="Path[Tag=MagnifyPlus]">
-                                            <Setter Property="Data" Value="{StaticResource MagnifyPlusIconData}"/>
-                                        </Style>
-                                    </Path.Styles>
-                                    <Path.Tag>
-                                        <Binding Path="SearchWidgetsIcon"/>
                                     </Path.Tag>
                                 </Path>
                             </Button>

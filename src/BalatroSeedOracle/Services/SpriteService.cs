@@ -741,7 +741,7 @@ namespace BalatroSeedOracle.Services
 
                     // Load playing card positions
                     playingCardPositions = LoadPlayingCardMetadata(
-                        "avares://BalatroSeedOracle/Assets/Decks/playing_cards_metadata.json"
+                        "avares://BalatroSeedOracle/Assets/Decks/standard_cards_metadata.json"
                     );
 
                     // Load boss blind positions

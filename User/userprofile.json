@@ -54,14 +54,6 @@
     "InstantTransitions": false,
     "LockVibeLevel": false
   },
-  "FeatureToggles": {
-    "ShowMusicMixer": true,
-    "ShowVisualizer": false,
-    "ShowTransitionDesigner": false,
-    "ShowHostServer": false,
-    "ShowFertilizer": false,
-    "ShowEventFX": false
-  },
   "HostApiSettings": {
     "Host": "127.0.0.1",
     "Port": 3141,

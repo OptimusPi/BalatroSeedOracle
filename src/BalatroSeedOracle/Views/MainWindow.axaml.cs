@@ -115,25 +115,7 @@ public partial class MainWindow : Window
 
     private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        try
-        {
-            // Get the widget position service
-            var positionService = ServiceHelper.GetService<Services.WidgetPositionService>();
-            if (positionService != null)
-            {
-                // Handle window resize by repositioning widgets that are now out of bounds
-                positionService.HandleWindowResize(e.NewSize.Width, e.NewSize.Height);
-
-                DebugLogger.Log(
-                    "MainWindow",
-                    $"Window resized to {e.NewSize.Width}x{e.NewSize.Height}, widgets repositioned"
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            DebugLogger.LogError($"Error handling window resize: {ex.Message}");
-        }
+        // Previously repositioned desktop widgets on resize; the widget system was removed.
     }
 
     private async Task CleanupAndExitAsync()

@@ -25,7 +25,6 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IPlatformServices? _platformServices;
-        private readonly WidgetWindowManager _widgetWindowManager;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -62,12 +61,6 @@ namespace BalatroSeedOracle.ViewModels
         private string _musicIcon = "VolumeHigh";
 
         [ObservableProperty]
-        private string _searchWidgetsIcon = "Magnify";
-
-        [ObservableProperty]
-        private string _toggleAllWidgetsIcon = "Widgets";
-
-        [ObservableProperty]
         private string _muteButtonText = "MUTE";
 
         [ObservableProperty]
@@ -101,91 +94,10 @@ namespace BalatroSeedOracle.ViewModels
             {
                 ActiveModal = null;
             }
-            else
-            {
-                // Close widget dock when modal opens
-                IsWidgetDockVisible = false;
-            }
         }
-
-        partial void OnIsSearchWidgetsVisibleChanged(bool value)
-        {
-            SearchWidgetsIcon = value ? "Magnify" : "MagnifyPlus";
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        private void UpdateToggleAllWidgetsIcon()
-        {
-            // Check if all enabled widgets are visible
-            var allVisible =
-                (IsMusicMixerWidgetVisible == IsMusicMixerWidgetEnabled)
-                && (IsVisualizerWidgetVisible == IsVisualizerWidgetEnabled)
-                && (IsTransitionDesignerWidgetVisible == IsTransitionDesignerWidgetEnabled)
-                && (IsFertilizerWidgetVisible == IsFertilizerWidgetEnabled)
-                && (IsHostApiWidgetVisible == IsHostApiWidgetEnabled)
-                && (IsEventFXWidgetVisible == IsEventFXWidgetEnabled)
-                && IsSearchWidgetsVisible;
-
-            ToggleAllWidgetsIcon = allVisible ? "Widgets" : "WidgetsOutline";
-        }
-
-        [ObservableProperty]
-        private int _widgetCounter = 0;
-
-        // Widget enabled state (from FeatureToggles - source of truth)
-        [ObservableProperty]
-        private bool _isMusicMixerWidgetEnabled = false;
-
-        [ObservableProperty]
-        private bool _isVisualizerWidgetEnabled = false;
-
-        [ObservableProperty]
-        private bool _isTransitionDesignerWidgetEnabled = false;
-
-        [ObservableProperty]
-        private bool _isFertilizerWidgetEnabled = false;
-
-        [ObservableProperty]
-        private bool _isHostApiWidgetEnabled = false;
-
-        [ObservableProperty]
-        private bool _isEventFXWidgetEnabled = false;
-
-        // Widget visibility state (can be toggled via dock)
-        [ObservableProperty]
-        private bool _isVisualizerWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isTransitionDesignerWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isMusicMixerWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isFertilizerWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isHostApiWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isEventFXWidgetVisible = false;
-
-        [ObservableProperty]
-        private bool _isSearchWidgetsVisible = true; // Search widgets visible by default
 
         [ObservableProperty]
         private bool _isVibeOutMode = false;
-
-        // Widget dock popup visibility
-        [ObservableProperty]
-        private bool _isWidgetDockVisible = false;
-
-        [RelayCommand]
-        private void ToggleWidgetDock()
-        {
-            IsWidgetDockVisible = !IsWidgetDockVisible;
-            PlayButtonClickSound();
-        }
 
         private double _previousVolume = 70;
 
@@ -210,10 +122,8 @@ namespace BalatroSeedOracle.ViewModels
             FiltersModalViewModel filtersModalViewModel,
             CreditsModalViewModel creditsModalViewModel,
             Func<AnalyzeModalViewModel> analyzeModalFactory,
-            WidgetWindowManager widgetWindowManager,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
-            WidgetPositionService? widgetPositionService = null,
             IPlatformServices? platformServices = null,
             Func<FilterSelectionModalViewModel>? filterSelectionFactory = null
         )
@@ -226,7 +136,6 @@ namespace BalatroSeedOracle.ViewModels
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
             CreditsModalViewModel = creditsModalViewModel;
-            _widgetWindowManager = widgetWindowManager;
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;
@@ -235,44 +144,11 @@ namespace BalatroSeedOracle.ViewModels
             LoadSettings();
         }
 
-        /// <summary>Exposes the WidgetWindowManager to the View (needed for code-behind widget restore).</summary>
-        public WidgetWindowManager WidgetWindowManager => _widgetWindowManager;
-
         /// <summary>Creates an AnalyzeModalViewModel via DI factory (no ServiceHelper). Used by View to show analyze modal.</summary>
         public AnalyzeModalViewModel CreateAnalyzeModalViewModel() => _analyzeModalFactory();
 
         /// <summary>Exposed so parent View can pass factory to child widgets (e.g. DayLatroWidget) that cannot get it from DI.</summary>
         public Func<AnalyzeModalViewModel> AnalyzeModalFactory => _analyzeModalFactory;
-
-        partial void OnIsMusicMixerWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        partial void OnIsVisualizerWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        partial void OnIsTransitionDesignerWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        partial void OnIsFertilizerWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        partial void OnIsHostApiWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
-
-        partial void OnIsEventFXWidgetVisibleChanged(bool value)
-        {
-            UpdateToggleAllWidgetsIcon();
-        }
 
         partial void OnIsAnimatingChanged(bool value)
         {
@@ -446,98 +322,6 @@ namespace BalatroSeedOracle.ViewModels
             // Settings now opens SettingsModal via ModalRequested event
         }
 
-        // Widget toggle commands all share the pattern:
-        //   "if disabled, no-op; otherwise play click sound and flip visibility".
-        // Each [RelayCommand] needs to be its own method so the source generator can
-        // produce a corresponding ICommand property — but the body is a one-liner now.
-        [RelayCommand]
-        private void ToggleMusicMixerWidget() =>
-            ToggleWidget(IsMusicMixerWidgetEnabled, () => IsMusicMixerWidgetVisible = !IsMusicMixerWidgetVisible);
-
-        [RelayCommand]
-        private void ToggleVisualizerWidget() =>
-            ToggleWidget(IsVisualizerWidgetEnabled, () => IsVisualizerWidgetVisible = !IsVisualizerWidgetVisible);
-
-        [RelayCommand]
-        private void ToggleTransitionDesignerWidget() =>
-            ToggleWidget(IsTransitionDesignerWidgetEnabled, () => IsTransitionDesignerWidgetVisible = !IsTransitionDesignerWidgetVisible);
-
-        [RelayCommand]
-        private void ToggleFertilizerWidget() =>
-            ToggleWidget(IsFertilizerWidgetEnabled, () => IsFertilizerWidgetVisible = !IsFertilizerWidgetVisible);
-
-        [RelayCommand]
-        private void ToggleHostApiWidget() =>
-            ToggleWidget(IsHostApiWidgetEnabled, () => IsHostApiWidgetVisible = !IsHostApiWidgetVisible);
-
-        [RelayCommand]
-        private void ToggleEventFXWidget() =>
-            ToggleWidget(IsEventFXWidgetEnabled, () => IsEventFXWidgetVisible = !IsEventFXWidgetVisible);
-
-        private void ToggleWidget(bool enabled, Action toggle)
-        {
-            if (!enabled)
-                return;
-            PlayButtonClickSound();
-            toggle();
-        }
-
-        [RelayCommand]
-        private void ToggleAllWidgets()
-        {
-            PlayButtonClickSound();
-
-            // Check if any widgets are currently visible
-            var anyVisible =
-                IsMusicMixerWidgetVisible
-                || IsVisualizerWidgetVisible
-                || IsTransitionDesignerWidgetVisible
-                || IsFertilizerWidgetVisible
-                || IsHostApiWidgetVisible
-                || IsEventFXWidgetVisible
-                || IsSearchWidgetsVisible;
-
-            // Toggle all widgets to the opposite state
-            var newState = !anyVisible;
-
-            IsMusicMixerWidgetVisible = newState && IsMusicMixerWidgetEnabled;
-            IsVisualizerWidgetVisible = newState && IsVisualizerWidgetEnabled;
-            IsTransitionDesignerWidgetVisible = newState && IsTransitionDesignerWidgetEnabled;
-            IsFertilizerWidgetVisible = newState && IsFertilizerWidgetEnabled;
-            IsHostApiWidgetVisible = newState && IsHostApiWidgetEnabled;
-            IsEventFXWidgetVisible = newState && IsEventFXWidgetEnabled;
-            IsSearchWidgetsVisible = newState;
-
-            // Show/hide search widgets via window manager
-            var widgetManager = _widgetWindowManager;
-            if (newState)
-            {
-                widgetManager.ShowAllWidgets();
-            }
-            else
-            {
-                widgetManager.HideAllWidgets();
-            }
-        }
-
-        [RelayCommand]
-        private void ToggleSearchWidgets()
-        {
-            PlayButtonClickSound();
-            IsSearchWidgetsVisible = !IsSearchWidgetsVisible;
-
-            // Show/hide all search widgets via window manager
-            var widgetManager = _widgetWindowManager;
-            if (IsSearchWidgetsVisible)
-            {
-                widgetManager.ShowAllWidgets();
-            }
-            else
-            {
-                widgetManager.HideAllWidgets();
-            }
-        }
-
         [RelayCommand]
         private void AnimationToggle()
         {
@@ -573,28 +357,9 @@ namespace BalatroSeedOracle.ViewModels
         {
             IsVibeOutMode = !IsVibeOutMode;
 
-            // In vibe out mode: hide all widgets
-            if (IsVibeOutMode)
-            {
-                IsWidgetDockVisible = false;
-                IsSearchWidgetsVisible = false;
-
-                // Hide search widgets via window manager
-                var widgetManager = _widgetWindowManager;
-                widgetManager.HideAllWidgets();
-            }
-            else
-            {
-                IsSearchWidgetsVisible = true;
-
-                // Show search widgets via window manager
-                var widgetManager = _widgetWindowManager;
-                widgetManager.ShowAllWidgets();
-            }
-
             DebugLogger.Log(
                 "BalatroMainMenu",
-                $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}, Widgets hidden: {!IsWidgetDockVisible}"
+                $"Vibe Out Mode: {(IsVibeOutMode ? "ON" : "OFF")}"
             );
 
             // Request window state change (true = fullscreen, false = normal)
@@ -726,38 +491,9 @@ namespace BalatroSeedOracle.ViewModels
                     Volume = 0;
                 }
 
-                // Load feature toggles - these control which widgets are enabled (exist)
-                // Combine user preferences with platform capabilities
-                var toggles = profile.FeatureToggles;
-                IsMusicMixerWidgetEnabled =
-                    (_platformServices?.SupportsAudioWidgets ?? true)
-                    && (toggles?.ShowMusicMixer ?? false);
-                IsVisualizerWidgetEnabled =
-                    (_platformServices?.SupportsAudioWidgets ?? true)
-                    && (toggles?.ShowVisualizer ?? false);
-                IsTransitionDesignerWidgetEnabled =
-                    (_platformServices?.SupportsTransitionDesigner ?? true)
-                    && (toggles?.ShowTransitionDesigner ?? false);
-                IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-                IsHostApiWidgetEnabled =
-                    (_platformServices?.SupportsApiHostWidget ?? true)
-                    && (toggles?.ShowHostServer ?? false);
-                IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-
-                // Initialize visibility to match enabled state
-                IsMusicMixerWidgetVisible = IsMusicMixerWidgetEnabled;
-                IsVisualizerWidgetVisible = IsVisualizerWidgetEnabled;
-                IsTransitionDesignerWidgetVisible = IsTransitionDesignerWidgetEnabled;
-                IsFertilizerWidgetVisible = IsFertilizerWidgetEnabled;
-                IsHostApiWidgetVisible = IsHostApiWidgetEnabled;
-                IsEventFXWidgetVisible = IsEventFXWidgetEnabled;
-                // Search widgets are always enabled but visibility is controlled separately
-                IsSearchWidgetsVisible = true;
-
                 DebugLogger.Log(
                     "BalatroMainMenuViewModel",
-                    $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}, "
-                        + $"Features: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
+                    $"Settings loaded: Volume={profile.MusicVolume}, Muted={profile.IsMusicMuted}"
                 );
             }
             catch (Exception ex)
@@ -767,50 +503,6 @@ namespace BalatroSeedOracle.ViewModels
                     $"Error loading settings: {ex.Message}"
                 );
             }
-        }
-
-        /// <summary>
-        /// Refreshes feature toggle visibility from profile. Call this when settings change.
-        /// </summary>
-        public void RefreshFeatureToggles()
-        {
-            var profile = _userProfileService.GetProfile();
-            var toggles = profile.FeatureToggles;
-
-            // Update enabled state (source of truth)
-            // Combine user preferences with platform capabilities
-            IsMusicMixerWidgetEnabled =
-                (_platformServices?.SupportsAudioWidgets ?? true)
-                && (toggles?.ShowMusicMixer ?? false);
-            IsVisualizerWidgetEnabled =
-                (_platformServices?.SupportsAudioWidgets ?? true)
-                && (toggles?.ShowVisualizer ?? false);
-            IsTransitionDesignerWidgetEnabled =
-                (_platformServices?.SupportsTransitionDesigner ?? true)
-                && (toggles?.ShowTransitionDesigner ?? false);
-            IsFertilizerWidgetEnabled = toggles?.ShowFertilizer ?? false;
-            IsHostApiWidgetEnabled =
-                (_platformServices?.SupportsApiHostWidget ?? true)
-                && (toggles?.ShowHostServer ?? false);
-            IsEventFXWidgetEnabled = toggles?.ShowEventFX ?? false;
-
-            // If a widget is disabled, hide it. If enabled, keep current visibility.
-            if (!IsMusicMixerWidgetEnabled)
-                IsMusicMixerWidgetVisible = false;
-            if (!IsVisualizerWidgetEnabled)
-                IsVisualizerWidgetVisible = false;
-            if (!IsTransitionDesignerWidgetEnabled)
-                IsTransitionDesignerWidgetVisible = false;
-            if (!IsFertilizerWidgetEnabled)
-                IsFertilizerWidgetVisible = false;
-            if (!IsHostApiWidgetEnabled)
-                IsHostApiWidgetVisible = false;
-            if (!IsEventFXWidgetEnabled)
-                IsEventFXWidgetVisible = false;
-            DebugLogger.Log(
-                "BalatroMainMenuViewModel",
-                $"Feature toggles refreshed: Mixer={IsMusicMixerWidgetVisible}, Viz={IsVisualizerWidgetVisible}, Trans={IsTransitionDesignerWidgetVisible}, Fert={IsFertilizerWidgetVisible}, Host={IsHostApiWidgetVisible}, EventFX={IsEventFXWidgetVisible}"
-            );
         }
 
         private void SaveVolumeToProfile()

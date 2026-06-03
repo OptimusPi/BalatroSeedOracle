@@ -9,7 +9,7 @@
         <StackPanel Spacing="10" MaxWidth="500" HorizontalAlignment="Center">
             
             <!-- Header -->
-            <TextBlock Text="FINISH"
+            <TextBlock Text="Finish"
                        FontSize="18"
                        FontFamily="{StaticResource BalatroFont}"
                        Foreground="{StaticResource Gold}"
@@ -25,20 +25,20 @@
                 <!-- Filter Name -->
                 <StackPanel>
                     <TextBlock Text="Filter Name"
-                               FontSize="18"
+                               FontSize="13"
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
                                Margin="0,0,0,4"/>
                     <TextBox Text="{Binding FilterName}"
                              PlaceholderText="Enter filter name..."
-                             FontSize="18"
+                             FontSize="13"
                              Height="32"/>
                 </StackPanel>
 
                 <!-- Description -->
                 <StackPanel>
                     <TextBlock Text="Description"
-                               FontSize="18"
+                               FontSize="13"
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"
                                Margin="0,0,0,4"/>
@@ -46,7 +46,7 @@
                              PlaceholderText="Enter description..."
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
-                             FontSize="18"
+                             FontSize="13"
                              Height="60"/>
                 </StackPanel>
 
@@ -55,32 +55,32 @@
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" Margin="0">
                         <!-- Row 0: Copy and Save side-by-side -->
                         <Button Grid.Row="0" Grid.Column="0"
-                                Content="COPY JSON"
+                                Content="Copy JSON"
                                 Command="{Binding CopyJsonCommand}"
                                 Classes="btn-blue"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="18"
+                                FontSize="13"
                                 Margin="0,0,4,8"/>
 
                         <Button Grid.Row="0" Grid.Column="1"
-                                Content="SAVE FILTER"
+                                Content="Save Filter"
                                 Command="{Binding SaveCurrentFilterCommand}"
                                 Classes="btn-green"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="18"
+                                FontSize="13"
                                 Margin="4,0,0,8"
                                 IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
                         <!-- Row 1: Go to Search (Full Width) -->
                         <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                Content="GO TO SEARCH"
+                                Content="Go to Search"
                                 Command="{Binding GoToSearchCommand}"
                                 Classes="btn-orange"
                                 Foreground="{StaticResource White}"
                                 Height="40"
-                                FontSize="18"
+                                FontSize="14"
                                 FontWeight="Bold"
                                 Margin="0,0,0,8"
                                 IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
@@ -92,7 +92,7 @@
                                 Classes="btn-red"
                                 Foreground="{StaticResource White}"
                                 Height="36"
-                                FontSize="18"/>
+                                FontSize="13"/>
                     </Grid>
                 </StackPanel>
 
@@ -106,7 +106,7 @@
                     Padding="12,8"
                     IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                 <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="18"
+                           FontSize="12"
                            Foreground="{Binding StatusColor}"
                            FontFamily="{StaticResource BalatroFont}"
                            TextWrapping="Wrap"

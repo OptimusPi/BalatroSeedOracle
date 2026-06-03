@@ -40,33 +40,33 @@
                         HorizontalAlignment="Center"
                         IsVisible="{Binding ShowActionButtons}">
                 <Button Name="CopyFilterButton"
-                        Content="MAKE A COPY"
+                        Content="Make a Copy"
                         Classes="btn-blue"
                         Height="44"
                         MinWidth="110"
-                        FontSize="18"
+                        FontSize="14"
                         Command="{Binding CopyFilterCommand}"/>
 
                 <Button Name="EditFilterButton"
-                        Content="EDIT THIS FILTER"
+                        Content="Edit This Filter"
                         Classes="btn-orange"
                         Height="44"
                         MinWidth="130"
-                        FontSize="18"
+                        FontSize="14"
                         Command="{Binding EditFilterCommand}"/>
 
                 <Button Name="DeleteFilterButton"
-                        Content="DELETE"
+                        Content="Delete"
                         Classes="btn-red"
                         Height="44"
                         Width="80"
-                        FontSize="18"
+                        FontSize="14"
                         Command="{Binding DeleteFilterCommand}"/>
             </StackPanel>
 
             <!-- Create new filter (full width) -->
             <Button Name="CreateNewFilterButton"
-                    Content="CREATE NEW FILTER"
+                    Content="Create New Filter"
                     Classes="btn-green"
                     Height="55"
                     MinWidth="300"
