@@ -106,7 +106,7 @@
                         Foreground="White"
                         FontFamily="{StaticResource BalatroFont}"
                         FontSize="18"
-                        FontWeight="Bold"
+                        FontWeight="Normal"
                         Padding="16,8"
                         Margin="8,8,0,8"
                         VerticalAlignment="Center"

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:controls="using:BalatroSeedOracle.Controls"
@@ -72,7 +72,7 @@
                     <TextBlock Text="Go to Search"
                                FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontWeight="Bold"
+                               FontWeight="Normal"
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -87,7 +87,7 @@
                     <TextBlock Text="Save and Close"
                                FontSize="18"
                                FontFamily="{StaticResource BalatroFont}"
-                               FontWeight="Bold"
+                               FontWeight="Normal"
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>

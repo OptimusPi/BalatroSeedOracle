@@ -117,7 +117,7 @@
                             BoxShadow="0 0 20 5 #FFD700">
                         <TextBlock Text="{Binding ClauseType}"
                                    FontSize="18"
-                                   FontWeight="Bold"
+                                   FontWeight="Normal"
                                    Foreground="{StaticResource Black}"
                                    FontFamily="{StaticResource BalatroFont}"
                                    HorizontalAlignment="Center"
@@ -131,7 +131,7 @@
                        Text="{Binding DisplayText}"
                        FontFamily="{StaticResource BalatroFont}"
                        FontSize="18"
-                       FontWeight="SemiBold"
+                       FontWeight="Normal"
                        Foreground="{StaticResource Gold}"
                        TextAlignment="Center"
                        TextWrapping="Wrap"
@@ -211,7 +211,7 @@
                     </Border.Background>
                     <TextBlock Text="{Binding EditionBadge}"
                                FontSize="18"
-                               FontWeight="Bold"
+                               FontWeight="Normal"
                                FontFamily="{StaticResource BalatroFont}"
                                Foreground="{StaticResource White}"/>
                 </Border>

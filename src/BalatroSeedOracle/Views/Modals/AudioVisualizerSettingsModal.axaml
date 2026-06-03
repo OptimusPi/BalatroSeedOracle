@@ -14,7 +14,7 @@
   <StackPanel Spacing="20" Margin="20">
     <TextBlock Text="Audio Visualizer Settings" 
                FontSize="18" 
-               FontWeight="Bold"
+               FontWeight="Normal"
                HorizontalAlignment="Center"/>
     
     <TextBlock Text="Audio visualizer settings are not available in this build." 

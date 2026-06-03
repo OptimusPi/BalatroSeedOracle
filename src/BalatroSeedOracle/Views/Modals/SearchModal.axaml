@@ -40,7 +40,7 @@
                     Foreground="White"
                     FontFamily="{StaticResource BalatroFont}"
                     FontSize="18"
-                    FontWeight="Bold"
+                    FontWeight="Normal"
                     Padding="12,6"
                     Margin="8,0,8,0"
                     VerticalAlignment="Center"

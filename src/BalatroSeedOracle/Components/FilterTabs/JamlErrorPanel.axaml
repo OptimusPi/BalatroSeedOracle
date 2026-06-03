@@ -14,7 +14,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="Errors &amp; Warnings"
                                Foreground="{StaticResource White}"
-                               FontWeight="Bold"
+                               FontWeight="Normal"
                                FontSize="18"/>
                     <TextBlock Text="{Binding ErrorCount, StringFormat='({0})'}"
                                Foreground="{StaticResource Red}"

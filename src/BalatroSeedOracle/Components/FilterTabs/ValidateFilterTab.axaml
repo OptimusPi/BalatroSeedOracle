@@ -81,7 +81,7 @@
                                 Foreground="{StaticResource White}"
                                 Height="40"
                                 FontSize="14"
-                                FontWeight="Bold"
+                                FontWeight="Normal"
                                 Margin="0,0,0,8"
                                 IsEnabled="{Binding FilterName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 

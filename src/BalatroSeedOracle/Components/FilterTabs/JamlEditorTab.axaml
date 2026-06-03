@@ -175,7 +175,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="{Binding ValidationStatus}"
                                    Foreground="{Binding ValidationStatusColor}"
-                                   FontWeight="Bold"
+                                   FontWeight="Normal"
                                    FontSize="18"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

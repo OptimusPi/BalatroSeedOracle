@@ -42,7 +42,7 @@
                                     <TextBlock Text="{Binding BossName}"
                                                FontSize="18"
                                                Foreground="{StaticResource White}"
-                                               FontWeight="Bold"/>
+                                               FontWeight="Normal"/>
                                 </StackPanel>
 
                                 <!-- Voucher -->

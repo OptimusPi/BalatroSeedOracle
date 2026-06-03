@@ -38,7 +38,7 @@
                            FontFamily="{StaticResource BalatroFont}"
                            FontSize="18"
                            Foreground="{Binding LabelForeground, RelativeSource={RelativeSource AncestorType=controls:FilterCategoryStrip}}"
-                           FontWeight="Bold"
+                           FontWeight="Normal"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center">
                     <TextBlock.RenderTransform>

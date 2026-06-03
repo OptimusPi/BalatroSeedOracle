@@ -228,6 +228,7 @@
         <Style Selector="Button:not(.SystemCaptionButton)">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="Background" Value="{StaticResource Red}" />
             <Setter Property="BorderThickness" Value="0" />
@@ -412,12 +413,15 @@
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
+            <!-- m6x11 is a pixel font; bold renders badly. Force Normal weight globally. -->
+            <Setter Property="FontWeight" Value="Normal" />
         </Style>
 
         <Style Selector="Label">
             <Setter Property="FontFamily" Value="{StaticResource BalatroFont}" />
             <Setter Property="Foreground" Value="{StaticResource White}" />
             <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Normal" />
         </Style>
 
         <Style Selector="TextBox">

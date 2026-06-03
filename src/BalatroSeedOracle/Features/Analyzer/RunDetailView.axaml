@@ -44,7 +44,7 @@
                         <TextBlock Text="{Binding CurrentBossDisplay}"
                                    FontSize="18"
                                    Foreground="{StaticResource White}"
-                                   FontWeight="Bold"/>
+                                   FontWeight="Normal"/>
                     </StackPanel>
                 </Border>
 
@@ -134,7 +134,7 @@
                                             <TextBlock Text="{Binding Name}"
                                                        FontSize="14"
                                                        Foreground="{Binding PackColor}"
-                                                       FontWeight="Bold"/>
+                                                       FontWeight="Normal"/>
                                             <ItemsControl ItemsSource="{Binding Items}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>

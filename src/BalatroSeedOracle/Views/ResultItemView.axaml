@@ -23,7 +23,7 @@
           
           <TextBlock Grid.Column="0" 
                      Text="{Binding Seed}" 
-                     FontWeight="Bold"
+                     FontWeight="Normal"
                      Classes="seed-text" />
           
           <TextBlock Grid.Column="1" 
@@ -46,7 +46,7 @@
                         Classes="score-badge">
                   <TextBlock Text="{Binding}"
                              FontSize="18"
-                             FontWeight="Bold" />
+                             FontWeight="Normal" />
                 </Border>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
