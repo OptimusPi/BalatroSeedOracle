@@ -92,7 +92,7 @@ stake: White
 must:
   - voucher: Telescope
     antes: [1, 2]
-  - soulJoker: Perkeo
+  - legendaryJoker: Perkeo
     edition: Negative
     antes: [1, 2, 3]
 should:
@@ -101,16 +101,16 @@ should:
     score: 10
 ```
 
-Clause discriminators are keys (`joker:`, `voucher:`, `soulJoker:`, `tarot:`, `spectral:`, `planet:`, `boss:`, `tag:`, ...), not a `type`/`value` pair. Names are PascalCase with no spaces (`Blueprint`, `SixthSense`). Ante `0` is the Soul/legendary slot before ante 1.
+Clause discriminators are keys (`joker:`, `voucher:`, `legendaryJoker:`, `tarotCard:`, `spectralCard:`, `planetCard:`, `boss:`, `tag:`, ...), not a `type`/`value` pair. Names are PascalCase with no spaces (`Blueprint`, `SixthSense`). Ante `0` is the Soul/legendary slot before ante 1.
 
 ### Filter Types
 
-- **Vouchers**: `Telescope`, `Observatory`, `Hieroglyph`, etc.
-- **Soul Jokers**: `Perkeo`, `Triboulet`, `Canio`, `Chicot`, etc.
-- **Regular Jokers**: `Blueprint`, `Brainstorm`, `Showman`, etc.
-- **Tarot Cards**: `TheFool`, `TheWorld`, `Death`, etc.
-- **Spectral Cards**: `Ankh`, `Soul`, `Wraith`, etc.
-- **Planet Cards**: `Jupiter`, `Mars`, `Venus`, etc.  
+- **Vouchers** (`voucher:`): `Telescope`, `Observatory`, `Hieroglyph`, etc.
+- **Legendary Jokers** (`legendaryJoker:`, the five that come from the Soul card): `Perkeo`, `Triboulet`, `Canio`, `Chicot`, `Yorick`.
+- **Regular Jokers** (`joker:`): `Blueprint`, `Brainstorm`, `Showman`, etc.
+- **Tarot Cards** (`tarotCard:`): `TheFool`, `TheWorld`, `Death`, etc.
+- **Spectral Cards** (`spectralCard:`): `Ankh`, `TheSoul`, `Wraith`, etc.
+- **Planet Cards** (`planetCard:`): `Jupiter`, `Mars`, `Venus`, etc.  
 - **Playing Cards**: Specific ranks/suits with seals/editions
 - **Boss Blinds**: `TheGoad`, `CeruleanBell`, `TheOx`, etc.
 - **Tags**: `NegativeTag`, `SpeedTag`, `RareTag`, etc.
@@ -148,10 +148,10 @@ Example using max aggregation:
 name: Tarot or Planet Rush
 mode: max
 should:
-  - tarot: TheFool
+  - tarotCard: TheFool
     antes: [1, 2, 3]
     score: 5
-  - planet: Jupiter
+  - planetCard: Jupiter
     antes: [1, 2, 3]
     score: 50
 ```
