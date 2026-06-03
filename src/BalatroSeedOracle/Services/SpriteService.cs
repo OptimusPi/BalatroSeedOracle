@@ -724,7 +724,7 @@ namespace BalatroSeedOracle.Services
 
                     // Load booster pack positions from json
                     boosterPositions = LoadSpritePositions(
-                        "avares://BalatroSeedOracle/Assets/Other/Boosters.json"
+                        "avares://BalatroSeedOracle/Assets/Boosters/Boosters.json"
                     );
 
                     // Load deck, enhancement, and seal positions from enhancers metadata
@@ -819,7 +819,7 @@ namespace BalatroSeedOracle.Services
                         "avares://BalatroSeedOracle/Assets/Jokers/stickers.png"
                     );
                     boosterSheet = LoadBitmap(
-                        "avares://BalatroSeedOracle/Assets/Other/boosters.png"
+                        "avares://BalatroSeedOracle/Assets/Boosters/boosters.png"
                     );
                 });
             }
