@@ -43,7 +43,7 @@ public partial class AnalyzerViewModel : ObservableObject
     public string[] StakeDisplayValues { get; } = Enum.GetNames(typeof(MotelyStake));
 
     [ObservableProperty]
-    private MotelySeedAnalysis? _currentAnalysis;
+    private MotelyLegacyTextAnalysis? _currentAnalysis;
 
     [ObservableProperty]
     private SeedAnalysisModel? _displayAnalysis;
@@ -250,8 +250,8 @@ public partial class AnalyzerViewModel : ObservableObject
             // Run analyzer on background thread
             var analysis = await Task.Run(() =>
             {
-                var config = new MotelySeedAnalysisConfig(CurrentSeed, SelectedDeck, SelectedStake);
-                return MotelySeedAnalyzer.Analyze(config);
+                var config = new MotelyLegacyTextAnalysisConfig(CurrentSeed, SelectedDeck, SelectedStake);
+                return MotelyLegacyTextAnalyzer.Analyze(config);
             });
 
             CurrentAnalysis = analysis;
@@ -260,7 +260,7 @@ public partial class AnalyzerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            CurrentAnalysis = new MotelySeedAnalysis($"Error: {ex.Message}", []);
+            CurrentAnalysis = new MotelyLegacyTextAnalysis($"Error: {ex.Message}", []);
             UpdateDisplayAnalysis();
         }
         finally
@@ -438,7 +438,7 @@ public partial class AnalyzerViewModel : ObservableObject
         OnPropertyChanged(nameof(AnteNavigationDisplay));
     }
 
-    partial void OnCurrentAnalysisChanged(MotelySeedAnalysis? value)
+    partial void OnCurrentAnalysisChanged(MotelyLegacyTextAnalysis? value)
     {
         // Notify UI of all ante-related property changes when analysis updates
         OnPropertyChanged(nameof(CurrentAnteDisplay));
