@@ -702,27 +702,23 @@ namespace BalatroSeedOracle.Views
 
                 // Generate unique ID
                 var filterId = $"{filterName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
-                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".json");
+                var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
 
-                var minimalFilter = new JamlRootDocument
-                {
-                    Name = filterName,
-                    Description = "Created with visual filter builder",
-                    Author = "pifreak",
-                    DateCreated = DateTime.UtcNow.ToString("o"),
-                    Deck = "Red",
-                    Stake = "White",
-                    Must = new System.Collections.Generic.List<JamlClauseUnion>(),
-                    Should = new System.Collections.Generic.List<JamlClauseUnion>(),
-                    MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
-                };
+                // JAML is the source format — write it literally instead of building a
+                // JamlRootDocument just to serialize it back out. JamlConfigLoader reads .jaml.
+                var safeName = filterName.Replace("\"", "\\\"");
+                var jaml =
+                    $"name: \"{safeName}\"\n"
+                    + "description: Created with visual filter builder\n"
+                    + "author: pifreak\n"
+                    + $"dateCreated: \"{DateTime.UtcNow:o}\"\n"
+                    + "deck: Red\n"
+                    + "stake: White\n"
+                    + "must: []\n"
+                    + "should: []\n"
+                    + "mustNot: []\n";
 
-                var json = System.Text.Json.JsonSerializer.Serialize(
-                    minimalFilter,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-
-                await System.IO.File.WriteAllTextAsync(filterPath, json);
+                await System.IO.File.WriteAllTextAsync(filterPath, jaml);
 
                 DebugLogger.Log("BalatroMainMenu", $"✅ Created new filter: {filterId}");
                 return filterId;
