@@ -79,3 +79,4 @@ docs/BLUEPRINT_GITHUB_PAGES_FIX.md
 publish*.txt
 build_output.txt
 temp_*.txt
+.vault_token
