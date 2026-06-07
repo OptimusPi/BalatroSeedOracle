@@ -1,0 +1,41 @@
+name: Oops Perkeo (Anaglyph + Negative Tag)
+description: >
+  Anaglyph deck. Negative Tag on a small blind early (ante 1) -> sets up a Negative
+  joker, and Anaglyph's post-boss Double Tag doubles it. Perkeo off The Soul by ante 2
+  (i.e. after the Negative Tag). Showman so duplicate Oops! All 6s can appear; grab an
+  Ankh in-run to clone one Oops! All 6s into a second for the "easy 4". Scored by how
+  many Oops! All 6s the seed actually puts in shops/packs.
+author: pifreak
+deck: Anaglyph
+stake: White
+
+# mode defaults to `sum`: aggregated score = sum(count * score) over should clauses.
+defaults:
+  antes: [1, 2]
+
+must:
+  # Negative Tag on a small blind, ante 1 -> the Negative-joker setup.
+  # (Anaglyph hands you a Double Tag after each boss, which doubles this.)
+  - smallBlindTag: NegativeTag
+    antes: [1]
+
+  # Perkeo off The Soul, by ante 2 -> "after" the Negative Tag above.
+  - legendaryJoker: Perkeo
+    antes: [1, 2]
+
+  # Showman: lets duplicate jokers/cards (a 2nd Oops! All 6s) exist at all.
+  - joker: Showman
+    antes: [1, 2]
+
+  # At least one Oops! All 6s to find (Ankh duplicates it in-run; not seed-searchable).
+  - joker: OopsAll6s
+    antes: [1, 2]
+
+should:
+  # Score by how many Oops! All 6s show up (sum mode -> total == the count).
+  - joker: OopsAll6s
+    score: 1
+
+  # A little credit for grabbing Perkeo early.
+  - legendaryJoker: Perkeo
+    score: 5

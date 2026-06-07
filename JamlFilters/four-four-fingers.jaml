@@ -1,0 +1,26 @@
+name: Four Four Fingers (gloriously useless)
+description: >
+  Painted Deck (+2 hand size, -1 JOKER SLOT) and FOUR copies of Four Fingers. Four Fingers
+  lets Flushes and Straights form with 4 cards; stacking four of them does exactly nothing
+  more than one does. The deck even costs you a joker slot to hold this nonsense. Peak
+  cardboard. Can you win? Probably, eventually. Should you? Absolutely not. frfr no cap.
+  Needs Showman so the duplicate Four Fingers can exist at all.
+author: pifreak
+deck: Painted
+stake: White
+
+defaults:
+  antes: [1, 2, 3, 4]
+
+must:
+  # Showman: without it the game blocks duplicate jokers, so 4x Four Fingers is impossible.
+  - joker: Showman
+
+  # The main event. Four of them. Four. Of them.
+  - joker: FourFingers
+    min: 4
+
+should:
+  # "Score" by how many Four Fingers we find. The number means nothing. It's beautiful.
+  - joker: FourFingers
+    score: 1

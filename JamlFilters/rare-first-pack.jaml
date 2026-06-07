@@ -1,0 +1,21 @@
+name: Rare in the First Pack
+description: >
+  The very first booster pack of the run (ante 1, pack slot 0) must contain a Rare joker
+  (any). Scored by how many Rare jokers turn up across the early antes.
+author: pifreak
+deck: Red
+stake: White
+
+defaults:
+  antes: [1]
+
+must:
+  # First booster pack of the run must hold a Rare joker (any rarity-rare joker).
+  - rareJoker: Any
+    boosterPacks: [0]
+
+should:
+  # Score by how many Rare jokers appear anywhere we look (sum mode -> total == count).
+  - rareJoker: Any
+    antes: [1, 2, 3]
+    score: 1
