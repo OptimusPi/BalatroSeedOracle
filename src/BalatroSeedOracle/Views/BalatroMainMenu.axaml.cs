@@ -917,6 +917,9 @@ namespace BalatroSeedOracle.Views
             if (_background is BalatroShaderBackground shader)
             {
                 ViewModel.LoadAndApplyVisualizerSettings(shader);
+                // Connect the FFT stem levels to the shader so the background
+                // reacts to the music (settings choose which stem drives what).
+                ViewModel.WireAudioAnalysisToShader(shader);
             }
 
             // Check for resumable search
@@ -1676,6 +1679,9 @@ namespace BalatroSeedOracle.Views
                     audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
                     _audioAnalysisHandler = null;
                 }
+
+                // Detach the music-reactivity bridge owned by the ViewModel.
+                ViewModel.UnwireAudioAnalysisFromShader();
 
                 DebugLogger.Log("BalatroMainMenu", "Event handlers cleaned up successfully");
             }

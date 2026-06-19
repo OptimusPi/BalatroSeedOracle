@@ -34,6 +34,22 @@ namespace BalatroSeedOracle.ViewModels
         private int _zoomThumpSource = 0;
         private int _colorSaturationSource = 0;
 
+        // --- Music reactivity bridge ---
+        // The shader the audio analysis drives, plus resting baselines captured at
+        // wire-up so reactivity modulates *around* the configured values instead of
+        // overwriting them, and smoothed deltas so the background pulses (not strobes).
+        private BalatroShaderBackground? _reactiveShader;
+        private float _baseZoom;
+        private float _baseContrast;
+        private float _baseSpinAmount;
+        private float _baseSpinTime;
+        private float _baseSaturation;
+        private float _smZoom;
+        private float _smContrast;
+        private float _smSpinAmount;
+        private float _smSpinTime;
+        private float _smSaturation;
+
         /// <summary>
         /// Expose audio manager for widgets to access frequency data
         /// </summary>
@@ -711,18 +727,33 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                if (_audioManager is not null)
-                {
-                    _audioAnalysisHandler = (bass, mid, treble, peak) => {
-                        // Audio reactivity handled by effect binding system
-                    };
+                if (_audioManager is null)
+                    return;
 
-                    _audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
-                    DebugLogger.Log(
-                        "ViewModel",
-                        "✅ Audio analysis handler connected (awaiting effect binding system)"
-                    );
-                }
+                _reactiveShader = shader;
+
+                // Capture resting baselines so reactivity adds motion on top of the
+                // user's/theme's configured values and decays back to them when quiet.
+                _baseZoom = shader.GetZoomScale();
+                _baseContrast = shader.GetContrast();
+                _baseSpinAmount = shader.GetSpinAmount();
+                _baseSpinTime = shader.GetSpinTimeSpeed();
+                _baseSaturation = shader.GetSaturationAmount();
+
+                // Re-wiring must never double-subscribe.
+                if (_audioAnalysisHandler is not null)
+                    _audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
+
+                // Event payload is (BassIntensity, ChordsIntensity, MelodyIntensity, peak);
+                // Drums is read live from the manager inside the handler.
+                _audioAnalysisHandler = (bass, chords, melody, _) =>
+                    ApplyAudioReactivity(bass, chords, melody);
+                _audioManager.AudioAnalysisUpdated += _audioAnalysisHandler;
+
+                DebugLogger.Log(
+                    "ViewModel",
+                    "Audio reactivity bridge connected (FFT stems -> shader)"
+                );
             }
             catch (Exception ex)
             {
@@ -730,6 +761,97 @@ namespace BalatroSeedOracle.ViewModels
                     "BalatroMainMenuViewModel",
                     $"Failed to wire audio analysis: {ex.Message}"
                 );
+            }
+        }
+
+        /// <summary>
+        /// Detach the audio reactivity bridge (called by View on teardown).
+        /// </summary>
+        public void UnwireAudioAnalysisFromShader()
+        {
+            try
+            {
+                if (_audioManager is not null && _audioAnalysisHandler is not null)
+                {
+                    _audioManager.AudioAnalysisUpdated -= _audioAnalysisHandler;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to unwire audio analysis: {ex.Message}"
+                );
+            }
+            finally
+            {
+                _audioAnalysisHandler = null;
+                _reactiveShader = null;
+            }
+        }
+
+        /// <summary>
+        /// Routes live FFT stem levels onto shader effects per the user's visualizer
+        /// settings. Source index: 0=None, 1=Drums, 2=Bass, 3=Chords, 4=Melody.
+        /// Runs on the audio analysis thread; only writes plain shader uniform fields.
+        /// </summary>
+        private void ApplyAudioReactivity(float bass, float chords, float melody)
+        {
+            var shader = _reactiveShader;
+            var audio = _audioManager;
+            if (shader is null || audio is null)
+                return;
+
+            try
+            {
+                var vibe = _userProfileService.GetProfile().VisualizerSettings;
+                float globalIntensity = Math.Clamp(vibe.AudioIntensity, 0f, 2f);
+                float drums = audio.DrumsIntensity;
+
+                float Level(int source) =>
+                    source switch
+                    {
+                        1 => drums,
+                        2 => bass,
+                        3 => chords,
+                        4 => melody,
+                        _ => 0f,
+                    };
+
+                static float Pct(float v) => Math.Clamp(v, 0f, 100f) / 100f;
+
+                // Target additive deltas per shader channel.
+                float zoomTarget =
+                    (
+                        Level(vibe.ZoomThumpSource) * Pct(vibe.ZoomThumpIntensity) * 0.6f
+                        + Level(vibe.BeatPulseSource) * Pct(vibe.BeatPulseIntensity) * 0.4f
+                    ) * globalIntensity;
+                float contrastTarget =
+                    Level(vibe.ShadowFlickerSource) * Pct(vibe.ShadowFlickerIntensity) * 1.5f * globalIntensity;
+                float spinAmountTarget =
+                    Level(vibe.SpinSource) * Pct(vibe.SpinIntensity) * 0.5f * globalIntensity;
+                float spinTimeTarget =
+                    Level(vibe.TwirlSource) * Pct(vibe.TwirlIntensity) * 2.0f * globalIntensity;
+                float saturationTarget =
+                    Level(vibe.ColorSaturationSource) * Pct(vibe.ColorSaturationIntensity) * 0.8f * globalIntensity;
+
+                // Smooth (attack/decay) so the background pulses instead of strobing.
+                const float smooth = 0.35f;
+                _smZoom += (zoomTarget - _smZoom) * smooth;
+                _smContrast += (contrastTarget - _smContrast) * smooth;
+                _smSpinAmount += (spinAmountTarget - _smSpinAmount) * smooth;
+                _smSpinTime += (spinTimeTarget - _smSpinTime) * smooth;
+                _smSaturation += (saturationTarget - _smSaturation) * smooth;
+
+                shader.SetZoomScale(_baseZoom + _smZoom);
+                shader.SetContrast(_baseContrast + _smContrast);
+                shader.SetSpinAmount(_baseSpinAmount + _smSpinAmount);
+                shader.SetSpinTime(_baseSpinTime + _smSpinTime);
+                shader.SetSaturationAmount(_baseSaturation + _smSaturation);
+            }
+            catch
+            {
+                // A reactive frame must never take down audio playback.
             }
         }
 
