@@ -27,10 +27,29 @@ namespace BalatroSeedOracle.ViewModels
 
         // Selected filter details
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowDetailsPanel))]
+        [NotifyPropertyChangedFor(nameof(ShowPlaceholder))]
+        [NotifyPropertyChangedFor(nameof(FilterName))]
+        [NotifyPropertyChangedFor(nameof(FilterAuthor))]
+        [NotifyPropertyChangedFor(nameof(FilterDescription))]
+        [NotifyPropertyChangedFor(nameof(CreatedDate))]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckName))]
+        [NotifyPropertyChangedFor(nameof(SelectedStakeName))]
+        [NotifyPropertyChangedFor(nameof(DeckCardImage))]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckDescription))]
+        [NotifyPropertyChangedFor(nameof(MustHaveCount))]
+        [NotifyPropertyChangedFor(nameof(ShouldHaveCount))]
+        [NotifyPropertyChangedFor(nameof(MustNotCount))]
+        [NotifyPropertyChangedFor(nameof(ShowFilterTab))]
+        [NotifyPropertyChangedFor(nameof(ShowScoreTab))]
+        [NotifyPropertyChangedFor(nameof(ShowDeckTab))]
         private FilterBrowserItem? _selectedFilter;
 
         // Active tab index
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowFilterTab))]
+        [NotifyPropertyChangedFor(nameof(ShowScoreTab))]
+        [NotifyPropertyChangedFor(nameof(ShowDeckTab))]
         private int _activeTabIndex = 0;
 
         // Details panel visibility
@@ -152,22 +171,9 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnSelectedFilterChanged(FilterBrowserItem? value)
         {
-            OnPropertyChanged(nameof(ShowDetailsPanel));
-            OnPropertyChanged(nameof(ShowPlaceholder));
-            OnPropertyChanged(nameof(FilterName));
-            OnPropertyChanged(nameof(FilterAuthor));
-            OnPropertyChanged(nameof(FilterDescription));
-            OnPropertyChanged(nameof(CreatedDate));
-            OnPropertyChanged(nameof(SelectedDeckName));
-            OnPropertyChanged(nameof(SelectedStakeName));
-            OnPropertyChanged(nameof(DeckCardImage));
-            OnPropertyChanged(nameof(SelectedDeckDescription));
-            OnPropertyChanged(nameof(MustHaveCount));
-            OnPropertyChanged(nameof(ShouldHaveCount));
-            OnPropertyChanged(nameof(MustNotCount));
-            OnPropertyChanged(nameof(ShowFilterTab));
-            OnPropertyChanged(nameof(ShowScoreTab));
-            OnPropertyChanged(nameof(ShowDeckTab));
+            // Dependent display properties are raised via [NotifyPropertyChangedFor]
+            // on _selectedFilter. This hook only maps the selection to the
+            // deck/stake indices the DeckAndStakeSelector component binds to.
 
             // Update deck/stake indices for DeckSpinner display
             if (value is not null)
@@ -219,12 +225,6 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        partial void OnActiveTabIndexChanged(int value)
-        {
-            OnPropertyChanged(nameof(ShowFilterTab));
-            OnPropertyChanged(nameof(ShowScoreTab));
-            OnPropertyChanged(nameof(ShowDeckTab));
-        }
 
         [RelayCommand]
         private void Search()

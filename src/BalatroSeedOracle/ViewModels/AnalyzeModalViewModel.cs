@@ -18,24 +18,35 @@ namespace BalatroSeedOracle.ViewModels
         private readonly UserProfileService _userProfileService;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
         private string _seedInput = "";
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AnalyzeSeedCommand))]
         private bool _isAnalyzing = false;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsSettingsTabActive))]
+        [NotifyPropertyChangedFor(nameof(IsAnalyzerTabActive))]
+        [NotifyPropertyChangedFor(nameof(SettingsTabVisible))]
+        [NotifyPropertyChangedFor(nameof(AnalyzerTabVisible))]
+        [NotifyPropertyChangedFor(nameof(TriangleColumn))]
         private AnalyzeModalTab _activeTab = AnalyzeModalTab.Settings;
 
         [ObservableProperty]
         private bool _showPlaceholder = true;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedDeck))]
         private int _deckIndex = 0;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedStake))]
         private int _stakeIndex = 0;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasAnalysisResults))]
+        [NotifyPropertyChangedFor(nameof(AnalysisHeader))]
         private SeedAnalysisModel? _currentAnalysis;
 
         public AnalyzeModalViewModel(
@@ -61,7 +72,7 @@ namespace BalatroSeedOracle.ViewModels
         public MotelyStake SelectedStake => (MotelyStake)StakeIndex;
 
         public bool HasAnalysisResults =>
-            CurrentAnalysis is not null && !string.IsNullOrEmpty(CurrentAnalysis.Error) == false;
+            CurrentAnalysis is not null && string.IsNullOrEmpty(CurrentAnalysis.Error);
         public string AnalysisHeader =>
             CurrentAnalysis is not null
                 ? $"Seed: {CurrentAnalysis.Seed} | Deck: {CurrentAnalysis.Deck} | Stake: {CurrentAnalysis.Stake}"
@@ -73,40 +84,12 @@ namespace BalatroSeedOracle.ViewModels
 
         #region Generated Property Changed Methods
 
+        // Dependent display properties and command CanExecute notifications are wired
+        // declaratively via [NotifyPropertyChangedFor] / [NotifyCanExecuteChangedFor]
+        // on the backing fields above.
         partial void OnSeedInputChanged(string value)
         {
-            AnalyzeSeedCommand.NotifyCanExecuteChanged();
             UpdatePlaceholderVisibility();
-        }
-
-        partial void OnIsAnalyzingChanged(bool value)
-        {
-            AnalyzeSeedCommand.NotifyCanExecuteChanged();
-        }
-
-        partial void OnActiveTabChanged(AnalyzeModalTab value)
-        {
-            OnPropertyChanged(nameof(IsSettingsTabActive));
-            OnPropertyChanged(nameof(IsAnalyzerTabActive));
-            OnPropertyChanged(nameof(SettingsTabVisible));
-            OnPropertyChanged(nameof(AnalyzerTabVisible));
-            OnPropertyChanged(nameof(TriangleColumn));
-        }
-
-        partial void OnDeckIndexChanged(int value)
-        {
-            OnPropertyChanged(nameof(SelectedDeck));
-        }
-
-        partial void OnStakeIndexChanged(int value)
-        {
-            OnPropertyChanged(nameof(SelectedStake));
-        }
-
-        partial void OnCurrentAnalysisChanged(SeedAnalysisModel? value)
-        {
-            OnPropertyChanged(nameof(HasAnalysisResults));
-            OnPropertyChanged(nameof(AnalysisHeader));
         }
 
         #endregion

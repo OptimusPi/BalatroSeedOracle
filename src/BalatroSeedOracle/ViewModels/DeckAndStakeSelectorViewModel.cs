@@ -19,9 +19,15 @@ namespace BalatroSeedOracle.ViewModels
         private readonly SpriteService _spriteService;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckName))]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckDisplayName))]
+        [NotifyPropertyChangedFor(nameof(SelectedDeckDescription))]
         private int _deckIndex;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedStakeName))]
+        [NotifyPropertyChangedFor(nameof(SelectedStakeDisplayName))]
+        [NotifyPropertyChangedFor(nameof(SelectedStakeDescription))]
         private int _stakeIndex;
 
         [ObservableProperty]
@@ -140,22 +146,18 @@ namespace BalatroSeedOracle.ViewModels
 
         partial void OnDeckIndexChanged(int value)
         {
-            // keep enum in sync
+            // keep enum in sync; dependent display properties are raised via
+            // [NotifyPropertyChangedFor] on _deckIndex.
             SelectedDeck = GetDeckEnum(value);
-            OnPropertyChanged(nameof(SelectedDeckName));
-            OnPropertyChanged(nameof(SelectedDeckDisplayName));
-            OnPropertyChanged(nameof(SelectedDeckDescription));
             UpdateDeckImage();
             RaiseSelectionChanged();
         }
 
         partial void OnStakeIndexChanged(int value)
         {
-            // keep enum in sync
+            // keep enum in sync; dependent display properties are raised via
+            // [NotifyPropertyChangedFor] on _stakeIndex.
             SelectedStake = GetStakeEnum(value);
-            OnPropertyChanged(nameof(SelectedStakeName));
-            OnPropertyChanged(nameof(SelectedStakeDisplayName));
-            OnPropertyChanged(nameof(SelectedStakeDescription));
             UpdateStakeImage();
             RaiseSelectionChanged();
         }
