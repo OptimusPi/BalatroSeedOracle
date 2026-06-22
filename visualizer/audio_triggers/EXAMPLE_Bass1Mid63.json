@@ -1,8 +1,0 @@
-{
-  "name": "Bass1Mid63",
-  "triggerType": "Audio",
-  "trackName": "Bass1",
-  "trackId": "bass1",
-  "frequencyBand": "Mid",
-  "thresholdValue": 0.63
-}
