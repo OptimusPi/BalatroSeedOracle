@@ -585,16 +585,8 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Name = FilterName;
                 config.Description = FilterDescription;
 
-                // Store example seed if we have one
-                // NOTE: ExampleSeed property not yet available in JamlRootDocument.
-                // This would require adding the property to the Motely core filter configuration.
                 if (!string.IsNullOrEmpty(ExampleSeedForPreview))
-                {
-                    DebugLogger.Log(
-                        "ValidateFilterTab",
-                        $"Example seed provided but not yet stored in config: {ExampleSeedForPreview}"
-                    );
-                }
+                    config.ExampleSeed = ExampleSeedForPreview;
 
                 // Generate proper filename in JsonFilters folder
                 var filePath = _filterService.GenerateFilterFileName(FilterName);

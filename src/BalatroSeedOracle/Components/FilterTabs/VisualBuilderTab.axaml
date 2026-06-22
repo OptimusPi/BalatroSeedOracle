@@ -534,7 +534,15 @@
                                                                 PointerPressed="OnItemPointerPressed"
                                                                 PointerEntered="OnCardPointerEntered"
                                                                 VerticalAlignment="Top"
-                                                                Height="95"/>
+                                                                Height="95">
+                                                            <Border.ContextMenu>
+                                                                <ContextMenu>
+                                                                    <MenuItem Header="★ Remove from Favorites"
+                                                                              IsVisible="{Binding IsFavorite}"
+                                                                              Click="OnRemoveFromFavoritesClick"/>
+                                                                </ContextMenu>
+                                                            </Border.ContextMenu>
+                                                        </Border>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
@@ -1060,9 +1068,10 @@
                       Margin="-16,0,0,-16">
                     <Grid ColumnDefinitions="*,400" Margin="20,40">
                         <!-- Left Side: Item Preview (Raised above the dimming) -->
-                        <Border Grid.Column="0" 
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="Center" 
+                        <Border Grid.Column="0"
+                                ZIndex="10"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
                                 Margin="0,0,20,0"
                                 Background="Transparent"
                                 IsHitTestVisible="False">

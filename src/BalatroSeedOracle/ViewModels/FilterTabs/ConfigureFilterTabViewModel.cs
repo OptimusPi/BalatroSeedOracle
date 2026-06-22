@@ -289,7 +289,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             switch (SelectedMainCategory)
             {
                 case "Favorites":
-                    var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
+                    var favoriteItems = AllJokers
+                        .Concat(AllTags)
+                        .Concat(AllVouchers)
+                        .Concat(AllTarots)
+                        .Concat(AllPlanets)
+                        .Concat(AllSpectrals)
+                        .Concat(AllStandardCards)
+                        .Where(j => j.IsFavorite == true)
+                        .ToList();
                     AddGroup("Favorite Items", favoriteItems);
                     AddGroup("Wildcards", FilteredWildcards);
                     break;
@@ -915,6 +923,23 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     "ConfigureFilterTab",
                     $"Loaded {AllJokers.Count} jokers, {AllTags.Count} tags, {AllVouchers.Count} vouchers"
                 );
+
+                // Mark favorites across all collections
+                var favoriteNames = FavoritesService.Instance?.GetFavoriteItems() ?? new List<string>();
+                var allItems = AllJokers
+                    .Concat(AllTags)
+                    .Concat(AllVouchers)
+                    .Concat(AllTarots)
+                    .Concat(AllPlanets)
+                    .Concat(AllSpectrals)
+                    .Concat(AllStandardCards);
+                foreach (var favoriteName in favoriteNames)
+                {
+                    var match = allItems.FirstOrDefault(i =>
+                        i.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase));
+                    if (match is not null)
+                        match.IsFavorite = true;
+                }
             }
             catch (Exception ex)
             {

@@ -47,16 +47,32 @@
                        Classes="edition-description"
                        HorizontalAlignment="Center"/>
             
-            <ComboBox Name="EditionComboBox"
-                      ItemsSource="{Binding Editions}"
-                      SelectedItem="{Binding SelectedEdition}"
-                      HorizontalAlignment="Stretch">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:EditionOptionViewModel">
-                        <TextBlock Text="{Binding DisplayName}"/>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+            <Grid ColumnDefinitions="*,Auto">
+                <ComboBox Name="EditionComboBox"
+                          Grid.Column="0"
+                          ItemsSource="{Binding Editions}"
+                          SelectedItem="{Binding SelectedEdition}"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EditionOptionViewModel">
+                            <TextBlock Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="1"
+                        Content="✕"
+                        Command="{Binding ClearEditionCommand}"
+                        IsVisible="{Binding HasEditionSelected}"
+                        ToolTip.Tip="Clear edition"
+                        Margin="4,0,0,0"
+                        Padding="8,4"
+                        FontSize="14"
+                        Foreground="{StaticResource BrightGold}"
+                        Background="{StaticResource SemiTransparentBlack}"
+                        BorderBrush="{StaticResource AccentGreen}"
+                        BorderThickness="1"
+                        CornerRadius="4"/>
+            </Grid>
 
             <!-- Edition Description -->
             <Border Background="{StaticResource TransparentDark1}"

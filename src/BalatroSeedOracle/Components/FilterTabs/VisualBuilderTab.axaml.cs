@@ -281,6 +281,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // The invisible hitbox (sender) never rotates, preventing seizure-inducing flicker
         }
 
+        private void OnRemoveFromFavoritesClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem mi && mi.DataContext is Models.FilterItem item)
+            {
+                var favoritesService = ServiceHelper.GetService<Services.FavoritesService>();
+                favoritesService?.RemoveFavoriteItem(item.Name);
+                item.IsFavorite = false;
+                if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+                    vm.SetCategory(vm.SelectedMainCategory);
+            }
+        }
+
         private void OnItemPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             // Prevent starting a new drag if one is already in progress or animating

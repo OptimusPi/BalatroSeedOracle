@@ -151,6 +151,15 @@ public sealed class SearchManager : IDisposable
         var search = settings.Start(cts.Token);
         bsoContext.Attach(search, cts);
 
+        _ = search.WaitForCompletionAsync(cts.Token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+            {
+                bsoContext.MarkCompleted();
+                activeContext.RaiseSearchCompleted();
+            }
+        }, TaskScheduler.Default);
+
         _activeSearches[searchId] = activeContext;
         activeContext.RaiseSearchStarted();
         return activeContext;

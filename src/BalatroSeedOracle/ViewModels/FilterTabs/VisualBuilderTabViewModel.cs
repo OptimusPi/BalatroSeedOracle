@@ -644,8 +644,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             switch (SelectedMainCategory)
             {
                 case "Favorites":
-                    // Favorite Items (user's frequently used items)
-                    var favoriteItems = AllJokers.Where(j => j.IsFavorite == true).ToList();
+                    // Favorite Items — search all collections, not just jokers
+                    var allItemsForFavorites = AllJokers
+                        .Concat(AllTags)
+                        .Concat(AllVouchers)
+                        .Concat(AllTarots)
+                        .Concat(AllPlanets)
+                        .Concat(AllSpectrals)
+                        .Concat(AllStandardCards);
+                    var favoriteItems = allItemsForFavorites.Where(j => j.IsFavorite == true).ToList();
                     AddGroup("Favorite Items", favoriteItems);
                     break;
 
@@ -2105,18 +2112,24 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 var favoriteNames = (_favoritesService ?? FavoritesService.Instance)
                     ?.GetFavoriteItems() ?? new List<string>();
 
+                var allLoadedItems = AllJokers
+                    .Concat(AllTags)
+                    .Concat(AllVouchers)
+                    .Concat(AllTarots)
+                    .Concat(AllPlanets)
+                    .Concat(AllSpectrals)
+                    .Concat(AllStandardCards);
                 foreach (var favoriteName in favoriteNames)
                 {
-                    // Find the joker in AllJokers and mark it as favorite
-                    var joker = AllJokers.FirstOrDefault(j =>
-                        j.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase)
+                    var match = allLoadedItems.FirstOrDefault(i =>
+                        i.Name.Equals(favoriteName, StringComparison.OrdinalIgnoreCase)
                     );
-                    if (joker is not null)
+                    if (match is not null)
                     {
-                        joker.IsFavorite = true;
+                        match.IsFavorite = true;
                         DebugLogger.Log(
                             "VisualBuilderTab",
-                            $"Marked {favoriteName} as favorite (Category={joker.Category})"
+                            $"Marked {favoriteName} as favorite (Category={match.Category})"
                         );
                     }
                 }
@@ -2802,15 +2815,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedEdition = edition;
 
             // Apply to currently visible shelf items (for visual feedback)
-            // BUT skip the Favorites group to avoid modifying favorited items
+            // BUT skip favorited items to avoid mutating the user's saved favorites
             foreach (var group in GroupedItems)
             {
-                // Skip Favorites group - don't modify user's saved favorites!
-                if (group.GroupName == "Favorites")
-                    continue;
-
                 foreach (var item in group.Items)
                 {
+                    // Skip favorited items — they should keep their own edition
+                    if (item.IsFavorite)
+                        continue;
+
                     // Set edition (None → null, otherwise the edition name)
                     item.Edition = edition == "None" ? null : edition;
 
@@ -2933,14 +2946,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SelectedSeal = seal;
 
             // Apply to currently visible items only (GroupedItems)
-            // BUT skip Favorites group - don't modify user's saved favorites!
+            // BUT skip favorited items - don't modify user's saved favorites!
             foreach (var group in GroupedItems)
             {
-                if (group.GroupName == "Favorites")
-                    continue;
-
                 foreach (var item in group.Items)
                 {
+                    if (item.IsFavorite)
+                        continue;
+
                     // Only apply seal to StandardCards
                     if (item.Type == "StandardCard")
                     {
@@ -3035,12 +3048,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             // Apply to ALL items in the shelf (DIRECT property update - no ItemConfigs needed!)
             foreach (var group in GroupedItems)
             {
-                // Skip Favorites group - don't modify user's saved favorites!
-                if (group.GroupName == "Favorites")
-                    continue;
-
                 foreach (var item in group.Items)
                 {
+                    // Skip favorited items - don't modify user's saved favorites!
+                    if (item.IsFavorite)
+                        continue;
+
                     // CRITICAL FIX: Update item.Stickers directly to trigger image binding update
                     var stickers = new List<string>();
 

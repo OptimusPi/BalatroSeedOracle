@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -69,6 +70,7 @@ namespace BalatroSeedOracle.ViewModels
         partial void OnSelectedEditionChanged(EditionOptionViewModel? value)
         {
             UpdateDisplay();
+            OnPropertyChanged(nameof(HasEditionSelected));
             RaiseEditionChanged();
         }
 
@@ -215,6 +217,15 @@ namespace BalatroSeedOracle.ViewModels
         #endregion
 
         #region Public Methods
+
+        public bool HasEditionSelected => SelectedEdition is not null && !string.IsNullOrEmpty(SelectedEdition.Tag);
+
+        [RelayCommand]
+        private void ClearEdition()
+        {
+            if (Editions.Count > 0)
+                SelectedEdition = Editions[0];
+        }
 
         public string GetSelectedEdition()
         {
