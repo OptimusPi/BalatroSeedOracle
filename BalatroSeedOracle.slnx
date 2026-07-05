@@ -3,5 +3,4 @@
   <Project Path="src/BalatroSeedOracle.Desktop/BalatroSeedOracle.Desktop.csproj" />
   <Project Path="src/MotelyJAML/Motely/Motely.csproj" />
   <Project Path="src/MotelyJAML/Motely.Tests/Motely.Tests.csproj" />
-  <Project Path="src/MotelyJAML/Motely.TUI/Motely.TUI.csproj" />
 </Solution>

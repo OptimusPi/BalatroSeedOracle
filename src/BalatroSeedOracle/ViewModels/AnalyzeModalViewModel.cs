@@ -123,7 +123,7 @@ namespace BalatroSeedOracle.ViewModels
 
                 var analysisData = await Task.Run(() =>
                 {
-                    var config = new Motely.Analysis.MotelyLegacyTextAnalysisConfig(seed, deck, stake);
+                    var config = new Motely.Analysis.MotelyUnitTestAnalysisConfig(seed, deck, stake);
                     return Motely.Analysis.MotelyLegacyTextAnalyzer.Analyze(config);
                 });
 
