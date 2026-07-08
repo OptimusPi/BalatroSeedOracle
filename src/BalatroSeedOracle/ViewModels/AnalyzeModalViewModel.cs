@@ -124,11 +124,13 @@ namespace BalatroSeedOracle.ViewModels
                 var analysisData = await Task.Run(() =>
                 {
                     var config = new Motely.Analysis.MotelyUnitTestAnalysisConfig(seed, deck, stake);
-                    return Motely.Analysis.MotelyLegacyTextAnalyzer.Analyze(config);
+                    return Motely.Analysis.MotelyUnitTestAnalyzer.Analyze(config);
                 });
 
-                // Map Motely analysis to our models
-                CurrentAnalysis = new SeedAnalysisModel
+                // Map Motely analysis to our models (populate fully BEFORE assigning
+                // CurrentAnalysis — SeedAnalysisModel is not observable, so the UI only
+                // sees data present at assignment time)
+                var analysis = new SeedAnalysisModel
                 {
                     Seed = seed,
                     Deck = deck,
@@ -197,17 +199,16 @@ namespace BalatroSeedOracle.ViewModels
                         Antes.Add(anteModel);
                     }
 
-                    // Attach ante collection to the current analysis for shared display component
-                    if (CurrentAnalysis is not null)
-                    {
-                        CurrentAnalysis.Antes = Antes;
-                    }
+                    // Attach ante collection to the analysis for the shared display component
+                    analysis.Antes = Antes;
 
                     DebugLogger.Log(
                         "AnalyzeModalViewModel",
                         $"Analysis completed successfully: {Antes.Count} antes"
                     );
                 }
+
+                CurrentAnalysis = analysis;
 
                 UpdatePlaceholderVisibility();
             }

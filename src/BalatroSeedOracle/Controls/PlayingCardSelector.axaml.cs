@@ -25,10 +25,6 @@ namespace BalatroSeedOracle.Controls
             _viewModel.SelectionChanged += OnViewModelSelectionChanged;
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
 
         #region Events
 

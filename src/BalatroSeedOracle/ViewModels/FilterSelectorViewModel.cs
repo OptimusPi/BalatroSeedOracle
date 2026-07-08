@@ -16,7 +16,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -214,7 +214,7 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Creates a fanned preview image showing multiple cards from the filter config
         /// </summary>
-        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.Jaml.JamlRootDocument config)
+        private IImage? CreateFannedPreviewImageFromConfig(Motely.Filters.Jaml.JamlConfig config)
         {
             try
             {
@@ -228,9 +228,10 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var item in config.Must.Take(4))
                     {
-                        if (!string.IsNullOrEmpty(item.GetValueName()))
+                        var value = item.GetValueName();
+                        if (!string.IsNullOrEmpty(value))
                         {
-                            previewItems.Add((item.GetValueName(), item.GetTypeName()));
+                            previewItems.Add((value, item.GetTypeName()));
                         }
                     }
                 }
@@ -239,9 +240,10 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     foreach (var item in config.Should)
                     {
-                        if (!string.IsNullOrEmpty(item.GetValueName()))
+                        var value = item.GetValueName();
+                        if (!string.IsNullOrEmpty(value))
                         {
-                            previewItems.Add((item.GetValueName(), item.GetTypeName()));
+                            previewItems.Add((value, item.GetTypeName()));
                         }
                     }
                 }
@@ -345,16 +347,17 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Gets a fallback single image preview from the filter config
         /// </summary>
-        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.Jaml.JamlRootDocument config)
+        private IImage? GetFilterPreviewImageFromConfig(Motely.Filters.Jaml.JamlConfig config)
         {
             try
             {
                 if (config.Must is not null && config.Must.Count > 0)
                 {
                     var firstItem = config.Must[0];
-                    if (!string.IsNullOrEmpty(firstItem.GetValueName()))
+                    var value = firstItem.GetValueName();
+                    if (!string.IsNullOrEmpty(value))
                     {
-                        return GetItemImage(firstItem.GetValueName(), firstItem.GetTypeName());
+                        return GetItemImage(value, firstItem.GetTypeName());
                     }
                 }
                 return null;

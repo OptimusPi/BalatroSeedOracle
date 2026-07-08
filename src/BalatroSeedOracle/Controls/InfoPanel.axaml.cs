@@ -10,9 +10,5 @@ namespace BalatroSeedOracle.Controls
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
     }
 }

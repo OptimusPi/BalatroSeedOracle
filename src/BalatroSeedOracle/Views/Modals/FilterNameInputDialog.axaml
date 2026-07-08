@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
              x:Class="BalatroSeedOracle.Views.Modals.FilterNameInputDialog"
+             x:DataType="vm:FilterNameInputDialogViewModel"
              Width="450"
              Height="250"
              HorizontalAlignment="Center"
@@ -16,8 +18,7 @@
                     Background="{StaticResource ModalGrey}"
                     CornerRadius="14,14,0,0"
                     Padding="20,12">
-                <TextBlock x:Name="TitleTextBlock"
-                           Text="Create New Filter"
+                <TextBlock Text="{Binding Title}"
                            FontSize="18"
                            Foreground="{StaticResource White}"
                            HorizontalAlignment="Center"
@@ -34,6 +35,7 @@
                                Foreground="{StaticResource White}"
                                FontFamily="{StaticResource BalatroFont}"/>
                     <TextBox x:Name="FilterNameTextBox"
+                             Text="{Binding InputText}"
                              PlaceholderText="Enter filter name..."
                              Margin="0,10,0,0"
                              FontSize="18"
@@ -51,18 +53,16 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Spacing="12">
-                    <Button x:Name="ConfirmButton"
-                            Content="CREATE"
+                    <Button Command="{Binding ConfirmCommand}"
+                            Content="{Binding ButtonText}"
                             Classes="btn-blue"
                             MinWidth="120"
-                            Height="45"
-                            Click="OnConfirmClick"/>
-                    <Button x:Name="CancelButton"
+                            Height="45"/>
+                    <Button Command="{Binding CancelCommand}"
                             Content="CANCEL"
                             Classes="btn-red"
                             MinWidth="120"
-                            Height="45"
-                            Click="OnCancelClick"/>
+                            Height="45"/>
                 </StackPanel>
             </Border>
         </Grid>

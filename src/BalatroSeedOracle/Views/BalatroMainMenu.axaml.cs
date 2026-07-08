@@ -21,11 +21,11 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Views
 {
-    public partial class BalatroMainMenu : UserControl
+    public partial class BalatroMainMenu : UserControl, IModalHost
     {
         private Grid? _modalContainer;
         private Border? _modalOverlay;
@@ -211,7 +211,13 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        private void ShowSearchModal()
+        /// <summary>
+        /// Show search modal
+        /// MIXED: Creates FilterSelectionModal UserControl, wires up ViewModel events, handles modal close logic
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: Service resolution, ViewModel configuration, filter selection flow
+        /// </summary>
+        public void ShowSearchModal()
         {
             _previousModalContent = null;
             _previousModalTitle = null;
@@ -347,7 +353,13 @@ namespace BalatroSeedOracle.Views
             ShowModalContent(filterSelectionModal, "🔍 Select Filter");
         }
 
-        private async Task ShowSearchModalWithFilterAsync(string configPath)
+        /// <summary>
+        /// Show search modal with specific filter loaded
+        /// MIXED: Creates SearchModal UserControl, loads filter, wires up desktop icon creation
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: Filter loading, search state management, desktop icon registration
+        /// </summary>
+        internal async Task ShowSearchModalWithFilterAsync(string configPath)
         {
             try
             {
@@ -429,10 +441,15 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show filters modal (for creating/managing filters) - now uses FilterSelectionModal as gateway
+        /// MIXED: Creates FilterSelectionModal UserControl, wires up ViewModel events, handles filter actions
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: Service resolution, ViewModel configuration, filter creation/edit/copy flow
         /// </summary>
         public void ShowFiltersModal()
         {
-            // Create FilterSelectionModal with Edit/Copy/Delete actions enabled
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
             var configurationService = App.GetService<IConfigurationService>()
                 ?? throw new InvalidOperationException("IConfigurationService not registered");
             var filterService = App.GetService<IFilterService>()
@@ -452,14 +469,12 @@ namespace BalatroSeedOracle.Views
                 filterService
             );
 
-            // Handle modal close event
             filterSelectionVM.ModalCloseRequested += async (s, e) =>
             {
                 var result = filterSelectionVM.Result;
 
                 if (result.Cancelled)
                 {
-                    // Reset IsModalVisible and hide modal
                     if (ViewModel != null)
                     {
                         ViewModel.IsModalVisible = false;
@@ -468,15 +483,12 @@ namespace BalatroSeedOracle.Views
                     return;
                 }
 
-                // Handle different actions - ShowFiltersModalDirect will replace the modal content directly
                 switch (result.Action)
                 {
                     case Models.FilterAction.CreateNew:
-                        // Show filter name input dialog first
                         var filterName = await ShowFilterNameInputDialog();
                         if (!string.IsNullOrWhiteSpace(filterName))
                         {
-                            // Create new filter with the given name
                             var newFilterId = await CreateNewFilterWithName(filterName);
                             if (!string.IsNullOrEmpty(newFilterId))
                             {
@@ -485,18 +497,8 @@ namespace BalatroSeedOracle.Views
                                 );
                             }
                         }
-                        else
-                        {
-                            // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                            DebugLogger.Log(
-                                "BalatroMainMenu",
-                                "Create filter cancelled - staying in filter selection"
-                            );
-                            // Do nothing - just let the dialog close and stay in FilterSelectionModal
-                        }
                         break;
                     case Models.FilterAction.Edit:
-                        // Open designer with selected filter loaded (replaces current modal)
                         if (result.FilterId != null)
                         {
                             await Dispatcher.UIThread.InvokeAsync(() =>
@@ -505,10 +507,8 @@ namespace BalatroSeedOracle.Views
                         }
                         break;
                     case Models.FilterAction.Copy:
-                        // Show dialog to get copy name, then clone and open designer
                         if (result.FilterId != null)
                         {
-                            // Get original filter name for default (using FilterService)
                             var filterService = ServiceHelper.GetRequiredService<IFilterService>();
                             var originalName = await filterService.GetFilterNameAsync(
                                 result.FilterId
@@ -531,34 +531,19 @@ namespace BalatroSeedOracle.Views
                                     );
                                 }
                             }
-                            else
-                            {
-                                // User cancelled - stay in FilterSelectionModal (don't close entire modal)
-                                DebugLogger.Log(
-                                    "BalatroMainMenu",
-                                    "Copy filter cancelled - staying in filter selection"
-                                );
-                                // Do nothing - just let the dialog close and stay in FilterSelectionModal
-                            }
                         }
-                        break;
-                    case Models.FilterAction.Delete:
-                        // NOTE: Delete is now handled entirely in FilterSelectionModalViewModel.ConfirmDelete()
-                        // This case should never be reached since ConfirmDelete() doesn't invoke ModalCloseRequested anymore
-                        DebugLogger.Log(
-                            "BalatroMainMenu",
-                            "Delete action reached ModalCloseRequested - this should not happen. Delete is handled in ViewModel."
-                        );
                         break;
                 }
             };
 
-            // Show FilterSelectionModal as main modal content (NOT wrapped in StandardModal)
             ShowModalContent(filterSelectionModal, "🎨 Select Filter");
         }
 
         /// <summary>
         /// Show filters modal directly (internal use - called after filter selection)
+        /// MIXED: Creates FiltersModal UserControl, loads filter data, wires up close callback
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: Filter file loading, ViewModel configuration, filter reload
         /// </summary>
         public async Task ShowFiltersModalDirectAsync(string filterId)
         {
@@ -632,6 +617,9 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show Avalonia input dialog for filter name (Browser-compatible)
+        /// MIXED: Creates FilterNameInputDialog UserControl, manages modal stack for cancel/restore
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: Modal stack management, default name generation, dialog result handling
         /// </summary>
         private async Task<string?> ShowFilterNameInputDialog(string? defaultName = null)
         {
@@ -691,6 +679,8 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Create a new filter with the given name
+        /// BUSINESS: Filter file creation, JAML generation, file I/O
+        /// NOTE: This is business logic that could be moved to a service or ViewModel
         /// </summary>
         private async Task<string?> CreateNewFilterWithName(string filterName)
         {
@@ -705,7 +695,7 @@ namespace BalatroSeedOracle.Views
                 var filterPath = System.IO.Path.Combine(filtersDir, filterId + ".jaml");
 
                 // JAML is the source format — write it literally instead of building a
-                // JamlRootDocument just to serialize it back out. JamlConfigLoader reads .jaml.
+                // JamlConfig just to serialize it back out. JamlConfigLoader reads .jaml.
                 var safeName = filterName.Replace("\"", "\\\"");
                 var jaml =
                     $"name: \"{safeName}\"\n"
@@ -732,8 +722,9 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show settings modal
+        /// VIEW-ONLY: Creates SettingsModal UserControl and presents it via ShowModalContent
         /// </summary>
-        private void ShowSettingsModal()
+        public void ShowSettingsModal()
         {
             // Clear modal stack when starting fresh from main menu
             _previousModalContent = null;
@@ -751,6 +742,24 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show word lists modal from Settings (with back navigation to Settings)
+        /// VIEW-ONLY: Creates WordListsModal UserControl and presents it via ShowModalContent
+        /// </summary>
+        public void ShowWordListsModal()
+        {
+            // Clear modal stack when starting fresh
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
+            var wordListsModal = new Modals.WordListsModal();
+            var modal = new StandardModal("WORD LISTS");
+            modal.SetContent(wordListsModal);
+            modal.BackClicked += (s, e) => HideModalContent();
+            ShowModalContent(modal, "WORD LISTS");
+        }
+
+        /// <summary>
+        /// Show word lists modal from Settings (with back navigation to Settings)
+        /// VIEW-ONLY: Creates WordListsModal UserControl with back navigation stack management
         /// </summary>
         public void ShowWordListsModalFromSettings()
         {
@@ -792,8 +801,9 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show credits modal from Settings (with back navigation to Settings)
+        /// VIEW-ONLY: Creates CreditsModal UserControl with back navigation stack management
         /// </summary>
-        public void ShowCreditsModalFromSettings()
+        public void ShowCreditsModal()
         {
             // Save Settings modal for back navigation
             if (_activeModalContent != null)
@@ -833,8 +843,9 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show tools modal
+        /// VIEW-ONLY: Resolves ToolsModal from DI and presents it via ShowModalContent
         /// </summary>
-        private void ShowToolsModal()
+        public void ShowToolsModal()
         {
             var toolsModal = App.GetService<Modals.ToolsModal>();
             if (toolsModal == null)
@@ -850,45 +861,48 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show analyze modal - skips FilterSelectionModal and goes straight to analyzer
+        /// VIEW-ONLY: Delegates to OpenAnalyzer which creates AnalyzeModal UserControl
         /// </summary>
-        private void ShowAnalyzeModal()
+        public void ShowAnalyzeModal()
         {
             OpenAnalyzer(null);
         }
 
-        public void ApplyShaderParameters(Models.ShaderParameters parameters)
+        /// <summary>
+        /// Show Audio Visualizer Settings modal
+        /// VIEW-ONLY: Creates AudioVisualizerSettingsModal UserControl with ViewModel and presents it via ShowModalContent
+        /// </summary>
+        public void ShowAudioVisualizerSettingsModal()
         {
-            try
-            {
-                if (_shaderBackground != null)
-                {
-                    _shaderBackground.SetTime(parameters.TimeSpeed);
-                    _shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
-                    _shaderBackground.SetMainColor(parameters.MainColor);
-                    _shaderBackground.SetAccentColor(parameters.AccentColor);
-                    _shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
-                    _shaderBackground.SetContrast(parameters.Contrast);
-                    _shaderBackground.SetSpinAmount(parameters.SpinAmount);
-                    _shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
-                    _shaderBackground.SetZoomScale(parameters.ZoomScale);
-                    _shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
-                    _shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
-                    _shaderBackground.SetPixelSize(parameters.PixelSize);
-                    _shaderBackground.SetSpinEase(parameters.SpinEase);
-                    _shaderBackground.SetLoopCount(parameters.LoopCount);
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "BalatroMainMenu",
-                    $"Failed to apply shader parameters: {ex.Message}"
-                );
-            }
+            _previousModalContent = null;
+            _previousModalTitle = null;
+
+            var userProfileService = App.GetService<UserProfileService>()
+                ?? throw new InvalidOperationException("UserProfileService not registered");
+            var viewModel = new ViewModels.AudioVisualizerSettingsModalViewModel(userProfileService);
+            var audioVisualizerSettingsModal = new Modals.AudioVisualizerSettingsModal();
+            audioVisualizerSettingsModal.DataContext = viewModel;
+            var modal = new StandardModal("AUDIO VISUALIZER");
+            modal.SetContent(audioVisualizerSettingsModal);
+            modal.BackClicked += (s, ev) => HideModalContent();
+            ShowModalContent(modal, "AUDIO VISUALIZER");
+        }
+
+        /// <summary>
+        /// Show Filter Selection modal
+        /// VIEW-ONLY: Delegates to ShowSearchModal (FilterSelectionModal is part of Search flow)
+        /// </summary>
+        public void ShowFilterSelectionModal()
+        {
+            // FilterSelectionModal is part of the Search flow
+            ShowSearchModal();
         }
 
         /// <summary>
         /// Open analyzer with the specified filter (filter selection happens inside analyzer)
+        /// MIXED: Creates AnalyzeModal UserControl via ViewModel factory
+        /// VIEW: UserControl creation and presentation via ShowModalContent
+        /// BUSINESS: ViewModel creation via factory, analyzer initialization
         /// </summary>
         private void OpenAnalyzer(string? filterId)
         {
@@ -995,10 +1009,11 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        #region Modal Management (View-only logic)
+        #region Modal Hosting (View-only layer - manages UserControl presentation, animations, transitions)
 
         /// <summary>
         /// Updates the main title text
+        /// VIEW-ONLY: Updates TextBlock text property
         /// </summary>
         public void SetTitle(string title)
         {
@@ -1012,6 +1027,16 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
+        /// VIEW-ONLY: Delegates to ShowModalContent for presentation
+        /// </summary>
+        public void ShowModal(UserControl content, string title)
+        {
+            ShowModalContent(content, title);
+        }
+
+        /// <summary>
+        /// Show a UserControl as a modal overlay - Balatro style (NO wimpy fades, just POP!)
+        /// VIEW-ONLY: Core modal presentation logic - manages overlay, content wrapper, transitions
         /// </summary>
         public void ShowModalContent(
             UserControl content,
@@ -1096,6 +1121,7 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Smoothly transition from current modal to new modal (Balatro-style)
+        /// VIEW-ONLY: Animation-only transition logic
         /// </summary>
         private async Task TransitionToNewModalAsync(UserControl newContent, string? title)
         {
@@ -1197,6 +1223,7 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Show modal with pop-up bounce animation (Balatro-style)
+        /// VIEW-ONLY: Animation-only presentation logic
         /// </summary>
         private async Task ShowModalWithAnimationAsync(UserControl content, string? title)
         {
@@ -1282,6 +1309,16 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Hide the modal overlay
+        /// VIEW-ONLY: Delegates to HideModalContent
+        /// </summary>
+        public void HideModal()
+        {
+            HideModalContent();
+        }
+
+        /// <summary>
+        /// Hide the modal overlay (internal)
+        /// VIEW-ONLY: Core modal hiding logic - manages overlay visibility, content clearing
         /// </summary>
         public void HideModalContent()
         {
@@ -1290,6 +1327,17 @@ namespace BalatroSeedOracle.Views
 
             // Capture the content we are hiding so we only clear it if no new modal has opened since.
             var contentToClear = _modalContentWrapper.Content;
+
+            // NEVER lose your spot: if a search modal is closing (any path - Back
+            // button, minimize, etc.) while its search is still running, drop a
+            // desktop icon so the user can jump right back in.
+            var searchModal = FindSearchModalIn(contentToClear);
+            if (searchModal?.ViewModel is { } searchVm
+                && !string.IsNullOrEmpty(searchVm.CurrentSearchId)
+                && searchVm.IsSearching)
+            {
+                ShowSearchDesktopIcon(searchVm.CurrentSearchId, searchVm.CurrentFilterPath);
+            }
 
             // PERFORMANCE FIX: Defer content clearing to prevent audio crackling
             // FiltersModal has thousands of controls - clearing synchronously blocks UI thread
@@ -1319,260 +1367,78 @@ namespace BalatroSeedOracle.Views
             // Audio manager cleanup handled via IAudioManager interface
         }
 
+        /// <summary>
+        /// Digs a SearchModal out of closing modal content (it may be wrapped in a
+        /// StandardModal or be the content directly).
+        /// VIEW-ONLY: Helper for visual tree inspection
+        /// </summary>
+        private static Modals.SearchModal? FindSearchModalIn(object? content)
+        {
+            return content switch
+            {
+                Modals.SearchModal direct => direct,
+                Modals.StandardModal standard => standard.GetContent() as Modals.SearchModal,
+                _ => null,
+            };
+        }
+
         #endregion
 
 
-        #region Shader Management (Delegated to ViewModel)
+        #region Shader Management
 
-        // ApplyVisualizerTheme removed - was empty stub
-
-        public void ApplyMainColor(int colorIndex)
+        /// <summary>
+        /// Apply all shader parameters at once via ShaderParameters model
+        /// VIEW-ONLY: Delegates to shader background control
+        /// </summary>
+        public void ApplyShaderParameters(Models.ShaderParameters parameters)
         {
-            if (_background is BalatroShaderBackground shader)
+            try
             {
-                ViewModel.ApplyMainColor(shader, colorIndex);
+                if (_shaderBackground != null)
+                {
+                    _shaderBackground.SetTime(parameters.TimeSpeed);
+                    _shaderBackground.SetSpinTime(parameters.SpinTimeSpeed);
+                    _shaderBackground.SetMainColor(parameters.MainColor);
+                    _shaderBackground.SetAccentColor(parameters.AccentColor);
+                    _shaderBackground.SetBackgroundColor(parameters.BackgroundColor);
+                    _shaderBackground.SetContrast(parameters.Contrast);
+                    _shaderBackground.SetSpinAmount(parameters.SpinAmount);
+                    _shaderBackground.SetParallax(parameters.ParallaxX, parameters.ParallaxY);
+                    _shaderBackground.SetZoomScale(parameters.ZoomScale);
+                    _shaderBackground.SetSaturationAmount(parameters.SaturationAmount);
+                    _shaderBackground.SetSaturationAmount2(parameters.SaturationAmount2);
+                    _shaderBackground.SetPixelSize(parameters.PixelSize);
+                    _shaderBackground.SetSpinEase(parameters.SpinEase);
+                    _shaderBackground.SetLoopCount(parameters.LoopCount);
+                }
             }
-        }
-
-        public void ApplyMainColor(SkiaSharp.SKColor color)
-        {
-            if (_background is BalatroShaderBackground shader)
+            catch (Exception ex)
             {
-                ViewModel.ApplyMainColor(shader, color);
-            }
-        }
-
-        public void ApplyAccentColor(int colorIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyAccentColor(shader, colorIndex);
-            }
-        }
-
-        public void ApplyAccentColor(SkiaSharp.SKColor color)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyAccentColor(shader, color);
-            }
-        }
-
-        // ApplyAudioIntensity removed - was empty stub
-        // ApplyParallaxStrength removed - was empty stub
-
-        public void ApplyTimeSpeed(float speed)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyTimeSpeed(shader, speed);
-            }
-        }
-
-        public void ApplyShaderContrast(float contrast)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderContrast(shader, contrast);
-            }
-        }
-
-        public void ApplyShaderSpinAmount(float spinAmount)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderSpinAmount(shader, spinAmount);
-            }
-        }
-
-        public void ApplyShaderZoomPunch(float zoom)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderZoomPunch(shader, zoom);
-            }
-        }
-
-        public void ApplyShaderMelodySaturation(float saturation)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderMelodySaturation(shader, saturation);
-            }
-        }
-
-        public void ApplyShaderPixelSize(float pixelSize)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderPixelSize(shader, pixelSize);
-            }
-        }
-
-        public void ApplyShaderSpinEase(float spinEase)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShaderSpinEase(shader, spinEase);
-            }
-        }
-
-        // New shader parameter methods that call shader directly
-        public void ApplyShaderTime(float time)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetTime(time);
-            }
-        }
-
-        public float GetTimeSpeed()
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                return shader.GetTimeSpeed();
-            }
-            return 1f;
-        }
-
-        public float GetSpinTimeSpeed()
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                return shader.GetSpinTimeSpeed();
-            }
-            return 1f;
-        }
-
-        public void ApplyShaderSpinTime(float spinTime)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetSpinTime(spinTime);
-            }
-        }
-
-        public void ApplyShaderParallaxX(float parallaxX)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetParallaxX(parallaxX);
-            }
-        }
-
-        public void ApplyShaderParallaxY(float parallaxY)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetParallaxY(parallaxY);
-            }
-        }
-
-        public void ApplyShaderLoopCount(float loopCount)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetLoopCount(loopCount);
-            }
-        }
-
-        public void ApplyPsychedelicBlend(float blend)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicBlend(blend);
-            }
-        }
-
-        public void ApplyPsychedelicSpeed(float speed)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicSpeed(speed);
-            }
-        }
-
-        public void ApplyPsychedelicComplexity(float value)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicComplexity(value);
-            }
-        }
-
-        public void ApplyPsychedelicColorCycle(float value)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicColorCycle(value);
-            }
-        }
-
-        public void ApplyPsychedelicKaleidoscope(float value)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicKaleidoscope(value);
-            }
-        }
-
-        public void ApplyPsychedelicFluidFlow(float value)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                shader.SetPsychedelicFluidFlow(value);
+                DebugLogger.LogError(
+                    "BalatroMainMenu",
+                    $"Failed to apply shader parameters: {ex.Message}"
+                );
             }
         }
 
         /// <summary>
+        /// Get the BalatroShaderBackground control for direct shader access
+        /// Used by ViewModel for direct shader parameter manipulation
+        /// </summary>
+        public BalatroShaderBackground? GetShaderBackground()
+        {
+            return _background as BalatroShaderBackground;
+        }
+
+        /// <summary>
         /// Set the volume for a specific track in the audio manager
+        /// VIEW-ONLY: Audio routing logic
         /// </summary>
         internal void SetTrackVolume(string trackName, float volume)
         {
             DebugLogger.Log("BalatroMainMenu", $"SetTrackVolume called: {trackName} = {volume}");
         }
-
-        public void ApplyShadowFlickerSource(int sourceIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyShadowFlickerSource(shader, sourceIndex);
-            }
-        }
-
-        public void ApplySpinSource(int sourceIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplySpinSource(shader, sourceIndex);
-            }
-        }
-
-        public void ApplyTwirlSource(int sourceIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyTwirlSource(shader, sourceIndex);
-            }
-        }
-
-        public void ApplyZoomThumpSource(int sourceIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyZoomThumpSource(shader, sourceIndex);
-            }
-        }
-
-        public void ApplyColorSaturationSource(int sourceIndex)
-        {
-            if (_background is BalatroShaderBackground shader)
-            {
-                ViewModel.ApplyColorSaturationSource(shader, sourceIndex);
-            }
-        }
-
-        // ApplyBeatPulseSource removed - was empty stub
 
         #endregion
 
@@ -1580,6 +1446,7 @@ namespace BalatroSeedOracle.Views
 
         /// <summary>
         /// Shows the search modal for an existing search instance
+        /// VIEW-ONLY: Creates SearchModal UserControl and presents it via ShowModalContent
         /// </summary>
         public async Task ShowSearchModalForInstanceAsync(
             string searchId,
@@ -1596,6 +1463,7 @@ namespace BalatroSeedOracle.Views
                 var searchContent = new Modals.SearchModal(ViewModel.SearchModalViewModel);
                 // Set the MainMenu reference so CREATE NEW FILTER button works
                 searchContent.ViewModel.MainMenu = this;
+                searchContent.CloseRequested += (s, e) => HideModalContent();
                 await searchContent.ViewModel.ConnectToExistingSearch(searchId);
 
                 if (!string.IsNullOrEmpty(configPath))
@@ -1612,7 +1480,7 @@ namespace BalatroSeedOracle.Views
                     var modalSearchId = searchContent.ViewModel.CurrentSearchId;
                     if (!string.IsNullOrEmpty(modalSearchId))
                     {
-                        ShowSearchDesktopIcon(modalSearchId, cfgPath);
+                        ViewModel.ShowSearchDesktopIcon(modalSearchId, cfgPath);
                     }
                 };
 
@@ -1628,23 +1496,22 @@ namespace BalatroSeedOracle.Views
             }
         }
 
-        // Search desktop-icon widgets were removed along with the widget system.
-        // These shells remain so existing callers (ModalHelper, SearchModal) compile;
-        // searches still run and surface through SearchModal / the results grid.
+        /// <summary>
+        /// Adds a search "desktop icon" - delegated to ViewModel
+        /// VIEW-ONLY: Wrapper for ViewModel method
+        /// </summary>
         public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
         {
-            DebugLogger.Log(
-                "BalatroMainMenu",
-                $"ShowSearchDesktopIcon no-op (widgets removed) for searchId: {searchId}"
-            );
+            ViewModel.ShowSearchDesktopIcon(searchId, configPath);
         }
 
+        /// <summary>
+        /// Removes a search desktop icon - delegated to ViewModel
+        /// VIEW-ONLY: Wrapper for ViewModel method
+        /// </summary>
         public void RemoveSearchDesktopIcon(string searchId)
         {
-            DebugLogger.Log(
-                "BalatroMainMenu",
-                $"RemoveSearchDesktopIcon no-op (widgets removed) for searchId: {searchId}"
-            );
+            ViewModel.RemoveSearchDesktopIcon(searchId);
         }
 
         #endregion

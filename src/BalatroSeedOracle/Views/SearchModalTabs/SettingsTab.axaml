@@ -1,10 +1,9 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SettingsTab"
-             x:DataType="vm:SearchModalViewModel"
-             x:CompileBindings="True">
+             x:DataType="vm:SearchModalViewModel">
 
     <!-- Preferred Deck Tab - Two-Column Layout (copied from FilterSelectionModal) -->
     <Grid Margin="20" ColumnDefinitions="*,15,*">

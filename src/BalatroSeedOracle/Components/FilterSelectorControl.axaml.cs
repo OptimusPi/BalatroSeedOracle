@@ -52,10 +52,6 @@ namespace BalatroSeedOracle.Components
             }
         }
 
-        private void InitializeComponent()
-        {
-            Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
-        }
 
         private void InitializeViewModel()
         {
@@ -180,7 +176,9 @@ namespace BalatroSeedOracle.Components
             return _viewModel?.GetSelectedFilterPath();
         }
 
-        // Event handler for filter list item click
+        // view-only: OK — handlers below are thin relays from Click to the strongly-typed
+        // component events (FilterSelected/FilterConfirmed/...) that parent modals consume.
+        // Selection state itself lives in FilterListViewModel.
         private void OnFilterListItemClick(object? sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is Models.FilterListItem item)

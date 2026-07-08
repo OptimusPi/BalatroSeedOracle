@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.FilterTabs"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
@@ -8,7 +8,6 @@
              xmlns:components="using:BalatroSeedOracle.Components"
              x:Class="BalatroSeedOracle.Components.FilterTabs.VisualBuilderTab"
              x:DataType="vm:VisualBuilderTabViewModel"
-             x:CompileBindings="True"
              ClipToBounds="False">
 
     <UserControl.Resources>
@@ -539,7 +538,8 @@
                                                                 <ContextMenu>
                                                                     <MenuItem Header="★ Remove from Favorites"
                                                                               IsVisible="{Binding IsFavorite}"
-                                                                              Click="OnRemoveFromFavoritesClick"/>
+                                                                              Command="{Binding $parent[UserControl].((vm:VisualBuilderTabViewModel)DataContext).RemoveFromFavoritesCommand}"
+                                                                              CommandParameter="{Binding}"/>
                                                                 </ContextMenu>
                                                             </Border.ContextMenu>
                                                         </Border>

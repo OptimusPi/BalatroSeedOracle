@@ -3,8 +3,7 @@
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
              xmlns:controls="using:BalatroSeedOracle.Controls"
              x:Class="BalatroSeedOracle.Views.SearchModalTabs.SearchTab"
-             x:DataType="vm:SearchModalViewModel"
-             x:CompileBindings="True">
+             x:DataType="vm:SearchModalViewModel">
 
     <UserControl.Styles>
 

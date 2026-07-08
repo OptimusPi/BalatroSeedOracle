@@ -37,9 +37,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             InitializeComponent();
 
-            var backButton = this.FindControl<Button>("BackButton");
-            if (backButton is not null)
-                backButton.Click += OnBackButtonClick;
+            BackButton.Click += OnBackButtonClick;
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -63,21 +61,19 @@ namespace BalatroSeedOracle.Views.Modals
         /// <summary>Sets the modal content area.</summary>
         public void SetContent(Control content)
         {
-            var modalContent = this.FindControl<ContentPresenter>("ModalContent");
-            if (modalContent is null)
-            {
-                DebugLogger.LogError("ModalContent is null!");
-                return;
-            }
-            modalContent.Content = content;
+            ModalContent.Content = content;
+        }
+
+        /// <summary>Gets the modal content area's content (null if unset).</summary>
+        public object? GetContent()
+        {
+            return ModalContent.Content;
         }
 
         /// <summary>Sets the back button text.</summary>
         public void SetBackButtonText(string text)
         {
-            var backButton = this.FindControl<Button>("BackButton");
-            if (backButton is not null)
-                backButton.Content = text;
+            BackButton.Content = text;
         }
 
         private void OnBackButtonClick(object? sender, RoutedEventArgs e)
@@ -126,8 +122,7 @@ namespace BalatroSeedOracle.Views.Modals
         {
             try
             {
-                var modalContent = this.FindControl<ContentPresenter>("ModalContent");
-                var content = modalContent?.Content;
+                var content = ModalContent.Content;
 
                 if (content is IModalBackNavigable viewNav && viewNav.TryGoBack())
                     return true;

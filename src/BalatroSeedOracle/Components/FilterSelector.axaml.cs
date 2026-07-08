@@ -105,21 +105,10 @@ namespace BalatroSeedOracle.Components
             InitializeViewModel();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
 
         private void InitializeViewModel()
         {
-            var spriteService = ServiceHelper.GetRequiredService<SpriteService>();
-            var configurationService = ServiceHelper.GetRequiredService<IConfigurationService>();
-            var filterCacheService = ServiceHelper.GetRequiredService<IFilterCacheService>();
-            var viewModel = new FilterSelectorViewModel(
-                spriteService,
-                configurationService,
-                filterCacheService
-            );
+            var viewModel = ServiceHelper.GetRequiredService<FilterSelectorViewModel>();
 
             // Wire up ViewModel events to control events
             viewModel.FilterSelected += (s, e) => FilterSelected?.Invoke(this, e);

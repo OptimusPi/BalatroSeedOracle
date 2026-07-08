@@ -47,6 +47,7 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
+        // view-only: OK — window-state toggle is view-layer code
         private void MaximizeBtn_Click(object? sender, RoutedEventArgs e)
         {
             if (_parentWindow == null)

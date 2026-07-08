@@ -1,14 +1,15 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
+using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
+using Motely.Enums;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -16,6 +17,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
     {
         private readonly FiltersModalViewModel? _parentViewModel;
         private readonly FilterSerializationService? _serializationService;
+        private readonly ClauseConversionService _clauseConversion = new();
 
         public event EventHandler<string>? CopyToClipboardRequested;
 
@@ -85,41 +87,40 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 if (visualTab is null)
                     return;
 
-                var config = new JamlRootDocument
+                var config = new JamlConfig
                 {
+                    Id = Guid.NewGuid().ToString("N"),
                     Name = "Generated Filter",
                     Description = "Auto-generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow.ToString("o"),
-                    Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
-                    Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
-                    Must =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
-                    Should =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
-                    MustNot =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
+                    Deck = ParseDeckName(GetDeckName(_parentViewModel.SelectedDeckIndex)),
+                    Stake = ParseStakeName(GetStakeName(_parentViewModel.SelectedStakeIndex)),
+                    Must = new System.Collections.Generic.List<IJamlClause>(),
+                    Should = new System.Collections.Generic.List<IJamlClause>(),
+                    MustNot = new System.Collections.Generic.List<IJamlClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
+                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    if (clause is not null)
+                        config.Must.Add(clause);
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
+                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    if (clause is not null)
+                        config.Should.Add(clause);
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
                 // No separate MustNot collection needed
 
                 // Update JSON content silently using FilterSerializationService for proper formatting
-                JsonContent =
-                    _serializationService?.SerializeConfig(config)
-                    ?? JsonSerializer.Serialize(config, Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument);
+                JsonContent = _serializationService?.SerializeConfig(config) ?? JamlConfigLoader.ToYaml(config);
 
                 // Silent status update (no user-visible message)
                 var totalItems = config.Must.Count + config.Should.Count;
@@ -157,38 +158,39 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                var config = new JamlRootDocument
+                var config = new JamlConfig
                 {
+                    Id = Guid.NewGuid().ToString("N"),
                     Name = "Generated Filter",
                     Description = "Generated from visual builder",
                     Author = "pifreak",
-                    DateCreated = DateTime.UtcNow.ToString("o"),
-                    Deck = GetDeckName(_parentViewModel.SelectedDeckIndex),
-                    Stake = GetStakeName(_parentViewModel.SelectedStakeIndex),
-                    Must =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
-                    Should =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
-                    MustNot =
-                        new System.Collections.Generic.List<JamlClauseUnion>(),
+                    Deck = ParseDeckName(GetDeckName(_parentViewModel.SelectedDeckIndex)),
+                    Stake = ParseStakeName(GetStakeName(_parentViewModel.SelectedStakeIndex)),
+                    Must = new System.Collections.Generic.List<IJamlClause>(),
+                    Should = new System.Collections.Generic.List<IJamlClause>(),
+                    MustNot = new System.Collections.Generic.List<IJamlClause>(),
                 };
 
                 // Generate Must clauses from visual builder
                 foreach (var item in visualTab.SelectedMust)
                 {
-                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Must.Add(c); }
+                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    if (clause is not null)
+                        config.Must.Add(clause);
                 }
 
                 // Generate Should clauses from visual builder
                 foreach (var item in visualTab.SelectedShould)
                 {
-                    { var c = new JamlClauseUnion(); c.SetDiscriminator(item.Type, item.Name); config.Should.Add(c); }
+                    var clause = _clauseConversion.ConvertFilterItemToClause(item, new ItemConfig());
+                    if (clause is not null)
+                        config.Should.Add(clause);
                 }
 
                 // MUST-NOT is now handled via IsInvertedFilter flag on items in MUST array
                 // No separate MustNot collection needed
 
-                JsonContent = JsonSerializer.Serialize(config, Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument);
+                JsonContent = JamlConfigLoader.ToYaml(config);
 
                 ValidationStatus =
                     $"✓ Generated from visual ({config.Must.Count + config.Should.Count} items)";
@@ -235,11 +237,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                     return;
                 }
 
-                // Parse the JSON
-                var config = JsonSerializer.Deserialize(
-                    JsonContent,
-                    Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
+                // Parse the YAML content
+                if (!JamlConfigLoader.TryLoad(JsonContent, out var config, out var loadError))
+                {
+                    ValidationStatus = $"Failed to parse YAML: {loadError}";
+                    ValidationStatusColor = Brushes.Red;
+                    return;
+                }
 
                 if (config is null)
                 {
@@ -312,12 +316,12 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             if (ValidateJsonSyntax())
             {
-                ValidationStatus = "✓ Valid JSON";
+                ValidationStatus = "✓ Valid YAML";
                 ValidationStatusColor = Brushes.Green;
             }
             else
             {
-                ValidationStatus = "✗ Invalid JSON syntax";
+                ValidationStatus = "✗ Invalid YAML syntax";
                 ValidationStatusColor = Brushes.Red;
             }
         }
@@ -327,17 +331,15 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             try
             {
-                if (ValidateJsonSyntax())
+                if (JamlConfigLoader.TryLoad(JsonContent, out var config, out _) && config is not null)
                 {
-                    // Use custom compact formatter that keeps arrays horizontal
-                    JsonContent = CompactJsonFormatter.Format(JsonContent, maxArrayWidth: 120);
-
-                    ValidationStatus = "✓ JSON formatted";
+                    JsonContent = JamlConfigLoader.ToYaml(config);
+                    ValidationStatus = "✓ YAML formatted";
                     ValidationStatusColor = Brushes.Green;
                 }
                 else
                 {
-                    ValidationStatus = "Cannot format invalid JSON";
+                    ValidationStatus = "Cannot format invalid YAML";
                     ValidationStatusColor = Brushes.Red;
                 }
             }
@@ -371,36 +373,25 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private bool ValidateJsonSyntax()
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(JsonContent))
-                    return false;
-
-                JsonDocument.Parse(JsonContent);
-                return true;
-            }
-            catch
-            {
+            if (string.IsNullOrWhiteSpace(JsonContent))
                 return false;
-            }
+            return JamlConfigLoader.TryLoad(JsonContent, out _, out _);
         }
 
         private string GetDefaultJsonContent()
         {
-            // Default JSON template - compact formatting
-            return @"{
-  ""name"": ""New Filter"",
-  ""description"": ""Created with visual filter builder"",
-  ""author"": ""pifreak"",
-  ""dateCreated"": """
-                + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ")
-                + @""",
-  ""deck"": ""Red"",
-  ""stake"": ""White"",
-  ""must"": [],
-  ""should"": [],
-  ""mustNot"": []
-}";
+            return JamlConfigLoader.ToYaml(new JamlConfig
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = "New Filter",
+                Description = "Created with visual filter builder",
+                Author = "pifreak",
+                Deck = MotelyDeck.Red,
+                Stake = MotelyStake.White,
+                Must = [],
+                Should = [],
+                MustNot = [],
+            });
         }
 
         private Models.FilterItem? FindOrCreateFilterItem(
@@ -536,17 +527,31 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         {
             var stake = index switch
             {
-                0 => Motely.Enums.MotelyStake.White,
-                1 => Motely.Enums.MotelyStake.Red,
-                2 => Motely.Enums.MotelyStake.Green,
-                3 => Motely.Enums.MotelyStake.Black,
-                4 => Motely.Enums.MotelyStake.Blue,
-                5 => Motely.Enums.MotelyStake.Purple,
-                6 => Motely.Enums.MotelyStake.Orange,
-                7 => Motely.Enums.MotelyStake.Gold,
-                _ => Motely.Enums.MotelyStake.White,
+                0 => MotelyStake.White,
+                1 => MotelyStake.Red,
+                2 => MotelyStake.Green,
+                3 => MotelyStake.Black,
+                4 => MotelyStake.Blue,
+                5 => MotelyStake.Purple,
+                6 => MotelyStake.Orange,
+                7 => MotelyStake.Gold,
+                _ => MotelyStake.White,
             };
             return stake.ToString().ToLower();
+        }
+
+        private static MotelyDeck ParseDeckName(string name)
+        {
+            if (Enum.TryParse<MotelyDeck>(name, true, out var deck))
+                return deck;
+            return MotelyDeck.Red;
+        }
+
+        private static MotelyStake ParseStakeName(string name)
+        {
+            if (Enum.TryParse<MotelyStake>(name, true, out var stake))
+                return stake;
+            return MotelyStake.White;
         }
 
         #endregion

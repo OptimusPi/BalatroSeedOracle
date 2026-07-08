@@ -19,7 +19,7 @@ using BalatroSeedOracle.Views.Modals;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -57,12 +57,18 @@ namespace BalatroSeedOracle.ViewModels
         // Callback for EDIT FILTER button (set by View) - takes filter path
         private Action<string?>? _editFilterRequestedAction;
 
+        // Tab content properties (removed direct UserControl instantiation - view handles this via XAML)
+        // These are now just markers; actual content is managed in XAML DataTemplates
+        public object? SettingsTabContent => "Settings";
+        public object? SearchTabContent => "Search";
+        public object? ResultsTabContent => "Results";
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(StartSearchCommand))]
         private bool _isSearching = false;
 
         [ObservableProperty]
-        private Motely.Filters.Jaml.JamlRootDocument? _loadedConfig;
+        private Motely.Filters.Jaml.JamlConfig? _loadedConfig;
 
         [ObservableProperty]
         private int _selectedTabIndex = 0;
@@ -683,6 +689,11 @@ namespace BalatroSeedOracle.ViewModels
 
                 // CRITICAL: Get the ACTUAL search ID from the SearchInstance, not a random GUID!
                 _currentSearchId = _searchContext.SearchId;
+
+                // _searchContext/_currentSearchId are plain fields - notify the
+                // minimize-to-desktop button that it can enable now.
+                MinimizeToDesktopCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(CanMinimizeToDesktopVisible));
 
                 // Subscribe to SearchInstance events directly
                 _searchContext.SearchCompleted += OnSearchCompleted;
@@ -1774,12 +1785,12 @@ namespace BalatroSeedOracle.ViewModels
                 var content =
                     await _platformServices.ReadTextFromPathAsync(configPath) ?? string.Empty;
 
-                Motely.Filters.Jaml.JamlRootDocument? config = null;
+                Motely.Filters.Jaml.JamlConfig? config = null;
                 var extension = Path.GetExtension(configPath).ToLowerInvariant();
                 if (extension == ".jaml")
                 {
                     if (
-                        Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
                             content,
                             out var jamlConfig,
                             out var jamlError
@@ -1797,11 +1808,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    config =
-                        System.Text.Json.JsonSerializer.Deserialize(
-                            content,
-                            Motely.Filters.MotelyJsonSerializerContext.Default.JamlRootDocument
-                        );
+                    if (JamlConfigLoader.TryLoad(content, out var loadedConfig, out var loadError))
+                        config = loadedConfig;
+                    else
+                        BsoLogger.LogError("SearchModalViewModel", $"Filter load error: {loadError ?? "Unknown"}");
                 }
 
                 if (config is not null)
@@ -1814,21 +1824,23 @@ namespace BalatroSeedOracle.ViewModels
                     );
 
                     // Update deck and stake from the loaded config
-                    if (!string.IsNullOrEmpty(config.Deck))
+                    var deckString = config.Deck.ToString();
+                    if (!string.IsNullOrEmpty(deckString))
                     {
-                        DeckSelection = config.Deck;
+                        DeckSelection = deckString;
                         SelectedDeckIndex = Array.FindIndex(
                             DeckDisplayValues,
-                            d => string.Equals(d, config.Deck, StringComparison.OrdinalIgnoreCase)
+                            d => string.Equals(d, deckString, StringComparison.OrdinalIgnoreCase)
                         );
                     }
 
-                    if (!string.IsNullOrEmpty(config.Stake))
+                    var stakeString = config.Stake.ToString();
+                    if (!string.IsNullOrEmpty(stakeString))
                     {
-                        StakeSelection = config.Stake;
+                        StakeSelection = stakeString;
                         SelectedStakeIndex = Array.FindIndex(
                             StakeDisplayValues,
-                            s => s == config.Stake
+                            s => s == stakeString
                         );
                     }
 
@@ -2190,32 +2202,16 @@ namespace BalatroSeedOracle.ViewModels
         /// <summary>
         /// Initialize dynamic tabs for consistent Balatro styling
         /// </summary>
-        public object? SettingsTabContent { get; private set; }
-        public object? SearchTabContent { get; private set; }
-        public object? ResultsTabContent { get; private set; }
-
         private void InitializeSearchTabs()
         {
+            // Tab content is now managed in XAML via DataTemplates
+            // ViewModel only provides tab identifiers/names
             TabItems.Clear();
-
-            // PROPER MVVM: Use XAML UserControls
-            SettingsTabContent = new Views.SearchModalTabs.SettingsTab { DataContext = this };
-            SearchTabContent = new Views.SearchModalTabs.SearchTab { DataContext = this };
+            TabItems.Add(new TabItemViewModel("Search", "Search"));
 
             if (_platformServices.SupportsResultsGrid)
             {
-                // ResultsTab works on all platforms now
-                ResultsTabContent = new Views.SearchModalTabs.ResultsTab { DataContext = this };
-            }
-
-            // Remove the built-in "Select Filter" tab; the new `FilterSelectionModal` will be used instead
-            // Preferred Deck tab removed - users already see deck/stake info in filter selection modal
-            // TabItems.Add(new TabItemViewModel("Preferred Deck", SettingsTabContent));
-            TabItems.Add(new TabItemViewModel("Search", SearchTabContent));
-
-            if (_platformServices.SupportsResultsGrid)
-            {
-                TabItems.Add(new TabItemViewModel("Results", ResultsTabContent));
+                TabItems.Add(new TabItemViewModel("Results", "Results"));
             }
         }
 

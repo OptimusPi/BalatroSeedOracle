@@ -3,8 +3,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
-using Motely; // For SearchOptionsDto
+using Motely;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger; // Resolve ambiguity
 
 namespace BalatroSeedOracle.Services.Engines
@@ -24,7 +25,7 @@ namespace BalatroSeedOracle.Services.Engines
         }
 
         public async Task<string> StartSearchAsync(
-            JamlRootDocument config,
+            JamlConfig config,
             SearchOptionsDto options
         )
         {

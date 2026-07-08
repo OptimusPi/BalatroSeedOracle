@@ -12,7 +12,7 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -432,7 +432,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Helper Methods
 
         // Uses shared FilterConfigurationService instead of duplicating massive logic
-        private JamlRootDocument BuildConfigFromCurrentState()
+        private JamlConfig BuildConfigFromCurrentState()
         {
             // Use the parent's robust implementation if possible
             var config = _parentViewModel.BuildConfigFromCurrentState();
@@ -442,158 +442,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             config.Description = FilterDescription;
 
             return config;
-        }
-
-        /// <summary>
-        /// Converts a FilterItem (including FilterOperatorItem with nested children) to a MotleyJsonFilterClause
-        /// </summary>
-        private JamlClauseUnion? ConvertFilterItemToClause(
-            Models.FilterItem item,
-            Dictionary<string, Models.ItemConfig> itemConfigs
-        )
-        {
-            if (item is Models.FilterOperatorItem operatorItem)
-            {
-                var operatorClause = new JamlClauseUnion
-                {
-                    Clauses = new List<JamlClauseUnion>(),
-                };
-                var op = operatorItem.OperatorType.ToLowerInvariant();
-                if (op == "or") operatorClause.Or = operatorClause.Clauses;
-                else operatorClause.And = operatorClause.Clauses;
-
-                DebugLogger.Log(
-                    "SaveFilterTab",
-                    $"Converting FilterOperatorItem: {operatorItem.OperatorType} with {operatorItem.Children.Count} children"
-                );
-
-                foreach (var child in operatorItem.Children)
-                {
-                    var childClause = ConvertFilterItemToClause(child, itemConfigs);
-                    if (childClause is not null)
-                    {
-                        operatorClause.Clauses.Add(childClause);
-                    }
-                    else
-                    {
-                        DebugLogger.LogError(
-                            "SaveFilterTab",
-                            $"Failed to convert child: {child.ItemKey} (Type={child.Type}, Name={child.Name})"
-                        );
-                    }
-                }
-
-                DebugLogger.Log(
-                    "SaveFilterTab",
-                    $"Created {operatorItem.OperatorType} clause with {operatorClause.Clauses.Count} children"
-                );
-
-                return operatorClause;
-            }
-
-            if (itemConfigs.TryGetValue(item.ItemKey, out var itemConfig))
-            {
-                var clause = new JamlClauseUnion
-                {
-                    Antes = itemConfig.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                    Min = itemConfig.Min,
-                };
-
-                var discriminator = NormalizeItemTypeToDiscriminator(itemConfig.ItemType);
-                if (discriminator is null)
-                {
-                    DebugLogger.Log(
-                        "SaveFilterTab",
-                        $"Unknown item type: {itemConfig.ItemType}"
-                    );
-                    return null;
-                }
-                clause.SetDiscriminator(discriminator, itemConfig.ItemName);
-
-                if (discriminator == "joker"
-                    && !string.IsNullOrEmpty(itemConfig.Edition)
-                    && itemConfig.Edition != "none")
-                {
-                    clause.SetEditionString(itemConfig.Edition);
-                }
-
-                if (itemConfig.Stickers is not null && itemConfig.Stickers.Count > 0)
-                {
-                    clause.SetStickerStrings(itemConfig.Stickers.ToArray());
-                }
-                if (!string.IsNullOrEmpty(itemConfig.Seal) && itemConfig.Seal != "none")
-                {
-                    clause.SetSealString(itemConfig.Seal);
-                }
-
-                return clause;
-            }
-
-            DebugLogger.Log(
-                "SaveFilterTab",
-                $"ItemKey '{item.ItemKey}' not in ItemConfigs - creating clause from FilterItem properties"
-            );
-
-            var fallbackClause = new JamlClauseUnion
-            {
-                Antes = item.Antes ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-            };
-
-            var fallbackDiscriminator = NormalizeItemTypeToDiscriminator(item.Type);
-            if (fallbackDiscriminator is null)
-            {
-                DebugLogger.LogError(
-                    "SaveFilterTab",
-                    $"Cannot convert FilterItem with unknown type: {item.Type}"
-                );
-                return null;
-            }
-            fallbackClause.SetDiscriminator(fallbackDiscriminator, item.Name);
-            if (fallbackDiscriminator == "joker"
-                && !string.IsNullOrEmpty(item.Edition) && item.Edition != "none")
-            {
-                fallbackClause.SetEditionString(item.Edition);
-            }
-
-            if (item.Stickers is not null && item.Stickers.Count > 0)
-            {
-                fallbackClause.SetStickerStrings(item.Stickers.ToArray());
-            }
-            if (!string.IsNullOrEmpty(item.Seal) && item.Seal != "none")
-            {
-                fallbackClause.SetSealString(item.Seal);
-            }
-
-            DebugLogger.Log(
-                "SaveFilterTab",
-                $"Created fallback clause: Type={fallbackClause.GetTypeName()}, Value={fallbackClause.GetValueName()}"
-            );
-
-            return fallbackClause;
-        }
-
-        private static string? NormalizeItemTypeToDiscriminator(string itemType)
-        {
-            return itemType?.ToLower() switch
-            {
-                "joker" => "joker",
-                "souljoker" => "legendaryJoker",
-                "legendaryjoker" => "legendaryJoker",
-                "tarot" => "tarotCard",
-                "tarotcard" => "tarotCard",
-                "voucher" => "voucher",
-                "planet" => "planetCard",
-                "planetcard" => "planetCard",
-                "spectral" => "spectralCard",
-                "spectralcard" => "spectralCard",
-                "playingcard" => "standardCard",
-                "standardcard" => "standardCard",
-                "tag" => "tag",
-                "smallblindtag" => "smallBlindTag",
-                "bigblindtag" => "bigBlindTag",
-                "boss" => "boss",
-                _ => null,
-            };
         }
 
         // Logic moved to shared FilterConfigurationService

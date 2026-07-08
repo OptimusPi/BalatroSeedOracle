@@ -100,6 +100,7 @@ public partial class PanelSpinner : UserControl
         NextButton.IsVisible = ShowArrows;
     }
 
+    // view-only: OK — control-internal item cycling on this reusable control's own properties
     private void OnPrevClick(object? sender, RoutedEventArgs e)
     {
         if (_items.Count == 0)

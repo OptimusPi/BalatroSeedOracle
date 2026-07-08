@@ -20,6 +20,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Motely;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
@@ -40,6 +41,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly SearchManager? _searchManager;
         private readonly FilterSerializationService? _serializationService;
         private readonly Func<ValidateFilterTabViewModel>? _validateTabFactory;
+        private readonly ClauseConversionService _clauseConversion = new();
 
         // ===== CORE STATE (using [ObservableProperty] for automatic INotifyPropertyChanged) =====
         [ObservableProperty]
@@ -60,10 +62,9 @@ namespace BalatroSeedOracle.ViewModels
         private string? _currentFilterPath;
 
         [ObservableProperty]
-        private JamlRootDocument? _loadedConfig;
+        private JamlConfig? _loadedConfig;
 
-        // Track original metadata to preserve on save (prevent overwriting author/date)
-        private string? _originalDateCreated;
+        // Track original metadata to preserve on save (prevent overwriting author)
         private string? _originalAuthor;
 
         [ObservableProperty]
@@ -440,32 +441,19 @@ namespace BalatroSeedOracle.ViewModels
         /// Loads a specific filter config for editing (called from other modals)
         /// </summary>
         /// <param name="config">The filter config to load</param>
-        public async Task LoadFilterForEditing(JamlRootDocument config)
+        public async Task LoadFilterForEditing(JamlConfig config)
         {
             try
             {
                 LoadedConfig = config;
                 FilterName = config.Name ?? "Unnamed Filter";
                 FilterDescription = config.Description ?? "";
-                // Convert string deck/stake to enum values
-                if (
-                    !string.IsNullOrEmpty(config.Deck)
-                    && Enum.TryParse<Motely.Enums.MotelyDeck>(config.Deck, true, out var deck)
-                )
-                {
-                    SelectedDeck = deck;
-                }
-                if (
-                    !string.IsNullOrEmpty(config.Stake)
-                    && Enum.TryParse<Motely.Enums.MotelyStake>(config.Stake, true, out var stake)
-                )
-                {
-                    SelectedStake = stake;
-                }
+                // Deck and stake are now enum values
+                SelectedDeck = config.Deck;
+                SelectedStake = config.Stake;
 
                 // Store original metadata
                 _originalAuthor = config.Author;
-                _originalDateCreated = config.DateCreated;
 
                 // Note: Criteria hash calculation and clause loading will be implemented when needed
 
@@ -580,7 +568,7 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private void PopulateFilterTabs(Motely.Filters.Jaml.JamlRootDocument config)
+        private void PopulateFilterTabs(Motely.Filters.Jaml.JamlConfig config)
         {
             MustHaveItems.Items.Clear();
             ShouldHaveItems.Items.Clear();
@@ -593,7 +581,7 @@ namespace BalatroSeedOracle.ViewModels
                     MustHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.GetValueName(),
+                            Name = item.GetValueName() ?? "",
                             Status = FilterItemStatus.MustHave,
                         }
                     );
@@ -607,7 +595,7 @@ namespace BalatroSeedOracle.ViewModels
                     ShouldHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.GetValueName(),
+                            Name = item.GetValueName() ?? "",
                             Status = FilterItemStatus.ShouldHave,
                         }
                     );
@@ -621,7 +609,7 @@ namespace BalatroSeedOracle.ViewModels
                     MustNotHaveItems.Items.Add(
                         new FilterItem
                         {
-                            Name = item.GetValueName(),
+                            Name = item.GetValueName() ?? "",
                             Status = FilterItemStatus.MustNotHave,
                         }
                     );
@@ -649,7 +637,7 @@ namespace BalatroSeedOracle.ViewModels
                 );
 
                 var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlRootDocument>(
+                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlConfig>(
                         CurrentFilterPath
                     );
                 if (config is not null)
@@ -857,7 +845,7 @@ namespace BalatroSeedOracle.ViewModels
                     )
                     .Build();
 
-                var config = deserializer.Deserialize<JamlRootDocument>(jamlVm.JamlContent);
+                var config = deserializer.Deserialize<JamlConfig>(jamlVm.JamlContent);
 
                 if (config is null)
                 {
@@ -919,25 +907,24 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         /// <summary>
-        /// Builds JamlRootDocument from current ViewModel state
+        /// Builds JamlConfig from current ViewModel state
         /// Called by code-behind and ViewModel methods
         /// </summary>
-        public Motely.Filters.Jaml.JamlRootDocument BuildConfigFromCurrentState()
+        public Motely.Filters.Jaml.JamlConfig BuildConfigFromCurrentState()
         {
             var author = _userProfileService?.GetAuthorName() ?? "Unknown";
 
-            var config = new Motely.Filters.Jaml.JamlRootDocument
+            var config = new Motely.Filters.Jaml.JamlConfig
             {
+                Id = Guid.NewGuid().ToString("N"),
                 Name = string.IsNullOrWhiteSpace(FilterName) ? "Untitled Filter" : FilterName,
                 Description = FilterDescription,
-                // Preserve original DateCreated and Author when re-saving an existing filter
-                DateCreated = _originalDateCreated ?? DateTime.UtcNow.ToString("o"),
                 Author = _originalAuthor ?? author,
-                Deck = SelectedDeck.ToString(),
-                Stake = SelectedStake.ToString().ToLower(),
-                Must = new List<JamlClauseUnion>(),
-                Should = new List<JamlClauseUnion>(),
-                MustNot = new List<JamlClauseUnion>(),
+                Deck = SelectedDeck,
+                Stake = SelectedStake,
+                Must = new List<IJamlClause>(),
+                Should = new List<IJamlClause>(),
+                MustNot = new List<IJamlClause>(),
             };
 
             var visualBuilder = VisualBuilderTab as FilterTabs.VisualBuilderTabViewModel;
@@ -972,7 +959,7 @@ namespace BalatroSeedOracle.ViewModels
         // so they're skipped here and surfaced via AppendBannedItemsAsMustNot.
         private void AppendVisualClauses(
             IEnumerable<Models.FilterItem> source,
-            List<JamlClauseUnion> target
+            List<IJamlClause> target
         )
         {
             foreach (var filterItem in source)
@@ -993,9 +980,10 @@ namespace BalatroSeedOracle.ViewModels
                 }
 
                 target.Add(clause);
+                var childClauses = clause.GetClauses();
                 BsoLogger.Log(
                     "FiltersModalViewModel",
-                    $"Added clause: Type={clause.GetTypeName()}, HasClauses={clause.Clauses is not null}, ClausesCount={clause.Clauses?.Count ?? 0}"
+                    $"Added clause: Type={clause.GetTypeName()}, HasClauses={childClauses is not null}, ClausesCount={childClauses?.Length ?? 0}"
                 );
             }
         }
@@ -1004,7 +992,7 @@ namespace BalatroSeedOracle.ViewModels
         // unwrap their children into MustNot to match the JSON config schema.
         private void AppendBannedItemsAsMustNot(
             IEnumerable<Models.FilterItem> source,
-            List<JamlClauseUnion> mustNot
+            List<IJamlClause> mustNot
         )
         {
             foreach (var item in source)
@@ -1023,7 +1011,7 @@ namespace BalatroSeedOracle.ViewModels
 
         private void AppendKeyedClauses(
             IEnumerable<string> itemKeys,
-            List<JamlClauseUnion> target
+            List<IJamlClause> target
         )
         {
             foreach (var itemKey in itemKeys)
@@ -1037,189 +1025,47 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        private JamlClauseUnion? ConvertItemConfigToClause(
-            ItemConfig itemConfig
-        )
+        private IJamlClause? ConvertItemConfigToClause(ItemConfig itemConfig)
         {
-            if (itemConfig.ItemType == "Operator" && !string.IsNullOrEmpty(itemConfig.OperatorType))
-            {
-                var operatorClause = new JamlClauseUnion
-                {
-                    Score = itemConfig.Score,
-                    Label = itemConfig.Label,
-                    Clauses = new List<JamlClauseUnion>(),
-                };
-
-                var op = itemConfig.OperatorType.ToLowerInvariant();
-                if (op == "or") operatorClause.Or = operatorClause.Clauses;
-                else operatorClause.And = operatorClause.Clauses;
-
-                if (itemConfig.Antes?.Any() == true)
-                {
-                    operatorClause.Antes = itemConfig.Antes.ToArray();
-                }
-
-                if (!string.IsNullOrEmpty(itemConfig.Mode))
-                {
-                    operatorClause.Mode = itemConfig.Mode;
-                }
-
-                if (itemConfig.Children?.Any() == true)
-                {
-                    foreach (var child in itemConfig.Children)
-                    {
-                        var childClause = ConvertItemConfigToClause(child);
-                        if (childClause is not null)
-                        {
-                            operatorClause.Clauses.Add(childClause);
-                        }
-                    }
-                }
-
-                return operatorClause;
-            }
-
-            var clause = new JamlClauseUnion
-            {
-                Score = itemConfig.Score,
-                Label = itemConfig.Label,
-                Min = itemConfig.Min,
-            };
-
-            var discriminator = !string.IsNullOrEmpty(itemConfig.TagType)
-                ? itemConfig.TagType
-                : (itemConfig.IsSoulJoker ? "legendaryJoker" : itemConfig.ItemType);
-            clause.SetDiscriminator(discriminator, itemConfig.IsMultiValue ? null : itemConfig.ItemName);
-
-            if (itemConfig.Antes?.Any() == true)
-            {
-                clause.Antes = itemConfig.Antes.ToArray();
-            }
-
-            if (!string.IsNullOrEmpty(itemConfig.Edition) && itemConfig.Edition != "none")
-            {
-                clause.SetEditionString(itemConfig.Edition);
-            }
-
-            if (itemConfig.Stickers?.Any() == true)
-            {
-                clause.SetStickerStrings(itemConfig.Stickers.ToArray());
-            }
-
-            if (itemConfig.ItemType == "PlayingCard")
-            {
-                if (itemConfig.Seal != "None")
-                    clause.SetSealString(itemConfig.Seal);
-                if (itemConfig.Enhancement != "None")
-                    clause.SetEnhancementString(itemConfig.Enhancement);
-            }
-
-            if (
-                itemConfig.ShopSlots?.Any() == true
-                || itemConfig.PackSlots?.Any() == true
-                || itemConfig.SkipBlindTags
-                || itemConfig.IsMegaArcana
-            )
-            {
-                clause.Sources = new JamlSources
-                {
-                    ShopItems = itemConfig.ShopSlots?.ToArray(),
-                    BoosterPacks = itemConfig.PackSlots?.ToArray(),
-                    Tags = itemConfig.SkipBlindTags,
-                    RequireMega = itemConfig.IsMegaArcana,
-                };
-            }
-            else if (itemConfig.Sources is not null)
-            {
-                clause.Sources = itemConfig.Sources as JamlSources;
-            }
-
-            return clause;
+            return _clauseConversion.ConvertItemConfigToClause(itemConfig);
         }
 
-        private JamlClauseUnion? ConvertFilterItemToClause(
-            Models.FilterItem filterItem
-        )
+        private IJamlClause? ConvertFilterItemToClause(Models.FilterItem filterItem)
         {
             // Handle FilterOperatorItem (OR/AND clauses)
             if (filterItem is Models.FilterOperatorItem operatorItem)
             {
-                // Skip BannedItems operator - it's handled separately
                 if (operatorItem.OperatorType == "BannedItems")
                     return null;
 
-                BsoLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"Converting FilterOperatorItem: Type={operatorItem.OperatorType}, Children={operatorItem.Children.Count}"
-                );
-
-                var operatorClause = new JamlClauseUnion
-                {
-                    Label = operatorItem.DisplayName,
-                    Clauses = new List<JamlClauseUnion>(),
-                };
-                var op = operatorItem.OperatorType.ToLowerInvariant();
-                if (op == "or") operatorClause.Or = operatorClause.Clauses;
-                else operatorClause.And = operatorClause.Clauses;
-
+                var isOr = operatorItem.OperatorType.Equals("Or", StringComparison.OrdinalIgnoreCase);
+                var logic = isOr ? (LogicClause)new OrClause() : new AndClause();
+                var children = new List<IJamlClause>();
                 foreach (var child in operatorItem.Children)
                 {
-                    BsoLogger.Log(
-                        "FiltersModalViewModel",
-                        $"  Converting child: {child.Name} (Type={child.Type})"
-                    );
                     var childClause = ConvertFilterItemToClause(child);
                     if (childClause is not null)
-                    {
-                        operatorClause.Clauses.Add(childClause);
-                        BsoLogger.Log(
-                            "FiltersModalViewModel",
-                            $"  ✓ Added child clause: Type={childClause.GetTypeName()}, Value={childClause.GetValueName()}"
-                        );
-                    }
-                    else
-                    {
-                        BsoLogger.LogError(
-                            "FiltersModalViewModel",
-                            $"  ✗ Failed to convert child: {child.Name}"
-                        );
-                    }
+                        children.Add(childClause);
                 }
-
-                BsoLogger.LogImportant(
-                    "FiltersModalViewModel",
-                    $"✓ Created {operatorItem.OperatorType} operator with {operatorClause.Clauses.Count} clauses"
-                );
-
-                return operatorClause;
+                logic.Clauses = children.ToArray();
+                logic.Label = operatorItem.DisplayName;
+                return logic;
             }
 
-            // Regular FilterItem
             // Convert wildcard names to Motely-compatible values
             string clauseValue = filterItem.Name;
             if (filterItem.Name.StartsWith("Wildcard_", StringComparison.OrdinalIgnoreCase))
             {
-                // SoulJoker wildcards ALWAYS use "Any" regardless of rarity
                 if (filterItem.Type == "SoulJoker")
-                {
                     clauseValue = "Any";
-                }
                 else
-                {
-                    // Regular joker wildcards: Wildcard_JokerLegendary → anylegendary
-                    clauseValue = filterItem
-                        .Name.Replace("Wildcard_Joker", "any", StringComparison.OrdinalIgnoreCase)
-                        .ToLowerInvariant();
-                }
+                    clauseValue = filterItem.Name.Replace("Wildcard_Joker", "any", StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
             }
 
-            var clause = new JamlClauseUnion();
-            clause.SetDiscriminator(filterItem.Type, clauseValue);
+            var clause = JamlClauseExtensions.CreateClauseForDiscriminator(filterItem.Type, clauseValue);
 
             if (filterItem.Antes?.Any() == true)
-            {
-                clause.Antes = filterItem.Antes.ToArray();
-            }
+                clause.SetAntes(filterItem.Antes.ToArray());
 
             if (
                 !string.IsNullOrEmpty(filterItem.Edition)
@@ -1231,25 +1077,20 @@ namespace BalatroSeedOracle.ViewModels
             }
 
             if (filterItem.Stickers?.Any() == true)
-            {
                 clause.SetStickerStrings(filterItem.Stickers.ToArray());
-            }
 
             if (filterItem.Type == "PlayingCard" || filterItem.Category == "PlayingCards")
             {
                 if (!string.IsNullOrEmpty(filterItem.Seal) && filterItem.Seal != "None")
                     clause.SetSealString(filterItem.Seal);
-                if (
-                    !string.IsNullOrEmpty(filterItem.Enhancement)
-                    && filterItem.Enhancement != "None"
-                )
+                if (!string.IsNullOrEmpty(filterItem.Enhancement) && filterItem.Enhancement != "None")
                     clause.SetEnhancementString(filterItem.Enhancement);
             }
 
             return clause;
         }
 
-        public void LoadConfigIntoState(Motely.Filters.Jaml.JamlRootDocument config)
+        public void LoadConfigIntoState(Motely.Filters.Jaml.JamlConfig config)
         {
             // Clear current state
             ClearAllSelections();
@@ -1259,24 +1100,11 @@ namespace BalatroSeedOracle.ViewModels
             FilterDescription = config.Description ?? "";
 
             // Store original metadata to preserve on save
-            _originalDateCreated = config.DateCreated;
             _originalAuthor = config.Author;
 
-            // Load deck and stake from JSON strings → parse to enums
-            if (
-                !string.IsNullOrEmpty(config.Deck)
-                && Enum.TryParse<Motely.Enums.MotelyDeck>(config.Deck, true, out var deck)
-            )
-            {
-                SelectedDeck = deck;
-            }
-            if (
-                !string.IsNullOrEmpty(config.Stake)
-                && Enum.TryParse<Motely.Enums.MotelyStake>(config.Stake, true, out var stake)
-            )
-            {
-                SelectedStake = stake;
-            }
+            // Deck and stake are enum values
+            SelectedDeck = config.Deck;
+            SelectedStake = config.Stake;
 
             LoadClausesIntoSelection(config.Must, SelectedMust);
             LoadClausesIntoSelection(config.Should, SelectedShould);
@@ -1299,7 +1127,7 @@ namespace BalatroSeedOracle.ViewModels
         // Each clause is registered in ItemConfigs under a freshly generated key,
         // and the key is appended to the appropriate selection collection.
         private void LoadClausesIntoSelection(
-            IEnumerable<JamlClauseUnion>? clauses,
+            IEnumerable<IJamlClause>? clauses,
             ObservableCollection<string> selection
         )
         {
@@ -1315,37 +1143,37 @@ namespace BalatroSeedOracle.ViewModels
         }
 
         private ItemConfig ConvertClauseToItemConfig(
-            JamlClauseUnion clause,
+            IJamlClause clause,
             string itemKey
         )
         {
             var normalizedType = NormalizeItemType(clause.GetTypeName());
+            var childClauses = clause.GetClauses();
 
             if (
                 (
                     normalizedType.Equals("and", StringComparison.OrdinalIgnoreCase)
                     || normalizedType.Equals("or", StringComparison.OrdinalIgnoreCase)
                 )
-                && clause.Clauses?.Count > 0
+                && childClauses?.Length > 0
             )
             {
                 var operatorConfig = new ItemConfig
                 {
                     ItemKey = itemKey,
                     ItemType = "Operator",
-                    ItemName = $"{normalizedType.ToUpper()} ({clause.Clauses.Count} items)",
+                    ItemName = $"{normalizedType.ToUpper()} ({childClauses.Length} items)",
                     OperatorType =
                         normalizedType.Substring(0, 1).ToUpper()
                         + normalizedType.Substring(1).ToLower(),
-                    Mode = clause.Mode,
-                    Score = clause.Score ?? 1,
+                    Score = clause.Score > 0 ? clause.Score : 1,
                     Label = clause.Label,
-                    Antes = clause.Antes?.ToList(),
+                    Antes = clause.GetAntes().ToList(),
                     Children = new List<ItemConfig>(),
                 };
 
                 int childIndex = 0;
-                foreach (var childClause in clause.Clauses)
+                foreach (var childClause in childClauses)
                 {
                     var childKey = $"{itemKey}_child_{++childIndex}";
                     var childConfig = ConvertClauseToItemConfig(childClause, childKey);
@@ -1355,7 +1183,7 @@ namespace BalatroSeedOracle.ViewModels
                 return operatorConfig;
             }
 
-            string itemName = clause.GetValueName();
+            string itemName = clause.GetValueName() ?? "";
             if (
                 itemName.Equals("Any", StringComparison.OrdinalIgnoreCase)
                 && normalizedType == "SoulJoker"
@@ -1369,12 +1197,11 @@ namespace BalatroSeedOracle.ViewModels
                 ItemKey = itemKey,
                 ItemType = normalizedType,
                 ItemName = itemName,
-                Score = clause.Score ?? 1,
+                Score = clause.Score > 0 ? clause.Score : 1,
                 Label = clause.Label,
                 Min = clause.Min,
                 Edition = clause.GetEditionString() ?? "none",
-                Antes = clause.Antes?.ToList(),
-                Sources = clause.Sources,
+                Antes = clause.GetAntes().ToList(),
                 Stickers = clause.GetStickerStrings()?.ToList(),
             };
 
@@ -1397,7 +1224,6 @@ namespace BalatroSeedOracle.ViewModels
             _instanceCounter = 0;
 
             // Clear original metadata when starting a new filter
-            _originalDateCreated = null;
             _originalAuthor = null;
         }
 
@@ -1499,33 +1325,34 @@ namespace BalatroSeedOracle.ViewModels
                 {
                     BsoLogger.Log("FiltersModalViewModel", $"Editing filter from: {filterPath}");
 
-                    var json = await File.ReadAllTextAsync(filterPath);
-                    var config = System.Text.Json.JsonSerializer.Deserialize(
-                        json,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
-
-                    if (config is not null)
+                    var yaml = await File.ReadAllTextAsync(filterPath);
+                    if (!JamlConfigLoader.TryLoad(yaml, out var config, out var loadError) || config is null)
                     {
-                        CurrentFilterPath = filterPath;
-
-                        // CRITICAL: Load the config into state (populates SelectedMust/Should/MustNot)
-                        LoadConfigIntoState(config);
-
-                        // Update Visual Builder with FilterItem objects and expand zones
-                        await UpdateVisualBuilderFromItemConfigs();
-                        ExpandDropZonesWithItems();
-
-                        ApplyDeckFromConfig(config.Deck);
-                        ApplyStakeFromConfig(config.Stake);
-
-                        // Switch to Visual Builder tab
-                        SelectedTabIndex = 1;
-                        BsoLogger.Log(
+                        BsoLogger.LogError(
                             "FiltersModalViewModel",
-                            $"Filter loaded for editing: {config.Name}"
+                            $"Failed to load filter for editing: {loadError}"
                         );
+                        return;
                     }
+
+                    CurrentFilterPath = filterPath;
+
+                    // CRITICAL: Load the config into state (populates SelectedMust/Should/MustNot)
+                    LoadConfigIntoState(config);
+
+                    // Update Visual Builder with FilterItem objects and expand zones
+                    await UpdateVisualBuilderFromItemConfigs();
+                    ExpandDropZonesWithItems();
+
+                    ApplyDeckFromConfig(config.Deck.ToString());
+                    ApplyStakeFromConfig(config.Stake.ToString());
+
+                    // Switch to Visual Builder tab
+                    SelectedTabIndex = 1;
+                    BsoLogger.Log(
+                        "FiltersModalViewModel",
+                        $"Filter loaded for editing: {config.Name}"
+                    );
                 }
                 catch (Exception ex)
                 {
@@ -1556,14 +1383,12 @@ namespace BalatroSeedOracle.ViewModels
                         counter++;
                     }
 
-                    JamlRootDocument? config = null;
+                    JamlConfig? config = null;
                     try
                     {
-                        var json = await File.ReadAllTextAsync(originalPath);
-                        config = System.Text.Json.JsonSerializer.Deserialize(
-                            json,
-                            MotelyJsonSerializerContext.Default.JamlRootDocument
-                        );
+                        var yaml = await File.ReadAllTextAsync(originalPath);
+                        if (JamlConfigLoader.TryLoad(yaml, out var loadedConfig, out _))
+                            config = loadedConfig;
                     }
                     catch
                     {
@@ -1575,11 +1400,8 @@ namespace BalatroSeedOracle.ViewModels
                         config.Name = string.IsNullOrWhiteSpace(config.Name)
                             ? candidateName
                             : $"{config.Name} (copy)";
-                        var newJson = System.Text.Json.JsonSerializer.Serialize(
-                            config,
-                            MotelyJsonSerializerContext.Default.JamlRootDocument
-                        );
-                        await File.WriteAllTextAsync(newPath, newJson);
+                        var newYaml = JamlConfigLoader.ToYaml(config);
+                        await File.WriteAllTextAsync(newPath, newYaml);
                     }
                     else
                     {
@@ -1591,11 +1413,10 @@ namespace BalatroSeedOracle.ViewModels
 
                     try
                     {
-                        var newJson = await File.ReadAllTextAsync(newPath);
-                        var newConfig = System.Text.Json.JsonSerializer.Deserialize(
-                            newJson,
-                            MotelyJsonSerializerContext.Default.JamlRootDocument
-                        );
+                        var newYaml = await File.ReadAllTextAsync(newPath);
+                        var newConfig = JamlConfigLoader.TryLoad(newYaml, out var loadedConfig, out _)
+                            ? loadedConfig
+                            : null;
                         if (newConfig is not null)
                         {
                             LoadedConfig = newConfig;
@@ -1607,8 +1428,8 @@ namespace BalatroSeedOracle.ViewModels
                             ExpandDropZonesWithItems();
 
                             // Preserve deck/stake selections from the copy
-                            ApplyDeckFromConfig(newConfig.Deck);
-                            ApplyStakeFromConfig(newConfig.Stake);
+                            ApplyDeckFromConfig(newConfig.Deck.ToString());
+                            ApplyStakeFromConfig(newConfig.Stake.ToString());
 
                             SelectedTabIndex = 1;
                             BsoLogger.Log(

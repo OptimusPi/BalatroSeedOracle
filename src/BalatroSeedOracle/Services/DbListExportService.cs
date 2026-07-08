@@ -1,4 +1,5 @@
 using System;
+using BalatroSeedOracle.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -228,12 +229,12 @@ namespace BalatroSeedOracle.Services
 
         private string GenerateJsonContent(List<SearchResult> results)
         {
-            var exportData = new BalatroSeedOracle.Json.SearchResultExport
+            var exportData = new BalatroSeedOracle.Models.SearchResultExport
             {
                 ExportDate = DateTime.UtcNow,
                 TotalResults = results.Count,
                 Results = results
-                    .Select(r => new BalatroSeedOracle.Json.SearchResultExportRow
+                    .Select(r => new BalatroSeedOracle.Models.SearchResultExportRow
                     {
                         Seed = r.Seed,
                         TotalScore = r.TotalScore,

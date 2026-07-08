@@ -14,7 +14,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -585,9 +585,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
                 config.Name = FilterName;
                 config.Description = FilterDescription;
 
-                if (!string.IsNullOrEmpty(ExampleSeedForPreview))
-                    config.ExampleSeed = ExampleSeedForPreview;
-
                 // Generate proper filename in JsonFilters folder
                 var filePath = _filterService.GenerateFilterFileName(FilterName);
                 var success = await _configurationService.SaveFilterAsync(filePath, config);
@@ -1127,7 +1124,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         #region Helper Methods
 
-        private JamlRootDocument BuildConfigFromCurrentState()
+        private JamlConfig BuildConfigFromCurrentState()
         {
             // MUST run on UI thread to access ObservableCollections
             return Dispatcher.UIThread.Invoke(() =>

@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Motely; // For JamlConfigLoader (it's in Motely namespace)
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services
 {
@@ -19,7 +19,7 @@ namespace BalatroSeedOracle.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<JamlRootDocument?> FetchGameConfigAsync(string gameId)
+        public async Task<JamlConfig?> FetchGameConfigAsync(string gameId)
         {
             // ONE JAML TO RULE THEM ALL
             // e.g. https://r2.weejoker.app/games/weejoker_season1.jaml
@@ -36,7 +36,7 @@ namespace BalatroSeedOracle.Services
                 // Return raw config - the ViewModel will handle the "Pick Seed by Day" logic
                 // The JAML contains ALL seeds for the season.
                 // We need to parse JAML here. Since JamlConfigLoader might be available:
-                if (Motely.JamlConfigLoader.TryLoadFromJamlString(content, out var config, out _))
+                if (Motely.Filters.Jaml.JamlConfigLoader.TryLoad(content, out var config, out _))
                 {
                     return config;
                 }

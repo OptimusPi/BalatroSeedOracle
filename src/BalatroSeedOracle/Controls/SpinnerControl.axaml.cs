@@ -162,10 +162,6 @@ namespace BalatroSeedOracle.Controls
                     : Value < Maximum;
         }
 
-        private void InitializeComponent()
-        {
-            Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
-        }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
@@ -216,6 +212,8 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
+        // view-only: OK — increment/decrement/edit handlers operate on this reusable
+        // control's own StyledProperties (Value/Minimum/Maximum), not on a ViewModel
         private void OnDecrementClick(object? sender, RoutedEventArgs e)
         {
             if (IsCircularStakeSpinner())

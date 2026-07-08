@@ -7,15 +7,11 @@ using BalatroSeedOracle.Services;
 namespace BalatroSeedOracle.Json;
 
 /// <summary>
-/// AOT-compatible JSON serialization context for BalatroSeedOracle types.
+/// AOT-compatible JSON serialization context for BalatroSeedOracle app types.
 /// This enables Native AOT compilation by pre-generating serialization code at compile time.
-///
-/// USAGE:
-/// - For deserialization: JsonSerializer.Deserialize(json, BsoJsonSerializerContext.Default.UserProfile)
-/// - For serialization: JsonSerializer.Serialize(obj, BsoJsonSerializerContext.Default.UserProfile)
-///
-/// For JamlRootDocument, use Motely's MotelyJsonSerializerContext instead:
-/// - JsonSerializer.Deserialize(json, MotelyJsonSerializerContext.Default.JamlRootDocument)
+/// 
+/// NOTE: This is for app-level JSON serialization only. For JAML, use Motely's
+/// JamlConfigLoader directly - no app-side JAML serialization context.
 /// </summary>
 [JsonSourceGenerationOptions(
     WriteIndented = true,
@@ -86,76 +82,3 @@ namespace BalatroSeedOracle.Json;
 // EventFX config
 [JsonSerializable(typeof(EventFXConfig))]
 public partial class BsoJsonSerializerContext : JsonSerializerContext { }
-
-/// <summary>
-/// Favorites data container for the FavoritesService
-/// </summary>
-public class FavoritesData
-{
-    public List<string> FavoriteItems { get; set; } = new List<string>();
-    public List<JokerSet> CommonSets { get; set; } = new List<JokerSet>();
-}
-
-/// <summary>
-/// A named set of jokers/items with tags and zone assignments
-/// </summary>
-public class JokerSet
-{
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public List<string> Items { get; set; } = new List<string>();
-    public List<string> Tags { get; set; } = new List<string>();
-    public List<string> MustItems { get; set; } = new List<string>();
-    public List<string> ShouldItems { get; set; } = new List<string>();
-    public List<string> MustNotItems { get; set; } = new List<string>();
-
-    [JsonIgnore]
-    public bool HasZoneInfo =>
-        MustItems.Count > 0 || ShouldItems.Count > 0 || MustNotItems.Count > 0;
-}
-
-/// <summary>
-/// Credit entry for the credits modal. Deserialized via source-gen
-/// (BsoJsonSerializerContext) — credits.json uses lowercase keys, matched by the
-/// context's CamelCase naming policy + case-insensitive option.
-/// </summary>
-public class Credit
-{
-    public string? Name { get; set; }
-    public string? Role { get; set; }
-    public string? Note { get; set; }
-    public string? Link { get; set; }
-
-    [JsonIgnore]
-    public bool HasLink => !string.IsNullOrWhiteSpace(Link);
-}
-
-/// <summary>
-/// DataGrid result item for export
-/// </summary>
-public class DataGridResultItem
-{
-    public string? Seed { get; set; }
-    public long Score { get; set; }
-    public Dictionary<string, object>? Tallies { get; set; }
-}
-
-/// <summary>
-/// Named export shape for DbListExportService JSON export (replaces an anonymous type
-/// that could not be source-gen serialized under AOT).
-/// </summary>
-public class SearchResultExport
-{
-    public System.DateTime ExportDate { get; set; }
-    public int TotalResults { get; set; }
-    public List<SearchResultExportRow> Results { get; set; } = new();
-}
-
-public class SearchResultExportRow
-{
-    public string? Seed { get; set; }
-    public int TotalScore { get; set; }
-    public int[]? Scores { get; set; }
-    public string[]? Labels { get; set; }
-    public string? ScoresDisplay { get; set; }
-}

@@ -6,7 +6,8 @@
              xmlns:converters="using:BalatroSeedOracle.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="BalatroSeedOracle.Controls.PlayingCardSelector"
-             x:DataType="vm:PlayingCardSelectorViewModel">
+             x:DataType="vm:PlayingCardSelectorViewModel"
+             d:DataContext="{d:DesignInstance Type=vm:PlayingCardSelectorViewModel}">
 
   <UserControl.Resources>
     <converters:CardBackgroundConverter x:Key="CardBackgroundConverter"/>

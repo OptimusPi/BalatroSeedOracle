@@ -3,12 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services.Storage;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services
 {
@@ -30,14 +29,14 @@ namespace BalatroSeedOracle.Services
         /// Returns null if filter not found or failed to parse.
         /// </summary>
         /// <param name="filterId">Filter ID (filename without .json extension)</param>
-        JamlRootDocument? GetFilter(string filterId);
+        JamlConfig? GetFilter(string filterId);
 
         /// <summary>
         /// Gets a cached filter configuration by full file path.
         /// Returns null if filter not found or failed to parse.
         /// </summary>
         /// <param name="filePath">Full path to filter file</param>
-        JamlRootDocument? GetFilterByPath(string filePath);
+        JamlConfig? GetFilterByPath(string filePath);
 
         /// <summary>
         /// Gets all cached filter configurations.
@@ -83,7 +82,7 @@ namespace BalatroSeedOracle.Services
     {
         public string FilterId { get; set; } = "";
         public string FilePath { get; set; } = "";
-        public JamlRootDocument Config { get; set; } = null!;
+        public JamlConfig Config { get; set; } = null!;
         public DateTime LastModified { get; set; }
         public long FileSizeBytes { get; set; }
 
@@ -293,7 +292,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                JamlRootDocument? config = null;
+                JamlConfig? config = null;
 
                 var content = await _store
                     .ReadTextAsync(filePath.Replace('\\', '/'))
@@ -307,7 +306,7 @@ namespace BalatroSeedOracle.Services
                 {
                     // Load JAML content
                     if (
-                        Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
                             content,
                             out var jamlConfig,
                             out var jamlError
@@ -327,10 +326,16 @@ namespace BalatroSeedOracle.Services
                 }
                 else
                 {
-                    config = JsonSerializer.Deserialize(
-                        content,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
+                    if (JamlConfigLoader.TryLoad(content, out var loadedConfig, out var loadError))
+                        config = loadedConfig;
+                    else
+                    {
+                        DebugLogger.LogError(
+                            "FilterCacheService",
+                            $"Failed to parse filter {filterId}: {loadError}"
+                        );
+                        return null;
+                    }
                 }
 
                 if (config == null)
@@ -355,7 +360,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public JamlRootDocument? GetFilter(string filterId)
+        public JamlConfig? GetFilter(string filterId)
         {
             if (string.IsNullOrWhiteSpace(filterId))
                 return null;
@@ -376,7 +381,7 @@ namespace BalatroSeedOracle.Services
             }
         }
 
-        public JamlRootDocument? GetFilterByPath(string filePath)
+        public JamlConfig? GetFilterByPath(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
                 return null;
@@ -567,7 +572,7 @@ namespace BalatroSeedOracle.Services
         {
             try
             {
-                JamlRootDocument? config = null;
+                JamlConfig? config = null;
                 DateTime lastModifiedUtc;
                 long sizeBytes;
                 var isBrowser = _platformServices != null && !_platformServices.SupportsFileSystem;
@@ -589,7 +594,7 @@ namespace BalatroSeedOracle.Services
                     {
                         // Load JAML file using JamlConfigLoader
                         if (
-                            Motely.JamlConfigLoader.TryLoadFromJaml(
+                            Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
                                 filePath,
                                 out var jamlConfig,
                                 out var jamlError
@@ -611,11 +616,17 @@ namespace BalatroSeedOracle.Services
                     {
                         try
                         {
-                            var json = File.ReadAllText(filePath);
-                            config = System.Text.Json.JsonSerializer.Deserialize(
-                                json,
-                                MotelyJsonSerializerContext.Default.JamlRootDocument
-                            );
+                            var yaml = File.ReadAllText(filePath);
+                            if (JamlConfigLoader.TryLoad(yaml, out var loadedConfig, out var loadError))
+                                config = loadedConfig;
+                            else
+                            {
+                                DebugLogger.LogError(
+                                    "FilterCacheService",
+                                    $"Failed to load filter {filePath}: {loadError}"
+                                );
+                                return null;
+                            }
                         }
                         catch (Exception loadEx)
                         {

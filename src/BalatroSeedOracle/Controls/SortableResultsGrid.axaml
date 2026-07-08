@@ -1,9 +1,11 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:treeDataGrid="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
              x:Class="BalatroSeedOracle.Controls.SortableResultsGrid"
-             x:DataType="vm:SortableResultsGridViewModel">
+             x:DataType="vm:SortableResultsGridViewModel"
+             d:DataContext="{d:DesignInstance Type=vm:SortableResultsGridViewModel}">
 
     <Grid RowDefinitions="Auto,*">
         <!-- Stats and Actions Header -->

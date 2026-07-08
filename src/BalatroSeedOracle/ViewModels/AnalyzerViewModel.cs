@@ -251,7 +251,7 @@ public partial class AnalyzerViewModel : ObservableObject
             var analysis = await Task.Run(() =>
             {
                 var config = new MotelyUnitTestAnalysisConfig(CurrentSeed, SelectedDeck, SelectedStake);
-                return MotelyLegacyTextAnalyzer.Analyze(config);
+                return MotelyUnitTestAnalyzer.Analyze(config);
             });
 
             CurrentAnalysis = analysis;

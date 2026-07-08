@@ -80,4 +80,3 @@ publish*.txt
 build_output.txt
 temp_*.txt
 .vault_token
-/src/MotelyJAML

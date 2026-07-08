@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
-using Motely.Executors;
 
 namespace BalatroSeedOracle.Desktop;
 
@@ -23,7 +22,7 @@ public static class DesktopAppInitializer
             var app = Avalonia.Application.Current as BalatroSeedOracle.App;
             if (app?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                if (desktop.MainWindow is BalatroSeedOracle.Views.MainWindow mainWindow)
+                if (desktop.MainWindow is BalatroSeedOracle.Views.MainWindow)
                 {
                     try
                     {
@@ -46,9 +45,6 @@ public static class DesktopAppInitializer
     {
         try
         {
-            MultiSearchManager.Instance.SetTotalThreads(Environment.ProcessorCount);
-            DebugLogger.Log("App", $"Thread budget set to: {Environment.ProcessorCount}");
-
             var searchManager = App.GetService<SearchManager>();
             if (searchManager != null)
             {

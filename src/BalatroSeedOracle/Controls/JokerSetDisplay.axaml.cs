@@ -1,3 +1,4 @@
+using BalatroSeedOracle.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using BalatroSeedOracle.Constants;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Json;
+
 using BalatroSeedOracle.Services;
 
 namespace BalatroSeedOracle.Controls

@@ -5,258 +5,636 @@ using Avalonia.Media;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.ViewModels.FilterTabs;
+using Motely;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 
-namespace BalatroSeedOracle.Services
+namespace BalatroSeedOracle.Services;
+
+/// <summary>
+/// Converts between the UI's FilterItem/ItemConfig model and the engine's polymorphic IJamlClause types.
+/// No JamlClauseUnion glue — directly constructs the concrete clause subtype the engine expects.
+/// </summary>
+public sealed class ClauseConversionService
 {
-    public class ClauseConversionService
+    public ClauseRowViewModel? ConvertToClauseViewModel(
+        IJamlClause clause,
+        string category,
+        int nestingLevel = 0
+    )
     {
-        public ClauseConversionService() { }
+        var vm = new ClauseRowViewModel { NestingLevel = nestingLevel };
 
-        public ClauseRowViewModel ConvertToClauseViewModel(
-            JamlClauseUnion clause,
-            string category,
-            int nestingLevel = 0
-        )
+        if (clause is LogicClause logic)
         {
-            var vm = new ClauseRowViewModel { NestingLevel = nestingLevel };
+            var op = clause is AndClause ? "and" : "or";
+            vm.ClauseType = op;
+            vm.DisplayText = $"{op.ToUpperInvariant()} Group ({logic.Clauses.Length} items)";
+            vm.IsExpanded = false;
 
-            var typeName = clause.GetTypeName();
-
-            if (typeName == "or" || typeName == "and")
+            foreach (var nested in logic.Clauses)
             {
-                vm.ClauseType = typeName;
-                vm.DisplayText =
-                    $"{typeName.ToUpper()} Group ({clause.Clauses?.Count ?? 0} items)";
-                vm.IsExpanded = false;
-
-                if (clause.Clauses != null)
-                {
-                    foreach (var nestedClause in clause.Clauses)
-                    {
-                        var childVm = ConvertToClauseViewModel(
-                            nestedClause,
-                            category,
-                            nestingLevel + 1
-                        );
-                        if (childVm != null)
-                        {
-                            vm.Children.Add(childVm);
-                        }
-                    }
-                }
-                return vm;
+                var childVm = ConvertToClauseViewModel(nested, category, nestingLevel + 1);
+                if (childVm is not null)
+                    vm.Children.Add(childVm);
             }
-
-            vm.ClauseType = typeName;
-
-            var displayParts = new List<string>();
-            var value = clause.GetValueName();
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                displayParts.Add(value);
-            }
-
-            var edition = clause.GetEditionString();
-            if (!string.IsNullOrEmpty(edition))
-            {
-                vm.EditionBadge = edition;
-            }
-
-            if (clause.Stickers != null && clause.Stickers.Length > 0)
-            {
-                displayParts.Add($"[{string.Join(", ", clause.Stickers.Select(s => s.ToString()))}]");
-            }
-
-            var seal = clause.GetSealString();
-            if (!string.IsNullOrEmpty(seal))
-            {
-                displayParts.Add($"Seal: {seal}");
-            }
-            var enhancement = clause.GetEnhancementString();
-            if (!string.IsNullOrEmpty(enhancement))
-            {
-                displayParts.Add($"Enhanced: {enhancement}");
-            }
-
-            vm.DisplayText = string.Join(" ", displayParts);
-
-            vm.IconPath = GetIconPath(typeName, value);
-
-            if (clause.Antes?.Length > 0)
-            {
-                var min = clause.Antes.Min();
-                var max = clause.Antes.Max();
-                vm.AnteRange = min == max ? $"Ante {min}" : $"Antes {min}-{max}";
-            }
-
-            vm.MinCount = clause.Min;
-
-            vm.ScoreValue = clause.Score ?? 1;
-
-            vm.ItemKey = $"{category}:{(string.IsNullOrEmpty(value) ? typeName : value)}";
-
             return vm;
         }
 
-        public JamlClauseUnion? ConvertFilterItemToClause(
-            FilterItem filterItem,
-            ItemConfig config
-        )
+        var typeName = GetTypeName(clause);
+        vm.ClauseType = typeName;
+
+        var value = GetValueName(clause);
+        var edition = GetEditionString(clause);
+        var stickers = GetStickers(clause);
+        var seal = GetSealString(clause);
+        var enhancement = GetEnhancementString(clause);
+
+        var displayParts = new List<string>();
+        if (!string.IsNullOrEmpty(value))
+            displayParts.Add(value);
+        if (stickers.Length > 0)
+            displayParts.Add($"[{string.Join(", ", stickers)}]");
+        if (!string.IsNullOrEmpty(seal))
+            displayParts.Add($"Seal: {seal}");
+        if (!string.IsNullOrEmpty(enhancement))
+            displayParts.Add($"Enhanced: {enhancement}");
+
+        vm.DisplayText = string.Join(" ", displayParts);
+        vm.EditionBadge = edition;
+        vm.IconPath = GetIconPath(typeName, value);
+
+        if (clause is IAnteScopedClause anteScoped && anteScoped.Antes.Length > 0)
         {
-            if (filterItem == null)
-                return null;
-
-            if (filterItem is FilterOperatorItem operatorItem)
-            {
-                if (operatorItem.OperatorType == "BannedItems")
-                    return null;
-
-                var operatorClause = new JamlClauseUnion
-                {
-                    Clauses = new List<JamlClauseUnion>(),
-                };
-                var op = operatorItem.OperatorType.ToLowerInvariant();
-                if (op == "or") operatorClause.Or = operatorClause.Clauses;
-                else operatorClause.And = operatorClause.Clauses;
-
-                foreach (var child in operatorItem.Children)
-                {
-                    var childConfig = new ItemConfig();
-                    var childClause = ConvertFilterItemToClause(child, childConfig);
-                    if (childClause != null)
-                    {
-                        operatorClause.Clauses.Add(childClause);
-                    }
-                }
-
-                return operatorClause;
-            }
-
-            var clause = new JamlClauseUnion
-            {
-                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min > 0 ? config.Min : null,
-                Score = config.Score,
-            };
-
-            clause.SetDiscriminator(MapCategoryToType(filterItem.Category, filterItem.Name), filterItem.Name);
-
-            if (!string.IsNullOrEmpty(config.Edition) && config.Edition != "none")
-            {
-                clause.SetEditionString(config.Edition);
-            }
-
-            if (config.Stickers?.Count > 0)
-            {
-                clause.SetStickerStrings(config.Stickers.ToArray());
-            }
-
-            if (IsSourceCapableCategory(filterItem.Category))
-            {
-                if (HasValidSources(config))
-                {
-                    clause.Sources = new JamlSources
-                    {
-                        ShopItems = config.ShopSlots?.ToArray(),
-                        BoosterPacks = config.PackSlots?.ToArray(),
-                        Tags = config.SkipBlindTags,
-                        RequireMega = config.IsMegaArcana,
-                    };
-                }
-            }
-
-            if (filterItem.Category.ToLower() == "playingcards")
-            {
-                if (!string.IsNullOrEmpty(config.Seal) && config.Seal != "None")
-                    clause.SetSealString(config.Seal);
-                if (!string.IsNullOrEmpty(config.Enhancement) && config.Enhancement != "None")
-                    clause.SetEnhancementString(config.Enhancement);
-            }
-
-            return clause;
+            var min = anteScoped.Antes.Min();
+            var max = anteScoped.Antes.Max();
+            vm.AnteRange = min == max ? $"Ante {min}" : $"Antes {min}-{max}";
         }
 
-        private IImage? GetIconPath(string? type, string? value)
+        vm.MinCount = clause.Min;
+        vm.ScoreValue = clause.Score;
+        vm.ItemKey = $"{category}:{(string.IsNullOrEmpty(value) ? typeName : value)}";
+
+        return vm;
+    }
+
+    public IJamlClause? ConvertItemConfigToClause(ItemConfig config)
+    {
+        if (config is null)
+            return null;
+
+        if (config.ItemType == "Operator" && !string.IsNullOrEmpty(config.OperatorType))
         {
-            if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(value))
+            var isOr = config.OperatorType.Equals("Or", StringComparison.OrdinalIgnoreCase);
+            var logic = isOr ? (LogicClause)new OrClause() : new AndClause();
+            var children = new List<IJamlClause>();
+            if (config.Children is not null)
+            {
+                foreach (var child in config.Children)
+                {
+                    var childClause = ConvertItemConfigToClause(child);
+                    if (childClause is not null)
+                        children.Add(childClause);
+                }
+            }
+            logic.Clauses = children.ToArray();
+            logic.Label = config.Label;
+            logic.Score = config.Score;
+            return logic;
+        }
+
+        var filterItem = new FilterItem
+        {
+            Name = config.IsSoulJoker ? "Any" : config.ItemName,
+            Type = config.ItemType,
+            Category = MapCategory(config.ItemType),
+            Antes = config.Antes?.ToArray(),
+            Edition = config.Edition,
+            Seal = config.Seal,
+            Enhancement = config.Enhancement,
+            Rank = config.Rank,
+            Suit = config.Suit,
+            Stickers = config.Stickers?.ToList(),
+            Score = config.Score,
+            MinCount = config.Min ?? 1,
+            Label = config.Label,
+        };
+        return ConvertFilterItemToClause(filterItem, config);
+    }
+
+    private static string MapCategory(string itemType)
+    {
+        return itemType?.ToLowerInvariant() switch
+        {
+            "joker" => "Jokers",
+            "souljoker" => "SoulJokers",
+            "tarot" => "Tarots",
+            "planet" => "Planets",
+            "spectral" => "Spectrals",
+            "voucher" => "Vouchers",
+            "tag" => "Tags",
+            "boss" => "Bosses",
+            "playingcard" => "PlayingCards",
+            _ => "Other",
+        };
+    }
+
+    public IJamlClause? ConvertFilterItemToClause(FilterItem filterItem, ItemConfig config)
+    {
+        if (filterItem is null)
+            return null;
+
+        if (filterItem is FilterOperatorItem operatorItem)
+        {
+            if (operatorItem.OperatorType == "BannedItems")
                 return null;
 
-            var spriteService = SpriteService.Instance;
-
-            try
+            var isOr = operatorItem.OperatorType.Equals("Or", StringComparison.OrdinalIgnoreCase);
+            var logic = isOr ? (LogicClause)new OrClause() : new AndClause();
+            var children = new List<IJamlClause>();
+            foreach (var child in operatorItem.Children)
             {
-                return type?.ToLower() switch
-                {
-                    "joker" => spriteService.GetJokerImage(value),
-                    "legendaryjoker" => spriteService.GetJokerImage(value),
-                    "souljoker" => spriteService.GetJokerImage(value),
-                    "tarotcard" => spriteService.GetTarotImage(value),
-                    "planetcard" => spriteService.GetPlanetCardImage(value),
-                    "spectralcard" => spriteService.GetSpectralImage(value),
-                    "voucher" => spriteService.GetVoucherImage(value),
-                    "standardcard" => null,
-                    "playingcard" => null,
-                    "tag" => spriteService.GetTagImage(value),
-                    "smallblindtag" => spriteService.GetTagImage(value),
-                    "bigblindtag" => spriteService.GetTagImage(value),
-                    "boss" => spriteService.GetBossImage(value),
-                    _ => null,
-                };
+                var childClause = ConvertFilterItemToClause(child, new ItemConfig());
+                if (childClause is not null)
+                    children.Add(childClause);
             }
-            catch (Exception ex)
+            logic.Clauses = children.ToArray();
+            return logic;
+        }
+
+        var discriminator = MapCategoryToDiscriminator(filterItem.Category, filterItem.Name, config.TagType);
+        var antes = config.Antes?.ToArray() ?? [1, 2, 3, 4, 5, 6, 7, 8];
+        var min = config.Min > 0 ? config.Min : 1;
+
+        var clause = BuildClause(filterItem, config, discriminator, antes, min ?? 1);
+        if (clause is null)
+            return null;
+
+        // Apply common IJamlClause fields
+        clause.Label = config.Label;
+        clause.Score = config.Score;
+
+        return clause;
+    }
+
+    private IJamlClause? BuildClause(
+        FilterItem filterItem,
+        ItemConfig config,
+        string discriminator,
+        int[] antes,
+        int min
+    )
+    {
+        var edition = ParseEdition(config.Edition);
+        var stickers = ParseStickers(config.Stickers);
+        var rank = ParseEnumNullable<MotelyStandardcardRank>(config.Rank);
+        var suit = ParseEnumNullable<MotelyStandardcardSuit>(config.Suit);
+
+        switch (discriminator.ToLowerInvariant())
+        {
+            case "joker":
+                return new JokerClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Jokers = ParseEnumArray<MotelyJoker>(filterItem.Name),
+                    Edition = edition,
+                    Stickers = stickers,
+                    Sources = BuildJokerSources(config),
+                };
+            case "commonjoker":
+                return new CommonJokerClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Jokers = ParseEnumArray<MotelyJokerCommon>(filterItem.Name),
+                    Edition = edition,
+                    Stickers = stickers,
+                    Sources = BuildJokerSources(config),
+                };
+            case "uncommonjoker":
+                return new UncommonJokerClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Jokers = ParseEnumArray<MotelyJokerUncommon>(filterItem.Name),
+                    Edition = edition,
+                    Stickers = stickers,
+                    Sources = BuildJokerSources(config),
+                };
+            case "rarejoker":
+                return new RareJokerClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Jokers = ParseEnumArray<MotelyJokerRare>(filterItem.Name),
+                    Edition = edition,
+                    Stickers = stickers,
+                    Sources = BuildJokerSources(config),
+                };
+            case "legendaryjoker":
+                return new LegendaryJokerClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Jokers = ParseEnumArray<MotelyJoker>(filterItem.Name),
+                    Edition = edition,
+                    Sources = BuildLegendarySources(config),
+                };
+            case "voucher":
+                return new VoucherClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Vouchers = ParseEnumArray<MotelyVoucher>(filterItem.Name),
+                    Rolls = [0],
+                };
+            case "tarotcard":
+                return new TarotCardClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Tarots = ParseEnumArray<MotelyTarotCard>(filterItem.Name),
+                    Sources = BuildTarotSources(config),
+                };
+            case "spectralcard":
+                return new SpectralCardClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Spectrals = ParseEnumArray<MotelySpectralCard>(filterItem.Name),
+                    Sources = BuildSpectralSources(config),
+                };
+            case "planetcard":
+                return new PlanetCardClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Planets = ParseEnumArray<MotelyPlanetCard>(filterItem.Name),
+                    Sources = BuildPlanetSources(config),
+                };
+            case "standardcard":
+                return new StandardCardClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Rank = rank,
+                    Suit = suit,
+                    Edition = edition,
+                    Seal = ParseEnumNullable<MotelyItemSeal>(config.Seal),
+                    Enhancement = ParseEnumNullable<MotelyItemEnhancement>(config.Enhancement),
+                    Sources = BuildStandardSources(config),
+                };
+            case "boss":
+                return new BossClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Bosses = ParseEnumArray<MotelyBossBlind>(filterItem.Name),
+                };
+            case "tag":
+            case "smallblindtag":
+            case "bigblindtag":
+                return new TagClause
+                {
+                    Antes = antes,
+                    Min = min,
+                    Tags = ParseEnumArray<MotelyTag>(filterItem.Name),
+                    Rolls = GetTagRolls(discriminator),
+                };
+            default:
+                DebugLogger.LogError(
+                    "ClauseConversionService",
+                    $"Unsupported discriminator '{discriminator}' for category '{filterItem.Category}'"
+                );
+                return null;
+        }
+    }
+
+    #region Helpers
+
+    private static string MapCategoryToDiscriminator(string category, string itemName, string? tagType)
+    {
+        var lower = category?.ToLowerInvariant();
+        return lower switch
+        {
+            "souljokers" => "legendaryJoker",
+            "jokers" => "joker",
+            "tarots" => "tarotCard",
+            "planets" => "planetCard",
+            "spectrals" => "spectralCard",
+            "playingcards" => "standardCard",
+            "vouchers" => "voucher",
+            "tags" => tagType?.ToLowerInvariant() switch
+            {
+                "smallblindtag" => "smallBlindTag",
+                "bigblindtag" => "bigBlindTag",
+                _ => "tag",
+            },
+            "bosses" => "boss",
+            "other" => "standardCard",
+            "operator" => throw new InvalidOperationException(
+                $"FilterOperatorItem should be handled before BuildClause. ItemName: '{itemName}'"
+            ),
+            _ => throw new ArgumentException(
+                $"Unknown category '{category}' for item '{itemName}'."
+            ),
+        };
+    }
+
+    private static int[] GetTagRolls(string discriminator)
+    {
+        return discriminator.ToLowerInvariant() switch
+        {
+            "smallblindtag" => [0],
+            "bigblindtag" => [1],
+            _ => [0, 1],
+        };
+    }
+
+    private static T[] ParseEnumArray<T>(string value) where T : struct, Enum
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return [];
+
+        var results = new List<T>();
+        foreach (var part in value.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var trimmed = part.Trim();
+            if (Enum.TryParse<T>(trimmed, true, out var parsed))
+            {
+                results.Add(parsed);
+            }
+            else
             {
                 DebugLogger.LogError(
                     "ClauseConversionService",
-                    $"Failed to get icon for type '{type}', value '{value}': {ex.Message}"
+                    $"Could not parse '{trimmed}' as {typeof(T).Name}"
                 );
-                return null;
             }
         }
+        return results.ToArray();
+    }
 
-        private string MapCategoryToType(string category, string itemName)
+    private static T? ParseEnumNullable<T>(string? value) where T : struct, Enum
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Equals("None", StringComparison.OrdinalIgnoreCase))
+            return null;
+        if (Enum.TryParse<T>(value.Trim(), true, out var parsed))
+            return parsed;
+        DebugLogger.LogError("ClauseConversionService", $"Could not parse '{value}' as {typeof(T).Name}");
+        return null;
+    }
+
+    private static MotelyItemEdition? ParseEdition(string? edition)
+    {
+        if (string.IsNullOrWhiteSpace(edition) || edition.Equals("none", StringComparison.OrdinalIgnoreCase))
+            return null;
+        if (Enum.TryParse<MotelyItemEdition>(edition.Trim(), true, out var parsed))
+            return parsed;
+        DebugLogger.LogError("ClauseConversionService", $"Could not parse edition '{edition}'");
+        return null;
+    }
+
+    private static MotelyJokerSticker[] ParseStickers(List<string>? stickers)
+    {
+        if (stickers is null || stickers.Count == 0)
+            return [];
+        return stickers
+            .Select(s => s.Trim())
+            .Where(s => Enum.TryParse<MotelyJokerSticker>(s, true, out _))
+            .Select(s => Enum.Parse<MotelyJokerSticker>(s, true))
+            .ToArray();
+    }
+
+    private static JokerSourceConfig? BuildJokerSources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new JokerSourceConfig
         {
-            var lowerCategory = category?.ToLower();
-            return lowerCategory switch
+            ShopItems = config.ShopSlots?.ToArray() ?? [],
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+        };
+    }
+
+    private static LegendaryJokerSourceConfig? BuildLegendarySources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new LegendaryJokerSourceConfig
+        {
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            RequireMegaPack = config.IsMegaArcana,
+        };
+    }
+
+    private static TarotCardSourceConfig? BuildTarotSources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new TarotCardSourceConfig
+        {
+            ShopItems = config.ShopSlots?.ToArray() ?? [],
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+        };
+    }
+
+    private static SpectralCardSourceConfig? BuildSpectralSources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new SpectralCardSourceConfig
+        {
+            ShopItems = config.ShopSlots?.ToArray() ?? [],
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+            RequireMegaPack = config.IsMegaArcana,
+        };
+    }
+
+    private static PlanetSourceConfig? BuildPlanetSources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new PlanetSourceConfig
+        {
+            ShopItems = config.ShopSlots?.ToArray() ?? [],
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+        };
+    }
+
+    private static StandardCardSourceConfig? BuildStandardSources(ItemConfig config)
+    {
+        if (!HasAnySource(config))
+            return null;
+        return new StandardCardSourceConfig
+        {
+            ShopItems = config.ShopSlots?.ToArray() ?? [],
+            BoosterPacks = config.PackSlots?.ToArray() ?? [],
+        };
+    }
+
+    private static bool HasAnySource(ItemConfig config)
+    {
+        return (config.ShopSlots?.Count > 0)
+            || (config.PackSlots?.Count > 0)
+            || config.SkipBlindTags
+            || config.IsMegaArcana;
+    }
+
+    #endregion
+
+    #region Display helpers
+
+    private static string GetTypeName(IJamlClause clause)
+    {
+        return clause switch
+        {
+            AndClause => "and",
+            OrClause => "or",
+            JokerClause or CommonJokerClause or UncommonJokerClause or RareJokerClause => "joker",
+            LegendaryJokerClause => "legendaryJoker",
+            VoucherClause => "voucher",
+            TarotCardClause => "tarotCard",
+            SpectralCardClause => "spectralCard",
+            PlanetCardClause => "planetCard",
+            StandardCardClause => "standardCard",
+            BossClause => "boss",
+            TagClause => "tag",
+            _ => clause.GetType().Name.Replace("Clause", ""),
+        };
+    }
+
+    private static string? GetValueName(IJamlClause clause)
+    {
+        return clause switch
+        {
+            JokerClause c => FirstOrNone(c.Jokers),
+            CommonJokerClause c => FirstOrNone(c.Jokers),
+            UncommonJokerClause c => FirstOrNone(c.Jokers),
+            RareJokerClause c => FirstOrNone(c.Jokers),
+            LegendaryJokerClause c => FirstOrNone(c.Jokers),
+            VoucherClause c => FirstOrNone(c.Vouchers),
+            TarotCardClause c => FirstOrNone(c.Tarots),
+            SpectralCardClause c => FirstOrNone(c.Spectrals),
+            PlanetCardClause c => FirstOrNone(c.Planets),
+            BossClause c => FirstOrNone(c.Bosses),
+            TagClause c => FirstOrNone(c.Tags),
+            StandardCardClause c => FormatStandardCard(c),
+            StartingDrawClause c => FormatStartingDraw(c),
+            _ => null,
+        };
+    }
+
+    private static string? FirstOrNone<T>(T[] values) where T : struct, Enum
+    {
+        if (values.Length == 0)
+            return null;
+        return values[0].ToString();
+    }
+
+    private static string? FormatStandardCard(StandardCardClause c)
+    {
+        if (c.Rank.HasValue && c.Suit.HasValue)
+            return $"{c.Rank.Value} of {c.Suit.Value}";
+        if (c.Rank.HasValue)
+            return c.Rank.Value.ToString();
+        if (c.Suit.HasValue)
+            return c.Suit.Value.ToString();
+        return null;
+    }
+
+    private static string? FormatStartingDraw(StartingDrawClause c)
+    {
+        if (c.Rank.HasValue && c.Suit.HasValue)
+            return $"{c.Rank.Value} of {c.Suit.Value}";
+        if (c.Rank.HasValue)
+            return c.Rank.Value.ToString();
+        if (c.Suit.HasValue)
+            return c.Suit.Value.ToString();
+        return null;
+    }
+
+    private static string? GetEditionString(IJamlClause clause)
+    {
+        return clause switch
+        {
+            JokerClause { Edition: { } e } => e.ToString(),
+            CommonJokerClause { Edition: { } e } => e.ToString(),
+            UncommonJokerClause { Edition: { } e } => e.ToString(),
+            RareJokerClause { Edition: { } e } => e.ToString(),
+            LegendaryJokerClause { Edition: { } e } => e.ToString(),
+            StandardCardClause { Edition: { } e } => e.ToString(),
+            _ => null,
+        };
+    }
+
+    private static string[] GetStickers(IJamlClause clause)
+    {
+        return clause switch
+        {
+            JokerClause c => c.Stickers.Select(s => s.ToString()).ToArray(),
+            CommonJokerClause c => c.Stickers.Select(s => s.ToString()).ToArray(),
+            UncommonJokerClause c => c.Stickers.Select(s => s.ToString()).ToArray(),
+            RareJokerClause c => c.Stickers.Select(s => s.ToString()).ToArray(),
+            _ => [],
+        };
+    }
+
+    private static string? GetSealString(IJamlClause clause)
+    {
+        return clause switch
+        {
+            StandardCardClause { Seal: { } s } => s.ToString(),
+            _ => null,
+        };
+    }
+
+    private static string? GetEnhancementString(IJamlClause clause)
+    {
+        return clause switch
+        {
+            StandardCardClause { Enhancement: { } e } => e.ToString(),
+            _ => null,
+        };
+    }
+
+    private static IImage? GetIconPath(string? type, string? value)
+    {
+        if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(value))
+            return null;
+
+        var spriteService = SpriteService.Instance;
+
+        try
+        {
+            return type.ToLowerInvariant() switch
             {
-                "souljokers" => "legendaryJoker",
-                "jokers" => "joker",
-                "tarots" => "tarotCard",
-                "planets" => "planetCard",
-                "spectrals" => "spectralCard",
-                "playingcards" => "standardCard",
-                "vouchers" => "voucher",
-                "tags" => "tag",
-                "bosses" => "boss",
-                "other" => "standardCard",
-                "operator" => throw new InvalidOperationException(
-                    $"FilterOperatorItem with category 'Operator' should be handled by early return in ConvertFilterItemToClause. "
-                        + $"ItemName: '{itemName}'"
-                ),
-                _ => throw new ArgumentException(
-                    $"Unknown category '{category}' for item '{itemName}'."
-                ),
+                "joker" => spriteService.GetJokerImage(value),
+                "legendaryjoker" => spriteService.GetJokerImage(value),
+                "souljoker" => spriteService.GetJokerImage(value),
+                "tarotcard" => spriteService.GetTarotImage(value),
+                "planetcard" => spriteService.GetPlanetCardImage(value),
+                "spectralcard" => spriteService.GetSpectralImage(value),
+                "voucher" => spriteService.GetVoucherImage(value),
+                "standardcard" => null,
+                "playingcard" => null,
+                "tag" => spriteService.GetTagImage(value),
+                "smallblindtag" => spriteService.GetTagImage(value),
+                "bigblindtag" => spriteService.GetTagImage(value),
+                "boss" => spriteService.GetBossImage(value),
+                _ => null,
             };
         }
-
-        private bool IsSourceCapableCategory(string category)
+        catch (Exception ex)
         {
-            var lowerCategory = category?.ToLower();
-            return lowerCategory == "jokers"
-                || lowerCategory == "souljokers"
-                || lowerCategory == "tarots"
-                || lowerCategory == "spectrals"
-                || lowerCategory == "planets"
-                || lowerCategory == "playingcards";
-        }
-
-        private bool HasValidSources(ItemConfig config)
-        {
-            return (config.ShopSlots?.Count > 0)
-                || (config.PackSlots?.Count > 0)
-                || config.SkipBlindTags
-                || config.IsMegaArcana;
+            DebugLogger.LogError(
+                "ClauseConversionService",
+                $"Failed to get icon for type '{type}', value '{value}': {ex.Message}"
+            );
+            return null;
         }
     }
+
+    #endregion
 }

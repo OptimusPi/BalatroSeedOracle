@@ -3,6 +3,8 @@
     <!-- Shared library - single target (platform-specific code moved to head projects) -->
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>BalatroSeedOracle</AssemblyName>
+    <!-- Enable compiled bindings by default for compile-time XAML validation and runtime performance. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- CS0108: Avalonia name generator emits InitializeComponent(bool) on every .axaml-having
          partial class. When one derives from another (e.g. AudioVisualizerSettingsModal : StandardModal),
          the derived emission "hides" the base; this is structural to the generator, not real shadowing. -->

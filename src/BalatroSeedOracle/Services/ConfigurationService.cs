@@ -1,13 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Storage;
 using Microsoft.Extensions.Logging;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 // AOT-compatible JSON serialization - use source generators instead of reflection
 
@@ -68,7 +67,7 @@ namespace BalatroSeedOracle.Services
                     EnsureDirectoryExists(Path.GetDirectoryName(filePath)!);
                 }
 
-                if (config is Motely.Filters.Jaml.JamlRootDocument motelyConfig)
+                if (config is Motely.Filters.Jaml.JamlConfig motelyConfig)
                 {
                     // Use FilterSerializationService for consistent, clean JSON output
                     // This omits null properties, empty arrays, and empty strings
@@ -141,14 +140,16 @@ namespace BalatroSeedOracle.Services
                     if (string.IsNullOrWhiteSpace(json))
                         return null;
 
-                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
+                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlConfig))
                     {
-                        // AOT-compatible: Use Motely's source-generated serializer context
-                        var config = JsonSerializer.Deserialize(
-                            json,
-                            MotelyJsonSerializerContext.Default.JamlRootDocument
+                        if (JamlConfigLoader.TryLoad(json, out var config, out var error))
+                            return config as T;
+
+                        DebugLogger.LogError(
+                            "ConfigurationService",
+                            $"Failed to load JAML from browser store: {error}"
                         );
-                        return config as T;
+                        return null;
                     }
 
                     return null;
@@ -158,8 +159,8 @@ namespace BalatroSeedOracle.Services
                     if (!File.Exists(filePath))
                         return null;
 
-                    // For JamlRootDocument, try cache first for better performance
-                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
+                    // For JamlConfig, try cache first for better performance
+                    if (typeof(T) == typeof(Motely.Filters.Jaml.JamlConfig))
                     {
                         if (_filterCacheService is not null)
                         {
@@ -174,20 +175,22 @@ namespace BalatroSeedOracle.Services
                     // Fallback to disk loading
                     return await Task.Run(() =>
                     {
-                        if (typeof(T) == typeof(Motely.Filters.Jaml.JamlRootDocument))
+                        if (typeof(T) == typeof(Motely.Filters.Jaml.JamlConfig))
                         {
                             try
                             {
-                                var json = System.IO.File.ReadAllText(filePath);
-                                var config = System.Text.Json.JsonSerializer.Deserialize(
-                                    json,
-                                    MotelyJsonSerializerContext.Default.JamlRootDocument
+                                var yaml = System.IO.File.ReadAllText(filePath);
+                                if (JamlConfigLoader.TryLoad(yaml, out var config, out var error))
+                                    return config as T;
+
+                                DebugLogger.LogError(
+                                    "ConfigurationService",
+                                    $"Failed to load filter from '{filePath}': {error}"
                                 );
-                                if (config != null) return config as T;
                             }
                             catch (Exception ex)
                             {
-                                DebugLogger.LogError("ConfigurationService", $"Failed to deserialize filter from '{filePath}': {ex.Message}");
+                                DebugLogger.LogError("ConfigurationService", $"Failed to read filter from '{filePath}': {ex.Message}");
                             }
                         }
                         return null;

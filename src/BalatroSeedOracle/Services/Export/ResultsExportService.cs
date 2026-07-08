@@ -1,4 +1,5 @@
 using System;
+using BalatroSeedOracle.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -99,12 +100,12 @@ namespace BalatroSeedOracle.Services.Export
         /// </summary>
         public async Task ExportToJsonAsync(Stream stream, IEnumerable<SearchResult> results)
         {
-            var exportData = new Json.SearchResultExport
+            var exportData = new SearchResultExport
             {
                 ExportDate = DateTime.UtcNow,
                 TotalResults = results.Count(),
                 Results = results
-                    .Select(r => new Json.SearchResultExportRow
+                    .Select(r => new SearchResultExportRow
                     {
                         Seed = r.Seed,
                         TotalScore = r.TotalScore,

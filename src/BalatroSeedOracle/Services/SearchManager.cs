@@ -9,7 +9,9 @@ using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services.Engines;
 using Motely;
+using Motely.Enums;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.Services;
@@ -65,21 +67,28 @@ public sealed class SearchManager : IDisposable
 
     public async Task<ActiveSearchContext> StartSearchAsync(
         SearchCriteria criteria,
-        JamlRootDocument config
+        JamlConfig config
     )
     {
         DebugLogger.Log("SearchManager", $"Starting search via {_currentEngine.Name} for: {config.Name}");
 
-        if (!string.IsNullOrEmpty(criteria.Deck)) config.Deck = criteria.Deck;
-        if (!string.IsNullOrEmpty(criteria.Stake)) config.Stake = criteria.Stake;
+        if (!string.IsNullOrEmpty(criteria.Deck))
+        {
+            if (Enum.TryParse<MotelyDeck>(criteria.Deck, true, out var deck))
+                config.Deck = deck;
+        }
+        if (!string.IsNullOrEmpty(criteria.Stake))
+        {
+            if (Enum.TryParse<MotelyStake>(criteria.Stake, true, out var stake))
+                config.Stake = stake;
+        }
 
         var options = new SearchOptionsDto
         {
             ThreadCount = criteria.ThreadCount,
             BatchSize = criteria.BatchSize,
             StartBatch = (long)criteria.StartBatch,
-            EndBatch = (long)criteria.EndBatch,
-            SpecificSeed = criteria.DebugSeed,
+            MaxBatches = criteria.EndBatch <= long.MaxValue ? (long?)criteria.EndBatch : null,
         };
 
         if (_currentEngine is LocalSearchEngine)
@@ -91,26 +100,20 @@ public sealed class SearchManager : IDisposable
         return context;
     }
 
-    public ActiveSearchContext StartSearch(SearchCriteria criteria, JamlRootDocument config)
+    public ActiveSearchContext StartSearch(SearchCriteria criteria, JamlConfig config)
         => StartSearchLegacy(criteria, config);
 
-    private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, JamlRootDocument config)
+    private ActiveSearchContext StartSearchLegacy(SearchCriteria criteria, JamlConfig config)
     {
-        var yaml = JamlFormatter.Format(config);
-        if (!Motely.Filters.Jaml.JamlConfigLoader.TryLoad(yaml, out var jamlConfig, out var conversionError) || jamlConfig is null)
-        {
-            DebugLogger.LogError("SearchManager", $"Failed to parse JAML: {conversionError}");
-            throw new InvalidOperationException($"Filter config could not be parsed as JAML: {conversionError}");
-        }
 
         var settings = JamlSearchBuilder
-            .CreateSettings(jamlConfig)
+            .CreateSettings(config)
             .WithThreadCount(criteria.ThreadCount > 0 ? criteria.ThreadCount : Environment.ProcessorCount)
             .WithBatchCharacterCount(criteria.BatchSize > 0 ? criteria.BatchSize : 3)
             .WithStartBatchIndex((long)criteria.StartBatch)
             .WithEndBatchIndex(criteria.EndBatch <= long.MaxValue ? (long)criteria.EndBatch : long.MaxValue)
-            .WithDeck(jamlConfig.Deck)
-            .WithStake(jamlConfig.Stake);
+            .WithDeck(config.Deck)
+            .WithStake(config.Stake);
 
         var searchId = Guid.NewGuid().ToString("N");
         var bsoContext = new BsoSearchContext(searchId, config.Name ?? "filter");
@@ -241,7 +244,7 @@ public sealed class SearchManager : IDisposable
         return toRemove.Count;
     }
 
-    public async Task<QuickSearchResult> RunQuickSearchAsync(SearchCriteria criteria, JamlRootDocument config)
+    public async Task<QuickSearchResult> RunQuickSearchAsync(SearchCriteria criteria, JamlConfig config)
     {
         var startTime = DateTime.UtcNow;
         try
@@ -306,5 +309,5 @@ public class RestoredSearchInfo
     public string? LastSeed { get; set; }
     public long TotalSeedsProcessed { get; set; }
     public long TotalMatches { get; set; }
-    public JamlRootDocument Config { get; set; } = null!;
+    public JamlConfig Config { get; set; } = null!;
 }

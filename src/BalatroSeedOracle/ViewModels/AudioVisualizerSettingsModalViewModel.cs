@@ -207,11 +207,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public event EventHandler? RequestClose;
 
-        public AudioVisualizerSettingsModalViewModel()
+        public AudioVisualizerSettingsModalViewModel(UserProfileService userProfileService)
         {
-            _userProfileService =
-                App.GetService<UserProfileService>()
-                ?? throw new InvalidOperationException("UserProfileService not available");
+            _userProfileService = userProfileService
+                ?? throw new ArgumentNullException(nameof(userProfileService));
 
             // Load settings from profile
             LoadSettings();

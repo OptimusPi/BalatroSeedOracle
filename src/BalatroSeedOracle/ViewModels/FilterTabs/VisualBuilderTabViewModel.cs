@@ -593,6 +593,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             SetCategory(category);
         }
 
+        [RelayCommand]
+        private void RemoveFromFavorites(FilterItem? item)
+        {
+            if (item is null)
+                return;
+
+            _favoritesService?.RemoveFavoriteItem(item.Name);
+            item.IsFavorite = false;
+            SetCategory(SelectedMainCategory);
+        }
+
         public void SetCategory(string category)
         {
             // Auto-clear search when switching tabs for clean navigation

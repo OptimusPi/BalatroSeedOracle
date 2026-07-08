@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using BalatroSeedOracle.Services.Storage;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services
 {
@@ -132,7 +131,7 @@ namespace BalatroSeedOracle.Services
             try
             {
                 var config =
-                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlRootDocument>(
+                    await _configurationService.LoadFilterAsync<Motely.Filters.Jaml.JamlConfig>(
                         filePath
                     );
                 return config != null;
@@ -227,12 +226,10 @@ namespace BalatroSeedOracle.Services
                 if (!File.Exists(filterPath))
                     return string.Empty;
 
-                var json = await File.ReadAllTextAsync(filterPath);
-                var config = JsonSerializer.Deserialize(
-                    json,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-                return config?.Name ?? "";
+                var yaml = await File.ReadAllTextAsync(filterPath);
+                if (JamlConfigLoader.TryLoad(yaml, out var config, out _))
+                    return config?.Name ?? "";
+                return "";
             }
             catch (Exception ex)
             {
@@ -259,25 +256,17 @@ namespace BalatroSeedOracle.Services
                     return string.Empty;
                 }
 
-                var json = await File.ReadAllTextAsync(filterPath);
-                var config = JsonSerializer.Deserialize(
-                    json,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-                if (config == null)
+                var yaml = await File.ReadAllTextAsync(filterPath);
+                if (!JamlConfigLoader.TryLoad(yaml, out var config, out _) || config is null)
                     return string.Empty;
 
                 config.Name = newName;
-                config.DateCreated = DateTime.UtcNow.ToString("o");
                 config.Author = _userProfileService.GetAuthorName() ?? "Unknown";
 
                 var newId = $"{newName.Replace(" ", "").ToLower()}_{Guid.NewGuid():N}";
                 var newPath = Path.Combine(filtersDir, $"{newId}.json");
-                var newJson = JsonSerializer.Serialize(
-                    config,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-                await File.WriteAllTextAsync(newPath, newJson);
+                var newYaml = JamlConfigLoader.ToYaml(config);
+                await File.WriteAllTextAsync(newPath, newYaml);
 
                 Helpers.DebugLogger.Log(
                     "FilterService",

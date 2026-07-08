@@ -109,10 +109,6 @@ namespace BalatroSeedOracle.Components
             this.Loaded += OnLoaded;
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
 
         private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {

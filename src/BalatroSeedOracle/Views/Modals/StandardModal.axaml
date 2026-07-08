@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:modals="using:BalatroSeedOracle.Views.Modals"
              x:Class="BalatroSeedOracle.Views.Modals.StandardModal"
+             x:DataType="modals:StandardModal"
              Classes.squeeze="{Binding Squeeze, RelativeSource={RelativeSource Mode=Self}}">
 
     <UserControl.Styles>

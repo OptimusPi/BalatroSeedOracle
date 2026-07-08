@@ -13,6 +13,8 @@ namespace BalatroSeedOracle.ViewModels
     {
         private readonly UserProfileService _userProfileService;
         private readonly SearchManager? _searchManager; // Nullable if service might fail
+        private readonly IModalHost? _modalHost;
+        private readonly IPlatformServices? _platformServices;
 
         [ObservableProperty]
         private int _visualizerTheme;
@@ -62,7 +64,9 @@ namespace BalatroSeedOracle.ViewModels
             }
         }
 
-        public SettingsModalViewModel()
+        public SettingsModalViewModel(
+            IModalHost? modalHost = null,
+            IPlatformServices? platformServices = null)
         {
             _userProfileService =
                 App.GetService<UserProfileService>()
@@ -72,9 +76,11 @@ namespace BalatroSeedOracle.ViewModels
             _searchManager = App.GetService<SearchManager>();
             if (_searchManager == null)
             {
-                // In production this might be fatal, but for now we allow it
                 DebugLogger.Log("SettingsModalViewModel", "SearchManager not available");
             }
+
+            _modalHost = modalHost;
+            _platformServices = platformServices;
 
             LoadSettings();
         }
@@ -131,6 +137,44 @@ namespace BalatroSeedOracle.ViewModels
         {
             DebugLogger.Log("SettingsModalViewModel", "Close requested");
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        [RelayCommand]
+        private void OpenWordLists()
+        {
+            _modalHost?.ShowWordListsModalFromSettings();
+        }
+
+        [RelayCommand]
+        private void OpenCredits()
+        {
+            _modalHost?.ShowCreditsModal();
+        }
+
+        [RelayCommand]
+        private void OpenFiltersDirectory()
+        {
+            try
+            {
+                _platformServices?.OpenInFileManager(AppPaths.FiltersDir);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SettingsModalViewModel", $"Error opening filters directory: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private void OpenAppDirectory()
+        {
+            try
+            {
+                _platformServices?.OpenInFileManager(AppPaths.DataRootDir);
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SettingsModalViewModel", $"Error opening app directory: {ex.Message}");
+            }
         }
 
         [RelayCommand]

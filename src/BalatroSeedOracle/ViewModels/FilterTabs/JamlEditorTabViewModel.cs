@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
@@ -11,9 +10,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels.FilterTabs
 {
@@ -115,12 +112,27 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(NullNamingConvention.Instance)
-                    .IgnoreUnmatchedProperties()
-                    .Build();
+                if (!JamlConfigLoader.TryLoad(JamlContent, out var config, out var loadError) || config is null)
+                {
+                    var lineNumber = ExtractLineNumber(loadError ?? "Unknown error");
+                    ValidationErrors.Add(
+                        new ValidationErrorItem
+                        {
+                            LineNumber = lineNumber,
+                            Column = 0,
+                            Message = loadError ?? "Invalid JAML syntax",
+                            Severity = ValidationErrorItem.ErrorSeverity.Error,
+                        }
+                    );
 
-                var config = deserializer.Deserialize<JamlRootDocument>(JamlContent);
+                    ValidationStatus = "✗ Invalid JAML syntax";
+                    ValidationStatusColor = Brushes.Red;
+                    ErrorMessage = loadError ?? "Invalid JAML syntax";
+                    HasError = true;
+                    HasErrors = true;
+                    ErrorCount = ValidationErrors.Count;
+                    return;
+                }
 
                 // Additional validation checks
                 ValidateSchema(config);
@@ -144,27 +156,6 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
                 // Update preview items
                 UpdatePreview(config);
-            }
-            catch (YamlDotNet.Core.YamlException yamlEx)
-            {
-                // Parse YAML error
-                var lineNumber = ExtractLineNumber(yamlEx.Message);
-                ValidationErrors.Add(
-                    new ValidationErrorItem
-                    {
-                        LineNumber = lineNumber,
-                        Column = 0,
-                        Message = yamlEx.Message,
-                        Severity = ValidationErrorItem.ErrorSeverity.Error,
-                    }
-                );
-
-                ValidationStatus = "✗ Invalid JAML syntax";
-                ValidationStatusColor = Brushes.Red;
-                ErrorMessage = yamlEx.Message;
-                HasError = true;
-                HasErrors = true;
-                ErrorCount = ValidationErrors.Count;
             }
             catch (Exception ex)
             {
@@ -195,70 +186,34 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 1;
         }
 
-        private void ValidateSchema(JamlRootDocument config)
+        private void ValidateSchema(JamlConfig config)
         {
-            // Validate deck enum
-            if (!string.IsNullOrEmpty(config.Deck))
+            var deckName = config.Deck.ToString();
+            if (!Enum.IsDefined(typeof(Motely.Enums.MotelyDeck), config.Deck))
             {
-                var validDecks = new[]
-                {
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Black",
-                    "Magic",
-                    "Nebula",
-                    "Ghost",
-                    "Abandoned",
-                    "Checkered",
-                    "Zodiac",
-                    "Painted",
-                    "Anaglyph",
-                    "Plasma",
-                    "Erratic",
-                    "Challenge",
-                };
-                if (!validDecks.Contains(config.Deck))
-                {
-                    ValidationErrors.Add(
-                        new ValidationErrorItem
-                        {
-                            LineNumber = 1,
-                            Column = 0,
-                            Message = $"Invalid deck: {config.Deck}",
-                            Severity = ValidationErrorItem.ErrorSeverity.Warning,
-                        }
-                    );
-                }
+                ValidationErrors.Add(
+                    new ValidationErrorItem
+                    {
+                        LineNumber = 1,
+                        Column = 0,
+                        Message = $"Invalid deck: {deckName}",
+                        Severity = ValidationErrorItem.ErrorSeverity.Warning,
+                    }
+                );
             }
 
-            // Validate stake enum
-            if (!string.IsNullOrEmpty(config.Stake))
+            var stakeName = config.Stake.ToString();
+            if (!Enum.IsDefined(typeof(Motely.Enums.MotelyStake), config.Stake))
             {
-                var validStakes = new[]
-                {
-                    "White",
-                    "Red",
-                    "Green",
-                    "Black",
-                    "Blue",
-                    "Purple",
-                    "Orange",
-                    "Gold",
-                };
-                if (!validStakes.Contains(config.Stake))
-                {
-                    ValidationErrors.Add(
-                        new ValidationErrorItem
-                        {
-                            LineNumber = 1,
-                            Column = 0,
-                            Message = $"Invalid stake: {config.Stake}",
-                            Severity = ValidationErrorItem.ErrorSeverity.Warning,
-                        }
-                    );
-                }
+                ValidationErrors.Add(
+                    new ValidationErrorItem
+                    {
+                        LineNumber = 1,
+                        Column = 0,
+                        Message = $"Invalid stake: {stakeName}",
+                        Severity = ValidationErrorItem.ErrorSeverity.Warning,
+                    }
+                );
             }
         }
 
@@ -325,7 +280,7 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
             return 0;
         }
 
-        private void UpdatePreview(JamlRootDocument config)
+        private void UpdatePreview(JamlConfig config)
         {
             PreviewItems.Clear();
             var spriteService = SpriteService.Instance;
@@ -359,29 +314,29 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         }
 
         private FilterItem CreateFilterItemFromClause(
-            JamlClauseUnion clause,
+            IJamlClause clause,
             FilterItemStatus status,
             string category,
             SpriteService spriteService
         )
         {
-            var value = clause.GetValueName();
-            var typeName = clause.GetTypeName();
+            var value = clause.GetValueName() ?? "";
+            var typeName = clause.GetTypeName() ?? "";
             var displayName = string.IsNullOrEmpty(value) ? typeName : value;
             var item = new FilterItem
             {
-                Name = displayName,
-                DisplayName = displayName,
+                Name = displayName ?? "",
+                DisplayName = displayName ?? "",
                 Status = status,
                 Category = category,
                 Type = string.IsNullOrEmpty(typeName) ? "Joker" : typeName,
                 Value = value,
-                Edition = clause.GetEditionString(),
-                Seal = clause.GetSealString(),
-                Enhancement = clause.GetEnhancementString(),
+                Edition = clause.GetEditionString() ?? "",
+                Seal = clause.GetSealString() ?? "",
+                Enhancement = clause.GetEnhancementString() ?? "",
                 Stickers = clause.GetStickerStrings()?.ToList(),
-                Score = clause.Score ?? 1,
-                MinCount = clause.Min ?? 0,
+                Score = clause.Score > 0 ? clause.Score : 1,
+                MinCount = clause.Min,
             };
 
             // Fetch image based on type and name
@@ -436,14 +391,14 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(NullNamingConvention.Instance)
-                    .IgnoreUnmatchedProperties()
-                    .Build();
-
-                var config = deserializer.Deserialize<JamlRootDocument>(JamlContent);
-                if (config is null)
+                if (!JamlConfigLoader.TryLoad(JamlContent, out var config, out var loadError) || config is null)
+                {
+                    ValidationStatus = $"✗ Sync failed: {loadError ?? "Invalid JAML"}";
+                    ValidationStatusColor = Brushes.Red;
+                    ErrorMessage = loadError ?? "Invalid JAML";
+                    HasError = true;
                     return;
+                }
 
                 // Load the config into the parent state
                 _parentViewModel.LoadConfigIntoState(config);
@@ -480,12 +435,17 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
             try
             {
-                // Use custom JAML formatter for idiomatic output:
-                // - type-as-key format: "joker: Blueprint" instead of "type: Joker, value: Blueprint"
-                // - inline numeric arrays: "antes: [1,2,3]" instead of multi-line
-                JamlContent = JamlFormatter.Format(JamlContent);
-                ValidationStatus = "✓ Formatted";
-                ValidationStatusColor = Brushes.LightGreen;
+                if (JamlConfigLoader.TryLoad(JamlContent, out var config, out _) && config is not null)
+                {
+                    JamlContent = JamlConfigLoader.ToYaml(config);
+                    ValidationStatus = "✓ Formatted";
+                    ValidationStatusColor = Brushes.LightGreen;
+                }
+                else
+                {
+                    ValidationStatus = "✗ Cannot format invalid JAML";
+                    ValidationStatusColor = Brushes.Red;
+                }
             }
             catch (Exception ex)
             {
@@ -583,14 +543,13 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
         #region Helper Methods
 
         /// <summary>
-        /// Convert config to JAML using the centralized JamlFormatter
-        /// (Single source of truth in Motely.Filters.JamlFormatter)
+        /// Convert config to JAML using the engine's canonical YAML serializer.
         /// </summary>
-        private string ConvertConfigToJaml(JamlRootDocument config)
+        private string ConvertConfigToJaml(JamlConfig config)
         {
             try
             {
-                return JamlFormatter.Format(config);
+                return JamlConfigLoader.ToYaml(config);
             }
             catch (Exception ex)
             {
@@ -604,20 +563,18 @@ namespace BalatroSeedOracle.ViewModels.FilterTabs
 
         private string GetDefaultJamlContent()
         {
-            return @"# JAML - Joker Ante Markup Language
-# A YAML-based format for Balatro seed filters
-name: New Filter
-description: Created with visual filter builder
-author: pifreak
-dateCreated: "
-                + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ")
-                + @"
-deck: Red
-stake: White
-must: []
-should: []
-mustNot: []
-";
+            return JamlConfigLoader.ToYaml(new JamlConfig
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = "New Filter",
+                Description = "Created with visual filter builder",
+                Author = "pifreak",
+                Deck = Motely.Enums.MotelyDeck.Red,
+                Stake = Motely.Enums.MotelyStake.White,
+                Must = [],
+                Should = [],
+                MustNot = [],
+            });
         }
 
         #endregion

@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Views.Modals.ToolsModal">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.ToolsModal"
+             x:DataType="vm:ToolsModalViewModel">
     
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel HorizontalAlignment="Center" Margin="20" Spacing="20">
@@ -25,50 +27,43 @@
                       Margin="0,0,0,12"/>
             
             <!-- Import Files Button -->
-            <Button Name="ImportFilesButton"
-                   Click="OnImportFilesClick"
+            <Button Command="{Binding ImportFilesCommand}"
                    Classes="btn-red"
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center">
-                <TextBlock Text="Import Files" 
+                <TextBlock Text="Import Files"
                            FontSize="18"
-                           
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
-            
+
             <!-- Word Lists Button -->
-            <Button Name="WordListsButton"
-                   Click="OnWordListsClick"
+            <Button Command="{Binding ShowWordListsCommand}"
                    Classes="btn-red"
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center">
-                <TextBlock Text="Word Lists" 
+                <TextBlock Text="Word Lists"
                            FontSize="18"
-                           
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
-            
+
             <!-- Credits Button -->
-            <Button Name="CreditsButton"
-                   Click="OnCreditsClick"
+            <Button Command="{Binding ShowCreditsCommand}"
                    Classes="btn-red"
                    MinWidth="250"
                    MinHeight="60"
                    HorizontalAlignment="Center">
                 <TextBlock Text="Credits"
                            FontSize="18"
-
                            FontFamily="{StaticResource BalatroFont}"
                            IsHitTestVisible="False"/>
             </Button>
 
             <!-- My Website (WebView) -->
-            <Button Name="MyWebsiteButton"
-                   Click="OnMyWebsiteClick"
+            <Button Command="{Binding OpenMyWebsiteCommand}"
                    Classes="btn-blue"
                    MinWidth="250"
                    MinHeight="60"
@@ -84,8 +79,7 @@
             </Button>
 
             <!-- Balatro-inspired site (WebView) -->
-            <Button Name="BalatroSiteButton"
-                   Click="OnBalatroSiteClick"
+            <Button Command="{Binding OpenBalatroSiteCommand}"
                    Classes="btn-blue"
                    MinWidth="250"
                    MinHeight="60"
@@ -101,8 +95,7 @@
             </Button>
 
             <!-- Web App – BSO in WebView (use web app instead of re-creating) -->
-            <Button Name="WebAppButton"
-                   Click="OnWebAppClick"
+            <Button Command="{Binding OpenWebAppCommand}"
                    Classes="btn-blue"
                    MinWidth="250"
                    MinHeight="60"
@@ -118,12 +111,12 @@
             </Button>
 
             <!-- Audio Visualizer Settings Button -->
-            <Button Name="AudioVisualizerSettingsButton"
-                   Click="OnAudioVisualizerSettingsClick"
+            <Button Command="{Binding ShowAudioVisualizerSettingsCommand}"
                    Classes="btn-blue"
                    MinWidth="250"
                    MinHeight="60"
-                   HorizontalAlignment="Center">
+                   HorizontalAlignment="Center"
+                   IsVisible="{Binding SupportsAudio}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource MusicIconData}" Width="20" Height="20" VerticalAlignment="Center"/>
                     <TextBlock Text="Audio Visualizer"
@@ -136,8 +129,7 @@
 
 
             <!-- Nuke Everything Button -->
-            <Button Name="NukeEverythingButton"
-                   Click="OnNukeEverythingClick"
+            <Button Command="{Binding NukeEverythingCommand}"
                    Classes="btn-red"
                    MinWidth="250"
                    MinHeight="60"
@@ -145,7 +137,7 @@
                    Background="{StaticResource BrightRed2}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <PathIcon Data="{StaticResource FireIconData}" Width="20" Height="20" VerticalAlignment="Center" Foreground="White"/>
-                    <TextBlock Text="Nuke Everything" 
+                    <TextBlock Text="Nuke Everything"
                                FontSize="18"
                                Foreground="White"
                                FontFamily="{StaticResource BalatroFont}"

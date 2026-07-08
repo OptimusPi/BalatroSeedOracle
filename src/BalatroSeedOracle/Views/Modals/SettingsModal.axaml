@@ -1,8 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="BalatroSeedOracle.Views.Modals.SettingsModal"
              x:DataType="vm:SettingsModalViewModel"
+             d:DataContext="{d:DesignInstance Type=vm:SettingsModalViewModel}"
              MinWidth="600"
              MinHeight="550">
 
@@ -52,7 +54,7 @@
                         Height="50"
                         FontSize="18"
                         FontFamily="{StaticResource BalatroFont}"
-                        Click="OnWordListsClick"/>
+                        Command="{Binding OpenWordListsCommand}"/>
 
                 <Button Content="Open Filters Folder"
                         Classes="btn-red"
@@ -60,7 +62,7 @@
                         Height="50"
                         FontSize="18"
                         FontFamily="{StaticResource BalatroFont}"
-                        Click="OnOpenFiltersDirectoryClick"/>
+                        Command="{Binding OpenFiltersDirectoryCommand}"/>
 
                 <Button Content="Open App Folder"
                         Classes="btn-red"
@@ -68,7 +70,7 @@
                         Height="50"
                         FontSize="18"
                         FontFamily="{StaticResource BalatroFont}"
-                        Click="OnOpenAppDirectoryClick"/>
+                        Command="{Binding OpenAppDirectoryCommand}"/>
 
                 <Button Content="Credits"
                         Classes="btn-purple"
@@ -76,7 +78,7 @@
                         Height="50"
                         FontSize="18"
                         FontFamily="{StaticResource BalatroFont}"
-                        Click="OnCreditsClick"/>
+                        Command="{Binding OpenCreditsCommand}"/>
             </StackPanel>
         </ScrollViewer>
 

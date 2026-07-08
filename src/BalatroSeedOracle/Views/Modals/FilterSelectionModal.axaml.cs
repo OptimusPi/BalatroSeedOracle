@@ -14,7 +14,7 @@ using BalatroSeedOracle.Controls;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -423,6 +423,7 @@ namespace BalatroSeedOracle.Views.Modals
             return await tcs.Task;
         }
 
+        // view-only: OK — StorageProvider file picker requires TopLevel (view plumbing)
         private async void OnBrowseFilterClick(
             object? sender,
             Avalonia.Interactivity.RoutedEventArgs e
@@ -526,11 +527,11 @@ namespace BalatroSeedOracle.Views.Modals
 
                 DebugLogger.Log("FilterSelectionModal", $"Read {text.Length} chars. Parsing...");
 
-                JamlRootDocument? config;
+                JamlConfig? config;
                 if (extension == ".jaml")
                 {
                     if (
-                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        !Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
                             text,
                             out config,
                             out var parseError
@@ -547,16 +548,11 @@ namespace BalatroSeedOracle.Views.Modals
                 }
                 else
                 {
-                    config = System.Text.Json.JsonSerializer.Deserialize(
-                        text,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
-
-                    if (config == null)
+                    if (!JamlConfigLoader.TryLoad(text, out config, out var parseError) || config == null)
                     {
                         DebugLogger.LogError(
                             "FilterSelectionModal",
-                            "Failed to deserialize JSON filter"
+                            $"Failed to parse filter: {parseError ?? "Unknown error"}"
                         );
                         return;
                     }

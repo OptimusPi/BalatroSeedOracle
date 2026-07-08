@@ -11,7 +11,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using BalatroSeedOracle.ViewModels;
 using BalatroSeedOracle.Views.Modals;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 
@@ -95,7 +95,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowFiltersModal(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.Jaml.JamlRootDocument config
+            Motely.Filters.Jaml.JamlConfig config
         )
         {
             var filtersContent = new Views.Modals.FiltersModal(
@@ -110,7 +110,7 @@ namespace BalatroSeedOracle.Helpers
 
         private static async Task LoadFilterForEditingAsync(
             Views.Modals.FiltersModal filtersContent,
-            Motely.Filters.Jaml.JamlRootDocument config
+            Motely.Filters.Jaml.JamlConfig config
         )
         {
             try
@@ -186,11 +186,11 @@ namespace BalatroSeedOracle.Helpers
         /// Creates and shows a search modal with a config object (no temp files!)
         /// </summary>
         /// <param name="menu">The main menu to show the modal on</param>
-        /// <param name="config">The JamlRootDocument object to search with</param>
+        /// <param name="config">The JamlConfig object to search with</param>
         /// <returns>The created modal</returns>
         public static StandardModal ShowSearchModalWithConfig(
             this Views.BalatroMainMenu menu,
-            Motely.Filters.Jaml.JamlRootDocument config
+            Motely.Filters.Jaml.JamlConfig config
         )
         {
             // This method should not be used - filters must be saved first!
@@ -206,10 +206,10 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowToolsModal(this Views.BalatroMainMenu menu)
         {
-            var userProfile = App.GetService<UserProfileService>()
-                ?? throw new InvalidOperationException("UserProfileService not registered");
-            var ToolView = new ToolsModal(userProfile);
-            return menu.ShowModal("MORE", ToolView);
+            var toolViewModel = App.GetService<ViewModels.ToolsModalViewModel>()
+                ?? throw new InvalidOperationException("ToolsModalViewModel not registered");
+            var toolView = new ToolsModal(toolViewModel);
+            return menu.ShowModal("MORE", toolView);
         }
 
         /// <summary>
@@ -444,25 +444,22 @@ namespace BalatroSeedOracle.Helpers
         {
             var filtersDir = AppPaths.FiltersDir;
 
-            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
+            var tempPath = System.IO.Path.Combine(filtersDir, "_UNSAVED_CREATION.yaml");
 
             // Create basic empty filter structure
-            var emptyFilter = new JamlRootDocument
+            var emptyFilter = new JamlConfig
             {
+                Id = "unsaved-creation",
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
                 Author = App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown",
-                DateCreated = DateTime.UtcNow.ToString("o"),
-                Must = new System.Collections.Generic.List<JamlClauseUnion>(),
-                Should = new System.Collections.Generic.List<JamlClauseUnion>(),
-                MustNot = new System.Collections.Generic.List<JamlClauseUnion>(),
+                Must = new System.Collections.Generic.List<IJamlClause>(),
+                Should = new System.Collections.Generic.List<IJamlClause>(),
+                MustNot = new System.Collections.Generic.List<IJamlClause>(),
             };
 
-            var json = JsonSerializer.Serialize(
-                emptyFilter,
-                MotelyJsonSerializerContext.Default.JamlRootDocument
-            );
-            await System.IO.File.WriteAllTextAsync(tempPath, json);
+            var yaml = JamlConfigLoader.ToYaml(emptyFilter);
+            await System.IO.File.WriteAllTextAsync(tempPath, yaml);
 
             return tempPath;
         }
@@ -476,28 +473,21 @@ namespace BalatroSeedOracle.Helpers
         {
             try
             {
-                var originalJson = await System.IO.File.ReadAllTextAsync(originalPath);
-                var config = JsonSerializer.Deserialize(
-                    originalJson,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-
-                if (config != null)
+                var originalYaml = await System.IO.File.ReadAllTextAsync(originalPath);
+                if (!JamlConfigLoader.TryLoad(originalYaml, out var config, out var error) || config is null)
                 {
-                    config.Name = $"{config.Name} (Copy)";
-                    config.Author =
-                        App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
-                    config.DateCreated = DateTime.UtcNow.ToString("o");
-
-                    var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Name}.json");
-                    var json = JsonSerializer.Serialize(
-                        config,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
-                    await System.IO.File.WriteAllTextAsync(clonedPath, json);
-
-                    return clonedPath;
+                    DebugLogger.LogError("ModalHelper", $"Failed to load filter for cloning: {error}");
+                    return string.Empty;
                 }
+
+                config.Name = $"{config.Name} (Copy)";
+                config.Author = App.GetService<UserProfileService>()?.GetAuthorName() ?? "Unknown";
+
+                var clonedPath = System.IO.Path.Combine(AppPaths.FiltersDir, $"{config.Id}-copy.yaml");
+                var yaml = JamlConfigLoader.ToYaml(config);
+                await System.IO.File.WriteAllTextAsync(clonedPath, yaml);
+
+                return clonedPath;
             }
             catch (System.Exception ex)
             {

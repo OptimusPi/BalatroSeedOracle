@@ -76,6 +76,7 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
+                sp.GetService<IModalHost>(),
                 sp.GetService<IPlatformServices>(),
                 () => sp.GetRequiredService<FilterSelectionModalViewModel>()
             ));
@@ -89,6 +90,7 @@ namespace BalatroSeedOracle.Extensions
             services.AddSingleton<Views.BalatroMainMenu>(sp => new Views.BalatroMainMenu(
                 sp.GetRequiredService<BalatroMainMenuViewModel>()
             ));
+            services.AddSingleton<IModalHost>(sp => sp.GetRequiredService<Views.BalatroMainMenu>());
             services.AddSingleton<Views.MainWindow>(sp => new Views.MainWindow(
                 sp.GetRequiredService<MainWindowViewModel>(),
                 sp.GetRequiredService<Views.BalatroMainMenu>(),
@@ -120,11 +122,15 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<SearchModalViewModel>()
             ));
             services.AddTransient<Views.Modals.ToolsModal>(sp => new Views.Modals.ToolsModal(
+                sp.GetRequiredService<ToolsModalViewModel>()
+            ));
+            services.AddTransient<ToolsModalViewModel>(sp => new ToolsModalViewModel(
                 sp.GetService<UserProfileService>(),
                 sp.GetService<IConfigurationService>(),
                 sp.GetService<IFilterService>(),
                 sp.GetService<IFilterCacheService>(),
-                sp.GetService<IPlatformServices>()
+                sp.GetService<IPlatformServices>(),
+                sp.GetService<IModalHost>()
             ));
             services.AddTransient<AnalyzeModalViewModel>(sp => new AnalyzeModalViewModel(
                 sp.GetRequiredService<SpriteService>(),
@@ -136,6 +142,11 @@ namespace BalatroSeedOracle.Extensions
             services.AddTransient<FilterListViewModel>(sp => new FilterListViewModel(
                 sp.GetRequiredService<IFilterCacheService>(),
                 sp.GetService<SpriteService>()
+            ));
+            services.AddTransient<FilterSelectorViewModel>(sp => new FilterSelectorViewModel(
+                sp.GetRequiredService<SpriteService>(),
+                sp.GetRequiredService<IConfigurationService>(),
+                sp.GetRequiredService<IFilterCacheService>()
             ));
             services.AddTransient<PaginatedFilterBrowserViewModel>(sp => new PaginatedFilterBrowserViewModel(
                 sp.GetRequiredService<IFilterCacheService>(),

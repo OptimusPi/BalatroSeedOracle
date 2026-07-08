@@ -1,9 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="BalatroSeedOracle.Views.Modals.CreditsModal"
              x:DataType="vm:CreditsModalViewModel"
-             x:CompileBindings="True">
+             d:DataContext="{d:DesignInstance Type=vm:CreditsModalViewModel}">
     <UserControl.Styles>
         <Style Selector="TextBlock#CreditLink:pointerover">
             <Setter Property="Foreground" Value="{StaticResource Blue}"/>

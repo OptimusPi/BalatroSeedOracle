@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Models;
 using Motely;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 using DebugLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.Services;
@@ -12,19 +13,19 @@ namespace BalatroSeedOracle.Services;
 public sealed class ActiveSearchContext : IDisposable
 {
     private readonly BsoSearchContext? _context;
-    private readonly JamlRootDocument _config;
+    private readonly JamlConfig _config;
     private readonly string _searchId;
 
     private bool _hasNewResults;
 
-    internal ActiveSearchContext(BsoSearchContext context, JamlRootDocument config)
+    internal ActiveSearchContext(BsoSearchContext context, JamlConfig config)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _searchId = context.SearchId;
     }
 
-    public ActiveSearchContext(string searchId, JamlRootDocument config)
+    public ActiveSearchContext(string searchId, JamlConfig config)
     {
         _searchId = searchId;
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -34,7 +35,7 @@ public sealed class ActiveSearchContext : IDisposable
     public string SearchId => _searchId;
     public string FilterId => _context?.FilterId ?? "remote_filter";
     public string FilterName => _config.Name ?? SearchId;
-    public JamlRootDocument Config => _config;
+    public JamlConfig Config => _config;
     public string ConfigPath => "";
     public string DatabasePath => "";
 
@@ -113,7 +114,7 @@ public sealed class ActiveSearchContext : IDisposable
     public void Stop() => _context?.Cancel();
     public void StopSearch() => _context?.Cancel();
 
-    public JamlRootDocument? GetFilterConfig() => _config;
+    public JamlConfig? GetFilterConfig() => _config;
 
     public event EventHandler<SearchResultEventArgs>? SearchStarted;
     public event EventHandler<SearchResultEventArgs>? SearchCompleted;

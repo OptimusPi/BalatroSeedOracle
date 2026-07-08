@@ -189,6 +189,7 @@ namespace BalatroSeedOracle.Controls
             }
         }
 
+        // view-only: OK — control-internal tag-chip management on this reusable control
         private void OnTagSelected(object? sender, SelectionChangedEventArgs e)
         {
             if (TagInput.SelectedItem is string selectedTag && !string.IsNullOrEmpty(selectedTag))

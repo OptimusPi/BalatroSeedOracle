@@ -3,242 +3,132 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
-using Motely.Filters;
 using Motely.Filters.Jaml;
-using ItemConfig = BalatroSeedOracle.Models.ItemConfig;
 
-namespace BalatroSeedOracle.Services
+namespace BalatroSeedOracle.Services;
+
+public sealed class FilterSerializationService
 {
-    public class FilterSerializationService
+    private readonly UserProfileService _userProfileService;
+    private readonly ClauseConversionService _clauseConversion;
+
+    public FilterSerializationService(UserProfileService userProfileService)
     {
-        private readonly UserProfileService _userProfileService;
+        _userProfileService = userProfileService;
+        _clauseConversion = new ClauseConversionService();
+    }
 
-        public FilterSerializationService(UserProfileService userProfileService)
+    public string SerializeConfig(JamlConfig config)
+    {
+        if (string.IsNullOrWhiteSpace(config.Name))
+            config.Name = "Untitled Filter";
+        if (string.IsNullOrWhiteSpace(config.Author))
+            config.Author = _userProfileService?.GetAuthorName() ?? "Jimbo";
+
+        return JamlConfigLoader.ToYaml(config);
+    }
+
+    public JamlConfig? DeserializeConfig(string yaml)
+    {
+        if (!JamlConfigLoader.TryLoad(yaml, out var config, out var error))
         {
-            _userProfileService = userProfileService;
-        }
-
-        public string SerializeConfig(JamlRootDocument config)
-        {
-            if (string.IsNullOrWhiteSpace(config.Name))
-                config.Name = "Untitled Filter";
-            if (string.IsNullOrWhiteSpace(config.Author))
-                config.Author = _userProfileService?.GetAuthorName() ?? "Jimbo";
-            if (string.IsNullOrWhiteSpace(config.DateCreated))
-                config.DateCreated = DateTime.UtcNow.ToString("o");
-
-            return JsonSerializer.Serialize(
-                config,
-                MotelyJsonSerializerContext.Default.JamlRootDocument
+            DebugLogger.LogError(
+                "FilterSerializationService",
+                $"Failed to deserialize config: {error}"
             );
+            return null;
         }
 
-        public JamlRootDocument? DeserializeConfig(string json)
-        {
-            try
-            {
-                var config = JsonSerializer.Deserialize(
-                    json,
-                    MotelyJsonSerializerContext.Default.JamlRootDocument
-                );
-                if (config == null)
-                {
-                    DebugLogger.LogError(
-                        "FilterSerializationService",
-                        "DeserializeConfig returned null"
-                    );
-                    return null;
-                }
+        DebugLogger.Log(
+            "FilterSerializationService",
+            $"Deserialized config: Name='{config?.Name}', Must={(config?.Must.Count ?? 0)}, Should={(config?.Should.Count ?? 0)}, MustNot={(config?.MustNot.Count ?? 0)}"
+        );
+        return config;
+    }
 
-                DebugLogger.Log(
-                    "FilterSerializationService",
-                    $"Deserialized config: Name='{config.Name}', Must={(config.Must?.Count ?? 0)}, Should={(config.Should?.Count ?? 0)}, MustNot={(config.MustNot?.Count ?? 0)}"
-                );
-                return config;
-            }
-            catch (Exception ex)
+    public JamlConfig? DeserializeConfigFromFile(string filePath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
             {
                 DebugLogger.LogError(
                     "FilterSerializationService",
-                    $"Failed to deserialize config: {ex.Message}"
+                    $"File not found: {filePath}"
                 );
                 return null;
             }
-        }
 
-        public JamlRootDocument? DeserializeConfigFromFile(string filePath)
-        {
-            try
+            var text = File.ReadAllText(filePath);
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            if (ext == ".yaml" || ext == ".yml" || ext == ".jaml")
             {
-                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                {
-                    DebugLogger.LogError(
-                        "FilterSerializationService",
-                        $"File not found: {filePath}"
-                    );
-                    return null;
-                }
-
-                var text = File.ReadAllText(filePath);
-                var ext = Path.GetExtension(filePath).ToLowerInvariant();
-                if (ext == ".yaml" || ext == ".yml" || ext == ".jaml")
-                {
-                    // Motely owns JAML parsing — route through the engine's AOT-safe strict
-                    // loader instead of a reflection YamlDotNet deserializer (IL3050/IL2026).
-                    if (JamlConfigLoader.TryParseRoot(text, out var doc, out var jamlError))
-                        return doc;
-
-                    DebugLogger.LogError(
-                        "FilterSerializationService",
-                        $"Failed to parse JAML '{filePath}': {jamlError}"
-                    );
-                    return null;
-                }
                 return DeserializeConfig(text);
             }
-            catch (Exception ex)
-            {
-                DebugLogger.LogError(
-                    "FilterSerializationService",
-                    $"Error loading config from file '{filePath}': {ex.Message}"
-                );
-                return null;
-            }
+
+            DebugLogger.LogError(
+                "FilterSerializationService",
+                $"Unsupported filter extension '{ext}' for '{filePath}'"
+            );
+            return null;
         }
-
-        public JamlClauseUnion? CreateFilterClause(
-            string category,
-            string itemName,
-            ItemConfig config
-        )
+        catch (Exception ex)
         {
-            var filterItem = new JamlClauseUnion
-            {
-                Antes = config.Antes?.ToArray() ?? new[] { 1, 2, 3, 4, 5, 6, 7, 8 },
-                Min = config.Min,
-            };
-
-            var normalizedCategory = category.ToLower();
-
-            bool canHaveSources = IsSourceCapableCategory(normalizedCategory);
-
-            if (canHaveSources && HasValidSources(config))
-            {
-                filterItem.Sources = new JamlSources
-                {
-                    ShopItems = config.ShopSlots?.ToArray(),
-                    BoosterPacks = config.PackSlots?.ToArray(),
-                    Tags = config.SkipBlindTags,
-                    RequireMega = config.IsMegaArcana,
-                };
-            }
-
-            filterItem.SetDiscriminator(MapCategoryToType(normalizedCategory, itemName), itemName);
-
-            if (config.Edition != null && config.Edition != "none")
-            {
-                filterItem.SetEditionString(config.Edition);
-            }
-
-            if (config.Stickers?.Count > 0)
-            {
-                filterItem.SetStickerStrings(config.Stickers.ToArray());
-            }
-
-            if (normalizedCategory == "playingcards")
-            {
-                if (config.Seal != "None")
-                    filterItem.SetSealString(config.Seal);
-                if (config.Enhancement != "None")
-                    filterItem.SetEnhancementString(config.Enhancement);
-            }
-
-            return filterItem;
+            DebugLogger.LogError(
+                "FilterSerializationService",
+                $"Error loading config from file '{filePath}': {ex.Message}"
+            );
+            return null;
         }
+    }
 
-        public void ConvertSelectionsToFilterClauses(
-            ObservableCollection<string> items,
-            Dictionary<string, ItemConfig> itemConfigs,
-            List<JamlClauseUnion> targetList,
-            int defaultScore = 0
-        )
+    public IJamlClause? CreateFilterClause(
+        string category,
+        string itemName,
+        ItemConfig config
+    )
+    {
+        var filterItem = new FilterItem
         {
-            foreach (var item in items)
+            Category = category,
+            Name = itemName,
+            ItemKey = $"{category}:{itemName}",
+        };
+        return _clauseConversion.ConvertFilterItemToClause(filterItem, config);
+    }
+
+    public void ConvertSelectionsToFilterClauses(
+        ObservableCollection<string> items,
+        Dictionary<string, ItemConfig> itemConfigs,
+        List<IJamlClause> targetList,
+        int defaultScore = 0
+    )
+    {
+        foreach (var item in items)
+        {
+            var colonIndex = item.IndexOf(':');
+            if (colonIndex <= 0)
+                continue;
+
+            var category = item.Substring(0, colonIndex);
+            var itemNameWithSuffix = item.Substring(colonIndex + 1);
+
+            var hashIndex = itemNameWithSuffix.IndexOf('#');
+            var itemName = hashIndex > 0
+                ? itemNameWithSuffix.Substring(0, hashIndex)
+                : itemNameWithSuffix;
+
+            var itemConfig = itemConfigs.TryGetValue(item, out var cfg) ? cfg : new ItemConfig();
+
+            var filterItem = CreateFilterClause(category, itemName, itemConfig);
+            if (filterItem is not null)
             {
-                var colonIndex = item.IndexOf(':');
-                if (colonIndex > 0)
-                {
-                    var category = item.Substring(0, colonIndex);
-                    var itemNameWithSuffix = item.Substring(colonIndex + 1);
-
-                    var hashIndex = itemNameWithSuffix.IndexOf('#');
-                    var itemName =
-                        hashIndex > 0
-                            ? itemNameWithSuffix.Substring(0, hashIndex)
-                            : itemNameWithSuffix;
-
-                    var itemConfig = itemConfigs.ContainsKey(item)
-                        ? itemConfigs[item]
-                        : new ItemConfig();
-
-                    var filterItem = CreateFilterClause(category, itemName, itemConfig);
-                    if (filterItem != null)
-                    {
-                        filterItem.Score =
-                            itemConfig.Score > 0
-                                ? itemConfig.Score
-                                : (itemConfig.Antes?.Count ?? Math.Max(defaultScore, 1));
-                        targetList.Add(filterItem);
-                    }
-                }
-            }
-        }
-
-        private bool IsSourceCapableCategory(string category)
-        {
-            return category == "jokers"
-                || category == "souljokers"
-                || category == "tarots"
-                || category == "spectrals"
-                || category == "planets"
-                || category == "playingcards";
-        }
-
-        private bool HasValidSources(ItemConfig config)
-        {
-            return (config.ShopSlots?.Count > 0)
-                || (config.PackSlots?.Count > 0)
-                || config.SkipBlindTags
-                || config.IsMegaArcana;
-        }
-
-        private string MapCategoryToType(string category, string itemName)
-        {
-            switch (category)
-            {
-                case "souljokers":
-                    return "legendaryJoker";
-                case "jokers":
-                    return "joker";
-                case "tarots":
-                    return "tarotCard";
-                case "planets":
-                    return "planetCard";
-                case "spectrals":
-                    return "spectralCard";
-                case "playingcards":
-                    return "standardCard";
-                case "vouchers":
-                    return "voucher";
-                case "tags":
-                    return "tag";
-                case "bosses":
-                    return "boss";
-                default:
-                    return category;
+                filterItem.Score = itemConfig.Score > 0
+                    ? itemConfig.Score
+                    : Math.Max(defaultScore, 1);
+                targetList.Add(filterItem);
             }
         }
     }

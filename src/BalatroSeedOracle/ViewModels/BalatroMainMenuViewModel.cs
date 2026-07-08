@@ -25,6 +25,7 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IPlatformServices? _platformServices;
+        private readonly IModalHost? _modalHost;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -54,6 +55,12 @@ namespace BalatroSeedOracle.ViewModels
         /// Expose audio manager for widgets to access frequency data
         /// </summary>
         public IAudioManager? AudioManager => _audioManager;
+
+        /// <summary>
+        /// Active search "desktop icons" — searches that keep running after their
+        /// modal was closed. Click one to reconnect without losing your spot.
+        /// </summary>
+        public System.Collections.ObjectModel.ObservableCollection<SearchWidgetIconViewModel> ActiveSearchWidgets { get; } = new();
 
         [ObservableProperty]
         private string _mainTitle = "";
@@ -140,6 +147,7 @@ namespace BalatroSeedOracle.ViewModels
             Func<AnalyzeModalViewModel> analyzeModalFactory,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
+            IModalHost? modalHost = null,
             IPlatformServices? platformServices = null,
             Func<FilterSelectionModalViewModel>? filterSelectionFactory = null
         )
@@ -155,6 +163,7 @@ namespace BalatroSeedOracle.ViewModels
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;
+            _modalHost = modalHost;
 
             // Load settings
             LoadSettings();
@@ -1001,6 +1010,131 @@ namespace BalatroSeedOracle.ViewModels
         public void ApplyColorSaturationSource(BalatroShaderBackground? shader, int sourceIndex)
         {
             _colorSaturationSource = sourceIndex;
+        }
+
+        #endregion
+
+        #region Desktop Icon Management
+
+        /// <summary>
+        /// Adds a search "desktop icon" to the main menu for a search that keeps
+        /// running after its modal was closed. Clicking it reconnects to the
+        /// running instance (or reopens the filter if the search isn't started yet)
+        /// so the user never loses their spot.
+        /// </summary>
+        public void ShowSearchDesktopIcon(string searchId, string? configPath = null)
+        {
+            try
+            {
+                // Dedupe: one icon per search
+                foreach (var existing in ActiveSearchWidgets)
+                {
+                    if (existing.SearchId == searchId)
+                        return;
+                }
+
+                var searchManager = ServiceHelper.GetService<SearchManager>();
+                var context = searchManager?.GetSearch(searchId);
+
+                var icon = new SearchWidgetIconViewModel(
+                    searchId,
+                    configPath,
+                    context,
+                    OnSearchWidgetIconClicked
+                );
+                ActiveSearchWidgets.Add(icon);
+
+                DebugLogger.Log(
+                    "BalatroMainMenuViewModel",
+                    $"Search desktop icon created for searchId: {searchId} (live instance: {context != null})"
+                );
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to create search desktop icon: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Removes a search desktop icon by search ID
+        /// </summary>
+        public void RemoveSearchDesktopIcon(string searchId)
+        {
+            try
+            {
+                for (int i = ActiveSearchWidgets.Count - 1; i >= 0; i--)
+                {
+                    if (ActiveSearchWidgets[i].SearchId == searchId)
+                    {
+                        ActiveSearchWidgets[i].Dispose();
+                        ActiveSearchWidgets.RemoveAt(i);
+                        DebugLogger.Log(
+                            "BalatroMainMenuViewModel",
+                            $"Search desktop icon removed for searchId: {searchId}"
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to remove search desktop icon: {ex.Message}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Handles search widget icon click - removes icon and shows appropriate modal
+        /// </summary>
+        private async void OnSearchWidgetIconClicked(SearchWidgetIconViewModel icon)
+        {
+            try
+            {
+                var searchManager = ServiceHelper.GetService<SearchManager>();
+                var context = searchManager?.GetSearch(icon.SearchId);
+
+                RemoveSearchDesktopIcon(icon.SearchId);
+
+                // Use IModalHost to show the appropriate search modal
+                // Note: IModalHost.ShowSearchModal() shows filter selection, not the specific search instance
+                // For now, we delegate to the view via a callback since showing specific search instances
+                // requires access to the view's ShowSearchModalForInstanceAsync method
+                if (_modalHost is Views.BalatroMainMenu mainMenu)
+                {
+                    if (context is not null)
+                    {
+                        // Live instance: reconnect with full state
+                        await mainMenu.ShowSearchModalForInstanceAsync(icon.SearchId, icon.ConfigPath);
+                    }
+                    else if (!string.IsNullOrEmpty(icon.ConfigPath))
+                    {
+                        // Restored-from-disk: reopen search modal with filter loaded
+                        await mainMenu.ShowSearchModalWithFilterAsync(icon.ConfigPath);
+                    }
+                    else
+                    {
+                        mainMenu.ShowSearchModal();
+                    }
+                }
+                else
+                {
+                    DebugLogger.LogError(
+                        "BalatroMainMenuViewModel",
+                        "IModalHost is not BalatroMainMenu - cannot show search modal for desktop icon"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError(
+                    "BalatroMainMenuViewModel",
+                    $"Failed to handle search widget icon click: {ex.Message}"
+                );
+            }
         }
 
         #endregion

@@ -1,4 +1,5 @@
 using System;
+using BalatroSeedOracle.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -54,6 +55,7 @@ namespace BalatroSeedOracle.Windows
         public DataGridResultsWindow()
         {
             InitializeComponent();
+            WireUpControls();
         }
 
         public DataGridResultsWindow(ActiveSearchContext searchInstance, Services.Export.ResultsExportService exportService, string? filterName = null)
@@ -62,6 +64,7 @@ namespace BalatroSeedOracle.Windows
             _exportService = exportService;
             _filterName = filterName;
             InitializeComponent();
+            WireUpControls();
             SetupControls();
             SetupSqlEditor();
 
@@ -72,12 +75,9 @@ namespace BalatroSeedOracle.Windows
             }
         }
 
-        private void InitializeComponent()
+        private void WireUpControls()
         {
-            AvaloniaXamlLoader.Load(this);
-
-            // Control references are now auto-generated from x:Name attributes
-            // No FindControl anti-pattern needed!
+            // Control references are auto-generated from x:Name attributes
             _resultsGrid = ResultsGrid;
             _queryResultsGrid = QueryResultsGrid;
             _quickSearchBox = QuickSearchBox;

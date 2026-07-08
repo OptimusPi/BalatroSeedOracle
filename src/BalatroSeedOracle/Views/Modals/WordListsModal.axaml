@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="BalatroSeedOracle.Views.Modals.WordListsModal">
+             xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             x:Class="BalatroSeedOracle.Views.Modals.WordListsModal"
+             x:DataType="vm:WordListsModalViewModel">
     
     <StackPanel Spacing="20" Margin="20">
         <!-- Explanatory Text -->
@@ -35,9 +37,8 @@
                 <ComboBox Grid.Column="1"
                           Name="FileSelector"
                           HorizontalAlignment="Stretch"
-                          SelectedIndex="0">
-                    <!-- Files loaded dynamically from WordLists/ folder -->
-                </ComboBox>
+                          ItemsSource="{Binding Files}"
+                          SelectedItem="{Binding SelectedFile}"/>
                 
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
@@ -55,12 +56,12 @@
                     <Button Name="NewButton"
                             Content="New List"
                             Classes="small-button"
-                            Click="OnNewClick"/>
+                            Command="{Binding NewFileCommand}"/>
                     <Button Name="SaveButton"
                             Content="Save"
                             Classes="small-button"
                             Background="{StaticResource Green}"
-                            Click="OnSaveClick"/>
+                            Command="{Binding SaveCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -101,14 +102,15 @@
                              Foreground="{StaticResource White}"
                              BorderThickness="0"
                              Padding="12"
-                             Text=""/>
+                             Text="{Binding EditorText}"
+                             IsReadOnly="{Binding IsEditorReadOnly}"/>
                 </ScrollViewer>
             </Grid>
         </Border>
         
         <!-- Status text -->
         <TextBlock Name="StatusText"
-                   Text="Edit word lists used by filters"
+                   Text="{Binding StatusMessage}"
                    Foreground="{StaticResource ModalGrey}"
                    FontSize="18"
                    HorizontalAlignment="Center"/>

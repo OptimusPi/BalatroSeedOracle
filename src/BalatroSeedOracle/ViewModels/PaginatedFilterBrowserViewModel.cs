@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using BalatroSeedOracle.Helpers;
@@ -11,7 +10,7 @@ using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -121,25 +120,21 @@ namespace BalatroSeedOracle.ViewModels
             var tempPath = Path.Combine(filtersDir, "_UNSAVED_CREATION.json");
 
             // Create basic empty filter structure
-            var emptyFilter = new Motely.Filters.Jaml.JamlRootDocument
+            var emptyFilter = new Motely.Filters.Jaml.JamlConfig
             {
+                Id = Guid.NewGuid().ToString("N"),
                 Name = "New Filter",
                 Description = "Created with Filter Designer",
                 Author = _userProfileService?.GetAuthorName() ?? "Unknown",
-                DateCreated = DateTime.UtcNow.ToString("o"),
-                Must =
-                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
-                Should =
-                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
-                MustNot =
-                    new System.Collections.Generic.List<Motely.Filters.Jaml.JamlClauseUnion>(),
+                Deck = Motely.Enums.MotelyDeck.Red,
+                Stake = Motely.Enums.MotelyStake.White,
+                Must = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
+                Should = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
+                MustNot = new System.Collections.Generic.List<Motely.Filters.Jaml.IJamlClause>(),
             };
 
-            var json = JsonSerializer.Serialize(
-                emptyFilter,
-                MotelyJsonSerializerContext.Default.JamlRootDocument
-            );
-            await File.WriteAllTextAsync(tempPath, json);
+            var yaml = Motely.Filters.Jaml.JamlConfigLoader.ToYaml(emptyFilter);
+            await File.WriteAllTextAsync(tempPath, yaml);
 
             return tempPath;
         }
@@ -218,13 +213,13 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc) ? dc : cachedFilter.LastModified,
+                    DateCreated = cachedFilter.LastModified,
                     FilePath = cachedFilter.FilePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
                     MustNotCount = config.MustNot?.Count ?? 0,
-                    DeckName = config.Deck ?? "Red",
-                    StakeName = config.Stake ?? "White",
+                    DeckName = config.Deck.ToString(),
+                    StakeName = config.Stake.ToString(),
                 };
 
                 // Parse Must items
@@ -265,14 +260,14 @@ namespace BalatroSeedOracle.ViewModels
                 if (string.IsNullOrWhiteSpace(content))
                     return null;
 
-                Motely.Filters.Jaml.JamlRootDocument? config = null;
+                Motely.Filters.Jaml.JamlConfig? config = null;
                 var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
                 if (extension == ".jaml")
                 {
                     // Load JAML file
                     if (
-                        !Motely.JamlConfigLoader.TryLoadFromJamlString(
+                        !Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
                             content,
                             out config,
                             out var jamlError
@@ -288,10 +283,14 @@ namespace BalatroSeedOracle.ViewModels
                 }
                 else
                 {
-                    config = JsonSerializer.Deserialize(
-                        content,
-                        MotelyJsonSerializerContext.Default.JamlRootDocument
-                    );
+                    if (!Motely.Filters.Jaml.JamlConfigLoader.TryLoad(content, out config, out var loadError))
+                    {
+                        DebugLogger.LogError(
+                            "PaginatedFilterBrowserViewModel",
+                            $"Failed to load filter {filePath}: {loadError}"
+                        );
+                        return null;
+                    }
                 }
 
                 if (config is null || string.IsNullOrEmpty(config.Name))
@@ -302,13 +301,13 @@ namespace BalatroSeedOracle.ViewModels
                     Name = config.Name,
                     Description = config.Description ?? "",
                     Author = config.Author ?? "Unknown",
-                    DateCreated = DateTime.TryParse(config.DateCreated, out var dc2) ? dc2 : File.GetLastWriteTime(filePath),
+                    DateCreated = File.GetLastWriteTime(filePath),
                     FilePath = filePath,
                     MustCount = config.Must?.Count ?? 0,
                     ShouldCount = config.Should?.Count ?? 0,
                     MustNotCount = config.MustNot?.Count ?? 0,
-                    DeckName = config.Deck ?? "Red",
-                    StakeName = config.Stake ?? "White",
+                    DeckName = config.Deck.ToString(),
+                    StakeName = config.Stake.ToString(),
                 };
 
                 // Parse Must items
@@ -345,7 +344,7 @@ namespace BalatroSeedOracle.ViewModels
         /// Extracts item names from filter clauses and groups them by category
         /// </summary>
         private FilterItemCollections ParseItemCollections(
-            List<Motely.Filters.Jaml.JamlClauseUnion> clauses,
+            System.Collections.Generic.IList<Motely.Filters.Jaml.IJamlClause> clauses,
             int? scoreOverride = null
         )
         {
@@ -360,10 +359,11 @@ namespace BalatroSeedOracle.ViewModels
                     AddItemToCollection(collections, clause, itemValue, scoreOverride);
                 }
 
-                if (clause.Clauses is not null && clause.Clauses.Count > 0)
+                var childClauses = clause.GetClauses();
+                if (childClauses is not null && childClauses.Length > 0)
                 {
                     var nestedCollections = ParseItemCollections(
-                        clause.Clauses,
+                        childClauses,
                         scoreOverride ?? clause.Score
                     );
                     collections.Jokers.AddRange(nestedCollections.Jokers);
@@ -410,25 +410,26 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void AddItemToCollection(
             FilterItemCollections collections,
-            Motely.Filters.Jaml.JamlClauseUnion clause,
+            Motely.Filters.Jaml.IJamlClause clause,
             string itemValue,
             int? scoreOverride = null
         )
         {
-            var itemType = clause.GetTypeName().ToLowerInvariant();
+            var typeName = clause.GetTypeName() ?? "";
+            var itemType = typeName.ToLowerInvariant();
 
             var itemConfig = new ItemConfig
             {
                 ItemKey = itemValue,
-                ItemType = clause.GetTypeName(),
+                ItemType = typeName,
                 ItemName = itemValue,
-                Antes = clause.Antes?.ToList(),
+                Antes = clause.GetAntes().ToList(),
                 Edition = clause.GetEditionString() ?? "none",
                 Seal = clause.GetSealString() ?? "None",
                 Enhancement = clause.GetEnhancementString() ?? "None",
-                Rank = clause.Rank,
-                Suit = clause.Suit,
-                Score = scoreOverride ?? clause.Score ?? 1,
+                Rank = clause is StandardCardClause sc ? sc.Rank?.ToString() : clause is StartingDrawClause sd ? sd.Rank?.ToString() : null,
+                Suit = clause is StandardCardClause sc2 ? sc2.Suit?.ToString() : clause is StartingDrawClause sd2 ? sd2.Suit?.ToString() : null,
+                Score = scoreOverride ?? (clause.Score > 0 ? clause.Score : 1),
                 Label = clause.Label,
                 Stickers = clause.GetStickerStrings()?.ToList(),
             };

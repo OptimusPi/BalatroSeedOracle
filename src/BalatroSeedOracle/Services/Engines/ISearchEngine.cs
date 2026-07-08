@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Motely; // For SearchOptionsDto
-using Motely.Filters; // Restored
+using Motely;
+using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services.Engines
 {
@@ -16,7 +17,7 @@ namespace BalatroSeedOracle.Services.Engines
         /// <summary>
         /// Starts a search with the given configuration.
         /// </summary>
-        Task<string> StartSearchAsync(JamlRootDocument config, SearchOptionsDto options);
+        Task<string> StartSearchAsync(JamlConfig config, SearchOptionsDto options);
 
         /// <summary>
         /// Stops a running search.

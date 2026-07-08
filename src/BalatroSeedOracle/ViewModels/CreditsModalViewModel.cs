@@ -1,10 +1,12 @@
+using BalatroSeedOracle.Models;
+using BalatroSeedOracle.Json;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using Avalonia.Platform;
 using BalatroSeedOracle.Helpers;
-using BalatroSeedOracle.Json;
+
 
 namespace BalatroSeedOracle.ViewModels
 {

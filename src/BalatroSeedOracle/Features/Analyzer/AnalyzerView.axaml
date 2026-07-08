@@ -5,8 +5,7 @@
              xmlns:conv="using:BalatroSeedOracle.Converters"
              xmlns:features="using:BalatroSeedOracle.Features.Analyzer"
              x:Class="BalatroSeedOracle.Features.Analyzer.AnalyzerView"
-             x:DataType="vm:AnalyzerViewModel"
-             x:CompileBindings="True">
+             x:DataType="vm:AnalyzerViewModel">
 
     <UserControl.Resources>
         <conv:ItemTypeToSpriteConverter x:Key="ItemTypeToSprite"/>

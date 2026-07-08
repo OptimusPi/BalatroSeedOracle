@@ -1,8 +1,10 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BalatroSeedOracle.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="BalatroSeedOracle.Controls.SourceSelector"
-             x:DataType="vm:SourceSelectorViewModel">
+             x:DataType="vm:SourceSelectorViewModel"
+             d:DataContext="{d:DesignInstance Type=vm:SourceSelectorViewModel}">
     
     <UserControl.Styles>
         <Style Selector="ComboBox">

@@ -222,6 +222,7 @@ public partial class App : Application
             {
                 if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
                 {
+                    // view-only: OK — cross-window lookup on another instance; generated x:Name fields don't apply here
                     var errorBoundary = desktop.MainWindow.FindControl<Controls.ErrorBoundary>("MainContentHost");
                     if (errorBoundary != null)
                     {

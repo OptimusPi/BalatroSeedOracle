@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using BalatroSeedOracle.Services;
 using Motely;
 using Motely.Filters;
+using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services.Engines
 {
@@ -18,7 +19,7 @@ namespace BalatroSeedOracle.Services.Engines
             _platformServices = platformServices;
         }
 
-        public Task<string> StartSearchAsync(JamlRootDocument config, SearchOptionsDto options)
+        public Task<string> StartSearchAsync(JamlConfig config, SearchOptionsDto options)
         {
             // SearchManager handles local launches directly via StartSearchLegacy.
             return Task.FromResult("local-job-1");

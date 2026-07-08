@@ -13,8 +13,7 @@
              x:Class="BalatroSeedOracle.Views.BalatroMainMenu"
              x:DataType="vm:BalatroMainMenuViewModel"
              Background="Transparent"
-             Focusable="True"
-             x:CompileBindings="True">
+             Focusable="True">
 
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Ctrl+F" Command="{Binding SeedSearchCommand}" />
@@ -102,6 +101,74 @@
                         Margin="0,4,4,4"
                         IsHitTestVisible="False"/>
 
+            <!-- Active search widgets: searches that keep running after their modal
+                 is closed. Click one to jump back in without losing your spot. -->
+            <ItemsControl Grid.Row="0"
+                          ItemsSource="{Binding ActiveSearchWidgets}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Bottom"
+                          Margin="20,0,0,8"
+                          IsHitTestVisible="True">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" Spacing="8"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SearchWidgetIconViewModel">
+                        <Button Command="{Binding OpenCommand}"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                ToolTip.Tip="Click to reopen this search">
+                            <Grid>
+                                <!-- Dark shadow underneath (Balatro dock style) -->
+                                <Border Background="{StaticResource HoverShadow}"
+                                        CornerRadius="8"
+                                        Margin="0,3,0,0"/>
+                                <Border Background="{StaticResource ModalGrey}"
+                                        BorderBrush="{StaticResource ModalBorder}"
+                                        BorderThickness="2"
+                                        CornerRadius="8"
+                                        Padding="10,6"
+                                        Margin="0,0,0,3"
+                                        MinWidth="170">
+                                    <StackPanel Spacing="3">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Ellipse Width="8" Height="8"
+                                                     VerticalAlignment="Center"
+                                                     Fill="{StaticResource Gold}"
+                                                     IsVisible="{Binding IsRunning}"/>
+                                            <TextBlock Text="{Binding FilterName}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="16"
+                                                       Foreground="{StaticResource White}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="150"/>
+                                        </StackPanel>
+                                        <ProgressBar Minimum="0" Maximum="100"
+                                                     Value="{Binding ProgressPercent}"
+                                                     Height="6"
+                                                     Foreground="{StaticResource Gold}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding ProgressText}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource VeryLightGrey}"/>
+                                            <TextBlock Text="{Binding ResultsText}"
+                                                       FontFamily="{StaticResource BalatroFont}"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource Gold}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- All Docks Container - Anchored to screen edges (always visible so user can toggle widgets) -->
             <Grid Grid.Row="1"
                   VerticalAlignment="Bottom"
@@ -184,31 +251,31 @@
                     <Button Classes="btn-green"
                             Command="{Binding SeedSearchCommand}"
                             Content="SEARCH"
-                            FontSize="36"
-                            MinHeight="60"
-                            MinWidth="158"/>
+                            FontSize="24"
+                            MinHeight="52"
+                            MinWidth="130"/>
 
                     <Button Classes="btn-blue"
                             Command="{Binding EditorCommand}"
                             Content="DESIGNER"
-                            FontSize="36"
-                            MinHeight="46"
-                            MinWidth="100"/>
+                            FontSize="24"
+                            MinHeight="52"
+                            MinWidth="130"/>
 
                     <Button Classes="btn-purple"
                             Command="{Binding AnalyzeCommand}"
                             Content="ANALYZER"
-                            FontSize="36"
-                            MinHeight="46"
-                            MinWidth="100"/>
+                            FontSize="24"
+                            MinHeight="52"
+                            MinWidth="130"/>
 
                     <!-- MODS button equivalent - MORE (orange) -->
                     <Button Classes="btn-orange"
                             Command="{Binding ToolCommand}"
                             Content="SETTINGS"
-                            FontSize="36"
-                            MinHeight="60"
-                            MinWidth="158"/>
+                            FontSize="24"
+                            MinHeight="52"
+                            MinWidth="130"/>
                         </StackPanel>
                     </Border>
                 </Grid>
