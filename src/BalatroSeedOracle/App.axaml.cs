@@ -104,7 +104,8 @@ public partial class App : Application
 
                 // For Browser/Mobile, wrap main view in ErrorBoundary (template-driven, per Avalonia best practices)
                 var mainMenu = _serviceProvider!.GetRequiredService<Views.BalatroMainMenu>();
-                singleViewPlatform.MainView = new ErrorBoundary { Content = mainMenu };
+                var browserBoundary = new ErrorBoundary { Content = mainMenu };
+                singleViewPlatform.MainView = browserBoundary;
 
                 // Pre-load sprites asynchronously (without the complex shader transition)
                 _ = PreloadSpritesWithoutTransition();
@@ -222,7 +223,6 @@ public partial class App : Application
             {
                 if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
                 {
-                    // view-only: OK — cross-window lookup on another instance; generated x:Name fields don't apply here
                     var errorBoundary = desktop.MainWindow.FindControl<Controls.ErrorBoundary>("MainContentHost");
                     if (errorBoundary != null)
                     {
@@ -230,12 +230,18 @@ public partial class App : Application
                         errorBoundary.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
                         return;
                     }
+
+                    DebugLogger.LogError("App", $"ErrorBoundary host not found for {source}");
                 }
 
                 if (ApplicationLifetime is ISingleViewApplicationLifetime singleView && singleView.MainView is Controls.ErrorBoundary errorBoundaryView)
                 {
                     errorBoundaryView.HasError = true;
                     errorBoundaryView.ErrorMessage = $"[{source}] {ex.GetType().Name}: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+                }
+                else
+                {
+                    DebugLogger.LogError("App", $"No ErrorBoundary available for {source}");
                 }
             }
             catch (Exception dex)

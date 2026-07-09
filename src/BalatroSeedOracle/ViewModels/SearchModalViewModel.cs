@@ -1243,22 +1243,29 @@ namespace BalatroSeedOracle.ViewModels
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
-                IsSearching = false;
+                try
+                {
+                    IsSearching = false;
 
-                // A finished search has nothing to resume — drop the saved state so
-                // the desktop icon doesn't reappear on next launch.
-                _userProfileService.ClearSearchState();
+                    // A finished search has nothing to resume — drop the saved state so
+                    // the desktop icon doesn't reappear on next launch.
+                    _userProfileService.ClearSearchState();
 
-                // CRITICAL FIX: Load any remaining results from DuckDB into ObservableCollection
-                // (Real-time results are already added via OnResultFound, but load any missed ones)
-                await LoadExistingResults();
+                    // CRITICAL FIX: Load any remaining results from DuckDB into ObservableCollection
+                    // (Real-time results are already added via OnResultFound, but load any missed ones)
+                    await LoadExistingResults();
 
-                AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
-                PanelText = $"Search complete: {ResultsCount} seeds";
-                BsoLogger.Log(
-                    "SearchModalViewModel",
-                    $"Search completed with {ResultsCount} results"
-                );
+                    AddConsoleMessage($"Search completed. Found {ResultsCount} results.");
+                    PanelText = $"Search complete: {ResultsCount} seeds";
+                    BsoLogger.Log(
+                        "SearchModalViewModel",
+                        $"Search completed with {ResultsCount} results"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    BsoLogger.LogError("SearchModalViewModel", $"Search completion handler failed: {ex.Message}");
+                }
             });
         }
 
@@ -1268,13 +1275,28 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         private void OnResultFound(object? sender, Models.SearchResult result)
         {
+            if (result is null || string.IsNullOrWhiteSpace(result.Seed))
+                return;
+
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                // Add result to collection (UI will update automatically via ObservableCollection)
-                SearchResults.Add(result);
+                try
+                {
+                    var alreadyPresent = SearchResults.Any(r =>
+                        string.Equals(r.Seed, result.Seed, StringComparison.OrdinalIgnoreCase));
+                    if (alreadyPresent)
+                        return;
 
-                // Update panel text with current count
-                PanelText = $"Found {SearchResults.Count} seeds so far...";
+                    // Add result to collection (UI will update automatically via ObservableCollection)
+                    SearchResults.Add(result);
+
+                    // Update panel text with current count
+                    PanelText = $"Found {SearchResults.Count} seeds so far...";
+                }
+                catch (Exception ex)
+                {
+                    BsoLogger.LogError("SearchModalViewModel", $"Result handling failed: {ex.Message}");
+                }
             });
         }
 

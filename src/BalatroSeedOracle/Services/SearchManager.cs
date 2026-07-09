@@ -121,33 +121,55 @@ public sealed class SearchManager : IDisposable
 
         settings.WithSeedMatchCallback(seed =>
         {
-            bsoContext.OnResult(seed, 0, null);
-            activeContext.RaiseResultFound(new SearchResult { Seed = seed, TotalScore = 0 });
+            try
+            {
+                bsoContext.OnResult(seed, 0, null);
+                activeContext.RaiseResultFound(new SearchResult { Seed = seed, TotalScore = 0 });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchManager", $"Seed match callback failed: {ex.Message}");
+            }
         });
         settings.WithScoredResultCallback(tally =>
         {
-            var tallies = tally.TallyValuesSpan.ToArray();
-            bsoContext.OnResult(tally.Seed, tally.Score, tallies);
-            activeContext.RaiseResultFound(new SearchResult
+            try
             {
-                Seed = tally.Seed,
-                TotalScore = tally.Score,
-                Scores = tallies,
-            });
+                var tallies = tally.TallyValuesSpan.ToArray();
+                bsoContext.OnResult(tally.Seed, tally.Score, tallies);
+                activeContext.RaiseResultFound(new SearchResult
+                {
+                    Seed = tally.Seed,
+                    TotalScore = tally.Score,
+                    Scores = tallies,
+                });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchManager", $"Scored result callback failed: {ex.Message}");
+            }
         });
         settings.WithProgressCallback(progress =>
         {
-            bsoContext.OnProgress(progress.SeedsSearched, progress.MatchingSeeds, 0);
-            activeContext.RaiseProgressUpdated(new SearchProgress
+            try
             {
-                PercentComplete = progress.PercentComplete,
-                SeedsSearched = (ulong)progress.SeedsSearched,
-                SeedsPerMillisecond = progress.SeedsPerMillisecond,
-                ResultsFound = (int)progress.MatchingSeeds,
-                EstimatedTimeRemaining = progress.EstimatedTimeRemainingMilliseconds.HasValue
-                    ? TimeSpan.FromMilliseconds(progress.EstimatedTimeRemainingMilliseconds.Value)
-                    : null,
-            });
+                bsoContext.OnProgress(progress.SeedsSearched, progress.MatchingSeeds, 0);
+                activeContext.RaiseProgressUpdated(new SearchProgress
+                {
+                    PercentComplete = progress.PercentComplete,
+                    SeedsSearched = (ulong)progress.SeedsSearched,
+                    SeedsPerMillisecond = progress.SeedsPerMillisecond,
+                    ResultsFound = (int)progress.MatchingSeeds,
+                    EstimatedTimeRemaining = progress.EstimatedTimeRemainingMilliseconds.HasValue
+                        ? TimeSpan.FromMilliseconds(progress.EstimatedTimeRemainingMilliseconds.Value)
+                        : null,
+                    IsComplete = progress.PercentComplete >= 100.0,
+                });
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchManager", $"Progress callback failed: {ex.Message}");
+            }
         });
 
         var cts = new CancellationTokenSource();
@@ -156,10 +178,31 @@ public sealed class SearchManager : IDisposable
 
         _ = search.WaitForCompletionAsync(cts.Token).ContinueWith(t =>
         {
-            if (!t.IsCanceled)
+            try
             {
-                bsoContext.MarkCompleted();
-                activeContext.RaiseSearchCompleted();
+                if (t.IsFaulted)
+                {
+                    var errorMessage = t.Exception?.GetBaseException().Message ?? "Unknown search error";
+                    DebugLogger.LogError("SearchManager", $"Search task faulted: {errorMessage}");
+                }
+
+                if (!t.IsCanceled)
+                {
+                    bsoContext.MarkCompleted();
+                    activeContext.RaiseProgressUpdated(new SearchProgress
+                    {
+                        PercentComplete = 100.0,
+                        SeedsSearched = (ulong)bsoContext.TotalSeedsSearched,
+                        ResultsFound = (int)bsoContext.MatchingSeeds,
+                        IsComplete = true,
+                        HasError = t.IsFaulted,
+                    });
+                    activeContext.RaiseSearchCompleted();
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLogger.LogError("SearchManager", $"Search completion callback failed: {ex.Message}");
             }
         }, TaskScheduler.Default);
 

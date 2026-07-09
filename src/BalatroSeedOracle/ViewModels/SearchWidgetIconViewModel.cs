@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using Avalonia.Threading;
+using BalatroSeedOracle.Helpers;
 using BalatroSeedOracle.Models;
 using BalatroSeedOracle.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BsoLogger = BalatroSeedOracle.Helpers.DebugLogger;
 
 namespace BalatroSeedOracle.ViewModels
 {
@@ -66,10 +68,17 @@ namespace BalatroSeedOracle.ViewModels
         {
             Dispatcher.UIThread.Post(() =>
             {
-                ProgressPercent = progress.PercentComplete;
-                ProgressText = $"{progress.PercentComplete:F1}%";
-                ResultsText = $"{progress.ResultsFound} found";
-                IsRunning = true;
+                try
+                {
+                    ProgressPercent = progress.PercentComplete;
+                    ProgressText = $"{progress.PercentComplete:F1}%";
+                    ResultsText = $"{progress.ResultsFound} found";
+                    IsRunning = true;
+                }
+                catch (Exception ex)
+                {
+                    BsoLogger.LogError("SearchWidgetIconViewModel", $"Progress update failed: {ex.Message}");
+                }
             });
         }
 
@@ -77,11 +86,18 @@ namespace BalatroSeedOracle.ViewModels
         {
             Dispatcher.UIThread.Post(() =>
             {
-                IsRunning = false;
-                ProgressText = "done";
-                if (_searchContext is not null)
+                try
                 {
-                    ResultsText = $"{_searchContext.ResultCount} found";
+                    IsRunning = false;
+                    ProgressText = "done";
+                    if (_searchContext is not null)
+                    {
+                        ResultsText = $"{_searchContext.ResultCount} found";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    BsoLogger.LogError("SearchWidgetIconViewModel", $"Completion update failed: {ex.Message}");
                 }
             });
         }

@@ -122,10 +122,41 @@ public sealed class ActiveSearchContext : IDisposable
     public event EventHandler<SearchResult>? ResultFound;
 
     internal void RaiseSearchStarted() => SearchStarted?.Invoke(this, new SearchResultEventArgs());
-    internal void RaiseSearchCompleted() => SearchCompleted?.Invoke(this, new SearchResultEventArgs());
-    internal void RaiseProgressUpdated(SearchProgress progress) =>
-        ProgressUpdated?.Invoke(this, progress);
-    internal void RaiseResultFound(SearchResult result) => ResultFound?.Invoke(this, result);
+    internal void RaiseSearchCompleted()
+    {
+        try
+        {
+            SearchCompleted?.Invoke(this, new SearchResultEventArgs());
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("ActiveSearchContext", $"Search completed callback failed: {ex.Message}");
+        }
+    }
+
+    internal void RaiseProgressUpdated(SearchProgress progress)
+    {
+        try
+        {
+            ProgressUpdated?.Invoke(this, progress);
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("ActiveSearchContext", $"Progress callback failed: {ex.Message}");
+        }
+    }
+
+    internal void RaiseResultFound(SearchResult result)
+    {
+        try
+        {
+            ResultFound?.Invoke(this, result);
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.LogError("ActiveSearchContext", $"Result callback failed: {ex.Message}");
+        }
+    }
 
     public void Dispose()
     {
