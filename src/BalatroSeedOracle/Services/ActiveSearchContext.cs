@@ -150,6 +150,7 @@ public sealed class ActiveSearchContext : IDisposable
     {
         try
         {
+            MarkNewResults();
             ResultFound?.Invoke(this, result);
         }
         catch (Exception ex)
