@@ -31,7 +31,6 @@ namespace BalatroSeedOracle.Services
     public class EventFXService
     {
         private readonly TransitionService? _transitionService;
-        private readonly SoundEffectsService? _soundEffectsService;
         private readonly Dictionary<EventFXType, EventFXConfig> _configCache = new();
 
         // The shader hookup: who owns the background provides "where are we now" and
@@ -40,13 +39,9 @@ namespace BalatroSeedOracle.Services
         private Func<Models.ShaderParameters>? _getCurrentParameters;
         private Action<Models.ShaderParameters>? _applyParameters;
 
-        public EventFXService(
-            TransitionService? transitionService = null,
-            SoundEffectsService? soundEffectsService = null
-        )
+        public EventFXService(TransitionService? transitionService = null)
         {
             _transitionService = transitionService;
-            _soundEffectsService = soundEffectsService;
         }
 
         /// <summary>
