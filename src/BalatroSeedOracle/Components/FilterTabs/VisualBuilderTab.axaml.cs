@@ -40,6 +40,15 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Control? _originalDragSource; // Store the original control to animate back to
         private string? _sourceDropZone; // Track which drop zone the item came from (MustDropZone, ShouldDropZone, MustNotDropZone, or null for shelf)
 
+        // Pending drag: press arms it, real movement past the threshold starts it.
+        // Without this, a fast click is a full drag start+cancel and the drop zones flash.
+        private const double DragStartThreshold = 6.0;
+        private Models.FilterItem? _pendingDragItem;
+        private Control? _pendingDragSource;
+        private string? _pendingSourceDropZone;
+        private bool _pendingFromShelf;
+        private Avalonia.Point _pendingPressPoint;
+
         // Simple LERP system for smooth drag adornment positioning
         private Avalonia.Point _adornerTargetPosition; // Target position (where mouse is)
         private Avalonia.Point _canvasOffset; // Offset from Canvas to TopLevel (for coordinate conversion)
@@ -350,71 +359,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     {
                         return; // Not left click, ignore
                     }
-                    _draggedItem = item;
-                    _isDragging = true;
-                    _originalDragSource = sender as Control;
-                    _sourceDropZone = null; // This item is from the shelf, not a drop zone
-
-                    // Get position relative to TopLevel for absolute positioning
+                    // Arm a pending drag; it becomes real only after the pointer
+                    // travels DragStartThreshold px (see OnPointerMovedManualDrag).
+                    _pendingDragItem = item;
+                    _pendingDragSource = sender as Control;
+                    _pendingSourceDropZone = null; // This item is from the shelf, not a drop zone
+                    _pendingFromShelf = true;
                     var topLevel = TopLevel.GetTopLevel(this);
-                    if (topLevel != null && _originalDragSource != null)
-                    {
-                        var sourcePos = _originalDragSource.TranslatePoint(
-                            new Avalonia.Point(0, 0),
-                            topLevel
-                        );
-                        _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
-
-                        // Store the click offset relative to the card origin (where user grabbed)
-                        var clickPos = e.GetPosition(topLevel);
-                        _dragOffset = new Avalonia.Point(
-                            clickPos.X - _dragStartPosition.X,
-                            clickPos.Y - _dragStartPosition.Y
-                        );
-
-                        // Initialize previous position for velocity tracking
-                        _previousMousePosition = clickPos;
-                    }
-                    else
-                    {
-                        _dragStartPosition = e.GetPosition(this);
-                        _dragOffset = new Avalonia.Point(0, 0);
-                        _previousMousePosition = e.GetPosition(this);
-                    }
-
-                    DebugLogger.Log(
-                        "VisualBuilderTab",
-                        $"🎯 MANUAL DRAG START for item: {item.Name}"
-                    );
-
-                    // Play card select sound
-                    // SoundEffectService.Instance.PlayCardSelect();
-
-                    // COMPLETELY hide the original card during drag (not just opacity)
-                    // This prevents CardDragBehavior from interfering with ghost movement
-                    item.IsBeingDragged = true;
-
-                    // CREATE GHOST IMAGE
-                    CreateDragAdorner(item, _dragStartPosition);
-
-                    // Start spring physics timer
-                    _springUpdateTimer?.Start();
-
-                    // Hide the original control during drag
-                    if (_originalDragSource != null)
-                    {
-                        _originalDragSource.Opacity = 0; // Hide original while dragging
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            "Hidden original shelf card during drag"
-                        );
-                    }
-
-                    // Show ALL drop zone overlays when dragging from center (zones don't expand, just overlays appear)
-                    ShowDropZoneOverlays();
-
-                    // Don't capture pointer - we're already handling PointerMoved on the UserControl itself
-                    // Capturing to sender (the small image) would prevent us from getting events outside its bounds
+                    _pendingPressPoint = topLevel != null ? e.GetPosition(topLevel) : e.GetPosition(this);
                 }
                 else
                 {
@@ -502,69 +454,14 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     );
                 }
 
-                // Now start the drag operation
-                _draggedItem = item;
-                _isDragging = true;
-                _originalDragSource = control;
-
-                // Get position relative to TopLevel
+                // Arm a pending drag; it becomes real only after the pointer
+                // travels DragStartThreshold px (see OnPointerMovedManualDrag).
+                _pendingDragItem = item;
+                _pendingDragSource = control;
+                _pendingSourceDropZone = _sourceDropZone;
+                _pendingFromShelf = false;
                 var topLevel = TopLevel.GetTopLevel(this);
-                if (topLevel != null && _originalDragSource != null)
-                {
-                    var sourcePos = _originalDragSource.TranslatePoint(
-                        new Avalonia.Point(0, 0),
-                        topLevel
-                    );
-                    _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
-
-                    // Store the click offset relative to the card origin (where user grabbed)
-                    var clickPos = e.GetPosition(topLevel);
-                    _dragOffset = new Avalonia.Point(
-                        clickPos.X - _dragStartPosition.X,
-                        clickPos.Y - _dragStartPosition.Y
-                    );
-
-                    // Initialize previous position for velocity tracking
-                    _previousMousePosition = clickPos;
-                }
-                else
-                {
-                    _dragStartPosition = e.GetPosition(this);
-                    _dragOffset = new Avalonia.Point(0, 0);
-                    _previousMousePosition = e.GetPosition(this);
-                }
-
-                // Play sound - disabled (NAudio removed)
-                // SoundEffectService.Instance.PlayCardSelect();
-
-                // Create ghost
-                CreateDragAdorner(item, _dragStartPosition);
-
-                // Start spring physics timer
-                _springUpdateTimer?.Start();
-
-                // Hide the original control during drag (make it invisible, not just transparent)
-                if (_originalDragSource != null)
-                {
-                    _originalDragSource.Opacity = 0; // Hide original while dragging
-                    DebugLogger.Log("VisualBuilderTab", "Hidden original card during drag");
-                }
-
-                // Show "Return to shelf" overlay + OTHER drop zones when dragging from drop zones (zones don't expand, just overlays)
-                if (_sourceDropZone != null)
-                {
-                    if (ReturnOverlay != null)
-                    {
-                        ReturnOverlay.IsVisible = true;
-                        DebugLogger.Log(
-                            "VisualBuilderTab",
-                            "✅ Showing return overlay immediately on drag start"
-                        );
-                    }
-
-                    // Show overlays for OTHER drop zones (not the source)
-                    ShowDropZoneOverlays(_sourceDropZone);
-                }
+                _pendingPressPoint = topLevel != null ? e.GetPosition(topLevel) : e.GetPosition(this);
             }
             catch (Exception ex)
             {
@@ -607,8 +504,92 @@ namespace BalatroSeedOracle.Components.FilterTabs
             }
         }
 
+        /// <summary>Promotes an armed pending drag into the real one: ghost, hidden original, overlays.</summary>
+        private void StartPendingDrag(PointerEventArgs e)
+        {
+            var item = _pendingDragItem;
+            if (item == null)
+                return;
+
+            _draggedItem = item;
+            _isDragging = true;
+            _originalDragSource = _pendingDragSource;
+            _sourceDropZone = _pendingSourceDropZone;
+
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel != null && _originalDragSource != null)
+            {
+                var sourcePos = _originalDragSource.TranslatePoint(new Avalonia.Point(0, 0), topLevel);
+                _dragStartPosition = sourcePos ?? e.GetPosition(topLevel);
+                var clickPos = e.GetPosition(topLevel);
+                _dragOffset = new Avalonia.Point(
+                    clickPos.X - _dragStartPosition.X,
+                    clickPos.Y - _dragStartPosition.Y
+                );
+                _previousMousePosition = clickPos;
+            }
+            else
+            {
+                _dragStartPosition = e.GetPosition(this);
+                _dragOffset = new Avalonia.Point(0, 0);
+                _previousMousePosition = e.GetPosition(this);
+            }
+
+            if (_pendingFromShelf)
+            {
+                // COMPLETELY hide the original card during drag (not just opacity)
+                // This prevents CardDragBehavior from interfering with ghost movement
+                item.IsBeingDragged = true;
+            }
+
+            CreateDragAdorner(item, _dragStartPosition);
+            _springUpdateTimer?.Start();
+
+            if (_originalDragSource != null)
+            {
+                _originalDragSource.Opacity = 0; // Hide original while dragging
+            }
+
+            if (_sourceDropZone != null)
+            {
+                // Dragging FROM a drop zone: show return-to-shelf + the OTHER zones
+                if (ReturnOverlay != null)
+                {
+                    ReturnOverlay.IsVisible = true;
+                }
+                ShowDropZoneOverlays(_sourceDropZone);
+            }
+            else
+            {
+                // Dragging from the shelf: show ALL drop zone overlays
+                ShowDropZoneOverlays();
+            }
+
+            ClearPendingDrag();
+        }
+
+        private void ClearPendingDrag()
+        {
+            _pendingDragItem = null;
+            _pendingDragSource = null;
+            _pendingSourceDropZone = null;
+            _pendingFromShelf = false;
+        }
+
         private void OnPointerMovedManualDrag(object? sender, PointerEventArgs e)
         {
+            // A pending drag becomes real once the pointer travels far enough.
+            if (!_isDragging && _pendingDragItem != null && _topLevel != null)
+            {
+                var pos = e.GetPosition(_topLevel);
+                var dx = pos.X - _pendingPressPoint.X;
+                var dy = pos.Y - _pendingPressPoint.Y;
+                if ((dx * dx) + (dy * dy) >= DragStartThreshold * DragStartThreshold)
+                {
+                    StartPendingDrag(e);
+                }
+            }
+
             if (!_isDragging || _draggedItem == null)
                 return;
 
@@ -790,6 +771,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
         private async void OnPointerReleasedManualDrag(object? sender, PointerReleasedEventArgs e)
         {
+            // Release before the movement threshold: it was a click, not a drag.
+            ClearPendingDrag();
+
             if (!_isDragging || _draggedItem == null)
                 return;
 

@@ -96,16 +96,17 @@
             </Grid>
         </Border>
 
-        <!-- Card name label with proper height for 2-line wrapping -->
-        <TextBlock Text="{Binding DisplayName}"
-                   FontFamily="{StaticResource BalatroFont}"
-                   FontSize="18"
-                   Foreground="{StaticResource White}"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   MaxWidth="71"
-                   MinHeight="40"
-                   MaxLines="2"
-                   Margin="0,2,0,6"/>
+        <!-- Card name label: one line, scales down to fit instead of breaking mid-word -->
+        <Viewbox StretchDirection="DownOnly"
+                 MaxWidth="71"
+                 MaxHeight="24"
+                 HorizontalAlignment="Center"
+                 Margin="0,2,0,6">
+            <TextBlock Text="{Binding DisplayName}"
+                       FontFamily="{StaticResource BalatroFont}"
+                       FontSize="18"
+                       Foreground="{StaticResource White}"
+                       TextAlignment="Center"/>
+        </Viewbox>
     </StackPanel>
 </UserControl>

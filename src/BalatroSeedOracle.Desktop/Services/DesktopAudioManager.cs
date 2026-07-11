@@ -95,8 +95,10 @@ public class DesktopAudioManager : IAudioManager, IDisposable
                 _device = _engine.InitializePlaybackDevice(defaultDevice, format);
                 LoadTracks(format);
                 LoadSoundEffects(format);
-                _device.MasterMixer.Volume = 0f;
-                _masterVolume = 0f;
+                // Apply whatever volume was set before the device existed (saved settings
+                // land in _masterVolume during startup, while _device is still null).
+                // Zeroing here instead used to permanently mute the music on every launch.
+                _device.MasterMixer.Volume = _masterVolume * 2.5f;
                 _device.Start();
                 _cancellationTokenSource = new CancellationTokenSource();
                 _updateTask = Task.Run(AnalysisUpdateLoop, _cancellationTokenSource.Token);

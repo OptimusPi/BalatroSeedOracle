@@ -554,15 +554,17 @@
         </Style>
 
         <Style Selector="ScrollBar:vertical">
-            <Setter Property="Width" Value="14" />
+            <Setter Property="Width" Value="10" />
             <Setter Property="Margin" Value="1,0,1,0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
+                        <!-- Track stays transparent: a solid track reads as a fat red lip
+                             sitting on top of the content it overlays. Only the thumb shows. -->
                         <Border Name="PART_Border"
-                                Background="{StaticResource RedHover}"
-                                CornerRadius="6"
-                                Width="12"
+                                Background="Transparent"
+                                CornerRadius="4"
+                                Width="10"
                                 HorizontalAlignment="Center"
                                 ClipToBounds="True">
                             <Track Name="PART_Track"
@@ -577,9 +579,10 @@
                                         <Thumb.Template>
                                             <ControlTemplate>
                                                 <Border Background="{StaticResource Red}"
-                                                        CornerRadius="6"
-                                                        Width="12"
-                                                        MinHeight="40"/>
+                                                        Opacity="0.85"
+                                                        CornerRadius="4"
+                                                        Width="8"
+                                                        MinHeight="32"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -592,15 +595,15 @@
         </Style>
 
         <Style Selector="ScrollBar:horizontal">
-            <Setter Property="Height" Value="14" />
+            <Setter Property="Height" Value="10" />
             <Setter Property="Margin" Value="0,1,0,1" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Border Name="PART_Border"
-                                Background="{StaticResource RedHover}"
-                                CornerRadius="6"
-                                Height="12"
+                                Background="Transparent"
+                                CornerRadius="4"
+                                Height="10"
                                 VerticalAlignment="Center"
                                 ClipToBounds="True">
                             <Track Name="PART_Track"
@@ -614,9 +617,10 @@
                                         <Thumb.Template>
                                             <ControlTemplate>
                                                 <Border Background="{StaticResource Red}"
-                                                        CornerRadius="6"
-                                                        Height="12"
-                                                        MinWidth="40"/>
+                                                        Opacity="0.85"
+                                                        CornerRadius="4"
+                                                        Height="8"
+                                                        MinWidth="32"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>

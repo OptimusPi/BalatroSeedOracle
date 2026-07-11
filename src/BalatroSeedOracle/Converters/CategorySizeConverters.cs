@@ -5,7 +5,9 @@ using Avalonia.Data.Converters;
 namespace BalatroSeedOracle.Converters
 {
     /// <summary>
-    /// Returns standard card width (71px - original sprite size)
+    /// Returns the display width for an item by category.
+    /// Cards are 71x95 native; tags and boss blinds are 34x34 chips —
+    /// rendering those in a card-sized box scales them ~2X too big.
     /// </summary>
     public class CategoryToWidthConverter : IValueConverter
     {
@@ -18,7 +20,9 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            return 71.0; // Standard card width
+            return value is string category && (category == "Tags" || category == "Bosses")
+                ? 34.0
+                : 71.0;
         }
 
         public object? ConvertBack(
@@ -33,7 +37,7 @@ namespace BalatroSeedOracle.Converters
     }
 
     /// <summary>
-    /// Returns standard card height (95px - proportional to 71px width)
+    /// Returns the display height for an item by category (see CategoryToWidthConverter).
     /// </summary>
     public class CategoryToHeightConverter : IValueConverter
     {
@@ -46,7 +50,9 @@ namespace BalatroSeedOracle.Converters
             CultureInfo culture
         )
         {
-            return 95.0; // Standard card height
+            return value is string category && (category == "Tags" || category == "Bosses")
+                ? 34.0
+                : 95.0;
         }
 
         public object? ConvertBack(
