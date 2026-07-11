@@ -44,7 +44,6 @@ namespace BalatroSeedOracle.Extensions
 
             // Note: SoundFlowAudioManager and SoundEffectsService are registered by Desktop Program.cs only
             services.AddSingleton<TransitionService>();
-            services.AddSingleton<TriggerService>();
             services.AddSingleton<EventFXService>();
             services.AddSingleton<SearchTransitionManager>(sp => new SearchTransitionManager(
                 sp.GetRequiredService<TransitionService>(),

@@ -30,7 +30,6 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(HostApiSettings))]
 // Visualizer presets and audio
 [JsonSerializable(typeof(VisualizerPreset))]
-[JsonSerializable(typeof(AudioTriggerPoint))]
 [JsonSerializable(typeof(FrequencyBreakpoint))]
 [JsonSerializable(typeof(MelodicBreakpoint))]
 [JsonSerializable(typeof(ParameterRange))]
@@ -38,11 +37,6 @@ namespace BalatroSeedOracle.Json;
 // Music mixer
 [JsonSerializable(typeof(MixerSettings))]
 [JsonSerializable(typeof(TrackSettings))]
-[JsonSerializable(typeof(MusicMixPreset))]
-[JsonSerializable(typeof(TrackMixSettings))]
-[JsonSerializable(typeof(TrackMetadata))]
-// Transition presets
-[JsonSerializable(typeof(TransitionPreset))]
 // Daylatro high scores
 [JsonSerializable(typeof(DaylatroHighScore))]
 [JsonSerializable(typeof(DaylatroDailyScores))]
@@ -68,7 +62,6 @@ namespace BalatroSeedOracle.Json;
 [JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(Dictionary<string, ParameterRange>))]
 [JsonSerializable(typeof(Dictionary<string, EffectMapping>))]
-[JsonSerializable(typeof(Dictionary<string, TrackMixSettings>))]
 [JsonSerializable(typeof(List<FrequencyBreakpoint>))]
 [JsonSerializable(typeof(List<MelodicBreakpoint>))]
 [JsonSerializable(typeof(List<SavedSearchWidget>))]
