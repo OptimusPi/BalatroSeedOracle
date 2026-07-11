@@ -83,6 +83,7 @@
                     <Button Command="{Binding PreviousResultCommand}"
                             IsEnabled="{Binding HasPreviousResult}"
                             ToolTip.Tip="Previous Seed (PgUp)"
+                            AutomationProperties.Name="Previous Seed"
                             Width="32"
                             Height="32"
                             Padding="0">
@@ -91,6 +92,7 @@
                     <Button Command="{Binding NextResultCommand}"
                             IsEnabled="{Binding HasNextResult}"
                             ToolTip.Tip="Next Seed (PgDn)"
+                            AutomationProperties.Name="Next Seed"
                             Width="32"
                             Height="32"
                             Padding="0">
@@ -110,6 +112,7 @@
                                Margin="0,0,8,0"/>
                     <Button Command="{Binding ScrollUpAnteCommand}"
                             ToolTip.Tip="Previous Ante (↑)"
+                            AutomationProperties.Name="Previous Ante"
                             Width="32"
                             Height="32"
                             Padding="0">
@@ -117,6 +120,7 @@
                     </Button>
                     <Button Command="{Binding ScrollDownAnteCommand}"
                             ToolTip.Tip="Next Ante (↓)"
+                            AutomationProperties.Name="Next Ante"
                             Width="32"
                             Height="32"
                             Padding="0">

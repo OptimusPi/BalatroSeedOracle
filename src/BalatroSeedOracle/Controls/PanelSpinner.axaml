@@ -135,7 +135,8 @@
                 Name="PrevButton"
                 Classes="panel-arrow"
                 IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=controls:PanelSpinner}}"
-                Click="OnPrevClick">
+                Click="OnPrevClick"
+                AutomationProperties.Name="Previous">
             <PathIcon Data="{StaticResource ChevronLeftIconData}" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
         
@@ -201,7 +202,8 @@
                 Name="NextButton"
                 Classes="panel-arrow"
                 IsVisible="{Binding ShowArrows, RelativeSource={RelativeSource AncestorType=controls:PanelSpinner}}"
-                Click="OnNextClick">
+                Click="OnNextClick"
+                AutomationProperties.Name="Next">
             <PathIcon Data="{StaticResource ChevronRightIconData}" Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         </Button>
     </Grid>

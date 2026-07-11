@@ -17,6 +17,10 @@ namespace BalatroSeedOracle.Components
         private static readonly DataFormat<FilterItem> FilterItemFormat =
             DataFormat.CreateInProcessFormat<FilterItem>("BalatroSeedOracle.FilterItem");
 
+        // Tracked separately from DataContext so a reassignment unsubscribes the actual
+        // previous item's Children collection instead of leaking a subscription to it.
+        private FilterOperatorItem? _subscribedOperatorItem;
+
         public FilterOperatorControl()
         {
             InitializeComponent();
@@ -40,6 +44,13 @@ namespace BalatroSeedOracle.Components
             // Set up the operator control
             DataContextChanged += (s, e) =>
             {
+                if (_subscribedOperatorItem != null)
+                {
+                    _subscribedOperatorItem.Children.CollectionChanged -=
+                        OnChildrenCollectionChanged;
+                    _subscribedOperatorItem = null;
+                }
+
                 if (DataContext is FilterOperatorItem operatorItem)
                 {
                     Helpers.DebugLogger.Log(
@@ -49,6 +60,7 @@ namespace BalatroSeedOracle.Components
 
                     // Subscribe to Children collection changes to update fanned layout
                     operatorItem.Children.CollectionChanged += OnChildrenCollectionChanged;
+                    _subscribedOperatorItem = operatorItem;
 
                     // Initial layout update
                     UpdateFannedLayout();
@@ -121,6 +133,17 @@ namespace BalatroSeedOracle.Components
                     $"OnCardPointerPressed: {ex.Message}"
                 );
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (_subscribedOperatorItem != null)
+            {
+                _subscribedOperatorItem.Children.CollectionChanged -=
+                    OnChildrenCollectionChanged;
+                _subscribedOperatorItem = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
 
         private void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

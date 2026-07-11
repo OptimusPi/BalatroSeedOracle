@@ -67,7 +67,8 @@
                         CornerRadius="3"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        ToolTip.Tip="Configure">
+                        ToolTip.Tip="Configure"
+                        AutomationProperties.Name="Configure">
                     <PathIcon Data="{StaticResource ChevronRightIconData}"
                                             Width="14" Height="14"
                                             Foreground="{StaticResource LightGrey}"/>
@@ -84,7 +85,8 @@
                         CornerRadius="12"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        ToolTip.Tip="Remove">
+                        ToolTip.Tip="Remove"
+                        AutomationProperties.Name="Remove item">
                     <Button.Styles>
                         <Style Selector="Button:pointerover">
                             <Setter Property="Background" Value="{StaticResource RedHover}"/>
@@ -126,7 +128,7 @@
                         <!-- Inline quick buttons -->
                         <Button Content="1-3" Command="{Binding QuickAntes1to3Command}" Classes="mini-button" ToolTip.Tip="Quick set 1-3"/>
                         <Button Content="All" Command="{Binding QuickAntesAllCommand}" Classes="mini-button" ToolTip.Tip="All Antes"/>
-                        <Button Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear">
+                        <Button Command="{Binding ClearAntesCommand}" Classes="mini-button-red" ToolTip.Tip="Clear" AutomationProperties.Name="Clear antes">
                             <PathIcon Data="{StaticResource CloseIconData}" Width="10" Height="10" Foreground="{StaticResource White}"/>
                         </Button>
                     </WrapPanel>

@@ -45,6 +45,12 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private Avalonia.Point _canvasOffset; // Offset from Canvas to TopLevel (for coordinate conversion)
         private Avalonia.Threading.DispatcherTimer? _springUpdateTimer;
 
+        // Tracks whichever ViewModel we're currently subscribed to, so a DataContext
+        // reassignment (the control is reused across a navigation, not torn down) unsubscribes
+        // from the OLD ViewModel first instead of leaking a subscription to it — mirrors the
+        // cleanup OnDetachedFromVisualTree already does at final teardown.
+        private ViewModels.FilterTabs.VisualBuilderTabViewModel? _subscribedViewModel;
+
         public VisualBuilderTab()
         {
             InitializeComponent();
@@ -66,6 +72,9 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // Subscribe to ViewModel when DataContext is set by parent
             this.DataContextChanged += (s, e) =>
             {
+                UnsubscribeFromViewModel(_subscribedViewModel);
+                _subscribedViewModel = null;
+
                 if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
                 {
                     DebugLogger.Log(
@@ -77,14 +86,29 @@ namespace BalatroSeedOracle.Components.FilterTabs
                         $"ViewModel collections - Must: {vm.SelectedMust.Count}, Should: {vm.SelectedShould.Count}"
                     );
 
-                    // CRITICAL-001 FIX: Use named methods for event handlers so they can be unsubscribed
-                    vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
-                    vm.SelectedShould.CollectionChanged += OnShouldCollectionChanged;
-
-                    vm.PropertyChanged += OnViewModelPropertyChanged;
+                    SubscribeToViewModel(vm);
+                    _subscribedViewModel = vm;
                     // Arrow position is now handled via data binding in XAML
                 }
             };
+        }
+
+        // CRITICAL-001 FIX: Use named methods for event handlers so they can be unsubscribed
+        private void SubscribeToViewModel(ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
+        {
+            vm.SelectedMust.CollectionChanged += OnMustCollectionChanged;
+            vm.SelectedShould.CollectionChanged += OnShouldCollectionChanged;
+            vm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        private void UnsubscribeFromViewModel(ViewModels.FilterTabs.VisualBuilderTabViewModel? vm)
+        {
+            if (vm is null)
+                return;
+
+            vm.PropertyChanged -= OnViewModelPropertyChanged;
+            vm.SelectedMust.CollectionChanged -= OnMustCollectionChanged;
+            vm.SelectedShould.CollectionChanged -= OnShouldCollectionChanged;
         }
 
         private void SetupDropZones()
@@ -2027,14 +2051,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             // CRITICAL-001 FIX: Unsubscribe from ViewModel events to prevent memory leaks
-            if (DataContext is ViewModels.FilterTabs.VisualBuilderTabViewModel vm)
-            {
-                vm.PropertyChanged -= OnViewModelPropertyChanged;
+            UnsubscribeFromViewModel(_subscribedViewModel);
+            _subscribedViewModel = null;
 
-                // Unsubscribe collection change handlers
-                vm.SelectedMust.CollectionChanged -= OnMustCollectionChanged;
-                vm.SelectedShould.CollectionChanged -= OnShouldCollectionChanged;
-            }
+            // Stop the spring-physics timer if torn down mid-drag — DispatcherTimer holds a
+            // strong reference to its Tick target, so a still-running timer keeps this whole
+            // control alive indefinitely after it's supposed to be gone.
+            _springUpdateTimer?.Stop();
 
             // Detach global pointer handlers
             if (_topLevel != null)

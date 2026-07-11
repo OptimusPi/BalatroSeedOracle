@@ -52,6 +52,7 @@
                         BorderThickness="1"
                         Command="{Binding EditClauseCommand}"
                         ToolTip.Tip="Edit clause settings"
+                        AutomationProperties.Name="Edit clause settings"
                         Margin="0,0,4,0"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Right">
@@ -77,6 +78,7 @@
                         BorderThickness="1"
                         Command="{Binding RemoveClauseCommand}"
                         ToolTip.Tip="Remove clause"
+                        AutomationProperties.Name="Remove clause"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Right">
                     <Button.Transitions>

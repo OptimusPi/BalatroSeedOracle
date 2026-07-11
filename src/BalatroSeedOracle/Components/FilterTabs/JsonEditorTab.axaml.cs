@@ -29,6 +29,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private FoldingManager? _foldingManager;
         private readonly BraceFoldingStrategy _foldingStrategy = new();
 
+        // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
+        // actual previous ViewModel instead of leaking a subscription to it.
+        private JsonEditorTabViewModel? _subscribedViewModel;
+
         public JsonEditorTabViewModel? ViewModel => DataContext as JsonEditorTabViewModel;
 
         public JsonEditorTab()
@@ -87,12 +91,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // When ViewModel changes, update editor
                 DataContextChanged += (s, e) =>
                 {
+                    if (_subscribedViewModel != null)
+                    {
+                        _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                        _subscribedViewModel = null;
+                    }
+
                     if (ViewModel != null)
                     {
                         _jsonEditor.Text = ViewModel.JsonContent;
 
                         // Subscribe to ViewModel property changes
                         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                        _subscribedViewModel = ViewModel;
                     }
                 };
 
@@ -211,6 +222,18 @@ namespace BalatroSeedOracle.Components.FilterTabs
                     _jsonEditor.Text = ViewModel.JsonContent;
                 }
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
 
         private void OnKeyDown(object? sender, KeyEventArgs e)

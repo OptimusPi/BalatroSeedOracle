@@ -8,13 +8,26 @@ using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services
 {
+    /// <summary>Saved-filter file management: listing, deleting, cloning, and naming filters
+    /// on disk. Filter content itself loads through <see cref="IConfigurationService"/> and
+    /// <c>JamlConfigLoader</c>; this service is the file/identity layer above that.</summary>
     public interface IFilterService
     {
         Task<List<string>> GetAvailableFiltersAsync();
         Task<bool> DeleteFilterAsync(string filePath);
+
+        /// <summary>True if the file loads and deserializes as a <c>JamlConfig</c> without
+        /// throwing — this is a load-succeeds check, not full JAML clause validation (that
+        /// lives in <c>JamlConfigLoader.TryLoad</c>'s own error output).</summary>
         Task<bool> ValidateFilterAsync(string filePath);
+
         string GenerateFilterFileName(string baseName);
         Task<string> GetFilterNameAsync(string filterId);
+
+        /// <summary>Copies an existing filter under a new name and a fresh generated ID
+        /// (<c>{slug}_{guid}</c>), re-serialized through <c>JamlConfigLoader.ToYaml</c>. Returns
+        /// the new filter's ID, or <see cref="string.Empty"/> if the source doesn't exist or
+        /// fails to parse.</summary>
         Task<string> CloneFilterAsync(string filterId, string newName);
     }
 

@@ -32,6 +32,10 @@ namespace BalatroSeedOracle.Components.FilterTabs
         private JamlHoverTooltipService? _hoverTooltipService;
         private JamlCodeSnippetService? _snippetService;
 
+        // Tracked separately from ViewModel/DataContext so a reassignment unsubscribes the
+        // actual previous ViewModel instead of leaking a subscription to it.
+        private JamlEditorTabViewModel? _subscribedViewModel;
+
         public JamlEditorTabViewModel? ViewModel => DataContext as JamlEditorTabViewModel;
 
         public JamlEditorTab()
@@ -52,6 +56,13 @@ namespace BalatroSeedOracle.Components.FilterTabs
             // When ViewModel changes, update editor
             DataContextChanged += (s, e) =>
             {
+                if (_subscribedViewModel != null)
+                {
+                    _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                    _subscribedViewModel.JumpToError -= OnJumpToError;
+                    _subscribedViewModel = null;
+                }
+
                 if (ViewModel != null)
                 {
                     JamlEditor.Text = ViewModel.JamlContent;
@@ -61,6 +72,8 @@ namespace BalatroSeedOracle.Components.FilterTabs
 
                     // Subscribe to jump to error event
                     ViewModel.JumpToError += OnJumpToError;
+
+                    _subscribedViewModel = ViewModel;
                 }
             };
 
@@ -452,6 +465,19 @@ namespace BalatroSeedOracle.Components.FilterTabs
                 // Silently ignore folding errors to avoid disrupting editing
                 DebugLogger.LogError("JamlEditorTab", $"Error updating foldings: {ex.Message}");
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel.JumpToError -= OnJumpToError;
+                _subscribedViewModel = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
 
         private void OnViewModelPropertyChanged(

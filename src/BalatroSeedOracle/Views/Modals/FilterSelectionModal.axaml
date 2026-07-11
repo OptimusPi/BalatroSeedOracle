@@ -84,7 +84,8 @@
                                             Padding="0"
                                             CornerRadius="8"
                                             VerticalAlignment="Center"
-                                            Command="{Binding FilterList.PreviousPageCommand}"/>
+                                            Command="{Binding FilterList.PreviousPageCommand}"
+                                            AutomationProperties.Name="Previous page"/>
 
                                     <!-- Page indicator -->
                                     <Border Background="{StaticResource Red}"
@@ -110,7 +111,8 @@
                                             Padding="0"
                                             CornerRadius="8"
                                             VerticalAlignment="Center"
-                                            Command="{Binding FilterList.NextPageCommand}"/>
+                                            Command="{Binding FilterList.NextPageCommand}"
+                                            AutomationProperties.Name="Next page"/>
                                 </StackPanel>
 
                                 <!-- Filter List - No scrolling, just pagination -->

@@ -36,21 +36,24 @@
 
                 <!-- Actions -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <Button Command="{Binding CopySelectedCommand}" 
+                    <Button Command="{Binding CopySelectedCommand}"
                             ToolTip.Tip="Copy selected seeds (Ctrl+C)"
+                            AutomationProperties.Name="Copy selected seeds"
                             Classes="btn-blue"
                             Padding="8,4"
                             IsEnabled="{Binding HasSelection}">
                         <PathIcon Data="{StaticResource ContentCopyIconData}" Width="14" Height="14"/>
                     </Button>
-                    <Button Command="{Binding PopOutCommand}" 
+                    <Button Command="{Binding PopOutCommand}"
                             ToolTip.Tip="Open in new window"
+                            AutomationProperties.Name="Open in new window"
                             Classes="btn-blue"
                             Padding="8,4">
                         <PathIcon Data="{StaticResource OpenInNewIconData}" Width="14" Height="14"/>
                     </Button>
-                    <Button Command="{Binding ExportAllCommand}" 
+                    <Button Command="{Binding ExportAllCommand}"
                             ToolTip.Tip="Export all results"
+                            AutomationProperties.Name="Export all results"
                             Classes="btn-green"
                             Padding="8,4">
                         <PathIcon Data="{StaticResource FileExportIconData}" Width="14" Height="14"/>

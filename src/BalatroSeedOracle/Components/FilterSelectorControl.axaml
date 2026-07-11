@@ -167,7 +167,8 @@
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding PreviousPageCommand}"
-                            IsEnabled="{Binding CanGoToPreviousPage}">
+                            IsEnabled="{Binding CanGoToPreviousPage}"
+                            AutomationProperties.Name="Previous page">
                         <PathIcon Data="{StaticResource ChevronLeftIconData}" Width="20" Height="20"/>
                     </Button>
 
@@ -192,7 +193,8 @@
                             Padding="0"
                             CornerRadius="8"
                             Command="{Binding NextPageCommand}"
-                            IsEnabled="{Binding CanGoToNextPage}">
+                            IsEnabled="{Binding CanGoToNextPage}"
+                            AutomationProperties.Name="Next page">
                         <PathIcon Data="{StaticResource ChevronRightIconData}" Width="20" Height="20"/>
                     </Button>
                 </StackPanel>

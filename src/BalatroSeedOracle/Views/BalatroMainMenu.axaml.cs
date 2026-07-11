@@ -923,8 +923,10 @@ namespace BalatroSeedOracle.Views
         /// </summary>
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            // Trigger intro animation event
+            // Wire the event-FX system to the live shader, then trigger the intro animation.
+            // Connect must come first: TriggerEvent is a no-op until the shader is reachable.
             var eventFXService = ServiceHelper.GetService<EventFXService>();
+            eventFXService?.Connect(() => CurrentShaderParameters, ApplyShaderParameters);
             eventFXService?.TriggerEvent(EventFXType.IntroAnimation, 5.0);
 
             // Load visualizer settings
@@ -1391,10 +1393,19 @@ namespace BalatroSeedOracle.Views
         /// Apply all shader parameters at once via ShaderParameters model
         /// VIEW-ONLY: Delegates to shader background control
         /// </summary>
+        /// <summary>
+        /// The last parameters pushed through <see cref="ApplyShaderParameters"/> — the
+        /// starting point for event-FX transitions so they blend from wherever the shader
+        /// actually is instead of a hardcoded state.
+        /// </summary>
+        public Models.ShaderParameters CurrentShaderParameters { get; private set; } =
+            Extensions.VisualizerPresetExtensions.CreateDefaultNormalParameters();
+
         public void ApplyShaderParameters(Models.ShaderParameters parameters)
         {
             try
             {
+                CurrentShaderParameters = parameters;
                 if (_shaderBackground != null)
                 {
                     _shaderBackground.SetTime(parameters.TimeSpeed);

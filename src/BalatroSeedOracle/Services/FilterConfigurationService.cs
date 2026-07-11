@@ -9,8 +9,17 @@ using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services;
 
+/// <summary>
+/// Converts the Visual Builder's raw UI selection state (item keys grouped by must/should/
+/// mustNot, plus per-item edition/ante/score config) directly into a real <see cref="JamlConfig"/>
+/// — the engine's own model, not a duplicate DTO. See CLAUDE.md's "one bridge" rule: this is a
+/// UI-selections-to-engine-model builder, not a second JAML representation.
+/// </summary>
 public interface IFilterConfigurationService
 {
+    /// <summary>Builds a new <see cref="JamlConfig"/> (fresh <c>Id</c>, Red deck, White stake)
+    /// from selected item keys and their per-item <see cref="ItemConfig"/> (edition, antes,
+    /// score). <paramref name="itemConfigs"/> keys not present in any selected list are ignored.</summary>
     JamlConfig BuildConfigFromSelections(
         List<string> selectedMust,
         List<string> selectedShould,

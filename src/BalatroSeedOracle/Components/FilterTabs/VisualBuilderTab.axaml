@@ -694,6 +694,7 @@
                             CornerRadius="6"
                             Cursor="Hand"
                             ToolTip.Tip="Cycle: OR -> AND -> BANNED"
+                            AutomationProperties.Name="Cycle operator type"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
                         <PathIcon Data="{StaticResource SwapHorizontalIconData}"
@@ -922,7 +923,8 @@
                                                                 VerticalAlignment="Top"
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
-                                                                Name="RemoveButton">
+                                                                Name="RemoveButton"
+                                                                AutomationProperties.Name="Remove from Must">
                                                             <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">
@@ -1037,7 +1039,8 @@
                                                                 VerticalAlignment="Top"
                                                                 Margin="0,-6,-6,0"
                                                                 IsVisible="False"
-                                                                Name="RemoveButton">
+                                                                Name="RemoveButton"
+                                                                AutomationProperties.Name="Remove from Should">
                                                             <PathIcon Data="{StaticResource CloseIconData}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                             <Button.Styles>
                                                                 <Style Selector="Button:pointerover">

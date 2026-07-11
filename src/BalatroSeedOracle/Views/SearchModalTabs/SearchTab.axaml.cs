@@ -9,6 +9,12 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
     /// </summary>
     public partial class SearchTab : UserControl
     {
+        // Avalonia's DataContextChanged carries no old-value event args, and by the time the
+        // handler runs, DataContext already IS the new value — reading DataContext here can
+        // never reach the previous ViewModel. Track it ourselves so reassignment unsubscribes
+        // the actual old VM instead of a no-op on the new one.
+        private INotifyPropertyChanged? _subscribedViewModel;
+
         public SearchTab()
         {
             InitializeComponent();
@@ -18,18 +24,17 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
         private void OnDataContextChanged(object? sender, System.EventArgs e)
         {
             // Unsubscribe from old ViewModel
-            if (
-                sender is UserControl control
-                && control.DataContext is INotifyPropertyChanged oldVm
-            )
+            if (_subscribedViewModel != null)
             {
-                oldVm.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
             }
 
             // Subscribe to new ViewModel
             if (DataContext is INotifyPropertyChanged newVm)
             {
                 newVm.PropertyChanged += OnViewModelPropertyChanged;
+                _subscribedViewModel = newVm;
             }
         }
 
@@ -51,6 +56,18 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                     );
                 }
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            if (_subscribedViewModel != null)
+            {
+                _subscribedViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                _subscribedViewModel = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
     }
 }

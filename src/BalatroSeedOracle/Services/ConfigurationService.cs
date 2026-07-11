@@ -12,14 +12,34 @@ using Motely.Filters.Jaml;
 
 namespace BalatroSeedOracle.Services
 {
+    /// <summary>
+    /// Persists filter configuration across both desktop and browser targets. On desktop,
+    /// <paramref name="filePath"/>-shaped arguments are real filesystem paths; in the browser
+    /// (no filesystem access), the same paths are treated as logical keys into
+    /// <see cref="IAppDataStore"/>. <see cref="JamlConfig"/> values are serialized via
+    /// <c>FilterSerializationService</c> for clean output (nulls/empty collections omitted).
+    /// </summary>
     public interface IConfigurationService
     {
+        /// <summary>Serializes and saves <paramref name="config"/>. Returns false on failure
+        /// instead of throwing — callers check the result rather than catching.</summary>
         Task<bool> SaveFilterAsync(string filePath, object config);
+
+        /// <summary>Loads and deserializes a filter as <typeparamref name="T"/>, or null if the
+        /// path doesn't resolve to a valid <typeparamref name="T"/>.</summary>
         Task<T?> LoadFilterAsync<T>(string filePath)
             where T : class;
+
+        /// <summary>A scratch path for filters not yet saved to a permanent location.</summary>
         string GetTempFilterPath();
+
+        /// <summary>The root directory (or logical key prefix, in the browser) filters are
+        /// stored under.</summary>
         string GetFiltersDirectory();
+
         bool FileExists(string filePath);
+
+        /// <summary>No-op in the browser, where there's no filesystem to create directories on.</summary>
         void EnsureDirectoryExists(string directoryPath);
     }
 

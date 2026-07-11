@@ -62,7 +62,8 @@
                             Value="{Binding Volume, Mode=TwoWay}"
                             Height="120"
                             Width="40"
-                            ToolTip.Tip="Drag to adjust volume"/>
+                            ToolTip.Tip="Drag to adjust volume"
+                            AutomationProperties.Name="Volume"/>
 
                     <!-- Volume Percentage Display -->
                     <TextBlock x:Name="VolumePercentText"
@@ -121,7 +122,8 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Cursor="Hand"
-                                ToolTip.Tip="Click to reopen this search">
+                                ToolTip.Tip="Click to reopen this search"
+                                AutomationProperties.Name="{Binding FilterName, StringFormat='Reopen search: {0}'}">
                             <Grid>
                                 <!-- Dark shadow underneath (Balatro dock style) -->
                                 <Border Background="{StaticResource HoverShadow}"
@@ -305,7 +307,8 @@
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Command="{Binding AnimationToggleCommand}"
-                                    ToolTip.Tip="Pause/resume background animation">
+                                    ToolTip.Tip="Pause/resume background animation"
+                                    AutomationProperties.Name="Pause/resume background animation">
                                 <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Path.Styles>
                                         <Style Selector="Path">
@@ -332,7 +335,8 @@
                                     BorderThickness="2"
                                     Margin="0,0,0,2"
                                     Command="{Binding MusicToggleCommand}"
-                                    ToolTip.Tip="Adjust volume">
+                                    ToolTip.Tip="Adjust volume"
+                                    AutomationProperties.Name="Toggle music">
                                 <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Path.Styles>
                                         <Style Selector="Path">

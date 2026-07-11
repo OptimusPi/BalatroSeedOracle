@@ -85,6 +85,10 @@ namespace BalatroSeedOracle.Controls
                 // Show restore icon and tooltip
                 IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("WindowRestoreIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Restore Window");
+                // The visible text label collapses to "" in narrow layouts (see ShowLabel) —
+                // AutomationProperties.Name keeps this button's purpose available to screen
+                // readers regardless of whether the text label is currently shown.
+                Avalonia.Automation.AutomationProperties.SetName(MaximizeBtn, "Restore Window");
                 LabelBlock.Text = "";
             }
             else
@@ -92,6 +96,7 @@ namespace BalatroSeedOracle.Controls
                 // Show maximize icon and tooltip
                 IconBlock.Data = (Avalonia.Media.Geometry)this.FindResource("FullscreenIconData")!;
                 ToolTip.SetTip(MaximizeBtn, "Maximize Window");
+                Avalonia.Automation.AutomationProperties.SetName(MaximizeBtn, "Maximize Window");
                 LabelBlock.Text = "";
             }
 
