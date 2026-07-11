@@ -135,16 +135,10 @@ namespace BalatroSeedOracle.ViewModels
         /// </summary>
         public FiltersModalViewModel FiltersModalViewModel { get; }
 
-        /// <summary>
-        /// CreditsModalViewModel - injected, used by ModalHelper to create CreditsModal (creator passes VM to View).
-        /// </summary>
-        public CreditsModalViewModel CreditsModalViewModel { get; }
-
         public BalatroMainMenuViewModel(
             UserProfileService userProfileService,
             SearchModalViewModel searchModalViewModel,
             FiltersModalViewModel filtersModalViewModel,
-            CreditsModalViewModel creditsModalViewModel,
             Func<AnalyzeModalViewModel> analyzeModalFactory,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
@@ -160,7 +154,6 @@ namespace BalatroSeedOracle.ViewModels
             _filterSelectionFactory = filterSelectionFactory;
             SearchModalViewModel = searchModalViewModel;
             FiltersModalViewModel = filtersModalViewModel;
-            CreditsModalViewModel = creditsModalViewModel;
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;

@@ -436,6 +436,12 @@
             <Setter Property="SelectionBrush" Value="{StaticResource Blue}" />
             <Setter Property="CaretBrush" Value="{StaticResource White}" />
         </Style>
+        <!-- Single-line boxes get no internal scrollbars: sub-pixel text overflow
+             otherwise summons the 12px red scrollbar pill inside the box, which
+             reads as a giant second caret next to the real one. -->
+        <Style Selector="TextBox[AcceptsReturn=False]">
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="Background" Value="{StaticResource DarkBackground}" />
             <Setter Property="BorderBrush" Value="{StaticResource Blue}" />

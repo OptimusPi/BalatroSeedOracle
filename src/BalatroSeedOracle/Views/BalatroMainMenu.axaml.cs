@@ -812,7 +812,7 @@ namespace BalatroSeedOracle.Views
                 _previousModalTitle = "SETTINGS";
             }
 
-            var creditsModal = ServiceHelper.GetRequiredService<Modals.CreditsModal>();
+            var creditsModal = new Modals.CreditsModal(new ViewModels.CreditsModalViewModel());
             var modal = new StandardModal("CREDITS");
             modal.SetContent(creditsModal);
             modal.BackClicked += (s, e) =>

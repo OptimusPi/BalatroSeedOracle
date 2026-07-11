@@ -71,7 +71,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<UserProfileService>(),
                 sp.GetRequiredService<SearchModalViewModel>(),
                 sp.GetRequiredService<FiltersModalViewModel>(),
-                sp.GetRequiredService<CreditsModalViewModel>(),
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
@@ -138,7 +137,6 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<UserProfileService>()
             ));
             // Note: AnalyzerViewModel is registered by Desktop Program.cs only
-            services.AddTransient<CreditsModalViewModel>();
             services.AddTransient<DeckAndStakeViewModel>();
             services.AddTransient<FilterListViewModel>(sp => new FilterListViewModel(
                 sp.GetRequiredService<IFilterCacheService>(),

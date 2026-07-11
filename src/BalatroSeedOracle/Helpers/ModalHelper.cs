@@ -302,7 +302,7 @@ namespace BalatroSeedOracle.Helpers
         /// <returns>The created modal</returns>
         public static StandardModal ShowCreditsModal(this Views.BalatroMainMenu menu)
         {
-            var creditsView = new CreditsModal(menu.ViewModel.CreditsModalViewModel);
+            var creditsView = new CreditsModal(new CreditsModalViewModel());
             return menu.ShowModal("CREDITS", creditsView);
         }
 

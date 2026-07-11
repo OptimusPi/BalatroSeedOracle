@@ -87,6 +87,7 @@ namespace BalatroSeedOracle.Views.Modals
                 if (files == null)
                     return;
 
+                var imported = false;
                 foreach (var file in files)
                 {
                     if (file is not IStorageFile storageFile)
@@ -96,15 +97,21 @@ namespace BalatroSeedOracle.Views.Modals
                     if (ext == ".jaml" || ext == ".json")
                     {
                         await ImportFilterFile(storageFile);
+                        imported = true;
                         break; // Only import first valid file
                     }
+                }
+
+                if (!imported)
+                {
+                    await ShowImportError("No .jaml or .json file in the drop.");
                 }
 
                 e.Handled = true;
             }
             catch (Exception ex)
             {
-                DebugLogger.LogError("FilterSelectionModal", $"OnFilterDrop: {ex.Message}");
+                await ShowImportError($"Import failed: {ex.Message}");
             }
         }
 
@@ -502,6 +509,14 @@ namespace BalatroSeedOracle.Views.Modals
             }
         }
 
+        private static async System.Threading.Tasks.Task ShowImportError(string message)
+        {
+            DebugLogger.LogError("FilterSelectionModal", message);
+            await MessageBoxManager
+                .GetMessageBoxStandard("Import Error", message)
+                .ShowAsync();
+        }
+
         private async System.Threading.Tasks.Task ImportFilterFile(IStorageFile file)
         {
             try
@@ -509,8 +524,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var extension = Path.GetExtension(file.Name).ToLowerInvariant();
                 if (extension != ".jaml" && extension != ".json")
                 {
-                    DebugLogger.LogError(
-                        "FilterSelectionModal",
+                    await ShowImportError(
                         $"Invalid file type: {extension}. Expected .jaml or .json"
                     );
                     return;
@@ -539,9 +553,8 @@ namespace BalatroSeedOracle.Views.Modals
                         || config == null
                     )
                     {
-                        DebugLogger.LogError(
-                            "FilterSelectionModal",
-                            $"Failed to parse JAML: {parseError ?? "Unknown error"}"
+                        await ShowImportError(
+                            $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"
                         );
                         return;
                     }
@@ -550,9 +563,8 @@ namespace BalatroSeedOracle.Views.Modals
                 {
                     if (!JamlConfigLoader.TryLoad(text, out config, out var parseError) || config == null)
                     {
-                        DebugLogger.LogError(
-                            "FilterSelectionModal",
-                            $"Failed to parse filter: {parseError ?? "Unknown error"}"
+                        await ShowImportError(
+                            $"Failed to parse {file.Name}:\n{parseError ?? "Unknown error"}"
                         );
                         return;
                     }
@@ -576,7 +588,7 @@ namespace BalatroSeedOracle.Views.Modals
                 var saved = await configurationService.SaveFilterAsync(destKey, config);
                 if (!saved)
                 {
-                    DebugLogger.LogError("FilterSelectionModal", "Failed to save imported filter");
+                    await ShowImportError($"Parsed OK, but saving as \"{destKey}\" failed.");
                     return;
                 }
 
