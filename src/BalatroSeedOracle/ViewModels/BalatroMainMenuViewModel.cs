@@ -25,7 +25,8 @@ namespace BalatroSeedOracle.ViewModels
         private readonly IAudioManager? _audioManager;
         private readonly EventFXService? _eventFXService;
         private readonly IPlatformServices? _platformServices;
-        private readonly IModalHost? _modalHost;
+        // Deferred: resolving IModalHost eagerly recreates the BalatroMainMenu → ViewModel DI cycle.
+        private readonly Func<IModalHost?>? _modalHostResolver;
         private Action<float, float, float, float>? _audioAnalysisHandler;
 
         // Effect source tracking
@@ -147,7 +148,7 @@ namespace BalatroSeedOracle.ViewModels
             Func<AnalyzeModalViewModel> analyzeModalFactory,
             IAudioManager? audioManager = null,
             EventFXService? eventFXService = null,
-            IModalHost? modalHost = null,
+            Func<IModalHost?>? modalHostResolver = null,
             IPlatformServices? platformServices = null,
             Func<FilterSelectionModalViewModel>? filterSelectionFactory = null
         )
@@ -163,7 +164,7 @@ namespace BalatroSeedOracle.ViewModels
             _audioManager = audioManager;
             _eventFXService = eventFXService;
             _platformServices = platformServices;
-            _modalHost = modalHost;
+            _modalHostResolver = modalHostResolver;
 
             // Load settings
             LoadSettings();
@@ -1103,7 +1104,7 @@ namespace BalatroSeedOracle.ViewModels
                 // Note: IModalHost.ShowSearchModal() shows filter selection, not the specific search instance
                 // For now, we delegate to the view via a callback since showing specific search instances
                 // requires access to the view's ShowSearchModalForInstanceAsync method
-                if (_modalHost is Views.BalatroMainMenu mainMenu)
+                if (_modalHostResolver?.Invoke() is Views.BalatroMainMenu mainMenu)
                 {
                     if (context is not null)
                     {

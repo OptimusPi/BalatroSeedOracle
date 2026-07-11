@@ -75,7 +75,9 @@ namespace BalatroSeedOracle.Extensions
                 sp.GetRequiredService<Func<AnalyzeModalViewModel>>(),
                 sp.GetService<IAudioManager>(),
                 sp.GetService<EventFXService>(),
-                sp.GetService<IModalHost>(),
+                // Deferred: IModalHost is BalatroMainMenu, whose ctor needs this very ViewModel.
+                // Resolving it here recurses forever (DI factory cycle) and the app never starts.
+                () => sp.GetService<IModalHost>(),
                 sp.GetService<IPlatformServices>(),
                 () => sp.GetRequiredService<FilterSelectionModalViewModel>()
             ));
