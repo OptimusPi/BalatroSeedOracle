@@ -21,6 +21,7 @@ namespace BalatroSeedOracle.Controls
         {
             InitializeComponent();
             this.AttachedToVisualTree += OnAttachedToVisualTree;
+            this.DetachedFromVisualTree += OnDetachedFromVisualTree;
         }
 
         private void OnAttachedToVisualTree(
@@ -28,21 +29,41 @@ namespace BalatroSeedOracle.Controls
             Avalonia.VisualTreeAttachmentEventArgs e
         )
         {
+            // Detach from any previous window first — re-attaching to the same or a
+            // different window must not stack a second subscription on top.
+            if (_parentWindow != null)
+            {
+                _parentWindow.PropertyChanged -= OnParentWindowPropertyChanged;
+            }
+
             // Find the parent window
             _parentWindow = this.GetVisualAncestors().OfType<Window>().FirstOrDefault();
 
             if (_parentWindow != null)
             {
-                // Subscribe to window state changes
-                _parentWindow.PropertyChanged += (s, e) =>
-                {
-                    if (e.Property == Window.WindowStateProperty)
-                    {
-                        UpdateButtonState();
-                    }
-                };
+                _parentWindow.PropertyChanged += OnParentWindowPropertyChanged;
 
                 // Initialize button state
+                UpdateButtonState();
+            }
+        }
+
+        private void OnDetachedFromVisualTree(
+            object? sender,
+            Avalonia.VisualTreeAttachmentEventArgs e
+        )
+        {
+            if (_parentWindow != null)
+            {
+                _parentWindow.PropertyChanged -= OnParentWindowPropertyChanged;
+                _parentWindow = null;
+            }
+        }
+
+        private void OnParentWindowPropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Window.WindowStateProperty)
+            {
                 UpdateButtonState();
             }
         }

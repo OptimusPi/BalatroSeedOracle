@@ -80,3 +80,9 @@ publish*.txt
 build_output.txt
 temp_*.txt
 .vault_token
+
+# Local MCP server config contains license keys - do not commit
+.mcp.json
+
+# Per-user runtime profile/preferences, not project source
+userprofile.json

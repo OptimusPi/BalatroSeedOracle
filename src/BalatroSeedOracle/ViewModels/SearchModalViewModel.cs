@@ -1374,11 +1374,24 @@ namespace BalatroSeedOracle.ViewModels
                     // Handle Continue feature
                     if (ContinueFromLast)
                     {
-                        // Let Motely handle continuation from its internal state
-                        // Don't set StartBatch - Motely will auto-resume if it has saved progress
-                        AddConsoleMessage(
-                            "Continue enabled - Motely will resume from last position if available."
-                        );
+                        var savedState = _userProfileService.GetSearchState();
+                        if (savedState is not null
+                            && !string.IsNullOrEmpty(CurrentFilterPath)
+                            && string.Equals(savedState.ConfigPath, CurrentFilterPath, StringComparison.OrdinalIgnoreCase)
+                            && savedState.BatchSize == criteria.BatchSize)
+                        {
+                            criteria.StartBatch = savedState.LastCompletedBatch + 1;
+                            AddConsoleMessage(
+                                $"Resuming from batch {criteria.StartBatch:N0} (saved progress found)."
+                            );
+                        }
+                        else
+                        {
+                            criteria.StartBatch = 0;
+                            AddConsoleMessage(
+                                "Continue enabled but no matching saved progress was found - starting from batch 0."
+                            );
+                        }
                     }
                     else
                     {
@@ -2241,13 +2254,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var wordListDir = Path.Combine(
-                    AppContext.BaseDirectory,
-                    "..",
-                    "..",
-                    "..",
-                    "WordLists"
-                );
+                var wordListDir = AppPaths.WordListsDir;
                 if (Directory.Exists(wordListDir))
                 {
                     var files = Directory
@@ -2296,13 +2303,7 @@ namespace BalatroSeedOracle.ViewModels
         {
             try
             {
-                var searchResultsDir = Path.Combine(
-                    AppContext.BaseDirectory,
-                    "..",
-                    "..",
-                    "..",
-                    "SearchResults"
-                );
+                var searchResultsDir = AppPaths.SearchResultsDir;
                 if (Directory.Exists(searchResultsDir))
                 {
                     var files = Directory
