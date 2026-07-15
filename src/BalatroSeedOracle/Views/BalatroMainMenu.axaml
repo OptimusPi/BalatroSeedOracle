@@ -336,7 +336,7 @@
                                     Margin="0,0,0,2"
                                     Command="{Binding MusicToggleCommand}"
                                     ToolTip.Tip="Adjust volume"
-                                    AutomationProperties.Name="Toggle music">
+                                    AutomationProperties.Name="Adjust volume">
                                 <Path Width="24" Height="24" Fill="{StaticResource White}" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Path.Styles>
                                         <Style Selector="Path">

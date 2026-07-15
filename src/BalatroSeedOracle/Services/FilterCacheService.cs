@@ -592,10 +592,13 @@ namespace BalatroSeedOracle.Services
 
                     if (extension == ".jaml")
                     {
-                        // Load JAML file using JamlConfigLoader
+                        // Load JAML file using JamlConfigLoader.
+                        // TryLoad takes the file *contents*, not the path — read it first,
+                        // exactly like the .json branch below.
+                        var jamlText = File.ReadAllText(filePath);
                         if (
                             Motely.Filters.Jaml.JamlConfigLoader.TryLoad(
-                                filePath,
+                                jamlText,
                                 out var jamlConfig,
                                 out var jamlError
                             )
