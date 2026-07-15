@@ -12,6 +12,14 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
     /// </summary>
     public partial class ResultsTab : UserControl
     {
+        // The DataContext is the app-lifetime singleton SearchModalViewModel. Track the
+        // instance we subscribed to so we can detach on OnDetachedFromVisualTree — otherwise
+        // the singleton roots this tab forever. _gridWired guards the child-grid handlers:
+        // this tab is cached in the VM and re-attaches on every tab switch, so subscribing
+        // them on each attach would stack duplicate handlers.
+        private SearchModalViewModel? _subscribedVm;
+        private bool _gridWired;
+
         public ResultsTab()
         {
             InitializeComponent();
@@ -20,8 +28,15 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
 
         private void OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
         {
-            if (DataContext is SearchModalViewModel vm && ResultsGrid != null)
+            if (DataContext is not SearchModalViewModel vm)
+                return;
+
+            // Grid events target the child grid (same lifetime as this tab). Wire them
+            // exactly once per tab instance to avoid duplicate handlers on re-attach.
+            if (ResultsGrid != null && !_gridWired)
             {
+                _gridWired = true;
+
                 DebugLogger.Log(
                     "ResultsTab",
                     $"OnAttachedToVisualTree: Grid found with {vm.SearchResults.Count} search results available for binding"
@@ -37,13 +52,25 @@ namespace BalatroSeedOracle.Views.SearchModalTabs
                 ResultsGrid.AnalyzeRequested += (s, result) =>
                     vm.OpenAnalyzeModalForSeed(result?.Seed);
 
-                // VM raises ShowDataGridResultsRequested; the View opens the window
-                // (window construction is a View concern, kept out of the VM).
-                vm.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
-                vm.ShowDataGridResultsRequested += OnShowDataGridResultsRequested;
-
                 ResultsGrid.PopOutRequested += (s, e2) => vm.RequestPopOutResults();
             }
+
+            // VM raises ShowDataGridResultsRequested; the View opens the window (window
+            // construction is a View concern, kept out of the VM). Detached in
+            // OnDetachedFromVisualTree so the singleton VM doesn't root this tab.
+            vm.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
+            vm.ShowDataGridResultsRequested += OnShowDataGridResultsRequested;
+            _subscribedVm = vm;
+        }
+
+        protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+        {
+            if (_subscribedVm is not null)
+            {
+                _subscribedVm.ShowDataGridResultsRequested -= OnShowDataGridResultsRequested;
+                _subscribedVm = null;
+            }
+            base.OnDetachedFromVisualTree(e);
         }
 
         private void OnShowDataGridResultsRequested(

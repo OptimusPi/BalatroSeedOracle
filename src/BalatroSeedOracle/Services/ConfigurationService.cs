@@ -217,9 +217,13 @@ namespace BalatroSeedOracle.Services
                     });
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Error loading filter
+                // Never fail silently — a null here with no trace hid real breakage before.
+                DebugLogger.LogError(
+                    "ConfigurationService",
+                    $"Failed to load filter from '{filePath}': {ex.Message}"
+                );
                 return null;
             }
         }

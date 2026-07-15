@@ -43,10 +43,12 @@ namespace BalatroSeedOracle.Views.Modals
             ViewModel = viewModel;
             DataContext = ViewModel;
 
-            ViewModel.CloseRequested += (s, e) => CloseRequested?.Invoke(this, e);
+            // Named handlers (not lambdas) so OnUnloaded can detach them. ViewModel is an
+            // app-lifetime singleton; a transient modal that subscribes without detaching
+            // roots its whole view tree on the singleton for the life of the app.
+            ViewModel.CloseRequested += OnVmCloseRequested;
             ViewModel.MinimizeToDesktopRequested += OnMinimizeToDesktopRequested;
-            ViewModel.CopyToClipboardRequested += async (s, text) =>
-                await CopyToClipboardAsync(text);
+            ViewModel.CopyToClipboardRequested += OnVmCopyToClipboardRequested;
 
             InitializeComponent();
             WireUpComponentEvents();
@@ -74,10 +76,25 @@ namespace BalatroSeedOracle.Views.Modals
             AvaloniaXamlLoader.Load(this);
         }
 
+        private void OnVmCloseRequested(object? sender, EventArgs e) =>
+            CloseRequested?.Invoke(this, e);
+
+        private async void OnVmCopyToClipboardRequested(object? sender, string text) =>
+            await CopyToClipboardAsync(text);
+
         protected override void OnUnloaded(Avalonia.Interactivity.RoutedEventArgs e)
         {
             base.OnUnloaded(e);
-            ViewModel?.Dispose();
+
+            // Detach from the singleton ViewModel so this modal instance can be collected.
+            // Do NOT Dispose the ViewModel: it is a singleton that owns the live search
+            // context, which must keep running when the modal is minimized to the desktop.
+            if (ViewModel is not null)
+            {
+                ViewModel.CloseRequested -= OnVmCloseRequested;
+                ViewModel.MinimizeToDesktopRequested -= OnMinimizeToDesktopRequested;
+                ViewModel.CopyToClipboardRequested -= OnVmCopyToClipboardRequested;
+            }
         }
 
         /// <summary>
